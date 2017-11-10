@@ -1,0 +1,7 @@
+{
+  "name": "Apigee Edge",
+  "type": "drupal-module",
+  "require": {
+    "php": ">=7.1"
+  }
+}

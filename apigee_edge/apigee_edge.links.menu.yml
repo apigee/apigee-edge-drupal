@@ -1,0 +1,6 @@
+apigee_edge.settings:
+  title: 'Apigee Edge'
+  description: 'Apigee Edge module settings.'
+  parent: system.admin_config
+  route_name: apigee_edge.settings
+  weight: 100
