@@ -1,0 +1,4 @@
+services:
+  plugin.manager.credentials_storage:
+    class: Drupal\apigee_edge\CredentialsStorageManager
+    parent: default_plugin_manager

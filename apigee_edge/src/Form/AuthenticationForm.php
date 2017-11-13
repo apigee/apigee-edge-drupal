@@ -5,6 +5,11 @@ namespace Drupal\apigee_edge\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 
+/**
+ * Provides a form for saving the API credentials.
+ *
+ * @ingroup apigee_edge
+ */
 class AuthenticationForm extends FormBase {
 
   /**
@@ -52,6 +57,10 @@ class AuthenticationForm extends FormBase {
       '#type' => 'submit',
       '#value' => $this->t('Save API credentials'),
     );
+
+    $type = \Drupal::service('plugin.manager.credentials_storage');
+    $plugin_definitions = $type->getDefinitions();
+
     return $form;
   }
 
