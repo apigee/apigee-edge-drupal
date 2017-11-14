@@ -23,5 +23,4 @@ abstract class CredentialsStoragePluginBase extends PluginBase implements Creden
   public function getName() {
     return $this->pluginDefinition['name'];
   }
-
 }

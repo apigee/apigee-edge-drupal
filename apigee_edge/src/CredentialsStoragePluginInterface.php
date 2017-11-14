@@ -23,7 +23,24 @@ interface CredentialsStoragePluginInterface extends PluginInspectionInterface {
    */
   public function getName();
 
+  /**
+   * Read the saved credentials from the storage unit.
+   *
+   * @return array
+   */
   public function loadCredentials();
 
+  /**
+   * Save the credentials in the storage unit.
+   *
+   * @return string
+   */
   public function saveCredentials();
+
+  /**
+   * Delete credentials from the storage unit.
+   *
+   * @return string
+   */
+  public function deleteCredentials();
 }

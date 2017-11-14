@@ -28,4 +28,10 @@ class PrivateFileStorage extends CredentialsStoragePluginBase {
     // TODO: Implement saveCredentials() method.
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function deleteCredentials() {
+    // TODO: Implement deleteCredentials() method.
+  }
 }
