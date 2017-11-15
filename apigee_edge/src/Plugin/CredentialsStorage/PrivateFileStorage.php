@@ -2,10 +2,11 @@
 
 namespace Drupal\apigee_edge\Plugin\CredentialsStorage;
 
+use Drupal\apigee_edge\CredentialsInterface;
 use Drupal\apigee_edge\CredentialsStoragePluginBase;
 
 /**
- * Store credentials in a private file.
+ * Stores the credentials in a private file.
  *
  * @CredentialsStorage(
  *   id = "credentials_storage_private_file",
@@ -17,7 +18,7 @@ class PrivateFileStorage extends CredentialsStoragePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function loadCredentials() {
+  public function loadCredentials() : CredentialsInterface {
     // TODO: Implement loadCredentials() method.
   }
 

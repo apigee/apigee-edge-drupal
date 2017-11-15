@@ -6,9 +6,9 @@ use Drupal\Component\Plugin\PluginBase;
 
 
 /**
- * Defines the CredentialsStoragePluginBase abstract class.
+ * Defines the AuthenticationMethodPluginBase abstract class.
  */
-abstract class CredentialsStoragePluginBase extends PluginBase implements CredentialsStoragePluginInterface {
+abstract class AuthenticationMethodPluginBase extends PluginBase implements AuthenticationMethodPluginInterface {
 
   /**
    * {@inheritdoc}

@@ -10,35 +10,35 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
 interface CredentialsStoragePluginInterface extends PluginInspectionInterface {
 
   /**
-   * Return the ID of the credentials storage plugin.
+   * Returns the ID of the credentials storage plugin.
    *
    * @return string
    */
-  public function getId();
+  public function getId() : string;
 
   /**
-   * Return the name of the credentials storage plugin.
+   * Returns the name of the credentials storage plugin.
    *
    * @return string
    */
-  public function getName();
+  public function getName() : string;
 
   /**
-   * Read the saved credentials from the storage unit.
+   * Loads the saved credentials from the storage unit.
    *
-   * @return array
+   * @return CredentialsInterface
    */
-  public function loadCredentials();
+  public function loadCredentials() : CredentialsInterface;
 
   /**
-   * Save the credentials in the storage unit.
+   * Saves the credentials in the storage unit.
    *
    * @return string
    */
   public function saveCredentials();
 
   /**
-   * Delete credentials from the storage unit.
+   * Deletes the credentials from the storage unit.
    *
    * @return string
    */

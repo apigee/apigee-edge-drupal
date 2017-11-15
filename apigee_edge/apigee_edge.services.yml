@@ -2,3 +2,7 @@ services:
   plugin.manager.credentials_storage:
     class: Drupal\apigee_edge\CredentialsStorageManager
     parent: default_plugin_manager
+
+  plugin.manager.authentication_method:
+      class: Drupal\apigee_edge\AuthenticationMethodManager
+      parent: default_plugin_manager
