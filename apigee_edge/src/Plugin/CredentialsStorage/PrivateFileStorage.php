@@ -2,7 +2,6 @@
 
 namespace Drupal\apigee_edge\Plugin\CredentialsStorage;
 
-use function Couchbase\passthruEncoder;
 use Drupal\apigee_edge\Credentials;
 use Drupal\apigee_edge\CredentialsInterface;
 use Drupal\apigee_edge\CredentialsSaveException;
