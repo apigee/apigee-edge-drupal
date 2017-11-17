@@ -26,4 +26,5 @@ class CredentialsStorage extends Plugin {
    * @ingroup plugin_translatable
    */
   public $name;
+
 }

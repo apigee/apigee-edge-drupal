@@ -13,6 +13,7 @@ interface CredentialsStoragePluginInterface extends PluginInspectionInterface {
    * Returns the ID of the credentials storage plugin.
    *
    * @return string
+   *   The ID of the credentials storage plugin.
    */
   public function getId() : string;
 
@@ -20,6 +21,7 @@ interface CredentialsStoragePluginInterface extends PluginInspectionInterface {
    * Returns the name of the credentials storage plugin.
    *
    * @return string
+   *   The name of the credentials storage plugin.
    */
   public function getName() : string;
 
@@ -27,20 +29,27 @@ interface CredentialsStoragePluginInterface extends PluginInspectionInterface {
    * Loads the saved credentials from the storage unit.
    *
    * @return CredentialsInterface
+   *   The CredentialsInterface which contains the stored API credentials.
    */
   public function loadCredentials() : CredentialsInterface;
 
   /**
    * Saves the credentials in the storage unit.
    *
-   * @return string
+   * @param CredentialsInterface $credentials
+   *   The credentials object.
+   *
+   * @return bool
+   *   TRUE if saving the credentials was successful else FALSE.
+   *
+   * @throws CredentialsSaveException
+   *   When unable to save credentials.
    */
-  public function saveCredentials();
+  public function saveCredentials(CredentialsInterface $credentials);
 
   /**
    * Deletes the credentials from the storage unit.
-   *
-   * @return string
    */
   public function deleteCredentials();
+
 }

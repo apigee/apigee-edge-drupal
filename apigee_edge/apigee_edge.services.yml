@@ -4,5 +4,8 @@ services:
     parent: default_plugin_manager
 
   plugin.manager.authentication_method:
-      class: Drupal\apigee_edge\AuthenticationMethodManager
-      parent: default_plugin_manager
+    class: Drupal\apigee_edge\AuthenticationMethodManager
+    parent: default_plugin_manager
+
+  sdk_connector:
+    class: Drupal\apigee_edge\SDKConnector

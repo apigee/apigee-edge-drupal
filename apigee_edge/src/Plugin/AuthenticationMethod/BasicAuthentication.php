@@ -4,7 +4,8 @@ namespace Drupal\apigee_edge\Plugin\AuthenticationMethod;
 
 use Drupal\apigee_edge\AuthenticationMethodPluginBase;
 use Drupal\apigee_edge\CredentialsInterface;
-use Http\Message\Authentication;
+use Http\Message\Authentication as AuthenticationInterface;
+use Http\Message\Authentication\BasicAuth;
 
 /**
  * Creates BasicAuth object.
@@ -19,7 +20,8 @@ class BasicAuthentication extends AuthenticationMethodPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function createAuthenticationObject(CredentialsInterface $credentials): Authentication {
-    return new Authentication\BasicAuth($credentials->getUsername(), $credentials->getPassword());
+  public function createAuthenticationObject(CredentialsInterface $credentials): AuthenticationInterface {
+    return new BasicAuth($credentials->getUsername(), $credentials->getPassword());
   }
+
 }

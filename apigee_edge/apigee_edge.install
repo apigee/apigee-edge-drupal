@@ -1,0 +1,41 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for Apigee Edge.
+ */
+
+use Drupal\Core\Site\Settings;
+
+/**
+ * Implements hook_requirements().
+ */
+function apigee_edge_requirements($phase) {
+  $requirements = [];
+
+  if ($phase == 'install') {
+    $private_file_path = Settings::get('file_private_path');
+    if (empty($private_file_path)) {
+      $requirements['apigee_edge'] = [
+        'title' => t('Private file path'),
+        'description' => t('The private file path must be set for the Apigee Edge module.'),
+        'severity' => REQUIREMENT_ERROR,
+      ];
+    }
+  }
+
+  return $requirements;
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function apigee_edge_uninstall() {
+  $credentials_storage_plugin_manager = \Drupal::service('plugin.manager.credentials_storage');
+
+  foreach ($credentials_storage_plugin_manager->getDefinitions() as $key => $value) {
+    $credentials_storage_plugin = $credentials_storage_plugin_manager->createInstance($key);
+    /** @var \Drupal\apigee_edge\CredentialsStoragePluginInterface $credentials_storage_plugin */
+    $credentials_storage_plugin->deleteCredentials();
+  }
+}

@@ -11,15 +11,15 @@ interface CredentialsInterface {
    * Gets the API base URL.
    *
    * @return string
-   *  The API base URL.
+   *   The API base URL.
    */
-  public function getBaseURL(): string;
+  public function getBaseUrl(): string;
 
   /**
    * Gets the API username.
    *
    * @return string
-   *  The API username.
+   *   The API username.
    */
   public function getUsername(): string;
 
@@ -27,7 +27,7 @@ interface CredentialsInterface {
    * Gets the API password.
    *
    * @return string
-   *  The API password.
+   *   The API password.
    */
   public function getPassword(): string;
 
@@ -35,13 +35,15 @@ interface CredentialsInterface {
    * Sets the API baseURL.
    *
    * @param string $baseURL
+   *   The API base URL.
    */
-  public function setBaseURL(string $baseURL);
+  public function setBaseUrl(string $baseURL);
 
   /**
    * Sets the API username.
    *
    * @param string $username
+   *   The API username.
    */
   public function setUsername(string $username);
 
@@ -49,6 +51,8 @@ interface CredentialsInterface {
    * Sets the API password.
    *
    * @param string $password
+   *   The API password.
    */
   public function setPassword(string $password);
+
 }

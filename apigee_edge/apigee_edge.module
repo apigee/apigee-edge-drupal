@@ -4,3 +4,54 @@
  * @file
  * Main module file for Apigee Edge.
  */
+
+use Apigee\Edge\Api\Management\Entity\Developer;
+use Drupal\user\UserInterface;
+
+/**
+ * Implements hook_user_presave().
+ */
+function apigee_edge_user_presave(UserInterface $account) {
+  $developer_data = [
+    'userName' => $account->getAccountName(),
+    'email' => $account->getEmail(),
+    'firstName' => $account->getAccountName(),
+    'lastName' => $account->getAccountName(),
+  ];
+
+  try {
+    /** @var \Apigee\Edge\Entity\EntityControllerFactory $ecf */
+    $ecf = \Drupal::service('sdk_connector')->getEntityControllerFactory();
+    $ec = $ecf->getControllerByEndpoint('developers');
+    $developer = new Developer($developer_data);
+    $ec->save($developer);
+  }
+  catch (\Exception $exception) {
+    \Drupal::logger('apigee_edge')->error('Could not save developer entity: '
+      . print_r($developer_data['email'], TRUE)
+      . ' '
+      . $exception->getMessage()
+      . PHP_EOL
+      . $exception->getTraceAsString());
+  }
+}
+
+/**
+ * Implements hook_user_delete().
+ */
+function apigee_edge_user_delete(UserInterface $account) {
+  try {
+    /** @var \Apigee\Edge\Entity\EntityControllerFactory $ecf */
+    $ecf = \Drupal::service('sdk_connector')->getEntityControllerFactory();
+    $ec = $ecf->getControllerByEndpoint('developers');
+    $ec->delete($account->getEmail());
+  }
+  catch (\Exception $exception) {
+    \Drupal::logger('apigee_edge')->error('Could not delete developer entity: '
+      . print_r($account->getEmail(), TRUE)
+      . ' '
+      . $exception->getMessage()
+      . PHP_EOL
+      . $exception->getTraceAsString());
+  }
+}

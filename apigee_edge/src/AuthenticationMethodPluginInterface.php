@@ -3,7 +3,7 @@
 namespace Drupal\apigee_edge;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
-use Http\Message\Authentication;
+use Http\Message\Authentication as AuthenticationInterface;
 
 /**
  * Defines an interface for authentication method plugins.
@@ -14,7 +14,7 @@ interface AuthenticationMethodPluginInterface extends PluginInspectionInterface 
    * Returns the ID of the authentication method plugin.
    *
    * @return string
-   *  The ID of the authentication method plugin.
+   *   The ID of the authentication method plugin.
    */
   public function getId() : string;
 
@@ -22,7 +22,7 @@ interface AuthenticationMethodPluginInterface extends PluginInspectionInterface 
    * Returns the name of the authentication method plugin.
    *
    * @return string
-   *  The name of the authentication method plugin.
+   *   The name of the authentication method plugin.
    */
   public function getName() : string;
 
@@ -30,11 +30,12 @@ interface AuthenticationMethodPluginInterface extends PluginInspectionInterface 
    * Creates an authentication object.
    *
    * @param \Drupal\apigee_edge\CredentialsInterface $credentials
-   *  An object that implements \Drupal\apigee_edge\CredentialsInterface
-   *  which contains the API credentials.
+   *   An object that implements \Drupal\apigee_edge\CredentialsInterface
+   *   which contains the API credentials.
    *
-   * @return Authentication
-   *  An object that implements \Http\Message\Authentication\Authentication.
+   * @return \Http\Message\Authentication
+   *   An object that implements \Http\Message\Authentication.
    */
-  public function createAuthenticationObject(CredentialsInterface $credentials) : Authentication;
+  public function createAuthenticationObject(CredentialsInterface $credentials) : AuthenticationInterface;
+
 }

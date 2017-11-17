@@ -1,0 +1,13 @@
+#edit-test-connection-submit {
+  margin-left: 0;
+}
+
+.test-connection-response-error {
+  color: red;
+  font-weight: bold;
+}
+
+.test-connection-response-success {
+  color: green;
+  font-weight: bold;
+}

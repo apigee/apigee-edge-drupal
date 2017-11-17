@@ -5,7 +5,7 @@ namespace Drupal\apigee_edge\Annotation;
 use Drupal\Component\Annotation\Plugin;
 
 /**
- * Defines a authentication method plugin annotation object.
+ * Defines an authentication method plugin annotation object.
  *
  * @Annotation
  */
@@ -26,4 +26,5 @@ class AuthenticationMethod extends Plugin {
    * @ingroup plugin_translatable
    */
   public $name;
+
 }

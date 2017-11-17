@@ -4,7 +4,6 @@ namespace Drupal\apigee_edge;
 
 use Drupal\Component\Plugin\PluginBase;
 
-
 /**
  * Defines the AuthenticationMethodPluginBase abstract class.
  */
@@ -23,4 +22,5 @@ abstract class AuthenticationMethodPluginBase extends PluginBase implements Auth
   public function getName() : string {
     return $this->pluginDefinition['name'];
   }
+
 }

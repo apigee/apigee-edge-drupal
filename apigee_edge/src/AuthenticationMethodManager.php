@@ -35,8 +35,10 @@ class AuthenticationMethodManager extends DefaultPluginManager {
       'Drupal\apigee_edge\AuthenticationMethodPluginInterface',
       'Drupal\apigee_edge\Annotation\AuthenticationMethod'
     );
+
     $this->alterInfo('authetnication_method_info');
     $this->setCacheBackend($cache_backend, 'authentication_method');
     $this->factory = new DefaultFactory($this->getDiscovery());
   }
+
 }

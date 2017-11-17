@@ -35,8 +35,10 @@ class CredentialsStorageManager extends DefaultPluginManager {
       'Drupal\apigee_edge\CredentialsStoragePluginInterface',
       'Drupal\apigee_edge\Annotation\CredentialsStorage'
     );
+
     $this->alterInfo('credentials_storage_info');
     $this->setCacheBackend($cache_backend, 'credentials_storage');
     $this->factory = new DefaultFactory($this->getDiscovery());
   }
+
 }

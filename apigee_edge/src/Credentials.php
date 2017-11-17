@@ -31,7 +31,7 @@ class Credentials implements CredentialsInterface {
   /**
    * {@inheritdoc}
    */
-  public function getBaseURL(): string {
+  public function getBaseUrl(): string {
     return $this->baseURL;
   }
 
@@ -52,7 +52,7 @@ class Credentials implements CredentialsInterface {
   /**
    * {@inheritdoc}
    */
-  public function setBaseURL(string $baseURL) {
+  public function setBaseUrl(string $baseURL) {
     $this->baseURL = $baseURL;
   }
 
@@ -69,4 +69,5 @@ class Credentials implements CredentialsInterface {
   public function setPassword(string $password) {
     $this->password = $password;
   }
+
 }
