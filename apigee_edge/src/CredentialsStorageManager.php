@@ -2,6 +2,7 @@
 
 namespace Drupal\apigee_edge;
 
+use Drupal\apigee_edge\Annotation\CredentialsStorage;
 use Drupal\Component\Plugin\Factory\DefaultFactory;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
@@ -32,8 +33,8 @@ class CredentialsStorageManager extends DefaultPluginManager {
       'Plugin/CredentialsStorage',
       $namespaces,
       $module_handler,
-      'Drupal\apigee_edge\CredentialsStoragePluginInterface',
-      'Drupal\apigee_edge\Annotation\CredentialsStorage'
+      CredentialsStoragePluginInterface::class,
+      CredentialsStorage::class
     );
 
     $this->alterInfo('credentials_storage_info');

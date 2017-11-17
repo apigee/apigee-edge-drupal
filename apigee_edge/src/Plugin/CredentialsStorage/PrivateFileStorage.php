@@ -24,6 +24,7 @@ class PrivateFileStorage extends CredentialsStoragePluginBase {
    */
   public function loadCredentials() : CredentialsInterface {
     $base_url = '';
+    $organization = '';
     $username = '';
     $password = '';
     $data = file_get_contents(self::FILE_URI);
@@ -31,12 +32,14 @@ class PrivateFileStorage extends CredentialsStoragePluginBase {
     if ($data !== FALSE) {
       $stored_credentials = json_decode($data);
       $base_url = $stored_credentials->baseURL;
+      $organization = $stored_credentials->organization;
       $username = $stored_credentials->username;
       $password = $stored_credentials->password;
     }
 
     $credentials = new Credentials();
     $credentials->setBaseURL($base_url);
+    $credentials->setOrganization($organization);
     $credentials->setUsername($username);
     $credentials->setPassword($password);
 
@@ -49,6 +52,7 @@ class PrivateFileStorage extends CredentialsStoragePluginBase {
   public function saveCredentials(CredentialsInterface $credentials) {
     $data = json_encode([
       'baseURL' => $credentials->getBaseURL(),
+      'organization' => $credentials->getOrganization(),
       'username' => $credentials->getUsername(),
       'password' => $credentials->getPassword(),
     ]);
@@ -68,6 +72,7 @@ class PrivateFileStorage extends CredentialsStoragePluginBase {
   public function deleteCredentials() {
     $data = json_encode([
       'baseURL' => '',
+      'organization' => '',
       'username' => '',
       'password' => '',
     ]);

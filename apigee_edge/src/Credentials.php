@@ -15,6 +15,13 @@ class Credentials implements CredentialsInterface {
   protected $baseURL;
 
   /**
+   * The name of the organization.
+   *
+   * @var string
+   */
+  protected $organization;
+
+  /**
    * The API username.
    *
    * @var string
@@ -38,6 +45,13 @@ class Credentials implements CredentialsInterface {
   /**
    * {@inheritdoc}
    */
+  public function getOrganization(): string {
+    return $this->organization;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getUsername(): string {
     return $this->username;
   }
@@ -54,6 +68,13 @@ class Credentials implements CredentialsInterface {
    */
   public function setBaseUrl(string $baseURL) {
     $this->baseURL = $baseURL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setOrganization(string $organization) {
+    $this->organization = $organization;
   }
 
   /**

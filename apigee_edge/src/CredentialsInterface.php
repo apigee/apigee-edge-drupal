@@ -24,6 +24,14 @@ interface CredentialsInterface {
   public function getUsername(): string;
 
   /**
+   * Gets the name of the organization.
+   *
+   * @return string
+   *   The name of the organization.
+   */
+  public function getOrganization(): string;
+
+  /**
    * Gets the API password.
    *
    * @return string
@@ -38,6 +46,14 @@ interface CredentialsInterface {
    *   The API base URL.
    */
   public function setBaseUrl(string $baseURL);
+
+  /**
+   * Sets the name of the organization.
+   *
+   * @param string $organization
+   *   The name of the organization.
+   */
+  public function setOrganization(string $organization);
 
   /**
    * Sets the API username.

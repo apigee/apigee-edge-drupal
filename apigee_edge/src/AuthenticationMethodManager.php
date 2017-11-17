@@ -2,6 +2,7 @@
 
 namespace Drupal\apigee_edge;
 
+use Drupal\apigee_edge\Annotation\AuthenticationMethod;
 use Drupal\Component\Plugin\Factory\DefaultFactory;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
@@ -32,8 +33,8 @@ class AuthenticationMethodManager extends DefaultPluginManager {
       'Plugin/AuthenticationMethod',
       $namespaces,
       $module_handler,
-      'Drupal\apigee_edge\AuthenticationMethodPluginInterface',
-      'Drupal\apigee_edge\Annotation\AuthenticationMethod'
+      AuthenticationMethodPluginInterface::class,
+      AuthenticationMethod::class
     );
 
     $this->alterInfo('authetnication_method_info');

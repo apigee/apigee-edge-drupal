@@ -27,12 +27,12 @@ function apigee_edge_user_presave(UserInterface $account) {
     $ec->save($developer);
   }
   catch (\Exception $exception) {
-    \Drupal::logger('apigee_edge')->error('Could not save developer entity: '
-      . print_r($developer_data['email'], TRUE)
-      . ' '
-      . $exception->getMessage()
-      . PHP_EOL
-      . $exception->getTraceAsString());
+    $context = [
+      '@developer' => print_r($developer_data, TRUE),
+      '@message' => $exception->getMessage(),
+      '@trace' => $exception->getTraceAsString(),
+    ];
+    \Drupal::logger('apigee_edge')->error('Could not save developer entity. @developer, @message, @trace', $context);
   }
 }
 
@@ -47,11 +47,11 @@ function apigee_edge_user_delete(UserInterface $account) {
     $ec->delete($account->getEmail());
   }
   catch (\Exception $exception) {
-    \Drupal::logger('apigee_edge')->error('Could not delete developer entity: '
-      . print_r($account->getEmail(), TRUE)
-      . ' '
-      . $exception->getMessage()
-      . PHP_EOL
-      . $exception->getTraceAsString());
+    $context = [
+      '@developer' => $account->getEmail(),
+      '@message' => $exception->getMessage(),
+      '@trace' => $exception->getTraceAsString(),
+    ];
+    \Drupal::logger('apigee_edge')->error('Could not delete developer entity. @developer, @message, @trace', $context);
   }
 }

@@ -34,7 +34,7 @@ class SDKConnector {
     $auth = $authentication_method_plugin->createAuthenticationObject($credentials);
     $client = new Client($auth);
 
-    return new EntityControllerFactory($credentials->getBaseURL(), $client);
+    return new EntityControllerFactory($credentials->getOrganization(), $client);
   }
 
 }

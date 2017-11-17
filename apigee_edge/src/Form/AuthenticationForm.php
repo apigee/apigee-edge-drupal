@@ -8,6 +8,7 @@ use Drupal\apigee_edge\AuthenticationMethodManager;
 use Drupal\apigee_edge\Credentials;
 use Drupal\apigee_edge\CredentialsSaveException;
 use Drupal\apigee_edge\CredentialsStorageManager;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -156,6 +157,12 @@ class AuthenticationForm extends ConfigFormBase {
       '#default_value' => $credentials->getBaseURL(),
       '#required' => TRUE,
     ];
+    $form['credentials']['credentials_api_organization'] = [
+      '#type' => 'textfield',
+      '#title' => t('Organization'),
+      '#default_value' => $credentials->getOrganization(),
+      '#required' => TRUE,
+    ];
     $form['credentials']['credentials_api_username'] = [
       '#type' => 'email',
       '#title' => t('API username'),
@@ -203,6 +210,7 @@ class AuthenticationForm extends ConfigFormBase {
         if ($form_state->getValue('credentials_storage_type') === $key) {
           $credentials = new Credentials();
           $credentials->setBaseURL($form_state->getValue('credentials_api_base_url'));
+          $credentials->setOrganization($form_state->getValue('credentials_api_organization'));
           $credentials->setUsername($form_state->getValue('credentials_api_username'));
           $credentials->setPassword($form_state->getValue('credentials_api_password'));
 
@@ -252,6 +260,7 @@ class AuthenticationForm extends ConfigFormBase {
 
     $credentials = new Credentials();
     $credentials->setBaseUrl($form_state->getValue('credentials_api_base_url'));
+    $credentials->setOrganization($form_state->getValue('credentials_api_organization'));
     $credentials->setUsername($form_state->getValue('credentials_api_username'));
     $credentials->setPassword($form_state->getValue('credentials_api_password'));
 
@@ -260,18 +269,18 @@ class AuthenticationForm extends ConfigFormBase {
         ->createInstance($form_state->getValue('authentication_method_type'))
         ->createAuthenticationObject($credentials);
       $client = new Client($auth);
-      $ecf = new EntityControllerFactory($credentials->getBaseUrl(), $client);
+      $ecf = new EntityControllerFactory($credentials->getOrganization(), $client);
       $ecf->getControllerByEndpoint('organizations')
-        ->load($credentials->getBaseUrl());
+        ->load($credentials->getOrganization());
 
       $response_text = '<span class="test-connection-response-success">Connection successful</span>';
       $ajax_response->addCommand(new HtmlCommand($response_wrapper, $response_text));
     }
     catch (\Exception $exception) {
       $response_text = '<span class="test-connection-response-error">Connection error</span> '
-        . $exception->getCode()
+        . Html::escape($exception->getCode())
         . ' '
-        . $exception->getMessage();
+        . Html::escape($exception->getMessage());
       $ajax_response->addCommand(new HtmlCommand($response_wrapper, $response_text));
     }
 
