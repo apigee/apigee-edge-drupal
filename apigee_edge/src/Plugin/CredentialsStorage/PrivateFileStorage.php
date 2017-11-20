@@ -6,6 +6,7 @@ use Drupal\apigee_edge\Credentials;
 use Drupal\apigee_edge\CredentialsInterface;
 use Drupal\apigee_edge\CredentialsSaveException;
 use Drupal\apigee_edge\CredentialsStoragePluginBase;
+use Drupal\Core\Site\Settings;
 
 /**
  * Stores the credentials in a private file.
@@ -18,6 +19,17 @@ use Drupal\apigee_edge\CredentialsStoragePluginBase;
 class PrivateFileStorage extends CredentialsStoragePluginBase {
 
   private const FILE_URI = 'private://api_credentials.json';
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasRequirements() : string {
+    $private_file_path = Settings::get('file_private_path');
+    if (empty($private_file_path)) {
+      return 'The private file path must be set for storing credentials in a private file.';
+    }
+    return '';
+  }
 
   /**
    * {@inheritdoc}

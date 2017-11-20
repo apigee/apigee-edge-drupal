@@ -26,6 +26,15 @@ interface CredentialsStoragePluginInterface extends PluginInspectionInterface {
   public function getName() : string;
 
   /**
+   * Checks the requirements of the storage.
+   *
+   * @return string
+   *   Empty string if every requirement is satisfied
+   *   else a warning message which describes the problem.
+   */
+  public function hasRequirements() : string;
+
+  /**
    * Loads the saved credentials from the storage unit.
    *
    * @return CredentialsInterface

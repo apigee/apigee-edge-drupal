@@ -12,6 +12,13 @@ abstract class CredentialsStoragePluginBase extends PluginBase implements Creden
   /**
    * {@inheritdoc}
    */
+  public function hasRequirements() : string {
+    return '';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getId() : string {
     return $this->pluginDefinition['id'];
   }

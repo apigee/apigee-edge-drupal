@@ -113,7 +113,7 @@ class AuthenticationForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['#attached']['library'][] = 'apigee_edge/authentication_form';
+    $form['#attached']['library'][] = 'apigee_edge/apigee_edge.admin';
 
     $credentials_storage_config = $this->config('apigee_edge.credentials_storage');
     $authentication_method_config = $this->config('apigee_edge.authentication_method');
@@ -200,6 +200,18 @@ class AuthenticationForm extends ConfigFormBase {
     ];
 
     return parent::buildForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    $credentials_storage_error = $this->credentialsStoragePluginManager
+      ->createInstance($form_state->getValue('credentials_storage_type'))
+      ->hasRequirements();
+    if (!empty($credentials_storage_error)) {
+      $form_state->setErrorByName('credentials_storage_type', $credentials_storage_error);
+    }
   }
 
   /**

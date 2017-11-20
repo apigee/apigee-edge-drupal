@@ -7,5 +7,5 @@ services:
     class: Drupal\apigee_edge\AuthenticationMethodManager
     parent: default_plugin_manager
 
-  apigee_edge.apigee_edge.sdk_connector:
+  apigee_edge.sdk_connector:
     class: Drupal\apigee_edge\SDKConnector
