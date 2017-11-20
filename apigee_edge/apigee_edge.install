@@ -31,7 +31,7 @@ function apigee_edge_requirements($phase) {
  * Implements hook_uninstall().
  */
 function apigee_edge_uninstall() {
-  $credentials_storage_plugin_manager = \Drupal::service('plugin.manager.credentials_storage');
+  $credentials_storage_plugin_manager = \Drupal::service('plugin.manager.apigee_edge.credentials_storage');
 
   foreach ($credentials_storage_plugin_manager->getDefinitions() as $key => $value) {
     $credentials_storage_plugin = $credentials_storage_plugin_manager->createInstance($key);

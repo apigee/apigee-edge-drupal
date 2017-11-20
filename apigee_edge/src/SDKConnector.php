@@ -20,8 +20,8 @@ class SDKConnector {
    *   The EntityControllerFactory object.
    */
   public function getEntityControllerFactory() : EntityControllerFactory {
-    $credentials_storage_plugin_manager = \Drupal::service('plugin.manager.credentials_storage');
-    $authentication_method_plugin_manager = \Drupal::service('plugin.manager.authentication_method');
+    $credentials_storage_plugin_manager = \Drupal::service('plugin.manager.apigee_edge.credentials_storage');
+    $authentication_method_plugin_manager = \Drupal::service('plugin.manager.apigee_edge.authentication_method');
     $credentials_storage_config = \Drupal::config('apigee_edge.credentials_storage');
     $authentication_method_config = \Drupal::config('apigee_edge.authentication_method');
 

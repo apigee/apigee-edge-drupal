@@ -87,8 +87,8 @@ class AuthenticationForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
-      $container->get('plugin.manager.credentials_storage'),
-      $container->get('plugin.manager.authentication_method')
+      $container->get('plugin.manager.apigee_edge.credentials_storage'),
+      $container->get('plugin.manager.apigee_edge.authentication_method')
     );
   }
 
@@ -148,30 +148,33 @@ class AuthenticationForm extends ConfigFormBase {
     $form['credentials'] = [
       '#type' => 'details',
       '#title' => $this->t('Credentials'),
-      '#description' => 'Basic authentication parameters.',
       '#open' => TRUE,
-    ];
-    $form['credentials']['credentials_api_base_url'] = [
-      '#type' => 'textfield',
-      '#title' => t('API base URL'),
-      '#default_value' => $credentials->getBaseURL(),
-      '#required' => TRUE,
     ];
     $form['credentials']['credentials_api_organization'] = [
       '#type' => 'textfield',
-      '#title' => t('Organization'),
+      '#title' => t('Management API organization'),
+      '#description' => t('The v4 product organization name. Changing this value could make your site stop working.'),
       '#default_value' => $credentials->getOrganization(),
+      '#required' => TRUE,
+    ];
+    $form['credentials']['credentials_api_base_url'] = [
+      '#type' => 'textfield',
+      '#title' => t('Management API endpoint URL'),
+      '#description' => t('URL to which to make Edge REST calls.'),
+      '#default_value' => $credentials->getBaseURL(),
       '#required' => TRUE,
     ];
     $form['credentials']['credentials_api_username'] = [
       '#type' => 'email',
-      '#title' => t('API username'),
+      '#title' => t('Endpoint authenticated user'),
+      '#description' => t('User name used when authenticating with the endpoint. Generally this takes the form of an email address. (Only enter it if you want to change the existing user.)'),
       '#default_value' => $credentials->getUsername(),
       '#required' => TRUE,
     ];
     $form['credentials']['credentials_api_password'] = [
       '#type' => 'password',
-      '#title' => t('API password'),
+      '#title' => t('Authenticated user’s password'),
+      '#description' => t('Password used when authenticating with the endpoint. (Only enter it if you want to change the existing password.)'),
       '#required' => TRUE,
     ];
 
