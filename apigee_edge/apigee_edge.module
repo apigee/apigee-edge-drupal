@@ -6,6 +6,7 @@
  */
 
 use Apigee\Edge\Api\Management\Entity\Developer;
+use Apigee\Edge\Exception\ClientErrorException;
 use Drupal\user\UserInterface;
 
 /**
@@ -26,10 +27,23 @@ function apigee_edge_user_presave(UserInterface $account) {
     $developer = new Developer($developer_data);
     $ec->save($developer);
   }
+  catch (ClientErrorException $exception) {
+    $context = [
+      '@developer' => print_r($developer_data, TRUE),
+      '@message' => (string) $exception,
+      '@trace' => $exception->getTraceAsString(),
+    ];
+    if ($exception->getEdgeErrorCode() === 'developer.service.DeveloperAlreadyExists') {
+      \Drupal::logger('apigee_edge')->notice('Developer is already exists. @developer, @message, @trace', $context);
+    }
+    else {
+      \Drupal::logger('apigee_edge')->error('Could not save developer entity. @developer, @message, @trace', $context);
+    }
+  }
   catch (\Exception $exception) {
     $context = [
       '@developer' => print_r($developer_data, TRUE),
-      '@message' => $exception->getMessage(),
+      '@message' => (string) $exception,
       '@trace' => $exception->getTraceAsString(),
     ];
     \Drupal::logger('apigee_edge')->error('Could not save developer entity. @developer, @message, @trace', $context);
@@ -49,7 +63,7 @@ function apigee_edge_user_delete(UserInterface $account) {
   catch (\Exception $exception) {
     $context = [
       '@developer' => $account->getEmail(),
-      '@message' => $exception->getMessage(),
+      '@message' => (string) $exception,
       '@trace' => $exception->getTraceAsString(),
     ];
     \Drupal::logger('apigee_edge')->error('Could not delete developer entity. @developer, @message, @trace', $context);
