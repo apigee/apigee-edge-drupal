@@ -39,7 +39,7 @@ class PrivateFileStorage extends CredentialsStoragePluginBase {
     $organization = '';
     $username = '';
     $password = '';
-    $data = file_get_contents(self::FILE_URI);
+    $data = file_exists(self::FILE_URI) ? file_get_contents(self::FILE_URI) : FALSE;
 
     if ($data !== FALSE) {
       $stored_credentials = json_decode($data);

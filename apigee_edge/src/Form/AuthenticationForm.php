@@ -8,9 +8,6 @@ use Drupal\apigee_edge\AuthenticationMethodManager;
 use Drupal\apigee_edge\Credentials;
 use Drupal\apigee_edge\CredentialsSaveException;
 use Drupal\apigee_edge\CredentialsStorageManager;
-use Drupal\Component\Utility\Html;
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -113,6 +110,8 @@ class AuthenticationForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $form['#prefix'] = '<div id="apigee-edge-auth-form">';
+    $form['#suffix'] = '</div>';
     $form['#attached']['library'][] = 'apigee_edge/apigee_edge.admin';
 
     $credentials_storage_config = $this->config('apigee_edge.credentials_storage');
@@ -152,35 +151,36 @@ class AuthenticationForm extends ConfigFormBase {
     ];
     $form['credentials']['credentials_api_organization'] = [
       '#type' => 'textfield',
-      '#title' => t('Management API organization'),
-      '#description' => t('The v4 product organization name. Changing this value could make your site stop working.'),
+      '#title' => $this->t('Management API organization'),
+      '#description' => $this->t('The v4 product organization name. Changing this value could make your site stop working.'),
       '#default_value' => $credentials->getOrganization(),
       '#required' => TRUE,
     ];
     $form['credentials']['credentials_api_base_url'] = [
       '#type' => 'textfield',
-      '#title' => t('Management API endpoint URL'),
-      '#description' => t('URL to which to make Edge REST calls.'),
+      '#title' => $this->t('Management API endpoint URL'),
+      '#description' => $this->t('URL to which to make Edge REST calls.'),
       '#default_value' => $credentials->getBaseURL(),
       '#required' => TRUE,
     ];
     $form['credentials']['credentials_api_username'] = [
       '#type' => 'email',
-      '#title' => t('Endpoint authenticated user'),
-      '#description' => t('User name used when authenticating with the endpoint. Generally this takes the form of an email address. (Only enter it if you want to change the existing user.)'),
+      '#title' => $this->t('Endpoint authenticated user'),
+      '#description' => $this->t('User name used when authenticating with the endpoint. Generally this takes the form of an email address. (Only enter it if you want to change the existing user.)'),
       '#default_value' => $credentials->getUsername(),
       '#required' => TRUE,
     ];
     $form['credentials']['credentials_api_password'] = [
       '#type' => 'password',
-      '#title' => t('Authenticated user’s password'),
+      '#title' => $this->t('Authenticated user’s password'),
       '#description' => t('Password used when authenticating with the endpoint. (Only enter it if you want to change the existing password.)'),
+      '#default_value' => $credentials->getPassword(),
       '#required' => TRUE,
     ];
 
     $form['test_connection'] = [
       '#type' => 'details',
-      '#title' => t('Test connection'),
+      '#title' => $this->t('Test connection'),
       '#description' => 'Send request using the given credentials and authentication method.',
       '#open' => TRUE,
     ];
@@ -188,15 +188,17 @@ class AuthenticationForm extends ConfigFormBase {
       '#type' => 'item',
     ];
     $form['test_connection']['test_connection_submit'] = [
-      '#type' => 'button',
-      '#value' => t('Send request'),
+      '#type' => 'submit',
+      '#value' => $this->t('Send request'),
       '#ajax' => [
-        'callback' => '::submitTestConnection',
+        'callback' => '::ajaxCallback',
+        'wrapper' => 'apigee-edge-auth-form',
         'progress' => [
           'type' => 'throbber',
-          'message' => t('Waiting for response...'),
+          'message' => $this->t('Waiting for response...'),
         ],
       ],
+      '#submit' => ['::submitTestConnection'],
     ];
 
     return parent::buildForm($form, $form_state);
@@ -212,6 +214,23 @@ class AuthenticationForm extends ConfigFormBase {
     if (!empty($credentials_storage_error)) {
       $form_state->setErrorByName('credentials_storage_type', $credentials_storage_error);
     }
+
+    $credentials = $this->createCredentials($form_state);
+    try {
+      $auth = $this->authenticationStoragePluginManager
+        ->createInstance($form_state->getValue('authentication_method_type'))
+        ->createAuthenticationObject($credentials);
+      $client = new Client($auth);
+      $ecf = new EntityControllerFactory($credentials->getOrganization(), $client);
+      $ecf->getControllerByEndpoint('organizations')
+        ->load($credentials->getOrganization());
+    }
+    catch (\Exception $exception) {
+      watchdog_exception('apigee_edge', $exception);
+      $form_state->setError($form, $this->t('Connection failed. Response from edge: %response', [
+        '%response' => $exception->getMessage(),
+      ]));
+    }
   }
 
   /**
@@ -223,11 +242,7 @@ class AuthenticationForm extends ConfigFormBase {
     try {
       foreach ($this->credentialsStorageTypes as $key => $value) {
         if ($form_state->getValue('credentials_storage_type') === $key) {
-          $credentials = new Credentials();
-          $credentials->setBaseURL($form_state->getValue('credentials_api_base_url'));
-          $credentials->setOrganization($form_state->getValue('credentials_api_organization'));
-          $credentials->setUsername($form_state->getValue('credentials_api_username'));
-          $credentials->setPassword($form_state->getValue('credentials_api_password'));
+          $credentials = $this->createCredentials($form_state);
 
           $this->credentialsStoragePluginManager
             ->createInstance($form_state->getValue('credentials_storage_type'))
@@ -256,6 +271,27 @@ class AuthenticationForm extends ConfigFormBase {
   }
 
   /**
+   * Creates a Credentials object from the form state.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *
+   * @return \Drupal\apigee_edge\Credentials
+   */
+  protected function createCredentials(FormStateInterface $form_state) : Credentials {
+    $credentials = new Credentials();
+    $credentials->setBaseUrl($form_state->getValue('credentials_api_base_url'));
+    $credentials->setOrganization($form_state->getValue('credentials_api_organization'));
+    $credentials->setUsername($form_state->getValue('credentials_api_username'));
+    $credentials->setPassword($form_state->getValue('credentials_api_password'));
+
+    return $credentials;
+  }
+
+  public function ajaxCallback(array $form) : array {
+    return $form;
+  }
+
+  /**
    * API test connection.
    *
    * Sends API test request using the current form data and set
@@ -265,41 +301,10 @@ class AuthenticationForm extends ConfigFormBase {
    *   An associative array containing the structure of the form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
-   *
-   * @return AjaxResponse
-   *   The AjaxResponse object which displays the response.
    */
-  public function submitTestConnection(array $form, FormStateInterface $form_state) : AjaxResponse {
-    $ajax_response = new AjaxResponse();
-    $response_wrapper = '#edit-test-connection-response';
-
-    $credentials = new Credentials();
-    $credentials->setBaseUrl($form_state->getValue('credentials_api_base_url'));
-    $credentials->setOrganization($form_state->getValue('credentials_api_organization'));
-    $credentials->setUsername($form_state->getValue('credentials_api_username'));
-    $credentials->setPassword($form_state->getValue('credentials_api_password'));
-
-    try {
-      $auth = $this->authenticationStoragePluginManager
-        ->createInstance($form_state->getValue('authentication_method_type'))
-        ->createAuthenticationObject($credentials);
-      $client = new Client($auth);
-      $ecf = new EntityControllerFactory($credentials->getOrganization(), $client);
-      $ecf->getControllerByEndpoint('organizations')
-        ->load($credentials->getOrganization());
-
-      $response_text = '<span class="test-connection-response-success">Connection successful</span>';
-      $ajax_response->addCommand(new HtmlCommand($response_wrapper, $response_text));
-    }
-    catch (\Exception $exception) {
-      $response_text = '<span class="test-connection-response-error">Connection error</span> '
-        . Html::escape($exception->getCode())
-        . ' '
-        . Html::escape($exception->getMessage());
-      $ajax_response->addCommand(new HtmlCommand($response_wrapper, $response_text));
-    }
-
-    return $ajax_response;
+  public function submitTestConnection(array $form, FormStateInterface $form_state) : void {
+    $form_state->setRebuild();
+    drupal_set_message($this->t('Connection successful.'));
   }
 
 }
