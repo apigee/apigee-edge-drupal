@@ -145,38 +145,76 @@ class AuthenticationForm extends ConfigFormBase {
       '#default_value' => $authentication_method_config->get('authentication_method'),
     ];
 
+    $state_event = 'visible';
+    $credentials_states = [
+      $state_event => [],
+    ];
+
     $form['credentials'] = [
       '#type' => 'details',
       '#title' => $this->t('Credentials'),
       '#open' => TRUE,
     ];
+
+    foreach ($this->credentialsStoragePluginManager->getDefinitions() as $key => $value) {
+      /** @var \Drupal\apigee_edge\CredentialsStoragePluginInterface $instance */
+      $instance = $this->credentialsStoragePluginManager->createInstance($key);
+      if ($instance->readonly()) {
+        $credentials_states[$state_event][] = 'or';
+        $credentials_states[$state_event][] = [
+          ':input[name="credentials_storage_type"]' => ['!value' => $key],
+        ];
+      }
+
+      if (($helptext = $instance->helpText())) {
+        // This should be a markup, not a checkbox, but the states api won't
+        // work that way.
+        $form['credentials']["help_{$key}"] = [
+          '#type' => 'checkbox',
+          '#title' => $helptext,
+          '#attributes' => [
+            'style' => 'display: none',
+          ],
+          '#prefix' => '<div class="apigee-auth-form-help-text">',
+          '#suffix' => '</div>',
+          '#states' => [
+            'visible' => [
+              [':input[name="credentials_storage_type"]' => ['value' => $key]],
+            ],
+          ],
+        ];
+      }
+    }
+
+    array_shift($credentials_states[$state_event]);
+
     $form['credentials']['credentials_api_organization'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Management API organization'),
       '#description' => $this->t('The v4 product organization name. Changing this value could make your site stop working.'),
       '#default_value' => $credentials->getOrganization(),
-      '#required' => TRUE,
+      '#states' => $credentials_states,
     ];
     $form['credentials']['credentials_api_base_url'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Management API endpoint URL'),
       '#description' => $this->t('URL to which to make Edge REST calls.'),
       '#default_value' => $credentials->getBaseURL(),
-      '#required' => TRUE,
+      '#states' => $credentials_states,
     ];
     $form['credentials']['credentials_api_username'] = [
       '#type' => 'email',
       '#title' => $this->t('Endpoint authenticated user'),
       '#description' => $this->t('User name used when authenticating with the endpoint. Generally this takes the form of an email address. (Only enter it if you want to change the existing user.)'),
       '#default_value' => $credentials->getUsername(),
-      '#required' => TRUE,
+      '#states' => $credentials_states,
     ];
     $form['credentials']['credentials_api_password'] = [
       '#type' => 'password',
       '#title' => $this->t('Authenticated user’s password'),
       '#description' => t('Password used when authenticating with the endpoint. (Only enter it if you want to change the existing password.)'),
       '#default_value' => $credentials->getPassword(),
-      '#required' => TRUE,
+      '#states' => $credentials_states,
     ];
 
     $form['test_connection'] = [
@@ -237,8 +275,6 @@ class AuthenticationForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $credentials_storage_config = $this->config('apigee_edge.credentials_storage');
-
     try {
       foreach ($this->credentialsStorageTypes as $key => $value) {
         if ($form_state->getValue('credentials_storage_type') === $key) {
@@ -254,7 +290,7 @@ class AuthenticationForm extends ConfigFormBase {
         }
         else {
           $this->credentialsStoragePluginManager
-            ->createInstance($credentials_storage_config->get($key))
+            ->createInstance($key)
             ->deleteCredentials();
         }
       }

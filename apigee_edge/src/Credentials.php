@@ -91,4 +91,15 @@ class Credentials implements CredentialsInterface {
     $this->password = $password;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function empty(): bool {
+    if ($this->getBaseUrl() || $this->getOrganization() || $this->getUsername() || $this->getPassword()) {
+      return FALSE;
+    }
+
+    return TRUE;
+  }
+
 }

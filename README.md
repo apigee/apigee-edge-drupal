@@ -8,9 +8,10 @@ To run the tests, some environment variables are needed. Creating a simple scrip
 ```
 #!/bin/bash
 
-export EDGE_USERNAME=""
-export EDGE_PASSWORD=""
-export EDGE_ORGANIZATION=""
+export APIGEE_EDGE_USERNAME=""
+export APIGEE_EDGE_PASSWORD=""
+export APIGEE_EDGE_ORGANIZATION=""
+export APIGEE_EDGE_BASE_URL=""
 php ./core/scripts/run-tests.sh --verbose --color --url "http://edge.test" ApigeeEdge
 ```
 

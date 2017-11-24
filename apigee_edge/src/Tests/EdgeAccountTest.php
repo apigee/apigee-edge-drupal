@@ -26,7 +26,6 @@ class EdgeAccountTest extends BrowserTestBase {
   protected $adminUser = NULL;
 
   public static $modules = [
-    'user',
     'apigee_edge',
   ];
 
@@ -36,14 +35,17 @@ class EdgeAccountTest extends BrowserTestBase {
    * @return bool
    */
   protected function initCredentials() : bool {
-    if (($username = getenv('EDGE_USERNAME'))) {
+    if (($username = getenv('APIGEE_EDGE_USERNAME'))) {
       $this->credentials['username'] = $username;
     }
-    if (($password = getenv('EDGE_PASSWORD'))) {
+    if (($password = getenv('APIGEE_EDGE_PASSWORD'))) {
       $this->credentials['password'] = $password;
     }
-    if (($organization = getenv('EDGE_ORGANIZATION'))) {
+    if (($organization = getenv('APIGEE_EDGE_ORGANIZATION'))) {
       $this->credentials['organization'] = $organization;
+    }
+    if (($base_url = getenv('APIGEE_EDGE_BASE_URL'))) {
+      $this->credentials['base_url'] = $base_url;
     }
 
     return (bool) $this->credentials;
@@ -69,10 +71,25 @@ class EdgeAccountTest extends BrowserTestBase {
     $this->drupalGet('/admin/config/apigee_edge');
 
     $formdata = [
+      'credentials_storage_type' => 'credentials_storage_private_file',
       'credentials_api_organization' => $this->credentials['organization'],
-      'credentials_api_base_url' => 'http://', // TODO
+      'credentials_api_base_url' => $this->credentials['base_url'],
       'credentials_api_username' => $this->credentials['username'],
       'credentials_api_password' => $this->credentials['password'],
+    ];
+
+    $this->submitForm($formdata, t('Send request'));
+    $this->assertSession()->pageTextContains(t('Connection successful'));
+
+    $this->submitForm($formdata, t('Save configuration'));
+    $this->assertSession()->pageTextContains(t('The configuration options have been saved'));
+  }
+
+  public function testEnvStorage() {
+    $this->drupalGet('/admin/config/apigee_edge');
+
+    $formdata = [
+      'credentials_storage_type' => 'credentials_storage_env',
     ];
 
     $this->submitForm($formdata, t('Send request'));

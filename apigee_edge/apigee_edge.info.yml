@@ -6,6 +6,8 @@ type: module
 core: 8.x
 
 dependencies:
+  - core:file
+  - core:user
 
 configure: apigee_edge.settings
 

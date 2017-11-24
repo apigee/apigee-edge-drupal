@@ -71,4 +71,11 @@ interface CredentialsInterface {
    */
   public function setPassword(string $password);
 
+  /**
+   * Checks whether this object is empty.
+   *
+   * @return bool
+   */
+  public function empty() : bool;
+
 }

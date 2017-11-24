@@ -69,7 +69,7 @@ class PrivateFileStorage extends CredentialsStoragePluginBase {
       'password' => $credentials->getPassword(),
     ]);
 
-    $status = file_save_data($data, self::FILE_URI, FILE_EXISTS_REPLACE);
+    $status = \file_save_data($data, self::FILE_URI, FILE_EXISTS_REPLACE);
 
     if ($status === FALSE) {
       throw new CredentialsSaveException(
@@ -88,7 +88,7 @@ class PrivateFileStorage extends CredentialsStoragePluginBase {
       'username' => '',
       'password' => '',
     ]);
-    file_save_data($data, self::FILE_URI, FILE_EXISTS_REPLACE);
+    \file_save_data($data, self::FILE_URI, FILE_EXISTS_REPLACE);
   }
 
 }

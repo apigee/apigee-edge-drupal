@@ -3,6 +3,7 @@
 namespace Drupal\apigee_edge;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Defines an interface for credentials storage plugins.
@@ -33,6 +34,22 @@ interface CredentialsStoragePluginInterface extends PluginInspectionInterface {
    *   else a warning message which describes the problem.
    */
   public function hasRequirements() : string;
+
+  /**
+   * Tells the editing form if the credentials can be saved.
+   *
+   * Some storage types might be read-only.
+   *
+   * @return bool
+   */
+  public function readonly() : bool;
+
+  /**
+   * Returns information on additional configuration for this plugin.
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   */
+  public function helpText() : ? TranslatableMarkup;
 
   /**
    * Loads the saved credentials from the storage unit.
