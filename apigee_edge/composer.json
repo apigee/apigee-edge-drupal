@@ -4,6 +4,6 @@
   "require": {
     "php": ">=7.1",
     "php-http/guzzle6-adapter": "^1.1",
-    "apigee/edge": "dev-2.x-dev#622a9ac2690f6839234dccc442947bfe9b4ed6f5"
+    "apigee/edge": "dev-2.x-dev#be0754b7088fa386a8306577d841b63e080f2d5f"
   }
 }

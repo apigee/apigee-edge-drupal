@@ -25,7 +25,7 @@ function apigee_edge_user_presave(UserInterface $account) {
     $ecf = \Drupal::service('apigee_edge.sdk_connector')->getEntityControllerFactory();
     $ec = $ecf->getControllerByEndpoint('developers');
     $developer = new Developer($developer_data);
-    $ec->save($developer);
+    $ec->create($developer);
   }
   catch (ClientErrorException $exception) {
     $context = [
