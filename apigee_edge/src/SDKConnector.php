@@ -2,8 +2,8 @@
 
 namespace Drupal\apigee_edge;
 
-use \Apigee\Edge\Entity\EntityControllerFactory;
-use \Apigee\Edge\HttpClient\Client;
+use Apigee\Edge\Api\Management\Controller\DeveloperController;
+use Apigee\Edge\HttpClient\Client;
 
 /**
  * Provides an Apigee Edge SDK connector.
@@ -11,30 +11,46 @@ use \Apigee\Edge\HttpClient\Client;
 class SDKConnector {
 
   /**
-   * Gets the EntityControllerFactory object.
+   * The currently used credentials storage plugin.
    *
-   * Creates an EntityControllerFactory object using the stored credentials
-   * and the configured authentication method.
-   *
-   * @return EntityControllerFactory
-   *   The EntityControllerFactory object.
+   * @var \Drupal\apigee_edge\CredentialsStoragePluginInterface
    */
-  public function getEntityControllerFactory() : EntityControllerFactory {
+  protected $credentialsStoragePlugin;
+
+  /**
+   * The currently used authentication method plugin.
+   *
+   * @var \Drupal\apigee_edge\AuthenticationMethodPluginInterface
+   */
+  protected $authenticationMethodPlugin;
+
+  /**
+   * SDKConnector constructor.
+   */
+  public function __construct() {
     $credentials_storage_plugin_manager = \Drupal::service('plugin.manager.apigee_edge.credentials_storage');
     $authentication_method_plugin_manager = \Drupal::service('plugin.manager.apigee_edge.authentication_method');
     $credentials_storage_config = \Drupal::config('apigee_edge.credentials_storage');
     $authentication_method_config = \Drupal::config('apigee_edge.authentication_method');
 
-    /** @var CredentialsStoragePluginInterface $credentials_storage_plugin */
-    $credentials_storage_plugin = $credentials_storage_plugin_manager->createInstance($credentials_storage_config->get('credentials_storage_type'));
-    /** @var AuthenticationMethodPluginInterface $authentication_method_plugin */
-    $authentication_method_plugin = $authentication_method_plugin_manager->createInstance($authentication_method_config->get('authentication_method'));
+    $this->credentialsStoragePlugin = $credentials_storage_plugin_manager->createInstance($credentials_storage_config->get('credentials_storage_type'));
+    $this->authenticationMethodPlugin = $authentication_method_plugin_manager->createInstance($authentication_method_config->get('authentication_method'));
+  }
 
-    $credentials = $credentials_storage_plugin->loadCredentials();
-    $auth = $authentication_method_plugin->createAuthenticationObject($credentials);
+  /**
+   * Gets the DeveloperController object.
+   *
+   * Creates a DeveloperController object using the stored credentials
+   * and the configured authentication method.
+   *
+   * @return DeveloperController
+   *   The DeveloperController object.
+   */
+  public function getDeveloperController() : DeveloperController {
+    $credentials = $this->credentialsStoragePlugin->loadCredentials();
+    $auth = $this->authenticationMethodPlugin->createAuthenticationObject($credentials);
     $client = new Client($auth);
-
-    return new EntityControllerFactory($credentials->getOrganization(), $client);
+    return new DeveloperController($credentials->getOrganization(), $client);
   }
 
 }

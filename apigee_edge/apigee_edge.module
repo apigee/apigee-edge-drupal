@@ -10,9 +10,9 @@ use Apigee\Edge\Exception\ClientErrorException;
 use Drupal\user\UserInterface;
 
 /**
- * Implements hook_user_presave().
+ * Implements hook_user_create().
  */
-function apigee_edge_user_presave(UserInterface $account) {
+function apigee_edge_user_insert(UserInterface $account) {
   $developer_data = [
     'userName' => $account->getAccountName(),
     'email' => $account->getEmail(),
@@ -21,11 +21,14 @@ function apigee_edge_user_presave(UserInterface $account) {
   ];
 
   try {
-    /** @var \Apigee\Edge\Entity\EntityControllerFactory $ecf */
-    $ecf = \Drupal::service('apigee_edge.sdk_connector')->getEntityControllerFactory();
-    $ec = $ecf->getControllerByEndpoint('developers');
+    /** @var \Apigee\Edge\Api\Management\Controller\DeveloperController $dc */
+    $dc = \Drupal::service('apigee_edge.sdk_connector')->getDeveloperController();
     $developer = new Developer($developer_data);
-    $ec->create($developer);
+    $dc->create($developer);
+
+    if (!$account->isActive()) {
+      $dc->setStatus($developer->id(), Developer::STATUS_INACTIVE);
+    }
   }
   catch (ClientErrorException $exception) {
     $context = [
@@ -55,10 +58,9 @@ function apigee_edge_user_presave(UserInterface $account) {
  */
 function apigee_edge_user_delete(UserInterface $account) {
   try {
-    /** @var \Apigee\Edge\Entity\EntityControllerFactory $ecf */
-    $ecf = \Drupal::service('apigee_edge.sdk_connector')->getEntityControllerFactory();
-    $ec = $ecf->getControllerByEndpoint('developers');
-    $ec->delete($account->getEmail());
+    /** @var \Apigee\Edge\Api\Management\Controller\DeveloperController $dc */
+    $dc = \Drupal::service('apigee_edge.sdk_connector')->getDeveloperController();
+    $dc->delete($account->getEmail());
   }
   catch (\Exception $exception) {
     $context = [

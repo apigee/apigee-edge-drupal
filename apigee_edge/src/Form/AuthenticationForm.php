@@ -2,6 +2,7 @@
 
 namespace Drupal\apigee_edge\Form;
 
+use Apigee\Edge\Api\Management\Controller\OrganizationController;
 use Apigee\Edge\Entity\EntityControllerFactory;
 use Apigee\Edge\HttpClient\Client;
 use Drupal\apigee_edge\AuthenticationMethodManager;
@@ -221,9 +222,8 @@ class AuthenticationForm extends ConfigFormBase {
         ->createInstance($form_state->getValue('authentication_method_type'))
         ->createAuthenticationObject($credentials);
       $client = new Client($auth);
-      $ecf = new EntityControllerFactory($credentials->getOrganization(), $client);
-      $ecf->getControllerByEndpoint('organizations')
-        ->load($credentials->getOrganization());
+      $oc = new OrganizationController($client);
+      $oc->load($credentials->getOrganization());
     }
     catch (\Exception $exception) {
       watchdog_exception('apigee_edge', $exception);
