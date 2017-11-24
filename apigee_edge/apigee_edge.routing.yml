@@ -1,0 +1,7 @@
+apigee_edge.settings:
+  path: '/admin/config/apigee_edge'
+  defaults:
+    _form: '\Drupal\apigee_edge\Form\AuthenticationForm'
+    _title: 'Apigee Edge Configuration'
+  requirements:
+    _permission: 'administer apigee edge'

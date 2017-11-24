@@ -1,0 +1,43 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for Apigee Edge.
+ */
+
+/**
+ * Implements hook_requirements().
+ */
+function apigee_edge_requirements($phase) {
+  $requirements = [];
+
+  if ($phase == 'runtime') {
+    $credentials_storage_plugin_manager = \Drupal::service('plugin.manager.apigee_edge.credentials_storage');
+    foreach ($credentials_storage_plugin_manager->getDefinitions() as $key => $value) {
+      $credentials_storage_plugin = $credentials_storage_plugin_manager->createInstance($key);
+      /** @var \Drupal\apigee_edge\CredentialsStoragePluginInterface $credentials_storage_plugin */
+      if (!empty($credentials_storage_plugin->hasRequirements())) {
+        $requirements[$credentials_storage_plugin->getId()] = [
+          'title' => t('Apigee Edge'),
+          'description' => $credentials_storage_plugin->hasRequirements(),
+          'severity' => REQUIREMENT_WARNING,
+        ];
+      }
+    }
+  }
+
+  return $requirements;
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function apigee_edge_uninstall() {
+  $credentials_storage_plugin_manager = \Drupal::service('plugin.manager.apigee_edge.credentials_storage');
+
+  foreach ($credentials_storage_plugin_manager->getDefinitions() as $key => $value) {
+    $credentials_storage_plugin = $credentials_storage_plugin_manager->createInstance($key);
+    /** @var \Drupal\apigee_edge\CredentialsStoragePluginInterface $credentials_storage_plugin */
+    $credentials_storage_plugin->deleteCredentials();
+  }
+}

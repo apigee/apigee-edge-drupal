@@ -1,0 +1,11 @@
+apigee_edge.authentication_method:
+  type: config_object
+  mapping:
+    authentication_method:
+      type: string
+
+apigee_edge.credentials_storage:
+  type: config_object
+  mapping:
+    credentials_storage_type:
+      type: string

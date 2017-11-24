@@ -1,0 +1,71 @@
+<?php
+
+/**
+ * @file
+ * Main module file for Apigee Edge.
+ */
+
+use Apigee\Edge\Api\Management\Entity\Developer;
+use Apigee\Edge\Exception\ClientErrorException;
+use Drupal\user\UserInterface;
+
+/**
+ * Implements hook_user_presave().
+ */
+function apigee_edge_user_presave(UserInterface $account) {
+  $developer_data = [
+    'userName' => $account->getAccountName(),
+    'email' => $account->getEmail(),
+    'firstName' => $account->getAccountName(),
+    'lastName' => $account->getAccountName(),
+  ];
+
+  try {
+    /** @var \Apigee\Edge\Entity\EntityControllerFactory $ecf */
+    $ecf = \Drupal::service('apigee_edge.sdk_connector')->getEntityControllerFactory();
+    $ec = $ecf->getControllerByEndpoint('developers');
+    $developer = new Developer($developer_data);
+    $ec->create($developer);
+  }
+  catch (ClientErrorException $exception) {
+    $context = [
+      '@developer' => print_r($developer_data, TRUE),
+      '@message' => (string) $exception,
+      '@trace' => $exception->getTraceAsString(),
+    ];
+    if ($exception->getEdgeErrorCode() === 'developer.service.DeveloperAlreadyExists') {
+      \Drupal::logger('apigee_edge')->notice('Developer is already exists. @developer, @message, @trace', $context);
+    }
+    else {
+      \Drupal::logger('apigee_edge')->error('Could not save developer entity. @developer, @message, @trace', $context);
+    }
+  }
+  catch (\Exception $exception) {
+    $context = [
+      '@developer' => print_r($developer_data, TRUE),
+      '@message' => (string) $exception,
+      '@trace' => $exception->getTraceAsString(),
+    ];
+    \Drupal::logger('apigee_edge')->error('Could not save developer entity. @developer, @message, @trace', $context);
+  }
+}
+
+/**
+ * Implements hook_user_delete().
+ */
+function apigee_edge_user_delete(UserInterface $account) {
+  try {
+    /** @var \Apigee\Edge\Entity\EntityControllerFactory $ecf */
+    $ecf = \Drupal::service('apigee_edge.sdk_connector')->getEntityControllerFactory();
+    $ec = $ecf->getControllerByEndpoint('developers');
+    $ec->delete($account->getEmail());
+  }
+  catch (\Exception $exception) {
+    $context = [
+      '@developer' => $account->getEmail(),
+      '@message' => (string) $exception,
+      '@trace' => $exception->getTraceAsString(),
+    ];
+    \Drupal::logger('apigee_edge')->error('Could not delete developer entity. @developer, @message, @trace', $context);
+  }
+}

@@ -1,0 +1,12 @@
+name: Apigee Edge
+description: Apigee Edge Drupal integration
+package: Apigee
+
+type: module
+core: 8.x
+
+dependencies:
+
+configure: apigee_edge.settings
+
+php: 7.1
