@@ -3,7 +3,7 @@ A Drupal 8 module that turns a site into a developer portal for Apigee's API man
 
 # Testing
 
-To run the tests, some environment variables are needed. Creating a simple script is recommended:
+To run the tests, some environment variables are needed both for the script and the server. Creating a simple script is recommended:
 
 ```
 #!/bin/bash

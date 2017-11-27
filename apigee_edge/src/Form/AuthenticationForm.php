@@ -247,14 +247,17 @@ class AuthenticationForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    $credentials_storage_error = $this->credentialsStoragePluginManager
-      ->createInstance($form_state->getValue('credentials_storage_type'))
-      ->hasRequirements();
+    /** @var \Drupal\apigee_edge\CredentialsStoragePluginInterface $credentials_storage */
+    $credentials_storage = $this->credentialsStoragePluginManager
+      ->createInstance($form_state->getValue('credentials_storage_type'));
+    $credentials_storage_error = $credentials_storage->hasRequirements();
     if (!empty($credentials_storage_error)) {
       $form_state->setErrorByName('credentials_storage_type', $credentials_storage_error);
     }
 
-    $credentials = $this->createCredentials($form_state);
+    $credentials = $credentials_storage->readonly() ?
+      $credentials_storage->loadCredentials() :
+      $this->createCredentials($form_state);
     try {
       $auth = $this->authenticationStoragePluginManager
         ->createInstance($form_state->getValue('authentication_method_type'))
