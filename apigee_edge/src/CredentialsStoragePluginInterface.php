@@ -41,6 +41,7 @@ interface CredentialsStoragePluginInterface extends PluginInspectionInterface {
    * Some storage types might be read-only.
    *
    * @return bool
+   *   TRUE if the storage is only readable, else FALSE.
    */
   public function readonly() : bool;
 
@@ -48,6 +49,7 @@ interface CredentialsStoragePluginInterface extends PluginInspectionInterface {
    * Returns information on additional configuration for this plugin.
    *
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *   Additional configuration information.
    */
   public function helpText() : ? TranslatableMarkup;
 

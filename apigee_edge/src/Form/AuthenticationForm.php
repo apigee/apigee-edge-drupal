@@ -55,9 +55,9 @@ class AuthenticationForm extends ConfigFormBase {
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
    * @param \Drupal\apigee_edge\CredentialsStorageManager $credentials_storage_plugin_manager
-   *   The entity storage.
+   *   The manager for credentials storage plugins.
    * @param \Drupal\apigee_edge\AuthenticationMethodManager $authentication_method_plugin_manager
-   *   The entity storage.
+   *   The manager for authentication method plugins.
    */
   public function __construct(ConfigFactoryInterface $config_factory,
                               CredentialsStorageManager $credentials_storage_plugin_manager,
@@ -313,8 +313,10 @@ class AuthenticationForm extends ConfigFormBase {
    * Creates a Credentials object from the form state.
    *
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
    *
    * @return \Drupal\apigee_edge\Credentials
+   *   The credentials object.
    */
   protected function createCredentials(FormStateInterface $form_state) : Credentials {
     $credentials = new Credentials();
@@ -326,6 +328,15 @@ class AuthenticationForm extends ConfigFormBase {
     return $credentials;
   }
 
+  /**
+   * Pass form array to the AJAX callback.
+   *
+   * @param array $form
+   *   An associative array containing the structure of the form.
+   *
+   * @return array
+   *   The AJAX response.
+   */
   public function ajaxCallback(array $form) : array {
     return $form;
   }

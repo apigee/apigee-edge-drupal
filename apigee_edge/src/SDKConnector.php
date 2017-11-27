@@ -4,6 +4,7 @@ namespace Drupal\apigee_edge;
 
 use Apigee\Edge\Api\Management\Controller\DeveloperController;
 use Apigee\Edge\HttpClient\Client;
+use Drupal\Core\Config\ConfigFactoryInterface;
 
 /**
  * Provides an Apigee Edge SDK connector.
@@ -25,16 +26,18 @@ class SDKConnector {
   protected $authenticationMethodPlugin;
 
   /**
-   * SDKConnector constructor.
+   * Constructs a new SDKConnector.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The factory for configuration objects.
+   * @param \Drupal\apigee_edge\CredentialsStorageManager $credentials_storage_plugin_manager
+   *   The manager for credentials storage plugins.
+   * @param \Drupal\apigee_edge\AuthenticationMethodManager $authentication_method_plugin_manager
+   *   The manager for authentication method plugins.
    */
-  public function __construct() {
-    $credentials_storage_plugin_manager = \Drupal::service('plugin.manager.apigee_edge.credentials_storage');
-    $authentication_method_plugin_manager = \Drupal::service('plugin.manager.apigee_edge.authentication_method');
-    $credentials_storage_config = \Drupal::config('apigee_edge.credentials_storage');
-    $authentication_method_config = \Drupal::config('apigee_edge.authentication_method');
-
-    $this->credentialsStoragePlugin = $credentials_storage_plugin_manager->createInstance($credentials_storage_config->get('credentials_storage_type'));
-    $this->authenticationMethodPlugin = $authentication_method_plugin_manager->createInstance($authentication_method_config->get('authentication_method'));
+  public function __construct(ConfigFactoryInterface $config_factory, CredentialsStorageManager $credentials_storage_plugin_manager, AuthenticationMethodManager $authentication_method_plugin_manager) {
+    $this->credentialsStoragePlugin = $credentials_storage_plugin_manager->createInstance($config_factory->get('credentials_storage_type'));
+    $this->authenticationMethodPlugin = $authentication_method_plugin_manager->createInstance($config_factory->get('authentication_method'));
   }
 
   /**
