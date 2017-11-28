@@ -36,8 +36,8 @@ class SDKConnector {
    *   The manager for authentication method plugins.
    */
   public function __construct(ConfigFactoryInterface $config_factory, CredentialsStorageManager $credentials_storage_plugin_manager, AuthenticationMethodManager $authentication_method_plugin_manager) {
-    $this->credentialsStoragePlugin = $credentials_storage_plugin_manager->createInstance($config_factory->get('credentials_storage_type'));
-    $this->authenticationMethodPlugin = $authentication_method_plugin_manager->createInstance($config_factory->get('authentication_method'));
+    $this->credentialsStoragePlugin = $credentials_storage_plugin_manager->createInstance($config_factory->get('apigee_edge.credentials_storage')->get('credentials_storage_type'));
+    $this->authenticationMethodPlugin = $authentication_method_plugin_manager->createInstance($config_factory->get('apigee_edge.authentication_method')->get('authentication_method'));
   }
 
   /**
