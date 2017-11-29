@@ -41,3 +41,43 @@ function apigee_edge_uninstall() {
     $credentials_storage_plugin->deleteCredentials();
   }
 }
+
+/**
+ * Implements hook_schema().
+ */
+function apigee_edge_schema() {
+  $schema = [];
+
+  $schema['apigee_edge_job'] = [
+    'fields' => [
+      'id' => [
+        'type' => 'varchar',
+        'length' => 36,
+        'not null' => TRUE,
+      ],
+      'status' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+      'job' => [
+        'type' => 'blob',
+        'not null' => TRUE,
+      ],
+      'created' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+      'updated' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'updated_idx' => ['updated'],
+      'status_idx' => ['status'],
+    ],
+  ];
+
+  return $schema;
+}
