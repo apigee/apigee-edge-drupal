@@ -18,13 +18,6 @@ class EdgeAccountTest extends BrowserTestBase {
    */
   protected $credentials = [];
 
-  /**
-   * User with administrator permissions for the edge module.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $adminUser = NULL;
-
   public static $modules = [
     'apigee_edge',
   ];
@@ -60,8 +53,7 @@ class EdgeAccountTest extends BrowserTestBase {
     }
     parent::setUp();
 
-    $this->adminUser = $this->createUser(['administer apigee edge']);
-    $this->drupalLogin($this->adminUser);
+    $this->drupalLogin($this->rootUser);
   }
 
   /**
