@@ -69,42 +69,111 @@ function apigee_edge_user_insert(UserInterface $account) {
     'lastName' => $account->get('last_name')->value,
   ];
 
-  $jobs = new JobList(TRUE);
-  $developer = new Developer($developer_data);
-  $jobs->addJob(new DeveloperCreate($developer));
-  if (!$account->isActive()) {
-    $jobs->addJob(new DeveloperSetStatus($developer->getEmail(), Developer::STATUS_INACTIVE));
-  }
+  try {
+    /** @var \Apigee\Edge\Api\Management\Controller\DeveloperController $dc */
+    $dc = \Drupal::service('apigee_edge.sdk_connector')->getDeveloperController();
+    $developer = new Developer($developer_data);
+    $dc->create($developer);
 
-  apigee_edge_get_executor()->call($jobs);
+    // The API creates users with a status of active.
+    // To set the status explicitly, use setStatus().
+    if (!$account->isActive()) {
+      $dc->setStatus($developer->id(), Developer::STATUS_INACTIVE);
+    }
+  }
+  catch (ClientErrorException $exception) {
+    $context = [
+      '@developer' => print_r($developer_data, TRUE),
+      '@message' => (string) $exception,
+      '@trace' => $exception->getTraceAsString(),
+    ];
+    if ($exception->getEdgeErrorCode() === 'developer.service.DeveloperAlreadyExists') {
+      \Drupal::logger('apigee_edge')->notice('Developer is already exists. @developer, @message, @trace', $context);
+    }
+    else {
+      \Drupal::logger('apigee_edge')->error('Could not save developer entity. @developer, @message, @trace', $context);
+    }
+  }
+  catch (\Exception $exception) {
+    $context = [
+      '@developer' => print_r($developer_data, TRUE),
+      '@message' => (string) $exception,
+      '@trace' => $exception->getTraceAsString(),
+    ];
+    \Drupal::logger('apigee_edge')->error('Could not save developer entity. @developer, @message, @trace', $context);
+  }
 }
 
 /**
  * Implements hook_user_update().
  */
 function apigee_edge_user_update(UserInterface $account) {
-  $jobs = new JobList(TRUE);
-  $developer = apigee_edge_get_developer($account);
+  if ($account->get('first_name')->value !== $account->original->get('first_name')->value) {
+    try {
+      /** @var \Apigee\Edge\Api\Management\Controller\DeveloperController $dc */
+      $dc = \Drupal::service('apigee_edge.sdk_connector')->getDeveloperController();
+      $developer = $dc->load($account->getEmail());
+      $developer->setFirstName($account->get('first_name')->value);
+      $dc->update($developer);
+    }
+    catch (\Exception $exception) {
+      $context = [
+        '@developer' => $account->getEmail(),
+        '@message' => (string) $exception,
+        '@trace' => $exception->getTraceAsString(),
+      ];
+      \Drupal::logger('apigee_edge')->error('Could not update developer entity. @developer, @message, @trace', $context);
+    }
+  }
 
-  $first_name = $account->get('first_name')->value;
-  $last_name = $account->get('last_name')->value;
-  $original_first_name = $account->original->get('first_name')->value;
-  $original_last_name = $account->original->get('last_name')->value;
-  if ($first_name !== $original_first_name || $last_name !== $original_last_name) {
-    $developer->setFirstName($first_name);
-    $developer->setLastName($last_name);
-    $jobs->addJob(new DeveloperUpdate($developer));
+  if ($account->get('last_name')->value !== $account->original->get('last_name')->value) {
+    try {
+      /** @var \Apigee\Edge\Api\Management\Controller\DeveloperController $dc */
+      $dc = \Drupal::service('apigee_edge.sdk_connector')->getDeveloperController();
+      $developer = $dc->load($account->getEmail());
+      $developer->setLastName($account->get('last_name')->value);
+      $dc->update($developer);
+    }
+    catch (\Exception $exception) {
+      $context = [
+        '@developer' => $account->getEmail(),
+        '@message' => (string) $exception,
+        '@trace' => $exception->getTraceAsString(),
+      ];
+      \Drupal::logger('apigee_edge')->error('Could not update developer entity. @developer, @message, @trace', $context);
+    }
   }
 
   if ($account->isBlocked() && $account->original->isActive()) {
-    $jobs->addJob(new DeveloperSetStatus($developer->getEmail(), Developer::STATUS_INACTIVE));
-  }
-  elseif ($account->isActive() && $account->original->isBlocked()) {
-    $jobs->addJob(new DeveloperSetStatus($developer->getEmail(), Developer::STATUS_ACTIVE));
+    try {
+      /** @var \Apigee\Edge\Api\Management\Controller\DeveloperController $dc */
+      $dc = \Drupal::service('apigee_edge.sdk_connector')->getDeveloperController();
+      $dc->setStatus($account->getEmail(), Developer::STATUS_INACTIVE);
+    }
+    catch (\Exception $exception) {
+      $context = [
+        '@developer' => $account->getEmail(),
+        '@message' => (string) $exception,
+        '@trace' => $exception->getTraceAsString(),
+      ];
+      \Drupal::logger('apigee_edge')->error('Could not block developer entity. @developer, @message, @trace', $context);
+    }
   }
 
-  if (!$jobs->isEmpty()) {
-    apigee_edge_get_executor()->call($jobs);
+  if ($account->isActive() && $account->original->isBlocked()) {
+    try {
+      /** @var \Apigee\Edge\Api\Management\Controller\DeveloperController $dc */
+      $dc = \Drupal::service('apigee_edge.sdk_connector')->getDeveloperController();
+      $dc->setStatus($account->getEmail(), Developer::STATUS_ACTIVE);
+    }
+    catch (\Exception $exception) {
+      $context = [
+        '@developer' => $account->getEmail(),
+        '@message' => (string) $exception,
+        '@trace' => $exception->getTraceAsString(),
+      ];
+      \Drupal::logger('apigee_edge')->error('Could not unblock developer entity. @developer, @message, @trace', $context);
+    }
   }
 }
 
@@ -112,8 +181,38 @@ function apigee_edge_user_update(UserInterface $account) {
  * Implements hook_user_cancel().
  */
 function apigee_edge_user_cancel(array $edit, UserInterface $account, $method) {
-  if ($method === 'user_cancel_block_unpublish' || $method === 'user_cancel_block') {
-    apigee_edge_get_executor()->call(new DeveloperSetStatus($account->getEmail(), Developer::STATUS_INACTIVE));
+  switch ($method) {
+    case 'user_cancel_block_unpublish':
+      try {
+        /** @var \Apigee\Edge\Api\Management\Controller\DeveloperController $dc */
+        $dc = \Drupal::service('apigee_edge.sdk_connector')->getDeveloperController();
+        $dc->setStatus($account->getEmail(), Developer::STATUS_INACTIVE);
+      }
+      catch (\Exception $exception) {
+        $context = [
+          '@developer' => $account->getEmail(),
+          '@message' => (string) $exception,
+          '@trace' => $exception->getTraceAsString(),
+        ];
+        \Drupal::logger('apigee_edge')->error('Could not block developer entity. @developer, @message, @trace', $context);
+      }
+      break;
+
+    case 'user_cancel_block':
+      try {
+        /** @var \Apigee\Edge\Api\Management\Controller\DeveloperController $dc */
+        $dc = \Drupal::service('apigee_edge.sdk_connector')->getDeveloperController();
+        $dc->setStatus($account->getEmail(), Developer::STATUS_INACTIVE);
+      }
+      catch (\Exception $exception) {
+        $context = [
+          '@developer' => $account->getEmail(),
+          '@message' => (string) $exception,
+          '@trace' => $exception->getTraceAsString(),
+        ];
+        \Drupal::logger('apigee_edge')->error('Could not block developer entity. @developer, @message, @trace', $context);
+      }
+      break;
   }
 }
 
@@ -121,7 +220,19 @@ function apigee_edge_user_cancel(array $edit, UserInterface $account, $method) {
  * Implements hook_user_delete().
  */
 function apigee_edge_user_delete(UserInterface $account) {
-  apigee_edge_get_executor()->call(new DeveloperDelete($account->getEmail()));
+  try {
+    /** @var \Apigee\Edge\Api\Management\Controller\DeveloperController $dc */
+    $dc = \Drupal::service('apigee_edge.sdk_connector')->getDeveloperController();
+    $dc->delete($account->getEmail());
+  }
+  catch (\Exception $exception) {
+    $context = [
+      '@developer' => $account->getEmail(),
+      '@message' => (string) $exception,
+      '@trace' => $exception->getTraceAsString(),
+    ];
+    \Drupal::logger('apigee_edge')->error('Could not delete developer entity. @developer, @message, @trace', $context);
+  }
 }
 
 /**

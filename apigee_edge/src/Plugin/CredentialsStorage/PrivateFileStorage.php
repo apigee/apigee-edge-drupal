@@ -82,7 +82,7 @@ class PrivateFileStorage extends CredentialsStoragePluginBase {
    * {@inheritdoc}
    */
   public function deleteCredentials() {
-    \file_unmanaged_delete(self::FILE_URI);
+    file_exists(self::FILE_URI) ? file_unmanaged_delete(self::FILE_URI) : FALSE;
   }
 
 }
