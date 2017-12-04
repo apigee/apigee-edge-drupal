@@ -26,16 +26,22 @@ class SDKConnector {
   protected $authenticationMethodPlugin;
 
   /**
+   * The http client.
+   *
    * @var \Apigee\Edge\HttpClient\Client
    */
   protected $client;
 
   /**
+   * The Edge organization.
+   *
    * @var string
    */
   protected $organization;
 
   /**
+   * The DeveloperController object.
+   *
    * @var \Apigee\Edge\Api\Management\Controller\DeveloperController
    */
   protected $developerController;
@@ -63,6 +69,7 @@ class SDKConnector {
    * Returns the http client.
    *
    * @return \Apigee\Edge\HttpClient\Client
+   *   The http client.
    */
   public function getClient() : Client {
     return $this->client;
