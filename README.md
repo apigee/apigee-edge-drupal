@@ -1,37 +1,32 @@
 # apigee-drupal-module
+
 A Drupal 8 module that turns a site into a developer portal for Apigee's API management product
 
 # Testing
 
-To run the tests, some environment variables are needed both for the script and the server. Creating a simple script in the `docroot` folder is recommended:
+To run the tests, some environment variables are needed both for the script and the server. These variables are: `APIGEE_EDGE_BASE_URL`, `APIGEE_EDGE_ORGANIZATION`, `APIGEE_EDGE_USERNAME` and `APIGEE_EDGE_PASSWORD`.
+
+Create the `phpunit.xml` file in the `docroot` folder and fill in `SIMPLETEST_DB, SIMPLETEST_BASE_URL, BROWSERTEST_OUTPUT_DIRECTORY` and the `APIGEE_EDGE_*` environment variables:
 
 ```
-#!/bin/bash
-
-export APIGEE_EDGE_USERNAME=""
-export APIGEE_EDGE_PASSWORD=""
-export APIGEE_EDGE_ORGANIZATION=""
-export APIGEE_EDGE_BASE_URL=""
-
-./../bin/phpunit --verbose --color --group ApigeeEdge
-```
-
-Create the `phpunit.xml` file in the `docroot` folder and fill in `SIMPLETEST_DB, SIMPLETEST_BASE_URL, BROWSERTEST_OUTPUT_DIRECTORY`:
-```
-<?xml version="1.0" encoding="UTF-8"?>   
+<?xml version="1.0" encoding="UTF-8"?>
 <phpunit bootstrap="./core/tests/bootstrap.php" colors="true"
          beStrictAboutTestsThatDoNotTestAnything="true"
          beStrictAboutOutputDuringTests="true"
          beStrictAboutChangesToGlobalState="true"
          checkForUnintentionallyCoveredCode="false"
          printerClass="\Drupal\Tests\Listeners\HtmlOutputPrinter">
-   
+
   <php>
     <ini name="error_reporting" value="32767"/>
     <ini name="memory_limit" value="-1"/>
     <env name="SIMPLETEST_BASE_URL" value="http://edge.test"/>
     <env name="SIMPLETEST_DB" value="mysql://drupal@localhost/drupal"/>
     <env name="BROWSERTEST_OUTPUT_DIRECTORY" value="./sites/default/files/test"/>
+    <env name="APIGEE_EDGE_BASE_URL" value="http://"/>
+    <env name="APIGEE_EDGE_USERNAME" value=""/>
+    <env name="APIGEE_EDGE_PASSWORD" value=""/>
+    <env name="APIGEE_EDGE_ORGANIZATION" value=""/>
   </php>
   <testsuites>
     <testsuite name="unit">
@@ -69,4 +64,10 @@ Create the `phpunit.xml` file in the `docroot` folder and fill in `SIMPLETEST_DB
     </whitelist>
   </filter>
   </phpunit>
+```
+
+To execute the tests, run the following command (note that the location of the `phpunit` executable might be different in your case):
+
+```
+./../bin/phpunit --verbose --color --group ApigeeEdge
 ```
