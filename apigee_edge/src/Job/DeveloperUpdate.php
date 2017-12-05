@@ -31,4 +31,13 @@ class DeveloperUpdate extends EdgeJob {
     $this->getConnector()->getDeveloperController()->update($this->developer);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function __toString() : string {
+    return t('Updating developer (@mail) on edge', [
+      '@mail' => $this->developer->getEmail(),
+    ])->render();
+  }
+
 }

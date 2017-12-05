@@ -75,12 +75,4 @@ abstract class EdgeJob extends Job {
     return [];
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __toString() : string {
-    // TODO print Journal data
-    return '';
-  }
-
 }

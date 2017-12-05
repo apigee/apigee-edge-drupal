@@ -71,6 +71,7 @@ class JobExecutor {
       'status' => $job->getStatus(),
       'job' => $jobdata,
       'updated' => $now,
+      'tag' => $job->getTag(),
     ];
     $this->connection->merge('apigee_edge_job')
       ->key('id', $job->getId())
@@ -101,15 +102,21 @@ class JobExecutor {
   /**
    * Claims a job if one is available.
    *
+   * @param null|string $tag
+   *   Optional tag to filter with.
+   *
    * @return \Drupal\apigee_edge\Job|null
    */
-  public function select() : ? Job {
+  public function select(?string $tag = NULL) : ? Job {
     // TODO handle race conditions.
     $query = $this->connection->select('apigee_edge_job', 'j')
       ->fields('j', ['job'])
       ->orderBy('updated')
       ->range(0, 1);
     $query->condition('status', [Job::IDLE, Job::RESCHEDULED], 'IN');
+    if ($tag !== NULL) {
+      $query->condition('tag', $tag);
+    }
     $jobdata = $query->execute()->fetchField();
 
     if ($jobdata) {
@@ -163,6 +170,34 @@ class JobExecutor {
   public function cast(Job $job) {
     $this->ensure($job, Job::SELECTED);
     $this->queue->createItem(['id' => $job->getId()]);
+  }
+
+  /**
+   * Counts jobs in the queue.
+   *
+   * @param null|string $tag
+   *   Optional tag to filter with.
+   * @param array|null $statuses
+   *   Optional statues to filter with.
+   *
+   * @return int
+   *   Number of counted jobs.
+   */
+  public function countJobs(?string $tag = NULL, ?array $statuses = NULL) : int {
+    $query = $this->connection->select('apigee_edge_job', 'j');
+
+    if ($tag !== NULL) {
+      $query->condition('tag', $tag);
+    }
+
+    if ($statuses !== NULL) {
+      $query->condition('status', $statuses, 'IN');
+    }
+
+    return (int) $query
+      ->countQuery()
+      ->execute()
+      ->fetchField();
   }
 
 }

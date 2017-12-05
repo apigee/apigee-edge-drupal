@@ -71,6 +71,13 @@ abstract class Job {
   private $id;
 
   /**
+   * The tag of the job.
+   *
+   * @var string
+   */
+  private $tag;
+
+  /**
    * Remaining retries.
    *
    * @var int
@@ -92,6 +99,26 @@ abstract class Job {
    */
   public function getId() : string {
     return $this->id;
+  }
+
+  /**
+   * Job tag.
+   *
+   * The job tag can be used to group multiple jobs together.
+   *
+   * @return string
+   */
+  public function getTag() : string {
+    return $this->tag;
+  }
+
+  /**
+   * Sets the job tag.
+   *
+   * @param string $tag
+   */
+  public function setTag(string $tag) {
+    $this->tag = $tag;
   }
 
   /**

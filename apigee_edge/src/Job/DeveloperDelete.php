@@ -29,4 +29,13 @@ class DeveloperDelete extends EdgeJob {
     $this->getConnector()->getDeveloperController()->delete($this->developerId);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function __toString(): string {
+    return t('Deleting developer (@mail) from edge', [
+      '@mail' => $this->developerId,
+    ])->render();
+  }
+
 }

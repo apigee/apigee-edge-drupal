@@ -59,6 +59,12 @@ function apigee_edge_schema() {
         'type' => 'int',
         'not null' => TRUE,
       ],
+      'tag' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ],
       'job' => [
         'type' => 'blob',
         'not null' => TRUE,
@@ -76,6 +82,7 @@ function apigee_edge_schema() {
     'indexes' => [
       'updated_idx' => ['updated'],
       'status_idx' => ['status'],
+      'tag_idx' => ['tag'],
     ],
   ];
 

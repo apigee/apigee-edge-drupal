@@ -2,6 +2,8 @@
 
 namespace Drupal\apigee_edge\Job;
 
+use Apigee\Edge\Api\Management\Entity\Developer;
+
 /**
  * A job that updates a developer's status.
  */
@@ -36,4 +38,16 @@ class DeveloperSetStatus extends EdgeJob {
   protected function executeRequest() {
     $this->getConnector()->getDeveloperController()->setStatus($this->developerId, $this->status);
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __toString(): string {
+    $args = ['@mail' => $this->developerId];
+    return ($this->status == Developer::STATUS_ACTIVE ?
+      t('Enabling developer (@mail) on edge', $args) :
+      t('Disabling developer (@mail) on edge', $args))
+      ->render();
+  }
+
 }
