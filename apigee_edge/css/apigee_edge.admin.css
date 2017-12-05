@@ -1,13 +1,3 @@
-#edit-test-connection-submit {
+.apigee-edge-authentication .form-submit {
   margin-left: 0;
-}
-
-.test-connection-response-error {
-  color: red;
-  font-weight: bold;
-}
-
-.test-connection-response-success {
-  color: green;
-  font-weight: bold;
 }

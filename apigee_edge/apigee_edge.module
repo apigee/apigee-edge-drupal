@@ -6,26 +6,76 @@
  */
 
 use Apigee\Edge\Api\Management\Entity\Developer;
+use Apigee\Edge\Api\Management\Entity\DeveloperInterface;
 use Apigee\Edge\Exception\ClientErrorException;
+use Drupal\apigee_edge\JobExecutor;
+use Drupal\apigee_edge\SDKConnector;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\user\UserInterface;
 
 /**
- * Implements hook_user_presave().
+ * Implements hook_entity_base_field_info().
  */
-function apigee_edge_user_presave(UserInterface $account) {
+function apigee_edge_entity_base_field_info(EntityTypeInterface $entity_type) {
+  $fields = [];
+
+  if ($entity_type->id() === 'user') {
+    $fields['first_name'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('First name'))
+      ->setDescription(t('Your first name.'))
+      ->setSetting('max_length', 32)
+      ->setRequired(TRUE)
+      ->setDisplayOptions('form', [
+        'type' => 'string_textfield',
+        'weight' => '-11',
+        'settings' => [
+          'display_label' => TRUE,
+        ],
+      ])
+      ->setDisplayConfigurable('form', TRUE);
+
+    $fields['last_name'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Last name'))
+      ->setDescription(t('Your last name.'))
+      ->setSetting('max_length', 32)
+      ->setRequired(TRUE)
+      ->setDisplayOptions('form', [
+        'type' => 'string_textfield',
+        'weight' => '-11',
+        'settings' => [
+          'display_label' => TRUE,
+        ],
+      ])
+      ->setDisplayConfigurable('form', TRUE);
+  }
+
+  return $fields;
+}
+
+/**
+ * Implements hook_user_insert().
+ */
+function apigee_edge_user_insert(UserInterface $account) {
   $developer_data = [
     'userName' => $account->getAccountName(),
     'email' => $account->getEmail(),
-    'firstName' => $account->getAccountName(),
-    'lastName' => $account->getAccountName(),
+    'firstName' => $account->get('first_name')->value,
+    'lastName' => $account->get('last_name')->value,
   ];
 
   try {
-    /** @var \Apigee\Edge\Entity\EntityControllerFactory $ecf */
-    $ecf = \Drupal::service('apigee_edge.sdk_connector')->getEntityControllerFactory();
-    $ec = $ecf->getControllerByEndpoint('developers');
+    /** @var \Apigee\Edge\Api\Management\Controller\DeveloperController $dc */
+    $dc = \Drupal::service('apigee_edge.sdk_connector')->getDeveloperController();
     $developer = new Developer($developer_data);
-    $ec->create($developer);
+    $dc->create($developer);
+
+    // The API creates users with a status of active.
+    // To set the status explicitly, use setStatus().
+    if (!$account->isActive()) {
+      $dc->setStatus($developer->getEmail(), Developer::STATUS_INACTIVE);
+    }
   }
   catch (ClientErrorException $exception) {
     $context = [
@@ -51,14 +101,84 @@ function apigee_edge_user_presave(UserInterface $account) {
 }
 
 /**
+ * Implements hook_user_update().
+ */
+function apigee_edge_user_update(UserInterface $account) {
+  $email = $account->getEmail();
+  $first_name = $account->get('first_name')->value;
+  $last_name = $account->get('last_name')->value;
+  $original_email = $account->original->getEmail();
+  $original_first_name = $account->original->get('first_name')->value;
+  $original_last_name = $account->original->get('last_name')->value;
+
+  if ($email !== $original_email || $first_name !== $original_first_name || $last_name !== $original_last_name) {
+    try {
+      /** @var \Apigee\Edge\Api\Management\Controller\DeveloperController $dc */
+      $dc = \Drupal::service('apigee_edge.sdk_connector')->getDeveloperController();
+      /** @var Developer $developer */
+      $developer = $dc->load($original_email);
+      $developer->setEmail($email);
+      $developer->setFirstName($first_name);
+      $developer->setLastName($last_name);
+      $dc->update($developer);
+    }
+    catch (\Exception $exception) {
+      $context = [
+        '@developer' => $account->getEmail(),
+        '@message' => (string) $exception,
+        '@trace' => $exception->getTraceAsString(),
+      ];
+      \Drupal::logger('apigee_edge')->error('Could not update developer entity. @developer, @message, @trace', $context);
+    }
+  }
+
+  if ($account->isActive() !== $account->original->isActive()) {
+    try {
+      /** @var \Apigee\Edge\Api\Management\Controller\DeveloperController $dc */
+      $dc = \Drupal::service('apigee_edge.sdk_connector')->getDeveloperController();
+      $status = $account->isActive() ? Developer::STATUS_ACTIVE : Developer::STATUS_INACTIVE;
+      $dc->setStatus($account->getEmail(), $status);
+    }
+    catch (\Exception $exception) {
+      $context = [
+        '@developer' => $account->getEmail(),
+        '@message' => (string) $exception,
+        '@trace' => $exception->getTraceAsString(),
+      ];
+      \Drupal::logger('apigee_edge')->error('Could not block/unblock developer entity. @developer, @message, @trace', $context);
+    }
+  }
+}
+
+/**
+ * Implements hook_user_cancel().
+ */
+function apigee_edge_user_cancel(array $edit, UserInterface $account, $method) {
+  if ($method === 'user_cancel_block_unpublish' || $method === 'user_cancel_block') {
+    try {
+      /** @var \Apigee\Edge\Api\Management\Controller\DeveloperController $dc */
+      $dc = \Drupal::service('apigee_edge.sdk_connector')->getDeveloperController();
+      $dc->setStatus($account->getEmail(), Developer::STATUS_INACTIVE);
+    }
+    catch (\Exception $exception) {
+      $context = [
+        '@developer' => $account->getEmail(),
+        '@message' => (string) $exception,
+        '@trace' => $exception->getTraceAsString(),
+      ];
+      \Drupal::logger('apigee_edge')->error('Could not block developer entity. @developer, @message, @trace', $context);
+    }
+  }
+}
+
+/**
  * Implements hook_user_delete().
  */
 function apigee_edge_user_delete(UserInterface $account) {
   try {
-    /** @var \Apigee\Edge\Entity\EntityControllerFactory $ecf */
-    $ecf = \Drupal::service('apigee_edge.sdk_connector')->getEntityControllerFactory();
-    $ec = $ecf->getControllerByEndpoint('developers');
-    $ec->delete($account->getEmail());
+    /** @var \Apigee\Edge\Api\Management\Controller\DeveloperController $dc */
+    $dc = \Drupal::service('apigee_edge.sdk_connector')->getDeveloperController();
+    $dc->delete($account->getEmail());
   }
   catch (\Exception $exception) {
     $context = [
@@ -68,4 +188,60 @@ function apigee_edge_user_delete(UserInterface $account) {
     ];
     \Drupal::logger('apigee_edge')->error('Could not delete developer entity. @developer, @message, @trace', $context);
   }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function apigee_edge_cron() {
+  /** @var \Drupal\apigee_edge\JobExecutor $executor */
+  $executor = \Drupal::service('apigee_edge.job_executor');
+  // Schedules 100 items from the job table.
+  // The reason of this is to avoid race conditions.
+  for ($i = 0; $i < 100; $i++) {
+    if (($job = $executor->select())) {
+      $executor->cast($job);
+    }
+    else {
+      break;
+    }
+  }
+}
+
+/**
+ * Returns the job executor instance.
+ *
+ * @return \Drupal\apigee_edge\JobExecutor
+ *   The job executor instance.
+ */
+function apigee_edge_get_executor() : JobExecutor {
+  return \Drupal::service('apigee_edge.job_executor');
+}
+
+/**
+ * Returns the SDK Connector instance.
+ *
+ * @return \Drupal\apigee_edge\SDKConnector
+ *   The SDK Connector instance.
+ */
+function apigee_edge_get_connector() : SDKConnector {
+  return \Drupal::service('apigee_edge.sdk_connector');
+}
+
+/**
+ * Loads the remote apigee developer for a local account.
+ *
+ * @param \Drupal\Core\Session\AccountInterface $account
+ *   Locla account.
+ *
+ * @return \Apigee\Edge\Api\Management\Entity\DeveloperInterface
+ *   The developer entity.
+ */
+function apigee_edge_get_developer(AccountInterface $account) : DeveloperInterface {
+  /** @var \Apigee\Edge\Api\Management\Controller\DeveloperController $dc */
+  $dc = \Drupal::service('apigee_edge.sdk_connector')->getDeveloperController();
+  /** @var Developer $developer */
+  $developer = $dc->load($account->getEmail());
+
+  return $developer;
 }

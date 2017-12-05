@@ -5,3 +5,20 @@ apigee_edge.settings:
     _title: 'Apigee Edge Configuration'
   requirements:
     _permission: 'administer apigee edge'
+
+apigee_edge.user_sync.schedule:
+  path: '/admin/config/apigee_edge/sync/schedule'
+  defaults:
+    _controller: '\Drupal\apigee_edge\Controller\UserSyncController::schedule'
+  requirements:
+    _permission: 'administer apigee edge'
+    _csrf_token: 'TRUE'
+
+
+apigee_edge.user_sync.run:
+  path: '/admin/config/apigee_edge/sync/run'
+  defaults:
+    _controller: '\Drupal\apigee_edge\Controller\UserSyncController::run'
+  requirements:
+    _permission: 'administer apigee edge'
+    _csrf_token: 'TRUE'

@@ -69,7 +69,7 @@ class PrivateFileStorage extends CredentialsStoragePluginBase {
       'password' => $credentials->getPassword(),
     ]);
 
-    $status = file_save_data($data, self::FILE_URI, FILE_EXISTS_REPLACE);
+    $status = \file_unmanaged_save_data($data, self::FILE_URI, FILE_EXISTS_REPLACE);
 
     if ($status === FALSE) {
       throw new CredentialsSaveException(
@@ -82,13 +82,7 @@ class PrivateFileStorage extends CredentialsStoragePluginBase {
    * {@inheritdoc}
    */
   public function deleteCredentials() {
-    $data = json_encode([
-      'baseURL' => '',
-      'organization' => '',
-      'username' => '',
-      'password' => '',
-    ]);
-    file_save_data($data, self::FILE_URI, FILE_EXISTS_REPLACE);
+    file_exists(self::FILE_URI) ? file_unmanaged_delete(self::FILE_URI) : FALSE;
   }
 
 }
