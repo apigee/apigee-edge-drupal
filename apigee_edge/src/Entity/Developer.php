@@ -126,35 +126,31 @@ class Developer extends EdgeEntityBase {
   }
 
   /**
-   * Returns a Drupal developer entity created from an Edge developer entity.
+   * {@inheritdoc}
    *
-   * @param EdgeDeveloper $edge_developer
-   *   An Edge developer entity.
-   *
-   * @return Developer
-   *   The Drupal developer entity.
+   * @param \Drupal\apigee_edge\Entity\Developer $entity
    */
-  public static function createFromEdgeDeveloper(EdgeDeveloper $edge_developer) : Developer {
-    return new Developer([
-      '@email' => $edge_developer->getEmail(),
-      '@userName' => $edge_developer->getUserName(),
-      '@firstName' => $edge_developer->getFirstName(),
-      '@lastName' => $edge_developer->getLastName(),
+  public static function createFromEdgeEntity($entity) {
+    /** @var \Apigee\Edge\Api\Management\Entity\Developer $entity */
+    return static::create([
+      'email' => $entity->getEmail(),
+      'userName' => $entity->getUserName(),
+      'firstName' => $entity->getFirstName(),
+      'lastName' => $entity->getLastName(),
     ]);
   }
 
   /**
-   * Creates an Edge developer entity from the current instance.
+   * {@inheritdoc}
    *
-   * @return EdgeDeveloper
-   *   The Edge developer entity.
+   * @return \Apigee\Edge\Api\Management\Entity\Developer
    */
-  public function createToEdgeDeveloper() : EdgeDeveloper {
+  public function toEdgeEntity() {
     return new EdgeDeveloper([
-      '@email' => $this->email,
-      '@userName' => $this->userName,
-      '@firstName' => $this->firstName,
-      '@lastName' => $this->lastName,
+      'email' => $this->email,
+      'userName' => $this->userName,
+      'firstName' => $this->firstName,
+      'lastName' => $this->lastName,
     ]);
   }
 
