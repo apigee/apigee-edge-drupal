@@ -3,6 +3,7 @@
 namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Api\Management\Entity\Developer as EdgeDeveloper;
+use Drupal\user\UserInterface;
 
 /**
  * Defines the Developer entity class.
@@ -16,6 +17,10 @@ use Apigee\Edge\Api\Management\Entity\Developer as EdgeDeveloper;
  * )
  */
 class Developer extends EdgeEntityBase {
+
+  public const STATUS_ACTIVE = EdgeDeveloper::STATUS_ACTIVE;
+
+  public const STATUS_INACTIVE = EdgeDeveloper::STATUS_INACTIVE;
 
   /**
    * The developer's username.
@@ -44,6 +49,64 @@ class Developer extends EdgeEntityBase {
    * @var string
    */
   protected $lastName;
+
+  /**
+   * The developer's status.
+   *
+   * @var string
+   */
+  protected $status;
+
+  /**
+   * Creates a Drupal developer entity from a Drupal user.
+   *
+   * @param UserInterface $account
+   *   The Drupal user.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface|static
+   *   The developer entity.
+   */
+  public static function createFromDrupalUser(UserInterface $account) {
+    return static::create([
+      'email' => $account->getEmail(),
+      'userName' => $account->getAccountName(),
+      'firstName' => $account->$account->get('first_name')->value,
+      'lastName' => $account->$account->get('first_name')->value,
+      'status' => $account->isActive() ? self::STATUS_ACTIVE : self::STATUS_INACTIVE,
+    ]);
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * @param \Apigee\Edge\Api\Management\Entity\Developer $entity
+   *   The Edge developer entity.
+   */
+  public static function createFromEdgeEntity($entity) {
+    return static::create([
+      'email' => $entity->getEmail(),
+      'userName' => $entity->getUserName(),
+      'firstName' => $entity->getFirstName(),
+      'lastName' => $entity->getLastName(),
+      'status' => $entity->getStatus(),
+    ]);
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * @return \Apigee\Edge\Api\Management\Entity\Developer
+   *   The Edge developer entity.
+   */
+  public function toEdgeEntity() {
+    return new EdgeDeveloper([
+      'email' => $this->email,
+      'userName' => $this->userName,
+      'firstName' => $this->firstName,
+      'lastName' => $this->lastName,
+      'status' => $this->status,
+    ]);
+  }
 
   /**
    * Gets the developer's username.
@@ -126,32 +189,23 @@ class Developer extends EdgeEntityBase {
   }
 
   /**
-   * {@inheritdoc}
+   * Gets the developer's status.
    *
-   * @param \Drupal\apigee_edge\Entity\Developer $entity
+   * @return string
+   *   The developer's status.
    */
-  public static function createFromEdgeEntity($entity) {
-    /** @var \Apigee\Edge\Api\Management\Entity\Developer $entity */
-    return static::create([
-      'email' => $entity->getEmail(),
-      'userName' => $entity->getUserName(),
-      'firstName' => $entity->getFirstName(),
-      'lastName' => $entity->getLastName(),
-    ]);
+  public function getStatus(): string {
+    return $this->status;
   }
 
   /**
-   * {@inheritdoc}
+   * Sets the developer's status.
    *
-   * @return \Apigee\Edge\Api\Management\Entity\Developer
+   * @param string $status
+   *   The developer's status.
    */
-  public function toEdgeEntity() {
-    return new EdgeDeveloper([
-      'email' => $this->email,
-      'userName' => $this->userName,
-      'firstName' => $this->firstName,
-      'lastName' => $this->lastName,
-    ]);
+  public function setStatus(string $status) {
+    $this->status = $status;
   }
 
 }
