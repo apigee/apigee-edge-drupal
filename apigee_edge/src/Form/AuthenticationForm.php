@@ -3,7 +3,6 @@
 namespace Drupal\apigee_edge\Form;
 
 use Apigee\Edge\Api\Management\Controller\OrganizationController;
-use Apigee\Edge\Entity\EntityControllerFactory;
 use Apigee\Edge\HttpClient\Client;
 use Drupal\apigee_edge\AuthenticationMethodManager;
 use Drupal\apigee_edge\Credentials;
