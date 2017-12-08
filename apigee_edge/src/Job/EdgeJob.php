@@ -57,6 +57,7 @@ abstract class EdgeJob extends Job {
    * and the service class contains elements that can't be serialized.
    *
    * @return \Drupal\apigee_edge\SDKConnector
+   *   The SDK connector service.
    */
   protected function getConnector() : SDKConnector {
     return \Drupal::service('apigee_edge.sdk_connector');
@@ -71,7 +72,7 @@ abstract class EdgeJob extends Job {
    * {@inheritdoc}
    */
   public function renderArray() : array {
-    // TODO visualize Journal
+    // TODO visualize Journal.
     return [];
   }
 

@@ -47,6 +47,7 @@ class JobList extends Job {
    * Adds a job to the job list.
    *
    * @param \Drupal\apigee_edge\Job $job
+   *   The job should be added.
    */
   public function addJob(Job $job) {
     $this->jobs[] = $job;
@@ -113,6 +114,7 @@ class JobList extends Job {
    * Whether the job list is empty.
    *
    * @return bool
+   *   TRUE if the job list is empty.
    */
   public function isEmpty() : bool {
     return count($this->jobs) === 0;

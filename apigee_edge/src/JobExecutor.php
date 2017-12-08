@@ -5,7 +5,6 @@ namespace Drupal\apigee_edge;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Queue\QueueFactory;
-use Drupal\Core\Queue\QueueWorkerManager;
 
 /**
  * Job executor service.

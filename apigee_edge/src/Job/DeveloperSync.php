@@ -15,7 +15,7 @@ class DeveloperSync extends EdgeJob {
   /**
    * All edge accounts.
    *
-   * Format: strtolower(email) => email
+   * Format: strtolower(email) => email.
    *
    * @var array
    */
@@ -24,7 +24,7 @@ class DeveloperSync extends EdgeJob {
   /**
    * All Drupal accounts.
    *
-   * Format: strtolower(mail) => mail
+   * Format: strtolower(mail) => mail.
    *
    * @var array
    */
@@ -34,6 +34,7 @@ class DeveloperSync extends EdgeJob {
    * Returns the database connection service.
    *
    * @return \Drupal\Core\Database\Connection
+   *   The database connection service.
    */
   protected function getConnection() : Connection {
     return \Drupal::service('database');
