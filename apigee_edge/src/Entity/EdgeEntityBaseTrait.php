@@ -41,20 +41,10 @@ trait EdgeEntityBaseTrait {
   protected $typedData;
 
   /**
-   * Constructs an Entity object.
-   *
-   * @param array $values
-   *   An array of values to set, keyed by property name. If the entity type
-   *   has bundles, the bundle key has to be specified.
-   * @param string $entity_type
-   *   The type of the entity to create.
+   * {@inheritdoc}
    */
-  public function __construct(array $values, $entity_type) {
-    $this->entityTypeId = $entity_type;
-    // Set initial values.
-    foreach ($values as $key => $value) {
-      $this->$key = $value;
-    }
+  public function uuid() {
+    return NULL;
   }
 
   /**

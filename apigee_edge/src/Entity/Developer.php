@@ -29,10 +29,9 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
     return isset($id) ? $id : NULL;
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function uuid() {
+  public function __construct(array $values = []) {
+    parent::__construct($values);
+    $this->entityTypeId = 'developer';
   }
 
 }
