@@ -76,12 +76,6 @@ trait EdgeEntityBaseTrait {
   /**
    * {@inheritdoc}
    */
-  public function id() {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function language() {
     return new Language(['id' => Language::LANGCODE_NOT_SPECIFIED]);
   }

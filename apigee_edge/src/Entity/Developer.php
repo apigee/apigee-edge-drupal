@@ -17,18 +17,15 @@ use Apigee\Edge\Api\Management\Entity\Developer as EdgeDeveloper;
  */
 class Developer extends EdgeDeveloper implements DeveloperInterface {
 
-  use EdgeEntityBaseTrait {
-    EdgeEntityBaseTrait::id as private drupalId;
-  }
+  use EdgeEntityBaseTrait;
 
   /**
-   * @inheritDoc
+   * Constructs a Developer object.
+   *
+   * @param array $values
+   *   An array of values to set, keyed by property name. If the entity type
+   *   has bundles, the bundle key has to be specified.
    */
-  public function id() : ? string {
-    $id = parent::id();
-    return isset($id) ? $id : NULL;
-  }
-
   public function __construct(array $values = []) {
     parent::__construct($values);
     $this->entityTypeId = 'developer';
