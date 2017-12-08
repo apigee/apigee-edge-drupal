@@ -2,7 +2,9 @@
 
 namespace Drupal\apigee_edge\Entity\Storage;
 
-use Apigee\Edge\Entity\CpsLimitEntityControllerInterface;
+use Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface;
+use Apigee\Edge\Entity\EntityCrudOperationsControllerInterface;
+use Drupal\Core\Entity\EntityInterface;
 
 
 /**
@@ -10,8 +12,25 @@ use Apigee\Edge\Entity\CpsLimitEntityControllerInterface;
  */
 class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorageInterface {
 
-  protected function getController() : CpsLimitEntityControllerInterface {
+  /**
+   * {@inheritdoc}
+   */
+  protected function getController() : EntityCrudOperationsControllerInterface {
     return $this->connector->getDeveloperController();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function doSave($id, EntityInterface $entity) {
+    $result = parent::doSave($id, $entity);
+
+    $this->withController(function (DeveloperControllerInterface $controller) use ($entity) {
+      /** @var \Drupal\apigee_edge\Entity\Developer $entity */
+      $controller->setStatus($entity->id(), $entity->getStatus());
+    });
+
+    return $result;
   }
 
 }

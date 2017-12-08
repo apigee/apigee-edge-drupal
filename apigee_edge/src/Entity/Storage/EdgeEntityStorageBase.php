@@ -2,7 +2,9 @@
 
 namespace Drupal\apigee_edge\Entity\Storage;
 
-use Apigee\Edge\Entity\CpsLimitEntityControllerInterface;
+use Apigee\Edge\Entity\EntityCrudOperationsControllerInterface;
+use Apigee\Edge\Entity\EntityDenormalizer;
+use Apigee\Edge\Entity\EntityNormalizer;
 use Drupal\apigee_edge\ExceptionLoggerTrait;
 use Drupal\apigee_edge\SDKConnector;
 use Drupal\Core\Entity\EntityStorageBase;
@@ -30,19 +32,25 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
    */
   protected function doLoadMultiple(array $ids = NULL) {
     $loaded = [];
-    $this->withController(function (CpsLimitEntityControllerInterface $controller) use ($ids, &$loaded) {
+    $this->withController(function ($controller) use ($ids, &$loaded) {
+      /** @var \Apigee\Edge\Entity\CpsLimitEntityControllerInterface|\Apigee\Edge\Entity\NonCpsLimitEntityControllerInterface $controller */
       $entities = [];
-      foreach ($controller->getEntities() as $entity) {
-        /** @var \Apigee\Edge\Entity\EntityInterface $entity */
-        $drupal_entity = call_user_func([$this->entityClass, 'createFromEdgeEntity'], $entity);
-        $entities[$entity->id()] = $drupal_entity;
+      $normalizer = new EntityNormalizer();
+      $denormalizer = new EntityDenormalizer();
+      foreach ($controller->getEntities() as $edge_entity) {
+        /** @var \Apigee\Edge\Entity\EntityInterface $edge_entity */
+        $normalized = $normalizer->normalize($edge_entity);
+        /** @var EntityInterface $drupal_entity */
+        $drupal_entity = $denormalizer->denormalize($normalized, $this->entityClass);
 
-        $this->setStaticCache($entities);
+        $entities[$drupal_entity->id()] = $drupal_entity;
 
-        if (in_array($entity->id(), $ids)) {
-          $loaded[$entity->id()] = $drupal_entity;
+        if (in_array($drupal_entity->id(), $ids)) {
+          $loaded[$drupal_entity->id()] = $drupal_entity;
         }
       }
+
+      $this->setStaticCache($entities);
     });
 
     return $loaded;
@@ -59,7 +67,7 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
    * {@inheritdoc}
    */
   protected function doDelete($entities) {
-    $this->withController(function (CpsLimitEntityControllerInterface $controller) use ($entities) {
+    $this->withController(function (EntityCrudOperationsControllerInterface $controller) use ($entities) {
       foreach ($entities as $entity) {
         /** @var EntityInterface $entity */
         $controller->delete($entity->id());
@@ -72,16 +80,26 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
    */
   protected function doSave($id, EntityInterface $entity) {
     $result = 0;
-    /** @var \Drupal\apigee_edge\Entity\EdgeEntityBase $entity */
-    $this->withController(function (CpsLimitEntityControllerInterface $controller) use ($id, $entity, &$result) {
-
+    /** @var \Apigee\Edge\Entity\EntityInterface $entity */
+    $this->withController(function (EntityCrudOperationsControllerInterface $controller) use ($id, $entity, &$result) {
+      if ($entity->isNew()) {
+        $controller->create($entity);
+        $result = SAVED_NEW;
+      }
+      else {
+        $controller->update($entity);
+        $result = SAVED_UPDATED;
+      }
     });
+
+    return $result;
   }
 
   /**
    * {@inheritdoc}
    */
   protected function getQueryServiceName() {
+    return 'entity.query.edge';
   }
 
   public function __construct(EntityTypeInterface $entity_type, SDKConnector $connector, LoggerInterface $logger) {
@@ -119,7 +137,7 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
   public function deleteRevision($revision_id) {
   }
 
-  abstract protected function getController() : CpsLimitEntityControllerInterface;
+  abstract protected function getController() : EntityCrudOperationsControllerInterface;
 
   protected function withController(callable $action) {
     try {

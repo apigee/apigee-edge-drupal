@@ -14,3 +14,10 @@ services:
   apigee_edge.job_executor:
     class: Drupal\apigee_edge\JobExecutor
     arguments: ['@database', '@datetime.time', '@queue']
+
+  entity.query.edge:
+    class: Drupal\apigee_edge\Entity\Query\QueryFactory
+    arguments:
+      - '@entity_type.manager'
+    tags:
+      - { name: event_subscriber }
