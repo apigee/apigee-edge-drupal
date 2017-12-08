@@ -64,7 +64,7 @@ class DeveloperCreate extends EdgeJob {
    * @return \Drupal\apigee_edge\Job|null
    *   The created job or null if properties are missing on the local account.
    */
-  public static function createForUser(UserInterface $account) : ?Job {
+  public static function createForUser(UserInterface $account) : ? Job {
     $developer_data = [
       'userName' => $account->getAccountName(),
       'email' => $account->getEmail(),
@@ -89,7 +89,7 @@ class DeveloperCreate extends EdgeJob {
   /**
    * {@inheritdoc}
    */
-  public function __toString(): string {
+  public function __toString() : string {
     return t('Creating developer for @mail on edge', [
       '@mail' => $this->developer->getEmail(),
     ])->render();

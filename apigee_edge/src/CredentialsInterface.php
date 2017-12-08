@@ -75,6 +75,7 @@ interface CredentialsInterface {
    * Checks whether this object is empty.
    *
    * @return bool
+   *   TRUE if the credentials are not initialized.
    */
   public function empty() : bool;
 

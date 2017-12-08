@@ -3,9 +3,7 @@
 namespace Drupal\apigee_edge;
 
 /**
- * Class Job
- *
- * @package Drupal\apigee_edge
+ * Defines the Job class.
  */
 abstract class Job {
 
@@ -92,7 +90,7 @@ abstract class Job {
   protected $status = self::IDLE;
 
   /**
-   * Returns the job's id.
+   * Gets the job id.
    *
    * @return string
    *   UUID of the job.
@@ -102,11 +100,12 @@ abstract class Job {
   }
 
   /**
-   * Job tag.
+   * Gets the job tag.
    *
    * The job tag can be used to group multiple jobs together.
    *
    * @return string
+   *   The job tag.
    */
   public function getTag() : string {
     return $this->tag;
@@ -116,24 +115,27 @@ abstract class Job {
    * Sets the job tag.
    *
    * @param string $tag
+   *   The job tag.
    */
   public function setTag(string $tag) {
     $this->tag = $tag;
   }
 
   /**
-   * Returns the status of the job.
+   * Gets the status of the job.
    *
    * @return int
+   *   The job's status.
    */
   public function getStatus() : int {
     return $this->status;
   }
 
   /**
-   * Sets the job status.
+   * Sets the status of the job.
    *
    * @param int $status
+   *   The job's status.
    */
   public function setStatus(int $status) {
     if (!in_array($status, self::ALL_STATUSES)) {
@@ -147,6 +149,7 @@ abstract class Job {
    * Adds an exception to the exception storage.
    *
    * @param \Exception $exception
+   *   The exception.
    */
   public function recordException(\Exception $exception) {
     $this->exceptions[] = [
@@ -159,9 +162,10 @@ abstract class Job {
   }
 
   /**
-   * Returns all stored exception data.
+   * Gets all stored exception data.
    *
    * @return array
+   *   Array of the stored exceptions.
    */
   public function getExceptions(): array {
     return $this->exceptions;
@@ -171,15 +175,17 @@ abstract class Job {
    * Adds a message to the message storage.
    *
    * @param string $message
+   *   The message.
    */
   public function recordMessage(string $message) {
     $this->messages[] = $message;
   }
 
   /**
-   * Returns all stored messages.
+   * Gets all stored messages.
    *
    * @return string[]
+   *   Array of the stored messages.
    */
   public function getMessages() : array {
     return $this->messages;
@@ -213,8 +219,10 @@ abstract class Job {
    * Whether this job should be retried when an exception is thrown.
    *
    * @param \Exception $ex
+   *   The thrown exception.
    *
    * @return bool
+   *   TRUE if the job should be retried.
    */
   public function shouldRetry(\Exception $ex) : bool {
     return TRUE;
@@ -235,6 +243,7 @@ abstract class Job {
    * Returns this job's visual representation.
    *
    * @return array
+   *   The render array.
    */
   abstract public function renderArray() : array;
 
@@ -242,6 +251,7 @@ abstract class Job {
    * Returns this job's textual representation.
    *
    * @return string
+   *   The string representation of the job.
    */
   abstract public function __toString() : string;
 

@@ -26,6 +26,7 @@ class UserSyncController extends ControllerBase {
    * UserSyncController constructor.
    *
    * @param \Drupal\apigee_edge\JobExecutor $executor
+   *   The job executor service.
    */
   public function __construct(JobExecutor $executor) {
     $this->executor = $executor;
@@ -60,8 +61,10 @@ class UserSyncController extends ControllerBase {
    * Runs a user sync in the background.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The HTTP request.
    *
    * @return \Symfony\Component\HttpFoundation\RedirectResponse
+   *   HTTP response doing a redirect.
    */
   public function schedule(Request $request) {
     $destination = $request->query->get('destination');
@@ -81,8 +84,10 @@ class UserSyncController extends ControllerBase {
    * Runs a user sync in the foreground as a batch.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The HTTP request.
    *
    * @return \Symfony\Component\HttpFoundation\RedirectResponse
+   *   HTTP response doing a redirect.
    */
   public function run(Request $request) {
     $destination = $request->query->get('destination');

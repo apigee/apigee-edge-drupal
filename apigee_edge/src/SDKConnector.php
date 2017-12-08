@@ -9,7 +9,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 /**
  * Provides an Apigee Edge SDK connector.
  */
-class SDKConnector {
+class SDKConnector implements SDKConnectorInterface {
 
   /**
    * The currently used credentials storage plugin.
@@ -66,23 +66,14 @@ class SDKConnector {
   }
 
   /**
-   * Returns the http client.
-   *
-   * @return \Apigee\Edge\HttpClient\Client
-   *   The http client.
+   * {@inheritdoc}
    */
   public function getClient() : Client {
     return $this->client;
   }
 
   /**
-   * Gets the DeveloperController object.
-   *
-   * Creates a DeveloperController object using the stored credentials
-   * and the configured authentication method.
-   *
-   * @return DeveloperController
-   *   The DeveloperController object.
+   * {@inheritdoc}
    */
   public function getDeveloperController() : DeveloperController {
     if (!$this->developerController) {

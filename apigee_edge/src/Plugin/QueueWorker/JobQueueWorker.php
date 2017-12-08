@@ -9,6 +9,8 @@ use Drupal\Core\Queue\QueueWorkerBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
+ * Worker class for processing a queue item.
+ *
  * @QueueWorker(
  *   id = "apigee_edge_job",
  *   title = "Apigee Edge job runner",
@@ -17,6 +19,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class JobQueueWorker extends QueueWorkerBase implements ContainerFactoryPluginInterface {
 
   /**
+   * The job executor service.
+   *
    * @var \Drupal\apigee_edge\JobExecutor
    */
   protected $executor;
