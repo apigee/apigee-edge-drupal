@@ -33,7 +33,7 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
   protected function doLoadMultiple(array $ids = NULL) {
     $loaded = [];
     $this->withController(function ($controller) use ($ids, &$loaded) {
-      /** @var \Apigee\Edge\Entity\CpsLimitEntityControllerInterface|\Apigee\Edge\Entity\NonCpsLimitEntityControllerInterface $controller */
+      /** @var \Apigee\Edge\Entity\CpsListingEntityControllerInterface|\Apigee\Edge\Entity\NonCpsListingEntityControllerInterface $controller */
       $entities = [];
       $normalizer = new EntityNormalizer();
       $denormalizer = new EntityDenormalizer();
@@ -102,6 +102,9 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
     return 'entity.query.edge';
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function __construct(EntityTypeInterface $entity_type, SDKConnector $connector, LoggerInterface $logger) {
     parent::__construct($entity_type);
     $this->connector = $connector;
@@ -129,16 +132,37 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
    * {@inheritdoc}
    */
   public function loadRevision($revision_id) {
+    return NULL;
   }
 
   /**
    * {@inheritdoc}
    */
   public function deleteRevision($revision_id) {
+    return NULL;
   }
 
+  /**
+   * Returns the controller for the current entity.
+   *
+   * @return \Apigee\Edge\Entity\EntityCrudOperationsControllerInterface
+   *   The controller must also implement CpsListingEntityControllerInterface
+   *   or NonCpsListingEntityControllerInterface.
+   */
   abstract protected function getController() : EntityCrudOperationsControllerInterface;
 
+  /**
+   * Wraps communication with edge.
+   *
+   * This function converts exceptions from edge into EntityStorageException and
+   * logs the original exceptions.
+   *
+   * @param callable $action
+   *   Communication to perform.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   *   The converted exception.
+   */
   protected function withController(callable $action) {
     try {
       $action($this->getController());

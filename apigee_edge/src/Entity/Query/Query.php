@@ -23,6 +23,10 @@ class Query extends QueryBase implements QueryInterface {
    * {@inheritdoc}
    */
   public function execute() {
+    $filter = $this->condition->compile($this);
+    $all_records = $this->storage->loadMultiple();
+
+    return array_filter($all_records, $filter);
   }
 
 }
