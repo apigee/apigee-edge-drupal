@@ -7,6 +7,7 @@ use Apigee\Edge\Entity\EntityDenormalizer;
 use Apigee\Edge\Entity\EntityNormalizer;
 use Drupal\apigee_edge\ExceptionLoggerTrait;
 use Drupal\apigee_edge\SDKConnector;
+use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Entity\EntityStorageBase;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageException;
@@ -23,9 +24,11 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
   use ExceptionLoggerTrait;
 
   /**
-   * @var \Drupal\apigee_edge\SDKConnector
+   * The service container this object should use.
+   *
+   * @var \Symfony\Component\DependencyInjection\ContainerInterface
    */
-  protected $connector;
+  protected $container;
 
   /**
    * {@inheritdoc}
@@ -105,9 +108,9 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
   /**
    * {@inheritdoc}
    */
-  public function __construct(EntityTypeInterface $entity_type, SDKConnector $connector, LoggerInterface $logger) {
+  public function __construct(ContainerInterface $container, EntityTypeInterface $entity_type, LoggerInterface $logger) {
     parent::__construct($entity_type);
-    $this->connector = $connector;
+    $this->container = $container;
     $this->logger = $logger;
   }
 
@@ -115,15 +118,12 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
    * {@inheritdoc}
    */
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
-    /** @var SDKConnector $connector */
-    $connector = $container->get('apigee_edge.sdk_connector');
-
     /** @var \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory */
     $logger_factory = $container->get('logger.factory');
 
     return new static(
+      $container,
       $entity_type,
-      $connector,
       $logger_factory->get('edge_entity')
     );
   }
@@ -143,13 +143,29 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
   }
 
   /**
+   * Gets the SDK connector.
+   *
+   * @return SDKConnectorInterface
+   *   The SDK connector.
+   */
+  protected function getConnector() : SDKConnectorInterface {
+    /** @var SDKConnectorInterface $connector */
+    static $connector;
+    if (!$connector) {
+      $connector = $this->container->get('apigee_edge.sdk_connector');
+    }
+
+    return $connector;
+  }
+
+  /**
    * Returns the controller for the current entity.
    *
    * @return \Apigee\Edge\Entity\EntityCrudOperationsControllerInterface
    *   The controller must also implement CpsListingEntityControllerInterface
    *   or NonCpsListingEntityControllerInterface.
    */
-  abstract protected function getController() : EntityCrudOperationsControllerInterface;
+  abstract protected function getController(SDKConnectorInterface $connector) : EntityCrudOperationsControllerInterface;
 
   /**
    * Wraps communication with edge.
@@ -165,7 +181,7 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
    */
   protected function withController(callable $action) {
     try {
-      $action($this->getController());
+      $action($this->getController($this->getConnector()));
     }
     catch (ClientException $ex) {
       $this->logException($ex);

@@ -9,7 +9,7 @@ services:
 
   apigee_edge.sdk_connector:
     class: Drupal\apigee_edge\SDKConnector
-    arguments: ['@config.factory', '@plugin.manager.apigee_edge.credentials_storage', '@plugin.manager.apigee_edge.authentication_method']
+    arguments: ['@entity_type.manager', '@config.factory', '@plugin.manager.apigee_edge.credentials_storage', '@plugin.manager.apigee_edge.authentication_method']
 
   apigee_edge.job_executor:
     class: Drupal\apigee_edge\JobExecutor

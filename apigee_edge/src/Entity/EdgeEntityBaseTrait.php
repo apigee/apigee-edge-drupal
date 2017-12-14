@@ -48,6 +48,13 @@ trait EdgeEntityBaseTrait {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function id() {
+    return $this->uuid() === NULL ? parent::id() : $this->uuid();
+  }
+
+  /**
    * Gets the entity manager.
    *
    * @return \Drupal\Core\Entity\EntityManagerInterface
@@ -92,7 +99,6 @@ trait EdgeEntityBaseTrait {
    */
   public function enforceIsNew($value = TRUE) {
     $this->enforceIsNew = $value;
-
     return $this;
   }
 

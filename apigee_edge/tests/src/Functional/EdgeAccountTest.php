@@ -62,7 +62,7 @@ class EdgeAccountTest extends BrowserTestBase {
     }
     parent::setUp();
 
-    $this->developerController = $this->container->get('apigee_edge.sdk_connector')->getDeveloperController();
+    $this->developerController = $this->container->get('apigee_edge.sdk_connector')->getControllerByEntity('developer');
     $this->drupalLogin($this->rootUser);
   }
 

@@ -95,11 +95,7 @@ class Credentials implements CredentialsInterface {
    * {@inheritdoc}
    */
   public function empty(): bool {
-    if ($this->baseURL || $this->organization || $this->username || $this->password) {
-      return FALSE;
-    }
-
-    return TRUE;
+    return $this->baseURL || $this->organization || $this->username || $this->password;
   }
 
 }

@@ -2,8 +2,9 @@
 
 namespace Drupal\apigee_edge;
 
-use Apigee\Edge\Api\Management\Controller\DeveloperController;
+use Apigee\Edge\Entity\EntityCrudOperationsControllerInterface;
 use Apigee\Edge\HttpClient\Client;
+use Apigee\Edge\HttpClient\ClientInterface;
 
 /**
  * Defines an interface for SDK controller classes.
@@ -11,22 +12,30 @@ use Apigee\Edge\HttpClient\Client;
 interface SDKConnectorInterface {
 
   /**
-   * Returns the http client.
+   * Gets the organization.
    *
-   * @return \Apigee\Edge\HttpClient\Client
-   *   The http client.
+   * @return string
+   *   The organization.
    */
-  public function getClient() : Client;
+  public function getOrganization() : string;
 
   /**
-   * Gets the DeveloperController object.
+   * Returns the http client.
    *
-   * Creates a DeveloperController object using the stored credentials
+   * @return \Apigee\Edge\HttpClient\ClientInterface
+   *   The http client.
+   */
+  public function getClient() : ClientInterface;
+
+  /**
+   * Gets the requested controller object.
+   *
+   * Creates the requested controller object using the stored credentials
    * and the configured authentication method.
    *
-   * @return DeveloperController
-   *   The DeveloperController object.
+   * @return EntityCrudOperationsControllerInterface
+   *   The controller object.
    */
-  public function getDeveloperController() : DeveloperController;
+  public function getControllerByEntity(string $entity_type) : EntityCrudOperationsControllerInterface;
 
 }

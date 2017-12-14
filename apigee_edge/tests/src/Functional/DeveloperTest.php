@@ -31,7 +31,7 @@ class DeveloperTest extends BrowserTestBase {
     $this->profile = 'standard';
     parent::setUp();
 
-    $this->developerController = $this->container->get('apigee_edge.sdk_connector')->getDeveloperController();
+    $this->developerController = $this->container->get('apigee_edge.sdk_connector')->getControllerByEntity('developer');
   }
 
   /**
