@@ -2,11 +2,11 @@
 
 namespace Drupal\apigee_edge;
 
-use Apigee\Edge\Api\Management\Controller\DeveloperController;
 use Apigee\Edge\Entity\EntityCrudOperationsControllerInterface;
 use Apigee\Edge\Exception\UnknownEndpointException;
 use Apigee\Edge\HttpClient\Client;
 use Apigee\Edge\HttpClient\ClientInterface;
+use Drupal\apigee_edge\Entity\Storage\EdgeEntityStorageInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 
@@ -90,13 +90,12 @@ class SDKConnector implements SDKConnectorInterface {
    * {@inheritdoc}
    */
   public function getControllerByEntity(string $entity_type) :  EntityCrudOperationsControllerInterface {
-    switch ($entity_type) {
-      case 'developer':
-        return $this->entityTypeManager->getStorage('developer')->getController($this);
-
-      default:
-        throw new UnknownEndpointException($entity_type);
+    $controller = $this->entityTypeManager->getStorage($entity_type);
+    if ($controller instanceof EdgeEntityStorageInterface) {
+      return $controller->getController($this);
     }
+
+    throw new UnknownEndpointException($entity_type);
   }
 
 }

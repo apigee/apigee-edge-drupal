@@ -3,7 +3,6 @@
 namespace Drupal\apigee_edge;
 
 use Apigee\Edge\Entity\EntityCrudOperationsControllerInterface;
-use Apigee\Edge\HttpClient\Client;
 use Apigee\Edge\HttpClient\ClientInterface;
 
 /**

@@ -6,7 +6,6 @@ use Apigee\Edge\Entity\EntityCrudOperationsControllerInterface;
 use Apigee\Edge\Entity\EntityDenormalizer;
 use Apigee\Edge\Entity\EntityNormalizer;
 use Drupal\apigee_edge\ExceptionLoggerTrait;
-use Drupal\apigee_edge\SDKConnector;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Entity\EntityStorageBase;
 use Drupal\Core\Entity\EntityInterface;
@@ -157,15 +156,6 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
 
     return $connector;
   }
-
-  /**
-   * Returns the controller for the current entity.
-   *
-   * @return \Apigee\Edge\Entity\EntityCrudOperationsControllerInterface
-   *   The controller must also implement CpsListingEntityControllerInterface
-   *   or NonCpsListingEntityControllerInterface.
-   */
-  abstract protected function getController(SDKConnectorInterface $connector) : EntityCrudOperationsControllerInterface;
 
   /**
    * Wraps communication with edge.
