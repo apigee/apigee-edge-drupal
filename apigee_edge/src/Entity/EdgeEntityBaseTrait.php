@@ -2,6 +2,7 @@
 
 namespace Drupal\apigee_edge\Entity;
 
+use Apigee\Edge\Entity\EntityNormalizer;
 use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\Exception\UndefinedLinkTemplateException;
@@ -120,6 +121,7 @@ trait EdgeEntityBaseTrait {
    * {@inheritdoc}
    */
   public function label() {
+    return $this->id();
   }
 
   /**
@@ -430,7 +432,8 @@ trait EdgeEntityBaseTrait {
    * {@inheritdoc}
    */
   public function toArray() {
-    return [];
+    $normalizer = new EntityNormalizer();
+    return $normalizer->normalize($this);
   }
 
   /**
