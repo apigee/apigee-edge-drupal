@@ -51,7 +51,7 @@ trait EdgeEntityBaseTrait {
   /**
    * {@inheritdoc}
    */
-  public function id() {
+  public function id() : ? string {
     return $this->uuid() === NULL ? parent::id() : $this->uuid();
   }
 
