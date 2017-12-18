@@ -3,6 +3,7 @@
 namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
+use Apigee\Edge\Structure\AttributesProperty;
 
 /**
  * @\Drupal\apigee_edge\Annotation\EdgeEntityType(
@@ -16,13 +17,16 @@ use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
  */
 class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
 
-  use EdgeEntityBaseTrait;
+  use EdgeEntityBaseTrait {
+    id as private traitId;
+  }
 
   /**
    * {@inheritdoc}
    */
   public function __construct(array $values = []) {
     parent::__construct($values);
+    $this->attributes = new AttributesProperty();
     $this->entityTypeId = 'developer_app';
   }
 

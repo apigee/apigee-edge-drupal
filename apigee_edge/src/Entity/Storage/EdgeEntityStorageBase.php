@@ -47,7 +47,7 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
 
         $entities[$drupal_entity->id()] = $drupal_entity;
 
-        if (in_array($drupal_entity->id(), $ids)) {
+        if ($ids === NULL || in_array($drupal_entity->id(), $ids)) {
           $loaded[$drupal_entity->id()] = $drupal_entity;
         }
       }
