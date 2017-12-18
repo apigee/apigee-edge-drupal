@@ -12,6 +12,17 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\user\UserInterface;
 
 /**
+ * Implements hook_theme().
+ */
+function apigee_edge_theme() {
+  return [
+    'developer_app' => [
+      'render element' => 'elements',
+    ],
+  ];
+}
+
+/**
  * Implements hook_entity_base_field_info().
  */
 function apigee_edge_entity_base_field_info(EntityTypeInterface $entity_type) {
