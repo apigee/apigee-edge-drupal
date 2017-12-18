@@ -4,10 +4,10 @@ namespace Drupal\apigee_edge\Form;
 
 use Apigee\Edge\Api\Management\Controller\OrganizationController;
 use Apigee\Edge\HttpClient\Client;
-use Drupal\apigee_edge\AuthenticationMethodManager;
 use Drupal\apigee_edge\Credentials;
+use Drupal\apigee_edge\CredentialsInterface;
 use Drupal\apigee_edge\CredentialsSaveException;
-use Drupal\apigee_edge\CredentialsStorageManager;
+use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -15,8 +15,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a form for saving the API credentials.
- *
- * @ingroup apigee_edge
  */
 class AuthenticationForm extends ConfigFormBase {
 
@@ -37,14 +35,14 @@ class AuthenticationForm extends ConfigFormBase {
   /**
    * The credentials storage plugin manager object.
    *
-   * @var CredentialsStorageManager
+   * @var \Drupal\Component\Plugin\PluginManagerInterface
    */
   protected $credentialsStoragePluginManager;
 
   /**
    * The authentication method plugin manager object.
    *
-   * @var AuthenticationMethodManager
+   * @var \Drupal\Component\Plugin\PluginManagerInterface
    */
   protected $authenticationStoragePluginManager;
 
@@ -53,14 +51,14 @@ class AuthenticationForm extends ConfigFormBase {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
-   * @param \Drupal\apigee_edge\CredentialsStorageManager $credentials_storage_plugin_manager
+   * @param \Drupal\Component\Plugin\PluginManagerInterface $credentials_storage_plugin_manager
    *   The manager for credentials storage plugins.
-   * @param \Drupal\apigee_edge\AuthenticationMethodManager $authentication_method_plugin_manager
+   * @param \Drupal\Component\Plugin\PluginManagerInterface $authentication_method_plugin_manager
    *   The manager for authentication method plugins.
    */
   public function __construct(ConfigFactoryInterface $config_factory,
-                              CredentialsStorageManager $credentials_storage_plugin_manager,
-                              AuthenticationMethodManager $authentication_method_plugin_manager) {
+                              PluginManagerInterface $credentials_storage_plugin_manager,
+                              PluginManagerInterface $authentication_method_plugin_manager) {
     parent::__construct($config_factory);
     $this->credentialsStoragePluginManager = $credentials_storage_plugin_manager;
     $this->authenticationStoragePluginManager = $authentication_method_plugin_manager;
@@ -314,10 +312,10 @@ class AuthenticationForm extends ConfigFormBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    *
-   * @return \Drupal\apigee_edge\Credentials
+   * @return \Drupal\apigee_edge\CredentialsInterface
    *   The credentials object.
    */
-  protected function createCredentials(FormStateInterface $form_state) : Credentials {
+  protected function createCredentials(FormStateInterface $form_state) : CredentialsInterface {
     $credentials = new Credentials();
     $credentials->setBaseUrl($form_state->getValue('credentials_api_base_url'));
     $credentials->setOrganization($form_state->getValue('credentials_api_organization'));
@@ -351,7 +349,7 @@ class AuthenticationForm extends ConfigFormBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function submitTestConnection(array $form, FormStateInterface $form_state) : void {
+  public function submitTestConnection(array $form, FormStateInterface $form_state) {
     $form_state->setRebuild();
     drupal_set_message($this->t('Connection successful.'));
   }
