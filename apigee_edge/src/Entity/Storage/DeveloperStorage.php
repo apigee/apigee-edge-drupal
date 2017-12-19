@@ -4,8 +4,7 @@ namespace Drupal\apigee_edge\Entity\Storage;
 
 use Apigee\Edge\Api\Management\Controller\DeveloperController;
 use Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface;
-use Apigee\Edge\Entity\EntityCrudOperationsControllerInterface;
-use Drupal\apigee_edge\Entity\Developer;
+use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Entity\EntityInterface;
 

@@ -2,7 +2,6 @@
 
 namespace Drupal\apigee_edge\Entity\Query;
 
-use Drupal\apigee_edge\SDKConnector;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryBase;

@@ -2,7 +2,7 @@
 
 namespace Drupal\apigee_edge;
 
-use Apigee\Edge\Entity\EntityCrudOperationsControllerInterface;
+use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Apigee\Edge\Exception\UnknownEndpointException;
 use Apigee\Edge\HttpClient\Client;
 use Apigee\Edge\HttpClient\ClientInterface;

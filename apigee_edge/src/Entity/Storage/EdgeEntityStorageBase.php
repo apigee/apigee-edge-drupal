@@ -2,7 +2,7 @@
 
 namespace Drupal\apigee_edge\Entity\Storage;
 
-use Apigee\Edge\Entity\EntityCrudOperationsControllerInterface;
+use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Apigee\Edge\Entity\EntityDenormalizer;
 use Apigee\Edge\Entity\EntityNormalizer;
 use Drupal\apigee_edge\ExceptionLoggerTrait;
@@ -35,7 +35,7 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
   protected function doLoadMultiple(array $ids = NULL) {
     $loaded = [];
     $this->withController(function ($controller) use ($ids, &$loaded) {
-      /** @var \Apigee\Edge\Entity\CpsListingEntityControllerInterface|\Apigee\Edge\Entity\NonCpsListingEntityControllerInterface $controller */
+      /** @var \Apigee\Edge\Controller\CpsListingEntityControllerInterface|\Apigee\Edge\Controller\NonCpsListingEntityControllerInterface $controller */
       $entities = [];
       $normalizer = new EntityNormalizer();
       $denormalizer = new EntityDenormalizer();
@@ -62,7 +62,7 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
    * {@inheritdoc}
    */
   protected function has($id, EntityInterface $entity) {
-    return (bool) $this->load($id);
+    return !$entity->isNew();
   }
 
   /**

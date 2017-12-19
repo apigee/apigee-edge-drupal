@@ -26,8 +26,14 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
    */
   public function __construct(array $values = []) {
     parent::__construct($values);
-    $this->attributes = new AttributesProperty();
     $this->entityTypeId = 'developer_app';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function id(): ? string {
+    return $this->getAppId();
   }
 
 }

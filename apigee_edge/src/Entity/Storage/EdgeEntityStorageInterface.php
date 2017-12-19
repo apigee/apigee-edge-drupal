@@ -2,7 +2,7 @@
 
 namespace Drupal\apigee_edge\Entity\Storage;
 
-use Apigee\Edge\Entity\EntityCrudOperationsControllerInterface;
+use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 
@@ -16,7 +16,7 @@ interface EdgeEntityStorageInterface extends EntityStorageInterface {
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
    *
-   * @return \Apigee\Edge\Entity\EntityCrudOperationsControllerInterface
+   * @return \Apigee\Edge\Controller\EntityCrudOperationsControllerInterface
    *   The controller must also implement CpsListingEntityControllerInterface
    *   or NonCpsListingEntityControllerInterface.
    */
