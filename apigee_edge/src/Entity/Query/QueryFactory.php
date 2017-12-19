@@ -9,18 +9,31 @@ use Drupal\Core\Entity\Query\QueryException;
 use Drupal\Core\Entity\Query\QueryFactoryInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
+/**
+ * Provides a factory for creating entity query objects for the edge backend.
+ */
 class QueryFactory implements QueryFactoryInterface, EventSubscriberInterface {
 
   /**
+   * The namespace of this class, the parent class etc.
+   *
    * @var string[]
    */
   protected $namespaces;
 
   /**
+   * The entity type manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $manager;
 
+  /**
+   * Constructs a QueryFactory object.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $manager
+   *   The entity type manager.
+   */
   public function __construct(EntityTypeManagerInterface $manager) {
     $this->manager = $manager;
     $this->namespaces = QueryBase::getNamespaces($this);
@@ -30,9 +43,7 @@ class QueryFactory implements QueryFactoryInterface, EventSubscriberInterface {
    * {@inheritdoc}
    */
   public function get(EntityTypeInterface $entity_type, $conjunction) {
-    /** @var \Drupal\apigee_edge\Entity\Storage\EdgeEntityStorageInterface $storage */
-    $storage = $this->manager->getStorage($entity_type);
-    return new Query($entity_type, $conjunction, $this->namespaces, $storage);
+    return new Query($entity_type, $conjunction, $this->namespaces, $this->manager);
   }
 
   /**
