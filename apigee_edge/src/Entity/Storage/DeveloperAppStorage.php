@@ -27,19 +27,44 @@ class DeveloperAppStorage extends EdgeEntityStorageBase implements DeveloperAppS
         return $this->loadApp($entityId);
       }
 
-      protected function createDeveloperController(EdgeDeveloperApp $app) : DeveloperAppControllerInterface {
+      /**
+       * Creates a developer app controller.
+       *
+       * @param \Apigee\Edge\Api\Management\Entity\DeveloperApp $app
+       *
+       * @return \Apigee\Edge\Api\Management\Controller\DeveloperAppControllerInterface
+       */
+      protected function createDeveloperAppController(EdgeDeveloperApp $app) : DeveloperAppControllerInterface {
         return new DeveloperAppController($this->getOrganisation(), $app->getDeveloperId(), $this->client);
       }
 
+      /**
+       * Converts a Drupal entity into an Edge entity.
+       *
+       * The reason to do this is because the Drupal query overrides the id()
+       * method, so that it works with the listing endpoints. However, using
+       * the appId won't work with the create/update/delete endpoints. So in
+       * those cases a conversion to the superclass is needed.
+       *
+       * @param \Drupal\apigee_edge\Entity\DeveloperApp $app
+       *
+       * @return \Apigee\Edge\Api\Management\Entity\DeveloperApp
+       */
       protected function convertEntity(DeveloperApp $app) : EdgeDeveloperApp {
         $normalizer = new EntityNormalizer();
         $denormalizer = new EntityDenormalizer();
 
         $normalized = $normalizer->normalize($app);
-        //$normalized = json_decode(json_encode($normalized), TRUE);
         return $denormalizer->denormalize($normalized, EdgeDeveloperApp::class);
       }
 
+      /**
+       * Copies all properties to $destination from $source.
+       *
+       * @param \Drupal\apigee_edge\Entity\DeveloperApp $destination
+       *
+       * @param \Apigee\Edge\Api\Management\Entity\DeveloperApp $source
+       */
       protected function applyChanges(DeveloperApp $destination, EdgeDeveloperApp $source) {
         $rodst = new \ReflectionObject($destination);
         $rosrc = new \ReflectionObject($source);
@@ -61,7 +86,7 @@ class DeveloperAppStorage extends EdgeEntityStorageBase implements DeveloperAppS
        */
       public function create(EntityInterface $entity) : void {
         /** @var DeveloperApp $entity */
-        $controller = $this->createDeveloperController($entity);
+        $controller = $this->createDeveloperAppController($entity);
         $converted = $this->convertEntity($entity);
         $controller->create($converted);
         $this->applyChanges($entity, $converted);
@@ -72,7 +97,7 @@ class DeveloperAppStorage extends EdgeEntityStorageBase implements DeveloperAppS
        */
       public function update(EntityInterface $entity) : void {
         /** @var DeveloperApp $entity */
-        $controller = $this->createDeveloperController($entity);
+        $controller = $this->createDeveloperAppController($entity);
         $converted = $this->convertEntity($entity);
         $controller->update($converted);
         $this->applyChanges($entity, $converted);
@@ -84,7 +109,7 @@ class DeveloperAppStorage extends EdgeEntityStorageBase implements DeveloperAppS
       public function delete(string $entityId) : EntityInterface {
         /** @var DeveloperApp $entity */
         $entity = $this->loadApp($entityId);
-        $controller = $this->createDeveloperController($entity);
+        $controller = $this->createDeveloperAppController($entity);
         return $controller->delete($entity->getName());
       }
 

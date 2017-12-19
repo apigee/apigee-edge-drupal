@@ -157,7 +157,7 @@ class Condition extends ConditionBase implements ConditionInterface {
    * @return mixed|null
    *   Property value or NULL if not found.
    */
-  protected static function getProperty($item, string $property) {
+  public static function getProperty($item, string $property) {
     $normalized = ucfirst(implode('', array_map('ucfirst', explode('_', $property))));
     $getter_candidates = [
       "is{$normalized}",

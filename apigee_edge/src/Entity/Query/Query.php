@@ -2,6 +2,7 @@
 
 namespace Drupal\apigee_edge\Entity\Query;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryBase;
@@ -45,7 +46,39 @@ class Query extends QueryBase implements QueryInterface {
     $filter = $this->condition->compile($this);
     $all_records = $storage->loadMultiple();
 
-    return array_filter($all_records, $filter);
+    $result = array_filter($all_records, $filter);
+    if ($this->count) {
+      return count($result);
+    }
+
+    if ($this->sort) {
+      uasort($result, function (EntityInterface $entity0, EntityInterface $entity1) : int {
+        foreach ($this->sort as $sort) {
+          $value0 = Condition::getProperty($entity0, $sort['field']);
+          $value1 = Condition::getProperty($entity1, $sort['field']);
+
+          $cmp = $value0 <=> $value1;
+          if ($cmp === 0) {
+            continue;
+          }
+          if ($sort['direction'] === 'DESC') {
+            $cmp *= -1;
+          }
+
+          return $cmp;
+        }
+
+        return 0;
+      });
+    }
+
+    if ($this->range) {
+      $result = array_slice($result, $this->range['start'], $this->range['length']);
+    }
+
+    return array_map(function (EntityInterface $entity) : string {
+      return (string) $entity->id();
+    }, $result);
   }
 
 }
