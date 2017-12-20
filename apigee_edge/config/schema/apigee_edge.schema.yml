@@ -9,3 +9,19 @@ apigee_edge.credentials_storage:
   mapping:
     credentials_storage_type:
       type: string
+
+apigee_edge.createapp:
+  type: config_object
+  mapping:
+    multiple_products:
+      type: boolean
+    display_as_checkboxes:
+      type: boolean
+    description_visible:
+      type: boolean
+    description_required:
+      type: boolean
+    callback_url_visible:
+      type: boolean
+    callback_url_required:
+      type: boolean

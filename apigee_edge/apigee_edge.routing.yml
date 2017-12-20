@@ -6,6 +6,22 @@ apigee_edge.settings:
   requirements:
     _permission: 'administer apigee edge'
 
+apigee_edge.settings.createapp:
+  path: '/admin/config/apigee_edge/createapp'
+  defaults:
+    _form: '\Drupal\apigee_edge\Form\CreateAppAdminForm'
+    _title: 'Create app'
+  requirements:
+    _permission: 'administer apigee edge'
+
+entity.developer.createapp:
+  path: '/developer/{developer}/createapp'
+  defaults:
+    _form: '\Drupal\apigee_edge\Entity\Form\DeveloperAppCreate'
+    _title: 'Create app'
+  requirements:
+    _entity_create_access: 'developer_app:{developer}'
+
 apigee_edge.user_sync.schedule:
   path: '/admin/config/apigee_edge/sync/schedule'
   defaults:

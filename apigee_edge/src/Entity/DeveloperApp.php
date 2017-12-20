@@ -14,6 +14,12 @@ use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
  *     "storage" = "\Drupal\apigee_edge\Entity\Storage\DeveloperAppStorage",
  *     "list_builder" = "\Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder",
  *     "access" = "\Drupal\apigee_edge\Entity\Access\DeveloperAppAccessControlHandler",
+ *     "form" = {
+ *       "add" = "\Drupal\apigee_edge\Entity\Form\DeveloperAppCreate",
+ *     },
+ *   },
+ *   links = {
+ *     "add-form" = "/developer_app/add",
  *   },
  *   entity_keys = {
  *     "id" = "appId",

@@ -1,0 +1,6 @@
+multiple_products: true
+display_as_checkboxes: true
+description_visible: true
+description_required: false
+callback_url_visible: true
+callback_url_required: false
