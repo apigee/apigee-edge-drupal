@@ -3,6 +3,11 @@ apigee_edge.settings:
   title: 'General'
   base_route: apigee_edge.settings
 
+apigee_edge.entity_labels:
+  route_name: apigee_edge.entity_labels
+  title: 'App & Product labels'
+  base_route: apigee_edge.settings
+
 apigee_edge.settings.createapp:
   route_name: apigee_edge.settings.createapp
   title: 'Create app'
