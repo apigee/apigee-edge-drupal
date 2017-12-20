@@ -6,6 +6,14 @@ apigee_edge.settings:
   requirements:
     _permission: 'administer apigee edge'
 
+apigee_edge.entity_labels:
+  path: '/admin/config/apigee_edge/entity_labels'
+  defaults:
+    _form: '\Drupal\apigee_edge\Form\EntityLabelForm'
+    _title: 'Customize text for Developer Apps and API Product references'
+  requirements:
+    _permission: 'administer apigee edge'
+
 apigee_edge.settings.createapp:
   path: '/admin/config/apigee_edge/createapp'
   defaults:

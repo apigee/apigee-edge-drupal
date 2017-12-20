@@ -10,6 +10,14 @@ apigee_edge.credentials_storage:
     credentials_storage_type:
       type: string
 
+apigee_edge.entity_labels:
+  type: config_object
+  mapping:
+    developer_app_label:
+      type: string
+    api_product_label:
+      type: string
+
 apigee_edge.createapp:
   type: config_object
   mapping:

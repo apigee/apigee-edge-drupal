@@ -9,6 +9,7 @@ use Drupal\apigee_edge\JobExecutor;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\UserInterface;
 
 /**
@@ -20,6 +21,14 @@ function apigee_edge_theme() {
       'render element' => 'elements',
     ],
   ];
+}
+
+/**
+ * Implements hook_entity_type_alter().
+ */
+function apigee_edge_entity_type_alter(array &$entity_types) {
+  $config = \Drupal::config('apigee_edge.entity_labels');
+  $entity_types['developer_app']->set('label', new TranslatableMarkup($config->get('developer_app_label')));
 }
 
 /**
