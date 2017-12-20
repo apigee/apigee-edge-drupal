@@ -14,7 +14,6 @@ apigee_edge.user_sync.schedule:
     _permission: 'administer apigee edge'
     _csrf_token: 'TRUE'
 
-
 apigee_edge.user_sync.run:
   path: '/admin/config/apigee_edge/sync/run'
   defaults:

@@ -72,6 +72,8 @@ class Query extends QueryBase implements QueryInterface {
       });
     }
 
+    $this->initializePager();
+
     if ($this->range) {
       $result = array_slice($result, $this->range['start'], $this->range['length']);
     }
