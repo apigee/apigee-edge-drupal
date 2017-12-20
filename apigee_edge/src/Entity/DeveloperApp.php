@@ -13,7 +13,7 @@ use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
  *   handlers = {
  *     "storage" = "\Drupal\apigee_edge\Entity\Storage\DeveloperAppStorage",
  *     "list_builder" = "\Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder",
- *     "access" = "\Drupal\apigee_edge\Entity\Access\DeveloperApp",
+ *     "access" = "\Drupal\apigee_edge\Entity\Access\DeveloperAppAccessControlHandler",
  *   },
  *   entity_keys = {
  *     "id" = "appId",
