@@ -1,2 +1,5 @@
 administer apigee edge:
   title: 'Administer Apigee Edge'
+
+administer edge developer app:
+  title: 'Administer edge developer app'

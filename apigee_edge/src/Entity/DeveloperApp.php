@@ -3,7 +3,6 @@
 namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
-use Apigee\Edge\Structure\AttributesProperty;
 
 /**
  * Defines the Developer app entity class.
@@ -21,6 +20,7 @@ use Apigee\Edge\Structure\AttributesProperty;
  *   entity_keys = {
  *     "id" = "appId",
  *   },
+ *   admin_permission = "administer edge developer app",
  * )
  */
 class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
