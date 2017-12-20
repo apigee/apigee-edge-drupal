@@ -23,9 +23,9 @@ apigee_edge.settings.createapp:
     _permission: 'administer apigee edge'
 
 entity.developer.createapp:
-  path: '/developer/{developer}/createapp'
+  path: 'createapp/{user}/{developer}'
   defaults:
-    _form: '\Drupal\apigee_edge\Entity\Form\DeveloperAppCreate'
+    _entity_form: 'developer_app.add'
     _title: 'Create app'
   requirements:
     _entity_create_access: 'developer_app:{developer}'
