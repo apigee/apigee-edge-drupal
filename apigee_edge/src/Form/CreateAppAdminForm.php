@@ -35,7 +35,7 @@ class CreateAppAdminForm extends ConfigFormBase {
       'multiple_products' => $this->t('Multiple products'),
       'display_as_checkboxes' => $this->t('Display the API Product widget as checkboxes instead of a select box'),
       'description_visible' => $this->t('Description field is visible'),
-      'descripiton_required' => $this->t('Description field is required'),
+      'description_required' => $this->t('Description field is required'),
       'callback_url_visible' => $this->t('Callback URL field is visible'),
       'callback_url_required' => $this->t('Callback URL field is required'),
     ];
