@@ -28,7 +28,10 @@ function apigee_edge_theme() {
  */
 function apigee_edge_entity_type_alter(array &$entity_types) {
   $config = \Drupal::config('apigee_edge.entity_labels');
-  $entity_types['developer_app']->set('label', new TranslatableMarkup($config->get('developer_app_label')));
+  $developer_app_label = $config->get('developer_app_label');
+  if (isset($developer_app_label)) {
+    $entity_types['developer_app']->set('label', new TranslatableMarkup($developer_app_label));
+  }
 }
 
 /**
