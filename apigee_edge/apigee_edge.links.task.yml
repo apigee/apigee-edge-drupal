@@ -18,3 +18,9 @@ apigee_edge.createapp:
   base_route: entity.user.canonical
   title: 'Create app'
   class: '\Drupal\apigee_edge\Plugin\Menu\LocalTask\CreateAppLocalTask'
+
+apigee_edge.my_apps:
+  route_name: entity.user.my_apps
+  base_route: entity.user.canonical
+  title: 'My apps'
+  class: '\Drupal\apigee_edge\Plugin\Menu\LocalTask\CreateAppLocalTask'

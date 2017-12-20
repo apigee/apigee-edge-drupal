@@ -47,10 +47,10 @@ apigee_edge.user_sync.run:
     _csrf_token: 'TRUE'
 
 entity.user.my_apps:
-  path: '/user/{user}/my-apps'
+  path: '/user/{user}/{developer}/my-apps'
   defaults:
     _entity_list: 'developer_app'
     _title: 'My apps'
   requirements:
-    _entity_create_access: 'developer_app:{user}'
+    _entity_create_access: 'developer_app:{developer}'
     user: '\d+'

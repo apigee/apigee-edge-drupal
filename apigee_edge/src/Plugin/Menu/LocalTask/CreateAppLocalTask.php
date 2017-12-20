@@ -21,7 +21,9 @@ class CreateAppLocalTask extends LocalTaskDefault {
         $user = User::load($user);
       }
       $developer = Developer::load($user->getEmail());
-      $parameters['developer'] = $developer->uuid();
+      if (isset($developer)) {
+        $parameters['developer'] = $developer->uuid();
+      }
       $parameters['user'] = $user->id();
     }
 
