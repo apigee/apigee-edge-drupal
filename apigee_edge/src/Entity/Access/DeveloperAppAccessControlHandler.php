@@ -29,7 +29,7 @@ class DeveloperAppAccessControlHandler extends EntityHandlerBase implements Enti
 
     /** @var ?Developer $developer */
     $developer = Developer::load($account->getEmail());
-    if ($developer && $developer->id() === $entity->getDeveloperId()) {
+    if ($developer && $developer->uuid() === $entity->getDeveloperId()) {
       $result = AccessResult::allowed()->cachePerPermissions();
       return $return_as_object ? $result : $result->isAllowed();
     }
@@ -52,7 +52,7 @@ class DeveloperAppAccessControlHandler extends EntityHandlerBase implements Enti
     if ($entity_bundle) {
       /** @var ?Developer $developer */
       $developer = Developer::load($account->getEmail());
-      if ($developer && $developer->id() === $entity_bundle) {
+      if ($developer && $developer->uuid() === $entity_bundle) {
         $result = AccessResult::allowed()->cachePerPermissions();
         return $return_as_object ? $result : $result->isAllowed();
       }

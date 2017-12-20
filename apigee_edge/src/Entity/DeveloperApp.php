@@ -15,9 +15,6 @@ use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
  *     "list_builder" = "\Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder",
  *     "access" = "\Drupal\apigee_edge\Entity\Access\DeveloperApp",
  *   },
- *   links = {
- *     "collection" = "/developer_app",
- *   },
  *   entity_keys = {
  *     "id" = "appId",
  *     "bundle" = "developerId",

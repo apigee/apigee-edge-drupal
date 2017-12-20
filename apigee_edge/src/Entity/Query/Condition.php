@@ -7,6 +7,9 @@ use Drupal\Core\Entity\Query\ConditionBase;
 use Drupal\Core\Entity\Query\ConditionInterface;
 use Drupal\Core\Entity\Query\QueryException;
 
+/**
+ * Defines the condition class for the edge entity query.
+ */
 class Condition extends ConditionBase implements ConditionInterface {
 
   /**
@@ -46,7 +49,7 @@ class Condition extends ConditionBase implements ConditionInterface {
           return TRUE;
         };
       } :
-      function (array $filters) : callable  {
+      function (array $filters) : callable {
         return function ($item) use ($filters) : bool {
           foreach ($filters as $filter) {
             if ($filter($item)) {
@@ -115,26 +118,37 @@ class Condition extends ConditionBase implements ConditionInterface {
         switch ($condition['operator']) {
           case '=':
             return $value == $condition['value'];
+
           case '>':
             return $value > $condition['value'];
+
           case '<':
             return $value < $condition['value'];
+
           case '>=':
             return $value >= $condition['value'];
+
           case '<=':
             return $value <= $condition['value'];
+
           case '<>':
             return $value != $condition['value'];
+
           case 'IN':
             return array_search($value, $condition['value']) !== FALSE;
+
           case 'NOT IN':
             return array_search($value, $condition['value']) === FALSE;
+
           case 'STARTS_WITH':
             return strpos($value, $condition['value']) === 0;
+
           case 'CONTAINS':
             return strpos($value, $condition['value']) !== FALSE;
+
           case 'ENDS_WITH':
             return substr($value, -strlen($condition['value'])) === (string) $condition['value'];
+
           default:
             throw new QueryException('Invalid condition operator.');
         }
