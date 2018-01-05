@@ -5,12 +5,15 @@
  * Main module file for Apigee Edge.
  */
 
+use Apigee\Edge\Exception\ClientErrorException;
 use Drupal\apigee_edge\JobExecutor;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\UserInterface;
+
+define('APIGEE_EDGE_ERROR_CODE_DEVELOPER_DOES_NOT_EXITS', 'developer.service.DeveloperDoesNotExist');
 
 /**
  * Implements hook_theme().
@@ -87,7 +90,8 @@ function apigee_edge_user_insert(UserInterface $account) {
       '@message' => (string) $exception,
       '@trace' => $exception->getTraceAsString(),
     ];
-    \Drupal::logger('apigee_edge')->error('Could not save developer entity: @developer. @message, @trace', $context);
+    \Drupal::logger('apigee_edge')
+      ->error('Could not create developer entity: @developer. @message, @trace', $context);
   }
 }
 
@@ -96,17 +100,42 @@ function apigee_edge_user_insert(UserInterface $account) {
  */
 function apigee_edge_user_update(UserInterface $account) {
   try {
-    /** @var Developer $developer */
+    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
     $developer = Developer::createFromDrupalUser($account);
     $developer->save();
   }
   catch (\Exception $exception) {
+    $previous = $exception->getPrevious();
     $context = [
       '@developer' => $account->getEmail(),
       '@message' => (string) $exception,
       '@trace' => $exception->getTraceAsString(),
     ];
-    \Drupal::logger('apigee_edge')->error('Could not update developer entity: @developer. @message, @trace', $context);
+    if ($previous instanceof ClientErrorException && $previous->getEdgeErrorCode() === APIGEE_EDGE_ERROR_CODE_DEVELOPER_DOES_NOT_EXITS) {
+
+      \Drupal::logger('apigee_edge')
+        ->notice('Could not update @developer developer entity because it does not exist on Edge. Automatically trying to create a new developer entity.', $context);
+      try {
+        // Forcibly mark developer entity as new to send POST request to Edge
+        // instead of PUT. This should be a better way then clearing
+        // "originalEmail" property's value on the entity.
+        $developer->enforceIsNew(TRUE);
+        $developer->save();
+      }
+      catch (\Exception $e) {
+        $context = [
+          '@developer' => $account->getEmail(),
+          '@message' => (string) $exception,
+          '@trace' => $exception->getTraceAsString(),
+        ];
+        \Drupal::logger('apigee_edge')
+          ->error('Could not create developer entity: @developer. @message, @trace', $context);
+      }
+    }
+    else {
+      \Drupal::logger('apigee_edge')
+        ->error('Could not update developer entity: @developer. @message, @trace', $context);
+    }
   }
 }
 
@@ -126,7 +155,8 @@ function apigee_edge_user_cancel(array $edit, UserInterface $account, $method) {
         '@message' => (string) $exception,
         '@trace' => $exception->getTraceAsString(),
       ];
-      \Drupal::logger('apigee_edge')->error('Could not block developer entity: @developer. @message, @trace', $context);
+      \Drupal::logger('apigee_edge')
+        ->error('Could not block developer entity: @developer. @message, @trace', $context);
     }
   }
 }
@@ -146,7 +176,8 @@ function apigee_edge_user_delete(UserInterface $account) {
       '@message' => (string) $exception,
       '@trace' => $exception->getTraceAsString(),
     ];
-    \Drupal::logger('apigee_edge')->error('Could not delete developer entity: @developer. @message, @trace', $context);
+    \Drupal::logger('apigee_edge')
+      ->error('Could not delete developer entity: @developer. @message, @trace', $context);
   }
 }
 
@@ -174,6 +205,6 @@ function apigee_edge_cron() {
  * @return \Drupal\apigee_edge\JobExecutor
  *   The job executor instance.
  */
-function apigee_edge_get_executor() : JobExecutor {
+function apigee_edge_get_executor(): JobExecutor {
   return \Drupal::service('apigee_edge.job_executor');
 }
