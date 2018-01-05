@@ -7,11 +7,4 @@ namespace Drupal\apigee_edge;
  */
 class CredentialsSaveException extends \Exception {
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct($message = NULL) {
-    parent::__construct($message);
-  }
-
 }

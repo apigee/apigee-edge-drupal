@@ -115,8 +115,9 @@ class AuthenticationForm extends ConfigFormBase {
     $credentials_storage_config = $this->config('apigee_edge.credentials_storage');
     $authentication_method_config = $this->config('apigee_edge.authentication_method');
 
-    /** @var Credentials $credentials */
-    $credentials = $this->credentialsStoragePluginManager->createInstance($credentials_storage_config->get('credentials_storage_type'))->loadCredentials();
+    /** @var \Drupal\apigee_edge\Credentials $credentials */
+    $credentials = $this->credentialsStoragePluginManager->createInstance($credentials_storage_config->get('credentials_storage_type'))
+      ->loadCredentials();
 
     $form['credentials_storage'] = [
       '#type' => 'details',
@@ -185,31 +186,31 @@ class AuthenticationForm extends ConfigFormBase {
 
     array_shift($credentials_states[$state_event]);
 
-    $form['credentials']['credentials_api_organization'] = [
+    $form['credentials']['credentials_api_endpoint'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Management API organization'),
-      '#description' => $this->t('The v4 product organization name. Changing this value could make your site stop working.'),
-      '#default_value' => $credentials->getOrganization(),
+      '#title' => $this->t('Apigee Edge endpoint'),
+      '#description' => $this->t('Apigee Edge endpoint where the API calls are being sent. Defaults to the enterprise endpoint: %url.', ['%url' => $credentials::ENTERPRISE_ENDPOINT]),
+      '#default_value' => $credentials->getEndpoint(),
       '#states' => $credentials_states,
     ];
-    $form['credentials']['credentials_api_base_url'] = [
+    $form['credentials']['credentials_api_organization'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Management API endpoint URL'),
-      '#description' => $this->t('URL to which to make Edge REST calls.'),
-      '#default_value' => $credentials->getBaseURL(),
+      '#title' => $this->t('Organization'),
+      '#description' => $this->t('Name of the organization on Edge. Changing this value could make your site stop working.'),
+      '#default_value' => $credentials->getOrganization(),
       '#states' => $credentials_states,
     ];
     $form['credentials']['credentials_api_username'] = [
       '#type' => 'email',
-      '#title' => $this->t('Endpoint authenticated user'),
-      '#description' => $this->t('User name used when authenticating with the endpoint. Generally this takes the form of an email address. (Only enter it if you want to change the existing user.)'),
+      '#title' => $this->t('Username'),
+      '#description' => $this->t("Organization user's email address that is used for authenticating with the endpoint."),
       '#default_value' => $credentials->getUsername(),
       '#states' => $credentials_states,
     ];
     $form['credentials']['credentials_api_password'] = [
       '#type' => 'password',
-      '#title' => $this->t('Authenticated user’s password'),
-      '#description' => t('Password used when authenticating with the endpoint. (Only enter it if you want to change the existing password.)'),
+      '#title' => $this->t('Password'),
+      '#description' => t("Organization user's password that is used for authenticating with the endpoint."),
       '#default_value' => $credentials->getPassword(),
       '#states' => $credentials_states,
     ];
@@ -252,9 +253,15 @@ class AuthenticationForm extends ConfigFormBase {
       $form_state->setErrorByName('credentials_storage_type', $credentials_storage_error);
     }
 
-    $credentials = $credentials_storage->readonly() ?
-      $credentials_storage->loadCredentials() :
-      $this->createCredentials($form_state);
+    if ($credentials_storage->readonly()) {
+      $credentials = $credentials_storage->loadCredentials();
+    }
+    else {
+      if ($form_state->hasValue('credentials_api_password') && $form_state->has('ajax_credentials_api_password')) {
+        $form_state->setValue('credentials_api_password', $form_state->get('ajax_credentials_api_password'));
+      }
+      $credentials = $this->createCredentials($form_state);
+    }
     try {
       $auth = $this->authenticationStoragePluginManager
         ->createInstance($form_state->getValue('authentication_method_type'))
@@ -301,7 +308,7 @@ class AuthenticationForm extends ConfigFormBase {
 
       parent::submitForm($form, $form_state);
     }
-    catch (CredentialsSaveException $exception) {
+    catch (\Exception $exception) {
       drupal_set_message($exception->getMessage(), 'error');
     }
   }
@@ -315,9 +322,9 @@ class AuthenticationForm extends ConfigFormBase {
    * @return \Drupal\apigee_edge\CredentialsInterface
    *   The credentials object.
    */
-  protected function createCredentials(FormStateInterface $form_state) : CredentialsInterface {
+  protected function createCredentials(FormStateInterface $form_state): CredentialsInterface {
     $credentials = new Credentials();
-    $credentials->setBaseUrl($form_state->getValue('credentials_api_base_url'));
+    $credentials->setEndpoint($form_state->getValue('credentials_api_endpoint'));
     $credentials->setOrganization($form_state->getValue('credentials_api_organization'));
     $credentials->setUsername($form_state->getValue('credentials_api_username'));
     $credentials->setPassword($form_state->getValue('credentials_api_password'));
@@ -334,7 +341,7 @@ class AuthenticationForm extends ConfigFormBase {
    * @return array
    *   The AJAX response.
    */
-  public function ajaxCallback(array $form) : array {
+  public function ajaxCallback(array $form): array {
     return $form;
   }
 
@@ -351,6 +358,10 @@ class AuthenticationForm extends ConfigFormBase {
    */
   public function submitTestConnection(array $form, FormStateInterface $form_state) {
     $form_state->setRebuild();
+    // Store the provided password, otherwise saving form after clicking on
+    // "Send request" button is not going to work because password field
+    // value becomes empty. (Password form elements has no default values.)
+    $form_state->set('ajax_credentials_api_password', $form_state->getValue('credentials_api_password', ''));
     drupal_set_message($this->t('Connection successful.'));
   }
 

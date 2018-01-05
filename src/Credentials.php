@@ -7,12 +7,14 @@ namespace Drupal\apigee_edge;
  */
 class Credentials implements CredentialsInterface {
 
+  public const ENTERPRISE_ENDPOINT = 'https://api.enterprise.apigee.com/v1';
+
   /**
-   * The API base URL.
+   * The Edge API endpoint.
    *
    * @var string
    */
-  protected $baseURL;
+  protected $endpoint;
 
   /**
    * The name of the organization.
@@ -36,10 +38,17 @@ class Credentials implements CredentialsInterface {
   protected $password;
 
   /**
+   * Credentials constructor.
+   */
+  public function __construct() {
+    $this->endpoint = self::ENTERPRISE_ENDPOINT;
+  }
+
+  /**
    * {@inheritdoc}
    */
-  public function getBaseUrl(): string {
-    return $this->baseURL;
+  public function getEndpoint(): string {
+    return $this->endpoint;
   }
 
   /**
@@ -66,8 +75,10 @@ class Credentials implements CredentialsInterface {
   /**
    * {@inheritdoc}
    */
-  public function setBaseUrl(string $baseURL) {
-    $this->baseURL = $baseURL;
+  public function setEndpoint(string $endpoint) {
+    // Automatically fall-back to the enterprise endpoint if empty endpoint is
+    // passed.
+    $this->endpoint = $endpoint ?: self::ENTERPRISE_ENDPOINT;
   }
 
   /**
@@ -95,7 +106,7 @@ class Credentials implements CredentialsInterface {
    * {@inheritdoc}
    */
   public function empty(): bool {
-    return !$this->baseURL || !$this->organization || !$this->username || !$this->password;
+    return !$this->endpoint || !$this->organization || !$this->username || !$this->password;
   }
 
 }

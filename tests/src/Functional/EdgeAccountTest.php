@@ -46,7 +46,7 @@ class EdgeAccountTest extends BrowserTestBase {
     if (($organization = getenv('APIGEE_EDGE_ORGANIZATION'))) {
       $this->credentials['organization'] = $organization;
     }
-    if (($base_url = getenv('APIGEE_EDGE_BASE_URL'))) {
+    if (($base_url = getenv('APIGEE_EDGE_ENDPOINT'))) {
       $this->credentials['base_url'] = $base_url;
     }
 
@@ -76,7 +76,7 @@ class EdgeAccountTest extends BrowserTestBase {
     $formdata = [
       'credentials_storage_type' => 'credentials_storage_private_file',
       'credentials_api_organization' => $this->credentials['organization'],
-      'credentials_api_base_url' => $this->credentials['base_url'],
+      'credentials_api_endpoint' => $this->credentials['base_url'],
       'credentials_api_username' => $this->credentials['username'],
       'credentials_api_password' => $this->credentials['password'],
     ];

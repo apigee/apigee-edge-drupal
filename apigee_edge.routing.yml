@@ -1,5 +1,5 @@
 apigee_edge.settings:
-  path: '/admin/config/apigee_edge'
+  path: '/admin/config/apigee-edge'
   defaults:
     _form: '\Drupal\apigee_edge\Form\AuthenticationForm'
     _title: 'Apigee Edge Configuration'
@@ -7,7 +7,7 @@ apigee_edge.settings:
     _permission: 'administer apigee edge'
 
 apigee_edge.settings.product:
-  path: '/admin/config/apigee_edge/productsettings'
+  path: '/admin/config/apigee-edge/product-settings'
   defaults:
     _form: '\Drupal\apigee_edge\Form\ProductSettingsForm'
     _title: 'API Product Settings'
@@ -15,7 +15,7 @@ apigee_edge.settings.product:
     _permission: 'administer apigee edge'
 
 apigee_edge.settings.app:
-  path: '/admin/config/apigee_edge/appsettings'
+  path: '/admin/config/apigee-edge/app-settings'
   defaults:
     _form: '\Drupal\apigee_edge\Form\AppSettingsForm'
     _title: 'Application Settings'
@@ -30,7 +30,7 @@ entity.developer.createapp:
     _entity_create_access: 'developer_app:{developer}'
 
 apigee_edge.user_sync.schedule:
-  path: '/admin/config/apigee_edge/sync/schedule'
+  path: '/admin/config/apigee-edge/sync/schedule'
   defaults:
     _controller: '\Drupal\apigee_edge\Controller\UserSyncController::schedule'
   requirements:
@@ -38,7 +38,7 @@ apigee_edge.user_sync.schedule:
     _csrf_token: 'TRUE'
 
 apigee_edge.user_sync.run:
-  path: '/admin/config/apigee_edge/sync/run'
+  path: '/admin/config/apigee-edge/sync/run'
   defaults:
     _controller: '\Drupal\apigee_edge\Controller\UserSyncController::run'
   requirements:

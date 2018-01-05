@@ -8,12 +8,12 @@ namespace Drupal\apigee_edge;
 interface CredentialsInterface {
 
   /**
-   * Gets the API base URL.
+   * Gets the Edge API endpoint.
    *
    * @return string
-   *   The API base URL.
+   *   Apigee Edge endpoint URI.
    */
-  public function getBaseUrl(): string;
+  public function getEndpoint(): string;
 
   /**
    * Gets the API username.
@@ -40,12 +40,12 @@ interface CredentialsInterface {
   public function getPassword(): string;
 
   /**
-   * Sets the API baseURL.
+   * Sets the Edge API endpoint.
    *
-   * @param string $baseURL
-   *   The API base URL.
+   * @param string $endpoint
+   *   Apigee Edge endpoint URI.
    */
-  public function setBaseUrl(string $baseURL);
+  public function setEndpoint(string $endpoint);
 
   /**
    * Sets the name of the organization.
