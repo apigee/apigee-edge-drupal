@@ -39,7 +39,7 @@ class DeveloperAppCreate extends EntityForm {
       '#machine_name' => [
         'source' => ['details', 'displayName'],
         'label' => $this->t('Internal name'),
-        'exists' => [DeveloperApp::class, 'load'],
+        'exists' => [self::class, 'appExists'],
       ],
       '#title' => $this->t('Internal name'),
       '#disabled' => !$app->isNew(),
@@ -125,6 +125,20 @@ class DeveloperAppCreate extends EntityForm {
     }
 
     return parent::form($form, $form_state);
+  }
+
+  /**
+   * Checks if an app machine name already exists.
+   *
+   * @param string $name
+   *
+   * @return bool
+   */
+  public static function appExists(string $name) : bool {
+    $query = \Drupal::entityQuery('developer_app');
+    $query->condition('name', $name);
+
+    return $query->count()->execute();
   }
 
   /**
