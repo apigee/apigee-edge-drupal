@@ -39,7 +39,7 @@ class EnvStorage extends CredentialsStoragePluginBase {
    * {@inheritdoc}
    */
   public function helpText() : ? TranslatableMarkup {
-    return t('Environment variables: APIGEE_EDGE_BASE_URL, APIGEE_EDGE_ORIGANIZATION, APIGEE_EDGE_USERNAME, APIGEE_EDGE_PASSWORD');
+    return t('Environment variables: APIGEE_EDGE_ENDPOINT, APIGEE_EDGE_ORIGANIZATION, APIGEE_EDGE_USERNAME, APIGEE_EDGE_PASSWORD');
   }
 
   /**
@@ -47,7 +47,7 @@ class EnvStorage extends CredentialsStoragePluginBase {
    */
   public function loadCredentials() : CredentialsInterface {
     $credentials = new Credentials();
-    $credentials->setBaseUrl(getenv('APIGEE_EDGE_BASE_URL'));
+    $credentials->setEndpoint(getenv('APIGEE_EDGE_ENDPOINT'));
     $credentials->setOrganization(getenv('APIGEE_EDGE_ORGANIZATION'));
     $credentials->setUsername(getenv('APIGEE_EDGE_USERNAME'));
     $credentials->setPassword(getenv('APIGEE_EDGE_PASSWORD'));

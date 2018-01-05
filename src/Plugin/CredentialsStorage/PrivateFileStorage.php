@@ -35,7 +35,7 @@ class PrivateFileStorage extends CredentialsStoragePluginBase {
    * {@inheritdoc}
    */
   public function loadCredentials() : CredentialsInterface {
-    $base_url = '';
+    $endpoint = '';
     $organization = '';
     $username = '';
     $password = '';
@@ -43,14 +43,14 @@ class PrivateFileStorage extends CredentialsStoragePluginBase {
 
     if ($data !== FALSE) {
       $stored_credentials = json_decode($data);
-      $base_url = $stored_credentials->baseURL;
+      $endpoint = $stored_credentials->endpoint;
       $organization = $stored_credentials->organization;
       $username = $stored_credentials->username;
       $password = $stored_credentials->password;
     }
 
     $credentials = new Credentials();
-    $credentials->setBaseURL($base_url);
+    $credentials->setEndpoint($endpoint);
     $credentials->setOrganization($organization);
     $credentials->setUsername($username);
     $credentials->setPassword($password);
@@ -63,7 +63,7 @@ class PrivateFileStorage extends CredentialsStoragePluginBase {
    */
   public function saveCredentials(CredentialsInterface $credentials) {
     $data = json_encode([
-      'baseURL' => $credentials->getBaseURL(),
+      'endpoint' => $credentials->getEndpoint(),
       'organization' => $credentials->getOrganization(),
       'username' => $credentials->getUsername(),
       'password' => $credentials->getPassword(),

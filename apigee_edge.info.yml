@@ -1,5 +1,5 @@
 name: Apigee Edge
-description: Apigee Edge Drupal integration
+description: Apigee Edge Drupal integration.
 package: Apigee
 
 type: module
@@ -11,4 +11,4 @@ dependencies:
 
 configure: apigee_edge.settings
 
-php: 7.1
+php: "7.1"

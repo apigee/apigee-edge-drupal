@@ -4,7 +4,7 @@ A Drupal 8 module that turns a site into a developer portal for Apigee's API man
 
 # Testing
 
-To run the tests, some environment variables are needed both for the script and the server. These variables are: `APIGEE_EDGE_BASE_URL`, `APIGEE_EDGE_ORGANIZATION`, `APIGEE_EDGE_USERNAME` and `APIGEE_EDGE_PASSWORD`.
+To run the tests, some environment variables are needed both for the script and the server. These variables are: `APIGEE_EDGE_ENDPOINT`, `APIGEE_EDGE_ORGANIZATION`, `APIGEE_EDGE_USERNAME` and `APIGEE_EDGE_PASSWORD`.
 
 Create the `phpunit.xml` file in the `docroot` folder and fill in `SIMPLETEST_DB, SIMPLETEST_BASE_URL, BROWSERTEST_OUTPUT_DIRECTORY` and the `APIGEE_EDGE_*` environment variables:
 
@@ -23,7 +23,7 @@ Create the `phpunit.xml` file in the `docroot` folder and fill in `SIMPLETEST_DB
     <env name="SIMPLETEST_BASE_URL" value="http://edge.test"/>
     <env name="SIMPLETEST_DB" value="mysql://drupal@localhost/drupal"/>
     <env name="BROWSERTEST_OUTPUT_DIRECTORY" value="./sites/default/files/test"/>
-    <env name="APIGEE_EDGE_BASE_URL" value="http://"/>
+    <env name="APIGEE_EDGE_ENDPOINT" value="http://"/>
     <env name="APIGEE_EDGE_USERNAME" value=""/>
     <env name="APIGEE_EDGE_PASSWORD" value=""/>
     <env name="APIGEE_EDGE_ORGANIZATION" value=""/>
