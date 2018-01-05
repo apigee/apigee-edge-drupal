@@ -205,7 +205,7 @@ class AppSettingsForm extends ConfigFormBase {
       'callback_url_required',
     ];
 
-    foreach (array_keys($config_names) as $name) {
+    foreach ($config_names as $name) {
       $config->set($name, $form_state->getValue($name));
     }
 

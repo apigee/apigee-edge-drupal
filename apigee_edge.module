@@ -227,3 +227,27 @@ function apigee_edge_cron() {
 function apigee_edge_get_executor(): JobExecutor {
   return \Drupal::service('apigee_edge.job_executor');
 }
+
+/**
+ * Constructs the "Create App" entity title for the Developer App entity.
+ *
+ * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+ */
+function apigee_edge_create_app_title() {
+  $label = \Drupal::entityTypeManager()->getDefinition('developer_app')->get('label_singular');
+  return new TranslatableMarkup("Add @label", [
+    '@label' => $label,
+  ]);
+}
+
+/**
+ * Constructs the "My Apps" entity title for the Developer App entity.
+ *
+ * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+ */
+function apigee_edge_my_apps_title() {
+  $label = \Drupal::entityTypeManager()->getDefinition('developer_app')->get('label_plural');
+  return new TranslatableMarkup("My @label", [
+    '@label' => $label,
+  ]);
+}

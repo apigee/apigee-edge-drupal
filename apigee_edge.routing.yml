@@ -26,6 +26,7 @@ entity.developer.createapp:
   path: 'createapp/{user}/{developer}'
   defaults:
     _entity_form: 'developer_app.add'
+    _title_callback: 'apigee_edge_create_app_title'
   requirements:
     _entity_create_access: 'developer_app:{developer}'
 
@@ -49,7 +50,7 @@ entity.user.my_apps:
   path: '/user/{user}/{developer}/my-apps'
   defaults:
     _entity_list: 'developer_app'
-    _title: 'My apps'
+    _title_callback: 'apigee_edge_my_apps_title'
   requirements:
     _entity_create_access: 'developer_app:{developer}'
     user: '\d+'

@@ -3,7 +3,6 @@
 namespace Drupal\apigee_edge\Plugin\Menu\LocalTask;
 
 use Drupal\Core\Menu\LocalTaskDefault;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Symfony\Component\HttpFoundation\Request;
 
 class MyAppsLocalTask extends LocalTaskDefault {
@@ -14,10 +13,7 @@ class MyAppsLocalTask extends LocalTaskDefault {
    * {@inheritdoc}
    */
   public function getTitle(Request $request = NULL) {
-    $label = \Drupal::entityTypeManager()->getDefinition('developer_app')->get('label_plural');
-    return new TranslatableMarkup("My @label", [
-      '@label' => $label,
-    ]);
+    return apigee_edge_my_apps_title();
   }
 
 }
