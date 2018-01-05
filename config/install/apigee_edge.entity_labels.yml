@@ -1,2 +1,4 @@
-developer_app_label: App
-api_product_label: API Product
+app_label_singular: ''
+app_label_plural: ''
+api_product_label_singular: ''
+api_product_label_plural: ''

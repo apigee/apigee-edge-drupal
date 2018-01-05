@@ -28,9 +28,28 @@ function apigee_edge_theme() {
  */
 function apigee_edge_entity_type_alter(array &$entity_types) {
   $config = \Drupal::config('apigee_edge.entity_labels');
-  $developer_app_label = $config->get('developer_app_label');
-  if (isset($developer_app_label)) {
-    $entity_types['developer_app']->set('label', new TranslatableMarkup($developer_app_label));
+
+  $app_label_singular = $config->get('app_label_singular');
+  $app_label_plural = $config->get('app_label_plural');
+  $api_product_label_singular = $config->get('api_product_label_singular');
+  $api_product_label_plural = $config->get('api_product_label_plural');
+
+  if ($app_label_singular && $app_label_plural) {
+    $entity_types['developer_app']->set('label_singular', new TranslatableMarkup($app_label_singular));
+    $entity_types['developer_app']->set('label_plural', new TranslatableMarkup($app_label_plural));
+    $entity_types['developer_app']->set('label_count', [
+      'singular' => "@count {$app_label_singular}",
+      'plural' => "@count {$app_label_plural}",
+    ]);
+  }
+
+  if ($api_product_label_singular && $api_product_label_plural) {
+    $entity_types['api_product']->set('label_singular', new TranslatableMarkup($api_product_label_singular));
+    $entity_types['api_product']->set('label_plural', new TranslatableMarkup($api_product_label_plural));
+    $entity_types['api_product']->set('label_count', [
+      'singular' => "@count {$api_product_label_singular}",
+      'plural' => "@count {$api_product_label_plural}",
+    ]);
   }
 }
 

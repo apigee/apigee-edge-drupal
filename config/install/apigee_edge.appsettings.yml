@@ -1,6 +1,10 @@
+display_as_select: false
+associate_apps: true
+user_select: true
 multiple_products: true
-display_as_checkboxes: true
+require: false
 description_visible: true
 description_required: false
 callback_url_visible: true
 callback_url_required: false
+default_products: []

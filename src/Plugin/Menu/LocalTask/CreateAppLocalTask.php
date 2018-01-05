@@ -2,32 +2,22 @@
 
 namespace Drupal\apigee_edge\Plugin\Menu\LocalTask;
 
-use Drupal\apigee_edge\Entity\Developer;
 use Drupal\Core\Menu\LocalTaskDefault;
-use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\user\Entity\User;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Symfony\Component\HttpFoundation\Request;
 
 class CreateAppLocalTask extends LocalTaskDefault {
+
+  use DeveloperRouteParametersTrait;
 
   /**
    * {@inheritdoc}
    */
-  public function getRouteParameters(RouteMatchInterface $route_match) {
-    $parameters = [];
-    if (($user = $route_match->getParameter('user'))) {
-      /** @var User $user */
-      /** @var Developer $developer */
-      if (is_string($user)) {
-        $user = User::load($user);
-      }
-      $developer = Developer::load($user->getEmail());
-      if (isset($developer)) {
-        $parameters['developer'] = $developer->uuid();
-      }
-      $parameters['user'] = $user->id();
-    }
-
-    return $parameters;
+  public function getTitle(Request $request = NULL) {
+    $label = \Drupal::entityTypeManager()->getDefinition('developer_app')->get('label_singular');
+    return new TranslatableMarkup("Create @label", [
+      '@label' => $label,
+    ]);
   }
 
 }

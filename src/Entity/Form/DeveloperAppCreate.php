@@ -2,6 +2,7 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
+use Drupal\apigee_edge\Entity\Developer;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Form\FormStateInterface;
 
@@ -39,6 +40,27 @@ class DeveloperAppCreate extends EntityForm {
       '#disabled' => !$app->isNew(),
       '#default_value' => $app->getName(),
     ];
+
+    if (($developerId = $this->getRouteMatch()->getParameter('developer'))) {
+      $form['details']['developerId'] = [
+        '#type' => 'value',
+        '#value' => $developerId,
+      ];
+    }
+    else {
+      $developers = [];
+      /** @var Developer $developer */
+      foreach (Developer::loadMultiple() as $developer) {
+        $developers[$developer->uuid()] = $developer->getUserName();
+      }
+
+      $form['details']['developerId'] = [
+        '#title' => $this->t('Owner'),
+        '#type' => 'select',
+        '#default_value' => $app->getDeveloperId(),
+        '#options' => $developers,
+      ];
+    }
 
     $form['details']['callbackUrl'] = [
       '#type' => 'textfield',

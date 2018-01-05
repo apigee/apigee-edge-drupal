@@ -6,6 +6,11 @@ use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\Tests\BrowserTestBase;
 
+/**
+ * Create, delete, update API Product entity tests.
+ *
+ * @group ApigeeEdge
+ */
 class ApiProductTest extends BrowserTestBase {
 
   /**

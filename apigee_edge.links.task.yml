@@ -3,24 +3,22 @@ apigee_edge.settings:
   title: 'General'
   base_route: apigee_edge.settings
 
-apigee_edge.entity_labels:
-  route_name: apigee_edge.entity_labels
-  title: 'App & Product labels'
+apigee_edge.settings.product:
+  route_name: apigee_edge.settings.product
+  title: 'API Product Settings'
   base_route: apigee_edge.settings
 
-apigee_edge.settings.createapp:
-  route_name: apigee_edge.settings.createapp
-  title: 'Create app'
+apigee_edge.settings.app:
+  route_name: apigee_edge.settings.app
+  title: 'Application Settings'
   base_route: apigee_edge.settings
 
 apigee_edge.createapp:
   route_name: entity.developer.createapp
   base_route: entity.user.canonical
-  title: 'Create app'
   class: '\Drupal\apigee_edge\Plugin\Menu\LocalTask\CreateAppLocalTask'
 
 apigee_edge.my_apps:
   route_name: entity.user.my_apps
   base_route: entity.user.canonical
-  title: 'My apps'
-  class: '\Drupal\apigee_edge\Plugin\Menu\LocalTask\CreateAppLocalTask'
+  class: '\Drupal\apigee_edge\Plugin\Menu\LocalTask\MyAppsLocalTask'

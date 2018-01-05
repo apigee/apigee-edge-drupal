@@ -8,7 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Provides a form for changing the entity labels.
  */
-class EntityLabelForm extends ConfigFormBase {
+class ProductSettingsForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
@@ -32,18 +32,22 @@ class EntityLabelForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('apigee_edge.entity_labels');
 
-    $form['developer_app_label'] = array(
+    $form['label'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('How to refer to an API Product on the UI'),
+      '#collapsible' => FALSE,
+    ];
+
+    $form['label']['api_product_label_singular'] = array(
       '#type' => 'textfield',
-      '#title' => $this->t('Label of Developer App'),
-      '#default_value' => $config->get('developer_app_label'),
-      '#required' => TRUE,
+      '#title' => $this->t('Singular format'),
+      '#default_value' => $config->get('api_product_label_singular'),
     );
 
-    $form['api_product_label'] = array(
+    $form['label']['api_product_label_plural'] = array(
       '#type' => 'textfield',
-      '#title' => $this->t('Label of API Product'),
-      '#default_value' => $config->get('api_product_label'),
-      '#required' => TRUE,
+      '#title' => $this->t('Plural format'),
+      '#default_value' => $config->get('api_product_label_plural'),
     );
 
     return parent::buildForm($form, $form_state);
@@ -53,10 +57,19 @@ class EntityLabelForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->config('apigee_edge.entity_labels')
-      ->set('developer_app_label', $form_state->getValue('developer_app_label'))
-      ->set('api_product_label', $form_state->getValue('api_product_label'))
-      ->save();
+    $config = \Drupal::configFactory()->getEditable('apigee_edge.entity_labels');
+
+    $config_names = [
+      'api_product_label_singular',
+      'api_product_label_plural',
+    ];
+
+    foreach ($config_names as $name) {
+      $config->set($name, $form_state->getValue($name));
+    }
+
+    $config->save();
+
     parent::submitForm($form, $form_state);
   }
 

@@ -9,7 +9,12 @@ use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
  *
  * @\Drupal\apigee_edge\Annotation\EdgeEntityType(
  *   id = "developer_app",
- *   label = @Translation("Developer app"),
+ *   label_singular = @Translation("Developer App"),
+ *   label_plural = @Translation("Developer Apps"),
+ *   label_count = @PluralTranslation(
+ *     singular = "@count Developer App",
+ *     plural = "@count Developer Apps",
+ *   ),
  *   handlers = {
  *     "storage" = "\Drupal\apigee_edge\Entity\Storage\DeveloperAppStorage",
  *     "list_builder" = "\Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder",

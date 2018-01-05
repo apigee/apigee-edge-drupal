@@ -13,17 +13,27 @@ apigee_edge.credentials_storage:
 apigee_edge.entity_labels:
   type: config_object
   mapping:
-    developer_app_label:
+    app_label_singular:
       type: string
-    api_product_label:
+    app_label_plural:
+      type: string
+    api_product_label_singular:
+      type: string
+    api_product_label_plural:
       type: string
 
-apigee_edge.createapp:
+apigee_edge.appsettings:
   type: config_object
   mapping:
+    display_as_select:
+      type: boolean
+    associate_apps:
+      type: boolean
+    user_select:
+      type: boolean
     multiple_products:
       type: boolean
-    display_as_checkboxes:
+    require:
       type: boolean
     description_visible:
       type: boolean
@@ -33,3 +43,7 @@ apigee_edge.createapp:
       type: boolean
     callback_url_required:
       type: boolean
+    default_products:
+      type: sequence
+      sequence:
+        type: string
