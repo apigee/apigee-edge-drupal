@@ -3,6 +3,7 @@
 namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Api\Management\Entity\Developer as EdgeDeveloper;
+use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
 /**
@@ -21,6 +22,9 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
   use EdgeEntityBaseTrait {
     id as private traitId;
   }
+
+  /** @var null|int */
+  protected $drupalUserId;
 
   /**
    * The original email address of the developer.
@@ -45,13 +49,13 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
   /**
    * Creates developer entity from Drupal user.
    *
-   * @param UserInterface $user
+   * @param \Drupal\user\UserInterface $user
    *   The Drupal user account.
    *
    * @return Developer
    *   The developer entity.
    */
-  public static function createFromDrupalUser(UserInterface $user) : Developer {
+  public static function createFromDrupalUser(UserInterface $user): Developer {
     $developer_data = [
       'email' => $user->getEmail(),
       'originalEmail' => isset($user->original) ? $user->original->getEmail() : $user->getEmail(),
@@ -62,6 +66,7 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
     ];
 
     $developer = !isset($user->original) ? static::create($developer_data) : new static($developer_data);
+    $developer->setOwnerId($user->id());
 
     return $developer;
   }
@@ -76,14 +81,14 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
   /**
    * {@inheritdoc}
    */
-  public function id() : ? string {
+  public function id(): ? string {
     return $this->originalEmail;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setEmail(string $email) : void {
+  public function setEmail(string $email): void {
     parent::setEmail($email);
     if ($this->originalEmail === NULL) {
       $this->originalEmail = $this->email;
@@ -95,6 +100,34 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
    */
   public function setOriginalEmail(string $originalEmail) {
     $this->originalEmail = $originalEmail;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getOwner() {
+    return $this->drupalUserId === NULL ? NULL : User::load($this->drupalUserId);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setOwner(UserInterface $account) {
+    $this->drupalUserId = $account->id();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getOwnerId() {
+    return $this->drupalUserId;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setOwnerId($uid) {
+    $this->drupalUserId = $uid;
   }
 
 }

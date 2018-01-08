@@ -8,6 +8,7 @@ core: 8.x
 dependencies:
   - core:file
   - core:user
+  - entity:entity
 
 configure: apigee_edge.settings
 

@@ -13,6 +13,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\UserInterface;
 
+define('APIGEE_EDGE_ERROR_CODE_DEVELOPER_ALREADY_EXITS', 'developer.service.DeveloperAlreadyExists');
 define('APIGEE_EDGE_ERROR_CODE_DEVELOPER_DOES_NOT_EXITS', 'developer.service.DeveloperDoesNotExist');
 
 /**
@@ -90,71 +91,78 @@ function apigee_edge_entity_base_field_info(EntityTypeInterface $entity_type) {
         ],
       ])
       ->setDisplayConfigurable('form', TRUE);
+
+    $fields['apigee_edge_developer_id'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Apigee Edge developer ID'))
+      ->setSettings([
+        'target_type' => 'developer_app',
+      ]);
   }
 
   return $fields;
 }
 
 /**
- * Implements hook_user_insert().
+ * Implements hook_user_presave().
+ *
+ * TODO Take (configurable?) actions if a user could not be saved in Drupal but
+ * it has been in Edge.
  */
-function apigee_edge_user_insert(UserInterface $account) {
-  try {
-    $developer = Developer::createFromDrupalUser($account);
-    $developer->save();
-  }
-  catch (\Exception $exception) {
-    $context = [
-      '@developer' => $account->getEmail(),
-      '@message' => (string) $exception,
-      '@trace' => $exception->getTraceAsString(),
-    ];
-    \Drupal::logger('apigee_edge')
-      ->error('Could not create developer entity: @developer. @message, @trace', $context);
-  }
-}
-
-/**
- * Implements hook_user_update().
- */
-function apigee_edge_user_update(UserInterface $account) {
+function apigee_edge_user_presave(UserInterface $account) {
+  $developer_id = NULL;
   try {
     /** @var \Drupal\apigee_edge\Entity\Developer $developer */
     $developer = Developer::createFromDrupalUser($account);
     $developer->save();
+    $account->set('apigee_edge_developer_id', $developer->getDeveloperId());
   }
   catch (\Exception $exception) {
     $previous = $exception->getPrevious();
     $context = [
       '@developer' => $account->getEmail(),
       '@message' => (string) $exception,
-      '@trace' => $exception->getTraceAsString(),
+      '@operation' => $account->isNew() ? 'create' : 'update',
     ];
-    if ($previous instanceof ClientErrorException && $previous->getEdgeErrorCode() === APIGEE_EDGE_ERROR_CODE_DEVELOPER_DOES_NOT_EXITS) {
-
-      \Drupal::logger('apigee_edge')
-        ->notice('Could not update @developer developer entity because it does not exist on Edge. Automatically trying to create a new developer entity.', $context);
-      try {
-        // Forcibly mark developer entity as new to send POST request to Edge
-        // instead of PUT. This should be a better way then clearing
-        // "originalEmail" property's value on the entity.
-        $developer->enforceIsNew(TRUE);
-        $developer->save();
-      }
-      catch (\Exception $e) {
-        $context = [
-          '@developer' => $account->getEmail(),
-          '@message' => (string) $exception,
-          '@trace' => $exception->getTraceAsString(),
-        ];
+    if ($previous instanceof ClientErrorException && $previous->getEdgeErrorCode()) {
+      if ($previous->getEdgeErrorCode() === APIGEE_EDGE_ERROR_CODE_DEVELOPER_DOES_NOT_EXITS) {
         \Drupal::logger('apigee_edge')
-          ->error('Could not create developer entity: @developer. @message, @trace', $context);
+          ->info('Could not update @developer developer entity because it does not exist on Edge. Automatically trying to create a new developer entity.', $context);
+        try {
+          // Forcibly mark developer entity as new to send POST request to Edge
+          // instead of PUT. This should be a better way then clearing
+          // "originalEmail" property's value on the entity.
+          $developer->enforceIsNew(TRUE);
+          $developer->save();
+          $developer_id = $developer->getDeveloperId();
+        }
+        catch (\Exception $e) {
+          $context = [
+            '@developer' => $account->getEmail(),
+            '@message' => (string) $exception,
+            '@trace' => $exception->getTraceAsString(),
+          ];
+          watchdog_exception('apigee_edge', $exception, 'Could not create developer entity: @developer. %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
+        }
+      }
+      elseif ($previous->getEdgeErrorCode() === APIGEE_EDGE_ERROR_CODE_DEVELOPER_ALREADY_EXITS) {
+        \Drupal::logger('apigee_edge')
+          ->info($previous->getMessage());
+        $developer = Developer::load($account->getEmail());
+        if ($developer) {
+          $developer_id = $developer->getDeveloperId();
+        }
+        else {
+          \Drupal::logger('apigee_edge')->error("Unable to save @developer developer's developer id on user", $context);
+        }
       }
     }
     else {
-      \Drupal::logger('apigee_edge')
-        ->error('Could not update developer entity: @developer. @message, @trace', $context);
+      watchdog_exception('apigee_edge', $exception, 'Could not @operation developer entity: @developer. %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
     }
+  }
+
+  if ($developer_id !== NULL) {
+    $account->set('apigee_edge_developer_id', $developer_id);
   }
 }
 
@@ -234,7 +242,9 @@ function apigee_edge_get_executor(): JobExecutor {
  * @return \Drupal\Core\StringTranslation\TranslatableMarkup
  */
 function apigee_edge_create_app_title() {
-  $label = \Drupal::entityTypeManager()->getDefinition('developer_app')->get('label_singular');
+  $label = \Drupal::entityTypeManager()
+    ->getDefinition('developer_app')
+    ->get('label_singular');
   return new TranslatableMarkup("Add @label", [
     '@label' => $label,
   ]);
@@ -246,7 +256,9 @@ function apigee_edge_create_app_title() {
  * @return \Drupal\Core\StringTranslation\TranslatableMarkup
  */
 function apigee_edge_my_apps_title() {
-  $label = \Drupal::entityTypeManager()->getDefinition('developer_app')->get('label_plural');
+  $label = \Drupal::entityTypeManager()
+    ->getDefinition('developer_app')
+    ->get('label_plural');
   return new TranslatableMarkup("My @label", [
     '@label' => $label,
   ]);

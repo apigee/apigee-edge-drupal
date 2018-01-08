@@ -3,6 +3,8 @@
 namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
+use Drupal\user\Entity\User;
+use Drupal\user\UserInterface;
 
 /**
  * Defines the Developer app entity class.
@@ -17,7 +19,8 @@ use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
  *   ),
  *   handlers = {
  *     "storage" = "\Drupal\apigee_edge\Entity\Storage\DeveloperAppStorage",
- *     "access" = "\Drupal\apigee_edge\Entity\Access\DeveloperAppAccessControlHandler",
+ *     "access" = "Drupal\entity\UncacheableEntityAccessControlHandler",
+ *     "permission_provider" = "\Drupal\apigee_edge\Entity\DeveloperAppEntityPermissionProvider",
  *     "form" = {
  *       "add" = "\Drupal\apigee_edge\Entity\Form\DeveloperAppCreate",
  *     },
@@ -29,7 +32,8 @@ use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
  *     "id" = "appId",
  *     "bundle" = "developerId",
  *   },
- *   admin_permission = "administer edge developer app",
+ *   permission_granularity = "entity_type",
+ *   admin_permission = "administer developer_app",
  * )
  */
 class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
@@ -37,6 +41,9 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
   use EdgeEntityBaseTrait {
     id as private traitId;
   }
+
+  /** @var null|int */
+  protected $drupalUserId ;
 
   /**
    * {@inheritdoc}
@@ -51,6 +58,34 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
    */
   public function id(): ? string {
     return $this->getAppId();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getOwner() {
+    return $this->drupalUserId === NULL ? NULL : User::load($this->drupalUserId);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setOwner(UserInterface $account) {
+    $this->drupalUserId = $account->id();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getOwnerId() {
+    return $this->drupalUserId;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setOwnerId($uid) {
+    $this->drupalUserId = $uid;
   }
 
 }

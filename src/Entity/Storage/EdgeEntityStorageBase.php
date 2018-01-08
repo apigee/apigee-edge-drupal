@@ -8,8 +8,8 @@ use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
 use Apigee\Edge\Entity\EntityNormalizer;
 use Drupal\apigee_edge\ExceptionLoggerTrait;
 use Drupal\apigee_edge\SDKConnectorInterface;
-use Drupal\Core\Entity\EntityStorageBase;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityStorageBase;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeInterface;
 use GuzzleHttp\Exception\ClientException;
@@ -48,7 +48,9 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
         }
       }
 
-      $this->setStaticCache($entities);
+      // TODO Store in a static cache those entities that have been loaded here
+      // but has not been returned by this function.
+
     });
 
     return $loaded;

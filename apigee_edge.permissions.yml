@@ -1,5 +1,8 @@
 administer apigee edge:
   title: 'Administer Apigee Edge'
+  restricted access: true
 
-administer edge developer app:
-  title: 'Administer edge developer app'
+administer apigee edge developer apps settings:
+  title: 'Administer Developer Apps settings'
+  description: 'Administer settings of developer_app.'
+  restrict access: true
