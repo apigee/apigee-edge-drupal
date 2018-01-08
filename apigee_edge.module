@@ -139,9 +139,8 @@ function apigee_edge_user_presave(UserInterface $account) {
           $context = [
             '@developer' => $account->getEmail(),
             '@message' => (string) $exception,
-            '@trace' => $exception->getTraceAsString(),
           ];
-          watchdog_exception('apigee_edge', $exception, 'Could not create developer entity: @developer. %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
+          watchdog_exception('apigee_edge', $exception, 'Could not create developer entity: @developer. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
         }
       }
       elseif ($previous->getEdgeErrorCode() === APIGEE_EDGE_ERROR_CODE_DEVELOPER_ALREADY_EXITS) {
@@ -157,7 +156,7 @@ function apigee_edge_user_presave(UserInterface $account) {
       }
     }
     else {
-      watchdog_exception('apigee_edge', $exception, 'Could not @operation developer entity: @developer. %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
+      watchdog_exception('apigee_edge', $exception, 'Could not @operation developer entity: @developer. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
     }
   }
 
@@ -180,10 +179,8 @@ function apigee_edge_user_cancel(array $edit, UserInterface $account, $method) {
       $context = [
         '@developer' => $account->getEmail(),
         '@message' => (string) $exception,
-        '@trace' => $exception->getTraceAsString(),
       ];
-      \Drupal::logger('apigee_edge')
-        ->error('Could not block developer entity: @developer. @message, @trace', $context);
+      watchdog_exception('apigee_edge', $exception, 'Could not block @developer developer. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
     }
   }
 }
@@ -201,10 +198,8 @@ function apigee_edge_user_delete(UserInterface $account) {
     $context = [
       '@developer' => $account->getEmail(),
       '@message' => (string) $exception,
-      '@trace' => $exception->getTraceAsString(),
     ];
-    \Drupal::logger('apigee_edge')
-      ->error('Could not delete developer entity: @developer. @message, @trace', $context);
+    watchdog_exception('apigee_edge', $exception, 'Could not delete @developer developer entity. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
   }
 }
 

@@ -82,6 +82,15 @@ class DeveloperAppStorage extends EdgeEntityStorageBase implements DeveloperAppS
     $devid_uid_map = array_flip($uid_devid_map);
 
     foreach ($entities as $entity) {
+      // If developer id is not in this map it means the developer does
+      // not exist in Drupal yet (developer syncing between Edge and Drupal is
+      // required) or the developer id has not been stored in
+      // related Drupal user yet.
+      // This can be fixed with running developer sync too,
+      // because it could happen that the user had been
+      // created in Drupal before Edge connected was configured.
+      // Although, this could be a result of a previous error
+      // but there should be a log about that.
       if (isset($devid_uid_map[$entity->getDeveloperId()])) {
         $entity->setOwnerId($devid_uid_map[$entity->getDeveloperId()]);
       }
