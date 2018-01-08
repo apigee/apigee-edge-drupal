@@ -13,7 +13,7 @@ class DeveloperSync extends EdgeJob {
   use JobCreatorTrait;
 
   /**
-   * All edge accounts.
+   * All Apigee Edge accounts.
    *
    * Format: strtolower(email) => email.
    *
@@ -62,7 +62,7 @@ class DeveloperSync extends EdgeJob {
   }
 
   /**
-   * Loads all edge developers' emails.
+   * Loads all Apigee Edge developers' emails.
    *
    * @return array
    *   Format: strtolower(email) => email

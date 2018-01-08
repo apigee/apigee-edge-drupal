@@ -46,11 +46,12 @@ apigee_edge.user_sync.run:
     _permission: 'administer apigee edge'
     _csrf_token: 'TRUE'
 
-entity.user.my_apps:
-  path: '/user/{user}/{developer}/my-apps'
+apigee_edge.user.developer_apps:
+  path: '/user/{user}/apps'
   defaults:
-    _entity_list: 'developer_app'
-    _title_callback: 'apigee_edge_my_apps_title'
+    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppListingController::content'
+    # FIXME
+    _title_callback: 'apigee_edge_my_apps_title' #FIXME
   requirements:
-    _entity_create_access: 'developer_app:{developer}'
-    user: '\d+'
+     user: '\d+'
+     _access: 'TRUE' #FIXME

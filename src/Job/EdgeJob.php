@@ -6,7 +6,7 @@ use Drupal\apigee_edge\Job;
 use Drupal\apigee_edge\SDKConnector;
 
 /**
- * Base class for all edge communication jobs.
+ * Base class for all Apigee Edge communication jobs.
  */
 abstract class EdgeJob extends Job {
 

@@ -5,12 +5,33 @@ namespace Drupal\apigee_edge\Entity\Form;
 use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
-use Drupal\apigee_edge\Entity\DeveloperApp;
+use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class DeveloperAppCreate extends EntityForm {
+
+  /** @var \Drupal\apigee_edge\SDKConnectorInterface */
+  protected $sdkConnector;
+
+  /**
+   * DeveloperAppCreate constructor.
+   *
+   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdkConnector
+   */
+  public function __construct(SDKConnectorInterface $sdkConnector) {
+    $this->sdkConnector = $sdkConnector;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    $sdkConnector = $container->get('apigee_edge.sdk_connector');
+    return new static($sdkConnector);
+  }
 
   /**
    * {@inheritdoc}
@@ -54,7 +75,7 @@ class DeveloperAppCreate extends EntityForm {
     }
     else {
       $developers = [];
-      /** @var Developer $developer */
+      /** @var \Drupal\apigee_edge\Entity\Developer $developer */
       foreach (Developer::loadMultiple() as $developer) {
         $developers[$developer->uuid()] = $developer->getUserName();
       }
@@ -134,7 +155,7 @@ class DeveloperAppCreate extends EntityForm {
    *
    * @return bool
    */
-  public static function appExists(string $name) : bool {
+  public static function appExists(string $name): bool {
     $query = \Drupal::entityQuery('developer_app');
     $query->condition('name', $name);
 
@@ -173,13 +194,11 @@ class DeveloperAppCreate extends EntityForm {
     $config = \Drupal::config('apigee_edge.appsettings');
 
     if ($config->get('associate_apps')) {
-      /** @var \Drupal\apigee_edge\SDKConnectorInterface $connector */
-      $connector = \Drupal::service('apigee_edge.sdk_connector');
       $dacc = new DeveloperAppCredentialController(
-        $connector->getOrganization(),
+        $this->sdkConnector->getOrganization(),
         $app->getDeveloperId(),
         $app->getName(),
-        $connector->getClient()
+        $this->sdkConnector->getClient()
       );
 
       /** @var \Apigee\Edge\Api\Management\Entity\AppCredential[] $credentials */

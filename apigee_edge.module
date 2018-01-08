@@ -164,7 +164,7 @@ function apigee_edge_user_update(UserInterface $account) {
 function apigee_edge_user_cancel(array $edit, UserInterface $account, $method) {
   if ($method === 'user_cancel_block_unpublish' || $method === 'user_cancel_block') {
     try {
-      /** @var Developer $developer */
+      /** @var \Drupal\apigee_edge\Entity\Developer $developer */
       $developer = Developer::createFromDrupalUser($account);
       $developer->save();
     }
@@ -185,7 +185,7 @@ function apigee_edge_user_cancel(array $edit, UserInterface $account, $method) {
  */
 function apigee_edge_user_delete(UserInterface $account) {
   try {
-    /** @var Developer $developer */
+    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
     $developer = Developer::load($account->getEmail());
     $developer->delete();
   }

@@ -10,7 +10,7 @@ use Drupal\Core\Entity\Query\QueryFactoryInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
- * Provides a factory for creating entity query objects for the edge backend.
+ * Factory for creating entity query objects for the Apigee Edge backend.
  */
 class QueryFactory implements QueryFactoryInterface, EventSubscriberInterface {
 
@@ -50,7 +50,7 @@ class QueryFactory implements QueryFactoryInterface, EventSubscriberInterface {
    * {@inheritdoc}
    */
   public function getAggregate(EntityTypeInterface $entity_type, $conjunction) {
-    throw new QueryException('Aggregation over edge entities is not supported');
+    throw new QueryException('Aggregation over Apigee Edge entities is not supported.');
   }
 
   /**

@@ -8,7 +8,7 @@ use Drupal\Core\Entity\Query\ConditionInterface;
 use Drupal\Core\Entity\Query\QueryException;
 
 /**
- * Defines the condition class for the edge entity query.
+ * Defines the condition class for the Apigee Edge entity query.
  */
 class Condition extends ConditionBase implements ConditionInterface {
 

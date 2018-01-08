@@ -9,7 +9,7 @@ use Drupal\Core\Entity\Query\QueryBase;
 use Drupal\Core\Entity\Query\QueryInterface;
 
 /**
- * Defines the entity query for edge entities.
+ * Defines the entity query for Apigee Edge entities.
  */
 class Query extends QueryBase implements QueryInterface {
 

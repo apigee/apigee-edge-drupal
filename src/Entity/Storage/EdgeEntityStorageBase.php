@@ -4,6 +4,7 @@ namespace Drupal\apigee_edge\Entity\Storage;
 
 use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Apigee\Edge\Entity\EntityDenormalizer;
+use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
 use Apigee\Edge\Entity\EntityNormalizer;
 use Drupal\apigee_edge\ExceptionLoggerTrait;
 use Drupal\apigee_edge\SDKConnectorInterface;
@@ -37,16 +38,11 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
     $this->withController(function ($controller) use ($ids, &$loaded) {
       /** @var \Apigee\Edge\Controller\CpsListingEntityControllerInterface|\Apigee\Edge\Controller\NonCpsListingEntityControllerInterface $controller */
       $entities = [];
-      $normalizer = new EntityNormalizer();
-      $denormalizer = new EntityDenormalizer();
+      /** @var \Apigee\Edge\Entity\EntityInterface $edge_entity */
       foreach ($controller->getEntities() as $edge_entity) {
-        /** @var \Apigee\Edge\Entity\EntityInterface $edge_entity */
-        $normalized = $normalizer->normalize($edge_entity);
-        /** @var EntityInterface $drupal_entity */
-        $drupal_entity = $denormalizer->denormalize($normalized, $this->entityClass);
-
+        /** @var \Drupal\Core\Entity\EntityInterface $drupal_entity */
+        $drupal_entity = $this->toDrupalEntity($edge_entity);
         $entities[$drupal_entity->id()] = $drupal_entity;
-
         if ($ids === NULL || in_array($drupal_entity->id(), $ids)) {
           $loaded[$drupal_entity->id()] = $drupal_entity;
         }
@@ -56,6 +52,22 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
     });
 
     return $loaded;
+  }
+
+  /**
+   * Transforms an SDK entity to a Drupal entity.
+   *
+   * @param \Apigee\Edge\Entity\EntityInterface $edge_entity
+   *
+   * @return \Drupal\Core\Entity\EntityInterface
+   */
+  protected function toDrupalEntity(EdgeEntityInterface $edge_entity) {
+    $normalizer = new EntityNormalizer();
+    $denormalizer = new EntityDenormalizer();
+    /** @var \Apigee\Edge\Entity\EntityInterface $edge_entity */
+    $normalized = $normalizer->normalize($edge_entity);
+    /** @var \Drupal\Core\Entity\EntityInterface $drupal_entity */
+    return $denormalizer->denormalize($normalized, $this->entityClass);
   }
 
   /**
@@ -71,7 +83,7 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
   protected function doDelete($entities) {
     $this->withController(function (EntityCrudOperationsControllerInterface $controller) use ($entities) {
       foreach ($entities as $entity) {
-        /** @var EntityInterface $entity */
+        /** @var \Drupal\Core\Entity\EntityInterface $entity */
         $controller->delete($entity->id());
       }
     });
@@ -144,11 +156,11 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
   /**
    * Gets the SDK connector.
    *
-   * @return SDKConnectorInterface
+   * @return \Drupal\apigee_edge\SDKConnectorInterface
    *   The SDK connector.
    */
   protected function getConnector() : SDKConnectorInterface {
-    /** @var SDKConnectorInterface $connector */
+    /** @var \Drupal\apigee_edge\SDKConnectorInterface $connector */
     static $connector;
     if (!$connector) {
       $connector = $this->container->get('apigee_edge.sdk_connector');
@@ -158,9 +170,9 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
   }
 
   /**
-   * Wraps communication with edge.
+   * Wraps communication with Apigee Edge.
    *
-   * This function converts exceptions from edge into EntityStorageException and
+   * This function converts exceptions from Edge into EntityStorageException and
    * logs the original exceptions.
    *
    * @param callable $action

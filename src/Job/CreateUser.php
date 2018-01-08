@@ -6,7 +6,7 @@ use Apigee\Edge\Api\Management\Entity\Developer;
 use Drupal\user\Entity\User;
 
 /**
- * A job to create a Drupal user from an edge developer.
+ * A job to create a Drupal user from an Apigee Edge developer.
  */
 class CreateUser extends EdgeJob {
 
