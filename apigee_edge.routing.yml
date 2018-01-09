@@ -49,9 +49,16 @@ apigee_edge.user_sync.run:
 apigee_edge.user.developer_apps:
   path: '/user/{user}/apps'
   defaults:
-    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppListingController::content'
-    # FIXME
+    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppListingController::render'
     _title_callback: 'apigee_edge_my_apps_title' #FIXME
+  requirements:
+     user: '\d+'
+     _access: 'TRUE' #FIXME
+
+entity.developer_app.developer_app_details:
+  path: '/user/{user}/apps/{app_name}/details'
+  defaults:
+    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppDetailsController::render'
   requirements:
      user: '\d+'
      _access: 'TRUE' #FIXME

@@ -3,6 +3,7 @@
 namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
+use Drupal\Core\Url;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
@@ -40,10 +41,11 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
 
   use EdgeEntityBaseTrait {
     id as private traitId;
+    toUrl as private traitToUrl;
   }
 
   /** @var null|int */
-  protected $drupalUserId ;
+  protected $drupalUserId;
 
   /**
    * {@inheritdoc}
@@ -86,6 +88,30 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
    */
   public function setOwnerId($uid) {
     $this->drupalUserId = $uid;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function toUrl($rel = 'canonical', array $options = []) {
+    // Pass required router parameters.
+    if ($rel == 'developer-app-details') {
+      $route_name = "entity.developer_app.developer_app_details";
+      $route_parameters = [
+        'user' => $this->drupalUserId,
+        'app_name' => $this->getName(),
+      ];
+      $options = [
+        'entity_type' => $this->entityTypeId,
+        'entity' => $this,
+        // Display links by default based on the current language.
+        'language' => $this->language(),
+      ];
+      return new Url($route_name, $route_parameters, $options);
+    }
+    else {
+      return $this->traitToUrl($rel, $options);
+    }
   }
 
 }
