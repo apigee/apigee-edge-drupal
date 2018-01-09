@@ -6,5 +6,12 @@
     "php-http/guzzle6-adapter": "^1.1",
     "apigee/edge": "dev-2.x-dev",
     "drupal/entity": "^1.0"
+  },
+  "extra": {
+    "patches": {
+      "drupal/core": {
+        "Table sort ignores \"field\", always adds header title as order query parameter" : "https://www.drupal.org/files/issues/drupal-tablesort-field-ignored-2935344-3.patch"
+      }
+    }
   }
 }

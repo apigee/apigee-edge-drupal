@@ -3,6 +3,7 @@
 namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Entity\EntityNormalizer;
+use Apigee\Edge\Entity\Property\DisplayNamePropertyInterface;
 use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\Exception\UndefinedLinkTemplateException;
@@ -51,7 +52,7 @@ trait EdgeEntityBaseTrait {
   /**
    * {@inheritdoc}
    */
-  public function id() : ? string {
+  public function id(): ? string {
     return $this->uuid() === NULL ? parent::id() : $this->uuid();
   }
 
@@ -121,6 +122,9 @@ trait EdgeEntityBaseTrait {
    * {@inheritdoc}
    */
   public function label() {
+    if (class_implements($this, DisplayNamePropertyInterface::class)) {
+      return $this->getDisplayName();
+    }
     return $this->id();
   }
 
@@ -150,14 +154,18 @@ trait EdgeEntityBaseTrait {
 
     if (isset($link_templates[$rel])) {
       $route_parameters = $this->urlRouteParameters($rel);
-      $route_name = "entity.{$this->entityTypeId}." . str_replace(['-', 'drupal:'], ['_', ''], $rel);
+      $route_name = "entity.{$this->entityTypeId}." . str_replace([
+          '-',
+          'drupal:',
+        ], ['_', ''], $rel);
       $uri = new Url($route_name, $route_parameters);
     }
     else {
       $bundle = $this->bundle();
       // A bundle-specific callback takes precedence over the generic one for
       // the entity type.
-      $bundles = $this->entityManager()->getBundleInfo($this->getEntityTypeId());
+      $bundles = $this->entityManager()
+        ->getBundleInfo($this->getEntityTypeId());
       if (isset($bundles[$bundle]['uri_callback'])) {
         $uri_callback = $bundles[$bundle]['uri_callback'];
       }
@@ -215,7 +223,8 @@ trait EdgeEntityBaseTrait {
       $uri_route_parameters[$this->getEntityTypeId()] = $this->id();
     }
     if ($rel === 'add-form' && ($this->getEntityType()->hasKey('bundle'))) {
-      $parameter_name = $this->getEntityType()->getBundleEntityType() ?: $this->getEntityType()->getKey('bundle');
+      $parameter_name = $this->getEntityType()
+        ->getBundleEntityType() ?: $this->getEntityType()->getKey('bundle');
       $uri_route_parameters[$parameter_name] = $this->bundle();
     }
     if ($rel === 'revision' && $this instanceof RevisionableInterface) {
@@ -303,7 +312,8 @@ trait EdgeEntityBaseTrait {
    */
   public static function load($id) {
     $entity_manager = \Drupal::entityManager();
-    return $entity_manager->getStorage($entity_manager->getEntityTypeFromClass(get_called_class()))->load($id);
+    return $entity_manager->getStorage($entity_manager->getEntityTypeFromClass(get_called_class()))
+      ->load($id);
   }
 
   /**
@@ -311,7 +321,8 @@ trait EdgeEntityBaseTrait {
    */
   public static function loadMultiple(array $ids = NULL) {
     $entity_manager = \Drupal::entityManager();
-    return $entity_manager->getStorage($entity_manager->getEntityTypeFromClass(get_called_class()))->loadMultiple($ids);
+    return $entity_manager->getStorage($entity_manager->getEntityTypeFromClass(get_called_class()))
+      ->loadMultiple($ids);
   }
 
   /**
@@ -319,14 +330,17 @@ trait EdgeEntityBaseTrait {
    */
   public static function create(array $values = []) {
     $entity_manager = \Drupal::entityManager();
-    return $entity_manager->getStorage($entity_manager->getEntityTypeFromClass(get_called_class()))->create($values);
+    return $entity_manager->getStorage($entity_manager->getEntityTypeFromClass(get_called_class()))
+      ->create($values);
   }
 
   /**
    * {@inheritdoc}
    */
   public function save() {
-    return $this->entityTypeManager()->getStorage($this->entityTypeId)->save($this);
+    return $this->entityTypeManager()
+      ->getStorage($this->entityTypeId)
+      ->save($this);
   }
 
   /**
@@ -334,7 +348,9 @@ trait EdgeEntityBaseTrait {
    */
   public function delete() {
     if (!$this->isNew()) {
-      $this->entityTypeManager()->getStorage($this->entityTypeId)->delete([$this->id() => $this]);
+      $this->entityTypeManager()
+        ->getStorage($this->entityTypeId)
+        ->delete([$this->id() => $this]);
     }
   }
 
