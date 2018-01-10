@@ -239,22 +239,28 @@ function apigee_edge_get_executor(): JobExecutor {
 function apigee_edge_create_app_title() {
   $label = \Drupal::entityTypeManager()
     ->getDefinition('developer_app')
-    ->get('label_singular');
-  return new TranslatableMarkup("Add @label", [
+    ->getSingularLabel();
+  return t("Add @label", [
     '@label' => $label,
   ]);
 }
 
 /**
- * Constructs the "My Apps" entity title for the Developer App entity.
+ * Constructs the title of the app listing page of a developer.
+ *
+ * @param \Drupal\user\UserInterface $user
+ *   User object from path.
  *
  * @return \Drupal\Core\StringTranslation\TranslatableMarkup
  */
-function apigee_edge_my_apps_title() {
+function apigee_edge_user_developer_apps_title(UserInterface $user) {
   $label = \Drupal::entityTypeManager()
     ->getDefinition('developer_app')
-    ->get('label_plural');
-  return new TranslatableMarkup("My @label", [
-    '@label' => $label,
-  ]);
+    ->getPluralLabel();
+  $args['@label'] = $label;
+  if ($user->id() == \Drupal::currentUser()->id()) {
+    return t('My @label', $args);
+  }
+  $args['@user'] = $user->getDisplayName();
+  return t('@label of @user', $args);
 }

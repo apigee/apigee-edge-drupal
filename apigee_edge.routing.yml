@@ -22,15 +22,6 @@ apigee_edge.settings.app:
   requirements:
     _permission: 'administer apigee edge'
 
-entity.developer.createapp:
-  path: 'user/{user}/apps/create'
-  defaults:
-    _entity_form: 'developer_app.add'
-    _title_callback: 'apigee_edge_create_app_title'
-  requirements:
-    #_entity_create_access: 'developer_app:{developer}'
-    _access: 'TRUE'
-
 apigee_edge.user_sync.schedule:
   path: '/admin/config/apigee-edge/sync/schedule'
   defaults:
@@ -51,10 +42,19 @@ apigee_edge.user.developer_apps:
   path: '/user/{user}/apps'
   defaults:
     _controller: '\Drupal\apigee_edge\Controller\DeveloperAppListingController::render'
-    _title_callback: 'apigee_edge_my_apps_title' #FIXME
+    _title_callback: 'apigee_edge_user_developer_apps_title'
   requirements:
      user: '\d+'
      _access: 'TRUE' #FIXME
+
+entity.developer.createapp:
+  path: 'user/{user}/apps/create'
+  defaults:
+    _entity_form: 'developer_app.add'
+    _title_callback: 'apigee_edge_create_app_title'
+  requirements:
+    #_entity_create_access: 'developer_app:{developer}'
+    _access: 'TRUE' #FIXME
 
 entity.developer_app.developer_app_details:
   path: '/user/{user}/apps/{app_name}/details'

@@ -60,8 +60,10 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
    * Transforms an SDK entity to a Drupal entity.
    *
    * @param \Apigee\Edge\Entity\EntityInterface $edge_entity
+   *   SDK entity object.
    *
    * @return \Drupal\Core\Entity\EntityInterface
+   *   Drupal entity.
    */
   protected function toDrupalEntity(EdgeEntityInterface $edge_entity) {
     $normalizer = new EntityNormalizer();
