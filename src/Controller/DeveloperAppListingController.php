@@ -49,27 +49,19 @@ class DeveloperAppListingController extends ControllerBase implements ContainerI
    *
    * @param \Drupal\user\UserInterface $user
    *   Drupal user entity.
-   * @param null|string $sortField
-   *   Sorting field.
-   * @param null $sortDirection
-   *   Sorting order.
+   * @param array $headers
+   *   Table headers for sorting.
    *
    * @return array|\Drupal\Core\Entity\EntityInterface[]
    */
-  protected function getEntities(UserInterface $user, $sortField = NULL, $sortDirection = NULL) {
-    if ($sortField === NULL) {
-      $sortField = $this->defaultSortField;
-    }
-    if ($sortDirection === NULL) {
-      $sortDirection = $this->defaultSortDirection;
-    }
+  protected function getEntities(UserInterface $user, array $headers = []) {
     $storedDeveloperId = $user->get('apigee_edge_developer_id')->target_id;
     if ($storedDeveloperId === NULL) {
       return [];
     }
     $query = $this->developerAppStorage->getQuery()
-      ->condition('developerId', $storedDeveloperId)
-      ->sort($sortField, $sortDirection);
+      ->condition('developerId', $storedDeveloperId);
+    $query->tableSort($headers);
     return $this->developerAppStorage->loadMultiple($query->execute());
   }
 
@@ -87,11 +79,13 @@ class DeveloperAppListingController extends ControllerBase implements ContainerI
           ->getDefinition('developer_app')
           ->get('label_singular')),
       ]),
+      'specifier' => 'displayName',
       'field' => 'displayName',
       'sort' => 'asc',
     ];
     $headers['app_status'] = [
       'data' => $this->t('Status'),
+      'specifier' => 'status',
       'field' => 'status',
     ];
     return $headers;
@@ -140,7 +134,7 @@ class DeveloperAppListingController extends ControllerBase implements ContainerI
         // TODO.
       ],
     ];
-    foreach ($this->getEntities($user, $request->get('order'), $request->get('sort')) as $entity) {
+    foreach ($this->getEntities($user, $this->buildHeader()) as $entity) {
       if ($row = $this->buildRow($entity)) {
         $build['table']['#rows'][$entity->id()] = $row;
       }
