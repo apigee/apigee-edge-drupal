@@ -21,3 +21,12 @@ services:
       - '@entity_type.manager'
     tags:
       - { name: event_subscriber }
+  route_subscriber.apigee_edge.developer_app_name:
+    class: Drupal\apigee_edge\EventSubscriber\DeveloperAppByNameRouteAlterSubscriber
+    tags:
+      - { name: event_subscriber }
+  developer_app_name_converter:
+    class: Drupal\apigee_edge\Routing\DeveloperAppNameParameterConverter
+    arguments: ['@entity_type.manager']
+    tags:
+      - { name: paramconverter }

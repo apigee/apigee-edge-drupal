@@ -28,6 +28,7 @@ use Drupal\user\UserInterface;
  *   },
  *   links = {
  *     "add-form" = "/developer_app/add",
+ *     "developer-app-details" = "/user/{user}/apps/{app}/details",
  *   },
  *   entity_keys = {
  *     "id" = "appId",
@@ -99,7 +100,7 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
       $route_name = "entity.developer_app.developer_app_details";
       $route_parameters = [
         'user' => $this->drupalUserId,
-        'app_name' => $this->getName(),
+        'app' => $this->getName(),
       ];
       $options = [
         'entity_type' => $this->entityTypeId,
