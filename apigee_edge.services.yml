@@ -21,7 +21,7 @@ services:
       - '@entity_type.manager'
     tags:
       - { name: event_subscriber }
-  route_subscriber.apigee_edge.developer_app_name:
+  route_subscriber.apigee_edge.developer_app_by_name:
     class: Drupal\apigee_edge\EventSubscriber\DeveloperAppByNameRouteAlterSubscriber
     tags:
       - { name: event_subscriber }

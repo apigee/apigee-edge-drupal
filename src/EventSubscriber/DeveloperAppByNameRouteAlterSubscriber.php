@@ -8,6 +8,10 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Registers the 'type' of the 'app' route parameter if 'user' is also in path.
+ *
+ * The 'developer_app' parameter has already automatically resolved by
+ * EntityResolvedManager, but in that case the value of in the path is the app
+ * id and not the name of the app.
  */
 class DeveloperAppByNameRouteAlterSubscriber implements EventSubscriberInterface {
 
