@@ -9,6 +9,7 @@ use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\user\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class DeveloperAppCreate extends EntityForm {
@@ -67,7 +68,14 @@ class DeveloperAppCreate extends EntityForm {
       '#default_value' => $app->getName(),
     ];
 
-    if (($developerId = $this->getRouteMatch()->getParameter('developer'))) {
+    if (($user = $this->getRouteMatch()->getParameter('user'))) {
+      if (is_string($user)) {
+        /** @var \Drupal\user\Entity\User $user */
+        $user = User::load($user);
+      }
+      /** @var \Drupal\apigee_edge\Entity\Developer $developer */
+      $developer = Developer::load($user->getEmail());
+      $developerId = $developer ? $developer->uuid() : NULL;
       $form['details']['developerId'] = [
         '#type' => 'value',
         '#value' => $developerId,

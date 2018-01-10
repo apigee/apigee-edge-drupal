@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class CreateAppLocalTask extends LocalTaskDefault {
 
-  use DeveloperRouteParametersTrait;
+  //use DeveloperRouteParametersTrait;
 
   /**
    * {@inheritdoc}

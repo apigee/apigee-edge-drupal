@@ -23,12 +23,13 @@ apigee_edge.settings.app:
     _permission: 'administer apigee edge'
 
 entity.developer.createapp:
-  path: 'createapp/{user}/{developer}'
+  path: 'user/{user}/apps/create'
   defaults:
     _entity_form: 'developer_app.add'
     _title_callback: 'apigee_edge_create_app_title'
   requirements:
-    _entity_create_access: 'developer_app:{developer}'
+    #_entity_create_access: 'developer_app:{developer}'
+    _access: 'TRUE'
 
 apigee_edge.user_sync.schedule:
   path: '/admin/config/apigee-edge/sync/schedule'
