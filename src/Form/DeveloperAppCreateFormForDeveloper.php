@@ -68,4 +68,12 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
     $this->entity->setOwner($form_state->getBuildInfo()['args'][0]);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function getRedirectUrl() {
+    $entity = $this->getEntity();
+    return $entity->toUrl('collection-by-developer');
+  }
+
 }

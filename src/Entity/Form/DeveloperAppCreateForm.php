@@ -213,13 +213,6 @@ class DeveloperAppCreateForm extends EntityForm {
         $dacc->addProducts($credential->id(), $products);
       }
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    parent::submitForm($form, $form_state);
     $form_state->setRedirectUrl($this->getRedirectUrl());
   }
 
