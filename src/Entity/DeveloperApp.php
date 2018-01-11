@@ -31,7 +31,8 @@ use Drupal\user\UserInterface;
  *     "add-form" = "/developer-apps/add",
  *     "collection" = "/developer-apps",
  *     "add-form-for-developer" = "/user/{user}/apps/add",
- *     "collection-by-developer" = "/user/{user}/apps/{app}/details",
+ *     "collection-by-developer" = "/user/{user}/apps",
+ *     "canonical-by-developer" = "/user/{user}/apps/{app}/details",
  *   },
  *   entity_keys = {
  *     "id" = "appId",
@@ -108,7 +109,11 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
     $params = $this->traitUrlRouteParameters($rel);
     if ($rel == 'collection-by-developer') {
       $params['user'] = $this->drupalUserId;
+    }
+    elseif ($rel == 'canonical-by-developer') {
+      $params['user'] = $this->drupalUserId;
       $params['app'] = $this->getName();
+      unset($params['developer_app']);
     }
 
     return $params;

@@ -9,6 +9,7 @@ use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Url;
 use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
  * Lists developer apps of a developer on the UI.
@@ -83,7 +84,7 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder implem
    * {@inheritdoc}
    */
   protected function getAppDetailsLink(DeveloperAppInterface $app) {
-    return $app->toLink(NULL, 'collection-by-developer');
+    return $app->toLink(NULL, 'canonical-by-developer');
   }
 
   /**
@@ -120,6 +121,22 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder implem
     $build['table']['#rows'] = $rows;
 
     return $build;
+  }
+
+  /**
+   * Redirects users to their My apps page.
+   *
+   * This controller assumes that it is only invoked for authenticated users.
+   * This is enforced for the 'apigee_edge.user.my_apps' route with the
+   * '_user_is_logged_in' requirement.
+   *
+   * @return \Symfony\Component\HttpFoundation\RedirectResponse
+   *   Returns a redirect to the My apps of the currently logged in user.
+   */
+  public function myAppsPage() {
+    $options['absolute'] = TRUE;
+    $url = Url::fromRoute('entity.developer_app.collection_by_developer', ['user' => \Drupal::currentUser()->id()], $options);
+    return new RedirectResponse($url->toString(), 302);
   }
 
 }

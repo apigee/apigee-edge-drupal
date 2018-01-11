@@ -38,6 +38,14 @@ apigee_edge.user_sync.run:
     _permission: 'administer apigee edge'
     _csrf_token: 'TRUE'
 
+apigee_edge.user.my_apps:
+  path: '/user/apps'
+  defaults:
+    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppListBuilderForDeveloper::myAppsPage'
+    _title_callback: 'apigee_edge_user_developer_apps_title'
+  requirements:
+    _user_is_logged_in: 'TRUE'
+
 entity.developer_app.add:
   path: 'developer-apps/add'
   defaults:
@@ -72,7 +80,7 @@ entity.developer_app.collection_by_developer:
      user: '\d+'
      _access: 'TRUE' #FIXME
 
-entity.developer_app.developer_app_details:
+entity.developer_app.canonical_by_developer:
   path: '/user/{user}/apps/{app}/details'
   defaults:
     _form: '\Drupal\apigee_edge\Form\DeveloperAppDetailsForm'

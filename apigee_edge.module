@@ -17,6 +17,18 @@ define('APIGEE_EDGE_ERROR_CODE_DEVELOPER_ALREADY_EXITS', 'developer.service.Deve
 define('APIGEE_EDGE_ERROR_CODE_DEVELOPER_DOES_NOT_EXITS', 'developer.service.DeveloperDoesNotExist');
 
 /**
+ * Implements hook_menu_links_discovered_alter().
+ */
+function apigee_edge_menu_links_discovered_alter(array &$links) {
+  $links['apigee_edge.my_apps'] = [
+    'title' => apigee_edge_user_developer_apps_title(),
+    'route_name' => 'apigee_edge.user.my_apps',
+    'weight' => -30,
+    'menu_name' => 'account',
+  ];
+}
+
+/**
  * Implements hook_theme().
  */
 function apigee_edge_theme() {
@@ -251,17 +263,17 @@ function apigee_edge_create_app_title() {
 /**
  * Constructs the title of the app listing page of a developer.
  *
- * @param \Drupal\user\UserInterface $user
+ * @param \Drupal\user\UserInterface $user|null
  *   User object from path.
  *
  * @return \Drupal\Core\StringTranslation\TranslatableMarkup
  */
-function apigee_edge_user_developer_apps_title(UserInterface $user) {
+function apigee_edge_user_developer_apps_title(UserInterface $user = NULL) {
   $label = \Drupal::entityTypeManager()
     ->getDefinition('developer_app')
     ->getPluralLabel();
   $args['@label'] = $label;
-  if ($user->id() == \Drupal::currentUser()->id()) {
+  if ($user === NULL || $user->id() == \Drupal::currentUser()->id()) {
     return t('My @label', $args);
   }
   $args['@user'] = $user->getDisplayName();
