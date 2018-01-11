@@ -12,8 +12,3 @@ apigee_edge.settings.app:
   route_name: apigee_edge.settings.app
   title: 'Application Settings'
   base_route: apigee_edge.settings
-
-apigee_edge.createapp:
-  route_name: entity.developer.createapp
-  base_route: entity.user.canonical
-  class: '\Drupal\apigee_edge\Plugin\Menu\LocalTask\CreateAppLocalTask'

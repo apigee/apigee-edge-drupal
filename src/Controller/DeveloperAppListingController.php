@@ -6,12 +6,10 @@ use Apigee\Edge\Api\Management\Entity\App;
 use Apigee\Edge\Api\Management\Entity\AppCredential;
 use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
-use Drupal\apigee_edge\Entity\Storage\ApiProductStorageInterface;
 use Drupal\apigee_edge\Utility\AppStatusDisplayTrait;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Url;
@@ -28,12 +26,6 @@ class DeveloperAppListingController extends ControllerBase implements ContainerI
 
   use AppStatusDisplayTrait;
 
-  /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperAppStorageInterface */
-  protected $developerAppStorage;
-
-  /** @var \Drupal\apigee_edge\Entity\Storage\ApiProductStorageInterface */
-  protected $apiProductStorage;
-
   /** @var \Drupal\Core\Render\RendererInterface */
   protected $renderer;
 
@@ -46,11 +38,9 @@ class DeveloperAppListingController extends ControllerBase implements ContainerI
   /**
    * DeveloperAppListingController constructor.
    *
-   * @param \Drupal\Core\Entity\EntityStorageInterface $developerAppStorage
+   * @param \Drupal\Core\Render\RendererInterface $renderer
    */
-  public function __construct(EntityStorageInterface $developerAppStorage, ApiProductStorageInterface $apiProductStorage, RendererInterface $renderer) {
-    $this->developerAppStorage = $developerAppStorage;
-    $this->apiProductStorage = $apiProductStorage;
+  public function __construct(RendererInterface $renderer) {
     $this->renderer = $renderer;
   }
 
@@ -58,11 +48,46 @@ class DeveloperAppListingController extends ControllerBase implements ContainerI
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    $developerAppStorage = $container->get('entity.manager')
-      ->getStorage('developer_app');
-    $apiProductStorage = $container->get('entity.manager')
-      ->getStorage('api_product');
-    return new static($developerAppStorage, $apiProductStorage, $container->get('renderer'));
+    return new static($container->get('renderer'));
+  }
+
+  /**
+   * Returns definition of the Developer app entity.
+   *
+   * @return \Drupal\Core\Entity\EntityTypeInterface|null
+   */
+  protected function getDeveloperAppEntityDefinition() {
+    return $this->entityTypeManager()->getDefinition('developer_app');
+  }
+
+  /**
+   * Returns definition of the API product entity.
+   *
+   * @return \Drupal\Core\Entity\EntityTypeInterface|null
+   */
+  protected function getApiProductEntityDefinition() {
+    return $this->entityTypeManager()->getDefinition('api_product');
+  }
+
+  /**
+   * Returns the Developer app storage.
+   *
+   * @return \Drupal\Core\Entity\EntityStorageInterface
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   */
+  protected function getDeveloperAppStorage() {
+    return $this->entityTypeManager()->getStorage('developer_app');
+  }
+
+  /**
+   * Returns the API product storage.
+   *
+   * @return \Drupal\Core\Entity\EntityStorageInterface
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   */
+  protected function getApiProductStorage() {
+    return $this->entityTypeManager()->getStorage('api_product');
   }
 
   /**
@@ -74,16 +99,18 @@ class DeveloperAppListingController extends ControllerBase implements ContainerI
    *   Table headers for sorting.
    *
    * @return array|\Drupal\Core\Entity\EntityInterface[]
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   protected function getEntities(UserInterface $user, array $headers = []) {
     $storedDeveloperId = $user->get('apigee_edge_developer_id')->target_id;
     if ($storedDeveloperId === NULL) {
       return [];
     }
-    $query = $this->developerAppStorage->getQuery()
+    $query = $this->getDeveloperAppStorage()->getQuery()
       ->condition('developerId', $storedDeveloperId);
     $query->tableSort($headers);
-    return $this->developerAppStorage->loadMultiple($query->execute());
+    return $this->getDeveloperAppStorage()->loadMultiple($query->execute());
   }
 
   /**
@@ -96,9 +123,7 @@ class DeveloperAppListingController extends ControllerBase implements ContainerI
     $headers = [];
     $headers['app_name'] = [
       'data' => $this->t('@app name', [
-        '@app' => ucfirst(\Drupal::entityTypeManager()
-          ->getDefinition('developer_app')
-          ->get('label_singular')),
+        '@app' => ucfirst($this->getDeveloperAppEntityDefinition()->get('label_singular')),
       ]),
       'specifier' => 'displayName',
       'field' => 'displayName',
@@ -117,7 +142,6 @@ class DeveloperAppListingController extends ControllerBase implements ContainerI
    *
    * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $app
    *   The entity for this row of the list.
-   *
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   Current HTTP request from render().
    *
@@ -200,27 +224,20 @@ class DeveloperAppListingController extends ControllerBase implements ContainerI
         $warningRow['info']['data'] = $this->t(
           'One of the credentials associated with this @app is in revoked status.',
           [
-            '@app' => strtolower(\Drupal::entityTypeManager()
-              ->getDefinition('developer_app')
-              ->getSingularLabel()
-            ),
+            '@app' => strtolower($this->getDeveloperAppEntityDefinition()->getSingularLabel()),
           ]
         );
       }
       elseif ($hasRevokedCredProduct || $hasPendingCredProduct) {
         $args = [
-          '@app' => strtolower(\Drupal::entityTypeManager()
-            ->getDefinition('developer_app')
-            ->getSingularLabel()
+          '@app' => strtolower($this->getDeveloperAppEntityDefinition()->getSingularLabel()
           ),
-          '@apiproduct' => strtolower(\Drupal::entityTypeManager()
-            ->getDefinition('api_product')
-            ->getSingularLabel()),
+          '@apiproduct' => strtolower($this->getApiProductEntityDefinition()->getSingularLabel()),
           '@status' => $hasPendingCredProduct ? $this->t('pending') : $this->t('revoked'),
         ];
         if (count($app->getCredentials()) === 1) {
           /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $apiProduct */
-          $apiProduct = $this->apiProductStorage->load($problematicApiProductName);
+          $apiProduct = $this->getApiProductStorage()->load($problematicApiProductName);
           $args['%name'] = $apiProduct->getDisplayName();
           $warningRow['info']['data'] = $this->t("%name @apiproduct associated with this @app is in @status status.", $args);
         }
@@ -248,6 +265,15 @@ class DeveloperAppListingController extends ControllerBase implements ContainerI
    * @throws \Exception
    */
   public function render(UserInterface $user, Request $request) {
+    $build['add_app'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => 'pull-right',
+      ],
+      'link' => Link::createFromRoute($this->t('Add @label', [
+        '@label' => $this->getDeveloperAppEntityDefinition()->getSingularLabel(),
+      ]), 'entity.developer.createapp', ['user' => $user->id()])->toRenderable(),
+    ];
     /** @var \Apigee\Edge\Api\Management\Entity\DeveloperApp[] $entities */
     $build['table'] = [
       '#type' => 'table',
