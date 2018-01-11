@@ -105,20 +105,24 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder implem
     $build['table']['#empty'] = $this->t('Looks like you do not have any apps. Get started by adding one.');
     $build['add_app']['link']['#url'] = new Url('entity.developer_app.add_form_for_developer', ['user' => $user->id()], $build['add_app']['link']['#url']->getOptions());
 
-    $rows = [];
+    $tableRows = [];
     foreach ($this->loadByUser($user, $this->buildHeader()) as $entity) {
       /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
       if ($row = $this->buildRow($entity)) {
-        $rows += $this->buildRow($entity);
-        end($build['table']['#rows']);
+        $rows = $this->buildRow($entity);
+        reset($rows);
+        $infoRow = key($rows);
+        unset($rows[$infoRow]['data']['operations']);
+        end($rows);
         $warningRow = key($rows);
         if (!empty($rows[$warningRow]['data'])) {
           $rows[$warningRow]['data']['info']['colspan'] = 2;
         }
+        $tableRows += $rows;
       }
     }
 
-    $build['table']['#rows'] = $rows;
+    $build['table']['#rows'] = $tableRows;
 
     return $build;
   }

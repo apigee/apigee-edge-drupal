@@ -3,6 +3,7 @@
 namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
+use Drupal\Core\Annotation\Translation;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
@@ -11,6 +12,7 @@ use Drupal\user\UserInterface;
  *
  * @\Drupal\apigee_edge\Annotation\EdgeEntityType(
  *   id = "developer_app",
+ *   label = @Translation("Developer App"),
  *   label_singular = @Translation("Developer App"),
  *   label_plural = @Translation("Developer Apps"),
  *   label_count = @PluralTranslation(
@@ -24,13 +26,16 @@ use Drupal\user\UserInterface;
  *     "form" = {
  *       "default" = "Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm",
  *       "add" = "Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm",
+ *       "delete" = "Drupal\apigee_edge\Entity\Form\DeveloperAppDeleteForm",
  *     },
  *     "list_builder" = "Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder",
  *   },
  *   links = {
  *     "add-form" = "/developer-apps/add",
+ *     "delete-form" = "/developer-apps/{developer_app}/delete",
  *     "collection" = "/developer-apps",
  *     "add-form-for-developer" = "/user/{user}/apps/add",
+ *     "delete-form-for-developer" = "/user/{user}/apps/{app}/delete",
  *     "collection-by-developer" = "/user/{user}/apps",
  *     "canonical-by-developer" = "/user/{user}/apps/{app}/details",
  *   },
@@ -107,10 +112,14 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
    */
   protected function urlRouteParameters($rel) {
     $params = $this->traitUrlRouteParameters($rel);
-    if ($rel == 'collection-by-developer') {
+    if ($rel == 'add-form-for-developer') {
       $params['user'] = $this->drupalUserId;
     }
-    elseif ($rel == 'canonical-by-developer') {
+    elseif ($rel == 'collection-by-developer') {
+      $params['user'] = $this->drupalUserId;
+      unset($params['developer_app']);
+    }
+    elseif (in_array($rel, ['canonical-by-developer', 'delete-form-for-developer'])) {
       $params['user'] = $this->drupalUserId;
       $params['app'] = $this->getName();
       unset($params['developer_app']);
