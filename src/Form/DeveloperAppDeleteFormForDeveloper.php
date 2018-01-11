@@ -43,7 +43,9 @@ class DeveloperAppDeleteFormForDeveloper extends DeveloperAppDeleteForm {
    */
   public static function create(ContainerInterface $container) {
     return new static($container->get('entity_type.manager'), $container->get('module_handler'));
-  }  /**
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function getRedirectUrl() {
@@ -51,7 +53,12 @@ class DeveloperAppDeleteFormForDeveloper extends DeveloperAppDeleteForm {
     return $entity->toUrl('collection-by-developer');
   }
 
-
+  /**
+   * {@inheritdoc}
+   */
+  public function getCancelUrl() {
+    return $this->getRedirectUrl();
+  }
 
   /**
    * {@inheritdoc}
