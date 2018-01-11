@@ -59,7 +59,7 @@ entity.developer.createapp:
 entity.developer_app.developer_app_details:
   path: '/user/{user}/apps/{app}/details'
   defaults:
-    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppDetailsController::render'
+    _form: '\Drupal\apigee_edge\Form\DeveloperAppDetailsForm'
   requirements:
      user: '\d+'
      _access: 'TRUE' #FIXME
