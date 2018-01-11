@@ -24,6 +24,9 @@ function apigee_edge_theme() {
     'developer_app' => [
       'render element' => 'elements',
     ],
+    'status_property' => [
+      'render element' => 'element',
+    ],
   ];
 }
 
