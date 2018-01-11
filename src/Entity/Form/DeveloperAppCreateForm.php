@@ -6,13 +6,17 @@ use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\SDKConnectorInterface;
+use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\user\Entity\User;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class DeveloperAppCreate extends EntityForm {
+/**
+ * General form handler for the developer app create forms.
+ */
+class DeveloperAppCreateForm extends EntityForm {
 
   /** @var \Drupal\apigee_edge\SDKConnectorInterface */
   protected $sdkConnector;
@@ -22,23 +26,23 @@ class DeveloperAppCreate extends EntityForm {
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $sdkConnector
    */
-  public function __construct(SDKConnectorInterface $sdkConnector) {
+  public function __construct(SDKConnectorInterface $sdkConnector, ConfigFactory $configFactory) {
     $this->sdkConnector = $sdkConnector;
+    $this->configFactory = $configFactory;
   }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    $sdkConnector = $container->get('apigee_edge.sdk_connector');
-    return new static($sdkConnector);
+    return new static($container->get('apigee_edge.sdk_connector'), $container->get('config.factory'));
   }
 
   /**
    * {@inheritdoc}
    */
   public function form(array $form, FormStateInterface $form_state) {
-    $config = \Drupal::config('apigee_edge.appsettings');
+    $config = $this->configFactory->get('apigee_edge.appsettings');
 
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
     $app = $this->entity;
@@ -68,33 +72,18 @@ class DeveloperAppCreate extends EntityForm {
       '#default_value' => $app->getName(),
     ];
 
-    if (($user = $this->getRouteMatch()->getParameter('user'))) {
-      if (is_string($user)) {
-        /** @var \Drupal\user\Entity\User $user */
-        $user = User::load($user);
-      }
-      /** @var \Drupal\apigee_edge\Entity\Developer $developer */
-      $developer = Developer::load($user->getEmail());
-      $developerId = $developer ? $developer->uuid() : NULL;
-      $form['details']['developerId'] = [
-        '#type' => 'value',
-        '#value' => $developerId,
-      ];
+    $developers = [];
+    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
+    foreach (Developer::loadMultiple() as $developer) {
+      $developers[$developer->uuid()] = "{$developer->getFirstName()} {$developer->getLastName()}";
     }
-    else {
-      $developers = [];
-      /** @var \Drupal\apigee_edge\Entity\Developer $developer */
-      foreach (Developer::loadMultiple() as $developer) {
-        $developers[$developer->uuid()] = $developer->getUserName();
-      }
 
-      $form['details']['developerId'] = [
-        '#title' => $this->t('Owner'),
-        '#type' => 'select',
-        '#default_value' => $app->getDeveloperId(),
-        '#options' => $developers,
-      ];
-    }
+    $form['details']['developerId'] = [
+      '#title' => $this->t('Owner'),
+      '#type' => 'select',
+      '#default_value' => $app->getDeveloperId(),
+      '#options' => $developers,
+    ];
 
     $form['details']['callbackUrl'] = [
       '#type' => 'textfield',
@@ -116,9 +105,7 @@ class DeveloperAppCreate extends EntityForm {
       $required = $config->get('require');
       $form['product'] = [
         '#type' => 'fieldset',
-        '#title' => \Drupal::entityTypeManager()
-          ->getDefinition('api_product')
-          ->get('label_singular'),
+        '#title' => $this->entityTypeManager->getDefinition('api_product')->getSingularLabel(),
         '#collapsible' => FALSE,
         '#access' => $config->get('user_select'),
         '#attributes' => [
@@ -126,7 +113,7 @@ class DeveloperAppCreate extends EntityForm {
         ],
       ];
 
-      /** @var ApiProduct[] $products */
+      /** @var \Drupal\apigee_edge\Entity\ApiProduct[] $products */
       $products = ApiProduct::loadMultiple();
       $product_list = [];
       foreach ($products as $product) {
@@ -157,15 +144,22 @@ class DeveloperAppCreate extends EntityForm {
   }
 
   /**
-   * Checks if an app machine name already exists.
+   * Checks if the developer already has a developer app with the same name.
    *
    * @param string $name
+   *   Developer app name.
+   * @param array $element
+   *   Form element.
+   * @param \Drupal\Core\Form\FormStateInterface $formState
+   *   Form state.
    *
    * @return bool
+   *   TRUE or FALSE.
    */
-  public static function appExists(string $name): bool {
-    $query = \Drupal::entityQuery('developer_app');
-    $query->condition('name', $name);
+  public static function appExists(string $name, array $element, FormStateInterface $formState): bool {
+    $query = \Drupal::entityQuery('developer_app')
+      ->condition('developerId', $formState->getValue('developerId'))
+      ->condition('name', $name);
 
     return $query->count()->execute();
   }
@@ -199,7 +193,7 @@ class DeveloperAppCreate extends EntityForm {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
     $app = $this->entity;
     $app->save();
-    $config = \Drupal::config('apigee_edge.appsettings');
+    $config = $this->configFactory->get('apigee_edge.appsettings');
 
     if ($config->get('associate_apps')) {
       $dacc = new DeveloperAppCredentialController(
@@ -218,6 +212,25 @@ class DeveloperAppCreate extends EntityForm {
       if ($products) {
         $dacc->addProducts($credential->id(), $products);
       }
+    }
+    $form_state->setRedirectUrl($this->getRedirectUrl());
+  }
+
+  /**
+   * Returns the URL where the user should be redirected after form submission.
+   *
+   * @return \Drupal\Core\Url
+   *   The redirect URL.
+   */
+  protected function getRedirectUrl() {
+    $entity = $this->getEntity();
+    if ($entity->hasLinkTemplate('collection')) {
+      // If available, return the collection URL.
+      return $entity->urlInfo('collection');
+    }
+    else {
+      // Otherwise fall back to the front page.
+      return Url::fromRoute('<front>');
     }
   }
 

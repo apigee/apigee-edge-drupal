@@ -3,7 +3,6 @@
 namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
-use Drupal\Core\Url;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
@@ -19,16 +18,20 @@ use Drupal\user\UserInterface;
  *     plural = "@count Developer Apps",
  *   ),
  *   handlers = {
- *     "storage" = "\Drupal\apigee_edge\Entity\Storage\DeveloperAppStorage",
+ *     "storage" = "Drupal\apigee_edge\Entity\Storage\DeveloperAppStorage",
  *     "access" = "Drupal\entity\UncacheableEntityAccessControlHandler",
- *     "permission_provider" = "\Drupal\apigee_edge\Entity\DeveloperAppEntityPermissionProvider",
+ *     "permission_provider" = "Drupal\apigee_edge\Entity\DeveloperAppEntityPermissionProvider",
  *     "form" = {
- *       "add" = "\Drupal\apigee_edge\Entity\Form\DeveloperAppCreate",
+ *       "default" = "Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm",
+ *       "add" = "Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm",
  *     },
+ *     "list_builder" = "Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder",
  *   },
  *   links = {
- *     "add-form" = "/developer_app/add",
- *     "developer-app-details" = "/user/{user}/apps/{app}/details",
+ *     "add-form" = "/developer-apps/add",
+ *     "collection" = "/developer-apps",
+ *     "add-form-for-developer" = "/user/{user}/apps/add",
+ *     "collection-by-developer" = "/user/{user}/apps/{app}/details",
  *   },
  *   entity_keys = {
  *     "id" = "appId",
@@ -42,7 +45,7 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
 
   use EdgeEntityBaseTrait {
     id as private traitId;
-    toUrl as private traitToUrl;
+    urlRouteParameters as private traitUrlRouteParameters;
   }
 
   /** @var null|int */
@@ -75,6 +78,8 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
    */
   public function setOwner(UserInterface $account) {
     $this->drupalUserId = $account->id();
+    // TODO What should we do if id is missing from the user?
+    $this->developerId = $account->get('apigee_edge_developer_id')->target_id;
   }
 
   /**
@@ -89,30 +94,24 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
    */
   public function setOwnerId($uid) {
     $this->drupalUserId = $uid;
+    $user = User::load($uid);
+    // TODO Should we throw an exception if the user can not be loaded?
+    if ($user) {
+      $this->developerId = $user->get('apigee_edge_developer_id')->target_id;
+    }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function toUrl($rel = 'canonical', array $options = []) {
-    // Pass required router parameters.
-    if ($rel == 'developer-app-details') {
-      $route_name = "entity.developer_app.developer_app_details";
-      $route_parameters = [
-        'user' => $this->drupalUserId,
-        'app' => $this->getName(),
-      ];
-      $options = [
-        'entity_type' => $this->entityTypeId,
-        'entity' => $this,
-        // Display links by default based on the current language.
-        'language' => $this->language(),
-      ];
-      return new Url($route_name, $route_parameters, $options);
+  protected function urlRouteParameters($rel) {
+    $params = $this->traitUrlRouteParameters($rel);
+    if ($rel == 'collection-by-developer') {
+      $params['user'] = $this->drupalUserId;
+      $params['app'] = $this->getName();
     }
-    else {
-      return $this->traitToUrl($rel, $options);
-    }
+
+    return $params;
   }
 
 }
