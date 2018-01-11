@@ -38,23 +38,39 @@ apigee_edge.user_sync.run:
     _permission: 'administer apigee edge'
     _csrf_token: 'TRUE'
 
-apigee_edge.user.developer_apps:
-  path: '/user/{user}/apps'
-  defaults:
-    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppListingController::render'
-    _title_callback: 'apigee_edge_user_developer_apps_title'
-  requirements:
-     user: '\d+'
-     _access: 'TRUE' #FIXME
-
-entity.developer.createapp:
-  path: 'user/{user}/apps/create'
+entity.developer_app.add:
+  path: 'developer-apps/add'
   defaults:
     _entity_form: 'developer_app.add'
     _title_callback: 'apigee_edge_create_app_title'
   requirements:
-    #_entity_create_access: 'developer_app:{developer}'
     _access: 'TRUE' #FIXME
+
+entity.developer_app.collection:
+  path: 'developer-apps'
+  defaults:
+    _entity_list: 'developer_app'
+    _title: 'Developer apps' #FIXME
+  requirements:
+    _access: 'TRUE' #FIXME
+
+entity.developer_app.add_form_for_developer:
+  path: '/user/{user}/apps/create'
+  defaults:
+    _form: '\Drupal\apigee_edge\Form\DeveloperAppCreateFormForDeveloper'
+    _title_callback: 'apigee_edge_create_app_title'
+  requirements:
+     user: '\d+'
+     _access: 'TRUE' #FIXME
+
+entity.developer_app.collection_by_developer:
+  path: '/user/{user}/apps'
+  defaults:
+    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppListBuilderForDeveloper::render'
+    _title_callback: 'apigee_edge_user_developer_apps_title'
+  requirements:
+     user: '\d+'
+     _access: 'TRUE' #FIXME
 
 entity.developer_app.developer_app_details:
   path: '/user/{user}/apps/{app}/details'
@@ -63,4 +79,3 @@ entity.developer_app.developer_app_details:
   requirements:
      user: '\d+'
      _access: 'TRUE' #FIXME
-

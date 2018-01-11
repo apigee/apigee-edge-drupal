@@ -1,28 +1,23 @@
 <?php
 
-namespace Drupal\apigee_edge\Controller;
+namespace Drupal\apigee_edge\Entity\ListBuilder;
 
 use Apigee\Edge\Api\Management\Entity\App;
 use Apigee\Edge\Api\Management\Entity\AppCredential;
 use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\apigee_edge\Utility\AppStatusDisplayTrait;
-use Drupal\Component\Utility\Html;
-use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityListBuilder;
+use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Url;
-use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\Request;
 
-/**
- * Lists developer apps of a developer on the UI.
- *
- * @package Drupal\apigee_edge\Controller
- */
-class DeveloperAppListingController extends ControllerBase implements ContainerInjectionInterface {
+class DeveloperAppListBuilder extends EntityListBuilder {
 
   use AppStatusDisplayTrait;
 
@@ -35,20 +30,34 @@ class DeveloperAppListingController extends ControllerBase implements ContainerI
   /** @var string */
   protected $defaultSortField = 'ASC';
 
+  /** @var \Drupal\Core\Entity\EntityTypeManagerInterface */
+  protected $entityTypeManager;
+
   /**
-   * DeveloperAppListingController constructor.
+   * DeveloperAppListBuilder constructor.
    *
-   * @param \Drupal\Core\Render\RendererInterface $renderer
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
+   * @param \Drupal\Core\Render\RendererInterface $render
    */
-  public function __construct(RendererInterface $renderer) {
-    $this->renderer = $renderer;
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, EntityTypeManagerInterface $entityTypeManager, RendererInterface $render) {
+    parent::__construct($entity_type, $storage);
+    $this->renderer = $render;
+    $this->entityTypeManager = $entityTypeManager;
+    // Disable pager for now.
+    $this->limit = 0;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
-    return new static($container->get('renderer'));
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+    return new static(
+      $entity_type,
+      $container->get('entity.manager')->getStorage($entity_type->id()),
+      $container->get('entity.manager'),
+      $container->get('renderer')
+    );
   }
 
   /**
@@ -57,7 +66,7 @@ class DeveloperAppListingController extends ControllerBase implements ContainerI
    * @return \Drupal\Core\Entity\EntityTypeInterface|null
    */
   protected function getDeveloperAppEntityDefinition() {
-    return $this->entityTypeManager()->getDefinition('developer_app');
+    return $this->entityTypeManager->getDefinition('developer_app');
   }
 
   /**
@@ -66,18 +75,7 @@ class DeveloperAppListingController extends ControllerBase implements ContainerI
    * @return \Drupal\Core\Entity\EntityTypeInterface|null
    */
   protected function getApiProductEntityDefinition() {
-    return $this->entityTypeManager()->getDefinition('api_product');
-  }
-
-  /**
-   * Returns the Developer app storage.
-   *
-   * @return \Drupal\Core\Entity\EntityStorageInterface
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   */
-  protected function getDeveloperAppStorage() {
-    return $this->entityTypeManager()->getStorage('developer_app');
+    return $this->entityTypeManager->getDefinition('api_product');
   }
 
   /**
@@ -87,39 +85,57 @@ class DeveloperAppListingController extends ControllerBase implements ContainerI
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   protected function getApiProductStorage() {
-    return $this->entityTypeManager()->getStorage('api_product');
+    return $this->entityTypeManager->getStorage('api_product');
   }
 
   /**
-   * Returns developer apps of user in the given order.
-   *
-   * @param \Drupal\user\UserInterface $user
-   *   Drupal user entity.
-   * @param array $headers
-   *   Table headers for sorting.
-   *
-   * @return array|\Drupal\Core\Entity\EntityInterface[]
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * {@inheritdoc}
    */
-  protected function getEntities(UserInterface $user, array $headers = []) {
-    $storedDeveloperId = $user->get('apigee_edge_developer_id')->target_id;
-    if ($storedDeveloperId === NULL) {
-      return [];
-    }
-    $query = $this->getDeveloperAppStorage()->getQuery()
-      ->condition('developerId', $storedDeveloperId);
-    $query->tableSort($headers);
-    return $this->getDeveloperAppStorage()->loadMultiple($query->execute());
+  protected function getDefaultOperations(EntityInterface $entity) {
+    // TODO Use parent::getDefaultOperations() when permissions are working properly.
+    return [];
   }
 
   /**
-   * Builds the header row for the entity listing.
-   *
-   * @return array
-   *   A render array structure of header strings.
+   * {@inheritdoc}
    */
-  protected function buildHeader() {
+  public function getOperations(EntityInterface $entity) {
+    // TODO Use parent::getOperations() when permissions are working properly.
+    return [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function load(array $headers = []) {
+    $entity_ids = $this->getEntityIds($headers);
+    return $this->storage->loadMultiple($entity_ids);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getEntityIds(array $headers = []) {
+    $query = $this->storage->getQuery()->tableSort($headers);
+    return $query->execute();
+  }
+
+  /**
+   * Returns the canonical link of an app.
+   *
+   * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $app
+   *
+   * @return \Drupal\Core\Link
+   */
+  protected function getAppDetailsLink(DeveloperAppInterface $app) {
+    // FIXME When apps has a dedicated details page.
+    return new Link($app->getDisplayName(), new \Drupal\Core\Url('<front>'));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildHeader() {
     $headers = [];
     $headers['app_name'] = [
       'data' => $this->t('@app name', [
@@ -134,25 +150,28 @@ class DeveloperAppListingController extends ControllerBase implements ContainerI
       'specifier' => 'status',
       'field' => 'status',
     ];
-    return $headers;
+    return $headers + parent::buildHeader();
   }
 
   /**
-   * Builds info and warning rows for a developer app in the entity listing.
+   * Returns a unique CSS id for an app.
    *
    * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $app
-   *   The entity for this row of the list.
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   Current HTTP request from render().
    *
-   * @return array
-   *   A render array structure.
-   *
-   * @throws \Drupal\Core\Entity\EntityMalformedException
-   * @throws \Exception
+   * @return string
    */
-  protected function buildEntityRows(DeveloperAppInterface $app, Request $request) {
-    $appNameAsCssId = Html::getUniqueId($app->getName());
+  protected function getUniqueCssIdForApp(DeveloperAppInterface $app): string {
+    // App's default UUID is unique ennough.
+    return $app->id();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildRow(EntityInterface $entity) {
+    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
+    $request = \Drupal::request();
+    $appNameAsCssId = $this->getUniqueCssIdForApp($entity);
     $infoRowId = "{$appNameAsCssId}-info";
     $warningRowId = "{$appNameAsCssId}-warning";
     $rows = [
@@ -167,18 +186,19 @@ class DeveloperAppListingController extends ControllerBase implements ContainerI
     ];
     $infoRow = &$rows[$infoRowId]['data'];
     $warningRow = &$rows[$warningRowId]['data'];
-    $infoRow['app_name'] = $app->toLink(NULL, 'developer-app-details');
+    $infoRow['app_name'] = $this->getAppDetailsLink($entity);
     $infoRow['app_status']['data'] = [
       '#type' => 'html_tag',
       '#tag' => 'span',
-      '#value' => $this->getAppStatus($app),
+      '#value' => $this->getAppStatus($entity),
     ];
+    $infoRow += parent::buildRow($entity);
 
     $hasRevokedCred = FALSE;
     $hasRevokedCredProduct = FALSE;
     $hasPendingCredProduct = FALSE;
     $problematicApiProductName = NULL;
-    foreach ($app->getCredentials() as $credential) {
+    foreach ($entity->getCredentials() as $credential) {
       if ($credential->getStatus() === AppCredential::STATUS_REVOKED) {
         $hasRevokedCred = TRUE;
         break;
@@ -204,7 +224,7 @@ class DeveloperAppListingController extends ControllerBase implements ContainerI
      *  - if any credentials of the app has a product with revoked or pending
      *    status.
      */
-    if (($this->getAppStatus($app) !== App::STATUS_REVOKED && $hasRevokedCred) || $hasPendingCredProduct || $hasRevokedCredProduct) {
+    if (($this->getAppStatus($entity) !== App::STATUS_REVOKED && $hasRevokedCred) || $hasPendingCredProduct || $hasRevokedCredProduct) {
       $build['status'] = $infoRow['app_status']['data'];
       $build['warning'] = [
         '#type' => 'html_tag',
@@ -217,7 +237,7 @@ class DeveloperAppListingController extends ControllerBase implements ContainerI
       $build['warning-toggle'] = $link->toRenderable();
       $infoRow['app_status']['data'] = $this->renderer->render($build);
       $warningRow['info'] = [
-        'colspan' => 2,
+        'colspan' => 3,
       ];
 
       if ($hasRevokedCred) {
@@ -235,7 +255,7 @@ class DeveloperAppListingController extends ControllerBase implements ContainerI
           '@apiproduct' => strtolower($this->getApiProductEntityDefinition()->getSingularLabel()),
           '@status' => $hasPendingCredProduct ? $this->t('pending') : $this->t('revoked'),
         ];
-        if (count($app->getCredentials()) === 1) {
+        if (count($entity->getCredentials()) === 1) {
           /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $apiProduct */
           $apiProduct = $this->getApiProductStorage()->load($problematicApiProductName);
           $args['%name'] = $apiProduct->getDisplayName();
@@ -251,45 +271,42 @@ class DeveloperAppListingController extends ControllerBase implements ContainerI
   }
 
   /**
-   * Builds the list of developer's developer apps a renderable array.
-   *
-   * @param \Drupal\user\UserInterface $user
-   *   Drupal user entity.
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   Request object.
-   *
-   * @return array
-   *   Render array.
-   *
-   * @throws \Drupal\Core\Entity\EntityMalformedException
-   * @throws \Exception
+   * {@inheritdoc}
    */
-  public function render(UserInterface $user, Request $request) {
+  public function render() {
     $build['add_app'] = [
       '#type' => 'container',
       '#attributes' => [
-        'class' => 'pull-right',
+        'class' => '',
       ],
       'link' => Link::createFromRoute($this->t('Add @label', [
         '@label' => $this->getDeveloperAppEntityDefinition()->getSingularLabel(),
-      ]), 'entity.developer.createapp', ['user' => $user->id()])->toRenderable(),
+      ]), 'entity.developer_app.add', [], ['attributes' => ['class' => 'btn btn-primary']])->toRenderable(),
     ];
-    /** @var \Apigee\Edge\Api\Management\Entity\DeveloperApp[] $entities */
     $build['table'] = [
       '#type' => 'table',
       '#header' => $this->buildHeader(),
-      '#title' => '',
+      '#title' => $this->getTitle(),
       '#rows' => [],
-      '#empty' => $this->t('Looks like you do not have any apps. Get started by adding one.'),
-      '#stricky' => TRUE,
+      '#empty' => $this->t('There is no @label yet.', ['@label' => $this->entityType->getLabel()]),
       '#cache' => [
-        // TODO.
+        // TODO
+        // 'contexts' => $this->entityType->getListCacheContexts(),
+        // 'tags' => $this->entityType->getListCacheTags(),
       ],
     ];
-    foreach ($this->getEntities($user, $this->buildHeader()) as $entity) {
-      $build['table']['#rows'] += $this->buildEntityRows($entity, $request);
+    foreach ($this->load($this->buildHeader()) as $entity) {
+      if ($row = $this->buildRow($entity)) {
+        $build['table']['#rows'] += $this->buildRow($entity);
+      }
     }
 
+    // Only add the pager if a limit is specified.
+    if ($this->limit) {
+      $build['pager'] = [
+        '#type' => 'pager',
+      ];
+    }
     return $build;
   }
 
