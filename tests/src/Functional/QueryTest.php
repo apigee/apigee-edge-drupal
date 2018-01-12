@@ -5,6 +5,9 @@ namespace Drupal\Tests\apigee_edge\Functional;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\Tests\BrowserTestBase;
 
+/**
+ * @group ApigeeEdge
+ */
 class QueryTest extends BrowserTestBase {
 
   public static $modules = [
