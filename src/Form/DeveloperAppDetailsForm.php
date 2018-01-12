@@ -232,6 +232,8 @@ class DeveloperAppDetailsForm extends FormBase {
    *   Render array of the credential container.
    */
   private function renderCredentialContainer(AppCredentialInterface $credential, $index) {
+    $config = $this->configFactory->get('apigee_edge.appsettings');
+
     $consumer_key = $credential->getConsumerKey();
     $consumer_secret = $credential->getConsumerSecret();
     $issued = $this->dateFormatter->format($credential->getIssuedAt() / 1000, 'custom', self::DATE_FORMAT, drupal_get_user_timezone());
@@ -325,15 +327,7 @@ class DeveloperAppDetailsForm extends FormBase {
           ],
         ],
       ];
-      $form['credential_fieldset']['credential_secondary_wrapper']['api_product_list_wrapper'][$i]['api_product_name_wrapper'] = [
-        '#type' => 'container',
-        '#attributes' => [
-          'class' => [
-            'api-product-name',
-          ],
-        ],
-      ];
-      $form['credential_fieldset']['credential_secondary_wrapper']['api_product_list_wrapper'][$i]['api_product_name_wrapper']['api_product_name_value'] = [
+      $form['credential_fieldset']['credential_secondary_wrapper']['api_product_list_wrapper'][$i]['api_product_name_value'] = [
         '#markup' => Html::escape($api_product_name),
       ];
       $form['credential_fieldset']['credential_secondary_wrapper']['api_product_list_wrapper'][$i]['api_product_status_value'] = [
@@ -342,24 +336,48 @@ class DeveloperAppDetailsForm extends FormBase {
       ];
     }
 
+    $api_product_names = [];
+    foreach ($credential->getApiProducts() as $api_product) {
+      $api_product_names[$api_product->getApiproduct()] = $api_product->getApiproduct();
+    }
+
+    if ((bool) $config->get('multiple_products')) {
+      $form['credential_fieldset']['credential_secondary_wrapper']['api_product_list_wrapper']['api_product_list_edit'] = [
+        '#type' => 'checkboxes',
+        '#title' => $this->apiProductLabelPlural,
+        '#options' => $api_product_names,
+        '#required' => (bool) $config->get('require'),
+      ];
+    }
+    else {
+      $form['credential_fieldset']['credential_secondary_wrapper']['api_product_list_wrapper']['api_product_list_edit'] = [
+        '#type' => 'radios',
+        '#title' => $this->apiProductLabelPlural,
+        '#options' => $api_product_names,
+        '#required' => (bool) $config->get('require'),
+      ];
+    }
+
     $form['credential_fieldset']['credential_action_button_wrapper'] = [
       '#type' => 'container',
     ];
 
-    $form['credential_fieldset']['credential_action_button_wrapper']['credential_edit_button'] = [
-      '#type' => 'button',
-      '#value' => $this->t('Edit'),
-    ];
+    if ((bool) $config->get('associate_apps') && (bool) $config->get('user_select')) {
+      $form['credential_fieldset']['credential_action_button_wrapper']['credential_edit_button'] = [
+        '#type' => 'button',
+        '#value' => $this->t('Edit'),
+      ];
 
-    $form['credential_fieldset']['credential_action_button_wrapper']['credential_cancel_button'] = [
-      '#type' => 'button',
-      '#value' => $this->t('Cancel'),
-    ];
+      $form['credential_fieldset']['credential_action_button_wrapper']['credential_cancel_button'] = [
+        '#type' => 'button',
+        '#value' => $this->t('Cancel'),
+      ];
 
-    $form['credential_fieldset']['credential_action_button_wrapper']['credential_save_button'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Save'),
-    ];
+      $form['credential_fieldset']['credential_action_button_wrapper']['credential_save_button'] = [
+        '#type' => 'submit',
+        '#value' => $this->t('Save'),
+      ];
+    }
 
     return $form;
   }
