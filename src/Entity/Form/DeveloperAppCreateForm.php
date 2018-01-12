@@ -44,13 +44,22 @@ class DeveloperAppCreateForm extends EntityForm {
   public function form(array $form, FormStateInterface $form_state) {
     $config = $this->configFactory->get('apigee_edge.appsettings');
 
+    $form['#attached']['library'][] = 'apigee_edge/apigee_edge.components';
+
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
     $app = $this->entity;
+
+    $form['#attributes']['class'][] = 'apigee-edge--form';
 
     $form['details'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Details'),
       '#collapsible' => FALSE,
+      '#attributes' => [
+        'class' => [
+          'items--inline',
+        ],
+      ],
     ];
 
     $form['details']['displayName'] = [
@@ -99,6 +108,7 @@ class DeveloperAppCreateForm extends EntityForm {
       '#default_value' => $app->getDescription(),
       '#access' => (bool) $config->get('description_visible'),
       '#required' => (bool) $config->get('description_required'),
+      '#resizable' => 'none',
     ];
 
     if ($config->get('associate_apps')) {

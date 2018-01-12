@@ -1,0 +1,57 @@
+/* Forms */
+.items--inline :not(.form-checkboxes) .form-item {
+  margin-bottom: 1rem;
+  display: table;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.items--inline .form-item label {
+  margin-bottom: 0;
+  vertical-align: middle;
+  font-weight: bold;
+  word-break: break-all;
+  padding-right: 1rem;
+  display: table-cell;
+  width: 140px;
+}
+
+.items--inline .form-item label + * {
+  width: 100%;
+}
+
+.apigee-edge--form .form-item label.form-required::after {
+  vertical-align: super;
+}
+
+@media screen and (min-width: 768px) {
+  .apigee-edge--form .form-checkboxes .form-item {
+    width: 49%;
+    display: inline-block;
+  }
+}
+
+.apigee-edge--form .fieldset-legend {
+  font-size: 120%;
+}
+
+.apigee-edge--form small .machine-name-value + .admin-link::before {
+  content: ' ';
+}
+
+.form-wrapper.form-required::after {
+  display: none;
+}
+
+.form-wrapper.form-required .panel-title::after,
+.form-wrapper.form-required .fieldset-legend::after {
+  content: '';
+  vertical-align: super;
+  display: inline-block;
+  background-image: url(../images/required.svg);
+  background-repeat: no-repeat;
+  background-size: 6px 6px;
+  width: 6px;
+  height: 6px;
+  margin: 0 0.3em;
+}

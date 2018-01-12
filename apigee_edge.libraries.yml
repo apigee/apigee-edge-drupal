@@ -3,3 +3,15 @@ apigee_edge.admin:
   css:
     theme:
       css/apigee_edge.admin.css: {}
+apigee_edge.components:
+  version: 1.0
+  css:
+    theme:
+      css/apigee_edge.components.css: {}
+apigee_edge.listing:
+  version: 1.0
+  css:
+    theme:
+      css/apigee_edge.listing.css: {}
+  js:
+    js/apigee_edge.listing.js: {}

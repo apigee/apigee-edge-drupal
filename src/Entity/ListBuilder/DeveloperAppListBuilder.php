@@ -15,6 +15,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Url;
+use Drupal\Component\Utility\Html;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class DeveloperAppListBuilder extends EntityListBuilder {
@@ -178,19 +179,34 @@ class DeveloperAppListBuilder extends EntityListBuilder {
       $infoRowId => [
         'data' => [],
         'id' => $infoRowId,
+        'class' => [
+          'row--app',
+          'row--info',
+        ],
       ],
       $warningRowId => [
         'data' => [],
         'id' => $warningRowId,
+        'class' => [
+          'row--app',
+          'row--warning',
+        ],
       ],
     ];
     $infoRow = &$rows[$infoRowId]['data'];
     $warningRow = &$rows[$warningRowId]['data'];
     $infoRow['app_name'] = $this->getAppDetailsLink($entity);
     $infoRow['app_status']['data'] = [
+      '#prefix' => '<span class="' . Html::escape($this->getAppStatus($entity)) . ' wrapper--status">',
+      '#suffix' => '</span>',
       '#type' => 'html_tag',
       '#tag' => 'span',
       '#value' => $this->getAppStatus($entity),
+      '#attributes' => [
+        'class' => [
+        'label--status',
+        ],
+      ],
     ];
     $infoRow += parent::buildRow($entity);
 
@@ -232,7 +248,16 @@ class DeveloperAppListBuilder extends EntityListBuilder {
         '#value' => '!',
         '#attributes' => ['class' => 'circle'],
       ];
-      $url = Url::fromUserInput($request->getRequestUri(), ['fragment' => $warningRowId]);
+      $link_options = [
+        'attributes' => [
+          'class' => [
+            'toggle--warning',
+            'closed',
+          ],
+        ],
+        'fragment' => $warningRowId,
+      ];
+      $url = Url::fromUserInput($request->getRequestUri(), $link_options);
       $link = Link::fromTextAndUrl('^', $url);
       $build['warning-toggle'] = $link->toRenderable();
       $infoRow['app_status']['data'] = $this->renderer->render($build);
@@ -274,6 +299,8 @@ class DeveloperAppListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function render() {
+    $build['#attached']['library'][] = 'apigee_edge/apigee_edge.listing';
+
     $build['add_app'] = [
       '#type' => 'container',
       '#attributes' => [
@@ -281,7 +308,7 @@ class DeveloperAppListBuilder extends EntityListBuilder {
       ],
       'link' => Link::createFromRoute($this->t('Add @label', [
         '@label' => $this->getDeveloperAppEntityDefinition()->getSingularLabel(),
-      ]), 'entity.developer_app.add', [], ['attributes' => ['class' => 'btn btn-primary']])->toRenderable(),
+      ]), 'entity.developer_app.add', [], ['attributes' => ['class' => 'btn btn-primary btn--add-app']])->toRenderable(),
     ];
     $build['table'] = [
       '#type' => 'table',
@@ -295,6 +322,7 @@ class DeveloperAppListBuilder extends EntityListBuilder {
         // 'tags' => $this->entityType->getListCacheTags(),
       ],
     ];
+    $build['table']['#attributes']['class'][] = 'table--app-list';
     foreach ($this->load($this->buildHeader()) as $entity) {
       if ($row = $this->buildRow($entity)) {
         $build['table']['#rows'] += $this->buildRow($entity);
