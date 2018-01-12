@@ -31,6 +31,12 @@
   }
 }
 
+/* visually-hidden wrapper display problem. */
+.apigee-edge--form fieldset legend {
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
 .apigee-edge--form .fieldset-legend {
   font-size: 120%;
 }
