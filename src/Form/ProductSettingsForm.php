@@ -70,6 +70,9 @@ class ProductSettingsForm extends ConfigFormBase {
 
     $config->save();
 
+    \Drupal::entityTypeManager()->clearCachedDefinitions();
+    menu_cache_clear_all();
+
     parent::submitForm($form, $form_state);
   }
 
