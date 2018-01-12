@@ -462,7 +462,10 @@ class DeveloperAppDetailsForm extends FormBase {
    *   The current state of the form.
    */
   public function developerAppDeleteHandler(array &$form, FormStateInterface $form_state) {
-    // TODO : delete developer app.
+    $form_state->setRedirect('entity.developer_app.delete_form_for_developer', [
+      'app' => $this->developerApp->getName(),
+      'user' => $this->user->id(),
+    ]);
   }
 
 }
