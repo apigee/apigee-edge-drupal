@@ -1,0 +1,109 @@
+
+/* App listing components */
+.circle {
+  border-radius: 50%;
+  color: white;
+  width: 13px;
+  height: 14px;
+  background: orange;
+  display: table-cell;
+  text-align: center;
+  font-size: 85%;
+  padding-left: 1px;
+  margin: 0 1rem;
+  float: left;
+  margin-top: 4px;
+}
+
+.wrapper--status {
+  padding: 4px;
+  border-radius: 2px;
+  text-align: center;
+  font-size: 85%;
+  display: table-cell;
+  vertical-align: top;
+  width: 70px;
+  color: white;
+  float: left;
+}
+
+.wrapper--status.approved {
+  background-color: green;
+}
+
+.wrapper--status.revoked {
+  background-color: red;
+}
+
+.row--warning {
+  display: none;
+}
+
+.btn--add-app {
+  background-color: #fff;
+  background-image: -webkit-linear-gradient(top, #f3f3f3, #e8e8e8);
+  background-image: linear-gradient(to bottom, #f3f3f3, #e8e8e8);
+  border: 1px solid #e4e4e4;
+  border-bottom-color: #b4b4b4;
+  border-left-color: #d2d2d2;
+  border-right-color: #d2d2d2;
+  color: #3a3a3a;
+  cursor: pointer;
+  font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, sans-serif;
+  font-size: 0.929em;
+  font-weight: normal;
+  text-align: center;
+  padding: 0.25em 1.063em;
+  border-radius: 1em;
+  display: inline-block;
+  line-height: normal;
+}
+
+.btn--add-app:hover {
+  background: #dedede;
+  color: #5a5a5a;
+  text-decoration: none;
+}
+
+/* Temporary zebra healing. */
+.table--app-list .odd,
+.table--app-list .even {
+  background-color: transparent;
+}
+
+/* Collapsible functionality. */
+.toggle--warning {
+  display: inline-block;
+  overflow: hidden;
+  text-indent: -9999px;
+  border-bottom: none;
+  text-decoration: none;
+  position: relative;
+  top: 6px;
+}
+
+.toggle--warning:hover,
+.toggle--warning:active,
+.toggle--warning:visited,
+.toggle--warning:focus {
+  border-bottom: none;
+}
+
+.toggle--warning::after {
+  content: ' ';
+  float: left;
+  text-indent: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+.toggle--warning.closed::after {
+  border-width: 0 6px 10px 6px;
+  border-color: transparent transparent black transparent;
+}
+
+.toggle--warning.open::after {
+  border-width: 10px 6px 0 6px;
+  border-color: black transparent transparent transparent;
+}
