@@ -38,7 +38,7 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
     $this->entityManager = $entityManager;
     $this->entityTypeManager = $entityTypeManager;
     $this->moduleHandler = $moduleHandler;
-    $this->entity = $this->entityTypeManager->getStorage('developer_app')->create([]);
+    $this->entity = $this->entityTypeManager->getStorage('developer_app')->create();
   }
 
   /**

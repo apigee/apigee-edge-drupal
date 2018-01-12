@@ -7,6 +7,7 @@ use Apigee\Edge\Api\Management\Entity\ApiProduct as EdgeApiProduct;
 /**
  * @\Drupal\apigee_edge\Annotation\EdgeEntityType(
  *   id = "api_product",
+ *   label = @Translation("API Product"),
  *   label_singular = @Translation("API Product"),
  *   label_plural = @Translation("API Products"),
  *   label_count = @PluralTranslation(
