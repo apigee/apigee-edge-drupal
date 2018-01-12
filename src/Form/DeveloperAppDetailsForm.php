@@ -160,7 +160,7 @@ class DeveloperAppDetailsForm extends FormBase {
     ];
 
     $form['details_fieldset']['details_primary_wrapper']['description_value'] = [
-      '#type' => 'textfield',
+      '#type' => 'textarea',
       '#title' => t('Description'),
       '#default_value' => Html::escape($description),
       '#access' => (bool) $config->get('description_visible'),
@@ -423,7 +423,16 @@ class DeveloperAppDetailsForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    // TODO : save developer app.
+    try {
+      $this->developerApp->setDisplayName($form_state->getValue('display_name_value'));
+      $this->developerApp->setCallbackUrl($form_state->getValue('callback_url_value'));
+      $this->developerApp->setDescription($form_state->getValue('description_value'));
+      $this->developerApp->save();
+      drupal_set_message($this->t('Developer app has been successfully saved.'));
+    }
+    catch (\Exception $exception) {
+      drupal_set_message('Developer app could not be saved.', 'error');
+    }
   }
 
   /**
