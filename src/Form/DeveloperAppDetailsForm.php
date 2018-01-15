@@ -4,8 +4,6 @@ namespace Drupal\apigee_edge\Form;
 
 use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
-use Drupal\apigee_edge\Utility\AppStatusDisplayTrait;
-use Drupal\apigee_edge\Utility\CredentialStatusDisplayTrait;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
