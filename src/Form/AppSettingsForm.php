@@ -6,6 +6,9 @@ use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 
+/**
+ * Provides configuration form builder for changing app settings.
+ */
 class AppSettingsForm extends ConfigFormBase {
 
   /**
@@ -22,7 +25,7 @@ class AppSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'create_app_admin_form';
+    return 'apigee_edge_app_settings_form';
   }
 
   /**
@@ -67,7 +70,10 @@ class AppSettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('multiple_products'),
       '#states' => [
         'visible' => [
-          ':input[name="user_select"]' => ['visible' => TRUE, 'checked' => TRUE],
+          ':input[name="user_select"]' => [
+            'visible' => TRUE,
+            'checked' => TRUE,
+          ],
         ],
       ],
     ];
@@ -78,12 +84,15 @@ class AppSettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('require'),
       '#states' => [
         'visible' => [
-          ':input[name="user_select"]' => ['visible' => TRUE, 'checked' => TRUE],
+          ':input[name="user_select"]' => [
+            'visible' => TRUE,
+            'checked' => TRUE,
+          ],
         ],
       ],
     ];
 
-    /** @var ApiProduct[] $products */
+    /** @var \Drupal\apigee_edge\Entity\ApiProduct[] $products */
     $products = ApiProduct::loadMultiple();
     /** @var string[] $default_products */
     $default_products = $config->get('default_products') ?: [];
@@ -99,7 +108,10 @@ class AppSettingsForm extends ConfigFormBase {
       '#default_value' => reset($default_products),
       '#states' => [
         'visible' => [
-          ':input[name="multiple_products"]' => ['checked' => FALSE, 'visible' => TRUE],
+          ':input[name="multiple_products"]' => [
+            'checked' => FALSE,
+            'visible' => TRUE,
+          ],
         ],
       ],
     ];
@@ -111,9 +123,19 @@ class AppSettingsForm extends ConfigFormBase {
       '#default_value' => $default_products,
       '#states' => [
         'visible' => [
-          [':input[name="multiple_products"]' => ['checked' => TRUE, 'visible' => TRUE]],
+          [
+            ':input[name="multiple_products"]' => [
+              'checked' => TRUE,
+              'visible' => TRUE,
+            ],
+          ],
           'or',
-          [':input[name="user_select"]' => ['checked' => FALSE, 'visible' => TRUE]],
+          [
+            ':input[name="user_select"]' => [
+              'checked' => FALSE,
+              'visible' => TRUE,
+            ],
+          ],
         ],
       ],
     ];
@@ -191,7 +213,7 @@ class AppSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $config = \Drupal::configFactory()->getEditable('apigee_edge.appsettings');
+    $appSettingsConfig = \Drupal::configFactory()->getEditable('apigee_edge.appsettings');
 
     $config_names = [
       'display_as_select',
@@ -206,7 +228,7 @@ class AppSettingsForm extends ConfigFormBase {
     ];
 
     foreach ($config_names as $name) {
-      $config->set($name, $form_state->getValue($name));
+      $appSettingsConfig->set($name, $form_state->getValue($name));
     }
 
     $default_products = [];
@@ -225,17 +247,21 @@ class AppSettingsForm extends ConfigFormBase {
     }
     $default_products = array_values(array_filter($default_products));
 
-    $config->set('default_products', $default_products);
+    $appSettingsConfig->set('default_products', $default_products);
+    $appSettingsConfig->save();
 
-    $config->save();
+    $storedLabels = $this->configFactory->get('apigee_edge.entity_labels');
+    if ($storedLabels->get('app_label_singular') !== $form_state->getValue('app_label_singular') || $storedLabels->get('app_label_plural') !== $form_state->getValue('app_label_plural')) {
+      // Also set the label for consistency reasons.
+      $this->configFactory->getEditable('apigee_edge.entity_labels')
+        ->set('app_label', $form_state->getValue('app_label_singular'))
+        ->set('app_label_singular', $form_state->getValue('app_label_singular'))
+        ->set('app_label_plural', $form_state->getValue('app_label_plural'))
+        ->save();
 
-    \Drupal::configFactory()->getEditable('apigee_edge.entity_labels')
-      ->set('app_label_singular', $form_state->getValue('app_label_singular'))
-      ->set('app_label_plural', $form_state->getValue('app_label_plural'))
-      ->save();
-
-    \Drupal::entityTypeManager()->clearCachedDefinitions();
-    menu_cache_clear_all();
+      // Clearing required caches.
+      drupal_flush_all_caches();
+    }
 
     parent::submitForm($form, $form_state);
   }

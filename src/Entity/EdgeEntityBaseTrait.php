@@ -122,7 +122,7 @@ trait EdgeEntityBaseTrait {
    * {@inheritdoc}
    */
   public function label() {
-    if (class_implements($this, DisplayNamePropertyInterface::class)) {
+    if (class_implements($this, DisplayNamePropertyInterface::class) && !empty($this->getDisplayName())) {
       return $this->getDisplayName();
     }
     return $this->id();

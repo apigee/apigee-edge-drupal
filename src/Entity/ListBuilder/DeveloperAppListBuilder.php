@@ -269,15 +269,14 @@ class DeveloperAppListBuilder extends EntityListBuilder {
         $warningRow['info']['data'] = $this->t(
           'One of the credentials associated with this @app is in revoked status.',
           [
-            '@app' => strtolower($this->getDeveloperAppEntityDefinition()->getSingularLabel()),
+            '@app' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
           ]
         );
       }
       elseif ($hasRevokedCredProduct || $hasPendingCredProduct) {
         $args = [
-          '@app' => strtolower($this->getDeveloperAppEntityDefinition()->getSingularLabel()
-          ),
-          '@apiproduct' => strtolower($this->getApiProductEntityDefinition()->getSingularLabel()),
+          '@app' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
+          '@apiproduct' => $this->getApiProductEntityDefinition()->getLowercaseLabel(),
           '@status' => $hasPendingCredProduct ? $this->t('pending') : $this->t('revoked'),
         ];
         if (count($entity->getCredentials()) === 1) {

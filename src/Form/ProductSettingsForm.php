@@ -14,7 +14,7 @@ class ProductSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'apigee_edge_entity_label';
+    return 'apigee_edge_api_product_settings_form';
   }
 
   /**
@@ -38,17 +38,17 @@ class ProductSettingsForm extends ConfigFormBase {
       '#collapsible' => FALSE,
     ];
 
-    $form['label']['api_product_label_singular'] = array(
+    $form['label']['api_product_label_singular'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Singular format'),
       '#default_value' => $config->get('api_product_label_singular'),
-    );
+    ];
 
-    $form['label']['api_product_label_plural'] = array(
+    $form['label']['api_product_label_plural'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Plural format'),
       '#default_value' => $config->get('api_product_label_plural'),
-    );
+    ];
 
     return parent::buildForm($form, $form_state);
   }
@@ -57,21 +57,19 @@ class ProductSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $config = \Drupal::configFactory()->getEditable('apigee_edge.entity_labels');
+    $savedLabels = $this->configFactory->get('apigee_edge.entity_labels');
 
-    $config_names = [
-      'api_product_label_singular',
-      'api_product_label_plural',
-    ];
+    if ($savedLabels->get('api_product_label_singular') !== $form_state->getValue('api_product_label_singular') || $savedLabels->get('api_product_label_plural') !== $form_state->getValue('api_product_label_plural')) {
+      $this->configFactory->getEditable('apigee_edge.entity_labels')
+        // Also set the label for consistency reasons.
+        ->set('api_product_label', $form_state->getValue('api_product_label_singular'))
+        ->set('api_product_label_singular', $form_state->getValue('api_product_label_singular'))
+        ->set('api_product_label_plural', $form_state->getValue('api_product_label_plural'))
+        ->save();
 
-    foreach ($config_names as $name) {
-      $config->set($name, $form_state->getValue($name));
+      // Clearing required caches.
+      drupal_flush_all_caches();
     }
-
-    $config->save();
-
-    \Drupal::entityTypeManager()->clearCachedDefinitions();
-    menu_cache_clear_all();
 
     parent::submitForm($form, $form_state);
   }
