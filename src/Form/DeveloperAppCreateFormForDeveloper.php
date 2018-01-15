@@ -32,7 +32,7 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   public function __construct(SDKConnectorInterface $sdkConnector, ConfigFactory $configFactory, EntityManagerInterface $entityManager, EntityTypeManagerInterface $entityTypeManager, ModuleHandlerInterface $moduleHandler) {
-    parent::__construct($sdkConnector, $configFactory);
+    parent::__construct($sdkConnector, $configFactory, $entityTypeManager);
     $this->sdkConnector = $sdkConnector;
     $this->configFactory = $configFactory;
     $this->entityManager = $entityManager;

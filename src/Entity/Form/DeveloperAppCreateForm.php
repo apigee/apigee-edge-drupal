@@ -9,6 +9,7 @@ use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -25,17 +26,24 @@ class DeveloperAppCreateForm extends EntityForm {
    * DeveloperAppCreate constructor.
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $sdkConnector
+   * @param \Drupal\Core\Config\ConfigFactory $configFactory
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    */
-  public function __construct(SDKConnectorInterface $sdkConnector, ConfigFactory $configFactory) {
+  public function __construct(SDKConnectorInterface $sdkConnector, ConfigFactory $configFactory, EntityTypeManagerInterface $entityTypeManager) {
     $this->sdkConnector = $sdkConnector;
     $this->configFactory = $configFactory;
+    $this->entityTypeManager = $entityTypeManager;
   }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('apigee_edge.sdk_connector'), $container->get('config.factory'));
+    return new static(
+      $container->get('apigee_edge.sdk_connector'),
+      $container->get('config.factory'),
+      $container->get('entity_type.manager')
+    );
   }
 
   /**
@@ -64,7 +72,7 @@ class DeveloperAppCreateForm extends EntityForm {
 
     $form['details']['displayName'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Application Name'),
+      '#title' => $this->t('@appLabel Name', ['@appLabel' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel()]),
       '#required' => TRUE,
       '#default_value' => $app->getDisplayName(),
     ];
