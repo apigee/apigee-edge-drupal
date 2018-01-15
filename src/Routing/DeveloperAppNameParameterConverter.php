@@ -28,6 +28,9 @@ class DeveloperAppNameParameterConverter implements ParamConverterInterface {
    * {@inheritdoc}
    */
   public function convert($value, $definition, $name, array $defaults) {
+    if (empty($defaults['user'])) {
+      return NULL;
+    }
     /** @var \Drupal\user\UserInterface $user */
     $user = $this->entityTypeManager->getStorage('user')->load($defaults['user']);
     if ($user) {
@@ -52,7 +55,7 @@ class DeveloperAppNameParameterConverter implements ParamConverterInterface {
    * {@inheritdoc}
    */
   public function applies($definition, $name, Route $route) {
-    return (!empty($definition['type']) && $definition['type'] == 'developer_app_by_name') && isset($route->getOptions()['parameters']['user']);
+    return (!empty($definition['type']) && $definition['type'] == 'developer_app_by_name');
   }
 
 }

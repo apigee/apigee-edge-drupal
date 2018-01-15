@@ -50,7 +50,7 @@ entity.developer_app.add:
   path: 'developer-apps/add'
   defaults:
     _entity_form: 'developer_app.add'
-    _title_callback: 'apigee_edge_create_app_title'
+    _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm::getPageTitle'
   requirements:
     _access: 'TRUE' #FIXME
 
@@ -58,7 +58,7 @@ entity.developer_app.delete:
   path: 'developer-apps/{developer_app}/delete'
   defaults:
     _entity_form: 'developer_app.delete'
-    _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppDeleteForm::pageTitle'
+    _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppDeleteForm::getPageTitle'
   requirements:
     _access: 'TRUE' #FIXME
 
@@ -66,15 +66,15 @@ entity.developer_app.collection:
   path: 'developer-apps'
   defaults:
     _entity_list: 'developer_app'
-    _title: 'Developer apps' #FIXME
+    _title_callback: '\Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder::getPageTitle'
   requirements:
     _access: 'TRUE' #FIXME
 
 entity.developer_app.add_form_for_developer:
   path: '/user/{user}/apps/create'
   defaults:
-    _form: '\Drupal\apigee_edge\Form\DeveloperAppCreateFormForDeveloper'
-    _title_callback: 'apigee_edge_create_app_title'
+    _entity_form: 'developer_app.add_for_developer'
+    _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppCreateFormForDeveloper::getPageTitle'
   requirements:
      user: '\d+'
      _access: 'TRUE' #FIXME
@@ -82,8 +82,8 @@ entity.developer_app.add_form_for_developer:
 entity.developer_app.delete_form_for_developer:
   path: '/user/{user}/apps/{app}/delete'
   defaults:
-    _form: '\Drupal\apigee_edge\Form\DeveloperAppDeleteFormForDeveloper'
-    _title_callback: '\Drupal\apigee_edge\Form\DeveloperAppDeleteFormForDeveloper::pageTitle'
+    _entity_form: 'developer_app.delete_for_developer'
+    _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppDeleteFormForDeveloper::getPageTitle'
   requirements:
      user: '\d+'
      _access: 'TRUE' #FIXME
@@ -92,7 +92,7 @@ entity.developer_app.collection_by_developer:
   path: '/user/{user}/apps'
   defaults:
     _controller: '\Drupal\apigee_edge\Controller\DeveloperAppListBuilderForDeveloper::render'
-    _title_callback: 'apigee_edge_user_developer_apps_title'
+    _title_callback: '\Drupal\apigee_edge\Controller\DeveloperAppListBuilderForDeveloper::getPageTitle'
   requirements:
      user: '\d+'
      _access: 'TRUE' #FIXME

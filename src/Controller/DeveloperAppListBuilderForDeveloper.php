@@ -5,7 +5,12 @@ namespace Drupal\apigee_edge\Controller;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder;
 use Drupal\Component\Utility\Html;
-use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Render\RendererInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -16,7 +21,26 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
  *
  * @package Drupal\apigee_edge\Controller
  */
-class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder implements ContainerInjectionInterface {
+class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
+
+  /**
+   * @var \Drupal\Core\Session\AccountInterface
+   */
+  private $currentUser;
+
+  /**
+   * DeveloperAppListBuilderForDeveloper constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   * @param \Drupal\Core\Render\RendererInterface $render
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
+   */
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, EntityTypeManagerInterface $entityTypeManager, RendererInterface $render, AccountInterface $currentUser) {
+    parent::__construct($entity_type, $storage, $entityTypeManager, $render);
+    $this->currentUser = $currentUser;
+  }
 
   /**
    * {@inheritdoc}
@@ -27,15 +51,13 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder implem
       $entity_type,
       $container->get('entity.manager')->getStorage($entity_type->id()),
       $container->get('entity.manager'),
-      $container->get('renderer')
+      $container->get('renderer'),
+      $container->get('current_user')
     );
   }
 
   /**
-   * @param array $headers
-   * @param \Drupal\user\UserInterface|NULL $user
-   *
-   * @return array|int
+   * {@inheritdoc}
    */
   protected function getEntityIds(array $headers = [], UserInterface $user = NULL) {
     $storedDeveloperId = $user->get('apigee_edge_developer_id')->target_id;
@@ -125,6 +147,19 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder implem
     $build['table']['#rows'] = $tableRows;
 
     return $build;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPageTitle(RouteMatchInterface $routeMatch): string {
+    $args['@devAppLabel'] = $this->getDeveloperAppEntityDefinition()->getPluralLabel();
+    $account = $routeMatch->getParameter('user');
+    if ($account->id() == $this->currentUser->id()) {
+      return t('My @devAppLabel', $args);
+    }
+    $args['@user'] = $account->getDisplayName();
+    return t('@devAppLabel of @user', $args);
   }
 
   /**

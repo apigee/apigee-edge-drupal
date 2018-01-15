@@ -6,7 +6,10 @@ use Apigee\Edge\Api\Management\Entity\App;
 use Apigee\Edge\Api\Management\Entity\AppCredential;
 use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
+use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
 use Drupal\apigee_edge\Utility\AppStatusDisplayTrait;
+use Drupal\Component\Utility\Html;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -14,11 +17,19 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Render\RendererInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
-use Drupal\Component\Utility\Html;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class DeveloperAppListBuilder extends EntityListBuilder {
+/**
+ * General entity listing builder for developer apps.
+ *
+ * ContainerInjectionInterface had to be implemented to make
+ * \Drupal\Core\Controller\TitleResolver happy otherwise it would have
+ * called the constructor with 0 parameter when it generates the page title
+ * by calling getPageTitle().
+ */
+class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppPageTitleInterface, ContainerInjectionInterface {
 
   use AppStatusDisplayTrait;
 
@@ -39,6 +50,7 @@ class DeveloperAppListBuilder extends EntityListBuilder {
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    * @param \Drupal\Core\Render\RendererInterface $render
    */
   public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, EntityTypeManagerInterface $entityTypeManager, RendererInterface $render) {
@@ -59,6 +71,14 @@ class DeveloperAppListBuilder extends EntityListBuilder {
       $container->get('entity.manager'),
       $container->get('renderer')
     );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    $entityType = $container->get('entity_type.manager')->getDefinition('developer_app');
+    return static::createInstance($container, $entityType);
   }
 
   /**
@@ -204,7 +224,7 @@ class DeveloperAppListBuilder extends EntityListBuilder {
       '#value' => $this->getAppStatus($entity),
       '#attributes' => [
         'class' => [
-        'label--status',
+          'label--status',
         ],
       ],
     ];
@@ -305,8 +325,8 @@ class DeveloperAppListBuilder extends EntityListBuilder {
       '#attributes' => [
         'class' => '',
       ],
-      'link' => Link::createFromRoute($this->t('Add @label', [
-        '@label' => $this->getDeveloperAppEntityDefinition()->getSingularLabel(),
+      'link' => Link::createFromRoute($this->t('Add @devAppLabel', [
+        '@devAppLabel' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
       ]), 'entity.developer_app.add', [], ['attributes' => ['class' => 'btn btn-primary btn--add-app']])->toRenderable(),
     ];
     $build['table'] = [
@@ -314,7 +334,7 @@ class DeveloperAppListBuilder extends EntityListBuilder {
       '#header' => $this->buildHeader(),
       '#title' => $this->getTitle(),
       '#rows' => [],
-      '#empty' => $this->t('There is no @label yet.', ['@label' => $this->entityType->getLabel()]),
+      '#empty' => $this->t('There is no @devAppLabel yet.', ['@devAppLabel' => $this->entityType->getLabel()]),
       '#cache' => [
         // TODO
         // 'contexts' => $this->entityType->getListCacheContexts(),
@@ -335,6 +355,13 @@ class DeveloperAppListBuilder extends EntityListBuilder {
       ];
     }
     return $build;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPageTitle(RouteMatchInterface $routeMatch): string {
+    return $this->t('@devAppLabel', ['@devAppLabel' => $this->getDeveloperAppEntityDefinition()->getPluralLabel()]);
   }
 
 }

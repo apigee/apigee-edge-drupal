@@ -252,9 +252,7 @@ class AppSettingsForm extends ConfigFormBase {
 
     $storedLabels = $this->configFactory->get('apigee_edge.entity_labels');
     if ($storedLabels->get('app_label_singular') !== $form_state->getValue('app_label_singular') || $storedLabels->get('app_label_plural') !== $form_state->getValue('app_label_plural')) {
-      // Also set the label for consistency reasons.
       $this->configFactory->getEditable('apigee_edge.entity_labels')
-        ->set('app_label', $form_state->getValue('app_label_singular'))
         ->set('app_label_singular', $form_state->getValue('app_label_singular'))
         ->set('app_label_plural', $form_state->getValue('app_label_plural'))
         ->save();

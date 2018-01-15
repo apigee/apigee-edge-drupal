@@ -2,15 +2,17 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
+use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
 use Drupal\Core\Entity\EntityDeleteForm;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * General form handler for the developer app delete forms.
  */
-class DeveloperAppDeleteForm extends EntityDeleteForm {
+class DeveloperAppDeleteForm extends EntityDeleteForm implements DeveloperAppPageTitleInterface {
 
   /**
    * DeveloperAppDeleteForm constructor.
@@ -19,6 +21,13 @@ class DeveloperAppDeleteForm extends EntityDeleteForm {
    */
   public function __construct(EntityTypeManagerInterface $entityTypeManager) {
     $this->entityTypeManager = $entityTypeManager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static($container->get('entity_type.manager'));
   }
 
   /**
@@ -34,17 +43,10 @@ class DeveloperAppDeleteForm extends EntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
-    return new static($container->get('entity_type.manager'));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   protected function getDeletionMessage() {
     $entity = $this->getEntity();
-    return $this->t('The %name @label has been deleted.', [
-      '@label' => $entity->getEntityType()->getLowercaseLabel(),
+    return $this->t('The %name @devAppLabel has been deleted.', [
+      '@devAppLabel' => $entity->getEntityType()->getLowercaseLabel(),
       '%name' => $entity->label(),
     ]);
   }
@@ -54,21 +56,33 @@ class DeveloperAppDeleteForm extends EntityDeleteForm {
    */
   public function getQuestion() {
     $entity = $this->getEntity();
-    return $this->t('Are you sure you want to delete the %name @label?', [
-      '@label' => $entity->getEntityType()->getLowercaseLabel(),
+    return $this->t('Are you sure you want to delete the %name @devAppLabel?', [
+      '@devAppLabel' => $entity->getEntityType()->getLowercaseLabel(),
       '%name' => $entity->label(),
     ]);
   }
 
   /**
-   * Return page title.
+   * Builds a translatable page title by using values from args as replacements.
    *
-   * @return string
+   * @param array $args
+   *   An associative array of replacements.
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *
+   * @see \Drupal\Core\StringTranslation\StringTranslationTrait::t()
    */
-  public function pageTitle() {
-    return $this->t('Delete @name @label', [
-      '@name' => $this->entity->getDisplayName(),
-      '@label' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel(),
+  protected function pageTitle(array $args = []) {
+    return $this->t('Delete @name @devAppLabel', $args);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPageTitle(RouteMatchInterface $routeMatch): string {
+    return $this->pageTitle([
+      '@name' => $routeMatch->getParameter('developer_app')->getDisplayName(),
+      '@devAppLabel' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel(),
     ]);
   }
 

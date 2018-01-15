@@ -26,17 +26,19 @@ use Drupal\user\UserInterface;
  *     "form" = {
  *       "default" = "Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm",
  *       "add" = "Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm",
+ *       "add_for_developer" = "Drupal\apigee_edge\Entity\Form\DeveloperAppCreateFormForDeveloper",
  *       "delete" = "Drupal\apigee_edge\Entity\Form\DeveloperAppDeleteForm",
+ *       "delete_for_developer" = "Drupal\apigee_edge\Entity\Form\DeveloperAppDeleteFormForDeveloper",
  *     },
  *     "list_builder" = "Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder",
  *   },
  *   links = {
+ *     "collection" = "/developer-apps",
  *     "add-form" = "/developer-apps/add",
  *     "delete-form" = "/developer-apps/{developer_app}/delete",
- *     "collection" = "/developer-apps",
+ *     "collection-by-developer" = "/user/{user}/apps",
  *     "add-form-for-developer" = "/user/{user}/apps/add",
  *     "delete-form-for-developer" = "/user/{user}/apps/{app}/delete",
- *     "collection-by-developer" = "/user/{user}/apps",
  *     "canonical-by-developer" = "/user/{user}/apps/{app}/details",
  *   },
  *   entity_keys = {

@@ -5,19 +5,21 @@ namespace Drupal\apigee_edge\Entity\Form;
 use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
+use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * General form handler for the developer app create forms.
  */
-class DeveloperAppCreateForm extends EntityForm {
+class DeveloperAppCreateForm extends EntityForm implements DeveloperAppPageTitleInterface {
 
   /** @var \Drupal\apigee_edge\SDKConnectorInterface */
   protected $sdkConnector;
@@ -72,7 +74,7 @@ class DeveloperAppCreateForm extends EntityForm {
 
     $form['details']['displayName'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('@appLabel Name', ['@appLabel' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel()]),
+      '#title' => $this->t('@devAppLabel name', ['@devAppLabel' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel()]),
       '#required' => TRUE,
       '#default_value' => $app->getDisplayName(),
     ];
@@ -187,7 +189,9 @@ class DeveloperAppCreateForm extends EntityForm {
    */
   protected function actions(array $form, FormStateInterface $form_state) {
     $actions = parent::actions($form, $form_state);
-    $actions['submit']['#value'] = apigee_edge_create_app_title();
+    $actions['submit']['#value'] = $this->t('Add @devAppLabel', [
+      '@devAppLabel' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel(),
+    ]);
 
     return $actions;
   }
@@ -250,6 +254,13 @@ class DeveloperAppCreateForm extends EntityForm {
       // Otherwise fall back to the front page.
       return Url::fromRoute('<front>');
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPageTitle(RouteMatchInterface $routeMatch): string {
+    return $this->t('Add @devAppLabel', ['@devAppLabel' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel()]);
   }
 
 }

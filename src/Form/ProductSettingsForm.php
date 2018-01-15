@@ -61,8 +61,6 @@ class ProductSettingsForm extends ConfigFormBase {
 
     if ($savedLabels->get('api_product_label_singular') !== $form_state->getValue('api_product_label_singular') || $savedLabels->get('api_product_label_plural') !== $form_state->getValue('api_product_label_plural')) {
       $this->configFactory->getEditable('apigee_edge.entity_labels')
-        // Also set the label for consistency reasons.
-        ->set('api_product_label', $form_state->getValue('api_product_label_singular'))
         ->set('api_product_label_singular', $form_state->getValue('api_product_label_singular'))
         ->set('api_product_label_plural', $form_state->getValue('api_product_label_plural'))
         ->save();

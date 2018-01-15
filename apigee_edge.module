@@ -6,8 +6,8 @@
  */
 
 use Apigee\Edge\Exception\ClientErrorException;
-use Drupal\apigee_edge\JobExecutor;
 use Drupal\apigee_edge\Entity\Developer;
+use Drupal\apigee_edge\JobExecutor;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -20,8 +20,12 @@ define('APIGEE_EDGE_ERROR_CODE_DEVELOPER_DOES_NOT_EXITS', 'developer.service.Dev
  * Implements hook_menu_links_discovered_alter().
  */
 function apigee_edge_menu_links_discovered_alter(array &$links) {
+  $devAppLabel = \Drupal::entityTypeManager()
+    ->getDefinition('developer_app')
+    ->getPluralLabel();
+
   $links['apigee_edge.my_apps'] = [
-    'title' => apigee_edge_user_developer_apps_title(),
+    'title' => t('My @devAppLabel', ['@devAppLabel' => $devAppLabel]),
     'route_name' => 'apigee_edge.user.my_apps',
     'weight' => -30,
     'menu_name' => 'account',
@@ -54,6 +58,8 @@ function apigee_edge_entity_type_alter(array &$entity_types) {
   $api_product_label_plural = $config->get('api_product_label_plural');
 
   if ($app_label_singular && $app_label_plural) {
+    // Also set the label for consistency reasons.
+    $entity_types['developer_app']->set('label', new TranslatableMarkup($app_label_singular));
     $entity_types['developer_app']->set('label_singular', new TranslatableMarkup($app_label_singular));
     $entity_types['developer_app']->set('label_plural', new TranslatableMarkup($app_label_plural));
     $entity_types['developer_app']->set('label_count', [
@@ -63,6 +69,8 @@ function apigee_edge_entity_type_alter(array &$entity_types) {
   }
 
   if ($api_product_label_singular && $api_product_label_plural) {
+    // Also set the label for consistency reasons.
+    $entity_types['api_product']->set('label', new TranslatableMarkup($api_product_label_singular));
     $entity_types['api_product']->set('label_singular', new TranslatableMarkup($api_product_label_singular));
     $entity_types['api_product']->set('label_plural', new TranslatableMarkup($api_product_label_plural));
     $entity_types['api_product']->set('label_count', [
@@ -244,38 +252,4 @@ function apigee_edge_cron() {
  */
 function apigee_edge_get_executor(): JobExecutor {
   return \Drupal::service('apigee_edge.job_executor');
-}
-
-/**
- * Constructs the "Create App" entity title for the Developer App entity.
- *
- * @return \Drupal\Core\StringTranslation\TranslatableMarkup
- */
-function apigee_edge_create_app_title() {
-  $label = \Drupal::entityTypeManager()
-    ->getDefinition('developer_app')
-    ->getSingularLabel();
-  return t("Add @label", [
-    '@label' => $label,
-  ]);
-}
-
-/**
- * Constructs the title of the app listing page of a developer.
- *
- * @param \Drupal\user\UserInterface $user|null
- *   User object from path.
- *
- * @return \Drupal\Core\StringTranslation\TranslatableMarkup
- */
-function apigee_edge_user_developer_apps_title(UserInterface $user = NULL) {
-  $label = \Drupal::entityTypeManager()
-    ->getDefinition('developer_app')
-    ->getPluralLabel();
-  $args['@label'] = $label;
-  if ($user === NULL || $user->id() == \Drupal::currentUser()->id()) {
-    return t('My @label', $args);
-  }
-  $args['@user'] = $user->getDisplayName();
-  return t('@label of @user', $args);
 }
