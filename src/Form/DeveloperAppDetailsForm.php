@@ -20,9 +20,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class DeveloperAppDetailsForm extends FormBase {
 
-  use AppStatusDisplayTrait;
-  use CredentialStatusDisplayTrait;
-
   /**
    * The renderer service.
    *
@@ -133,7 +130,7 @@ class DeveloperAppDetailsForm extends FormBase {
     $display_name = $this->developerApp->getDisplayName();
     $callback_url = $this->developerApp->getCallbackUrl();
     $description = $this->developerApp->getDescription();
-    $status = $this->getAppStatus($this->developerApp);
+    $status = $this->developerApp->getStatus();
 
     $form['details_fieldset'] = [
       '#type' => 'fieldset',
@@ -238,7 +235,7 @@ class DeveloperAppDetailsForm extends FormBase {
     $consumer_secret = $credential->getConsumerSecret();
     $issued = $this->dateFormatter->format($credential->getIssuedAt() / 1000, 'custom', self::DATE_FORMAT, drupal_get_user_timezone());
     $expires = $credential->getExpiresAt() === '-1' ? t('Never') : $this->dateFormatter->format($credential->getExpiresAt() / 1000, 'custom', self::DATE_FORMAT, drupal_get_user_timezone());
-    $status = $this->getCredentialStatus($this->developerApp, $credential);
+    $status = $credential->getStatus();
 
     $form['credential_fieldset'] = [
       '#type' => 'fieldset',
