@@ -2,19 +2,20 @@ services:
   plugin.manager.apigee_edge.credentials_storage:
     class: Drupal\apigee_edge\CredentialsStorageManager
     parent: default_plugin_manager
-
   plugin.manager.apigee_edge.authentication_method:
     class: Drupal\apigee_edge\AuthenticationMethodManager
     parent: default_plugin_manager
-
   apigee_edge.sdk_connector:
     class: Drupal\apigee_edge\SDKConnector
     arguments: ['@entity_type.manager', '@config.factory', '@plugin.manager.apigee_edge.credentials_storage', '@plugin.manager.apigee_edge.authentication_method']
-
   apigee_edge.job_executor:
     class: Drupal\apigee_edge\JobExecutor
     arguments: ['@database', '@datetime.time', '@queue']
-
+  access_check.developer_app:
+    class: \Drupal\apigee_edge\Access\DeveloperAppAccessCheck
+    arguments: ['@entity_type.manager']
+    tags:
+      - { name: access_check, applies_to: _developer_app_access }
   entity.query.edge:
     class: Drupal\apigee_edge\Entity\Query\QueryFactory
     arguments:

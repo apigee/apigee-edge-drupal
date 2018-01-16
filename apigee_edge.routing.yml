@@ -38,21 +38,14 @@ apigee_edge.user_sync.run:
     _permission: 'administer apigee edge'
     _csrf_token: 'TRUE'
 
-apigee_edge.user.my_apps:
-  path: '/user/apps'
-  defaults:
-    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppListBuilderForDeveloper::myAppsPage'
-    _title_callback: 'apigee_edge_developer_app_entity_operation_title'
-  requirements:
-    _user_is_logged_in: 'TRUE'
-
 entity.developer_app.add:
   path: 'developer-apps/add'
   defaults:
     _entity_form: 'developer_app.add'
     _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm::getPageTitle'
   requirements:
-    _access: 'TRUE' #FIXME
+     # This route is only available to admins for now.
+    _permission: 'administer developer_app'
 
 entity.developer_app.delete:
   path: 'developer-apps/{developer_app}/delete'
@@ -60,7 +53,8 @@ entity.developer_app.delete:
     _entity_form: 'developer_app.delete'
     _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppDeleteForm::getPageTitle'
   requirements:
-    _access: 'TRUE' #FIXME
+    # This route is only available to admins for now.
+    _permission: 'administer developer_app'
 
 entity.developer_app.collection:
   path: 'developer-apps'
@@ -68,7 +62,8 @@ entity.developer_app.collection:
     _entity_list: 'developer_app'
     _title_callback: '\Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder::getPageTitle'
   requirements:
-    _access: 'TRUE' #FIXME
+    # This route is only available to admins for now.
+    _permission: 'administer developer_app'
 
 entity.developer_app.add_form_for_developer:
   path: '/user/{user}/apps/create'
@@ -77,7 +72,7 @@ entity.developer_app.add_form_for_developer:
     _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppCreateFormForDeveloper::getPageTitle'
   requirements:
      user: '\d+'
-     _access: 'TRUE' #FIXME
+     _entity_create_access: 'developer_app'
 
 entity.developer_app.delete_form_for_developer:
   path: '/user/{user}/apps/{app}/delete'
@@ -86,7 +81,7 @@ entity.developer_app.delete_form_for_developer:
     _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppDeleteFormForDeveloper::getPageTitle'
   requirements:
      user: '\d+'
-     _access: 'TRUE' #FIXME
+     _developer_app_access: 'delete'
 
 entity.developer_app.collection_by_developer:
   path: '/user/{user}/apps'
@@ -95,7 +90,16 @@ entity.developer_app.collection_by_developer:
     _title_callback: '\Drupal\apigee_edge\Controller\DeveloperAppListBuilderForDeveloper::getPageTitle'
   requirements:
      user: '\d+'
-     _access: 'TRUE' #FIXME
+     _permission: 'view own developer_app+view any developer_app+administer developer_app'
+
+apigee_edge.user.my_apps:
+  path: '/user/apps'
+  defaults:
+    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppListBuilderForDeveloper::myAppsPage'
+    _title_callback: 'apigee_edge_developer_app_entity_operation_title'
+  requirements:
+    _user_is_logged_in: 'TRUE'
+    _permission: 'view own developer_app+view any developer_app+administer developer_app'
 
 entity.developer_app.canonical_by_developer:
   path: '/user/{user}/apps/{app}/details'
@@ -103,4 +107,4 @@ entity.developer_app.canonical_by_developer:
     _form: '\Drupal\apigee_edge\Form\DeveloperAppDetailsForm'
   requirements:
      user: '\d+'
-     _access: 'TRUE' #FIXME
+     _developer_app_access: 'view'
