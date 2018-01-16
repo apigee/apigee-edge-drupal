@@ -2,10 +2,11 @@
 
 namespace Drupal\Tests\apigee_edge\Functional;
 
-use Apigee\Edge\Api\Management\Entity\Developer;
+use Drupal\apigee_edge\Entity\Developer;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
+use Drupal\user\UserInterface;
 
 /**
  * User synchronization tests
@@ -13,11 +14,6 @@ use Drupal\user\Entity\User;
  * @group ApigeeEdge
  */
 class UserSyncTest extends BrowserTestBase {
-
-  /**
-   * @var \Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface
-   */
-  protected $developerController;
 
   public static $modules = [
     'block',
@@ -30,26 +26,6 @@ class UserSyncTest extends BrowserTestBase {
     ['email' => 'test02@example.com', 'userName' => 'test02', 'firstName' => 'Test02', 'lastName' => 'User02'],
     ['email' => 'test03@example.com', 'userName' => 'test03', 'firstName' => 'Test03', 'lastName' => 'User03'],
     ['email' => 'test04@example.com', 'userName' => 'test04', 'firstName' => 'Test04', 'lastName' => 'User04'],
-    ['email' => 'test05@example.com', 'userName' => 'test05', 'firstName' => 'Test05', 'lastName' => 'User05'],
-    ['email' => 'test06@example.com', 'userName' => 'test06', 'firstName' => 'Test06', 'lastName' => 'User06'],
-    ['email' => 'test07@example.com', 'userName' => 'test07', 'firstName' => 'Test07', 'lastName' => 'User07'],
-    ['email' => 'test08@example.com', 'userName' => 'test08', 'firstName' => 'Test08', 'lastName' => 'User08'],
-    ['email' => 'test09@example.com', 'userName' => 'test09', 'firstName' => 'Test09', 'lastName' => 'User09'],
-    ['email' => 'test10@example.com', 'userName' => 'test10', 'firstName' => 'Test10', 'lastName' => 'User10'],
-    ['email' => 'test11@example.com', 'userName' => 'test11', 'firstName' => 'Test11', 'lastName' => 'User11'],
-    ['email' => 'test12@example.com', 'userName' => 'test12', 'firstName' => 'Test12', 'lastName' => 'User12'],
-    ['email' => 'test13@example.com', 'userName' => 'test13', 'firstName' => 'Test13', 'lastName' => 'User13'],
-    ['email' => 'test14@example.com', 'userName' => 'test14', 'firstName' => 'Test14', 'lastName' => 'User14'],
-    ['email' => 'test15@example.com', 'userName' => 'test15', 'firstName' => 'Test15', 'lastName' => 'User15'],
-    ['email' => 'test16@example.com', 'userName' => 'test16', 'firstName' => 'Test16', 'lastName' => 'User16'],
-    ['email' => 'test17@example.com', 'userName' => 'test17', 'firstName' => 'Test17', 'lastName' => 'User17'],
-    ['email' => 'test18@example.com', 'userName' => 'test18', 'firstName' => 'Test18', 'lastName' => 'User18'],
-    ['email' => 'test19@example.com', 'userName' => 'test19', 'firstName' => 'Test19', 'lastName' => 'User19'],
-    ['email' => 'test20@example.com', 'userName' => 'test20', 'firstName' => 'Test20', 'lastName' => 'User20'],
-    ['email' => 'test21@example.com', 'userName' => 'test21', 'firstName' => 'Test21', 'lastName' => 'User21'],
-    ['email' => 'test22@example.com', 'userName' => 'test22', 'firstName' => 'Test22', 'lastName' => 'User22'],
-    ['email' => 'test23@example.com', 'userName' => 'test23', 'firstName' => 'Test23', 'lastName' => 'User23'],
-    ['email' => 'test24@example.com', 'userName' => 'test24', 'firstName' => 'Test24', 'lastName' => 'User24'],
   ];
 
   /**
@@ -57,18 +33,19 @@ class UserSyncTest extends BrowserTestBase {
    */
   protected $drupalUsers = [];
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp() {
     parent::setUp();
 
     $this->drupalPlaceBlock('local_actions_block');
 
-    $this->developerController = \Drupal::service('apigee_edge.sdk_connector')->getDeveloperController();
-
     foreach ($this->edgeDevelopers as $edgeDeveloper) {
-      $this->developerController->create(new Developer($edgeDeveloper));
+      Developer::create($edgeDeveloper)->save();
     }
 
-    for ($i = 0; $i < 20; $i++) {
+    for ($i = 0; $i < 5; $i++) {
       $this->drupalUsers[] = $this->createUserWithFields();
     }
 
@@ -97,16 +74,25 @@ class UserSyncTest extends BrowserTestBase {
     return $account;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function tearDown() {
-    $ids = $this->developerController->getEntityIds();
+    $remote_ids = array_map(function($record): string {
+      return $record['email'];
+    }, $this->edgeDevelopers);
+    $drupal_emails = array_map(function(UserInterface $user): string {
+      return $user->getEmail();
+    }, $this->drupalUsers);
+    $ids = array_merge($remote_ids, $drupal_emails);
     foreach ($ids as $id) {
-      $this->developerController->delete($id);
+      Developer::load($id)->delete();
     }
     parent::tearDown();
   }
 
   public function testUserSync() {
-    $this->drupalGet('/admin/config/apigee_edge');
+    $this->drupalGet('/admin/config/apigee-edge');
     $this->clickLinkProperly(t('Run user sync'));
     $this->assertSession()->pageTextContains(t('Users are in sync with Edge.'));
 
@@ -121,7 +107,7 @@ class UserSyncTest extends BrowserTestBase {
 
     foreach ($this->drupalUsers as $drupalUser) {
       /** @var Developer $dev */
-      $dev = $this->developerController->load($drupalUser->getEmail());
+      $dev = Developer::load($drupalUser->getEmail());
       $this->assertNotEmpty($dev, 'Developer found on edge.');
       $this->assertEquals($drupalUser->getAccountName(), $dev->getUserName());
       $this->assertEquals($drupalUser->get('first_name')->value, $dev->getFirstName());

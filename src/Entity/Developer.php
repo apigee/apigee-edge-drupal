@@ -41,6 +41,11 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
    *   has bundles, the bundle key has to be specified.
    */
   public function __construct(array $values = []) {
+    // Callers expect that the status is always either 'active' or 'inactive',
+    // never null.
+    if (empty($values['status'])) {
+      $values['status'] = static::STATUS_ACTIVE;
+    }
     parent::__construct($values);
     $this->entityTypeId = 'developer';
     $this->originalEmail = isset($this->originalEmail) ? $this->originalEmail : $this->email;
@@ -62,7 +67,7 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
       'userName' => $user->getAccountName(),
       'firstName' => $user->get('first_name')->value,
       'lastName' => $user->get('last_name')->value,
-      'status' => $user->isActive() ? Developer::STATUS_ACTIVE : Developer::STATUS_INACTIVE,
+      'status' => $user->isActive() ? static::STATUS_ACTIVE : static::STATUS_INACTIVE,
     ];
 
     $developer = !isset($user->original) ? static::create($developer_data) : new static($developer_data);

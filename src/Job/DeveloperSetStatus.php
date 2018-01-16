@@ -2,6 +2,7 @@
 
 namespace Drupal\apigee_edge\Job;
 
+use Apigee\Edge\Api\Management\Controller\DeveloperController;
 use Apigee\Edge\Api\Management\Entity\Developer;
 
 /**
@@ -36,7 +37,8 @@ class DeveloperSetStatus extends EdgeJob {
    * {@inheritdoc}
    */
   protected function executeRequest() {
-    $this->getConnector()->getDeveloperController()->setStatus($this->developerId, $this->status);
+    $controller = new DeveloperController($this->getConnector()->getOrganization(), $this->getConnector()->getClient());
+    $controller->setStatus($this->developerId, $this->status);
   }
 
   /**

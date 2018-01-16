@@ -2,7 +2,7 @@
 
 namespace Drupal\apigee_edge\Job;
 
-use Apigee\Edge\Api\Management\Entity\DeveloperInterface;
+use Drupal\apigee_edge\Entity\DeveloperInterface;
 
 /**
  * A job to update a developer.
@@ -12,7 +12,7 @@ class DeveloperUpdate extends EdgeJob {
   /**
    * A developer who is being updated.
    *
-   * @var \Apigee\Edge\Api\Management\Entity\DeveloperInterface
+   * @var \Drupal\apigee_edge\Entity\DeveloperInterface
    */
   protected $developer;
 
@@ -28,7 +28,7 @@ class DeveloperUpdate extends EdgeJob {
    * {@inheritdoc}
    */
   protected function executeRequest() {
-    $this->getConnector()->getDeveloperController()->update($this->developer);
+    $this->developer->save();
   }
 
   /**

@@ -2,6 +2,8 @@
 
 namespace Drupal\apigee_edge\Job;
 
+use Drupal\apigee_edge\Entity\Developer;
+
 /**
  * A job to delete a developer.
  */
@@ -26,7 +28,7 @@ class DeveloperDelete extends EdgeJob {
    * {@inheritdoc}
    */
   protected function executeRequest() {
-    $this->getConnector()->getDeveloperController()->delete($this->developerId);
+    Developer::load($this->developerId)->delete();
   }
 
   /**

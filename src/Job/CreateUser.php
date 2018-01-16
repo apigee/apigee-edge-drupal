@@ -2,7 +2,7 @@
 
 namespace Drupal\apigee_edge\Job;
 
-use Apigee\Edge\Api\Management\Entity\Developer;
+use Drupal\apigee_edge\Entity\Developer;
 use Drupal\user\Entity\User;
 
 /**
@@ -32,8 +32,8 @@ class CreateUser extends EdgeJob {
    * {@inheritdoc}
    */
   protected function executeRequest() {
-    /** @var \Apigee\Edge\Api\Management\Entity\Developer $developer */
-    $developer = $this->getConnector()->getDeveloperController()->load($this->mail);
+    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
+    $developer = Developer::load($this->mail);
     User::create([
       'name' => $developer->getUserName(),
       'mail' => $developer->getEmail(),

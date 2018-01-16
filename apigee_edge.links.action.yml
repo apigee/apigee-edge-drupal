@@ -3,7 +3,7 @@ apigee_edge.schedule_user_sync:
   title: 'Schedule user sync'
   options:
     query:
-      destination: '/admin/config/apigee_edge'
+      destination: '/admin/config/apigee-edge'
   appears_on:
     - apigee_edge.settings
 
@@ -12,6 +12,6 @@ apigee_edge.run_user_sync:
   title: 'Run user sync'
   options:
     query:
-      destination: '/admin/config/apigee_edge'
+      destination: '/admin/config/apigee-edge'
   appears_on:
     - apigee_edge.settings

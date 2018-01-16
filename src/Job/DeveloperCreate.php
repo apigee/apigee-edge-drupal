@@ -2,9 +2,9 @@
 
 namespace Drupal\apigee_edge\Job;
 
-use Apigee\Edge\Api\Management\Entity\Developer;
-use Apigee\Edge\Api\Management\Entity\DeveloperInterface;
 use Apigee\Edge\Exception\ClientErrorException;
+use Drupal\apigee_edge\Entity\Developer;
+use Drupal\apigee_edge\Entity\DeveloperInterface;
 use Drupal\apigee_edge\Job;
 use Drupal\user\UserInterface;
 
@@ -18,7 +18,7 @@ class DeveloperCreate extends EdgeJob {
   /**
    * The developer to create.
    *
-   * @var \Apigee\Edge\Api\Management\Entity\DeveloperInterface
+   * @var \Drupal\apigee_edge\Entity\DeveloperInterface
    */
   protected $developer;
 
@@ -43,7 +43,7 @@ class DeveloperCreate extends EdgeJob {
    */
   protected function executeRequest() {
     try {
-      $this->getConnector()->getDeveloperController()->create($this->developer);
+      $this->developer->save();
     }
     catch (ClientErrorException $ex) {
       if ($this->failWhenExists || $ex->getEdgeErrorCode() !== static::ERR_DEVELOPER_ALREADY_EXISTS) {
@@ -65,25 +65,13 @@ class DeveloperCreate extends EdgeJob {
    *   The created job or null if properties are missing on the local account.
    */
   public static function createForUser(UserInterface $account) : ? Job {
-    $developer_data = [
-      'userName' => $account->getAccountName(),
-      'email' => $account->getEmail(),
-      'firstName' => $account->get('first_name')->value,
-      'lastName' => $account->get('last_name')->value,
-    ];
-
-    if (!$developer_data['firstName'] || !$developer_data['lastName']) {
+    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
+    $developer = Developer::createFromDrupalUser($account);
+    if (!$developer->getFirstName() || !$developer->getLastName()) {
       return NULL;
     }
 
-    $jobs = new JobList(TRUE);
-    $developer = new Developer($developer_data);
-    $jobs->addJob(new static($developer));
-    if (!$account->isActive()) {
-      $jobs->addJob(new DeveloperSetStatus($developer->getEmail(), Developer::STATUS_INACTIVE));
-    }
-
-    return $jobs;
+    return new static($developer);
   }
 
   /**

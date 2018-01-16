@@ -2,6 +2,7 @@
 
 namespace Drupal\apigee_edge\Job;
 
+use Apigee\Edge\Api\Management\Controller\DeveloperController;
 use Apigee\Edge\Api\Management\Entity\Developer;
 use Drupal\Core\Database\Connection;
 
@@ -68,7 +69,8 @@ class DeveloperSync extends EdgeJob {
    *   Format: strtolower(email) => email
    */
   protected function loadEdgeUserEmails() : array {
-    $mails = $this->getConnector()->getDeveloperController()->getEntityIds();
+    $controller = new DeveloperController($this->getConnector()->getOrganization(), $this->getConnector()->getClient());
+    $mails = $controller->getEntityIds();
 
     $accounts = [];
     foreach ($mails as $mail) {
