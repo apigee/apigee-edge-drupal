@@ -155,7 +155,7 @@ class DeveloperAppUITest extends BrowserTestBase {
       $account = $this->account;
     }
 
-    $this->drupalPostForm("user/{$account->id()}/apps/create", $data, 'Add Developer App');
+    $this->drupalPostForm("user/{$account->id()}/apps/create", $data, 'Add developer app');
   }
 
   /**
@@ -244,6 +244,32 @@ class DeveloperAppUITest extends BrowserTestBase {
       'displayName' => $name,
     ]);
     $this->assertSession()->pageTextContains($name);
+  }
+
+  /**
+   * Creates and deletes an app.
+   */
+  public function testCreateAndDeleteApp() {
+    $name = strtolower($this->randomMachineName());
+
+    $this->postCreateAppForm([
+      'name' => $name,
+      'displayName' => $name,
+    ]);
+    $this->assertSession()->pageTextContains($name);
+    $this->clickLink($name);
+
+    $this->submitForm([], 'Delete');
+    $this->submitForm([], 'Delete');
+
+    $this->assertSession()->pageTextContains("The {$name} developer app has been deleted.");
+    $apps = array_filter($this->getApps(), function (DeveloperApp $app) use($name): bool {
+      return $app->getName() === $name;
+    });
+    $this->assertEquals([], $apps, 'App is deleted');
+
+    $this->drupalGet("user/{$this->account->id()}/apps");
+    $this->assertSession()->pageTextNotContains($name);
   }
 
   /**
