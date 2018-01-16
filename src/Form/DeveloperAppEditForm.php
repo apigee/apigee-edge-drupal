@@ -7,6 +7,9 @@ use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 
 use Drupal\Component\Utility\Xss;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\PrependCommand;
+use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -19,7 +22,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides a form for displaying and editing the developer apps.
  */
-class DeveloperAppDetailsForm extends FormBase {
+class DeveloperAppEditForm extends FormBase {
 
   /**
    * The renderer service.
@@ -62,7 +65,7 @@ class DeveloperAppDetailsForm extends FormBase {
   protected $entityTypeManager;
 
   /**
-   * Constructs a new DeveloperAppDetailsForm.
+   * Constructs a new DeveloperAppEditForm.
    */
   public function __construct(DateFormatterInterface $date_formatter, RendererInterface $renderer, ConfigFactoryInterface $configFactory, EntityTypeManagerInterface $entityTypeManager) {
     $this->dateFormatter = $date_formatter;
@@ -128,6 +131,15 @@ class DeveloperAppDetailsForm extends FormBase {
     $form['details_fieldset'] = [
       '#type' => 'fieldset',
       '#title' => t('Details'),
+    ];
+
+    $form['details_fieldset']['details_status_wrapper'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'id' => [
+          'details-status-wrapper',
+        ],
+      ],
     ];
 
     $form['details_fieldset']['details_primary_wrapper'] = [
@@ -204,6 +216,10 @@ class DeveloperAppDetailsForm extends FormBase {
     $form['details_fieldset']['details_action_button_wrapper']['details_save_button'] = [
       '#type' => 'submit',
       '#value' => $this->t('Save'),
+      '#name' => 'details_save_button',
+      '#ajax' => [
+        'callback' => '::callback',
+      ],
     ];
 
     return $form;
@@ -449,6 +465,38 @@ class DeveloperAppDetailsForm extends FormBase {
     catch (\Exception $exception) {
       drupal_set_message('Developer app could not be saved.', 'error');
     }
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    $a = 5;
+
+    parent::validateForm($form, $form_state);
+  }
+
+
+  public function callback(array &$form, FormStateInterface $form_state) {
+
+    /*
+     * submit or button?
+     * first call validate? if ok, continue with "button-submit".
+     * validate function?
+     * save: send message to client side
+     * https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21Render%21Element%21Button.php/class/Button/8.2.x
+     */
+
+    $response = new AjaxResponse();
+    drupal_set_message($this->t('Cica.'));
+    drupal_set_message($this->t('Kutya.'), 'error');
+    $status_messages = array('#type' => 'status_messages');
+    $messages = \Drupal::service('renderer')->renderRoot($status_messages);
+    if (!empty($messages)) {
+      $response->addCommand(new ReplaceCommand('#details-status-wrapper', $messages));
+    }
+
+    return $response;
   }
 
   /**

@@ -21,25 +21,28 @@ use Drupal\user\UserInterface;
  *   ),
  *   handlers = {
  *     "storage" = "Drupal\apigee_edge\Entity\Storage\DeveloperAppStorage",
- *     "access" = "Drupal\entity\UncacheableEntityAccessControlHandler",
- *     "permission_provider" = "Drupal\apigee_edge\Entity\DeveloperAppEntityPermissionProvider",
  *     "form" = {
  *       "default" = "Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm",
  *       "add" = "Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm",
  *       "add_for_developer" = "Drupal\apigee_edge\Entity\Form\DeveloperAppCreateFormForDeveloper",
+ *       "edit" = "Drupal\apigee_edge\Entity\Form\DeveloperAppEditForm",
+ *       "edit_for_developer" = "Drupal\apigee_edge\Entity\Form\DeveloperAppEditForm",
  *       "delete" = "Drupal\apigee_edge\Entity\Form\DeveloperAppDeleteForm",
  *       "delete_for_developer" = "Drupal\apigee_edge\Entity\Form\DeveloperAppDeleteFormForDeveloper",
  *     },
  *     "list_builder" = "Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder",
  *   },
  *   links = {
+ *     "canonical" = "/developer-apps/{developer_app}",
  *     "collection" = "/developer-apps",
  *     "add-form" = "/developer-apps/add",
+ *     "edit-form" = "/developer-apps/{developer_app}/edit",
  *     "delete-form" = "/developer-apps/{developer_app}/delete",
+ *     "canonical-by-developer" = "/user/{user}/apps/{app}",
  *     "collection-by-developer" = "/user/{user}/apps",
  *     "add-form-for-developer" = "/user/{user}/apps/add",
+ *     "edit-form-for-developer" = "/user/{user}/apps/{app}/edit",
  *     "delete-form-for-developer" = "/user/{user}/apps/{app}/delete",
- *     "canonical-by-developer" = "/user/{user}/apps/{app}/details",
  *   },
  *   entity_keys = {
  *     "id" = "appId",
@@ -121,7 +124,11 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
       $params['user'] = $this->drupalUserId;
       unset($params['developer_app']);
     }
-    elseif (in_array($rel, ['canonical-by-developer', 'delete-form-for-developer'])) {
+    elseif (in_array($rel, [
+      'canonical-by-developer',
+      'edit-form-for-developer',
+      'delete-form-for-developer',
+    ])) {
       $params['user'] = $this->drupalUserId;
       $params['app'] = $this->getName();
       unset($params['developer_app']);

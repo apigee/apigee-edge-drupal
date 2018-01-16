@@ -332,7 +332,7 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
       ],
       'link' => Link::createFromRoute($this->t('Add @devAppLabel', [
         '@devAppLabel' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
-      ]), 'entity.developer_app.add', [], ['attributes' => ['class' => 'btn btn-primary btn--add-app']])->toRenderable(),
+      ]), 'entity.developer_app.add_form', [], ['attributes' => ['class' => 'btn btn-primary btn--add-app']])->toRenderable(),
     ];
     $build['table'] = [
       '#type' => 'table',
