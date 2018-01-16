@@ -4,9 +4,9 @@ namespace Drupal\apigee_edge;
 
 use Drupal\apigee_edge\Annotation\CredentialsStorage;
 use Drupal\Component\Plugin\Factory\DefaultFactory;
-use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Plugin\DefaultPluginManager;
 
 /**
  * Provides a credentials storage plugin manager.

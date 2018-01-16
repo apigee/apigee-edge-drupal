@@ -7,7 +7,6 @@ use Apigee\Edge\Api\Management\Entity\AppCredential;
 use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
-use Drupal\apigee_edge\Utility\AppStatusDisplayTrait;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
@@ -30,8 +29,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * by calling getPageTitle().
  */
 class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppPageTitleInterface, ContainerInjectionInterface {
-
-  use AppStatusDisplayTrait;
 
   /** @var \Drupal\Core\Render\RendererInterface */
   protected $renderer;
@@ -217,11 +214,11 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
     $warningRow = &$rows[$warningRowId]['data'];
     $infoRow['app_name'] = $this->getAppDetailsLink($entity);
     $infoRow['app_status']['data'] = [
-      '#prefix' => '<span class="' . Html::escape($this->getAppStatus($entity)) . ' wrapper--status">',
+      '#prefix' => '<span class="' . Html::escape($entity->getStatus()) . ' wrapper--status">',
       '#suffix' => '</span>',
       '#type' => 'html_tag',
       '#tag' => 'span',
-      '#value' => $this->getAppStatus($entity),
+      '#value' => $entity->getStatus(),
       '#attributes' => [
         'class' => [
           'label--status',
@@ -254,13 +251,12 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
     }
 
     /*
-     * Only display warning next to the status if:
-     *  - app has multiple credentials and one of them is revoked (if it has
-     *    only one revoked credentials we display "revoked" as app status)
-     *  - if any credentials of the app has a product with revoked or pending
+     * Display warning sign next to the status if app's status is approved, but:
+     *  - any credentials of the app is in revoked status
+     *  - any products of any credentials of the app is in revoked or pending
      *    status.
      */
-    if (($this->getAppStatus($entity) !== App::STATUS_REVOKED && $hasRevokedCred) || $hasPendingCredProduct || $hasRevokedCredProduct) {
+    if ($entity->getStatus() === App::STATUS_APPROVED && ($hasRevokedCred || $hasPendingCredProduct || $hasRevokedCredProduct)) {
       $build['status'] = $infoRow['app_status']['data'];
       $build['warning'] = [
         '#type' => 'html_tag',
@@ -286,12 +282,21 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
       ];
 
       if ($hasRevokedCred) {
-        $warningRow['info']['data'] = $this->t(
-          'One of the credentials associated with this @app is in revoked status.',
-          [
-            '@app' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
-          ]
-        );
+        $args = [
+          '@app' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
+        ];
+        if (count($entity->getCredentials()) > 1) {
+          $warningRow['info']['data'] = $this->t(
+            'One of the credentials associated with this @app is in revoked status.',
+            $args
+          );
+        }
+        else {
+          $warningRow['info']['data'] = $this->t(
+            'The credential associated with this @app is in revoked status.',
+            $args
+          );
+        }
       }
       elseif ($hasRevokedCredProduct || $hasPendingCredProduct) {
         $args = [

@@ -3,12 +3,13 @@
 namespace Drupal\apigee_edge\Form;
 
 use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
+use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
-use Drupal\apigee_edge\Utility\AppStatusDisplayTrait;
-use Drupal\apigee_edge\Utility\CredentialStatusDisplayTrait;
-use Drupal\Component\Utility\Html;
+
+use Drupal\Component\Utility\Xss;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\RendererInterface;
@@ -19,9 +20,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Provides a form for displaying and editing the developer apps.
  */
 class DeveloperAppDetailsForm extends FormBase {
-
-  use AppStatusDisplayTrait;
-  use CredentialStatusDisplayTrait;
 
   /**
    * The renderer service.
@@ -57,29 +55,20 @@ class DeveloperAppDetailsForm extends FormBase {
   protected $developerApp;
 
   /**
-   * The singular label of the Developer App entity.
+   * The entity type manager.
    *
-   * @var string
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $appLabelSingular;
-
-  /**
-   * The plural label of the API Product entity.
-   *
-   * @var string
-   */
-  protected $apiProductLabelPlural;
+  protected $entityTypeManager;
 
   /**
    * Constructs a new DeveloperAppDetailsForm.
    */
-  public function __construct(DateFormatterInterface $date_formatter, RendererInterface $renderer, ConfigFactoryInterface $configFactory) {
+  public function __construct(DateFormatterInterface $date_formatter, RendererInterface $renderer, ConfigFactoryInterface $configFactory, EntityTypeManagerInterface $entityTypeManager) {
     $this->dateFormatter = $date_formatter;
     $this->renderer = $renderer;
     $this->configFactory = $configFactory;
-
-    $this->appLabelSingular = \Drupal::entityTypeManager()->getDefinition('developer_app')->get('label_singular');
-    $this->apiProductLabelPlural = \Drupal::entityTypeManager()->getDefinition('api_product')->get('label_plural');
+    $this->entityTypeManager = $entityTypeManager;
   }
 
   /**
@@ -89,7 +78,8 @@ class DeveloperAppDetailsForm extends FormBase {
     return new static(
       $container->get('date.formatter'),
       $container->get('renderer'),
-      $container->get('config.factory')
+      $container->get('config.factory'),
+      $container->get('entity_type.manager')
     );
   }
 
@@ -133,7 +123,7 @@ class DeveloperAppDetailsForm extends FormBase {
     $display_name = $this->developerApp->getDisplayName();
     $callback_url = $this->developerApp->getCallbackUrl();
     $description = $this->developerApp->getDescription();
-    $status = $this->getAppStatus($this->developerApp);
+    $status = $this->developerApp->getStatus();
 
     $form['details_fieldset'] = [
       '#type' => 'fieldset',
@@ -148,13 +138,13 @@ class DeveloperAppDetailsForm extends FormBase {
       '#type' => 'textfield',
       '#title' => t('Application Name'),
       '#required' => TRUE,
-      '#default_value' => Html::escape($display_name),
+      '#default_value' => Xss::filter($display_name),
     ];
 
     $form['details_fieldset']['details_primary_wrapper']['callback_url_value'] = [
       '#type' => 'textfield',
       '#title' => t('Callback URL'),
-      '#default_value' => Html::escape($callback_url),
+      '#default_value' => Xss::filter($callback_url),
       '#access' => (bool) $config->get('callback_url_visible'),
       '#required' => (bool) $config->get('callback_url_required'),
     ];
@@ -162,7 +152,7 @@ class DeveloperAppDetailsForm extends FormBase {
     $form['details_fieldset']['details_primary_wrapper']['description_value'] = [
       '#type' => 'textarea',
       '#title' => t('Description'),
-      '#default_value' => Html::escape($description),
+      '#default_value' => Xss::filter($description),
       '#access' => (bool) $config->get('description_visible'),
       '#required' => (bool) $config->get('description_required'),
     ];
@@ -177,7 +167,7 @@ class DeveloperAppDetailsForm extends FormBase {
     ];
     $form['details_fieldset']['details_secondary_wrapper']['status_value'] = [
       '#type' => 'status_property',
-      '#value' => Html::escape($status),
+      '#value' => Xss::filter($status),
     ];
 
     $form['details_fieldset']['details_secondary_wrapper']['created_label'] = [
@@ -186,7 +176,7 @@ class DeveloperAppDetailsForm extends FormBase {
     ];
 
     $form['details_fieldset']['details_secondary_wrapper']['created_value'] = [
-      '#markup' => Html::escape($created),
+      '#markup' => Xss::filter($created),
     ];
 
     $form['details_fieldset']['details_secondary_wrapper']['last_updated_label'] = [
@@ -194,7 +184,7 @@ class DeveloperAppDetailsForm extends FormBase {
       '#title' => t('Last updated'),
     ];
     $form['details_fieldset']['details_secondary_wrapper']['last_updated_value'] = [
-      '#markup' => Html::escape($last_updated),
+      '#markup' => Xss::filter($last_updated),
     ];
 
     $form['details_fieldset']['details_action_button_wrapper'] = [
@@ -238,11 +228,16 @@ class DeveloperAppDetailsForm extends FormBase {
     $consumer_secret = $credential->getConsumerSecret();
     $issued = $this->dateFormatter->format($credential->getIssuedAt() / 1000, 'custom', self::DATE_FORMAT, drupal_get_user_timezone());
     $expires = $credential->getExpiresAt() === '-1' ? t('Never') : $this->dateFormatter->format($credential->getExpiresAt() / 1000, 'custom', self::DATE_FORMAT, drupal_get_user_timezone());
-    $status = $this->getCredentialStatus($this->developerApp, $credential);
+    $status = $credential->getStatus();
 
     $form['credential_fieldset'] = [
       '#type' => 'fieldset',
       '#title' => 'Credential',
+      '#attributes' => [
+        'id' => [
+          'edit-credential_' . $index . '-fieldset',
+        ],
+      ],
     ];
 
     $form['credential_fieldset']['credential_primary_wrapper'] = [
@@ -254,28 +249,28 @@ class DeveloperAppDetailsForm extends FormBase {
       '#title' => t('Consumer Key'),
     ];
     $form['credential_fieldset']['credential_primary_wrapper']['consumer_key_value'] = [
-      '#markup' => Html::escape($consumer_key),
+      '#markup' => Xss::filter($consumer_key),
     ];
     $form['credential_fieldset']['credential_primary_wrapper']['consumer_secret_label'] = [
       '#type' => 'label',
       '#title' => t('Consumer Secret'),
     ];
     $form['credential_fieldset']['credential_primary_wrapper']['consumer_secret_value'] = [
-      '#markup' => Html::escape($consumer_secret),
+      '#markup' => Xss::filter($consumer_secret),
     ];
     $form['credential_fieldset']['credential_primary_wrapper']['issued_label'] = [
       '#type' => 'label',
       '#title' => t('Issued'),
     ];
     $form['credential_fieldset']['credential_primary_wrapper']['issued_value'] = [
-      '#markup' => Html::escape($issued),
+      '#markup' => Xss::filter($issued),
     ];
     $form['credential_fieldset']['credential_primary_wrapper']['expires_label'] = [
       '#type' => 'label',
       '#title' => t('Expires'),
     ];
     $form['credential_fieldset']['credential_primary_wrapper']['expires_value'] = [
-      '#markup' => Html::escape($expires),
+      '#markup' => Xss::filter($expires),
     ];
     $form['credential_fieldset']['credential_primary_wrapper']['status_label'] = [
       '#type' => 'label',
@@ -283,7 +278,7 @@ class DeveloperAppDetailsForm extends FormBase {
     ];
     $form['credential_fieldset']['credential_primary_wrapper']['status_value'] = [
       '#type' => 'status_property',
-      '#value' => Html::escape($status),
+      '#value' => Xss::filter($status),
     ];
 
     $form['credential_fieldset']['credential_secondary_wrapper'] = [
@@ -300,7 +295,7 @@ class DeveloperAppDetailsForm extends FormBase {
     ];
     $form['credential_fieldset']['credential_secondary_wrapper']['api_product_label_wrapper']['api_product_label'] = [
       '#type' => 'label',
-      '#title' => $this->apiProductLabelPlural,
+      '#title' => $this->entityTypeManager->getDefinition('api_product')->getPluralLabel(),
     ];
 
     $form['credential_fieldset']['credential_secondary_wrapper']['api_product_list_wrapper'] = [
@@ -315,9 +310,11 @@ class DeveloperAppDetailsForm extends FormBase {
       ],
     ];
 
+    $current_product_list = [];
     for ($i = 0; $i < count($credential->getApiProducts()); $i++) {
       $api_product_name = $credential->getApiProducts()[$i]->getApiproduct();
       $api_product_status = $credential->getApiProducts()[$i]->getStatus();
+      $current_product_list[] = $api_product_name;
 
       $form['credential_fieldset']['credential_secondary_wrapper']['api_product_list_wrapper'][$i] = [
         '#type' => 'container',
@@ -328,41 +325,42 @@ class DeveloperAppDetailsForm extends FormBase {
         ],
       ];
       $form['credential_fieldset']['credential_secondary_wrapper']['api_product_list_wrapper'][$i]['api_product_name_value'] = [
-        '#markup' => Html::escape($api_product_name),
+        '#markup' => Xss::filter($api_product_name),
       ];
       $form['credential_fieldset']['credential_secondary_wrapper']['api_product_list_wrapper'][$i]['api_product_status_value'] = [
         '#type' => 'status_property',
-        '#value' => Html::escape($api_product_status),
+        '#value' => Xss::filter($api_product_status),
       ];
     }
-
-    $api_product_names = [];
-    foreach ($credential->getApiProducts() as $api_product) {
-      $api_product_names[$api_product->getApiproduct()] = $api_product->getApiproduct();
-    }
-
-    if ((bool) $config->get('multiple_products')) {
-      $form['credential_fieldset']['credential_secondary_wrapper']['api_product_list_wrapper']['api_product_list_edit'] = [
-        '#type' => 'checkboxes',
-        '#title' => $this->apiProductLabelPlural,
-        '#options' => $api_product_names,
-        '#required' => (bool) $config->get('require'),
-      ];
-    }
-    else {
-      $form['credential_fieldset']['credential_secondary_wrapper']['api_product_list_wrapper']['api_product_list_edit'] = [
-        '#type' => 'radios',
-        '#title' => $this->apiProductLabelPlural,
-        '#options' => $api_product_names,
-        '#required' => (bool) $config->get('require'),
-      ];
-    }
-
-    $form['credential_fieldset']['credential_action_button_wrapper'] = [
-      '#type' => 'container',
-    ];
 
     if ((bool) $config->get('associate_apps') && (bool) $config->get('user_select')) {
+      /** @var \Drupal\apigee_edge\Entity\ApiProduct[] $products */
+      $products = ApiProduct::loadMultiple();
+      $product_list = [];
+      foreach ($products as $product) {
+        $product_list[$product->id()] = $product->getDisplayName();
+      }
+
+      $multiple = $config->get('multiple_products');
+      $form['credential_fieldset']['credential_secondary_wrapper']['api_product_list_wrapper']['api_product_list_edit'][$index] = [
+        '#title' => $this->entityTypeManager->getDefinition('api_product')->getPluralLabel(),
+        '#options' => $product_list,
+        '#required' => (bool) $config->get('require'),
+        '#default_value' => $multiple ? $current_product_list : reset($current_product_list),
+      ];
+
+      if ($config->get('display_as_select')) {
+        $form['credential_fieldset']['credential_secondary_wrapper']['api_product_list_wrapper']['api_product_list_edit'][$index]['#type'] = 'select';
+        $form['credential_fieldset']['credential_secondary_wrapper']['api_product_list_wrapper']['api_product_list_edit'][$index]['#multiple'] = $multiple;
+      }
+      else {
+        $form['credential_fieldset']['credential_secondary_wrapper']['api_product_list_wrapper']['api_product_list_edit'][$index]['#type'] = $multiple ? 'checkboxes' : 'radios';
+      }
+
+      $form['credential_fieldset']['credential_action_button_wrapper'] = [
+        '#type' => 'container',
+      ];
+
       $form['credential_fieldset']['credential_action_button_wrapper']['credential_edit_button'] = [
         '#type' => 'button',
         '#value' => $this->t('Edit'),
@@ -393,7 +391,7 @@ class DeveloperAppDetailsForm extends FormBase {
       "Deleting the '"
       . $this->developerApp->getDisplayName()
       . "' "
-      . $this->appLabelSingular
+      . $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel()
       . " will also delete all of its data. The action cannot be undone.";
 
     $form['delete_fieldset'] = [
@@ -415,7 +413,7 @@ class DeveloperAppDetailsForm extends FormBase {
       ],
     ];
     $form['delete_fieldset']['delete_text_wrapper']['delete_text'] = [
-      '#markup' => Html::escape($delete_text),
+      '#markup' => Xss::filter($delete_text),
     ];
 
     $form['delete_fieldset']['delete_button_wrapper'] = [

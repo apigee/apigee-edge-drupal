@@ -6,7 +6,6 @@ use Apigee\Edge\Api\Management\Controller\OrganizationController;
 use Apigee\Edge\HttpClient\Client;
 use Drupal\apigee_edge\Credentials;
 use Drupal\apigee_edge\CredentialsInterface;
-use Drupal\apigee_edge\CredentialsSaveException;
 use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
