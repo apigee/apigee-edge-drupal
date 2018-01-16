@@ -150,7 +150,7 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
    */
   protected function getAppDetailsLink(DeveloperAppInterface $app) {
     // FIXME When apps has a dedicated details page.
-    return new Link($app->getDisplayName(), new \Drupal\Core\Url('<front>'));
+    return new Link($app->getDisplayName(), new Url('<front>'));
   }
 
   /**
@@ -334,11 +334,11 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
       '#header' => $this->buildHeader(),
       '#title' => $this->getTitle(),
       '#rows' => [],
-      '#empty' => $this->t('There is no @devAppLabel yet.', ['@devAppLabel' => $this->entityType->getLabel()]),
+      '#empty' => $this->t('There is no @label yet.', ['@label' => $this->entityType->getLabel()]),
       '#cache' => [
         // TODO
-        // 'contexts' => $this->entityType->getListCacheContexts(),
-        // 'tags' => $this->entityType->getListCacheTags(),
+        'contexts' => $this->entityType->getListCacheContexts(),
+        'tags' => $this->entityType->getListCacheTags(),
       ],
     ];
     $build['table']['#attributes']['class'][] = 'table--app-list';

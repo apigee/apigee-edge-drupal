@@ -4,8 +4,11 @@ namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Entity\EntityNormalizer;
 use Apigee\Edge\Entity\Property\DisplayNamePropertyInterface;
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Cache\RefinableCacheableDependencyTrait;
 use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Exception\UndefinedLinkTemplateException;
 use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\Core\Language\Language;
@@ -20,6 +23,8 @@ use Symfony\Component\Routing\Exception\RouteNotFoundException;
  * @see \Drupal\Core\Entity\EntityInterface
  */
 trait EdgeEntityBaseTrait {
+
+  use RefinableCacheableDependencyTrait;
 
   /**
    * The entity type.
@@ -364,6 +369,7 @@ trait EdgeEntityBaseTrait {
    * {@inheritdoc}
    */
   public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    $this->invalidateCacheTagsOnSave((bool) $update);
   }
 
   /**
@@ -388,6 +394,7 @@ trait EdgeEntityBaseTrait {
    * {@inheritdoc}
    */
   public static function postDelete(EntityStorageInterface $storage, array $entities) {
+    static::invalidateCacheTagsOnDelete($storage->getEntityType(), $entities);
   }
 
   /**
@@ -428,6 +435,44 @@ trait EdgeEntityBaseTrait {
    * {@inheritdoc}
    */
   public function getCacheTagsToInvalidate() {
+    if ($this->isNew()) {
+      return [];
+    }
+    return [$this->entityTypeId . ':' . $this->id()];
+  }
+
+  /**
+   * Invalidates an entity's cache tags upon save.
+   *
+   * @param bool $update
+   *   TRUE if the entity has been updated, or FALSE if it has been inserted.
+   */
+  protected function invalidateCacheTagsOnSave(bool $update) {
+    $tags = $this->getEntityType()->getListCacheTags();
+    if ($this->hasLinkTemplate('canonical')) {
+      // Creating or updating an entity may change a cached 403 or 404 response.
+      $tags = Cache::mergeTags($tags, ['4xx-response']);
+    }
+    if ($update) {
+      $tags = Cache::mergeTags($tags, $this->getCacheTagsToInvalidate());
+    }
+    Cache::invalidateTags($tags);
+  }
+
+  /**
+   * Invalidates an entity's cache tags upon delete.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entityType
+   *   The entity type definition.
+   * @param \Drupal\Core\Entity\EntityInterface[] $entities
+   *   An array of entities.
+   */
+  protected static function invalidateCacheTagsOnDelete(EntityTypeInterface $entityType, array $entities) {
+    $tags = $entityType->getListCacheTags();
+    foreach ($entities as $entity) {
+      $tags = Cache::mergeTags($tags, $entity->getCacheTagsToInvalidate());
+    }
+    Cache::invalidateTags($tags);
   }
 
   /**
@@ -498,43 +543,11 @@ trait EdgeEntityBaseTrait {
   /**
    * {@inheritdoc}
    */
-  public function getCacheContexts() {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function getCacheTags() {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheMaxAge() {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function addCacheContexts(array $cache_contexts) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function addCacheTags(array $cache_tags) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function mergeCacheMaxAge($max_age) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function addCacheableDependency($other_object) {
+    if ($this->cacheTags) {
+      return Cache::mergeTags($this->getCacheTagsToInvalidate(), $this->cacheTags);
+    }
+    return $this->getCacheTagsToInvalidate();
   }
 
 }
