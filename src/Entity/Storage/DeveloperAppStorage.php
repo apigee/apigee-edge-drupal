@@ -66,7 +66,6 @@ class DeveloperAppStorage extends EdgeEntityStorageBase implements DeveloperAppS
    * Adds Drupal user information to loaded entities.
    */
   protected function postLoad(array &$entities) {
-    parent::postLoad($entities);
     $appid_developerid_map = [];
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
     foreach ($entities as $entity) {
@@ -95,6 +94,9 @@ class DeveloperAppStorage extends EdgeEntityStorageBase implements DeveloperAppS
         $entity->setOwnerId($devid_uid_map[$entity->getDeveloperId()]);
       }
     }
+    // Call parent post load and with that call hook_developer_app_load()
+    // implementations.
+    parent::postLoad($entities);
   }
 
 }
