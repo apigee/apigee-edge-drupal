@@ -8,7 +8,6 @@ use Drupal\Component\Utility\Xss;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -215,16 +214,6 @@ trait DeveloperAppDetailsControllerTrait {
    */
   protected function pageTitle(array $args = []): TranslatableMarkup {
     return $this->t('@name @devAppLabel', $args);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getPageTitle(RouteMatchInterface $routeMatch): string {
-    return $this->pageTitle([
-      '@name' => $routeMatch->getParameter('developer_app')->getDisplayName(),
-      '@devAppLabel' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel(),
-    ]);
   }
 
 }
