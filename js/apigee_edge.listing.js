@@ -15,8 +15,17 @@
         event.preventDefault();
         var targetURL = $(this).attr('href');
         var targetID = '#' + targetURL.substr(targetURL.indexOf('#') + 1);
+        var textOpen = $(this).data('textOpen');
+        var textClosed = $(this).data('textClosed');
+        var textTarget = $(this).find('.text');
         $(targetID).toggle();
         $(this).toggleClass('open').toggleClass('closed');
+        if ($(this).hasClass('open')) {
+          textTarget.html(textClosed);
+        }
+        else {
+          textTarget.html(textOpen);
+        }
       });
 
     }

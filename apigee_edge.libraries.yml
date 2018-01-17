@@ -8,10 +8,20 @@ apigee_edge.components:
   css:
     theme:
       css/apigee_edge.components.css: {}
+      css/apigee_edge.status.css: {}
 apigee_edge.listing:
   version: 1.0
   css:
     theme:
       css/apigee_edge.listing.css: {}
+      css/apigee_edge.status.css: {}
   js:
     js/apigee_edge.listing.js: {}
+apigee_edge.details:
+  version: 1.0
+  css:
+    theme:
+      css/apigee_edge.details.css: {}
+      css/apigee_edge.status.css: {}
+  js:
+    js/apigee_edge.details.js: {}

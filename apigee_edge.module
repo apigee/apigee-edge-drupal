@@ -253,3 +253,22 @@ function apigee_edge_cron() {
 function apigee_edge_get_executor(): JobExecutor {
   return \Drupal::service('apigee_edge.job_executor');
 }
+
+function apigee_edge_preprocess_table(&$variables) {
+  if ($variables['attributes']['id'] === 'app-list') {
+    $variables['no_striping'] = TRUE;
+    $index = 0;
+
+    foreach ($variables['rows'] as $row) {
+      if ($row['attributes']->hasClass('row--info')) {
+        if (($index % 2 === 0)) {
+          $row['attributes']->addClass('odd');
+          $index++;
+        } else {
+          $row['attributes']->addClass('even');
+          $index++;
+        }
+      }
+    }
+  }
+}

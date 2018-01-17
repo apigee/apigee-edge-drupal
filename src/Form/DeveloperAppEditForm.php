@@ -97,6 +97,10 @@ class DeveloperAppEditForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, UserInterface $user = NULL, DeveloperAppInterface $app = NULL) {
+    $form['#attached']['library'][] = 'apigee_edge/apigee_edge.details';
+    $form['#attached']['library'][] = 'apigee_edge/apigee_edge.components';
+    $form['#attributes']['class'][] = 'apigee-edge--form';
+
     $this->user = $user;
     $this->developerApp = $app;
 
@@ -139,11 +143,19 @@ class DeveloperAppEditForm extends FormBase {
         'id' => [
           'details-status-wrapper',
         ],
+        'class' => [
+          'items--inline',
+        ],
       ],
     ];
 
     $form['details_fieldset']['details_primary_wrapper'] = [
       '#type' => 'container',
+      '#attributes' => [
+        'class' => [
+          'wrapper--primary',
+        ],
+      ],
     ];
 
     $form['details_fieldset']['details_primary_wrapper']['display_name_value'] = [
@@ -151,6 +163,9 @@ class DeveloperAppEditForm extends FormBase {
       '#title' => t('Application Name'),
       '#required' => TRUE,
       '#default_value' => Xss::filter($display_name),
+      '#attributes' => [
+        'disabled' => 'disabled',
+      ],
     ];
 
     $form['details_fieldset']['details_primary_wrapper']['callback_url_value'] = [
@@ -159,6 +174,9 @@ class DeveloperAppEditForm extends FormBase {
       '#default_value' => Xss::filter($callback_url),
       '#access' => (bool) $config->get('callback_url_visible'),
       '#required' => (bool) $config->get('callback_url_required'),
+      '#attributes' => [
+        'disabled' => 'disabled',
+      ],
     ];
 
     $form['details_fieldset']['details_primary_wrapper']['description_value'] = [
@@ -167,10 +185,19 @@ class DeveloperAppEditForm extends FormBase {
       '#default_value' => Xss::filter($description),
       '#access' => (bool) $config->get('description_visible'),
       '#required' => (bool) $config->get('description_required'),
+      '#resizable' => 'none',
+      '#attributes' => [
+        'disabled' => 'disabled',
+      ],
     ];
 
     $form['details_fieldset']['details_secondary_wrapper'] = [
       '#type' => 'container',
+      '#attributes' => [
+        'class' => [
+        'wrapper--secondary',
+        ],
+      ],
     ];
 
     $form['details_fieldset']['details_secondary_wrapper']['status_label'] = [
@@ -182,40 +209,72 @@ class DeveloperAppEditForm extends FormBase {
       '#value' => Xss::filter($status),
     ];
 
-    $form['details_fieldset']['details_secondary_wrapper']['created_label'] = [
+
+
+    $form['details_fieldset']['details_secondary_wrapper']['created'] = [
+      '#type' => 'container',
+    ];
+
+    $form['details_fieldset']['details_secondary_wrapper']['created']['created_label'] = [
       '#type' => 'label',
       '#title' => t('Created'),
     ];
 
-    $form['details_fieldset']['details_secondary_wrapper']['created_value'] = [
+    $form['details_fieldset']['details_secondary_wrapper']['created']['created_value'] = [
       '#markup' => Xss::filter($created),
     ];
 
-    $form['details_fieldset']['details_secondary_wrapper']['last_updated_label'] = [
+    $form['details_fieldset']['details_secondary_wrapper']['last_updated'] = [
+      '#type' => 'container',
+    ];
+
+    $form['details_fieldset']['details_secondary_wrapper']['last_updated']['last_updated_label'] = [
       '#type' => 'label',
       '#title' => t('Last updated'),
     ];
-    $form['details_fieldset']['details_secondary_wrapper']['last_updated_value'] = [
+    $form['details_fieldset']['details_secondary_wrapper']['last_updated']['last_updated_value'] = [
       '#markup' => Xss::filter($last_updated),
     ];
 
+
+
     $form['details_fieldset']['details_action_button_wrapper'] = [
       '#type' => 'container',
+      '#attributes' => [
+        'class' => [
+          'wrapper--buttons',
+        ],
+      ],
     ];
 
     $form['details_fieldset']['details_action_button_wrapper']['details_edit_button'] = [
       '#type' => 'button',
       '#value' => $this->t('Edit'),
+      '#attributes' => [
+        'class' => [
+          'button--edit',
+        ],
+      ],
     ];
 
     $form['details_fieldset']['details_action_button_wrapper']['details_cancel_button'] = [
       '#type' => 'button',
       '#value' => $this->t('Cancel'),
+      '#attributes' => [
+        'class' => [
+          'hidden',
+        ],
+      ],
     ];
 
     $form['details_fieldset']['details_action_button_wrapper']['details_save_button'] = [
       '#type' => 'submit',
       '#value' => $this->t('Save'),
+      '#attributes' => [
+        'class' => [
+          'hidden',
+        ],
+      ],
       '#name' => 'details_save_button',
       '#ajax' => [
         'callback' => '::callback',
@@ -258,47 +317,84 @@ class DeveloperAppEditForm extends FormBase {
 
     $form['credential_fieldset']['credential_primary_wrapper'] = [
       '#type' => 'container',
+      '#attributes' => [
+        'class' => [
+          'wrapper--primary',
+        ],
+      ],
     ];
 
-    $form['credential_fieldset']['credential_primary_wrapper']['consumer_key_label'] = [
+    $form['credential_fieldset']['credential_primary_wrapper']['consumer_key'] = [
+      '#type' => 'container',
+    ];
+    $form['credential_fieldset']['credential_primary_wrapper']['consumer_key']['consumer_key_label'] = [
       '#type' => 'label',
       '#title' => t('Consumer Key'),
     ];
-    $form['credential_fieldset']['credential_primary_wrapper']['consumer_key_value'] = [
+    $form['credential_fieldset']['credential_primary_wrapper']['consumer_key']['consumer_key_value'] = [
+      '#prefix' => '<span>',
       '#markup' => Xss::filter($consumer_key),
+      '#suffix' => '</span>',
     ];
-    $form['credential_fieldset']['credential_primary_wrapper']['consumer_secret_label'] = [
+
+    $form['credential_fieldset']['credential_primary_wrapper']['consumer_secret'] = [
+      '#type' => 'container',
+    ];
+    $form['credential_fieldset']['credential_primary_wrapper']['consumer_secret']['consumer_secret_label'] = [
       '#type' => 'label',
       '#title' => t('Consumer Secret'),
     ];
-    $form['credential_fieldset']['credential_primary_wrapper']['consumer_secret_value'] = [
+    $form['credential_fieldset']['credential_primary_wrapper']['consumer_secret']['consumer_secret_value'] = [
+      '#prefix' => '<span>',
       '#markup' => Xss::filter($consumer_secret),
+      '#suffix' => '</span>',
     ];
-    $form['credential_fieldset']['credential_primary_wrapper']['issued_label'] = [
+
+    $form['credential_fieldset']['credential_primary_wrapper']['issued'] = [
+      '#type' => 'container',
+    ];
+    $form['credential_fieldset']['credential_primary_wrapper']['issued']['issued_label'] = [
       '#type' => 'label',
       '#title' => t('Issued'),
     ];
-    $form['credential_fieldset']['credential_primary_wrapper']['issued_value'] = [
+    $form['credential_fieldset']['credential_primary_wrapper']['issued']['issued_value'] = [
+      '#prefix' => '<span>',
       '#markup' => Xss::filter($issued),
+      '#suffix' => '</span>',
     ];
-    $form['credential_fieldset']['credential_primary_wrapper']['expires_label'] = [
+
+    $form['credential_fieldset']['credential_primary_wrapper']['expires'] = [
+      '#type' => 'container',
+    ];
+    $form['credential_fieldset']['credential_primary_wrapper']['expires']['expires_label'] = [
       '#type' => 'label',
       '#title' => t('Expires'),
     ];
-    $form['credential_fieldset']['credential_primary_wrapper']['expires_value'] = [
+    $form['credential_fieldset']['credential_primary_wrapper']['expires']['expires_value'] = [
+      '#prefix' => '<span>',
       '#markup' => Xss::filter($expires),
+      '#suffix' => '</span>',
     ];
-    $form['credential_fieldset']['credential_primary_wrapper']['status_label'] = [
+
+    $form['credential_fieldset']['credential_primary_wrapper']['status'] = [
+      '#type' => 'container',
+    ];
+    $form['credential_fieldset']['credential_primary_wrapper']['status']['status_label'] = [
       '#type' => 'label',
       '#title' => t('Key Status'),
     ];
-    $form['credential_fieldset']['credential_primary_wrapper']['status_value'] = [
+    $form['credential_fieldset']['credential_primary_wrapper']['status']['status_value'] = [
       '#type' => 'status_property',
       '#value' => Xss::filter($status),
     ];
 
     $form['credential_fieldset']['credential_secondary_wrapper'] = [
       '#type' => 'container',
+      '#attributes' => [
+        'class' => [
+          'wrapper--secondary',
+        ],
+      ],
     ];
 
     $form['credential_fieldset']['credential_secondary_wrapper']['api_product_label_wrapper'] = [
@@ -365,6 +461,15 @@ class DeveloperAppEditForm extends FormBase {
         '#default_value' => $multiple ? $current_product_list : reset($current_product_list),
       ];
 
+      $form['credential_fieldset']['credential_action_button_wrapper'] = [
+        '#type' => 'container',
+        '#attributes' => [
+          'class' => [
+            'wrapper--buttons',
+          ],
+        ],
+      ];
+
       if ($config->get('display_as_select')) {
         $form['credential_fieldset']['credential_secondary_wrapper']['api_product_list_wrapper']['api_product_list_edit'][$index]['#type'] = 'select';
         $form['credential_fieldset']['credential_secondary_wrapper']['api_product_list_wrapper']['api_product_list_edit'][$index]['#multiple'] = $multiple;
@@ -380,16 +485,31 @@ class DeveloperAppEditForm extends FormBase {
       $form['credential_fieldset']['credential_action_button_wrapper']['credential_edit_button'] = [
         '#type' => 'button',
         '#value' => $this->t('Edit'),
+        '#attributes' => [
+          'class' => [
+            'button--edit',
+          ],
+        ],
       ];
 
       $form['credential_fieldset']['credential_action_button_wrapper']['credential_cancel_button'] = [
         '#type' => 'button',
         '#value' => $this->t('Cancel'),
+        '#attributes' => [
+          'class' => [
+            'hidden',
+          ],
+        ],
       ];
 
       $form['credential_fieldset']['credential_action_button_wrapper']['credential_save_button'] = [
         '#type' => 'submit',
         '#value' => $this->t('Save'),
+        '#attributes' => [
+          'class' => [
+            'hidden',
+          ],
+        ],
       ];
     }
 
@@ -437,6 +557,7 @@ class DeveloperAppEditForm extends FormBase {
       '#attributes' => [
         'class' => [
           'delete-button-wrapper',
+          'wrapper--buttons',
         ],
       ],
     ];

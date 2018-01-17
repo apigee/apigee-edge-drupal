@@ -1,0 +1,18 @@
+.wrapper--status {
+  padding: 4px;
+  border-radius: 2px;
+  text-align: center;
+  font-size: 85%;
+  display: inline-block;
+  vertical-align: top;
+  width: 70px;
+  color: white;
+}
+
+.wrapper--status.approved {
+  background-color: green;
+}
+
+.wrapper--status.revoked {
+  background-color: red;
+}

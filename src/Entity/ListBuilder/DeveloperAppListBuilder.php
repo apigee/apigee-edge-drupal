@@ -261,11 +261,17 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
             'toggle--warning',
             'closed',
           ],
+          'data-text-open' => [
+            $this->t('Show details'),
+          ],
+          'data-text-closed' => [
+            $this->t('Hide details'),
+          ],
         ],
         'fragment' => $warningRowId,
       ];
       $url = Url::fromUserInput($request->getRequestUri(), $link_options);
-      $link = Link::fromTextAndUrl('^', $url);
+      $link = Link::fromTextAndUrl($this->t('<span class="ui-icon-triangle-1-e ui-icon"></span><span class="text">Show details</span>'), $url);
       $build['warning-toggle'] = $link->toRenderable();
       $infoRow['app_status']['data'] = $this->renderer->render($build);
       $warningRow['info'] = [
@@ -339,6 +345,7 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
     }
 
     $build['table'] = [
+      '#id' => 'app-list',
       '#type' => 'table',
       '#header' => $this->buildHeader(),
       '#title' => $this->getTitle(),

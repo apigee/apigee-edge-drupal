@@ -3,36 +3,19 @@
 .circle {
   border-radius: 50%;
   color: white;
-  width: 13px;
+  width: 14px;
   height: 14px;
   background: orange;
   display: table-cell;
   text-align: center;
   font-size: 85%;
-  padding-left: 1px;
-  margin: 0 1rem;
+  margin: 0 0 0 1rem;
   float: left;
   margin-top: 4px;
 }
 
 .wrapper--status {
-  padding: 4px;
-  border-radius: 2px;
-  text-align: center;
-  font-size: 85%;
-  display: table-cell;
-  vertical-align: top;
-  width: 70px;
-  color: white;
   float: left;
-}
-
-.wrapper--status.approved {
-  background-color: green;
-}
-
-.wrapper--status.revoked {
-  background-color: red;
 }
 
 .row--warning {
@@ -75,11 +58,11 @@
 .toggle--warning {
   display: inline-block;
   overflow: hidden;
-  text-indent: -9999px;
   border-bottom: none;
   text-decoration: none;
   position: relative;
-  top: 6px;
+  top: 4px;
+  font-size: 85%;
 }
 
 .toggle--warning:hover,
@@ -90,20 +73,13 @@
 }
 
 .toggle--warning::after {
-  content: ' ';
-  float: left;
-  text-indent: 0;
-  width: 0;
-  height: 0;
-  border-style: solid;
+
 }
 
 .toggle--warning.closed::after {
-  border-width: 0 6px 10px 6px;
-  border-color: transparent transparent black transparent;
+
 }
 
-.toggle--warning.open::after {
-  border-width: 10px 6px 0 6px;
-  border-color: black transparent transparent transparent;
+.toggle--warning.open span {
+  background-position: -65px -16px;
 }

@@ -1,0 +1,40 @@
+.apigee-edge-developer-app-details .wrapper--buttons {
+  text-align: right;
+}
+
+.wrapper--primary,
+.wrapper--secondary {
+  width: 48%;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.wrapper--secondary {
+  margin-left: 2%;
+}
+
+.wrapper--secondary .api-product-list-wrapper {
+  max-width: 300px;
+}
+
+.apigee-edge-developer-app-details label {
+  margin-bottom: 0;
+  vertical-align: middle;
+  font-weight: bold;
+  word-break: break-all;
+  padding-right: 1rem;
+  display: inline-block;
+  width: 140px;
+}
+
+.apigee-edge-developer-app-details .api-product-list-row .api-product-name {
+  float: left;
+}
+
+.apigee-edge-developer-app-details .api-product-list-row .wrapper--status {
+  float: right;
+}
+
+.apigee-edge-developer-app-details .hidden {
+  display: none;
+}
