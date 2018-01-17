@@ -108,7 +108,7 @@ entity.developer_app.collection_by_developer:
     _title_callback: '\Drupal\apigee_edge\Controller\DeveloperAppListBuilderForDeveloper::getPageTitle'
   requirements:
      user: '\d+'
-    _custom_access: '\Drupal\apigee_edge\Access\MyAppsAccessCheck::access'
+     _custom_access: '\Drupal\apigee_edge\Access\MyAppsAccessCheck::access'
 
 entity.developer_app.add_form_for_developer:
   path: '/user/{user}/apps/create'
@@ -117,7 +117,7 @@ entity.developer_app.add_form_for_developer:
     _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppCreateFormForDeveloper::getPageTitle'
   requirements:
      user: '\d+'
-     _entity_create_access: 'TRUE'
+     _entity_create_access: 'developer_app'
 
 entity.developer_app.edit_form_for_developer:
   path: '/user/{user}/apps/{app}/edit'
