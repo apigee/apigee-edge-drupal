@@ -31,19 +31,6 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function getEntitiesByDeveloper(string $developerId): array {
-    // TODO Return Drupal developer app entities!!!
-    // For that, it should be moved to storage?
-    // \Drupal\apigee_edge\Entity\Storage\EdgeEntityStorageBase::doLoadMultiple
-    // should be called to load apps as Drupal entities and leverage Drupal
-    // integration.
-    $dac = new EdgeDeveloperAppController($this->getOrganisation(), $developerId, $this->client);
-    return $dac->getEntities();
-  }
-
-  /**
    * Creates a developer app controller.
    *
    * @param \Apigee\Edge\Api\Management\Entity\DeveloperApp $app
@@ -69,7 +56,6 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   protected function convertEntity(DeveloperApp $app): EdgeDeveloperApp {
     $normalizer = new EntityNormalizer();
     $denormalizer = new EntityDenormalizer();
-
     $normalized = $normalizer->normalize($app);
     return $denormalizer->denormalize($normalized, EdgeDeveloperApp::class);
   }

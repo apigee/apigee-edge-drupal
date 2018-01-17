@@ -12,14 +12,4 @@ use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
  */
 interface DeveloperAppControllerInterface extends EntityCrudOperationsControllerInterface, CpsListingEntityControllerInterface {
 
-  /**
-   * List apps of a developer.
-   *
-   * @param string $developerId
-   *   DeveloperId (UUID) or email address.
-   *
-   * @return \Apigee\Edge\Api\Management\Entity\DeveloperApp[]
-   */
-  public function getEntitiesByDeveloper(string $developerId): array;
-
 }
