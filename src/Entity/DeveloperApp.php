@@ -21,8 +21,8 @@ use Drupal\user\UserInterface;
  *   ),
  *   handlers = {
  *     "storage" = "Drupal\apigee_edge\Entity\Storage\DeveloperAppStorage",
- *     "access" = "Drupal\entity\UncacheableEntityAccessControlHandler",
- *     "permission_provider" = "Drupal\apigee_edge\Entity\DeveloperAppEntityPermissionProvider",
+ *     "access" = "Drupal\apigee_edge\Entity\EdgeEntityAccessControlHandler",
+ *     "permission_provider" = "Drupal\apigee_edge\Entity\EdgeEntityPermissionProviderBase",
  *     "form" = {
  *       "default" = "Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm",
  *       "add" = "Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm",

@@ -121,11 +121,26 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
   /**
    * {@inheritdoc}
    */
+  protected function renderAddAppLink(UserInterface $user = NULL) {
+    $link = parent::renderAddAppLink();
+    if ($user) {
+      $link['#url'] = new Url('entity.developer_app.add_form_for_developer', ['user' => $user->id()], $link['#url']->getOptions());
+    }
+    return $link;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function render(UserInterface $user = NULL) {
     $build = parent::render();
 
     $build['table']['#empty'] = $this->t('Looks like you do not have any apps. Get started by adding one.');
-    $build['add_app']['link']['#url'] = new Url('entity.developer_app.add_form_for_developer', ['user' => $user->id()], $build['add_app']['link']['#url']->getOptions());
+    // If current user has access to the Add app form (validated by the parent
+    // class).
+    if ($build['add_app']) {
+      $build['add_app']['link'] = $this->renderAddAppLink($user);
+    }
 
     $tableRows = [];
     foreach ($this->loadByUser($user, $this->buildHeader()) as $entity) {

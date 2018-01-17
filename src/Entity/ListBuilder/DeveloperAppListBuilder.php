@@ -320,20 +320,33 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
   }
 
   /**
+   * Returns a rendered link to Add developer app form.
+   *
+   * @return array
+   *   Render array.
+   */
+  protected function renderAddAppLink() {
+    return Link::createFromRoute($this->t('Add @devAppLabel', [
+      '@devAppLabel' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
+    ]), 'entity.developer_app.add_form', [], ['attributes' => ['class' => 'btn btn-primary btn--add-app']])->toRenderable();
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function render() {
     $build['#attached']['library'][] = 'apigee_edge/apigee_edge.listing';
 
-    $build['add_app'] = [
-      '#type' => 'container',
-      '#attributes' => [
-        'class' => '',
-      ],
-      'link' => Link::createFromRoute($this->t('Add @devAppLabel', [
-        '@devAppLabel' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
-      ]), 'entity.developer_app.add_form', [], ['attributes' => ['class' => 'btn btn-primary btn--add-app']])->toRenderable(),
-    ];
+    if ($this->entityTypeManager->getAccessControlHandler('developer_app')->createAccess()) {
+      $build['add_app'] = [
+        '#type' => 'container',
+        '#attributes' => [
+          'class' => '',
+        ],
+        'link' => $this->renderAddAppLink(),
+      ];
+    }
+
     $build['table'] = [
       '#type' => 'table',
       '#header' => $this->buildHeader(),
