@@ -50,6 +50,7 @@ entity.developer_app.canonical:
   path: '/developer-apps/{developer_app}'
   defaults:
     _controller: '\Drupal\apigee_edge\Controller\DeveloperAppDetailsController::render'
+    _title_callback: '\Drupal\apigee_edge\Controller\DeveloperAppDetailsController::getPageTitle'
   requirements:
     _entity_access: 'developer_app.view'
 
@@ -90,6 +91,7 @@ entity.developer_app.canonical_by_developer:
   path: '/user/{user}/apps/{app}'
   defaults:
     _controller: '\Drupal\apigee_edge\Controller\DeveloperAppDetailsControllerForDeveloper::render'
+    _title_callback: '\Drupal\apigee_edge\Controller\DeveloperAppDetailsControllerForDeveloper::getPageTitle'
   requirements:
     user: '\d+'
     _developer_app_access: 'view'

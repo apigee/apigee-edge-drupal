@@ -3,47 +3,40 @@
 namespace Drupal\apigee_edge\Controller;
 
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
+use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Form\FormBuilderInterface;
-use Drupal\user\UserInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
  * Displays the details of a developer app on the UI.
  *
  * @package Drupal\apigee_edge\Controller
  */
-class DeveloperAppDetailsController extends ControllerBase {
+class DeveloperAppDetailsController extends ControllerBase implements DeveloperAppPageTitleInterface {
 
   use DeveloperAppDetailsControllerTrait;
 
   /**
-   * {@inheritdoc}
+   * Renders the details of a developer app for a given user.
+   *
+   * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app
+   *   The developer app entity.
+   *
+   * @return array
+   *   The render array.
    */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('entity_type.manager'),
-      $container->get('form_builder')
-    );
+  public function render(DeveloperAppInterface $developer_app): array {
+    return $this->getRenderArray($developer_app);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, FormBuilderInterface $form_builder) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->formBuilder = $form_builder;
-  }
-
-  /**
-   * Renders the details form of a developer app.
-   */
-  public function render(DeveloperAppInterface $developer_app) {
-    $build = [];
-    // $build['form'] = \Drupal::service('entity.form_builder')->getForm($developer_app, 'details');
-
-    return $build;
+  public function getPageTitle(RouteMatchInterface $routeMatch): string {
+    return $this->pageTitle([
+      '@name' => $routeMatch->getParameter('developer_app')->getDisplayName(),
+      '@devAppLabel' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel(),
+    ]);
   }
 
 }
