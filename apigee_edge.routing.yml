@@ -44,16 +44,14 @@ apigee_edge.user.my_apps:
     _controller: '\Drupal\apigee_edge\Controller\DeveloperAppListBuilderForDeveloper::myAppsPage'
     _title_callback: 'apigee_edge_developer_app_entity_operation_title'
   requirements:
-    _user_is_logged_in: 'TRUE'
-    _custom_access: '\Drupal\apigee_edge\Access\MyAppsAccessCheck::access'
+    _permission: 'view own developer_app'
 
 entity.developer_app.canonical:
   path: '/developer-apps/{developer_app}'
   defaults:
     _controller: '\Drupal\apigee_edge\Controller\DeveloperAppDetailsController::render'
   requirements:
-     # This route is only available to admins for now.
-    _permission: 'administer developer_app'
+    _entity_access: 'developer_app.view'
 
 entity.developer_app.collection:
   path: '/developer-apps'
@@ -61,8 +59,7 @@ entity.developer_app.collection:
     _entity_list: 'developer_app'
     _title_callback: '\Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder::getPageTitle'
   requirements:
-     # This route is only available to admins for now.
-    _permission: 'administer developer_app'
+    _permission: 'access developer_app overview+administer developer_app'
 
 entity.developer_app.add_form:
   path: '/developer-apps/add'
@@ -70,7 +67,7 @@ entity.developer_app.add_form:
     _entity_form: 'developer_app.add'
     _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm::getPageTitle'
   requirements:
-     # This route is only available to admins for now.
+     # We did not want to expose this UI to regular users this the reason why route is only available to admins for now.
     _permission: 'administer developer_app'
 
 entity.developer_app.edit_form:
@@ -79,8 +76,7 @@ entity.developer_app.edit_form:
     _entity_form: 'developer_app.edit'
     _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppEditForm::getPageTitle'
   requirements:
-     # This route is only available to admins for now.
-    _permission: 'administer developer_app'
+    _entity_access: 'developer_app.update'
 
 entity.developer_app.delete_form:
   path: '/developer-apps/{developer_app}/delete'
@@ -88,16 +84,13 @@ entity.developer_app.delete_form:
     _entity_form: 'developer_app.delete'
     _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppDeleteForm::getPageTitle'
   requirements:
-    # This route is only available to admins for now.
-    _permission: 'administer developer_app'
+    _entity_access: 'developer_app.delete'
 
 entity.developer_app.canonical_by_developer:
   path: '/user/{user}/apps/{app}'
   defaults:
     _controller: '\Drupal\apigee_edge\Controller\DeveloperAppDetailsControllerForDeveloper::render'
   requirements:
-    # This route is only available to admins for now.
-    _permission: 'administer developer_app'
     user: '\d+'
     _developer_app_access: 'view'
 
@@ -126,7 +119,7 @@ entity.developer_app.edit_form_for_developer:
     _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppEditForm::getPageTitle'
   requirements:
      user: '\d+'
-     _developer_app_access: 'edit'
+     _developer_app_access: 'update'
 
 entity.developer_app.delete_form_for_developer:
   path: '/user/{user}/apps/{app}/delete'

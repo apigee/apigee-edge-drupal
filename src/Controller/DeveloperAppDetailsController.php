@@ -41,7 +41,7 @@ class DeveloperAppDetailsController extends ControllerBase {
    */
   public function render(DeveloperAppInterface $developer_app) {
     $build = [];
-    $build['form'] = \Drupal::service('entity.form_builder')->getForm($developer_app, 'details');
+    // $build['form'] = \Drupal::service('entity.form_builder')->getForm($developer_app, 'details');
 
     return $build;
   }

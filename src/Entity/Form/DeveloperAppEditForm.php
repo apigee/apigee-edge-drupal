@@ -82,6 +82,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
     $actions = parent::actions($form, $form_state);
     $actions['submit']['#value'] = t('Save');
 
+    $actions['delete']['#access'] = $this->entity->access('delete');
     $actions['delete']['#url'] = $this->getFormId() === 'developer_app_developer_app_edit_for_developer_form'
       ? $this->entity->toUrl('delete-form-for-developer')
       : $this->entity->toUrl('delete-form');
