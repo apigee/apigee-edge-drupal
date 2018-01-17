@@ -25,7 +25,7 @@ class MyAppsAccessCheck implements AccessInterface {
       'view own developer_app',
       'view any developer_app',
       'administer developer_app',
-    ]);
+    ], 'OR');
   }
 
 }
