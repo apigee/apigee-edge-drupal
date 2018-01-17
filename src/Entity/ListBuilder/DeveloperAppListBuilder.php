@@ -109,22 +109,6 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultOperations(EntityInterface $entity) {
-    // TODO Use parent::getDefaultOperations() when permissions are working properly.
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getOperations(EntityInterface $entity) {
-    // TODO Use parent::getOperations() when permissions are working properly.
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function load(array $headers = []) {
     $entity_ids = $this->getEntityIds($headers);
     return $this->storage->loadMultiple($entity_ids);
@@ -139,15 +123,22 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
   }
 
   /**
-   * Returns the canonical link of an app.
+   * Returns the link if user can view an app otherwise the label of the app.
    *
    * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $app
+   *   Developer app.
    *
-   * @return \Drupal\Core\Link
+   * @return \Drupal\Core\Link|string
+   *   Link to the view page of an app or the label of the app if the current
+   *   user has no permission to view an app.
+   *
+   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   protected function getAppDetailsLink(DeveloperAppInterface $app) {
-    // FIXME When apps has a dedicated details page.
-    return new Link($app->getDisplayName(), new Url('<front>'));
+    if ($app->access('view')) {
+      return $app->toLink();
+    }
+    return $app->label();
   }
 
   /**
