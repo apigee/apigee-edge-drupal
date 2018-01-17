@@ -2,22 +2,33 @@
 
 namespace Drupal\apigee_edge\Controller;
 
+use Drupal\apigee_edge\Entity\DeveloperAppInterface;
+use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\user\UserInterface;
 
 /**
- * Lists developer apps of a developer on the UI.
+ * Displays the details of a developer app for a given user on the UI.
  *
  * @package Drupal\apigee_edge\Controller
  */
-class DeveloperAppDetailsControllerForDeveloper extends ControllerBase {
+class DeveloperAppDetailsControllerForDeveloper extends ControllerBase implements DeveloperAppPageTitleInterface {
 
   use DeveloperAppDetailsControllerTrait;
 
-  public function render(UserInterface $user, DeveloperAppInterface $app) {
-    $build = [];
-    $build['form'] = $this->formBuilder()->getForm('Drupal\apigee_edge\Form\DeveloperAppEditForm', $user, $app);
-    return $build;
+  /**
+   * Renders the details of a developer app for a given user.
+   *
+   * @param \Drupal\user\UserInterface $user
+   *   The user entity.
+   * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $app
+   *   The developer app entity.
+   *
+   * @return array
+   *   The render array.
+   */
+  public function render(UserInterface $user, DeveloperAppInterface $app): array {
+    return $this->getRenderArray($app);
   }
 
 }

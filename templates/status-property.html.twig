@@ -5,15 +5,12 @@
  *
  * Available variables:
  * - element: Element that will be rendered.
- * - element['value'] : a link
- * - element['description'] : a description
- * - element['pre_render_addition'] : added during the #pre_render function
- * - element['#random_number'] : a random number variable, won't be printed with the element.
+ * - element['value'] : the status string.
  *
  * @ingroup themeable
  */
 #}
 
-<div class="status-property status-property-{{ element.value }}">
+<span class="status-property status-property-{{ element.value }}">
   {{ element.value|render|capitalize }}
-</div>
+</span>
