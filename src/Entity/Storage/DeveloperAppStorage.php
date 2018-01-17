@@ -51,12 +51,8 @@ class DeveloperAppStorage extends EdgeEntityStorageBase implements DeveloperAppS
    * {@inheritdoc}
    */
   public function loadByDeveloper(string $developerId): array {
-    /** @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerInterface $controller */
-    $controller = $this->getController($this->getConnector());
-    $ids = array_map(function ($entity) {
-      /** @var \Apigee\Edge\Api\Management\Entity\DeveloperApp $entity */
-      return $entity->getAppId();
-    }, $controller->getEntitiesByDeveloper($developerId));
+    $ids = $this->getQuery()->condition('developerId', $developerId)
+      ->execute();
     return $this->loadMultiple(array_values($ids));
   }
 
