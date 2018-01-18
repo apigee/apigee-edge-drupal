@@ -5,6 +5,8 @@ namespace Drupal\apigee_edge\Entity;
 use Apigee\Edge\Api\Management\Entity\ApiProduct as EdgeApiProduct;
 
 /**
+ * Defines the API product entity class.
+ *
  * @\Drupal\apigee_edge\Annotation\EdgeEntityType(
  *   id = "api_product",
  *   label = @Translation("API Product"),

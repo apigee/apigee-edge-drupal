@@ -7,7 +7,7 @@ use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
-use Drupal\Core\Config\ConfigFactory;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -21,20 +21,27 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class DeveloperAppCreateForm extends EntityForm implements DeveloperAppPageTitleInterface {
 
-  /** @var \Drupal\apigee_edge\SDKConnectorInterface */
+  /**
+   * The SDK Connector service.
+   *
+   * @var \Drupal\apigee_edge\SDKConnectorInterface
+   */
   protected $sdkConnector;
 
   /**
-   * DeveloperAppCreate constructor.
+   * Constructs DeveloperAppCreateForm.
    *
-   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdkConnector
-   * @param \Drupal\Core\Config\ConfigFactory $configFactory
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
+   *   The SDK Connector service.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   A config factory for retrieving required config objects.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct(SDKConnectorInterface $sdkConnector, ConfigFactory $configFactory, EntityTypeManagerInterface $entityTypeManager) {
-    $this->sdkConnector = $sdkConnector;
-    $this->configFactory = $configFactory;
-    $this->entityTypeManager = $entityTypeManager;
+  public function __construct(SDKConnectorInterface $sdk_connector, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager) {
+    $this->sdkConnector = $sdk_connector;
+    $this->configFactory = $config_factory;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**

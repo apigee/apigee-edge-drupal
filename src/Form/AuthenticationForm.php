@@ -265,7 +265,7 @@ class AuthenticationForm extends ConfigFormBase {
       $auth = $this->authenticationStoragePluginManager
         ->createInstance($form_state->getValue('authentication_method_type'))
         ->createAuthenticationObject($credentials);
-      $client = new Client($auth);
+      $client = new Client($auth, NULL, $credentials->getEndpoint());
       $oc = new OrganizationController($client);
       $oc->load($credentials->getOrganization());
     }

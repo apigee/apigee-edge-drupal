@@ -48,7 +48,6 @@ trait DeveloperAppDetailsControllerTrait {
   protected function getRenderArray(DeveloperAppInterface $developer_app): array {
     $config = $this->configFactory->get('apigee_edge.appsettings');
     $build = [];
-    
     $build['details'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Details'),

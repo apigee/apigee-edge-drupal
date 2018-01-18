@@ -3,7 +3,6 @@
 namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
-use Drupal\Core\Annotation\Translation;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
@@ -61,7 +60,11 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
     urlRouteParameters as private traitUrlRouteParameters;
   }
 
-  /** @var null|int */
+  /**
+   * The Drupal user ID which belongs to the developer app.
+   *
+   * @var null|int
+   */
   protected $drupalUserId;
 
   /**

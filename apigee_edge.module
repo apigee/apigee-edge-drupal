@@ -37,9 +37,6 @@ function apigee_edge_menu_links_discovered_alter(array &$links) {
  */
 function apigee_edge_theme() {
   return [
-    'developer_app' => [
-      'render element' => 'elements',
-    ],
     'status_property' => [
       'render element' => 'element',
     ],
@@ -254,6 +251,9 @@ function apigee_edge_get_executor(): JobExecutor {
   return \Drupal::service('apigee_edge.job_executor');
 }
 
+/**
+ * Implements hook_preprocess_table().
+ */
 function apigee_edge_preprocess_table(&$variables) {
   if ($variables['attributes']['id'] === 'app-list') {
     $variables['no_striping'] = TRUE;
@@ -264,7 +264,8 @@ function apigee_edge_preprocess_table(&$variables) {
         if (($index % 2 === 0)) {
           $row['attributes']->addClass('odd');
           $index++;
-        } else {
+        }
+        else {
           $row['attributes']->addClass('even');
           $index++;
         }

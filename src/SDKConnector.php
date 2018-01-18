@@ -69,7 +69,7 @@ class SDKConnector implements SDKConnectorInterface {
     $credentials = $this->credentialsStoragePlugin->loadCredentials();
     $auth = $this->authenticationMethodPlugin->createAuthenticationObject($credentials);
     $this->organization = $credentials->getOrganization();
-    $this->client = new Client($auth);
+    $this->client = new Client($auth, NULL, $credentials->getEndpoint());
   }
 
   /**

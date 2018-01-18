@@ -17,8 +17,10 @@ interface DeveloperAppPageTitleInterface {
    * from that directly.
    *
    * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
+   *   The current route match.
    *
    * @return string
+   *   The page title.
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string;
 
