@@ -43,7 +43,7 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
   public function __construct(array $values = []) {
     // Callers expect that the status is always either 'active' or 'inactive',
     // never null.
-    if (empty($values['status'])) {
+    if (!isset($values['status'])) {
       $values['status'] = static::STATUS_ACTIVE;
     }
     parent::__construct($values);

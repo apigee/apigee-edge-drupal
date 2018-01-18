@@ -2,7 +2,7 @@
 
 namespace Drupal\apigee_edge\Controller;
 
-use \Apigee\Edge\Entity\EntityInterface;
+use Apigee\Edge\Entity\EntityInterface;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Config\ConfigFactoryInterface;

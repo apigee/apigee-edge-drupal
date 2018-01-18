@@ -68,7 +68,7 @@ class ApiProductTest extends BrowserTestBase {
     $this->resetCache();
 
     $apiproductlist = ApiProduct::loadMultiple();
-    $this->assertEquals([$apiproduct->id()], array_keys($apiproductlist));
+    $this->assertContains($apiproduct->id(), array_keys($apiproductlist));
 
     $value = $this->randomMachineName();
     $apiproduct->setAttribute('test', $value);

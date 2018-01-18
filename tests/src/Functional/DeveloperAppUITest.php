@@ -55,7 +55,10 @@ class DeveloperAppUITest extends BrowserTestBase {
 
     $this->role = $this->createRole([
       'administer apigee edge',
-      'administer apigee edge developer apps settings',
+      'create developer_app',
+      'view own developer_app',
+      'update own developer_app',
+      'delete own developer_app',
     ]);
 
     $this->product = $this->createProduct();
@@ -259,7 +262,7 @@ class DeveloperAppUITest extends BrowserTestBase {
     $this->assertSession()->pageTextContains($name);
     $this->clickLink($name);
 
-    $this->submitForm([], 'Delete');
+    $this->clickLink('Delete');
     $this->submitForm([], 'Delete');
 
     $this->assertSession()->pageTextContains("The {$name} developer app has been deleted.");

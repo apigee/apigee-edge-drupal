@@ -15,11 +15,6 @@ class QueryTest extends BrowserTestBase {
   ];
 
   /**
-   * @var \Apigee\Edge\Api\Management\Controller\DeveloperController
-   */
-  protected $developerController;
-
-  /**
    * @var \Drupal\apigee_edge\Entity\Storage\DeveloperStorageInterface
    */
   protected $storage;
@@ -32,15 +27,15 @@ class QueryTest extends BrowserTestBase {
     ['email' => 'test04@example.com', 'userName' => 'test04', 'firstName' => 'Test04', 'lastName' => 'User'],
   ];
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp() {
     parent::setUp();
 
-    /** @var \Drupal\apigee_edge\SDKConnectorInterface $connector */
-    $connector = \Drupal::service('apigee_edge.sdk_connector');
-    $this->developerController = $connector->getControllerByEntity('developer');
 
     foreach ($this->edgeDevelopers as $edgeDeveloper) {
-      $this->developerController->create(new Developer($edgeDeveloper));
+      Developer::create($edgeDeveloper)->save();
     }
 
     $this->storage = \Drupal::entityTypeManager()->getStorage('developer');
@@ -48,6 +43,8 @@ class QueryTest extends BrowserTestBase {
 
   public function testQuery() {
     $query = $this->storage->getQuery();
+    $query->condition('email', 'test', 'STARTS_WITH');
+    $query->condition('email', '@example.com', 'ENDS_WITH');
     $query->sort('lastName');
     $query->sort('email', 'DESC');
     $results = $query->execute();
@@ -60,18 +57,25 @@ class QueryTest extends BrowserTestBase {
     ]), array_values($results));
 
     $query = $this->storage->getQuery();
+    $query->condition('email', 'test', 'STARTS_WITH');
+    $query->condition('email', '@example.com', 'ENDS_WITH');
     $query->sort('email');
     $query->range(1, 1);
     $results = $query->execute();
     $this->assertEquals(array_values(['test01@example.com']), array_values($results));
 
-    $this->assertEquals(5, $this->storage->getQuery()->count()->execute());
+    $query = $this->storage->getQuery();
+    $query->condition('email', 'test', 'STARTS_WITH');
+    $query->condition('email', '@example.com', 'ENDS_WITH');
+    $this->assertEquals(5, $query->count()->execute());
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function tearDown() {
-    $ids = $this->developerController->getEntityIds();
-    foreach ($ids as $id) {
-      $this->developerController->delete($id);
+    foreach ($this->edgeDevelopers as $edgeDeveloper) {
+      Developer::load($edgeDeveloper['email'])->delete();
     }
     parent::tearDown();
   }

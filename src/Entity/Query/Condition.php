@@ -78,7 +78,7 @@ class Condition extends ConditionBase implements ConditionInterface {
         if (is_array($condition['value'])) {
           $condition['value'] = array_map([Unicode::class, 'strtolower'], $condition['value']);
         }
-        elseif (!is_bool($condition['value'])) {
+        elseif (is_string($condition['value'])) {
           $condition['value'] = Unicode::strtolower($condition['value']);
         }
 

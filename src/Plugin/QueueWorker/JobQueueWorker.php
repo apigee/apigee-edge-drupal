@@ -5,6 +5,7 @@ namespace Drupal\apigee_edge\Plugin\QueueWorker;
 use Drupal\apigee_edge\Job;
 use Drupal\apigee_edge\JobExecutor;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Queue\QueueFactory;
 use Drupal\Core\Queue\QueueWorkerBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -25,12 +26,15 @@ class JobQueueWorker extends QueueWorkerBase implements ContainerFactoryPluginIn
    */
   protected $executor;
 
+  protected $queue;
+
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, JobExecutor $executor) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, JobExecutor $executor, QueueFactory $queueFactory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->executor = $executor;
+    $this->queue = $queueFactory->get('apigee_edge_job');
   }
 
   /**
@@ -39,31 +43,24 @@ class JobQueueWorker extends QueueWorkerBase implements ContainerFactoryPluginIn
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     /** @var \Drupal\apigee_edge\JobExecutor $executor */
     $executor = $container->get('apigee_edge.job_executor');
-    return new static($configuration, $plugin_id, $plugin_definition, $executor);
+    /** @var QueueFactory $queueFactory */
+    $queueFactory = $container->get('queue');
+    return new static($configuration, $plugin_id, $plugin_definition, $executor, $queueFactory);
   }
 
   /**
    * {@inheritdoc}
    */
   public function processItem($data) {
-    $job = $this->executor->load($data['id']);
-    if (!$job) {
+    $job = $this->executor->select($data['tag']);
+
+    if (!$job || $job->getStatus() !== Job::SELECTED) {
       return;
     }
 
-    if ($job->getStatus() !== Job::SELECTED) {
-      return;
-    }
+    $this->executor->call($job);
 
-    $this->executor->call($job, FALSE);
-
-    $status = $job->getStatus();
-    if ($status === Job::IDLE || $status === Job::RESCHEDULED) {
-      $this->executor->cast($job);
-    }
-    else {
-      $this->executor->save($job);
-    }
+    $this->queue->createItem(['tag' => $data['tag']]);
   }
 
 }

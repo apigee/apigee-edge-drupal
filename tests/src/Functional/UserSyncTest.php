@@ -91,15 +91,11 @@ class UserSyncTest extends BrowserTestBase {
     parent::tearDown();
   }
 
-  public function testUserSync() {
-    $this->drupalGet('/admin/config/apigee-edge');
-    $this->clickLinkProperly(t('Run user sync'));
-    $this->assertSession()->pageTextContains(t('Users are in sync with Edge.'));
-
+  protected function verify() {
     foreach ($this->edgeDevelopers as $edgeDeveloper) {
       /** @var User $account */
       $account = user_load_by_mail($edgeDeveloper['email']);
-      $this->assertNotEmpty($account, 'Account found');
+      $this->assertNotEmpty($account, 'Account found: ' . $edgeDeveloper['email']);
       $this->assertEquals($edgeDeveloper['userName'], $account->getAccountName());
       $this->assertEquals($edgeDeveloper['firstName'], $account->get('first_name')->value);
       $this->assertEquals($edgeDeveloper['lastName'], $account->get('last_name')->value);
@@ -113,6 +109,36 @@ class UserSyncTest extends BrowserTestBase {
       $this->assertEquals($drupalUser->get('first_name')->value, $dev->getFirstName());
       $this->assertEquals($drupalUser->get('last_name')->value, $dev->getLastName());
     }
+  }
+
+  public function testUserSync() {
+    $this->drupalGet('/admin/config/apigee-edge');
+    $this->clickLinkProperly(t('Run user sync'));
+    $this->assertSession()->pageTextContains(t('Users are in sync with Edge.'));
+
+    $this->verify();
+  }
+
+  public function testUserAsync() {
+    $this->drupalGet('/admin/config/apigee-edge');
+    $this->clickLinkProperly(t('Schedule user sync'));
+    $this->assertSession()->pageTextContains(t('User synchronization is scheduled.'));
+
+    /** @var \Drupal\Core\Queue\QueueFactory $queue_service */
+    $queue_service = \Drupal::service('queue');
+    /** @var \Drupal\Core\Queue\QueueInterface $queue */
+    $queue = $queue_service->get('apigee_edge_job');
+    /** @var \Drupal\Core\Queue\QueueWorkerManagerInterface $queue_worker_manager */
+    $queue_worker_manager = \Drupal::service('plugin.manager.queue_worker');
+    /** @var \Drupal\Core\Queue\QueueWorkerInterface $worker */
+    $worker = $queue_worker_manager->createInstance('apigee_edge_job');
+
+    while (($item = $queue->claimItem())) {
+      $worker->processItem($item->data);
+      $queue->deleteItem($item);
+    }
+
+    $this->verify();
   }
 
   /**

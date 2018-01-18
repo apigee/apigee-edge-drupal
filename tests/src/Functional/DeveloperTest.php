@@ -2,8 +2,7 @@
 
 namespace Drupal\Tests\apigee_edge\Functional;
 
-use Apigee\Edge\Api\Management\Entity\Developer;
-use Apigee\Edge\Exception\ClientErrorException;
+use Drupal\apigee_edge\Entity\Developer;
 use Drupal\Tests\BrowserTestBase;
 
 /**
@@ -12,13 +11,6 @@ use Drupal\Tests\BrowserTestBase;
  * @group ApigeeEdge
  */
 class DeveloperTest extends BrowserTestBase {
-
-  /**
-   * The DeveloperController object.
-   *
-   * @var \Apigee\Edge\Api\Management\Controller\DeveloperController
-   */
-  protected $developerController;
 
   public static $modules = [
     'apigee_edge',
@@ -30,8 +22,10 @@ class DeveloperTest extends BrowserTestBase {
   protected function setUp() {
     $this->profile = 'standard';
     parent::setUp();
+  }
 
-    $this->developerController = $this->container->get('apigee_edge.sdk_connector')->getControllerByEntity('developer');
+  protected function resetCache() {
+    \Drupal::entityTypeManager()->getStorage('developer')->resetCache();
   }
 
   /**
@@ -56,7 +50,7 @@ class DeveloperTest extends BrowserTestBase {
     $this->submitForm($formdata, 'Create new account');
 
     /** @var Developer $developer */
-    $developer = $this->developerController->load($test_user['email']);
+    $developer = Developer::load($test_user['email']);
 
     $this->assertEquals($developer->getEmail(), $test_user['email']);
     $this->assertEquals($developer->getFirstName(), $test_user['first_name']);
@@ -70,13 +64,17 @@ class DeveloperTest extends BrowserTestBase {
     $formdata['status'] = '1';
     $this->submitForm($formdata, 'Save');
 
-    $developer = $this->developerController->load($test_user['email']);
+    $this->resetCache();
+
+    $developer = Developer::load($test_user['email']);
 
     $this->assertEquals($developer->getEmail(), $test_user['email']);
     $this->assertEquals($developer->getFirstName(), $test_user['first_name']);
     $this->assertEquals($developer->getLastName(), $test_user['last_name']);
     $this->assertEquals($developer->getUserName(), $test_user['username']);
     $this->assertEquals($developer->getStatus(), $developer::STATUS_ACTIVE);
+
+    $developer->delete();
   }
 
   /**
@@ -110,8 +108,10 @@ class DeveloperTest extends BrowserTestBase {
     ];
     $this->submitForm($formdata, 'Create new account');
 
+    $this->resetCache();
+
     /** @var Developer $developer */
-    $developer = $this->developerController->load($test_user['email']);
+    $developer = Developer::load($test_user['email']);
 
     $this->assertEquals($developer->getEmail(), $test_user['email']);
     $this->assertEquals($developer->getFirstName(), $test_user['first_name']);
@@ -132,7 +132,9 @@ class DeveloperTest extends BrowserTestBase {
     $formdata['status'] = $test_user['status'];
     $this->submitForm($formdata, 'Save');
 
-    $developer = $this->developerController->load($test_user['email']);
+    $this->resetCache();
+
+    $developer = Developer::load($test_user['email']);
 
     $this->assertEquals($developer->getEmail(), $test_user['email']);
     $this->assertEquals($developer->getFirstName(), $test_user['first_name']);
@@ -146,7 +148,9 @@ class DeveloperTest extends BrowserTestBase {
     $this->getSession()->getPage()->checkField('edit-user-bulk-form-0');
     $this->getSession()->getPage()->pressButton('edit-submit');
 
-    $developer = $this->developerController->load($test_user['email']);
+    $this->resetCache();
+
+    $developer = Developer::load($test_user['email']);
     $this->assertEquals($developer->getStatus(), $developer::STATUS_INACTIVE);
 
     // Block user on the cancel form using the user_cancel_block method.
@@ -169,7 +173,9 @@ class DeveloperTest extends BrowserTestBase {
     ];
     $this->submitForm($formdata, 'Cancel account');
 
-    $developer = $this->developerController->load($test_user['email']);
+    $this->resetCache();
+
+    $developer = Developer::load($test_user['email']);
     $this->assertEquals($developer->getStatus(), $developer::STATUS_INACTIVE);
 
     // Block user on the cancel form using the user_cancel_reassign method.
@@ -192,7 +198,9 @@ class DeveloperTest extends BrowserTestBase {
     ];
     $this->submitForm($formdata, 'Cancel account');
 
-    $developer = $this->developerController->load($test_user['email']);
+    $this->resetCache();
+
+    $developer = Developer::load($test_user['email']);
     $this->assertEquals($developer->getStatus(), $developer::STATUS_INACTIVE);
 
     // Delete user by admin.
@@ -202,27 +210,9 @@ class DeveloperTest extends BrowserTestBase {
     ];
     $this->submitForm($formdata, 'Cancel account');
 
-    $this->setExpectedException(ClientErrorException::class);
-    $this->developerController->load($test_user['email']);
-  }
+    $this->resetCache();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function tearDown() {
-    parent::tearDown();
-    try {
-      $this->developerController->delete('edge.functional.test@pronovix.com');
-    }
-    catch (\Exception $ex) {
-
-    }
-    try {
-      $this->developerController->delete('mod.edge.functional.test@pronovix.com');
-    }
-    catch (\Exception $ex) {
-
-    }
+    $this->assertFalse(Developer::load($test_user['email']), 'Developer does not exists anymore.');
   }
 
 }

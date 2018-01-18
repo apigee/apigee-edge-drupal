@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\apigee_edge\Functional;
 
-use Apigee\Edge\Api\Management\Entity\Developer;
+use Drupal\apigee_edge\Entity\Developer;
 use Drupal\Tests\BrowserTestBase;
 
 /**
@@ -18,13 +18,6 @@ class EdgeAccountTest extends BrowserTestBase {
    * @var array
    */
   protected $credentials = [];
-
-  /**
-   * The DeveloperController object.
-   *
-   * @var \Apigee\Edge\Api\Management\Controller\DeveloperController
-   */
-  protected $developerController;
 
   public static $modules = [
     'apigee_edge',
@@ -62,8 +55,11 @@ class EdgeAccountTest extends BrowserTestBase {
     }
     parent::setUp();
 
-    $this->developerController = $this->container->get('apigee_edge.sdk_connector')->getControllerByEntity('developer');
     $this->drupalLogin($this->rootUser);
+  }
+
+  protected function resetCache() {
+    \Drupal::entityTypeManager()->getStorage('developer')->resetCache();
   }
 
   /**
@@ -71,7 +67,7 @@ class EdgeAccountTest extends BrowserTestBase {
    */
   public function testCredentialsStorages() {
     // Test private file storage.
-    $this->drupalGet('/admin/config/apigee_edge');
+    $this->drupalGet('/admin/config/apigee-edge');
 
     $formdata = [
       'credentials_storage_type' => 'credentials_storage_private_file',
@@ -94,15 +90,17 @@ class EdgeAccountTest extends BrowserTestBase {
       'lastName' => "Test",
     ];
 
-    $developer = new Developer($developer_data);
-    $this->developerController->create($developer);
+    $developer = Developer::create($developer_data);
+    $developer->save();
+
+    $this->resetCache();
 
     /** @var Developer $developer */
-    $developer = $this->developerController->load($developer_data['email']);
+    $developer = Developer::load($developer_data['email']);
     $this->assertEquals($developer->getEmail(), $developer_data['email']);
 
     // Test env storage.
-    $this->drupalGet('/admin/config/apigee_edge');
+    $this->drupalGet('/admin/config/apigee-edge');
 
     $formdata = [
       'credentials_storage_type' => 'credentials_storage_env',
@@ -114,21 +112,12 @@ class EdgeAccountTest extends BrowserTestBase {
     $this->submitForm($formdata, t('Save configuration'));
     $this->assertSession()->pageTextContains(t('The configuration options have been saved'));
 
-    $developer = $this->developerController->load($developer_data['email']);
+    $this->resetCache();
+
+    $developer = Developer::load($developer_data['email']);
     $this->assertEquals($developer->getEmail(), $developer_data['email']);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function tearDown() {
-    parent::tearDown();
-    try {
-      $this->developerController->delete('edge.functional.test@pronovix.com');
-    }
-    catch (\Exception $ex) {
-
-    }
+    $developer->delete();
   }
 
 }

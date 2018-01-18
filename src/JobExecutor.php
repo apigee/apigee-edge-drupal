@@ -167,8 +167,8 @@ class JobExecutor {
    *   The job to execute later.
    */
   public function cast(Job $job) {
-    $this->ensure($job, Job::SELECTED);
-    $this->queue->createItem(['id' => $job->getId()]);
+    $this->save($job);
+    $this->queue->createItem(['tag' => $job->getTag()]);
   }
 
   /**

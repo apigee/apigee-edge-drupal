@@ -70,7 +70,7 @@ class DeveloperAppTest extends BrowserTestBase {
     $this->assertNotEmpty(DeveloperApp::load($app->id()));
 
     $applist = DeveloperApp::loadMultiple();
-    $this->assertEquals([$app->id()], array_keys($applist));
+    $this->assertContains($app->id(), array_keys($applist));
 
     $value = $this->randomMachineName();
     $app->setAttribute('test', $value);

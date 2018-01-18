@@ -12,3 +12,39 @@ apigee_edge.settings.app:
   route_name: apigee_edge.settings.app
   title: 'Application Settings'
   base_route: apigee_edge.settings
+
+apigee_edge.developer_app.view:
+  route_name: entity.developer_app.canonical
+  title: 'View'
+  base_route: entity.developer_app.canonical
+  weight: -3
+
+apigee_edge.developer_app.edit:
+  route_name: entity.developer_app.edit_form
+  title: 'Edit'
+  base_route: entity.developer_app.canonical
+  weight: -2
+
+apigee_edge.developer_app.delete:
+  route_name: entity.developer_app.delete_form
+  title: 'Delete'
+  base_route: entity.developer_app.canonical
+  weight: -1
+
+apigee_edge.developer_app.view_by_developer:
+  route_name: entity.developer_app.canonical_by_developer
+  title: 'View'
+  base_route: entity.developer_app.canonical_by_developer
+  weight: -3
+
+apigee_edge.developer_app.edit_by_developer:
+  route_name: entity.developer_app.edit_form_for_developer
+  title: 'Edit'
+  base_route: entity.developer_app.canonical_by_developer
+  weight: -2
+
+apigee_edge.developer_app.delete_by_developer:
+  route_name: entity.developer_app.delete_form_for_developer
+  title: 'Delete'
+  base_route: entity.developer_app.canonical_by_developer
+  weight: -1
