@@ -15,6 +15,7 @@
 
 .wrapper--secondary .api-product-list-row {
   max-width: 300px;
+  margin-bottom: 1rem;
 }
 
 .apigee-edge-developer-app-details label {

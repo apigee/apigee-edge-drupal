@@ -155,6 +155,7 @@ trait DeveloperAppDetailsControllerTrait {
             '#attributes' => [
               'class' => [
                 'api-product-list-row',
+                'clearfix',
               ],
             ],
           ];
