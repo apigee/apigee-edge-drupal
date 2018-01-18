@@ -146,6 +146,7 @@ trait DeveloperAppDetailsControllerTrait {
         $build['credential'][$credential_index]['secondary_wrapper']['#attributes']['class'] = ['wrapper--secondary'];
         $build['credential'][$credential_index]['secondary_wrapper']['title'] = [
           '#type' => 'label',
+          '#title_display' => 'before',
           '#title' => $this->entityTypeManager->getDefinition('api_product')->getPluralLabel(),
         ];
 
@@ -204,6 +205,7 @@ trait DeveloperAppDetailsControllerTrait {
         $build[$element]['wrapper']['label'] = [
           '#type' => 'label',
           '#title' => $settings['label'],
+          '#title_display' => 'before',
         ];
 
         if ($settings['value_type'] === 'plain') {
