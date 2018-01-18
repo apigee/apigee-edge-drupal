@@ -11,6 +11,8 @@
  */
 #}
 
-<span class="status-property status-property-{{ element.value }}">
-  {{ element.value|render|capitalize }}
+<span class="wrapper--status {{ element.value }}">
+  <span class="label-status">
+    {{ element.value|render|capitalize }}
+  </span>
 </span>

@@ -1,4 +1,5 @@
 /* Forms */
+.items--inline :not(.form-checkboxes) .item-property,
 .items--inline :not(.form-checkboxes) .form-item {
   margin-bottom: 1rem;
   display: table;
@@ -6,6 +7,7 @@
   width: 100%;
 }
 
+.items--inline .item-property label,
 .items--inline .form-item label {
   margin-bottom: 0;
   vertical-align: middle;
@@ -13,10 +15,12 @@
   word-break: break-all;
   padding-right: 1rem;
   display: table-cell;
-  width: 140px;
+  width: 160px;
+  min-width: 160px;
 }
 
-.items--inline .form-item label + * {
+.items--inline .form-item label + *,
+.items--inline .item-property label + * {
   width: 100%;
 }
 

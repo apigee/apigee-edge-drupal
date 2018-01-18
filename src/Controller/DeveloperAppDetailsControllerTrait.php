@@ -48,12 +48,21 @@ trait DeveloperAppDetailsControllerTrait {
   protected function getRenderArray(DeveloperAppInterface $developer_app): array {
     $config = $this->configFactory->get('apigee_edge.appsettings');
     $build = [];
-
+    
     $build['details'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Details'),
       '#collapsible' => FALSE,
+      '#attributes' => [
+        'class' => [
+          'items--inline',
+          'apigee-edge-developer-app-details',
+        ],
+      ],
     ];
+
+    $build['#attached']['library'][] = 'apigee_edge/apigee_edge.components';
+    $build['#attached']['library'][] = 'apigee_edge/apigee_edge.details';
 
     $details_primary_elements = [
       'displayName' => [
@@ -87,8 +96,10 @@ trait DeveloperAppDetailsControllerTrait {
 
     $build['details']['primary_wrapper'] = $this->getContainerRenderArray($developer_app, $details_primary_elements);
     $build['details']['primary_wrapper']['#type'] = 'container';
+    $build['details']['primary_wrapper']['#attributes']['class'] = ['wrapper--primary'];
     $build['details']['secondary_wrapper'][] = $this->getContainerRenderArray($developer_app, $details_secondary_elements);
     $build['details']['secondary_wrapper']['#type'] = 'container';
+    $build['details']['secondary_wrapper']['#attributes']['class'] = ['wrapper--secondary'];
 
     if ($config->get('associate_apps')) {
       $credential_elements = [
@@ -119,12 +130,20 @@ trait DeveloperAppDetailsControllerTrait {
           '#type' => 'fieldset',
           '#title' => $this->t('Credential'),
           '#collapsible' => FALSE,
+          '#attributes' => [
+            'class' => [
+              'items--inline',
+              'apigee-edge-developer-app-details',
+            ],
+          ],
         ];
 
         $build['credential'][$credential_index]['primary_wrapper'] = $this->getContainerRenderArray($credential, $credential_elements);
         $build['credential'][$credential_index]['primary_wrapper']['#type'] = 'container';
+        $build['credential'][$credential_index]['primary_wrapper']['#attributes']['class'] = ['wrapper--primary'];
 
         $build['credential'][$credential_index]['secondary_wrapper']['#type'] = 'container';
+        $build['credential'][$credential_index]['secondary_wrapper']['#attributes']['class'] = ['wrapper--secondary'];
         $build['credential'][$credential_index]['secondary_wrapper']['title'] = [
           '#type' => 'label',
           '#title' => $this->entityTypeManager->getDefinition('api_product')->getPluralLabel(),
@@ -140,7 +159,9 @@ trait DeveloperAppDetailsControllerTrait {
             ],
           ];
           $build['credential'][$credential_index]['secondary_wrapper']['api_product_list_wrapper'][$product_index]['name'] = [
+            '#prefix' => '<span class="api-product-name">',
             '#markup' => Xss::filter($credential->getApiProducts()[$product_index]->getApiproduct()),
+            '#suffix' => '</span>',
           ];
           $build['credential'][$credential_index]['secondary_wrapper']['api_product_list_wrapper'][$product_index]['status'] = [
             '#type' => 'status_property',
@@ -173,6 +194,11 @@ trait DeveloperAppDetailsControllerTrait {
       if ($ro->hasMethod($getter)) {
         $build[$element]['wrapper'] = [
           '#type' => 'container',
+          '#attributes' => [
+            'class' => [
+              'item-property',
+            ],
+          ],
         ];
         $build[$element]['wrapper']['label'] = [
           '#type' => 'label',
@@ -181,7 +207,9 @@ trait DeveloperAppDetailsControllerTrait {
 
         if ($settings['value_type'] === 'plain') {
           $build[$element]['wrapper']['value'] = [
+            '#prefix' => '<span>',
             '#markup' => Xss::filter(call_user_func([$entity, $getter])),
+            '#suffix' => '</span>',
           ];
         }
         elseif ($settings['value_type'] === 'date') {

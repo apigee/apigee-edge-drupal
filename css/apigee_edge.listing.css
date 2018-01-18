@@ -51,7 +51,7 @@
 /* Temporary zebra healing. */
 .table--app-list .odd,
 .table--app-list .even {
-  background-color: transparent;
+  /* background-color: transparent; */
 }
 
 /* Collapsible functionality. */
