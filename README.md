@@ -2,6 +2,17 @@
 
 A Drupal 8 module that turns a site into a developer portal for Apigee's API management product
 
+# Installing
+
+```sh
+$ composer require drupal/apigee_edge
+```
+
+If you experience a conflict with `symfony/property-info`, you should try to update  the
+`phpdocumentor/reflection-docblock` library with `composer update phpdocumentor/reflection-docblock`
+because Drupal 8.4.x by default installs 2.0.4 (as a dependency of PHPUnit 4.8) and it is in conflict with one of
+Apigee Edge PHP SDK's required libraries (the above mentioned `symfony/property-info:^3.2`) minimum requirements.  
+
 # Testing
 
 To run the tests, some environment variables are needed both for the script and the server. These variables are: `APIGEE_EDGE_ENDPOINT`, `APIGEE_EDGE_ORGANIZATION`, `APIGEE_EDGE_USERNAME` and `APIGEE_EDGE_PASSWORD`.
