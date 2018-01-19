@@ -2,6 +2,7 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -15,14 +16,16 @@ class DeveloperAppDeleteFormForDeveloper extends DeveloperAppDeleteForm {
   /**
    * DeveloperAppDeleteFormForDeveloper constructor.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
-  public function __construct(\Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, ModuleHandlerInterface $moduleHandler) {
-    parent::__construct($entityTypeManager);
-    $this->moduleHandler = $moduleHandler;
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler) {
+    parent::__construct($entity_type_manager);
+    $this->moduleHandler = $module_handler;
   }
 
   /**

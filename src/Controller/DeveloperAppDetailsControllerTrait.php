@@ -123,9 +123,8 @@ trait DeveloperAppDetailsControllerTrait {
           'value_type' => 'status',
         ],
       ];
-      for ($credential_index = 0; $credential_index < count($developer_app->getCredentials()); $credential_index++) {
-        $credential = $developer_app->getCredentials()[$credential_index];
-        $build['credential'][$credential_index] = [
+      foreach ($developer_app->getCredentials() as $credential) {
+        $build['credential'][$credential->getConsumerKey()] = [
           '#type' => 'fieldset',
           '#title' => $this->t('Credential'),
           '#collapsible' => FALSE,
@@ -137,20 +136,20 @@ trait DeveloperAppDetailsControllerTrait {
           ],
         ];
 
-        $build['credential'][$credential_index]['primary_wrapper'] = $this->getContainerRenderArray($credential, $credential_elements);
-        $build['credential'][$credential_index]['primary_wrapper']['#type'] = 'container';
-        $build['credential'][$credential_index]['primary_wrapper']['#attributes']['class'] = ['wrapper--primary'];
+        $build['credential'][$credential->getConsumerKey()]['primary_wrapper'] = $this->getContainerRenderArray($credential, $credential_elements);
+        $build['credential'][$credential->getConsumerKey()]['primary_wrapper']['#type'] = 'container';
+        $build['credential'][$credential->getConsumerKey()]['primary_wrapper']['#attributes']['class'] = ['wrapper--primary'];
 
-        $build['credential'][$credential_index]['secondary_wrapper']['#type'] = 'container';
-        $build['credential'][$credential_index]['secondary_wrapper']['#attributes']['class'] = ['wrapper--secondary'];
-        $build['credential'][$credential_index]['secondary_wrapper']['title'] = [
+        $build['credential'][$credential->getConsumerKey()]['secondary_wrapper']['#type'] = 'container';
+        $build['credential'][$credential->getConsumerKey()]['secondary_wrapper']['#attributes']['class'] = ['wrapper--secondary'];
+        $build['credential'][$credential->getConsumerKey()]['secondary_wrapper']['title'] = [
           '#type' => 'label',
           '#title_display' => 'before',
           '#title' => $this->entityTypeManager->getDefinition('api_product')->getPluralLabel(),
         ];
 
-        for ($product_index = 0; $product_index < count($credential->getApiProducts()); $product_index++) {
-          $build['credential'][$credential_index]['secondary_wrapper']['api_product_list_wrapper'][$product_index] = [
+        foreach ($credential->getApiProducts() as $product) {
+          $build['credential'][$credential->getConsumerKey()]['secondary_wrapper']['api_product_list_wrapper'][$product->getApiproduct()] = [
             '#type' => 'container',
             '#attributes' => [
               'class' => [
@@ -159,14 +158,14 @@ trait DeveloperAppDetailsControllerTrait {
               ],
             ],
           ];
-          $build['credential'][$credential_index]['secondary_wrapper']['api_product_list_wrapper'][$product_index]['name'] = [
+          $build['credential'][$credential->getConsumerKey()]['secondary_wrapper']['api_product_list_wrapper'][$product->getApiproduct()]['name'] = [
             '#prefix' => '<span class="api-product-name">',
-            '#markup' => Xss::filter($credential->getApiProducts()[$product_index]->getApiproduct()),
+            '#markup' => Xss::filter($product->getApiproduct()),
             '#suffix' => '</span>',
           ];
-          $build['credential'][$credential_index]['secondary_wrapper']['api_product_list_wrapper'][$product_index]['status'] = [
+          $build['credential'][$credential->getConsumerKey()]['secondary_wrapper']['api_product_list_wrapper'][$product->getApiproduct()]['status'] = [
             '#type' => 'status_property',
-            '#value' => Xss::filter($credential->getApiProducts()[$product_index]->getStatus()),
+            '#value' => Xss::filter($product->getStatus()),
           ];
         }
       }

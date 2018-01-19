@@ -17,15 +17,22 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorageInterface {
 
-  /** @var \Drupal\Core\Entity\EntityTypeManagerInterface */
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
   protected $entityTypeManager;
 
   /**
    * DeveloperAppStorage constructor.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The service container.
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type definition.
    * @param \Psr\Log\LoggerInterface $logger
+   *   The logger service.
    */
   public function __construct(ContainerInterface $container, EntityTypeInterface $entity_type, LoggerInterface $logger) {
     $this->entityTypeManager = $container->get('entity_type.manager');

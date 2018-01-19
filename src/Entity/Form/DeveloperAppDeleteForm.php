@@ -17,10 +17,11 @@ class DeveloperAppDeleteForm extends EntityDeleteForm implements DeveloperAppPag
   /**
    * DeveloperAppDeleteForm constructor.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
-    $this->entityTypeManager = $entityTypeManager;
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -69,6 +70,7 @@ class DeveloperAppDeleteForm extends EntityDeleteForm implements DeveloperAppPag
    *   An associative array of replacements.
    *
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *   The translatable page title.
    *
    * @see \Drupal\Core\StringTranslation\StringTranslationTrait::t()
    */

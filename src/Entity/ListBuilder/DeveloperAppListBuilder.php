@@ -30,30 +30,50 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppPageTitleInterface, ContainerInjectionInterface {
 
-  /** @var \Drupal\Core\Render\RendererInterface */
+  /**
+   * The renderer service.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
+   */
   protected $renderer;
 
-  /** @var string */
+  /**
+   * The default sort direction.
+   *
+   * @var string
+   */
   protected $defaultSortDirection = 'displayName';
 
-  /** @var string */
+  /**
+   * The default sort field.
+   *
+   * @var string
+   */
   protected $defaultSortField = 'ASC';
 
-  /** @var \Drupal\Core\Entity\EntityTypeManagerInterface */
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
   protected $entityTypeManager;
 
   /**
    * DeveloperAppListBuilder constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   The entity storage object.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    * @param \Drupal\Core\Render\RendererInterface $render
+   *   The renderer service.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, EntityTypeManagerInterface $entityTypeManager, RendererInterface $render) {
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render) {
     parent::__construct($entity_type, $storage);
     $this->renderer = $render;
-    $this->entityTypeManager = $entityTypeManager;
+    $this->entityTypeManager = $entity_type_manager;
     // Disable pager for now.
     $this->limit = 0;
   }
@@ -82,6 +102,7 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
    * Returns definition of the Developer app entity.
    *
    * @return \Drupal\Core\Entity\EntityTypeInterface|null
+   *   The Developer app entity definition.
    */
   protected function getDeveloperAppEntityDefinition() {
     return $this->entityTypeManager->getDefinition('developer_app');
@@ -91,6 +112,7 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
    * Returns definition of the API product entity.
    *
    * @return \Drupal\Core\Entity\EntityTypeInterface|null
+   *   The API product entity definition.
    */
   protected function getApiProductEntityDefinition() {
     return $this->entityTypeManager->getDefinition('api_product');
@@ -100,6 +122,8 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
    * Returns the API product storage.
    *
    * @return \Drupal\Core\Entity\EntityStorageInterface
+   *   The API product storage.
+   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   protected function getApiProductStorage() {
@@ -166,11 +190,13 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
    * Returns a unique CSS id for an app.
    *
    * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $app
+   *   The developer app entity.
    *
    * @return string
+   *   The unique app id.
    */
   protected function getUniqueCssIdForApp(DeveloperAppInterface $app): string {
-    // App's default UUID is unique ennough.
+    // App's default UUID is unique enough.
     return $app->id();
   }
 

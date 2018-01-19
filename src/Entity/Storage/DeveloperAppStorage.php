@@ -3,6 +3,7 @@
 namespace Drupal\apigee_edge\Entity\Storage;
 
 use Apigee\Edge\Api\Management\Controller\DeveloperController;
+use Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface;
 use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppController;
 use Drupal\apigee_edge\SDKConnectorInterface;
@@ -11,17 +12,27 @@ use Drupal\user\UserInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Controller class for developer apps.
+ */
 class DeveloperAppStorage extends EdgeEntityStorageBase implements DeveloperAppStorageInterface {
 
-  /** @var \Drupal\Core\Entity\EntityTypeManagerInterface */
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
   protected $entityTypeManager;
 
   /**
    * DeveloperAppStorage constructor.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The service container.
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type definition.
    * @param \Psr\Log\LoggerInterface $logger
+   *   The logger service.
    */
   public function __construct(ContainerInterface $container, EntityTypeInterface $entity_type, LoggerInterface $logger) {
     $this->entityTypeManager = $container->get('entity_type.manager');
@@ -29,19 +40,26 @@ class DeveloperAppStorage extends EdgeEntityStorageBase implements DeveloperAppS
   }
 
   /**
-   * @return \Apigee\Edge\Api\Management\Controller\DeveloperController
+   * Gets a DeveloperController instance.
+   *
+   * @return \Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface
+   *   The DeveloperController instance.
    */
-  protected function getDeveloperController() {
+  protected function getDeveloperController(): DeveloperControllerInterface {
     return new DeveloperController($this->getConnector()
       ->getOrganization(), $this->getConnector()->getClient());
   }
 
   /**
-   * @method listByDeveloper
+   * Gets a DeveloperAppController instance.
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
+   *   The SDK Connector service.
    *
    * @return \Apigee\Edge\Controller\EntityCrudOperationsControllerInterface
+   *   The DeveloperAppController instance.
+   *
+   * @method listByDeveloper
    */
   public function getController(SDKConnectorInterface $connector): EntityCrudOperationsControllerInterface {
     return new DeveloperAppController($connector->getOrganization(), $connector->getClient());

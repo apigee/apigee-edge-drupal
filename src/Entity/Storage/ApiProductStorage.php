@@ -6,6 +6,9 @@ use Apigee\Edge\Api\Management\Controller\ApiProductController;
 use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 
+/**
+ * Controller class for API products.
+ */
 class ApiProductStorage extends EdgeEntityStorageBase implements ApiProductStorageInterface {
 
   /**
