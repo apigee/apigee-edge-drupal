@@ -1,0 +1,44 @@
+language: php
+
+sudo: required
+
+services:
+  - docker
+
+addons:
+  apt:
+    packages:
+      - docker-ce
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - php: nightly
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+
+notifications:
+  email: false
+
+env:
+  global:
+    - DOCKER_COMPOSE_VERSION=1.18.0
+  matrix:
+    - DEPENDENCIES="lowest"
+    - DEPENDENCIES="highest"
+
+
+before_install:
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+  - docker-compose build --build-arg DEPENDENCIES=${DEPENDENCIES} php
+  - docker-compose up -d
+  - docker ps -a
+
+script:
+  - set -e
+  - docker-compose run -e APIGEE_EDGE_ENDPOINT=${APIGEE_EDGE_ENDPOINT} -e APIGEE_EDGE_USERNAME=${APIGEE_EDGE_USERNAME} -e APIGEE_EDGE_PASSWORD=${APIGEE_EDGE_PASSWORD} -e APIGEE_EDGE_ORGANIZATION=${APIGEE_EDGE_ORGANIZATION} --user 82 php /var/www/html/vendor/bin/phpunit -c web/core --group apigee_edge
