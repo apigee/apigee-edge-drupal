@@ -10,7 +10,7 @@ use Drupal\Tests\UnitTestCase;
 /**
  * Entity query condition tests.
  *
- * @group ApigeeEdge
+ * @group apigee_edge
  */
 class ConditionTest extends UnitTestCase {
 

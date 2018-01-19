@@ -10,7 +10,7 @@ use Drupal\Tests\BrowserTestBase;
 /**
  * Create, delete, update Developer App entity tests.
  *
- * @group ApigeeEdge
+ * @group apigee_edge
  */
 class DeveloperAppTest extends BrowserTestBase {
 

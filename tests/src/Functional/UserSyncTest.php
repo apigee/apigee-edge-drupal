@@ -11,7 +11,7 @@ use Drupal\user\UserInterface;
 /**
  * User synchronization tests
  *
- * @group ApigeeEdge
+ * @group apigee_edge
  */
 class UserSyncTest extends BrowserTestBase {
 
