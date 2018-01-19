@@ -1,17 +1,24 @@
 {
-  "name": "drupal/apigee_edge",
-  "type": "drupal-module",
-  "require": {
-    "php": ">=7.1",
-    "php-http/guzzle6-adapter": "^1.1",
-    "apigee/edge": "dev-2.x-dev",
-    "drupal/entity": "^1.0"
-  },
-  "extra": {
-    "drush": {
-      "services": {
-        "drush.services.yml": "^9"
-      }
+    "name": "drupal/apigee_edge",
+    "type": "drupal-module",
+    "description": "Apigee Edge Drupal integration.",
+    "require": {
+        "php": ">=7.1",
+        "php-http/guzzle6-adapter": "^1.1",
+        "apigee/edge": "dev-2.x-dev",
+        "drupal/core": "^8.4",
+        "drupal/entity": "^1.0"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "extra": {
+        "drush": {
+            "services": {
+                "drush.services.yml": "^9"
+            }
+        }
     }
-  }
 }
