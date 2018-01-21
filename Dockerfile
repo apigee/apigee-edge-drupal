@@ -2,11 +2,9 @@ FROM wodby/drupal-php:7.1
 
 RUN composer global require "hirak/prestissimo:^0.3"
 
-ARG MODULE_NAME="drupal"
+ARG DRUPAL_MODULE_NAME="drupal"
 
 ARG DEPENDENCIES="highest"
-
-ENV COMPOSER_OPTIONS="--working-dir=/var/www/html/web"
 
 # We are using drupal-composer/drupal-project instead of drupal/drupal because we would like to update all
 # libraries, including Drupal, to the latest version when doing "highest" testing.
@@ -18,12 +16,16 @@ RUN composer create-project drupal-composer/drupal-project:8.x-dev /var/www/html
 # phpdocumentor/reflection-docblock too.
 RUN composer require drush/drush:^9.0 && composer require phpdocumentor/reflection-docblock:^3.0.2
 
-COPY --chown=www-data:www-data . "${WODBY_DIR_FILES}/${MODULE_NAME}"
+COPY --chown=www-data:www-data . "${WODBY_DIR_FILES}/${DRUPAL_MODULE_NAME}"
 
-RUN composer config repositories.library path "${WODBY_DIR_FILES}/${MODULE_NAME}" \
-    && composer require drupal/${MODULE_NAME}
+RUN composer config repositories.library path "${WODBY_DIR_FILES}/${DRUPAL_MODULE_NAME}" \
+    && if [[ $DEPENDENCIES = "highest" ]]; then composer require drupal/${DRUPAL_MODULE_NAME}; composer require --prefer-lowest drupal/${DRUPAL_MODULE_NAME}; fi
 
-RUN if [[ "$DEPENDENCIES" = 'highest' ]]; then composer update -o --with-dependencies; fi
+RUN if [[ $DEPENDENCIES = "highest" ]]; then \
+    composer update -o --with-dependencies; else \
+    # Downgrade drupal-scaffold library separately, because otherwise it would cause run time errors.
+    composer update drupal-composer/drupal-scaffold --prefer-lowest && composer update -o --with-dependencies --prefer-lowest; \
+    fi
 
 # Show the installed package versions for debugging purposes.
 RUN composer show
