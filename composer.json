@@ -4,7 +4,7 @@
     "description": "Apigee Edge Drupal integration.",
     "require": {
         "php": ">=7.1",
-        "php-http/guzzle6-adapter": "^1.1",
+        "php-http/guzzle6-adapter": "^1.1.1",
         "apigee/edge": "dev-2.x-dev",
         "drupal/core": "^8.4",
         "drupal/entity": "^1.0"
