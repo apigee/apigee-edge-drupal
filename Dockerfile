@@ -12,9 +12,11 @@ RUN composer create-project drupal-composer/drupal-project:8.x-dev /var/www/html
 
 # This library has to be updated to the latest version, because the lowest installed 2.0.4 is in conflict with
 # one of the Apigee PHP SDK's required library's (symfony/property-info:^3.2) mininmum requirement.
+# Also require ^3.1.0 from this library, because earlier version's minimum requirement from phpdocumentor/type-resolver
+# is 0.1.5, which does not have the fix for this problem: https://github.com/phpDocumentor/TypeResolver/pull/16.
 # We have to update Drush too, because 8.1.15 does not work with Drupal 8.4 and also conflicts with
 # phpdocumentor/reflection-docblock too.
-RUN composer require drush/drush:^9.0 && composer require phpdocumentor/reflection-docblock:^3.0.2
+RUN composer require drush/drush:^9.0 && composer require phpdocumentor/reflection-docblock:^3.1.0
 
 COPY --chown=www-data:www-data . "${WODBY_DIR_FILES}/${DRUPAL_MODULE_NAME}"
 
