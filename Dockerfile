@@ -21,7 +21,7 @@ RUN composer require drush/drush:^9.0 && composer require phpdocumentor/reflecti
 COPY --chown=www-data:www-data . "${WODBY_DIR_FILES}/${DRUPAL_MODULE_NAME}"
 
 RUN composer config repositories.library path "${WODBY_DIR_FILES}/${DRUPAL_MODULE_NAME}" \
-    && if [[ $DEPENDENCIES = "highest" ]]; then composer require drupal/${DRUPAL_MODULE_NAME}; composer require --prefer-lowest drupal/${DRUPAL_MODULE_NAME}; fi
+    && if [[ $DEPENDENCIES = "highest" ]]; then composer require drupal/${DRUPAL_MODULE_NAME}; else composer require --prefer-lowest drupal/${DRUPAL_MODULE_NAME}; fi
 
 RUN if [[ $DEPENDENCIES = "highest" ]]; then \
     composer update -o --with-dependencies; else \
