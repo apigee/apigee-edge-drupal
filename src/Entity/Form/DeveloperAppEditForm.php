@@ -107,6 +107,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
         }
 
         $multiple = $config->get('multiple_products');
+        $required = $config->get('require');
         $current_products = [];
         foreach ($credential->getApiProducts() as $product) {
           $current_products[] = $product->getApiproduct();
@@ -114,17 +115,31 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
 
         $form['credential'][$credential->getConsumerKey()]['api_products'] = [
           '#title' => $this->entityTypeManager->getDefinition('api_product')->getPluralLabel(),
-          '#required' => $config->get('require'),
+          '#required' => $required,
           '#options' => $product_list,
-          '#default_value' => $multiple ? $current_products : reset($current_products),
         ];
+
+        if ($multiple) {
+          $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = $current_products;
+        }
+        else {
+          $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = reset($current_products) ?: NULL;
+        }
 
         if ($config->get('display_as_select')) {
           $form['credential'][$credential->getConsumerKey()]['api_products']['#type'] = 'select';
           $form['credential'][$credential->getConsumerKey()]['api_products']['#multiple'] = $multiple;
+          $form['credential'][$credential->getConsumerKey()]['api_products']['#empty_value'] = '';
         }
         else {
-          $form['credential'][$credential->getConsumerKey()]['api_products']['#type'] = $multiple ? 'checkboxes' : 'radios';
+          if ($multiple) {
+            $form['credential'][$credential->getConsumerKey()]['api_products']['#type'] = 'checkboxes';
+            $form['credential'][$credential->getConsumerKey()]['api_products']['#options'] = $product_list;
+          }
+          else {
+            $form['credential'][$credential->getConsumerKey()]['api_products']['#type'] = 'radios';
+            $form['credential'][$credential->getConsumerKey()]['api_products']['#options'] = $required ? $product_list : ['_none' => t('N/A')] + $product_list;
+          }
         }
       }
     }
@@ -177,7 +192,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
               }
             }
             else {
-              if ($api_products['api_products'] !== 0) {
+              if (!empty($api_products['api_products']) && $api_products['api_products'] !== '_none') {
                 $selected_products[] = new CredentialProduct($api_products['api_products'], '');
               }
             }

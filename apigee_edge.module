@@ -255,7 +255,7 @@ function apigee_edge_get_executor(): JobExecutor {
  * Implements hook_preprocess_table().
  */
 function apigee_edge_preprocess_table(&$variables) {
-  if ($variables['attributes']['id'] === 'app-list') {
+  if (isset($variables['attributes']['id']) && $variables['attributes']['id'] === 'app-list') {
     $variables['no_striping'] = TRUE;
     $index = 0;
 
