@@ -9,6 +9,9 @@
         "drupal/core": "^8.4",
         "drupal/entity": "^1.0"
     },
+    "conflict": {
+        "phpdocumentor/type-resolver": "<0.1.7"
+    },
     "config": {
         "sort-packages": true
     },
