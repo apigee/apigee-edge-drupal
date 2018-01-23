@@ -104,8 +104,8 @@ class AppSettingsForm extends ConfigFormBase {
     $form['api_product']['default_api_product_single'] = [
       '#type' => 'radios',
       '#title' => $this->t('Default API Product'),
-      '#options' => ['' => $this->t('- None -')] + $product_list,
-      '#default_value' => reset($default_products),
+      '#options' => ['' => $this->t('N/A')] + $product_list,
+      '#default_value' => empty($default_products) ? '' : reset($default_products),
       '#states' => [
         'visible' => [
           ':input[name="multiple_products"]' => [

@@ -123,7 +123,12 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
           $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = $current_products;
         }
         else {
-          $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = reset($current_products) ?: NULL;
+          if ($required) {
+            $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = reset($current_products) ?: NULL;
+          }
+          else {
+            $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = reset($current_products) ?: '';
+          }
         }
 
         if ($config->get('display_as_select')) {
@@ -138,7 +143,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
           }
           else {
             $form['credential'][$credential->getConsumerKey()]['api_products']['#type'] = 'radios';
-            $form['credential'][$credential->getConsumerKey()]['api_products']['#options'] = $required ? $product_list : ['_none' => t('N/A')] + $product_list;
+            $form['credential'][$credential->getConsumerKey()]['api_products']['#options'] = $required ? $product_list : ['' => t('N/A')] + $product_list;
           }
         }
       }
@@ -192,7 +197,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
               }
             }
             else {
-              if (!empty($api_products['api_products']) && $api_products['api_products'] !== '_none') {
+              if (isset($api_products['api_products']) && $api_products['api_products'] !== '') {
                 $selected_products[] = new CredentialProduct($api_products['api_products'], '');
               }
             }
@@ -264,6 +269,8 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
       }
     }
 
+    // Update the app details after updating the product lists, because the
+    // entity->save() function override every entity property.
     if ($this->entity->getDisplayName() !== $this->originalEntity->getDisplayName() ||
       $this->entity->getCallbackUrl() !== $this->originalEntity->getCallbackUrl() ||
       $this->entity->getDescription() !== $this->originalEntity->getDescription()) {

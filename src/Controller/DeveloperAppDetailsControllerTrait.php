@@ -3,6 +3,7 @@
 namespace Drupal\apigee_edge\Controller;
 
 use Apigee\Edge\Entity\EntityInterface;
+use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -149,6 +150,9 @@ trait DeveloperAppDetailsControllerTrait {
         ];
 
         foreach ($credential->getApiProducts() as $product) {
+          /** @var \Drupal\apigee_edge\Entity\ApiProduct $api_product_entity */
+          $api_product_entity = ApiProduct::load($product->getApiproduct());
+
           $build['credential'][$credential->getConsumerKey()]['secondary_wrapper']['api_product_list_wrapper'][$product->getApiproduct()] = [
             '#type' => 'container',
             '#attributes' => [
@@ -160,7 +164,7 @@ trait DeveloperAppDetailsControllerTrait {
           ];
           $build['credential'][$credential->getConsumerKey()]['secondary_wrapper']['api_product_list_wrapper'][$product->getApiproduct()]['name'] = [
             '#prefix' => '<span class="api-product-name">',
-            '#markup' => Xss::filter($product->getApiproduct()),
+            '#markup' => Xss::filter($api_product_entity->getDisplayName()),
             '#suffix' => '</span>',
           ];
           $build['credential'][$credential->getConsumerKey()]['secondary_wrapper']['api_product_list_wrapper'][$product->getApiproduct()]['status'] = [
