@@ -84,11 +84,11 @@ class EdgeAccountTest extends BrowserTestBase {
     $this->assertSession()->pageTextContains(t('The configuration options have been saved'));
 
     $developer_data = [
-      'userName' => 'UserByAdmin',
-      'email' => 'edge.functional.test@pronovix.com',
-      'firstName' => 'Functional',
-      'lastName' => "Test",
+      'userName' => $this->randomMachineName(),
+      'firstName' => $this->randomString(),
+      'lastName' => $this->randomString(),
     ];
+    $developer_data['email'] = "{$developer_data['userName']}@example.com";
 
     $developer = Developer::create($developer_data);
     $developer->save();

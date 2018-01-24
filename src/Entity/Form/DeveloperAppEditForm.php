@@ -143,7 +143,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
           }
           else {
             $form['credential'][$credential->getConsumerKey()]['api_products']['#type'] = 'radios';
-            $form['credential'][$credential->getConsumerKey()]['api_products']['#options'] = $required ? $product_list : ['' => t('N/A')] + $product_list;
+            $form['credential'][$credential->getConsumerKey()]['api_products']['#options'] = $required ? $product_list : ['' => $this->t('N/A')] + $product_list;
           }
         }
       }
@@ -184,7 +184,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
       $entity->setDescription($form_state->getValue(['details', 'description']));
     }
 
-    if ($config->get('associate_apps')) {
+    if ($config->get('associate_apps') && $config->get('user_select')) {
       foreach ($form_state->getValue(['credential']) as $consumer_key => $api_products) {
         foreach ($entity->getCredentials() as $credential) {
           if ($credential->getConsumerKey() === $consumer_key) {
@@ -217,7 +217,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
 
     $redirect_user = FALSE;
 
-    if ($config->get('associate_apps')) {
+    if ($config->get('associate_apps') && $config->get('user_select')) {
       try {
         $dacc = new DeveloperAppCredentialController(
           $this->sdkConnector->getOrganization(),

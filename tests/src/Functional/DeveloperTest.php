@@ -89,13 +89,13 @@ class DeveloperTest extends BrowserTestBase {
     $this->drupalGet('/admin/people/create');
 
     $test_user = [
-      'email' => 'edge.functional.test@pronovix.com',
-      'first_name' => 'Functional',
-      'last_name' => 'Test',
-      'username' => 'UserByAdmin',
+      'first_name' => $this->randomString(),
+      'last_name' => $this->randomString(),
+      'username' => $this->randomMachineName(),
       'password' => user_password(),
       'status' => '0',
     ];
+    $test_user['email'] = "{$test_user['username']}@example.com";
 
     $formdata = [
       'mail' => $test_user['email'],
@@ -121,9 +121,9 @@ class DeveloperTest extends BrowserTestBase {
 
     // Unblock and edit the user's email, first name, last name by the admin.
     $this->drupalGet('/user/2/edit');
-    $test_user['email'] = 'mod.edge.functional.test@pronovix.com';
-    $test_user['first_name'] = '(mod) Functional';
-    $test_user['last_name'] = '(mod) Test';
+    $test_user['email'] = "mod.{$test_user['email']}";
+    $test_user['first_name'] = "(mod) {$test_user['first_name']}";
+    $test_user['last_name'] = "(mod) {$test_user['last_name']}";
     $test_user['status'] = '1';
 
     $formdata['mail'] = $test_user['email'];

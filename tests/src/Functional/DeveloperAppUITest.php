@@ -35,9 +35,9 @@ class DeveloperAppUITest extends BrowserTestBase {
   /**
    * Default product.
    *
-   * @var \Drupal\apigee_edge\Entity\ApiProduct
+   * @var \Drupal\apigee_edge\Entity\ApiProduct[]
    */
-  protected $product;
+  protected $products = [];
 
   /**
    * A role that can administer apigee edge and related settings.
@@ -61,7 +61,7 @@ class DeveloperAppUITest extends BrowserTestBase {
       'delete own developer_app',
     ]);
 
-    $this->product = $this->createProduct();
+    $this->products[] = $this->createProduct();
     $this->account = $this->createAccount();
     $this->drupalLogin($this->account);
   }
@@ -112,7 +112,9 @@ class DeveloperAppUITest extends BrowserTestBase {
    */
   protected function tearDown() {
     $this->account->delete();
-    $this->product->delete();
+    foreach ($this->products as $product) {
+      $product->delete();
+    }
     parent::tearDown();
   }
 
@@ -142,6 +144,10 @@ class DeveloperAppUITest extends BrowserTestBase {
       'user_select' => TRUE,
       'multiple_products' => TRUE,
       'require' => FALSE,
+      'callback_url_visible' => TRUE,
+      'callback_url_required' => FALSE,
+      'description_visible' => TRUE,
+      'description_required' => FALSE,
     ], 'Save configuration');
   }
 
@@ -159,6 +165,14 @@ class DeveloperAppUITest extends BrowserTestBase {
     }
 
     $this->drupalPostForm("user/{$account->id()}/apps/create", $data, 'Add developer app');
+  }
+
+  protected function postEditAppForm(array $data, string $app_name, ?UserInterface $account = NULL) {
+    if ($account === NULL) {
+      $account = $this->account;
+    }
+
+    $this->drupalPostForm("user/{$account->id()}/apps/{$app_name}/edit", $data, 'Save');
   }
 
   /**
@@ -203,7 +217,7 @@ class DeveloperAppUITest extends BrowserTestBase {
       }
     }
 
-    $this->assertFalse($found === NULL, 'Developer app name found.');
+    $this->assertNotNull($found, 'Developer app name found.');
     return $found;
   }
 
@@ -258,15 +272,19 @@ class DeveloperAppUITest extends BrowserTestBase {
     $this->postCreateAppForm([
       'name' => $name,
       'displayName' => $name,
+      "api_products[{$this->products[0]->getName()}]" => $this->products[0]->getName(),
     ]);
     $this->assertSession()->pageTextContains($name);
     $this->clickLink($name);
+
+    $this->assertSession()->pageTextContains($name);
+    $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
 
     $this->clickLink('Delete');
     $this->submitForm([], 'Delete');
 
     $this->assertSession()->pageTextContains("The {$name} developer app has been deleted.");
-    $apps = array_filter($this->getApps(), function (DeveloperApp $app) use($name): bool {
+    $apps = array_filter($this->getApps(), function(DeveloperApp $app) use($name): bool {
       return $app->getName() === $name;
     });
     $this->assertEquals([], $apps, 'App is deleted');
@@ -320,12 +338,257 @@ class DeveloperAppUITest extends BrowserTestBase {
    * Tests app creation with products.
    */
   public function testCreateAppWithProducts() {
-    $extra_product = $this->createProduct();
-    $this->assertAppCreationWithProduct([$this->product], TRUE, FALSE, TRUE);
-    $this->assertAppCreationWithProduct([$this->product, $extra_product]);
+    $this->products[] = $this->createProduct();
+    $this->assertAppCreationWithProduct([$this->products[0]], TRUE, FALSE, TRUE);
+    $this->assertAppCreationWithProduct([$this->products[0], $this->products[1]]);
     $this->assertAppCreationWithProduct([]);
+  }
 
-    $extra_product->delete();
+  /**
+   * Creates an app with no products.
+   */
+  public function testAppCRUDNoProducts() {
+    $this->submitAdminForm(['associate_apps' => FALSE]);
+
+    $this->assertAppCRUD();
+  }
+
+  /**
+   * Creates an app with the default product.
+   */
+  public function testAppDefaultProduct() {
+    $this->submitAdminForm([
+      'multiple_products' => FALSE,
+      'user_select' => FALSE,
+      "default_api_product_multiple[{$this->products[0]->getName()}]" => $this->products[0]->getName(),
+    ]);
+
+    $asserts = function() {
+      $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
+    };
+
+    $this->assertAppCRUD(NULL, $asserts, NULL, $asserts);
+  }
+
+  /**
+   * Creates an app with the default products.
+   */
+  public function testAppDefaultProducts() {
+    $this->products[] = $this->createProduct();
+    $this->products[] = $this->createProduct();
+
+    $this->submitAdminForm([
+      'multiple_products' => TRUE,
+      'user_select' => FALSE,
+      "default_api_product_multiple[{$this->products[0]->getName()}]" => $this->products[0]->getName(),
+      "default_api_product_multiple[{$this->products[1]->getName()}]" => $this->products[1]->getName(),
+    ]);
+
+    $asserts = function() {
+      $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
+      $this->assertSession()->pageTextContains($this->products[1]->getDisplayName());
+      $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
+    };
+
+    $this->assertAppCRUD(NULL, $asserts, NULL, $asserts);
+  }
+
+  /**
+   * Creates an app with a single product and then removes the product.
+   */
+  public function testAppCRUDSingleProductRemove() {
+    $this->submitAdminForm(['display_as_select' => TRUE, 'multiple_products' => FALSE]);
+
+    $this->assertAppCRUD(
+      function(array $data): array {
+        $data['api_products'] = $this->products[0]->getName();
+        return $data;
+      },
+      function() {
+        $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
+      },
+      function(array $data, string $credential_id): array {
+        $data["credential[{$credential_id}][api_products]"] = '';
+        return $data;
+      },
+      function() {
+        $this->assertSession()->pageTextNotContains($this->products[0]->getDisplayName());
+      }
+    );
+  }
+
+  /**
+   * Creates an app with no products and then adds one.
+   */
+  public function testAppCRUDSingleProductAdd() {
+    $this->submitAdminForm(['multiple_products' => FALSE]);
+
+    $this->assertAppCRUD(
+      function(array $data): array {
+        $data['api_products'] = '';
+        return $data;
+      },
+      function() {
+        $this->assertSession()->pageTextNotContains($this->products[0]->getDisplayName());
+      },
+      function(array $data, string $credential_id): array {
+        $data["credential[{$credential_id}][api_products]"] = $this->products[0]->getName();
+        return $data;
+      },
+      function() {
+        $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
+      }
+    );
+  }
+
+  /**
+   * Creates an app with multiple products and then removes them.
+   */
+  public function testAppCRUDMultiplePruductsRemove() {
+    $this->submitAdminForm(['display_as_select' => TRUE]);
+    $this->products[] = $this->createProduct();
+    $this->products[] = $this->createProduct();
+
+    $this->assertAppCRUD(
+      function(array $data): array {
+        $data['api_products[]'] = [
+          $this->products[0]->getName(),
+          $this->products[1]->getName(),
+        ];
+        return $data;
+      },
+      function() {
+        $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
+        $this->assertSession()->pageTextContains($this->products[1]->getDisplayName());
+        $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
+      },
+      function(array $data, string $credential_id): array {
+        $data["credential[{$credential_id}][api_products][]"] = [];
+        return $data;
+      },
+      function() {
+        $this->assertSession()->pageTextNotContains($this->products[0]->getDisplayName());
+        $this->assertSession()->pageTextNotContains($this->products[1]->getDisplayName());
+        $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
+      }
+    );
+  }
+
+  /**
+   * Creates an app with no products and then adds multiple ones.
+   */
+  public function testAppCRUDMultipleProductsAdd() {
+    $this->submitAdminForm([]);
+    $this->products[] = $this->createProduct();
+    $this->products[] = $this->createProduct();
+
+    $this->assertAppCRUD(
+      function(array $data): array {
+        return $data;
+      },
+      function() {
+        $this->assertSession()->pageTextNotContains($this->products[0]->getDisplayName());
+        $this->assertSession()->pageTextNotContains($this->products[1]->getDisplayName());
+        $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
+      },
+      function(array $data, string $credential_id): array {
+        $data["credential[{$credential_id}][api_products][{$this->products[0]->getName()}]"] = $this->products[0]->getName();
+        $data["credential[{$credential_id}][api_products][{$this->products[1]->getName()}]"] = $this->products[1]->getName();
+        return $data;
+      },
+      function() {
+        $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
+        $this->assertSession()->pageTextContains($this->products[1]->getDisplayName());
+        $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
+      }
+    );
+  }
+
+  /**
+   * Goes through a typical CRUD cycle for an app.
+   *
+   * @param callable|null $beforeCreate
+   *   Alters the data that will be posted on the create form.
+   * @param callable|null $afterCreate
+   *   Additional asserts after the app is created.
+   * @param callable|null $beforeUpdate
+   *   Alters the data that will be posted on the update form.
+   * @param callable|null $afterUpdate
+   *   Additional asserts after the app is created.
+   * @param \Drupal\user\UserInterface|null $account
+   */
+  protected function assertAppCRUD(?callable $beforeCreate = NULL, ?callable $afterCreate = NULL, ?callable $beforeUpdate = NULL, ?callable $afterUpdate = NULL, ?UserInterface $account = NULL) {
+    if ($account === NULL) {
+      $account = $this->account;
+    }
+
+    $name = strtolower($this->randomMachineName());
+    $displayName = $this->randomString();
+    $callbackUrl = "http://example.com/{$this->randomMachineName()}";
+    $description = trim($this->getRandomGenerator()->paragraphs(1));
+
+    $data = [
+      'name' => $name,
+      'displayName' => $displayName,
+      'callbackUrl' => $callbackUrl,
+      'description' => $description,
+    ];
+    if ($beforeCreate) {
+      $data = $beforeCreate($data);
+    }
+
+    $this->postCreateAppForm($data, $account);
+    $this->clickLink($displayName);
+    $this->assertSession()->pageTextContains($displayName);
+    $this->assertSession()->pageTextContains($callbackUrl);
+    $this->assertSession()->pageTextContains($description);
+
+    if ($afterCreate) {
+      $afterCreate($name);
+    }
+
+    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
+    $developer = Developer::load($account->getEmail());
+    /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperAppStorageInterface $storage */
+    $storage = \Drupal::entityTypeManager()->getStorage('developer_app');
+    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
+    $app = $storage->load(array_values($storage->getQuery()
+      ->condition('developerId', $developer->uuid())
+      ->condition('name', $name)
+      ->execute())[0]);
+    $this->assertNotNull($app);
+    /** @var \Apigee\Edge\Api\Management\Entity\AppCredential[] $credentials */
+    $credentials = $app->getCredentials();
+    /** @var \Apigee\Edge\Api\Management\Entity\AppCredential $credential */
+    $credential = reset($credentials);
+    $credential_id = $credential->id();
+
+    $displayName = $this->randomString();
+    $callbackUrl = "{$callbackUrl}/{$this->randomMachineName()}";
+    $description = trim($this->getRandomGenerator()->paragraphs(1));
+    $data = [
+      'details[displayName]' => $displayName,
+      'details[callbackUrl]' => $callbackUrl,
+      'details[description]' => $description,
+    ];
+    if ($beforeUpdate) {
+      $data = $beforeUpdate($data, $credential_id);
+    }
+
+    $this->postEditAppForm($data, $name, $account);
+    $this->assertSession()->pageTextContains($displayName);
+    $this->assertSession()->pageTextContains($callbackUrl);
+    $this->assertSession()->pageTextContains($description);
+
+    if ($afterUpdate) {
+      $afterUpdate($name);
+    }
+
+    $this->clickLink('Delete');
+    $this->submitForm([], 'Delete');
+
+    $this->drupalGet("/user/{$account->id()}/apps");
+    $this->assertSession()->pageTextNotContains($displayName);
   }
 
   /**

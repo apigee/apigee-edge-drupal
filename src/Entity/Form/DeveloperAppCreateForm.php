@@ -130,11 +130,12 @@ class DeveloperAppCreateForm extends EntityForm implements DeveloperAppPageTitle
 
     if ($config->get('associate_apps')) {
       $required = $config->get('require');
+      $user_select = (bool) $config->get('user_select');
       $form['product'] = [
         '#type' => 'fieldset',
         '#title' => $this->entityTypeManager->getDefinition('api_product')->getSingularLabel(),
         '#collapsible' => FALSE,
-        '#access' => $config->get('user_select'),
+        '#access' => $user_select,
         '#attributes' => [
           'class' => $required ? ['form-required'] : [],
         ],
@@ -155,15 +156,20 @@ class DeveloperAppCreateForm extends EntityForm implements DeveloperAppPageTitle
         '#title_display' => 'invisible',
         '#required' => $required,
         '#options' => $product_list,
-        '#default_value' => $multiple ? $default_products : reset($default_products),
+        '#access' => $user_select,
+        '#default_value' => $multiple ? $default_products : (string) reset($default_products),
       ];
 
       if ($config->get('display_as_select')) {
         $form['product']['api_products']['#type'] = 'select';
         $form['product']['api_products']['#multiple'] = $multiple;
+        $form['product']['api_products']['#empty_value'] = '';
       }
       else {
         $form['product']['api_products']['#type'] = $multiple ? 'checkboxes' : 'radios';
+        if (!$multiple) {
+          $form['product']['api_products']['#options'] = ['' => $this->t('N/A')] + $form['product']['api_products']['#options'];
+        }
       }
     }
 

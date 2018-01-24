@@ -19,6 +19,11 @@ class QueryTest extends BrowserTestBase {
    */
   protected $storage;
 
+  /**
+   * @var string
+   */
+  protected $prefix;
+
   protected $edgeDevelopers = [
     ['email' => 'test00@example.com', 'userName' => 'test00', 'firstName' => 'Test00', 'lastName' => 'User'],
     ['email' => 'test01@example.com', 'userName' => 'test01', 'firstName' => 'Test01', 'lastName' => 'User'],
@@ -33,8 +38,10 @@ class QueryTest extends BrowserTestBase {
   protected function setUp() {
     parent::setUp();
 
+    $this->prefix = $this->randomMachineName();
 
-    foreach ($this->edgeDevelopers as $edgeDeveloper) {
+    foreach ($this->edgeDevelopers as &$edgeDeveloper) {
+      $edgeDeveloper['email'] = "{$this->prefix}.{$edgeDeveloper['email']}";
       Developer::create($edgeDeveloper)->save();
     }
 
@@ -43,29 +50,29 @@ class QueryTest extends BrowserTestBase {
 
   public function testQuery() {
     $query = $this->storage->getQuery();
-    $query->condition('email', 'test', 'STARTS_WITH');
+    $query->condition('email', "{$this->prefix}.test", 'STARTS_WITH');
     $query->condition('email', '@example.com', 'ENDS_WITH');
     $query->sort('lastName');
     $query->sort('email', 'DESC');
     $results = $query->execute();
     $this->assertEquals(array_values([
-      'test04@example.com',
-      'test03@example.com',
-      'test02@example.com',
-      'test01@example.com',
-      'test00@example.com',
+      "{$this->prefix}.test04@example.com",
+      "{$this->prefix}.test03@example.com",
+      "{$this->prefix}.test02@example.com",
+      "{$this->prefix}.test01@example.com",
+      "{$this->prefix}.test00@example.com",
     ]), array_values($results));
 
     $query = $this->storage->getQuery();
-    $query->condition('email', 'test', 'STARTS_WITH');
+    $query->condition('email', "{$this->prefix}.test", 'STARTS_WITH');
     $query->condition('email', '@example.com', 'ENDS_WITH');
     $query->sort('email');
     $query->range(1, 1);
     $results = $query->execute();
-    $this->assertEquals(array_values(['test01@example.com']), array_values($results));
+    $this->assertEquals(array_values(["{$this->prefix}.test01@example.com"]), array_values($results));
 
     $query = $this->storage->getQuery();
-    $query->condition('email', 'test', 'STARTS_WITH');
+    $query->condition('email', "{$this->prefix}.test", 'STARTS_WITH');
     $query->condition('email', '@example.com', 'ENDS_WITH');
     $this->assertEquals(5, $query->count()->execute());
   }

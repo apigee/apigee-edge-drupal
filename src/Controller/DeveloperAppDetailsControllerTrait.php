@@ -48,7 +48,12 @@ trait DeveloperAppDetailsControllerTrait {
    */
   protected function getRenderArray(DeveloperAppInterface $developer_app): array {
     $config = $this->configFactory->get('apigee_edge.appsettings');
-    $build = [];
+    $build = [
+      '#cache' => [
+        'contexts' => $developer_app->getCacheContexts(),
+        'tags' => $developer_app->getCacheTags(),
+      ],
+    ];
     $build['details'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Details'),
@@ -183,6 +188,7 @@ trait DeveloperAppDetailsControllerTrait {
    *
    * @param \Apigee\Edge\Entity\EntityInterface $entity
    *   The entity.
+   * @param array $elements
    *
    * @return array
    *   The render array.

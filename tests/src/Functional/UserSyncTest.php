@@ -29,6 +29,11 @@ class UserSyncTest extends BrowserTestBase {
   ];
 
   /**
+   * @var string
+   */
+  protected $prefix;
+
+  /**
    * @var User[]
    */
   protected $drupalUsers = [];
@@ -41,7 +46,10 @@ class UserSyncTest extends BrowserTestBase {
 
     $this->drupalPlaceBlock('local_actions_block');
 
-    foreach ($this->edgeDevelopers as $edgeDeveloper) {
+    $this->prefix = $this->randomMachineName();
+
+    foreach ($this->edgeDevelopers as &$edgeDeveloper) {
+      $edgeDeveloper['email'] = "{$this->prefix}.{$edgeDeveloper['email']}";
       Developer::create($edgeDeveloper)->save();
     }
 
