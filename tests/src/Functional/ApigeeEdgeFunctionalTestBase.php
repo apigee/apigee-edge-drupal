@@ -15,10 +15,11 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
    * Creates a Drupal account.
    *
    * @param array $permissions
+   * @param bool $status
    *
    * @return \Drupal\user\UserInterface
    */
-  protected function createAccount(array $permissions = []) : ?UserInterface {
+  protected function createAccount(array $permissions = [], bool $status = TRUE) : ?UserInterface {
     $rid = NULL;
     if ($permissions) {
       $rid = $this->createRole($permissions);
@@ -30,7 +31,7 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
       'last_name' => $this->randomMachineName(),
       'name' => $this->randomMachineName(),
       'pass' => user_password(),
-      'status' => TRUE,
+      'status' => $status,
     ];
     if ($rid) {
       $edit['roles'][] = $rid;
@@ -39,6 +40,12 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
 
     $account = User::create($edit);
     $account->save();
+
+    $this->assertTrue($account->id(), 'User created.');
+    if (!$account->id()) {
+      return NULL;
+    }
+
     // This is here to make drupalLogin() work.
     $account->passRaw = $edit['pass'];
 

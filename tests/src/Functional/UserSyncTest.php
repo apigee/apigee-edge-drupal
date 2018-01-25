@@ -33,7 +33,7 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
   protected $prefix;
 
   /**
-   * @var User[]
+   * @var UserInterface[]
    */
   protected $drupalUsers = [];
 
@@ -47,38 +47,20 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
 
     $this->prefix = $this->randomMachineName();
 
+    $config = \Drupal::configFactory()->getEditable('apigee_edge.sync');
+    $escaped_prefix = preg_quote($this->prefix);
+    $config->set('filter', "/^{$escaped_prefix}\.test[\d]{2}@example\.com$/");
+
     foreach ($this->edgeDevelopers as &$edgeDeveloper) {
       $edgeDeveloper['email'] = "{$this->prefix}.{$edgeDeveloper['email']}";
       Developer::create($edgeDeveloper)->save();
     }
 
     for ($i = 0; $i < 5; $i++) {
-      $this->drupalUsers[] = $this->createUserWithFields();
+      $this->drupalUsers[] = $this->createAccount();
     }
 
     $this->drupalLogin($this->rootUser);
-  }
-
-  protected function createUserWithFields($status = TRUE) : ?User {
-    $edit = [
-      'first_name' => $this->randomMachineName(4),
-      'last_name' => $this->randomMachineName(5),
-      'name' => $this->randomMachineName(),
-      'pass' => user_password(),
-      'status' => $status,
-      'roles' => [Role::AUTHENTICATED_ID],
-    ];
-    $edit['mail'] = "{$edit['name']}@example.com";
-
-    $account = User::create($edit);
-    $account->save();
-
-    $this->assertTrue($account->id(), 'User created.');
-    if (!$account->id()) {
-      return NULL;
-    }
-
-    return $account;
   }
 
   /**
@@ -99,6 +81,17 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   protected function verify() {
+    $all_users = [];
+    /** @var UserInterface $account */
+    foreach (User::loadMultiple() as $account) {
+      $email = $account->getEmail();
+      if ($email) {
+        $all_users[$email] = $email;
+      }
+    }
+
+    unset($all_users[$this->rootUser->getEmail()]);
+
     foreach ($this->edgeDevelopers as $edgeDeveloper) {
       /** @var User $account */
       $account = user_load_by_mail($edgeDeveloper['email']);
@@ -106,6 +99,8 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
       $this->assertEquals($edgeDeveloper['userName'], $account->getAccountName());
       $this->assertEquals($edgeDeveloper['firstName'], $account->get('first_name')->value);
       $this->assertEquals($edgeDeveloper['lastName'], $account->get('last_name')->value);
+
+      unset($all_users[$edgeDeveloper['email']]);
     }
 
     foreach ($this->drupalUsers as $drupalUser) {
@@ -115,7 +110,11 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
       $this->assertEquals($drupalUser->getAccountName(), $dev->getUserName());
       $this->assertEquals($drupalUser->get('first_name')->value, $dev->getFirstName());
       $this->assertEquals($drupalUser->get('last_name')->value, $dev->getLastName());
+
+      unset($all_users[$drupalUser->getEmail()]);
     }
+
+    $this->assertEquals([], $all_users, 'Only the necessary users were synced. ' . implode(', ', $all_users));
   }
 
   public function testUserSync() {
