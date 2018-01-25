@@ -56,6 +56,15 @@ class UserSyncController extends ControllerBase {
   }
 
   /**
+   * Returns the user sync filter.
+   *
+   * @return null|string
+   */
+  protected static function getFilter(): ?string {
+    return ((string) \Drupal::config('apigee_edge.sync')->get('filter')) ?: NULL;
+  }
+
+  /**
    * Handler for 'apigee_edge.user_sync.schedule'.
    *
    * Runs a user sync in the background.
@@ -69,7 +78,7 @@ class UserSyncController extends ControllerBase {
   public function schedule(Request $request) {
     $destination = $request->query->get('destination');
 
-    $job = new DeveloperSync();
+    $job = new DeveloperSync(static::getFilter());
     $job->setTag($this->generateTag('background'));
     apigee_edge_get_executor()->cast($job);
 
@@ -116,7 +125,7 @@ class UserSyncController extends ControllerBase {
    *   Batch context.
    */
   public static function batchGenerateJobs(string $tag, array &$context) {
-    $job = new DeveloperSync();
+    $job = new DeveloperSync(static::getFilter());
     $job->setTag($tag);
     apigee_edge_get_executor()->call($job);
 

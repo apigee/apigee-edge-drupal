@@ -47,3 +47,9 @@ apigee_edge.appsettings:
       type: sequence
       sequence:
         type: string
+
+apigee_edge.sync:
+  type: config_object
+  mapping:
+    filter:
+      type: string
