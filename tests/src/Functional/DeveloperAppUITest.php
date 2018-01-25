@@ -6,15 +6,12 @@ use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
-use Drupal\Tests\BrowserTestBase;
-use Drupal\user\Entity\Role;
-use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
 /**
  * @group apigee_edge
  */
-class DeveloperAppUITest extends BrowserTestBase {
+class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
   protected const DUPLICATE_MACHINE_NAME = 'The machine-readable name is already in use. It must be unique.';
 
@@ -46,6 +43,14 @@ class DeveloperAppUITest extends BrowserTestBase {
    */
   protected $role;
 
+  protected static $permissions = [
+    'administer apigee edge',
+    'create developer_app',
+    'view own developer_app',
+    'update own developer_app',
+    'delete own developer_app',
+  ];
+
   /**
    * {@inheritdoc}
    */
@@ -53,58 +58,9 @@ class DeveloperAppUITest extends BrowserTestBase {
     $this->profile = 'standard';
     parent::setUp();
 
-    $this->role = $this->createRole([
-      'administer apigee edge',
-      'create developer_app',
-      'view own developer_app',
-      'update own developer_app',
-      'delete own developer_app',
-    ]);
-
     $this->products[] = $this->createProduct();
-    $this->account = $this->createAccount();
+    $this->account = $this->createAccount(static::$permissions);
     $this->drupalLogin($this->account);
-  }
-
-  /**
-   * Creates a Drupal account.
-   *
-   * @return \Drupal\user\UserInterface
-   */
-  protected function createAccount() : UserInterface {
-    $edit = [
-      'first_name' => $this->randomMachineName(),
-      'last_name' => $this->randomMachineName(),
-      'name' => $this->randomMachineName(),
-      'pass' => user_password(),
-      'status' => TRUE,
-      'roles' => [Role::AUTHENTICATED_ID, $this->role],
-    ];
-    $edit['mail'] = "{$edit['name']}@example.com";
-
-    $account = User::create($edit);
-    $account->save();
-    // This is here to make drupalLogin() work.
-    $account->passRaw = $edit['pass'];
-
-    return $account;
-  }
-
-  /**
-   * Creates a product.
-   *
-   * @return \Drupal\apigee_edge\Entity\ApiProduct
-   */
-  protected function createProduct() : ApiProduct {
-    /** @var ApiProduct $product */
-    $product = ApiProduct::create([
-      'name' => $this->randomMachineName(),
-      'displayName' => $this->randomString(),
-      'approvalType' => ApiProduct::APPROVAL_TYPE_AUTO,
-    ]);
-    $product->save();
-
-    return $product;
   }
 
   /**
@@ -176,26 +132,14 @@ class DeveloperAppUITest extends BrowserTestBase {
   }
 
   /**
-   * Loads all apps for a given user.
-   *
-   * @param null|string $email
-   *
-   * @return DeveloperApp[]|null
-   *
+   * {@inheritdoc}
    */
   protected function getApps(?string $email = NULL): ?array {
     if ($email === NULL) {
       $email = $this->account->getEmail();
     }
 
-    $developer = Developer::load($email);
-    if ($developer) {
-      /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperAppStorage $storage */
-      $storage = \Drupal::entityTypeManager()->getStorage('developer_app');
-      return $storage->loadByDeveloper($developer->uuid());
-    }
-
-    return NULL;
+    return parent::getApps($email);
   }
 
   /**
@@ -322,7 +266,7 @@ class DeveloperAppUITest extends BrowserTestBase {
       'displayName' => $name,
     ]);
 
-    $second_user = $this->createAccount();
+    $second_user = $this->createAccount(static::$permissions);
     $this->drupalLogin($second_user);
     $this->postCreateAppForm([
       'name' => $name,

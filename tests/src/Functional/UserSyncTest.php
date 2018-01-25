@@ -3,7 +3,6 @@
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Drupal\apigee_edge\Entity\Developer;
-use Drupal\Tests\BrowserTestBase;
 use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
@@ -13,7 +12,7 @@ use Drupal\user\UserInterface;
  *
  * @group apigee_edge
  */
-class UserSyncTest extends BrowserTestBase {
+class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
 
   public static $modules = [
     'block',
@@ -147,29 +146,6 @@ class UserSyncTest extends BrowserTestBase {
     }
 
     $this->verify();
-  }
-
-  /**
-   * Implements link clicking properly.
-   *
-   * The clickLink() function uses Mink, not drupalGet(). This means that
-   * certain features (like chekcing for meta refresh) are not working at all.
-   * This is a problem, because batch api works with meta refresh when JS is not
-   * available.
-   *
-   * @param string $name
-   */
-  protected function clickLinkProperly($name) {
-    /** @var \Behat\Mink\Element\NodeElement[] $links */
-    $links = $this->getSession()->getPage()->findAll('named', ['link', $name]);
-    $href = $links[0]->getAttribute('href');
-    $parts = parse_url($href);
-    $query = [];
-    parse_str($parts['query'], $query);
-
-    $this->drupalGet($parts['path'], [
-      'query' => $query,
-    ]);
   }
 
 }
