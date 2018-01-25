@@ -80,5 +80,5 @@ Create the `phpunit.xml` file in the `docroot` folder and fill in `SIMPLETEST_DB
 To execute the tests, run the following command (note that the location of the `phpunit` executable might be different in your case):
 
 ```
-./../bin/phpunit --verbose --color --group ApigeeEdge
+./../bin/phpunit --verbose --color --group apigee_edge
 ```
