@@ -12,7 +12,7 @@ use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
 /**
- * @group ApigeeEdge
+ * @group apigee_edge
  */
 class DeveloperAppUITest extends BrowserTestBase {
 

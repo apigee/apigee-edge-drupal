@@ -8,7 +8,7 @@ use Drupal\Tests\BrowserTestBase;
 /**
  * Edge account related tests.
  *
- * @group ApigeeEdge
+ * @group apigee_edge
  */
 class EdgeAccountTest extends BrowserTestBase {
 

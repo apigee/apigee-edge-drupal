@@ -6,7 +6,7 @@ use Drupal\apigee_edge\Entity\Developer;
 use Drupal\Tests\BrowserTestBase;
 
 /**
- * @group ApigeeEdge
+ * @group apigee_edge
  */
 class QueryTest extends BrowserTestBase {
 

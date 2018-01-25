@@ -1,0 +1,45 @@
+language: php
+
+sudo: required
+
+services:
+  - docker
+
+addons:
+  apt:
+    packages:
+      - docker-ce
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - php: nightly
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+
+notifications:
+  email: false
+
+env:
+  global:
+    - DOCKER_COMPOSE_VERSION=1.18.0
+  matrix:
+    - DEPENDENCIES="lowest"
+    - DEPENDENCIES="highest"
+
+# TODO Cache Docker images and PHP service build (common parts of the built, like Drupal core install, for a day).
+before_install:
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+  - docker-compose pull
+  - COMPOSE_PROJECT_NAME="apigee-edge-${DEPENDENCIES}" docker-compose build --build-arg DEPENDENCIES=${DEPENDENCIES} php
+  - COMPOSE_PROJECT_NAME="apigee-edge-${DEPENDENCIES}" docker-compose up -d
+  - docker ps -a
+
+script:
+  - set -e
+  - COMPOSE_PROJECT_NAME="apigee-edge-${DEPENDENCIES}" docker-compose run -e APIGEE_EDGE_ENDPOINT=${APIGEE_EDGE_ENDPOINT} -e APIGEE_EDGE_USERNAME=${APIGEE_EDGE_USERNAME} -e APIGEE_EDGE_PASSWORD=${APIGEE_EDGE_PASSWORD} -e APIGEE_EDGE_ORGANIZATION=${APIGEE_EDGE_ORGANIZATION} --user 82 php ./vendor/bin/phpunit -c web/core --group apigee_edge -v --debug

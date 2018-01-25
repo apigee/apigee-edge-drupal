@@ -1,0 +1,33 @@
+version: "2"
+
+services:
+  mariadb:
+    image: wodby/mariadb
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: 1
+      MYSQL_DATABASE: drupal
+      MYSQL_USER: drupal
+      MYSQL_PASSWORD: drupal
+
+  php:
+    build:
+      context: .
+      args:
+        DRUPAL_MODULE_NAME: apigee_edge
+    environment:
+      SIMPLETEST_BASE_URL: http://nginx
+      SIMPLETEST_DB: mysql://drupal:drupal@mariadb/drupal
+    volumes:
+      - codebase:/var/www/html
+
+  nginx:
+    image: wodby/drupal-nginx
+    environment:
+      NGINX_SERVER_NAME: localhost
+      NGINX_BACKEND_HOST: php
+      NGINX_SERVER_ROOT: /var/www/html/web
+    volumes_from:
+      - php
+
+volumes:
+  codebase:
