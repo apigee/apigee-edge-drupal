@@ -3,7 +3,6 @@
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Drupal\apigee_edge\Entity\Developer;
-use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
@@ -38,6 +37,11 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
   protected $drupalUsers = [];
 
   /**
+   * @var string
+   */
+  protected $filter;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp() {
@@ -49,7 +53,9 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
 
     $config = \Drupal::configFactory()->getEditable('apigee_edge.sync');
     $escaped_prefix = preg_quote($this->prefix);
-    $config->set('filter', "/^{$escaped_prefix}\.test[\d]{2}@example\.com$/");
+    $this->filter = "/^{$escaped_prefix}\.[a-zA-Z0-9]*@example\.com$/";
+    $config->set('filter', $this->filter);
+    $config->save();
 
     foreach ($this->edgeDevelopers as &$edgeDeveloper) {
       $edgeDeveloper['email'] = "{$this->prefix}.{$edgeDeveloper['email']}";
@@ -57,7 +63,7 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
     }
 
     for ($i = 0; $i < 5; $i++) {
-      $this->drupalUsers[] = $this->createAccount();
+      $this->drupalUsers[] = $this->createAccount([], TRUE, $this->prefix);
     }
 
     $this->drupalLogin($this->rootUser);
@@ -85,7 +91,8 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
     /** @var UserInterface $account */
     foreach (User::loadMultiple() as $account) {
       $email = $account->getEmail();
-      if ($email) {
+      if ($email && $email !== 'admin@example.com') {
+        $this->assertTrue($this->filter ? (bool) preg_match($this->filter, $email) : TRUE, "Email ({$email}) is filtered properly.");
         $all_users[$email] = $email;
       }
     }

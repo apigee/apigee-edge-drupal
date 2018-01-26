@@ -92,7 +92,7 @@ class DeveloperSync extends EdgeJob {
 
     $accounts = [];
     foreach ($mails as $mail) {
-      if ($this->filter && preg_match($this->filter, $mail)) {
+      if ($this->filter && !preg_match($this->filter, $mail)) {
         continue;
       }
       $accounts[strtolower($mail)] = $mail;
