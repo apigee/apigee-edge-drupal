@@ -26,8 +26,13 @@ env:
   global:
     - DOCKER_COMPOSE_VERSION=1.18.0
   matrix:
-    - DEPENDENCIES="lowest"
-    - DEPENDENCIES="highest"
+    - DRUPAL_CORE=8.4 DEPENDENCIES="--prefer-lowest"
+    - DRUPAL_CORE=8.4 DEPENDENCIES=""
+
+#matrix:
+#  allow_failures:
+#    - env: DRUPAL_CORE=8.5 DEPENDENCIES="--prefer-lowest"
+#    - env: DRUPAL_CORE=8.5 DEPENDENCIES=""
 
 # TODO Cache Docker images and PHP service build (common parts of the built, like Drupal core install, for a day).
 before_install:
@@ -36,10 +41,10 @@ before_install:
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
   - docker-compose pull
-  - COMPOSE_PROJECT_NAME="apigee-edge-${DEPENDENCIES}" docker-compose build --build-arg DEPENDENCIES=${DEPENDENCIES} php
-  - COMPOSE_PROJECT_NAME="apigee-edge-${DEPENDENCIES}" docker-compose up -d
+  - COMPOSE_PROJECT_NAME="apigee-edge-${DRUPAL_CORE}-${DEPENDENCIES}" docker-compose build --build-arg DEPENDENCIES=${DEPENDENCIES} DRUPAL_CORE=${DRUPAL_CORE} php
+  - COMPOSE_PROJECT_NAME="apigee-edge-${DRUPAL_CORE}-${DEPENDENCIES}" docker-compose up -d
   - docker ps -a
 
 script:
   - set -e
-  - COMPOSE_PROJECT_NAME="apigee-edge-${DEPENDENCIES}" docker-compose run -e APIGEE_EDGE_ENDPOINT=${APIGEE_EDGE_ENDPOINT} -e APIGEE_EDGE_USERNAME=${APIGEE_EDGE_USERNAME} -e APIGEE_EDGE_PASSWORD=${APIGEE_EDGE_PASSWORD} -e APIGEE_EDGE_ORGANIZATION=${APIGEE_EDGE_ORGANIZATION} --user 82 php ./vendor/bin/phpunit -c web/core --group apigee_edge -v --debug
+  - COMPOSE_PROJECT_NAME="apigee-edge-${DEPENDENCIES}" docker-compose run -e APIGEE_EDGE_ENDPOINT=${APIGEE_EDGE_ENDPOINT} -e APIGEE_EDGE_USERNAME=${APIGEE_EDGE_USERNAME} -e APIGEE_EDGE_PASSWORD=${APIGEE_EDGE_PASSWORD} -e APIGEE_EDGE_ORGANIZATION=${APIGEE_EDGE_ORGANIZATION} --user 82 php sh /opt/test.sh

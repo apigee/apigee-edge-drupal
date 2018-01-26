@@ -13,21 +13,20 @@ services:
     build:
       context: .
       args:
-        DRUPAL_MODULE_NAME: apigee_edge
+        - DRUPAL_CORE
+        - DEPENDENCIES
     environment:
+      DRUPAL_MODULE_NAME: apigee_edge
       SIMPLETEST_BASE_URL: http://nginx
       SIMPLETEST_DB: mysql://drupal:drupal@mariadb/drupal
     volumes:
-      - codebase:/var/www/html
+      - .:/opt/drupal-module
 
   nginx:
     image: wodby/drupal-nginx
     environment:
       NGINX_SERVER_NAME: localhost
       NGINX_BACKEND_HOST: php
-      NGINX_SERVER_ROOT: /var/www/html/web
+      NGINX_SERVER_ROOT: /var/www/html
     volumes_from:
       - php
-
-volumes:
-  codebase:
