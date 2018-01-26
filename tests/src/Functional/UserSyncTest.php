@@ -5,9 +5,12 @@ namespace Drupal\Tests\apigee_edge\Functional;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
+use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Output\BufferedOutput;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * User synchronization tests
+ * User synchronization test.
  *
  * @group apigee_edge
  */
@@ -27,16 +30,22 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
   ];
 
   /**
+   * Random property prefix.
+   *
    * @var string
    */
   protected $prefix;
 
   /**
+   * Array of Drupal users.
+   *
    * @var UserInterface[]
    */
   protected $drupalUsers = [];
 
   /**
+   * Email filter.
+   *
    * @var string
    */
   protected $filter;
@@ -73,10 +82,10 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function tearDown() {
-    $remote_ids = array_map(function($record): string {
+    $remote_ids = array_map(function ($record): string {
       return $record['email'];
     }, $this->edgeDevelopers);
-    $drupal_emails = array_map(function(UserInterface $user): string {
+    $drupal_emails = array_map(function (UserInterface $user): string {
       return $user->getEmail();
     }, $this->drupalUsers);
     $ids = array_merge($remote_ids, $drupal_emails);
@@ -86,6 +95,9 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
     parent::tearDown();
   }
 
+  /**
+   * Verifies that the Drupal users and the Edge developers are synchronized.
+   */
   protected function verify() {
     $all_users = [];
     /** @var UserInterface $account */
@@ -124,19 +136,23 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
     $this->assertEquals([], $all_users, 'Only the necessary users were synced. ' . implode(', ', $all_users));
   }
 
+  /**
+   * Tests Drupal user synchronization.
+   */
   public function testUserSync() {
     $this->drupalGet('/admin/config/apigee-edge');
     $this->clickLinkProperly(t('Run user sync'));
     $this->assertSession()->pageTextContains(t('Users are in sync with Edge.'));
-
     $this->verify();
   }
 
+  /**
+   * Tests scheduled Drupal user synchronization.
+   */
   public function testUserAsync() {
     $this->drupalGet('/admin/config/apigee-edge');
     $this->clickLinkProperly(t('Schedule user sync'));
     $this->assertSession()->pageTextContains(t('User synchronization is scheduled.'));
-
     /** @var \Drupal\Core\Queue\QueueFactory $queue_service */
     $queue_service = \Drupal::service('queue');
     /** @var \Drupal\Core\Queue\QueueInterface $queue */
@@ -145,10 +161,27 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
     $queue_worker_manager = \Drupal::service('plugin.manager.queue_worker');
     /** @var \Drupal\Core\Queue\QueueWorkerInterface $worker */
     $worker = $queue_worker_manager->createInstance('apigee_edge_job');
-
     while (($item = $queue->claimItem())) {
       $worker->processItem($item->data);
       $queue->deleteItem($item);
+    }
+    $this->verify();
+  }
+
+  /**
+   * Tests the Drupal user synchronization started from the CLI.
+   */
+  public function testCliUserSync() {
+    $cli_service = $this->container->get('apigee_edge.cli');
+    $input = new ArgvInput();
+    $output = new BufferedOutput();
+
+    $cli_service->sync(new SymfonyStyle($input, $output), 't');
+
+    $printed_output = $output->fetch();
+
+    foreach ($this->edgeDevelopers as $edge_developer) {
+      $this->assertContains($edge_developer['email'], $printed_output);
     }
 
     $this->verify();
