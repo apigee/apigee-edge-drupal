@@ -29,11 +29,11 @@ services:
       - .:/opt/drupal-module
 
   webserver:
-    image: wodby/drupal-nginx
+    image: wodby/php-apache:2.4-2.0.2
     environment:
-      NGINX_SERVER_NAME: localhost
-      NGINX_BACKEND_HOST: php
-      NGINX_SERVER_ROOT: /var/www/html
+      APACHE_SERVER_ROOT: /var/www/html
+      APACHE_BACKEND_HOST: php
+      APACHE_LOG_LEVEL: debug
     volumes_from:
       - php
 
