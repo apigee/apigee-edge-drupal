@@ -15,7 +15,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Trait for developer app details controllers.
  */
-trait DeveloperAppDetailsControllerTrait {
+trait DeveloperAppViewControllerTrait {
 
   /**
    * {@inheritdoc}
