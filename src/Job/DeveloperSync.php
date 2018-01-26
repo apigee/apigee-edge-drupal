@@ -67,14 +67,15 @@ class DeveloperSync extends EdgeJob {
    */
   protected function loadUserEmails() : array {
     $mails = $this->getConnection()->query("
-      SELECT DISTINCT u.mail
-      FROM {user__roles} r
-      JOIN {users_field_data} u ON r.entity_id = u.uid
+      SELECT u.mail
+      FROM {users_field_data} u
     ")->fetchCol();
 
     $accounts = [];
     foreach ($mails as $mail) {
-      $accounts[strtolower($mail)] = $mail;
+      if (isset($mail)) {
+        $accounts[strtolower($mail)] = $mail;
+      }
     }
 
     return $accounts;
@@ -162,7 +163,7 @@ class DeveloperSync extends EdgeJob {
    * {@inheritdoc}
    */
   public function __toString() : string {
-    return t('Synchronizing developers and users')->render();
+    return t('Synchronizing developers and users.')->render();
   }
 
 }

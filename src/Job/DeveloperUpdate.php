@@ -5,7 +5,7 @@ namespace Drupal\apigee_edge\Job;
 use Drupal\apigee_edge\Entity\DeveloperInterface;
 
 /**
- * A job to update a developer.
+ * A job to update a developer in Edge.
  */
 class DeveloperUpdate extends EdgeJob {
 
@@ -35,7 +35,7 @@ class DeveloperUpdate extends EdgeJob {
    * {@inheritdoc}
    */
   public function __toString() : string {
-    return t('Updating developer (@mail) on edge', [
+    return t('Updating developer (@mail) on Edge.', [
       '@mail' => $this->developer->getEmail(),
     ])->render();
   }
