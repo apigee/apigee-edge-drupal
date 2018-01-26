@@ -20,6 +20,7 @@ services:
       SIMPLETEST_BASE_URL: http://nginx
       SIMPLETEST_DB: mysql://drupal:drupal@mariadb/drupal
     volumes:
+      - codebase:/var/www/html
       - .:/opt/drupal-module
 
   nginx:
@@ -30,3 +31,6 @@ services:
       NGINX_SERVER_ROOT: /var/www/html
     volumes_from:
       - php
+
+volumes:
+  codebase:
