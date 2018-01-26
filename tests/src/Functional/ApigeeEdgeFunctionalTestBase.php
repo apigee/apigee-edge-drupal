@@ -16,10 +16,11 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
    *
    * @param array $permissions
    * @param bool $status
+   * @param string $prefix
    *
    * @return \Drupal\user\UserInterface
    */
-  protected function createAccount(array $permissions = [], bool $status = TRUE) : ?UserInterface {
+  protected function createAccount(array $permissions = [], bool $status = TRUE, string $prefix = '') : ?UserInterface {
     $rid = NULL;
     if ($permissions) {
       $rid = $this->createRole($permissions);
@@ -36,7 +37,12 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
     if ($rid) {
       $edit['roles'][] = $rid;
     }
-    $edit['mail'] = "{$edit['name']}@example.com";
+    if ($prefix) {
+      $edit['mail'] = "{$prefix}.{$edit['name']}@example.com";
+    }
+    else {
+      $edit['mail'] = "{$edit['name']}@example.com";
+    }
 
     $account = User::create($edit);
     $account->save();
