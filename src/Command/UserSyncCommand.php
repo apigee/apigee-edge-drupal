@@ -33,13 +33,7 @@ class UserSyncCommand extends CommandBase {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $this->setupIo($input, $output);
-
-    try {
-      $this->cliService->sync($this->getIo(), 't');
-    }
-    catch (\Exception $exception) {
-      $this->getIo()->error($exception->getMessage());
-    }
+    $this->cliService->sync($this->getIo(), 't');
   }
 
 }
