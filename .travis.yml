@@ -41,7 +41,7 @@ before_install:
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
   - docker-compose pull
-  - COMPOSE_PROJECT_NAME="apigee-edge-${DRUPAL_CORE}-${DEPENDENCIES}" docker-compose build --build-arg DEPENDENCIES=${DEPENDENCIES} DRUPAL_CORE=${DRUPAL_CORE} php
+  - COMPOSE_PROJECT_NAME="apigee-edge-${DRUPAL_CORE}-${DEPENDENCIES}" docker-compose build php
   - COMPOSE_PROJECT_NAME="apigee-edge-${DRUPAL_CORE}-${DEPENDENCIES}" docker-compose up -d
   - docker ps -a
 
