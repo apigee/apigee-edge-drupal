@@ -51,7 +51,7 @@ class UserSyncController extends ControllerBase {
    * @return string
    *   Job tag.
    */
-  protected function generateTag(string $type) : string {
+  protected static function generateTag(string $type) : string {
     return "user_sync_{$type}_" . user_password();
   }
 
@@ -90,7 +90,7 @@ class UserSyncController extends ControllerBase {
   /**
    * Handler for 'apigee_edge.user_sync.run'.
    *
-   * Runs a user sync in the foreground as a batch.
+   * Starts the user sync batch process.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The HTTP request.
@@ -100,18 +100,28 @@ class UserSyncController extends ControllerBase {
    */
   public function run(Request $request) {
     $destination = $request->query->get('destination');
-    $tag = $this->generateTag('batch');
+    $batch = static::getBatch();
+    batch_set($batch);
+    return batch_process($destination);
+  }
 
-    batch_set([
-      'title' => $this->t('Synchronizing users'),
+  /**
+   * Gets the batch array.
+   *
+   * @return array
+   *   The batch array.
+   */
+  public static function getBatch(): array {
+    $tag = static::generateTag('batch');
+
+    return [
+      'title' => t('Synchronizing users'),
       'operations' => [
         [[static::class, 'batchGenerateJobs'], [$tag]],
         [[static::class, 'batchExecuteJobs'], [$tag]],
       ],
       'finished' => [static::class, 'batchFinished'],
-    ]);
-
-    return batch_process($destination);
+    ];
   }
 
   /**

@@ -13,9 +13,9 @@ use Drupal\user\UserInterface;
  *
  * @package Drupal\apigee_edge\Controller
  */
-class DeveloperAppDetailsControllerForDeveloper extends ControllerBase implements DeveloperAppPageTitleInterface {
+class DeveloperAppViewControllerForDeveloper extends ControllerBase implements DeveloperAppPageTitleInterface {
 
-  use DeveloperAppDetailsControllerTrait;
+  use DeveloperAppViewControllerTrait;
 
   /**
    * Renders the details of a developer app for a given user.
