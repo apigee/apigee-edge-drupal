@@ -3,8 +3,6 @@
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Drupal\apigee_edge\Entity\Developer;
-use Drupal\Tests\BrowserTestBase;
-use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
@@ -13,7 +11,7 @@ use Drupal\user\UserInterface;
  *
  * @group apigee_edge
  */
-class UserSyncTest extends BrowserTestBase {
+class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
 
   public static $modules = [
     'block',
@@ -34,9 +32,14 @@ class UserSyncTest extends BrowserTestBase {
   protected $prefix;
 
   /**
-   * @var User[]
+   * @var UserInterface[]
    */
   protected $drupalUsers = [];
+
+  /**
+   * @var string
+   */
+  protected $filter;
 
   /**
    * {@inheritdoc}
@@ -48,38 +51,22 @@ class UserSyncTest extends BrowserTestBase {
 
     $this->prefix = $this->randomMachineName();
 
+    $config = \Drupal::configFactory()->getEditable('apigee_edge.sync');
+    $escaped_prefix = preg_quote($this->prefix);
+    $this->filter = "/^{$escaped_prefix}\.[a-zA-Z0-9]*@example\.com$/";
+    $config->set('filter', $this->filter);
+    $config->save();
+
     foreach ($this->edgeDevelopers as &$edgeDeveloper) {
       $edgeDeveloper['email'] = "{$this->prefix}.{$edgeDeveloper['email']}";
       Developer::create($edgeDeveloper)->save();
     }
 
     for ($i = 0; $i < 5; $i++) {
-      $this->drupalUsers[] = $this->createUserWithFields();
+      $this->drupalUsers[] = $this->createAccount([], TRUE, $this->prefix);
     }
 
     $this->drupalLogin($this->rootUser);
-  }
-
-  protected function createUserWithFields($status = TRUE) : ?User {
-    $edit = [
-      'first_name' => $this->randomMachineName(4),
-      'last_name' => $this->randomMachineName(5),
-      'name' => $this->randomMachineName(),
-      'pass' => user_password(),
-      'status' => $status,
-      'roles' => [Role::AUTHENTICATED_ID],
-    ];
-    $edit['mail'] = "{$edit['name']}@example.com";
-
-    $account = User::create($edit);
-    $account->save();
-
-    $this->assertTrue($account->id(), 'User created.');
-    if (!$account->id()) {
-      return NULL;
-    }
-
-    return $account;
   }
 
   /**
@@ -100,6 +87,18 @@ class UserSyncTest extends BrowserTestBase {
   }
 
   protected function verify() {
+    $all_users = [];
+    /** @var UserInterface $account */
+    foreach (User::loadMultiple() as $account) {
+      $email = $account->getEmail();
+      if ($email && $email !== 'admin@example.com') {
+        $this->assertTrue($this->filter ? (bool) preg_match($this->filter, $email) : TRUE, "Email ({$email}) is filtered properly.");
+        $all_users[$email] = $email;
+      }
+    }
+
+    unset($all_users[$this->rootUser->getEmail()]);
+
     foreach ($this->edgeDevelopers as $edgeDeveloper) {
       /** @var User $account */
       $account = user_load_by_mail($edgeDeveloper['email']);
@@ -107,6 +106,8 @@ class UserSyncTest extends BrowserTestBase {
       $this->assertEquals($edgeDeveloper['userName'], $account->getAccountName());
       $this->assertEquals($edgeDeveloper['firstName'], $account->get('first_name')->value);
       $this->assertEquals($edgeDeveloper['lastName'], $account->get('last_name')->value);
+
+      unset($all_users[$edgeDeveloper['email']]);
     }
 
     foreach ($this->drupalUsers as $drupalUser) {
@@ -116,7 +117,11 @@ class UserSyncTest extends BrowserTestBase {
       $this->assertEquals($drupalUser->getAccountName(), $dev->getUserName());
       $this->assertEquals($drupalUser->get('first_name')->value, $dev->getFirstName());
       $this->assertEquals($drupalUser->get('last_name')->value, $dev->getLastName());
+
+      unset($all_users[$drupalUser->getEmail()]);
     }
+
+    $this->assertEquals([], $all_users, 'Only the necessary users were synced. ' . implode(', ', $all_users));
   }
 
   public function testUserSync() {
@@ -147,29 +152,6 @@ class UserSyncTest extends BrowserTestBase {
     }
 
     $this->verify();
-  }
-
-  /**
-   * Implements link clicking properly.
-   *
-   * The clickLink() function uses Mink, not drupalGet(). This means that
-   * certain features (like chekcing for meta refresh) are not working at all.
-   * This is a problem, because batch api works with meta refresh when JS is not
-   * available.
-   *
-   * @param string $name
-   */
-  protected function clickLinkProperly($name) {
-    /** @var \Behat\Mink\Element\NodeElement[] $links */
-    $links = $this->getSession()->getPage()->findAll('named', ['link', $name]);
-    $href = $links[0]->getAttribute('href');
-    $parts = parse_url($href);
-    $query = [];
-    parse_str($parts['query'], $query);
-
-    $this->drupalGet($parts['path'], [
-      'query' => $query,
-    ]);
   }
 
 }

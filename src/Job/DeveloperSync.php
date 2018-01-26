@@ -32,6 +32,24 @@ class DeveloperSync extends EdgeJob {
   protected $drupalAccounts = [];
 
   /**
+   * Filter regexp for the edge developer emails.
+   *
+   * @var ?string
+   */
+  protected $filter = NULL;
+
+  /**
+   * DeveloperSync constructor.
+   *
+   * @param null|string $filter
+   *   An optional regexp filter for the edge developer emails.
+   */
+  public function __construct(?string $filter) {
+    parent::__construct();
+    $this->filter = $filter;
+  }
+
+  /**
    * Returns the database connection service.
    *
    * @return \Drupal\Core\Database\Connection
@@ -74,6 +92,9 @@ class DeveloperSync extends EdgeJob {
 
     $accounts = [];
     foreach ($mails as $mail) {
+      if ($this->filter && !preg_match($this->filter, $mail)) {
+        continue;
+      }
       $accounts[strtolower($mail)] = $mail;
     }
 
