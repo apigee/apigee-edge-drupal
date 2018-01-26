@@ -6,7 +6,7 @@ use Apigee\Edge\Api\Management\Controller\DeveloperController;
 use Apigee\Edge\Api\Management\Entity\Developer;
 
 /**
- * A job that updates a developer's status.
+ * A job that updates a developer's status in Edge.
  */
 class DeveloperSetStatus extends EdgeJob {
 
@@ -47,8 +47,8 @@ class DeveloperSetStatus extends EdgeJob {
   public function __toString(): string {
     $args = ['@mail' => $this->developerId];
     return ($this->status == Developer::STATUS_ACTIVE ?
-      t('Enabling developer (@mail) on edge', $args) :
-      t('Disabling developer (@mail) on edge', $args))
+      t('Enabling developer (@mail) on Edge.', $args) :
+      t('Disabling developer (@mail) on Edge.', $args))
       ->render();
   }
 

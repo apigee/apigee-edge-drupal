@@ -9,7 +9,7 @@ use Drupal\apigee_edge\Job;
 use Drupal\user\UserInterface;
 
 /**
- * A job to create a developer.
+ * A job to create a developer in Edge.
  */
 class DeveloperCreate extends EdgeJob {
 
@@ -78,7 +78,7 @@ class DeveloperCreate extends EdgeJob {
    * {@inheritdoc}
    */
   public function __toString() : string {
-    return t('Creating developer for @mail on edge', [
+    return t('Creating developer for @mail on Edge.', [
       '@mail' => $this->developer->getEmail(),
     ])->render();
   }
