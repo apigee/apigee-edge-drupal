@@ -1,7 +1,5 @@
 FROM wodby/drupal-php:7.1
 
-RUN composer global require "hirak/prestissimo:^0.3"
-
 ARG DRUPAL_CORE="8.4"
 ENV DRUPAL_CORE=${DRUPAL_CORE}
 ARG DEPENDENCIES=""
@@ -13,6 +11,4 @@ RUN composer create-project drupal/drupal:^$DRUPAL_CORE /var/www/html --no-inter
 
 RUN composer update -o --with-dependencies $DEPENDENCIES
 
-VOLUME /opt/drupal-module
-
-COPY test.sh /opt/
+COPY --chown=www-data:www-data .  /opt/drupal-module

@@ -1,4 +1,4 @@
-version: "2"
+version: "3"
 
 services:
   mariadb:
@@ -26,7 +26,6 @@ services:
       APIGEE_EDGE_ORGANIZATION: ${APIGEE_EDGE_ORGANIZATION}
     volumes:
       - codebase:/var/www/html
-      - .:/opt/drupal-module
 
   webserver:
     image: wodby/php-apache:2.4-2.0.2
@@ -34,8 +33,8 @@ services:
       APACHE_SERVER_ROOT: /var/www/html
       APACHE_BACKEND_HOST: php
       APACHE_LOG_LEVEL: debug
-    volumes_from:
-      - php
+    volumes:
+      - codebase:/var/www/html
 
 volumes:
   codebase:
