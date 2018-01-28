@@ -47,4 +47,4 @@ before_install:
 
 script:
   - set -e
-  - COMPOSE_PROJECT_NAME="apigee-edge-${DRUPAL_CORE}-${DEPENDENCIES}" docker-compose run --user 82 php sh /opt/test.sh
+  - COMPOSE_PROJECT_NAME="apigee-edge-${DRUPAL_CORE}-${DEPENDENCIES}" docker-compose run --user 82 php sh /opt/drupal-module/test.sh
