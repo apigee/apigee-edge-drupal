@@ -17,6 +17,7 @@ services:
         - DEPENDENCIES
     environment:
       PHP_FPM_CLEAR_ENV: "no"
+      PHP_FPM_USER: www-data
       DRUPAL_MODULE_NAME: apigee_edge
       SIMPLETEST_BASE_URL: http://webserver
       SIMPLETEST_DB: mysql://drupal:drupal@mariadb/drupal
