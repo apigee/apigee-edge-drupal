@@ -11,14 +11,11 @@ use Drupal\user\Entity\User;
 class CreateUser extends EdgeJob {
 
   /**
+   * The developer's email.
+   *
    * @var string
    */
   protected $mail;
-
-  /**
-   * @var int
-   */
-  protected $current = 0;
 
   /**
    * {@inheritdoc}
@@ -48,7 +45,7 @@ class CreateUser extends EdgeJob {
    * {@inheritdoc}
    */
   public function __toString(): string {
-    return t('Copying developer (@mail) to Drupal from edge.', [
+    return t('Copying developer (@mail) to Drupal from Edge.', [
       '@mail' => $this->mail,
     ])->render();
   }

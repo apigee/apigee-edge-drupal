@@ -65,8 +65,8 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
       'email' => $user->getEmail(),
       'originalEmail' => isset($user->original) ? $user->original->getEmail() : $user->getEmail(),
       'userName' => $user->getAccountName(),
-      'firstName' => $user->get('first_name')->value,
-      'lastName' => $user->get('last_name')->value,
+      'firstName' => (string) $user->get('first_name')->value,
+      'lastName' => (string) $user->get('last_name')->value,
       'status' => $user->isActive() ? static::STATUS_ACTIVE : static::STATUS_INACTIVE,
     ];
 

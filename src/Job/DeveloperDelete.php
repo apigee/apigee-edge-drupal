@@ -5,7 +5,7 @@ namespace Drupal\apigee_edge\Job;
 use Drupal\apigee_edge\Entity\Developer;
 
 /**
- * A job to delete a developer.
+ * A job to delete a developer from Edge.
  */
 class DeveloperDelete extends EdgeJob {
 
@@ -35,7 +35,7 @@ class DeveloperDelete extends EdgeJob {
    * {@inheritdoc}
    */
   public function __toString(): string {
-    return t('Deleting developer (@mail) from edge', [
+    return t('Deleting developer (@mail) from Edge', [
       '@mail' => $this->developerId,
     ])->render();
   }

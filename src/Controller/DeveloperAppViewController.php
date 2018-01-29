@@ -12,9 +12,9 @@ use Drupal\Core\Routing\RouteMatchInterface;
  *
  * @package Drupal\apigee_edge\Controller
  */
-class DeveloperAppDetailsController extends ControllerBase implements DeveloperAppPageTitleInterface {
+class DeveloperAppViewController extends ControllerBase implements DeveloperAppPageTitleInterface {
 
-  use DeveloperAppDetailsControllerTrait;
+  use DeveloperAppViewControllerTrait;
 
   /**
    * Renders the details of a developer app for a given user.

@@ -6,13 +6,13 @@ use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Apigee\Edge\Entity\EntityDenormalizer;
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
 use Apigee\Edge\Entity\EntityNormalizer;
+use Apigee\Edge\Exception\ClientErrorException;
 use Drupal\apigee_edge\ExceptionLoggerTrait;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageBase;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeInterface;
-use GuzzleHttp\Exception\ClientException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -189,12 +189,7 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
     try {
       $action($this->getController($this->getConnector()));
     }
-    catch (ClientException $ex) {
-      $this->logException($ex);
-      throw new EntityStorageException($ex->getMessage(), $ex->getCode(), $ex);
-    }
     catch (\Exception $ex) {
-      $this->logException($ex);
       throw new EntityStorageException($ex->getMessage(), $ex->getCode(), $ex);
     }
   }
