@@ -47,4 +47,4 @@ before_install:
 
 script:
   - set -e
-  - docker-compose run -e APIGEE_EDGE_ENDPOINT=${APIGEE_EDGE_ENDPOINT} -e APIGEE_EDGE_ORGANIZATION=${APIGEE_EDGE_ORGANIZATION} -e APIGEE_EDGE_USERNAME=${APIGEE_EDGE_USERNAME} -e APIGEE_EDGE_PASSWORD=${APIGEE_EDGE_PASSWORD} php sh /opt/drupal-module/test.sh
+  - docker-compose run php sh /opt/drupal-module/test.sh

@@ -11,4 +11,6 @@ RUN composer create-project drupal/drupal:^$DRUPAL_CORE /var/www/html --no-inter
 
 RUN composer update -o --with-dependencies $DEPENDENCIES
 
-COPY --chown=www-data:www-data .  /opt/drupal-module
+COPY --chown=www-data:www-data . /opt/drupal-module
+
+CMD ["php-fpm"]
