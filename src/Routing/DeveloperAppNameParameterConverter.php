@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Drupal\apigee_edge\Routing;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -12,7 +11,9 @@ use Symfony\Component\Routing\Route;
  */
 class DeveloperAppNameParameterConverter implements ParamConverterInterface {
 
-  /** @var \Drupal\Core\Entity\EntityTypeManagerInterface */
+  /**
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
   protected $entityTypeManager;
 
   /**

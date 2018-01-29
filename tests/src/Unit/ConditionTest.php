@@ -151,7 +151,7 @@ class ConditionTest extends UnitTestCase {
    * @return array
    */
   protected function randomData() : array {
-    return $this->entityData[mt_rand(0, count($this->entityData)-1)];
+    return $this->entityData[mt_rand(0, count($this->entityData) - 1)];
   }
 
   /**
@@ -208,7 +208,7 @@ class ConditionTest extends UnitTestCase {
     parent::setUp();
 
     for ($i = 0; $i < 1024; $i++) {
-      $this->entityData[] = [$this->getRandomGenerator()->name(), (int) mt_rand(1, 1024*1024*1024), (bool) mt_rand(0, 1)];
+      $this->entityData[] = [$this->getRandomGenerator()->name(), (int) mt_rand(1, 1024 * 1024 * 1024), (bool) mt_rand(0, 1)];
     }
 
     $this->entities = array_map(function ($data) {

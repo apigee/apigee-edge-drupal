@@ -4,6 +4,7 @@ namespace Drupal\apigee_edge\Annotation;
 
 use Drupal\Core\Entity\Annotation\EntityType;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\apigee_edge\Entity\Type\EdgeEntityType as EntityEdgeEntityType;
 
 /**
  * Defines an Edge entity type annotation object.
@@ -19,7 +20,7 @@ class EdgeEntityType extends EntityType {
   /**
    * {@inheritdoc}
    */
-  public $entity_type_class = \Drupal\apigee_edge\Entity\Type\EdgeEntityType::class;
+  public $entity_type_class = EntityEdgeEntityType::class;
 
   /**
    * {@inheritdoc}

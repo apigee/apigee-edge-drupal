@@ -4,7 +4,6 @@ namespace Drupal\Tests\apigee_edge\Functional;
 
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
-use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
@@ -80,7 +79,7 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
    *
    * @param string $email
    *
-   * @return DeveloperApp[]|null
+   * @return \Drupal\apigee_edge\Entity\DeveloperApp[]|null
    */
   protected function getApps(string $email): ?array {
     $developer = Developer::load($email);

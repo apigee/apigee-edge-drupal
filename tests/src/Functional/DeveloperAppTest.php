@@ -5,14 +5,13 @@ namespace Drupal\Tests\apigee_edge\Functional;
 use Apigee\Edge\Api\Management\Entity\App;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
-use Drupal\Tests\BrowserTestBase;
 
 /**
  * Create, delete, update Developer App entity tests.
  *
  * @group apigee_edge
  */
-class DeveloperAppTest extends BrowserTestBase {
+class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * {@inheritdoc}

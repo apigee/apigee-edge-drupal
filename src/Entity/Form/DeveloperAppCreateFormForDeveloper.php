@@ -15,10 +15,14 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
 
-  /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface */
+  /**
+   * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface
+   */
   protected $entity;
 
-  /** @var null|int Drupal user id, who is going to own the entity. */
+  /**
+   * @var null|int Drupal user id, who is going to own the entity.
+   */
   protected $userId;
 
   /**

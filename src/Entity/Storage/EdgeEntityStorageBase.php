@@ -6,7 +6,6 @@ use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Apigee\Edge\Entity\EntityDenormalizer;
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
 use Apigee\Edge\Entity\EntityNormalizer;
-use Apigee\Edge\Exception\ClientErrorException;
 use Drupal\apigee_edge\ExceptionLoggerTrait;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Entity\EntityInterface;
