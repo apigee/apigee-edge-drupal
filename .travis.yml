@@ -48,4 +48,4 @@ before_install:
 script:
   - set -e
   - docker-compose -f docker-compose.yml -f docker-compose.apigee_edge.yml run phpcs --standard=/var/www/html/core/phpcs.xml.dist /opt/drupal-module -s
-  - docker-compose -f docker-compose.yml -f docker-compose.apigee_edge.yml run php sh /opt/drupal-module/test.sh
+  - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then docker-compose -f docker-compose.yml -f docker-compose.apigee_edge.yml run php sh /opt/drupal-module/test.sh; fi
