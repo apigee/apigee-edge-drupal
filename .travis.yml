@@ -40,11 +40,11 @@ before_install:
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
-  - docker-compose pull
-  - docker-compose build php
-  - docker-compose up -d
+  - docker-compose -f docker-compose.yml -f docker-compose.apigee_edge.yml pull
+  - docker-compose -f docker-compose.yml -f docker-compose.apigee_edge.yml build php
+  - docker-compose -f docker-compose.yml -f docker-compose.apigee_edge.yml up -d
   - docker-compose ps
 
 script:
   - set -e
-  - docker-compose run php sh /opt/drupal-module/test.sh
+  - docker-compose -f docker-compose.yml -f docker-compose.apigee_edge.yml run php sh /opt/drupal-module/test.sh

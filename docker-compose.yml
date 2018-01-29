@@ -17,18 +17,17 @@ services:
         - DEPENDENCIES
     environment:
       PHP_FPM_CLEAR_ENV: "no"
-      DRUPAL_MODULE_NAME: apigee_edge
       SIMPLETEST_BASE_URL: http://webserver
       SIMPLETEST_DB: mysql://drupal:drupal@mariadb/drupal
-      APIGEE_EDGE_ENDPOINT: ${APIGEE_EDGE_ENDPOINT}
-      APIGEE_EDGE_USERNAME: ${APIGEE_EDGE_USERNAME}
-      APIGEE_EDGE_PASSWORD: ${APIGEE_EDGE_PASSWORD}
-      APIGEE_EDGE_ORGANIZATION: ${APIGEE_EDGE_ORGANIZATION}
     volumes:
       - codebase:/var/www/html
+    depends_on:
+      - mariadb
+      - webserver
 
   webserver:
-    image: wodby/php-apache:2.4-2.0.2
+    # Note: By using Nginx, the environment variables passed to the PHP container are missing from the BrowserTests.
+    image: wodby/php-apache
     environment:
       APACHE_SERVER_ROOT: /var/www/html
       APACHE_BACKEND_HOST: php
