@@ -82,10 +82,10 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function tearDown() {
-    $remote_ids = array_map(function ($record): string {
+    $remote_ids = array_map(function($record): string {
       return $record['email'];
     }, $this->edgeDevelopers);
-    $drupal_emails = array_map(function (UserInterface $user): string {
+    $drupal_emails = array_map(function(UserInterface $user): string {
       return $user->getEmail();
     }, $this->drupalUsers);
     $ids = array_merge($remote_ids, $drupal_emails);
