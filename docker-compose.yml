@@ -35,5 +35,13 @@ services:
     volumes:
       - codebase:/var/www/html
 
+  phpcs:
+    image: mxr576/docker-phpcs
+    volumes:
+      - .:/opt/drupal-module
+      - codebase:/var/www/html
+    depends_on:
+      - php
+
 volumes:
   codebase:
