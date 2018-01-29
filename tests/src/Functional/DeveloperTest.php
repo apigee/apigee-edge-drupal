@@ -35,11 +35,11 @@ class DeveloperTest extends BrowserTestBase {
     $this->drupalGet('/user/register');
 
     $test_user = [
-      'email' => 'edge.functional.test@pronovix.com',
-      'first_name' => 'Functional',
-      'last_name' => 'Test',
-      'username' => 'UserByAdmin',
+      'username' => $this->randomMachineName(),
+      'first_name' => $this->randomString(),
+      'last_name' => $this->randomString(),
     ];
+    $test_user['email'] = "{$test_user['username']}@example.com";
 
     $formdata = [
       'mail' => $test_user['email'],
@@ -49,8 +49,13 @@ class DeveloperTest extends BrowserTestBase {
     ];
     $this->submitForm($formdata, 'Create new account');
 
+    /** @var \Drupal\user\Entity\User $account */
+    $account = user_load_by_mail($test_user['email']);
+    $this->assertNotEmpty($account, 'Account is created');
+
     /** @var Developer $developer */
     $developer = Developer::load($test_user['email']);
+    $this->assertNotEmpty($developer);
 
     $this->assertEquals($developer->getEmail(), $test_user['email']);
     $this->assertEquals($developer->getFirstName(), $test_user['first_name']);
@@ -59,7 +64,7 @@ class DeveloperTest extends BrowserTestBase {
     $this->assertEquals($developer->getStatus(), $developer::STATUS_INACTIVE);
 
     $this->drupalLogin($this->rootUser);
-    $this->drupalGet('/user/2/edit');
+    $this->drupalGet("/user/{$account->id()}/edit");
 
     $formdata['status'] = '1';
     $this->submitForm($formdata, 'Save');
@@ -110,8 +115,13 @@ class DeveloperTest extends BrowserTestBase {
 
     $this->resetCache();
 
+    /** @var \Drupal\user\Entity\User $account */
+    $account = user_load_by_mail($test_user['email']);
+    $this->assertNotEmpty($account);
+
     /** @var Developer $developer */
     $developer = Developer::load($test_user['email']);
+    $this->assertNotEmpty($developer);
 
     $this->assertEquals($developer->getEmail(), $test_user['email']);
     $this->assertEquals($developer->getFirstName(), $test_user['first_name']);
@@ -120,7 +130,7 @@ class DeveloperTest extends BrowserTestBase {
     $this->assertEquals($developer->getStatus(), $developer::STATUS_INACTIVE);
 
     // Unblock and edit the user's email, first name, last name by the admin.
-    $this->drupalGet('/user/2/edit');
+    $this->drupalGet("/user/{$account->id()}/edit");
     $test_user['email'] = "mod.{$test_user['email']}";
     $test_user['first_name'] = "(mod) {$test_user['first_name']}";
     $test_user['last_name'] = "(mod) {$test_user['last_name']}";
@@ -134,7 +144,11 @@ class DeveloperTest extends BrowserTestBase {
 
     $this->resetCache();
 
+    $account = user_load_by_mail($test_user['email']);
+    $this->assertNotEmpty($account);
+
     $developer = Developer::load($test_user['email']);
+    $this->assertNotEmpty($developer);
 
     $this->assertEquals($developer->getEmail(), $test_user['email']);
     $this->assertEquals($developer->getFirstName(), $test_user['first_name']);
@@ -154,7 +168,7 @@ class DeveloperTest extends BrowserTestBase {
     $this->assertEquals($developer->getStatus(), $developer::STATUS_INACTIVE);
 
     // Block user on the cancel form using the user_cancel_block method.
-    $this->drupalGet('/user/2/edit');
+    $this->drupalGet("/user/{$account->id()}/edit");
     $test_user['status'] = '1';
     $formdata = [
       'mail' => $test_user['email'],
@@ -167,7 +181,7 @@ class DeveloperTest extends BrowserTestBase {
     ];
     $this->submitForm($formdata, 'Save');
 
-    $this->drupalGet('/user/2/cancel');
+    $this->drupalGet("/user/{$account->id()}/cancel");
     $formdata = [
       'user_cancel_method' => 'user_cancel_block',
     ];
@@ -176,10 +190,11 @@ class DeveloperTest extends BrowserTestBase {
     $this->resetCache();
 
     $developer = Developer::load($test_user['email']);
+    $this->assertNotEmpty($developer);
     $this->assertEquals($developer->getStatus(), $developer::STATUS_INACTIVE);
 
     // Block user on the cancel form using the user_cancel_reassign method.
-    $this->drupalGet('/user/2/edit');
+    $this->drupalGet("/user/{$account->id()}/edit");
     $test_user['status'] = '1';
     $formdata = [
       'mail' => $test_user['email'],
@@ -192,7 +207,7 @@ class DeveloperTest extends BrowserTestBase {
     ];
     $this->submitForm($formdata, 'Save');
 
-    $this->drupalGet('/user/2/cancel');
+    $this->drupalGet("/user/{$account->id()}/cancel");
     $formdata = [
       'user_cancel_method' => 'user_cancel_block_unpublish',
     ];
@@ -201,10 +216,11 @@ class DeveloperTest extends BrowserTestBase {
     $this->resetCache();
 
     $developer = Developer::load($test_user['email']);
+    $this->assertNotEmpty($developer);
     $this->assertEquals($developer->getStatus(), $developer::STATUS_INACTIVE);
 
     // Delete user by admin.
-    $this->drupalGet('/user/2/cancel');
+    $this->drupalGet("/user/{$account->id()}/cancel");
     $formdata = [
       'user_cancel_method' => 'user_cancel_delete',
     ];
