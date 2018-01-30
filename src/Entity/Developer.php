@@ -23,7 +23,9 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
     id as private traitId;
   }
 
-  /** @var null|int */
+  /**
+   * @var null|int
+   */
   protected $drupalUserId;
 
   /**

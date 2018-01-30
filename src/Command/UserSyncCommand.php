@@ -5,7 +5,6 @@ namespace Drupal\apigee_edge\Command;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Drupal\Console\Annotations\DrupalCommand;
 
 /**
  * User synchronization command class for Drupal Console.
