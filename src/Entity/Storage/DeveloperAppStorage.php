@@ -46,8 +46,10 @@ class DeveloperAppStorage extends EdgeEntityStorageBase implements DeveloperAppS
    *   The DeveloperController instance.
    */
   protected function getDeveloperController(): DeveloperControllerInterface {
-    return new DeveloperController($this->getConnector()
-      ->getOrganization(), $this->getConnector()->getClient());
+    return new DeveloperController(
+      $this->getConnector()->getOrganization(),
+      $this->getConnector()->getClient()
+    );
   }
 
   /**

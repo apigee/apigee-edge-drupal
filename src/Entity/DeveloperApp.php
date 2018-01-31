@@ -122,10 +122,11 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
    */
   protected function urlRouteParameters($rel) {
     $params = $this->traitUrlRouteParameters($rel);
-    if ($rel == 'add-form-for-developer') {
+    if ($rel === 'add-form-for-developer') {
       $params['user'] = $this->drupalUserId;
+      unset($params['developer_app']);
     }
-    elseif ($rel == 'collection-by-developer') {
+    elseif ($rel === 'collection-by-developer') {
       $params['user'] = $this->drupalUserId;
       unset($params['developer_app']);
     }
@@ -137,6 +138,9 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
       $params['user'] = $this->drupalUserId;
       $params['app'] = $this->getName();
       unset($params['developer_app']);
+    }
+    elseif ($rel === 'add-form') {
+      unset($params['developerId']);
     }
 
     return $params;
