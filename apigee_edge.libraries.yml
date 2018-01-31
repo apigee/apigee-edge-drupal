@@ -17,11 +17,11 @@ apigee_edge.listing:
       css/apigee_edge.status.css: {}
   js:
     js/apigee_edge.listing.js: {}
-apigee_edge.details:
+apigee_edge.view:
   version: 1.0
   css:
     theme:
-      css/apigee_edge.details.css: {}
+      css/apigee_edge.view.css: {}
       css/apigee_edge.status.css: {}
   js:
-    js/apigee_edge.details.js: {}
+    js/apigee_edge.view.js: {}

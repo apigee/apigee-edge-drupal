@@ -8,7 +8,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
- * Displays the details of a developer app on the UI.
+ * Displays the view page of a developer app on the UI.
  *
  * @package Drupal\apigee_edge\Controller
  */
@@ -17,7 +17,7 @@ class DeveloperAppViewController extends ControllerBase implements DeveloperAppP
   use DeveloperAppViewControllerTrait;
 
   /**
-   * Renders the details of a developer app for a given user.
+   * Renders the view page of a developer app for a given user.
    *
    * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app
    *   The developer app entity.

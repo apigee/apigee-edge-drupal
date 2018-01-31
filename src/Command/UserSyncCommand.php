@@ -2,21 +2,18 @@
 
 namespace Drupal\apigee_edge\Command;
 
-use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * User synchronization command class for Drupal Console.
  *
- * @DrupalCommand (
+ * @Drupal\Console\Annotations\DrupalCommand (
  *     extension="apigee_edge",
  *     extensionType="module"
  * )
  */
 class UserSyncCommand extends CommandBase {
-
-  use LoggerAwareTrait;
 
   /**
    * {@inheritdoc}

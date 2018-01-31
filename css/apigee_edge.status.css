@@ -10,10 +10,16 @@
   color: white;
 }
 
-.wrapper--status.approved {
+.wrapper--status.approved,
+.wrapper--status.enabled {
   background-color: green;
 }
 
-.wrapper--status.revoked {
+.wrapper--status.revoked,
+.wrapper--status.disabled {
   background-color: red;
+}
+
+.wrapper--status.pending {
+  background-color: orange;
 }

@@ -13,7 +13,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Trait for developer app details controllers.
+ * Trait for developer app view controllers.
  */
 trait DeveloperAppViewControllerTrait {
 
@@ -38,7 +38,7 @@ trait DeveloperAppViewControllerTrait {
   }
 
   /**
-   * Gets the details render array for a given developer app.
+   * Gets the view render array for a given developer app.
    *
    * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app
    *   The developer app entity.
@@ -61,13 +61,13 @@ trait DeveloperAppViewControllerTrait {
       '#attributes' => [
         'class' => [
           'items--inline',
-          'apigee-edge-developer-app-details',
+          'apigee-edge-developer-app-view',
         ],
       ],
     ];
 
     $build['#attached']['library'][] = 'apigee_edge/apigee_edge.components';
-    $build['#attached']['library'][] = 'apigee_edge/apigee_edge.details';
+    $build['#attached']['library'][] = 'apigee_edge/apigee_edge.view';
 
     $details_primary_elements = [
       'displayName' => [
@@ -75,11 +75,11 @@ trait DeveloperAppViewControllerTrait {
         'value_type' => 'plain',
       ],
       'callbackUrl' => [
-        'label' => t('Callback URL'),
+        'label' => $this->t('Callback URL'),
         'value_type' => 'plain',
       ],
       'description' => [
-        'label' => t('Description'),
+        'label' => $this->t('Description'),
         'value_type' => 'plain',
       ],
     ];
@@ -90,11 +90,11 @@ trait DeveloperAppViewControllerTrait {
         'value_type' => 'status',
       ],
       'createdAt' => [
-        'label' => t('Created'),
+        'label' => $this->t('Created'),
         'value_type' => 'date',
       ],
       'lastModifiedAt' => [
-        'label' => t('Last updated'),
+        'label' => $this->t('Last updated'),
         'value_type' => 'date',
       ],
     ];
@@ -109,23 +109,23 @@ trait DeveloperAppViewControllerTrait {
     if ($config->get('associate_apps')) {
       $credential_elements = [
         'consumerKey' => [
-          'label' => t('Consumer Key'),
+          'label' => $this->t('Consumer Key'),
           'value_type' => 'plain',
         ],
         'consumerSecret' => [
-          'label' => t('Consumer Secret'),
+          'label' => $this->t('Consumer Secret'),
           'value_type' => 'plain',
         ],
         'issuedAt' => [
-          'label' => t('Issued'),
+          'label' => $this->t('Issued'),
           'value_type' => 'date',
         ],
         'expiresAt' => [
-          'label' => t('Expires'),
+          'label' => $this->t('Expires'),
           'value_type' => 'date',
         ],
         'status' => [
-          'label' => t('Key Status'),
+          'label' => $this->t('Key Status'),
           'value_type' => 'status',
         ],
       ];
@@ -137,7 +137,7 @@ trait DeveloperAppViewControllerTrait {
           '#attributes' => [
             'class' => [
               'items--inline',
-              'apigee-edge-developer-app-details',
+              'apigee-edge-developer-app-view',
             ],
           ],
         ];
@@ -172,9 +172,21 @@ trait DeveloperAppViewControllerTrait {
             '#markup' => Xss::filter($api_product_entity->getDisplayName()),
             '#suffix' => '</span>',
           ];
+
+          $status = '';
+          if ($product->getStatus() === 'approved') {
+            $status = 'enabled';
+          }
+          elseif ($product->getStatus() === 'revoked') {
+            $status = 'disabled';
+          }
+          elseif ($product->getStatus() === 'pending') {
+            $status = 'pending';
+          }
+
           $build['credential'][$credential->getConsumerKey()]['secondary_wrapper']['api_product_list_wrapper'][$product->getApiproduct()]['status'] = [
             '#type' => 'status_property',
-            '#value' => Xss::filter($product->getStatus()),
+            '#value' => $status,
           ];
         }
       }
@@ -189,6 +201,7 @@ trait DeveloperAppViewControllerTrait {
    * @param \Apigee\Edge\Entity\EntityInterface $entity
    *   The entity.
    * @param array $elements
+   *   The elements of the container.
    *
    * @return array
    *   The render array.
