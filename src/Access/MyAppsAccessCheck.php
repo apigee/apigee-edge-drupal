@@ -30,7 +30,10 @@ class MyAppsAccessCheck implements AccessInterface {
     if ($user === NULL) {
       return AccessResult::forbidden('User is missing from route.');
     }
-    return AccessResultAllowed::allowedIf($account->id() === $user->id() && $account->hasPermission('view own developer_app'));
+    return AccessResultAllowed::allowedIf(
+      ($account->id() === $user->id() && $account->hasPermission('view own developer_app')) ||
+      ($account->hasPermission('administer developer_app'))
+    );
   }
 
 }

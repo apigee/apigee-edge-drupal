@@ -138,7 +138,7 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
     $build['table']['#empty'] = $this->t('Looks like you do not have any apps. Get started by adding one.');
     // If current user has access to the Add app form (validated by the parent
     // class).
-    if ($build['add_app']) {
+    if (!empty($build['add_app'])) {
       $build['add_app']['link'] = $this->renderAddAppLink($user);
     }
 
