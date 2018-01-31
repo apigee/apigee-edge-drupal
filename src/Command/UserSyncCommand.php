@@ -3,7 +3,6 @@
 namespace Drupal\apigee_edge\Command;
 
 use Drupal\Console\Annotations\DrupalCommand;
-use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
