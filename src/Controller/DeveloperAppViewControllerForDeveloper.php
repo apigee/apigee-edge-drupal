@@ -9,7 +9,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\user\UserInterface;
 
 /**
- * Displays the details of a developer app for a given user on the UI.
+ * Displays the view page of a developer app for a given user on the UI.
  *
  * @package Drupal\apigee_edge\Controller
  */
@@ -18,7 +18,7 @@ class DeveloperAppViewControllerForDeveloper extends ControllerBase implements D
   use DeveloperAppViewControllerTrait;
 
   /**
-   * Renders the details of a developer app for a given user.
+   * Renders the view page of a developer app for a given user.
    *
    * @param \Drupal\user\UserInterface $user
    *   The user entity.

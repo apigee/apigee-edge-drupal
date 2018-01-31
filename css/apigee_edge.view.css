@@ -1,4 +1,4 @@
-.apigee-edge-developer-app-details .wrapper--buttons {
+.apigee-edge-developer-app-view .wrapper--buttons {
   text-align: right;
 }
 
@@ -18,7 +18,7 @@
   margin-bottom: 1rem;
 }
 
-.apigee-edge-developer-app-details label {
+.apigee-edge-developer-app-view label {
   margin-bottom: 0;
   vertical-align: middle;
   font-weight: bold;
@@ -28,14 +28,14 @@
   width: 140px;
 }
 
-.apigee-edge-developer-app-details .api-product-list-row .api-product-name {
+.apigee-edge-developer-app-view .api-product-list-row .api-product-name {
   float: left;
 }
 
-.apigee-edge-developer-app-details .api-product-list-row .wrapper--status {
+.apigee-edge-developer-app-view .api-product-list-row .wrapper--status {
   float: right;
 }
 
-.apigee-edge-developer-app-details .hidden {
+.apigee-edge-developer-app-view .hidden {
   display: none;
 }
