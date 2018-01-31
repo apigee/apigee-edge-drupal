@@ -170,7 +170,7 @@ trait DeveloperAppViewControllerTrait {
           $build['credential'][$credential->getConsumerKey()]['secondary_wrapper']['api_product_list_wrapper'][$product->getApiproduct()]['name'] = [
             '#prefix' => '<span class="api-product-name">',
             '#markup' => Xss::filter($api_product_entity->getDisplayName()),
-            '#suffix' => '</span§§§§§>',
+            '#suffix' => '</span>',
           ];
 
           $status = '';
