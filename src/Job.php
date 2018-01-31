@@ -80,7 +80,7 @@ abstract class Job {
    *
    * @var int
    */
-  protected $retry = 3;
+  protected $retry = 0;
 
   /**
    * Job status.
