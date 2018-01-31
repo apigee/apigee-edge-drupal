@@ -15,5 +15,7 @@ composer require phpspec/prophecy:^1.6.1 phpdocumentor/reflection-docblock:^3.1.
 composer require ${DEPENDENCIES} phpspec/prophecy:^1.6.1 phpdocumentor/reflection-docblock:^3.1.0 guzzlehttp/psr7:^1.4.1
 composer config repositories.library path /opt/drupal-module
 composer require ${DEPENDENCIES} "drupal/${DRUPAL_MODULE_NAME}"
+# Install this to get more detailed output from PHPUnit.
+composer require limedeck/phpunit-detailed-printer:^2.0
 composer show
-php vendor/bin/phpunit -c core --group apigee_edge -v --debug
+php vendor/bin/phpunit -c core --group apigee_edge -v --debug --printer '\LimeDeck\Testing\Printer'

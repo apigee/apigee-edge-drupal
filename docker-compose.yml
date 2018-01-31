@@ -2,7 +2,7 @@ version: "3"
 
 services:
   mariadb:
-    image: wodby/mariadb
+    image: wodby/mariadb:${DB_IMAGE_VERSION:-10.2-3.0.2}
     environment:
       MYSQL_RANDOM_ROOT_PASSWORD: 1
       MYSQL_DATABASE: drupal
@@ -15,6 +15,8 @@ services:
       args:
         - DRUPAL_CORE
         - DEPENDENCIES
+        - PHP_VERSION
+        - PHP_IMAGE_VERSION
     environment:
       PHP_FPM_CLEAR_ENV: "no"
       SIMPLETEST_BASE_URL: http://webserver
@@ -27,7 +29,7 @@ services:
 
   webserver:
     # Note: By using Nginx, the environment variables passed to the PHP container are missing from the BrowserTests.
-    image: wodby/php-apache
+    image: wodby/php-apache:${APACHE_IMAGE_VERSION:-2.4-2.0.2}
     environment:
       APACHE_SERVER_ROOT: /var/www/html
       APACHE_BACKEND_HOST: php

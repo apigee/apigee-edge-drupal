@@ -26,8 +26,8 @@ env:
   global:
     - DOCKER_COMPOSE_VERSION=1.18.0
   matrix:
-    - DRUPAL_CORE=8.4 DEPENDENCIES="--prefer-lowest"
-    - DRUPAL_CORE=8.4 DEPENDENCIES=""
+    - PHP_VERSION=7.1 DRUPAL_CORE=8.4 DEPENDENCIES="--prefer-lowest"
+    - PHP_VERSION=7.1 DRUPAL_CORE=8.4 DEPENDENCIES=""
 
 #matrix:
 #  allow_failures:
