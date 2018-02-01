@@ -157,7 +157,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
    */
   protected function actions(array $form, FormStateInterface $form_state) {
     $actions = parent::actions($form, $form_state);
-    $actions['submit']['#value'] = t('Save');
+    $actions['submit']['#value'] = $this->t('Save');
 
     $actions['delete']['#access'] = $this->entity->access('delete');
     $actions['delete']['#url'] = $this->getFormId() === 'developer_app_developer_app_edit_for_developer_form'
@@ -253,8 +253,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
               }
 
               if ($product_list_changed) {
-                drupal_set_message(t("@consumer_key credential's product list has been successfully updated.",
-                  ['@consumer_key' => $new_credential->getConsumerKey()]));
+                drupal_set_message($this->t("Credential's product list has been successfully updated."));
               }
               break;
             }
@@ -262,7 +261,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
         }
       }
       catch (\Exception $exception) {
-        drupal_set_message(t("Could not update <@consumer_key> credential's product list.",
+        drupal_set_message(t("Could not update credential's product list.",
           ['@consumer_key' => $new_credential->getConsumerKey()]), 'error');
         watchdog_exception('apigee_edge', $exception);
         $redirect_user = FALSE;
@@ -276,12 +275,12 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
       $this->entity->getDescription() !== $this->originalEntity->getDescription()) {
       try {
         $this->entity->save();
-        drupal_set_message(t('@developer_app details have been successfully updated.',
+        drupal_set_message($this->t('@developer_app details have been successfully updated.',
           ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel()]));
         $redirect_user = TRUE;
       }
       catch (\Exception $exception) {
-        drupal_set_message(t('Could not update @developer_app details.',
+        drupal_set_message($this->t('Could not update @developer_app details.',
           ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel()]), 'error');
         watchdog_exception('apigee_edge', $exception);
         $redirect_user = FALSE;
