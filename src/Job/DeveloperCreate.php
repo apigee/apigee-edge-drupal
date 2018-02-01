@@ -67,9 +67,6 @@ class DeveloperCreate extends EdgeJob {
   public static function createForUser(UserInterface $account) : ? Job {
     /** @var \Drupal\apigee_edge\Entity\Developer $developer */
     $developer = Developer::createFromDrupalUser($account);
-    if (!$developer->getFirstName() || !$developer->getLastName()) {
-      return NULL;
-    }
 
     return new static($developer);
   }
