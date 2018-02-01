@@ -8,7 +8,10 @@ A Drupal 8 module that turns a site into a developer portal for Apigee's API man
 $ composer require drupal/apigee_edge
 ```
 
-If you experience a conflict with `symfony/property-info`, you should try to update  the `phpdocumentor/reflection-docblock` library with `composer update phpdocumentor/reflection-docblock` because Drupal 8.4.x by default installs 2.0.4 (as a dependency of PHPUnit 4.8) and it is in conflict with one of Apigee Edge PHP SDK's required libraries (the above mentioned `symfony/property-info:^3.2`) minimum requirements.  
+### Requirements
+
+* Drupal 8's minimum requirement is 2.0.4 from `phpdocumentor/reflection-docblock` but 3.1 is required at least.
+You can update it with `composer update phpdocumentor/reflection-docblock`.
 
 # Testing
 
