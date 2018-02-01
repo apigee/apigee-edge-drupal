@@ -10,6 +10,8 @@ use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\UrlGeneratorInterface;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -46,6 +48,13 @@ class AuthenticationForm extends ConfigFormBase {
   protected $authenticationStoragePluginManager;
 
   /**
+   * The URL generator.
+   *
+   * @var \Drupal\Core\Routing\UrlGeneratorInterface
+   */
+  protected $urlGenerator;
+
+  /**
    * Constructs a new AuthenticationForm.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -54,13 +63,17 @@ class AuthenticationForm extends ConfigFormBase {
    *   The manager for credentials storage plugins.
    * @param \Drupal\Component\Plugin\PluginManagerInterface $authentication_method_plugin_manager
    *   The manager for authentication method plugins.
+   * @param \Drupal\Core\Routing\UrlGeneratorInterface $url_generator
+   *   The URL generator.
    */
   public function __construct(ConfigFactoryInterface $config_factory,
                               PluginManagerInterface $credentials_storage_plugin_manager,
-                              PluginManagerInterface $authentication_method_plugin_manager) {
+                              PluginManagerInterface $authentication_method_plugin_manager,
+                              UrlGeneratorInterface $url_generator) {
     parent::__construct($config_factory);
     $this->credentialsStoragePluginManager = $credentials_storage_plugin_manager;
     $this->authenticationStoragePluginManager = $authentication_method_plugin_manager;
+    $this->urlGenerator = $url_generator;
 
     foreach ($credentials_storage_plugin_manager->getDefinitions() as $key => $value) {
       /** @var \Drupal\Core\StringTranslation\TranslatableMarkup $plugin_name */
@@ -82,7 +95,8 @@ class AuthenticationForm extends ConfigFormBase {
     return new static(
       $container->get('config.factory'),
       $container->get('plugin.manager.apigee_edge.credentials_storage'),
-      $container->get('plugin.manager.apigee_edge.authentication_method')
+      $container->get('plugin.manager.apigee_edge.authentication_method'),
+      $container->get('url_generator')
     );
   }
 
@@ -117,6 +131,40 @@ class AuthenticationForm extends ConfigFormBase {
     /** @var \Drupal\apigee_edge\Credentials $credentials */
     $credentials = $this->credentialsStoragePluginManager->createInstance($credentials_storage_config->get('credentials_storage_type'))
       ->loadCredentials();
+
+    $form['sync'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Sync developers'),
+      '#open' => TRUE,
+    ];
+
+    $form['sync']['sync_submit'] = [
+      '#title' => $this->t('Now'),
+      '#type' => 'link',
+      '#url' => $this->buildUrl('apigee_edge.user_sync.run'),
+      '#attributes' => [
+        'class' => [
+          'button',
+        ],
+      ],
+    ];
+
+    $form['sync']['background_sync_submit'] = [
+      '#title' => $this->t('Background...'),
+      '#type' => 'link',
+      '#url' => $this->buildUrl('apigee_edge.user_sync.schedule'),
+      '#attributes' => [
+        'class' => [
+          'button',
+        ],
+      ],
+    ];
+
+    $form['sync']['background_sync_text'] = [
+      '#prefix' => '<div class="help--button">',
+      '#markup' => $this->t('A background sync is recommended for large numbers of developers.'),
+      '#suffix' => '</div>',
+    ];
 
     $form['credentials_storage'] = [
       '#type' => 'details',
@@ -342,6 +390,22 @@ class AuthenticationForm extends ConfigFormBase {
    */
   public function ajaxCallback(array $form): array {
     return $form;
+  }
+
+  /**
+   * Build URL for user synchronization processes, using CSRF protection.
+   *
+   * @param string $route_name
+   *   The name of the route.
+   *
+   * @return \Drupal\Core\Url
+   *   The URL to redirect to.
+   */
+  protected function buildUrl(string $route_name) {
+    $url = Url::fromRoute($route_name);
+    $token = \Drupal::csrfToken()->get($url->getInternalPath());
+    $url->setOptions(['query' => ['destination' => '/admin/config/apigee-edge', 'token' => $token]]);
+    return $url;
   }
 
   /**
