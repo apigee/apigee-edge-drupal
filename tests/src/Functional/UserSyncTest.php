@@ -12,7 +12,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 /**
  * User synchronization test.
  *
- * @group apigee_edge
+ * @group apigee_edge2
  */
 class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
 
@@ -55,8 +55,6 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
    */
   protected function setUp() {
     parent::setUp();
-
-    $this->drupalPlaceBlock('local_actions_block');
 
     $this->prefix = $this->randomMachineName();
 
@@ -141,7 +139,7 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
    */
   public function testUserSync() {
     $this->drupalGet('/admin/config/apigee-edge');
-    $this->clickLinkProperly(t('Run user sync'));
+    $this->clickLinkProperly(t('Now'));
     $this->assertSession()->pageTextContains(t('Users are in sync with Edge.'));
     $this->verify();
   }
@@ -151,7 +149,7 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
    */
   public function testUserAsync() {
     $this->drupalGet('/admin/config/apigee-edge');
-    $this->clickLinkProperly(t('Schedule user sync'));
+    $this->clickLinkProperly(t('Background...'));
     $this->assertSession()->pageTextContains(t('User synchronization is scheduled.'));
     /** @var \Drupal\Core\Queue\QueueFactory $queue_service */
     $queue_service = \Drupal::service('queue');
