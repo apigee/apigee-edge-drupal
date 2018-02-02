@@ -147,10 +147,15 @@ class AuthenticationForm extends ConfigFormBase {
       ],
     ];
 
-    $form['sync']['background_sync_text'] = [
-      '#prefix' => '<div class="help--button">',
+    $form['sync']['sync_wrapper'] = [
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => 'help--button',
+      ),
+    ];
+
+    $form['sync']['sync_wrapper']['background_sync_text'] = [
       '#markup' => $this->t('A background sync is recommended for large numbers of developers.'),
-      '#suffix' => '</div>',
     ];
 
     $form['credentials_storage'] = [
