@@ -10,7 +10,6 @@ use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Routing\UrlGeneratorInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -48,13 +47,6 @@ class AuthenticationForm extends ConfigFormBase {
   protected $authenticationStoragePluginManager;
 
   /**
-   * The URL generator.
-   *
-   * @var \Drupal\Core\Routing\UrlGeneratorInterface
-   */
-  protected $urlGenerator;
-
-  /**
    * Constructs a new AuthenticationForm.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -63,17 +55,13 @@ class AuthenticationForm extends ConfigFormBase {
    *   The manager for credentials storage plugins.
    * @param \Drupal\Component\Plugin\PluginManagerInterface $authentication_method_plugin_manager
    *   The manager for authentication method plugins.
-   * @param \Drupal\Core\Routing\UrlGeneratorInterface $url_generator
-   *   The URL generator.
    */
   public function __construct(ConfigFactoryInterface $config_factory,
                               PluginManagerInterface $credentials_storage_plugin_manager,
-                              PluginManagerInterface $authentication_method_plugin_manager,
-                              UrlGeneratorInterface $url_generator) {
+                              PluginManagerInterface $authentication_method_plugin_manager) {
     parent::__construct($config_factory);
     $this->credentialsStoragePluginManager = $credentials_storage_plugin_manager;
     $this->authenticationStoragePluginManager = $authentication_method_plugin_manager;
-    $this->urlGenerator = $url_generator;
 
     foreach ($credentials_storage_plugin_manager->getDefinitions() as $key => $value) {
       /** @var \Drupal\Core\StringTranslation\TranslatableMarkup $plugin_name */
@@ -95,8 +83,7 @@ class AuthenticationForm extends ConfigFormBase {
     return new static(
       $container->get('config.factory'),
       $container->get('plugin.manager.apigee_edge.credentials_storage'),
-      $container->get('plugin.manager.apigee_edge.authentication_method'),
-      $container->get('url_generator')
+      $container->get('plugin.manager.apigee_edge.authentication_method')
     );
   }
 

@@ -12,7 +12,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 /**
  * User synchronization test.
  *
- * @group apigee_edge2
+ * @group apigee_edge
  */
 class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
 
