@@ -4,10 +4,12 @@ apigee_edge.error_page:
     error_page_title:
       type: string
     error_page_content:
-      format:
-        type: string
-      value:
-        type: text
+      type: mapping
+      mapping:
+        format:
+          type: string
+        value:
+          type: text
 
 apigee_edge.authentication_method:
   type: config_object
