@@ -149,9 +149,9 @@ class AuthenticationForm extends ConfigFormBase {
 
     $form['sync']['sync_wrapper'] = [
       '#type' => 'container',
-      '#attributes' => array(
+      '#attributes' => [
         'class' => 'help--button',
-      ),
+      ],
     ];
 
     $form['sync']['sync_wrapper']['background_sync_text'] = [
