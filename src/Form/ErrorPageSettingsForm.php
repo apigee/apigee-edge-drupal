@@ -4,8 +4,6 @@ namespace Drupal\apigee_edge\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\user\Entity\User;
-use Drupal\user\UserInterface;
 
 /**
  * Provides a form for saving the error page title and content.
