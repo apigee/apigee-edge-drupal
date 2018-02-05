@@ -10,6 +10,7 @@ use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -117,6 +118,45 @@ class AuthenticationForm extends ConfigFormBase {
     /** @var \Drupal\apigee_edge\Credentials $credentials */
     $credentials = $this->credentialsStoragePluginManager->createInstance($credentials_storage_config->get('credentials_storage_type'))
       ->loadCredentials();
+
+    $form['sync'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Sync developers'),
+      '#open' => TRUE,
+    ];
+
+    $form['sync']['sync_submit'] = [
+      '#title' => $this->t('Now'),
+      '#type' => 'link',
+      '#url' => $this->buildUrl('apigee_edge.user_sync.run'),
+      '#attributes' => [
+        'class' => [
+          'button',
+        ],
+      ],
+    ];
+
+    $form['sync']['background_sync_submit'] = [
+      '#title' => $this->t('Background...'),
+      '#type' => 'link',
+      '#url' => $this->buildUrl('apigee_edge.user_sync.schedule'),
+      '#attributes' => [
+        'class' => [
+          'button',
+        ],
+      ],
+    ];
+
+    $form['sync']['sync_wrapper'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => 'help--button',
+      ],
+    ];
+
+    $form['sync']['sync_wrapper']['background_sync_text'] = [
+      '#markup' => $this->t('A background sync is recommended for large numbers of developers.'),
+    ];
 
     $form['credentials_storage'] = [
       '#type' => 'details',
@@ -342,6 +382,22 @@ class AuthenticationForm extends ConfigFormBase {
    */
   public function ajaxCallback(array $form): array {
     return $form;
+  }
+
+  /**
+   * Build URL for user synchronization processes, using CSRF protection.
+   *
+   * @param string $route_name
+   *   The name of the route.
+   *
+   * @return \Drupal\Core\Url
+   *   The URL to redirect to.
+   */
+  protected function buildUrl(string $route_name) {
+    $url = Url::fromRoute($route_name);
+    $token = \Drupal::csrfToken()->get($url->getInternalPath());
+    $url->setOptions(['query' => ['destination' => '/admin/config/apigee-edge', 'token' => $token]]);
+    return $url;
   }
 
   /**

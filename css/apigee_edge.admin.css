@@ -1,3 +1,7 @@
 .apigee-edge-authentication .form-submit {
   margin-left: 0;
 }
+
+.help--button {
+  padding-top: 10px;
+}
