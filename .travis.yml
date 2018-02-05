@@ -28,11 +28,11 @@ env:
   matrix:
     - PHP_VERSION=7.1 DRUPAL_CORE=8.4 DEPENDENCIES="--prefer-lowest"
     - PHP_VERSION=7.1 DRUPAL_CORE=8.4 DEPENDENCIES=""
+    - PHP_VERSION=7.1 DRUPAL_CORE=8.5.x-dev DEPENDENCIES="--prefer-lowest"
 
-#matrix:
-#  allow_failures:
-#    - env: DRUPAL_CORE=8.5 DEPENDENCIES="--prefer-lowest"
-#    - env: DRUPAL_CORE=8.5 DEPENDENCIES=""
+matrix:
+  allow_failures:
+    - env: PHP_VERSION=7.1 DRUPAL_CORE=8.5.x-dev DEPENDENCIES="--prefer-lowest"
 
 # TODO Cache Docker images and PHP service build (common parts of the built, like Drupal core install, for a day).
 before_install:
