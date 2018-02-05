@@ -1,3 +1,11 @@
+apigee_edge.error_page:
+  path: '/connection-error'
+  defaults:
+    _controller: '\Drupal\apigee_edge\Controller\ErrorPageController::render'
+    _title_callback: '\Drupal\apigee_edge\Controller\ErrorPageController::getPageTitle'
+  requirements:
+    _permission: 'access content'
+
 apigee_edge.settings:
   path: '/admin/config/apigee-edge'
   defaults:
@@ -19,6 +27,14 @@ apigee_edge.settings.app:
   defaults:
     _form: '\Drupal\apigee_edge\Form\AppSettingsForm'
     _title: 'Application Settings'
+  requirements:
+    _permission: 'administer apigee edge'
+
+apigee_edge.settings.error_page:
+  path: '/admin/config/apigee-edge/error-page-settings'
+  defaults:
+    _form: '\Drupal\apigee_edge\Form\ErrorPageSettingsForm'
+    _title: 'Error Page Settings'
   requirements:
     _permission: 'administer apigee edge'
 
