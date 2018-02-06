@@ -1,10 +1,11 @@
 apigee_edge.error_page:
-  path: '/connection-error'
+  path: '/api-communication-error'
   defaults:
     _controller: '\Drupal\apigee_edge\Controller\ErrorPageController::render'
     _title_callback: '\Drupal\apigee_edge\Controller\ErrorPageController::getPageTitle'
   requirements:
     _permission: 'access content'
+    _user_is_logged_in: 'TRUE'
 
 apigee_edge.settings:
   path: '/admin/config/apigee-edge'
