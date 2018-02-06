@@ -32,7 +32,7 @@ interface SDKConnectorInterface {
    * Creates the requested controller object using the stored credentials
    * and the configured authentication method.
    *
-   * @return EntityCrudOperationsControllerInterface
+   * @return \Apigee\Edge\Controller\EntityCrudOperationsControllerInterface
    *   The controller object.
    */
   public function getControllerByEntity(string $entity_type) : EntityCrudOperationsControllerInterface;

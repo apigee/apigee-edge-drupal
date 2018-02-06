@@ -77,7 +77,9 @@ class JobList extends Job {
    */
   public function execute() : bool {
     if ($this->executeAll) {
+      // @codingStandardsIgnoreStart
       while ($this->executeJob());
+      // @codingStandardsIgnoreEnd
 
       return FALSE;
     }
