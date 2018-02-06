@@ -196,14 +196,14 @@ class AppSettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('Singular format'),
       '#default_value' => $label_config->get('app_label_singular'),
-      '#description' => $this->t('Leave empty to use the default'),
+      '#description' => $this->t('Leave empty to use the default "Developer App" label.'),
     ];
 
     $form['label']['app_label_plural'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Plural format'),
       '#default_value' => $label_config->get('app_label_plural'),
-      '#description' => $this->t('Leave empty to use the default'),
+      '#description' => $this->t('Leave empty to use the default "Developer Apps" label.'),
     ];
 
     return parent::buildForm($form, $form_state);
