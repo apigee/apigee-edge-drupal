@@ -184,6 +184,7 @@ class ConditionTest extends UnitTestCase {
       public function orConditionGroup() {}
       public function currentRevision() {}
       public function allRevisions() {}
+      public function latestRevision() {}
     });
   }
 

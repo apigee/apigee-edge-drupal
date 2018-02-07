@@ -11,6 +11,13 @@ use Drupal\user\UserInterface;
 abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
 
   /**
+   * {@inheritdoc}
+   */
+  public static $modules = [
+    'apigee_edge',
+  ];
+
+  /**
    * Creates a Drupal account.
    *
    * @param array $permissions

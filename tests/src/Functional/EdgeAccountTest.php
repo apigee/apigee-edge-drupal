@@ -67,7 +67,7 @@ class EdgeAccountTest extends BrowserTestBase {
    */
   public function testCredentialsStorages() {
     // Test private file storage.
-    $this->drupalGet('/admin/config/apigee-edge');
+    $this->drupalGet('/admin/config/apigee-edge/settings');
 
     $formdata = [
       'credentials_storage_type' => 'credentials_storage_private_file',
@@ -100,7 +100,7 @@ class EdgeAccountTest extends BrowserTestBase {
     $this->assertEquals($developer->getEmail(), $developer_data['email']);
 
     // Test env storage.
-    $this->drupalGet('/admin/config/apigee-edge');
+    $this->drupalGet('/admin/config/apigee-edge/settings');
 
     $formdata = [
       'credentials_storage_type' => 'credentials_storage_env',

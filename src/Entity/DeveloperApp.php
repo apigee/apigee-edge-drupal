@@ -47,15 +47,15 @@ use Drupal\user\UserInterface;
  *   },
  *   entity_keys = {
  *     "id" = "appId",
- *     "bundle" = "developerId",
  *   },
  *   permission_granularity = "entity_type",
  *   admin_permission = "administer developer_app",
+ *   field_ui_base_route = "apigee_edge.settings.app",
  * )
  */
 class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
 
-  use EdgeEntityBaseTrait {
+  use FieldableEdgeEntityBaseTrait {
     id as private traitId;
     urlRouteParameters as private traitUrlRouteParameters;
   }
@@ -71,6 +71,7 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
    * {@inheritdoc}
    */
   public function __construct(array $values = []) {
+    $values = array_filter($values);
     parent::__construct($values);
     $this->entityTypeId = 'developer_app';
   }

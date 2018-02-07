@@ -24,7 +24,7 @@ class ApigeeEdgeCommands extends DrushCommands {
    * @param \Drupal\apigee_edge\CliServiceInterface $cli_service
    *   The CLI service which allows interoperability.
    */
-  public function __construct(CliServiceInterface $cli_service) {
+  public function __construct(CliServiceInterface $cli_service = NULL) {
     $this->cliService = $cli_service;
   }
 

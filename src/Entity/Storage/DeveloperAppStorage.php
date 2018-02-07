@@ -15,7 +15,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Controller class for developer apps.
  */
-class DeveloperAppStorage extends EdgeEntityStorageBase implements DeveloperAppStorageInterface {
+class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements DeveloperAppStorageInterface {
 
   /**
    * The entity type manager.

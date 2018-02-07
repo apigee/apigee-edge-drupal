@@ -1,0 +1,11 @@
+<?php
+
+namespace Drupal\apigee_edge\Entity\Storage;
+
+use Drupal\Core\Entity\DynamicallyFieldableEntityStorageInterface;
+use Drupal\Core\Entity\FieldableEntityStorageInterface;
+use Drupal\Core\Entity\Schema\DynamicallyFieldableEntityStorageSchemaInterface;
+
+interface FieldableEdgeEntityStorageInterface extends EdgeEntityStorageInterface, FieldableEntityStorageInterface, DynamicallyFieldableEntityStorageInterface, DynamicallyFieldableEntityStorageSchemaInterface {
+
+}

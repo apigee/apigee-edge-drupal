@@ -3,15 +3,10 @@ apigee_edge.settings:
   title: 'General'
   base_route: apigee_edge.settings
 
-apigee_edge.settings.product:
-  route_name: apigee_edge.settings.product
-  title: 'API Product Settings'
-  base_route: apigee_edge.settings
-
 apigee_edge.settings.app:
   route_name: apigee_edge.settings.app
-  title: 'Application Settings'
-  base_route: apigee_edge.settings
+  title: 'General'
+  base_route: apigee_edge.settings.app
 
 apigee_edge.developer_app.view:
   route_name: entity.developer_app.canonical
