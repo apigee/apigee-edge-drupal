@@ -113,4 +113,3 @@ abstract class FieldableEdgeEntityStorageBase extends EdgeEntityStorageBase impl
   }
 
 }
-
