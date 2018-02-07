@@ -111,4 +111,6 @@ abstract class FieldableEdgeEntityStorageBase extends EdgeEntityStorageBase impl
 
     return $count;
   }
+
 }
+

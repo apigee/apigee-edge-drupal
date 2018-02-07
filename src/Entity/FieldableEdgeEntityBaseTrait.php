@@ -101,7 +101,7 @@ trait FieldableEdgeEntityBaseTrait {
       return !empty($def);
     }
     catch (PluginNotFoundException $ex) {
-      return false;
+      return FALSE;
     }
   }
 
