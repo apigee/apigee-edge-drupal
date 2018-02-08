@@ -5,7 +5,6 @@ namespace Drupal\apigee_edge\Commands;
 use Drupal\apigee_edge\CliServiceInterface;
 use Drush\Commands\DrushCommands;
 
-
 /**
  * Drush 9 command file.
  */

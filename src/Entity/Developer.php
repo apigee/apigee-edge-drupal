@@ -24,6 +24,18 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
   }
 
   /**
+   * Developer already exists error code.
+   */
+  const APIGEE_EDGE_ERROR_CODE_DEVELOPER_ALREADY_EXISTS = 'developer.service.DeveloperAlreadyExists';
+
+  /**
+   * Developer does not exists error code.
+   */
+  const APIGEE_EDGE_ERROR_CODE_DEVELOPER_DOES_NOT_EXISTS = 'developer.service.DeveloperDoesNotExist';
+
+  /**
+   * The associated Drupal UID.
+   *
    * @var null|int
    */
   protected $drupalUserId;

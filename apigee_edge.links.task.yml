@@ -13,6 +13,11 @@ apigee_edge.settings.app:
   title: 'Application Settings'
   base_route: apigee_edge.settings
 
+apigee_edge.settings.error_page:
+  route_name: apigee_edge.settings.error_page
+  title: 'Error Page Settings'
+  base_route: apigee_edge.settings
+
 apigee_edge.developer_app.view:
   route_name: entity.developer_app.canonical
   title: 'View'

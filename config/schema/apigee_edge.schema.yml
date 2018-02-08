@@ -1,3 +1,16 @@
+apigee_edge.error_page:
+  type: config_object
+  mapping:
+    error_page_title:
+      type: string
+    error_page_content:
+      type: mapping
+      mapping:
+        format:
+          type: string
+        value:
+          type: text
+
 apigee_edge.authentication_method:
   type: config_object
   mapping:

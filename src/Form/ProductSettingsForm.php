@@ -41,12 +41,14 @@ class ProductSettingsForm extends ConfigFormBase {
     $form['label']['api_product_label_singular'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Singular format'),
+      '#description' => 'Leave empty to use the default "API" label.',
       '#default_value' => $config->get('api_product_label_singular'),
     ];
 
     $form['label']['api_product_label_plural'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Plural format'),
+      '#description' => 'Leave empty to use the default "APIs" label.',
       '#default_value' => $config->get('api_product_label_plural'),
     ];
 

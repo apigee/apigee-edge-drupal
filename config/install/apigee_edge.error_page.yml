@@ -1,0 +1,4 @@
+error_page_title: 'Connection Error'
+error_page_content:
+ value: 'There is a problem with the connection to the API server. Please contact the Developer Portal support for further assistance.'
+ format: 'restricted_html'
