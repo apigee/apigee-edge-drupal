@@ -39,7 +39,7 @@ class EnvStorage extends CredentialsStoragePluginBase {
    * {@inheritdoc}
    */
   public function helpText() : ? TranslatableMarkup {
-    return t('Environment variables: APIGEE_EDGE_ENDPOINT, APIGEE_EDGE_ORIGANIZATION, APIGEE_EDGE_USERNAME, APIGEE_EDGE_PASSWORD');
+    return t('Environment variables: APIGEE_EDGE_ENDPOINT, APIGEE_EDGE_ORGANIZATION, APIGEE_EDGE_USERNAME, APIGEE_EDGE_PASSWORD');
   }
 
   /**

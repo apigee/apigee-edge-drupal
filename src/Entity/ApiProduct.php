@@ -9,12 +9,12 @@ use Apigee\Edge\Api\Management\Entity\ApiProduct as EdgeApiProduct;
  *
  * @\Drupal\apigee_edge\Annotation\EdgeEntityType(
  *   id = "api_product",
- *   label = @Translation("API Product"),
- *   label_singular = @Translation("API Product"),
- *   label_plural = @Translation("API Products"),
+ *   label = @Translation("API"),
+ *   label_singular = @Translation("API"),
+ *   label_plural = @Translation("APIs"),
  *   label_count = @PluralTranslation(
- *     singular = "@count API Product",
- *     plural = "@count API Products",
+ *     singular = "@count API",
+ *     plural = "@count APIs",
  *   ),
  *   handlers = {
  *     "storage" = "\Drupal\apigee_edge\Entity\Storage\ApiProductStorage",

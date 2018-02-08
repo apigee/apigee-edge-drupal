@@ -96,6 +96,7 @@ class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
 
     $visit_path('/admin/config/apigee-edge/product-settings');
     $visit_path('/admin/config/apigee-edge/app-settings');
+    $visit_path('/admin/config/apigee-edge/error-page-settings');
   }
 
 }

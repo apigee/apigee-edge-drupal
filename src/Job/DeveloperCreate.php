@@ -13,8 +13,6 @@ use Drupal\user\UserInterface;
  */
 class DeveloperCreate extends EdgeJob {
 
-  public const ERR_DEVELOPER_ALREADY_EXISTS = 'developer.service.DeveloperAlreadyExists';
-
   /**
    * The developer to create.
    *
@@ -46,7 +44,7 @@ class DeveloperCreate extends EdgeJob {
       $this->developer->save();
     }
     catch (ClientErrorException $ex) {
-      if ($this->failWhenExists || $ex->getEdgeErrorCode() !== static::ERR_DEVELOPER_ALREADY_EXISTS) {
+      if ($this->failWhenExists || $ex->getEdgeErrorCode() !== Developer::APIGEE_EDGE_ERROR_CODE_DEVELOPER_ALREADY_EXISTS) {
         throw $ex;
       }
       else {

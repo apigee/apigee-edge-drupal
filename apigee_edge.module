@@ -14,9 +14,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\UserInterface;
 
-define('APIGEE_EDGE_ERROR_CODE_DEVELOPER_ALREADY_EXISTS', 'developer.service.DeveloperAlreadyExists');
-define('APIGEE_EDGE_ERROR_CODE_DEVELOPER_DOES_NOT_EXISTS', 'developer.service.DeveloperDoesNotExist');
-
 /**
  * Implements hook_menu_links_discovered_alter().
  */
@@ -126,10 +123,23 @@ function apigee_edge_entity_base_field_info(EntityTypeInterface $entity_type) {
 }
 
 /**
- * Implements hook_form_FORM_ID_alter().
+ * Implements hook_entity_base_field_info_alter().
  */
-function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  $form['account']['mail']['#required'] = TRUE;
+function apigee_edge_entity_base_field_info_alter(&$fields, EntityTypeInterface $entity_type) {
+  if ($entity_type->id() === 'user') {
+    /** @var \Drupal\Core\Field\BaseFieldDefinition $mail */
+    $mail = $fields['mail'];
+    $mail->setRequired(TRUE);
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function apigee_edge_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  if ($form_id === 'user_register_form' || $form_id === 'user_form') {
+    $form['account']['mail']['#required'] = TRUE;
+  }
 }
 
 /**
@@ -154,7 +164,7 @@ function apigee_edge_user_presave(UserInterface $account) {
       '@operation' => $account->isNew() ? 'create' : 'update',
     ];
     if ($previous instanceof ClientErrorException && $previous->getEdgeErrorCode()) {
-      if ($previous->getEdgeErrorCode() === APIGEE_EDGE_ERROR_CODE_DEVELOPER_DOES_NOT_EXISTS) {
+      if ($previous->getEdgeErrorCode() === Developer::APIGEE_EDGE_ERROR_CODE_DEVELOPER_DOES_NOT_EXISTS) {
         \Drupal::logger('apigee_edge')
           ->info('Could not update @developer developer entity because it does not exist on Edge. Automatically trying to create a new developer entity.', $context);
         try {
@@ -173,7 +183,7 @@ function apigee_edge_user_presave(UserInterface $account) {
           watchdog_exception('apigee_edge', $exception, 'Could not create developer entity: @developer. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
         }
       }
-      elseif ($previous->getEdgeErrorCode() === APIGEE_EDGE_ERROR_CODE_DEVELOPER_ALREADY_EXISTS) {
+      elseif ($previous->getEdgeErrorCode() === Developer::APIGEE_EDGE_ERROR_CODE_DEVELOPER_ALREADY_EXISTS) {
         \Drupal::logger('apigee_edge')
           ->info($previous->getMessage());
         $developer = Developer::load($account->getEmail());
