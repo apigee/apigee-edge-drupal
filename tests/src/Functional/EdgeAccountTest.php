@@ -85,8 +85,8 @@ class EdgeAccountTest extends BrowserTestBase {
 
     $developer_data = [
       'userName' => $this->randomMachineName(),
-      'firstName' => $this->randomString(),
-      'lastName' => $this->randomString(),
+      'firstName' => $this->getRandomGenerator()->word(1),
+      'lastName' => $this->getRandomGenerator()->word(1),
     ];
     $developer_data['email'] = "{$developer_data['userName']}@example.com";
 

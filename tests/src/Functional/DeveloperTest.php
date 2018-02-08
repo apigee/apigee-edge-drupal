@@ -36,8 +36,8 @@ class DeveloperTest extends BrowserTestBase {
 
     $test_user = [
       'username' => $this->randomMachineName(),
-      'first_name' => $this->randomString(),
-      'last_name' => $this->randomString(),
+      'first_name' => $this->getRandomGenerator()->word(1),
+      'last_name' => $this->getRandomGenerator()->word(1),
     ];
     $test_user['email'] = "{$test_user['username']}@example.com";
 
@@ -94,8 +94,8 @@ class DeveloperTest extends BrowserTestBase {
     $this->drupalGet('/admin/people/create');
 
     $test_user = [
-      'first_name' => $this->randomString(),
-      'last_name' => $this->randomString(),
+      'first_name' => $this->getRandomGenerator()->word(1),
+      'last_name' => $this->getRandomGenerator()->word(1),
       'username' => $this->randomMachineName(),
       'password' => user_password(),
       'status' => '0',

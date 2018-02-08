@@ -73,7 +73,7 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
     /** @var ApiProduct $product */
     $product = ApiProduct::create([
       'name' => $this->randomMachineName(),
-      'displayName' => $this->randomString(),
+      'displayName' => $this->getRandomGenerator()->word(1),
       'approvalType' => ApiProduct::APPROVAL_TYPE_AUTO,
     ]);
     $product->save();

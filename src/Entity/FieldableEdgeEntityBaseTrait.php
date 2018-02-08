@@ -44,6 +44,13 @@ trait FieldableEdgeEntityBaseTrait {
     $this->fieldDefinitions = NULL;
   }
 
+  /**
+   * Parses the properties and its types from the parent class.
+   *
+   * @return array
+   *   The key is the property name, the value is its type, declared in the
+   *   docblocks.
+   */
   protected static function getProperties(): array {
     $rc = new \ReflectionClass(parent::class);
     $props = [];
@@ -58,6 +65,16 @@ trait FieldableEdgeEntityBaseTrait {
     return $props;
   }
 
+  /**
+   * Attempts to create a base field definition from a type.
+   *
+   * @param string $name
+   *   Name of the base field.
+   * @param string $type
+   *   Type of the property.
+   *
+   * @return \Drupal\Core\Field\BaseFieldDefinition|null
+   */
   protected static function getBaseFieldDefinition(string $name, string $type): ?BaseFieldDefinition {
     static $typeMapping = [
       'string' => 'string',
@@ -95,6 +112,14 @@ trait FieldableEdgeEntityBaseTrait {
     return $definition;
   }
 
+  /**
+   * Checks whether an entity type exists.
+   *
+   * @param string $type
+   *   Entity type to test.
+   *
+   * @return bool
+   */
   protected static function entityTypeExists(string $type): bool {
     try {
       $def = \Drupal::entityTypeManager()->getDefinition($type);
@@ -144,10 +169,22 @@ trait FieldableEdgeEntityBaseTrait {
       NULL;
   }
 
+  /**
+   * Returns the field UI's field name prefix.
+   *
+   * @return string
+   */
   protected function getFieldPrefix(): string {
-    return \Drupal::config('field_ui.settings')->get('field_prefix');
+    return (string) \Drupal::config('field_ui.settings')->get('field_prefix');
   }
 
+  /**
+   * Converts a field name to an attribute name.
+   *
+   * @param string $field_name
+   *
+   * @return string
+   */
   protected function getAttributeName(string $field_name): string {
     $field_prefix = $this->getFieldPrefix();
     if ($field_prefix && strpos($field_name, $field_prefix) === 0) {
@@ -157,6 +194,13 @@ trait FieldableEdgeEntityBaseTrait {
     return $field_name;
   }
 
+  /**
+   * Converts an attribute name to a field name.
+   *
+   * @param string $attribute_name
+   *
+   * @return string
+   */
   protected function getFieldName(string $attribute_name): string {
     $prefix = $this->getFieldPrefix();
     return strpos($attribute_name, $prefix) === 0 ?
@@ -164,6 +208,13 @@ trait FieldableEdgeEntityBaseTrait {
       $prefix . $attribute_name;
   }
 
+  /**
+   * Returns the orignal (stored in edge) data from the field.
+   *
+   * @param $field_name
+   *
+   * @return mixed|null
+   */
   protected function getOriginalFieldData($field_name) {
     if (isset($this->{$field_name})) {
       return $this->{$field_name};
@@ -209,11 +260,19 @@ trait FieldableEdgeEntityBaseTrait {
   public function preSave(EntityStorageInterface $storage) {
     $this->traitPreSave($storage);
     foreach ($this->fields as $field_name => $field) {
-      $value = $field->getValue();
       if (isset($this->{$field_name})) {
-        $this->{$field_name} = $value;
+        /** @var \Drupal\Core\Field\FieldItemInterface $item */
+        $item = $field->get(0);
+        if ($item) {
+          $mainproperty = $item::mainPropertyName();
+          if ($mainproperty) {
+            $value = $item->get($mainproperty)->getValue();
+            $this->{$field_name} = $value;
+          }
+        }
       }
       else {
+        $value = $field->getValue();
         $attribute_name = $this->getAttributeName($field_name);
         $this->attributes->add($attribute_name, json_encode($value));
       }

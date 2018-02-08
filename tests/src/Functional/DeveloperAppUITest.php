@@ -467,7 +467,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     }
 
     $name = strtolower($this->randomMachineName());
-    $displayName = $this->randomString();
+    $displayName = $this->getRandomGenerator()->word(1);
     $callbackUrl = "http://example.com/{$this->randomMachineName()}";
     $description = trim($this->getRandomGenerator()->paragraphs(1));
 
@@ -507,7 +507,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $credential = reset($credentials);
     $credential_id = $credential->id();
 
-    $displayName = $this->randomString();
+    $displayName = $this->getRandomGenerator()->word(1);
     $callbackUrl = "{$callbackUrl}/{$this->randomMachineName()}";
     $description = trim($this->getRandomGenerator()->paragraphs(1));
     $data = [
