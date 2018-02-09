@@ -52,7 +52,7 @@ class EdgeExceptionSubscriber implements EventSubscriberInterface {
    *   The exception event.
    */
   public function onException(GetResponseForExceptionEvent $event) {
-    if ($event->getException()->getPrevious() instanceof ApiException) {
+    if ($event->getException() instanceof ApiException || $event->getException()->getPrevious() instanceof ApiException) {
       $url = $this->urlGenerator->generateFromRoute('apigee_edge.error_page');
       $event->setResponse(new RedirectResponse($url));
     }

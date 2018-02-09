@@ -1,0 +1,8 @@
+name: 'Apigee Edge test'
+type: module
+description: 'Support module for the Apigee Edge tests.'
+core: 8.x
+package: Testing
+
+dependencies:
+  - apigee_edge:apigee_edge
