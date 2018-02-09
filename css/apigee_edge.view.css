@@ -39,3 +39,7 @@
 .apigee-edge-developer-app-view .hidden {
   display: none;
 }
+
+.secret {
+  display: none;
+}
