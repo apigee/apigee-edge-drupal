@@ -5,6 +5,8 @@ namespace Drupal\Tests\apigee_edge\Functional;
 use Apigee\Edge\Api\Management\Entity\App;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\field_ui\Tests\FieldUiTestTrait;
 
 class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
@@ -116,6 +118,48 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
         ],
       ],
     ];
+  }
+
+  public function testTypes() {
+    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
+    $app = DeveloperApp::create([
+      'name' => $this->randomMachineName(),
+      'status' => App::STATUS_APPROVED,
+      'developerId' => $this->developer->getDeveloperId(),
+    ]);
+
+    $field_values = [
+      'scopes' => ['a', 'b', 'c'],
+      'displayName' => $this->getRandomGenerator()->word(1),
+      'createdAt' => time(),
+    ];
+
+    foreach ($field_values as $field_name => $field_value) {
+      $app->set($field_name, $field_value);
+    }
+
+    $app->preSave(new class() implements EntityStorageInterface {
+      public function resetCache(array $ids = NULL) {}
+      public function loadMultiple(array $ids = NULL) {}
+      public function load($id) {}
+      public function loadUnchanged($id) {}
+      public function loadRevision($revision_id) {}
+      public function deleteRevision($revision_id) {}
+      public function loadByProperties(array $values = []) {}
+      public function create(array $values = []) {}
+      public function delete(array $entities) {}
+      public function save(EntityInterface $entity) {}
+      public function hasData() {}
+      public function getQuery($conjunction = 'AND') {}
+      public function getAggregateQuery($conjunction = 'AND') {}
+      public function getEntityTypeId() {}
+      public function getEntityType() {}
+    });
+
+    foreach ($field_values as $field_name => $field_value) {
+      $getter = 'get' . ucfirst($field_name);
+      $this->assertEquals($field_value, call_user_func([$app, $getter]));
+    }
   }
 
 }

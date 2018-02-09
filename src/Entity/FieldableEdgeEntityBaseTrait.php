@@ -9,7 +9,24 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 
-const EDGE_ENTITY_NAMESPACE = '\Apigee\Edge\Api\Management\Entity';
+const TYPE_EXCEPTIONS = [
+  'apiResources' => 'string[]',
+  'apps' => 'string[]',
+  'companies' => 'string[]',
+  'createdAt' => 'timestamp',
+  'description' => 'text_long',
+  'environments' => 'string[]',
+  'expiresAt' => 'timestamp',
+  'issuedAt' => 'timestamp',
+  'lastModifiedAt' => 'timestamp',
+  'proxies' => 'string[]',
+  'scopes' => 'string[]',
+  'status' => 'list_string',
+];
+
+const FIELD_BLACKLIST = [
+  'attributes',
+];
 
 trait FieldableEdgeEntityBaseTrait {
   use EdgeEntityBaseTrait {
@@ -54,13 +71,21 @@ trait FieldableEdgeEntityBaseTrait {
   protected static function getProperties(): array {
     $rc = new \ReflectionClass(parent::class);
     $props = [];
-    foreach ($rc->getProperties() as $property) {
-      $matches = [];
-      $type = 'mixed';
-      if (preg_match('/@var[\s]+([\S]+)/', $property->getDocComment(), $matches)) {
-        $type = $matches[1];
+    foreach ($rc->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+      if (strpos($method->getName(), 'get') !== 0) {
+        continue;
       }
-      $props[$property->getName()] = $type;
+
+      if ($method->getNumberOfParameters() > 0) {
+        continue;
+      }
+
+      $name = lcfirst(substr($method->getName(), 3));
+      if (in_array($name, FIELD_BLACKLIST)) {
+        continue;
+      }
+      $type = array_key_exists($name, TYPE_EXCEPTIONS) ? TYPE_EXCEPTIONS[$name] : 'string';
+      $props[$name] = $type;
     }
     return $props;
   }
@@ -76,30 +101,16 @@ trait FieldableEdgeEntityBaseTrait {
    * @return \Drupal\Core\Field\BaseFieldDefinition|null
    */
   protected static function getBaseFieldDefinition(string $name, string $type): ?BaseFieldDefinition {
-    static $typeMapping = [
-      'string' => 'string',
-    ];
-    $label = ucfirst($name);
+    $label = ucwords(preg_replace('/([a-z])([A-Z])/', '$1 $2', $name));
     if (($is_array = strpos($type, '[]') === strlen($type) - 2)) {
       $type = substr($type, 0, -2);
     }
 
-    $definition = NULL;
-    if (isset($typeMapping[$type])) {
-      $type = $typeMapping[$type];
+    try {
       $definition = BaseFieldDefinition::create($type);
     }
-    elseif (strpos($type, EDGE_ENTITY_NAMESPACE) === 0) {
-      $definition = BaseFieldDefinition::create('entity_reference');
-      $target = substr($type, strlen(EDGE_ENTITY_NAMESPACE) + 1);
-      if (static::entityTypeExists($target)) {
-        $definition->setSettings([
-          'target_type' => $target,
-        ]);
-      }
-    }
-
-    if (!$definition) {
+    catch (\Exception $ex) {
+      // Type not found.
       return NULL;
     }
 
@@ -257,19 +268,42 @@ trait FieldableEdgeEntityBaseTrait {
     return $this;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function preSave(EntityStorageInterface $storage) {
+    if ($this->validationRequired && !$this->validated) {
+      throw new \LogicException('Entity validation was skipped.');
+    }
+    else {
+      $this->validated = FALSE;
+    }
+
+    /** @var \Drupal\Core\Field\BaseFieldDefinition[] $definitions */
+    $definitions = $this->getFieldDefinitions();
+
     $this->traitPreSave($storage);
+
+    $rc = new \ReflectionClass($this);
     foreach ($this->fields as $field_name => $field) {
-      if (isset($this->{$field_name})) {
-        /** @var \Drupal\Core\Field\FieldItemInterface $item */
-        $item = $field->get(0);
-        if ($item) {
-          $mainproperty = $item::mainPropertyName();
-          if ($mainproperty) {
-            $value = $item->get($mainproperty)->getValue();
-            $this->{$field_name} = $value;
+      $setter = 'set' . ucfirst($field_name);
+      if (method_exists($this, $setter)) {
+        $value = [];
+
+        for ($i = 0, $count = $field->count(); $i < $count; $i++) {
+          /** @var \Drupal\Core\Field\FieldItemInterface $item */
+          $item = $field->get($i);
+          if ($item && ($mainproperty = $item::mainPropertyName())) {
+            $value[] = $item->get($mainproperty)->getValue();
           }
         }
+
+        if ($definitions[$field_name]->getCardinality() === 1) {
+          $value = reset($value);
+        }
+
+        $this->maybeTypeCastFirstParameterValue($rc->getMethod($setter), $value);
+        call_user_func([$this, $setter], $value);
       }
       else {
         $value = $field->getValue();
@@ -277,6 +311,48 @@ trait FieldableEdgeEntityBaseTrait {
         $this->attributes->add($attribute_name, json_encode($value));
       }
     }
+  }
+
+  /**
+   * Type casts a value to match the setter's type hint.
+   *
+   * Sometimes there are differences between how a value is stored by the field
+   * and the edge sdk connector. A good example is the timestamp: it is stored
+   * as an integer in Drupal, and as a string by the SDK.
+   *
+   * @param \ReflectionMethod $method
+   *   Method to get the type hint.
+   *
+   * @param $value
+   *   Value to type cast
+   */
+  private function maybeTypeCastFirstParameterValue(\ReflectionMethod $method, &$value) {
+    static $castable = [
+      'boolean', 'bool',
+      'integer', 'int',
+      'float', 'double',
+      'string',
+      'array',
+    ];
+
+    $parameter = $method->getParameters()[0];
+    if (!$parameter) {
+      return;
+    }
+
+    if (!$parameter->hasType()) {
+      return;
+    }
+
+    if ($parameter->getType()->allowsNull() && $value === NULL) {
+      return;
+    }
+
+    if (!in_array($parameter->getType()->getName(), $castable)) {
+      return;
+    }
+
+    settype($value, $parameter->getType()->getName());
   }
 
   /**
