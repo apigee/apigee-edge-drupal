@@ -130,7 +130,7 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
 
     $field_values = [
       'scopes' => ['a', 'b', 'c'],
-      'displayName' => $this->getRandomGenerator()->word(1),
+      'displayName' => $this->getRandomGenerator()->word(16),
       'createdAt' => time(),
     ];
 
