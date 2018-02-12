@@ -14,6 +14,13 @@ use Drupal\Core\Form\FormStateInterface;
 class FieldableEdgeEntityForm extends EntityForm implements EdgeEntityFormInterface {
 
   /**
+   * The fieldable entity being used by this form.
+   *
+   * @var \Drupal\Core\Entity\FieldableEntityInterface
+   */
+  protected $entity;
+
+  /**
    * {@inheritdoc}
    */
   protected function init(FormStateInterface $form_state) {

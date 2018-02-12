@@ -3,6 +3,7 @@
 namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
@@ -58,6 +59,7 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
   use FieldableEdgeEntityBaseTrait {
     id as private traitId;
     urlRouteParameters as private traitUrlRouteParameters;
+    baseFieldDefinitions as private traitBaseFieldDefinitions;
   }
 
   /**
@@ -74,6 +76,38 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
     $values = array_filter($values);
     parent::__construct($values);
     $this->entityTypeId = 'developer_app';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
+    /** @var \Drupal\Core\Field\BaseFieldDefinition[] $definitions */
+    $definitions = self::traitBaseFieldDefinitions($entity_type);
+    $definitions['displayName']->setRequired(TRUE);
+    $definitions['name']->setRequired(TRUE);
+
+    unset($definitions['credentials']);
+
+    // Hide readonly properties from Manage form display list.
+    $read_only_fields = [
+      'appId',
+      'appFamily',
+      'createdAt',
+      'createdBy',
+      'developerId',
+      'displayName',
+      'lastModifiedAt',
+      'lastModifiedBy',
+      'name',
+      'scopes',
+      'status',
+    ];
+    foreach ($read_only_fields as $field) {
+      $definitions[$field]->setDisplayConfigurable('form', FALSE);
+    }
+
+    return $definitions;
   }
 
   /**
@@ -145,6 +179,10 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
     }
 
     return $params;
+  }
+
+  public function isLatestRevision() {
+    return TRUE;
   }
 
 }

@@ -115,7 +115,7 @@ entity.developer_app.delete_form:
 entity.developer_app.canonical_by_developer:
   path: '/user/{user}/apps/{app}'
   defaults:
-    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppViewControllerForDeveloper::render'
+    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppViewControllerForDeveloper::view'
     _title_callback: '\Drupal\apigee_edge\Controller\DeveloperAppViewControllerForDeveloper::getPageTitle'
   requirements:
     user: '\d+'

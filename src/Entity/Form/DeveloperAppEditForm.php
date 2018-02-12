@@ -78,20 +78,24 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
     $config = $this->configFactory->get('apigee_edge.appsettings');
     $form = parent::form($form, $form_state);
 
-    unset($form['#after_build']);
     $form['#tree'] = TRUE;
-    $form['details']['name']['#access'] = FALSE;
-    $form['details']['developerId']['#access'] = FALSE;
+    $form['name']['#access'] = FALSE;
+    $form['developerId']['#access'] = FALSE;
     $form['product']['#access'] = !isset($form['product']) ?: FALSE;
 
     if ($config->get('associate_apps') && $config->get('user_select')) {
+      $form['credential'] = [
+        '#type' => 'container',
+        '#weight' => 100,
+      ];
+
       foreach ($this->entity->getCredentials() as $credential) {
         $credential_status_element = [
           '#type' => 'status_property',
           '#value' => Xss::filter($credential->getStatus()),
         ];
         $rendered_credential_status = $this->renderer->render($credential_status_element);
-        $credential_title = $rendered_credential_status . ' Credential - ' . $credential->getConsumerKey();
+        $credential_title = $rendered_credential_status . ' Credential';
 
         $form['credential'][$credential->getConsumerKey()] = [
           '#type' => 'fieldset',
@@ -171,19 +175,11 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
    * {@inheritdoc}
    */
   protected function copyFormValuesToEntity(EntityInterface $entity, array $form, FormStateInterface $form_state) {
+    parent::copyFormValuesToEntity($entity, $form, $form_state);
     $config = $this->configFactory->get('apigee_edge.appsettings');
     $this->originalEntity = clone $this->entity;
 
     /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
-    $entity->setDisplayName($form_state->getValue(['details', 'displayName']));
-
-    if ($config->get('callback_url_visible')) {
-      $entity->setCallbackUrl($form_state->getValue(['details', 'callbackUrl']));
-    }
-    if ((bool) $config->get('description_visible')) {
-      $entity->setDescription($form_state->getValue(['details', 'description']));
-    }
-
     if ($config->get('associate_apps') && $config->get('user_select')) {
       foreach ($form_state->getValue(['credential']) as $consumer_key => $api_products) {
         foreach ($entity->getCredentials() as $credential) {
@@ -216,6 +212,18 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
     $config = $this->configFactory->get('apigee_edge.appsettings');
 
     $redirect_user = FALSE;
+
+    try {
+      $this->entity->save();
+      drupal_set_message($this->t('@developer_app details have been successfully updated.',
+        ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel()]));
+      $redirect_user = TRUE;
+    }
+    catch (\Exception $exception) {
+      drupal_set_message($this->t('Could not update @developer_app details.',
+        ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel()]), 'error');
+      watchdog_exception('apigee_edge', $exception);
+    }
 
     if ($config->get('associate_apps') && $config->get('user_select')) {
       try {
@@ -263,25 +271,6 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
       catch (\Exception $exception) {
         drupal_set_message(t("Could not update credential's product list.",
           ['@consumer_key' => $new_credential->getConsumerKey()]), 'error');
-        watchdog_exception('apigee_edge', $exception);
-        $redirect_user = FALSE;
-      }
-    }
-
-    // Update the app details after updating the product lists, because the
-    // entity->save() function override every entity property.
-    if ($this->entity->getDisplayName() !== $this->originalEntity->getDisplayName() ||
-      $this->entity->getCallbackUrl() !== $this->originalEntity->getCallbackUrl() ||
-      $this->entity->getDescription() !== $this->originalEntity->getDescription()) {
-      try {
-        $this->entity->save();
-        drupal_set_message($this->t('@developer_app details have been successfully updated.',
-          ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel()]));
-        $redirect_user = TRUE;
-      }
-      catch (\Exception $exception) {
-        drupal_set_message($this->t('Could not update @developer_app details.',
-          ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel()]), 'error');
         watchdog_exception('apigee_edge', $exception);
         $redirect_user = FALSE;
       }

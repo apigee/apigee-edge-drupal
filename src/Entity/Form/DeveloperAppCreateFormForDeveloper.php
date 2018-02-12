@@ -69,7 +69,7 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
   public function buildForm(array $form, FormStateInterface $form_state, int $user = NULL) {
     $this->userId = $user;
     $form = parent::buildForm($form, $form_state);
-    $form['details']['developerId'] = [
+    $form['developerId'] = [
       '#type' => 'value',
       '#value' => $this->entity->getDeveloperId(),
     ];
