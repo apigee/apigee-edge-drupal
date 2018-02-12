@@ -100,17 +100,58 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     /** @var \Drupal\Core\Field\BaseFieldDefinition[] $definitions */
     $definitions = self::traitBaseFieldDefinitions($entity_type);
-    $definitions['displayName']->setRequired(TRUE);
-    $definitions['name']->setRequired(TRUE);
+    $developer_app_singular_label = \Drupal::entityTypeManager()->getDefinition('developer_app')->getSingularLabel();
     unset($definitions['credentials']);
 
-    $developer_app_singular_label = \Drupal::entityTypeManager()->getDefinition('developer_app')->getSingularLabel();
+    $definitions['name']->setRequired(TRUE);
 
-    $definitions['displayName']->setLabel(t('@developer_app name', ['@developer_app' => $developer_app_singular_label]));
-    $definitions['callbackUrl']->setLabel(t('Callback URL'));
-    $definitions['status']->setLabel(t('@developer_app status', ['@developer_app' => $developer_app_singular_label]));
-    $definitions['createdAt']->setLabel(t('Created'));
-    $definitions['lastModifiedAt']->setLabel(t('Last updated'));
+    $definitions['displayName']
+      ->setDisplayOptions('view', [
+        'label' => 'inline',
+        'weight' => 0,
+      ])
+      ->setLabel(t('@developer_app name', ['@developer_app' => $developer_app_singular_label]))
+      ->setRequired(TRUE);
+
+    $definitions['callbackUrl']
+      ->setDisplayOptions('form', [
+        'weight' => 0,
+      ])
+      ->setDisplayOptions('view', [
+        'label' => 'inline',
+        'weight' => 2,
+      ])
+      ->setLabel(t('Callback URL'));
+
+    $definitions['description']
+      ->setDisplayOptions('form', [
+        'weight' => 1,
+      ])
+      ->setDisplayOptions('view', [
+        'label' => 'inline',
+        'weight' => 4,
+      ]);
+
+    $definitions['status']
+      ->setDisplayOptions('view', [
+        'label' => 'inline',
+        'weight' => 1,
+      ])
+      ->setLabel(t('@developer_app status', ['@developer_app' => $developer_app_singular_label]));
+
+    $definitions['createdAt']
+      ->setDisplayOptions('view', [
+        'label' => 'inline',
+        'weight' => 3,
+      ])
+      ->setLabel(t('Created'));
+    
+    $definitions['lastModifiedAt']
+      ->setDisplayOptions('view', [
+        'label' => 'inline',
+        'weight' => 5,
+      ])
+      ->setLabel(t('Last updated'));
 
     // Hide readonly properties from Manage form display list.
     $read_only_fields = [
