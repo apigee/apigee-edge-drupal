@@ -15,8 +15,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-.apigee-edge-developer-app-view .wrapper--buttons {
-  text-align: right;
+.field {
+  width: 48%;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.field--label {
+  margin-bottom: 1rem;
+  vertical-align: middle;
+  font-weight: bold;
+  word-break: break-all;
+  padding-right: 1rem;
+  display: table-cell;
+  width: 160px;
+  min-width: 160px;
 }
 
 .wrapper--primary,
@@ -35,26 +48,12 @@
   margin-bottom: 1rem;
 }
 
-.apigee-edge-developer-app-view label {
-  margin-bottom: 0;
-  vertical-align: middle;
-  font-weight: bold;
-  word-break: break-all;
-  padding-right: 1rem;
-  display: inline-block;
-  width: 140px;
-}
-
 .apigee-edge-developer-app-view .api-product-list-row .api-product-name {
   float: left;
 }
 
 .apigee-edge-developer-app-view .api-product-list-row .wrapper--status {
   float: right;
-}
-
-.apigee-edge-developer-app-view .hidden {
-  display: none;
 }
 
 .secret {

@@ -30,11 +30,14 @@ use Drupal\Core\Routing\RouteMatchInterface;
  */
 class DeveloperAppViewControllerForDeveloper extends EntityViewController implements DeveloperAppPageTitleInterface {
 
+  use DeveloperAppViewControllerTrait;
+
   /**
    * {@inheritdoc}
    */
   public function view(EntityInterface $app, $view_mode = 'full') {
     $build = parent::view($app, $view_mode);
+    $build['credentials'] = $this->getCredentialsRenderArray($build);
     return $build;
   }
 
@@ -42,7 +45,10 @@ class DeveloperAppViewControllerForDeveloper extends EntityViewController implem
    * {@inheritdoc}
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
-    return 'title';
+    return t('@name @devAppLabel', [
+      '@name' => $routeMatch->getParameter('app')->getDisplayName(),
+      '@devAppLabel' => $this->entityManager->getDefinition('developer_app')->getSingularLabel(),
+    ]);
   }
 
 }

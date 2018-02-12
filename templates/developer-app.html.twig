@@ -1,3 +1,8 @@
-<article>
-  {{ content }}
+<article{{ attributes }}>
+  <div{{ content_attributes }}>
+    {{ content }}
+    <div>
+      {{ credentials }}
+    </div>
+  </div>
 </article>

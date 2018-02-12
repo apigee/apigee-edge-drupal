@@ -3,16 +3,16 @@
  * Copyright 2018 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License version 2 as published by the 
+ * the terms of the GNU General Public License version 2 as published by the
  * Free Software Foundation.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
  * License for more details.
  *
- * You should have received a copy of the GNU General Public License along 
- * with this program; if not, write to the Free Software Foundation, Inc., 51 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
@@ -20,12 +20,11 @@ namespace Drupal\apigee_edge\Controller;
 
 use Apigee\Edge\Entity\EntityInterface;
 use Drupal\apigee_edge\Entity\ApiProduct;
-use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Render\RendererInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -36,119 +35,72 @@ trait DeveloperAppViewControllerTrait {
   /**
    * {@inheritdoc}
    */
+  public function __construct(EntityManagerInterface $entity_manager, RendererInterface $renderer, ConfigFactoryInterface $configFactory, DateFormatterInterface $date_formatter) {
+    $this->entityManager = $entity_manager;
+    $this->renderer = $renderer;
+    $this->configFactory = $configFactory;
+    $this->dateFormatter = $date_formatter;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('entity_type.manager'),
+      $container->get('entity.manager'),
+      $container->get('renderer'),
       $container->get('config.factory'),
       $container->get('date.formatter')
     );
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $configFactory, DateFormatterInterface $date_formatter) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->configFactory = $configFactory;
-    $this->dateFormatter = $date_formatter;
-  }
-
-  /**
-   * Gets the view render array for a given developer app.
+   * Creates the view render array for the developer app credentials.
    *
-   * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app
-   *   The developer app entity.
+   * @param array $build
+   *   The render array.
    *
    * @return array
    *   The render array.
    */
-  protected function getRenderArray(DeveloperAppInterface $developer_app): array {
+  protected function getCredentialsRenderArray(array $build): array {
     $config = $this->configFactory->get('apigee_edge.appsettings');
+    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app */
+    $developer_app = $build['#developer_app'];
     $build = [
       '#cache' => [
         'contexts' => $developer_app->getCacheContexts(),
         'tags' => $developer_app->getCacheTags(),
       ],
     ];
-    $build['details'] = [
-      '#type' => 'fieldset',
-      '#title' => $this->t('Details'),
-      '#collapsible' => FALSE,
-      '#attributes' => [
-        'class' => [
-          'items--inline',
-          'apigee-edge-developer-app-view',
-        ],
-      ],
-    ];
-
-    $build['#attached']['library'][] = 'apigee_edge/apigee_edge.components';
-    $build['#attached']['library'][] = 'apigee_edge/apigee_edge.view';
-
-    $details_primary_elements = [
-      'displayName' => [
-        'label' => $this->t('@devAppLabel name', ['@devAppLabel' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel()]),
-        'value_type' => 'plain',
-      ],
-      'callbackUrl' => [
-        'label' => $this->t('Callback URL'),
-        'value_type' => 'plain',
-      ],
-      'description' => [
-        'label' => $this->t('Description'),
-        'value_type' => 'plain',
-      ],
-    ];
-
-    $details_secondary_elements = [
-      'status' => [
-        'label' => $this->t('@devAppLabel status', ['@devAppLabel' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel()]),
-        'value_type' => 'status',
-      ],
-      'createdAt' => [
-        'label' => $this->t('Created'),
-        'value_type' => 'date',
-      ],
-      'lastModifiedAt' => [
-        'label' => $this->t('Last updated'),
-        'value_type' => 'date',
-      ],
-    ];
-
-    $build['details']['primary_wrapper'] = $this->getContainerRenderArray($developer_app, $details_primary_elements);
-    $build['details']['primary_wrapper']['#type'] = 'container';
-    $build['details']['primary_wrapper']['#attributes']['class'] = ['wrapper--primary'];
-    $build['details']['secondary_wrapper'][] = $this->getContainerRenderArray($developer_app, $details_secondary_elements);
-    $build['details']['secondary_wrapper']['#type'] = 'container';
-    $build['details']['secondary_wrapper']['#attributes']['class'] = ['wrapper--secondary'];
 
     if ($config->get('associate_apps')) {
       $credential_elements = [
         'consumerKey' => [
-          'label' => $this->t('Consumer Key'),
+          'label' => ('Consumer Key'),
           'value_type' => 'plain',
         ],
         'consumerSecret' => [
-          'label' => $this->t('Consumer Secret'),
+          'label' => ('Consumer Secret'),
           'value_type' => 'plain',
         ],
         'issuedAt' => [
-          'label' => $this->t('Issued'),
+          'label' => t('Issued'),
           'value_type' => 'date',
         ],
         'expiresAt' => [
-          'label' => $this->t('Expires'),
+          'label' => t('Expires'),
           'value_type' => 'date',
         ],
         'status' => [
-          'label' => $this->t('Key Status'),
+          'label' => t('Key Status'),
           'value_type' => 'status',
         ],
       ];
       foreach ($developer_app->getCredentials() as $credential) {
         $build['credential'][$credential->getConsumerKey()] = [
           '#type' => 'fieldset',
-          '#title' => $this->t('Credential'),
+          '#title' => t('Credential'),
           '#collapsible' => FALSE,
           '#attributes' => [
             'class' => [
@@ -167,7 +119,7 @@ trait DeveloperAppViewControllerTrait {
         $build['credential'][$credential->getConsumerKey()]['secondary_wrapper']['title'] = [
           '#type' => 'label',
           '#title_display' => 'before',
-          '#title' => $this->entityTypeManager->getDefinition('api_product')->getPluralLabel(),
+          '#title' => $this->entityManager->getDefinition('api_product')->getPluralLabel(),
         ];
 
         foreach ($credential->getApiProducts() as $product) {
@@ -275,21 +227,6 @@ trait DeveloperAppViewControllerTrait {
       }
     }
     return $build;
-  }
-
-  /**
-   * Builds a translatable page title by using values from args as replacements.
-   *
-   * @param array $args
-   *   An associative array of replacements.
-   *
-   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
-   *   The page title.
-   *
-   * @see \Drupal\Core\StringTranslation\StringTranslationTrait::t()
-   */
-  protected function pageTitle(array $args = []): TranslatableMarkup {
-    return $this->t('@name @devAppLabel', $args);
   }
 
 }

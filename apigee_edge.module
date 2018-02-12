@@ -27,6 +27,7 @@ use Drupal\apigee_edge\JobExecutor;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\UserInterface;
 
@@ -159,6 +160,35 @@ function apigee_edge_form_alter(&$form, FormStateInterface $form_state, $form_id
   if ($form_id === 'user_register_form' || $form_id === 'user_form') {
     $form['account']['mail']['#required'] = TRUE;
   }
+}
+
+/**
+ * Prepares variables for developer app templates.
+ *
+ * Default template: developer_app.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing the elements.
+ */
+function template_preprocess_developer_app(&$variables) {
+  $variables['#attached']['library'][] = 'apigee_edge/apigee_edge.components';
+  $variables['#attached']['library'][] = 'apigee_edge/apigee_edge.view';
+  $variables['view_mode'] = $variables['elements']['#view_mode'];
+  $variables['developer_app'] = $variables['elements']['#developer_app'];
+
+  // Helpful $content variable for templates.
+  $variables += ['content' => []];
+  foreach (Element::children($variables['elements']) as $key) {
+    $variables['content'][$key] = $variables['elements'][$key];
+  }
+
+  unset($variables['content']['credentials']);
+  $variables['credentials'] = $variables['elements']['credentials'];
+
+  $variables['content']['status'][0] = [
+    '#type' => 'status_property',
+    '#value' => $variables['developer_app']->getStatus(),
+  ];
 }
 
 /**

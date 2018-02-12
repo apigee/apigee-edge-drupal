@@ -74,7 +74,7 @@ apigee_edge.user.my_apps:
 entity.developer_app.canonical:
   path: '/developer-apps/{developer_app}'
   defaults:
-    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppViewController::render'
+    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppViewController::view'
     _title_callback: '\Drupal\apigee_edge\Controller\DeveloperAppViewController::getPageTitle'
   requirements:
     _entity_access: 'developer_app.view'

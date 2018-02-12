@@ -102,8 +102,15 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
     $definitions = self::traitBaseFieldDefinitions($entity_type);
     $definitions['displayName']->setRequired(TRUE);
     $definitions['name']->setRequired(TRUE);
-
     unset($definitions['credentials']);
+
+    $developer_app_singular_label = \Drupal::entityTypeManager()->getDefinition('developer_app')->getSingularLabel();
+
+    $definitions['displayName']->setLabel(t('@developer_app name', ['@developer_app' => $developer_app_singular_label]));
+    $definitions['callbackUrl']->setLabel(t('Callback URL'));
+    $definitions['status']->setLabel(t('@developer_app status', ['@developer_app' => $developer_app_singular_label]));
+    $definitions['createdAt']->setLabel(t('Created'));
+    $definitions['lastModifiedAt']->setLabel(t('Last updated'));
 
     // Hide readonly properties from Manage form display list.
     $read_only_fields = [
@@ -198,7 +205,7 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
   }
 
   public function isLatestRevision() {
-    return TRUE;
+    return FALSE;
   }
 
 }

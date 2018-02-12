@@ -18,9 +18,9 @@
 
 namespace Drupal\apigee_edge\Controller;
 
-use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
-use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Entity\Controller\EntityViewController;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
@@ -28,30 +28,26 @@ use Drupal\Core\Routing\RouteMatchInterface;
  *
  * @package Drupal\apigee_edge\Controller
  */
-class DeveloperAppViewController extends ControllerBase implements DeveloperAppPageTitleInterface {
+class DeveloperAppViewController extends EntityViewController implements DeveloperAppPageTitleInterface {
 
   use DeveloperAppViewControllerTrait;
 
   /**
-   * Renders the view page of a developer app for a given user.
-   *
-   * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app
-   *   The developer app entity.
-   *
-   * @return array
-   *   The render array.
+   * {@inheritdoc}
    */
-  public function render(DeveloperAppInterface $developer_app): array {
-    return $this->getRenderArray($developer_app);
+  public function view(EntityInterface $developer_app, $view_mode = 'full') {
+    $build = parent::view($developer_app, $view_mode);
+    $build['credentials'] = $this->getCredentialsRenderArray($build);
+    return $build;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
-    return $this->pageTitle([
+    return t('@name @devAppLabel', [
       '@name' => $routeMatch->getParameter('developer_app')->getDisplayName(),
-      '@devAppLabel' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel(),
+      '@devAppLabel' => $this->entityManager->getDefinition('developer_app')->getSingularLabel(),
     ]);
   }
 
