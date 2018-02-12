@@ -32,6 +32,10 @@
   min-width: 160px;
 }
 
+.panel-body .field .field--label::after {
+  content: '';
+}
+
 .wrapper--primary,
 .wrapper--secondary {
   width: 48%;
