@@ -35,6 +35,9 @@ function apigee_edge_menu_links_discovered_alter(array &$links) {
  */
 function apigee_edge_theme() {
   return [
+    'developer_app' => [
+      'render element' => 'elements',
+    ],
     'status_property' => [
       'render element' => 'element',
     ],
