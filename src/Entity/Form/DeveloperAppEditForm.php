@@ -229,18 +229,6 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
 
     $redirect_user = FALSE;
 
-    try {
-      $this->entity->save();
-      drupal_set_message($this->t('@developer_app details have been successfully updated.',
-        ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel()]));
-      $redirect_user = TRUE;
-    }
-    catch (\Exception $exception) {
-      drupal_set_message($this->t('Could not update @developer_app details.',
-        ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel()]), 'error');
-      watchdog_exception('apigee_edge', $exception);
-    }
-
     if ($config->get('associate_apps') && $config->get('user_select')) {
       try {
         $dacc = new DeveloperAppCredentialController(
@@ -290,6 +278,18 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
         watchdog_exception('apigee_edge', $exception);
         $redirect_user = FALSE;
       }
+    }
+
+    try {
+      $this->entity->save();
+      drupal_set_message($this->t('@developer_app details have been successfully updated.',
+        ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel()]));
+      $redirect_user = TRUE;
+    }
+    catch (\Exception $exception) {
+      drupal_set_message($this->t('Could not update @developer_app details.',
+        ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel()]), 'error');
+      watchdog_exception('apigee_edge', $exception);
     }
 
     if ($redirect_user) {

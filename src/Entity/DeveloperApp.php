@@ -145,7 +145,7 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
         'weight' => 3,
       ])
       ->setLabel(t('Created'));
-    
+
     $definitions['lastModifiedAt']
       ->setDisplayOptions('view', [
         'label' => 'inline',
