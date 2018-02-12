@@ -227,8 +227,9 @@ trait FieldableEdgeEntityBaseTrait {
    * @return mixed|null
    */
   protected function getOriginalFieldData($field_name) {
-    if (isset($this->{$field_name})) {
-      return $this->{$field_name};
+    $getter = 'get' . ucfirst($field_name);
+    if (method_exists($this, $getter)) {
+      return call_user_func([$this, $getter]);
     }
 
     $attribute_name = $this->getAttributeName($field_name);
