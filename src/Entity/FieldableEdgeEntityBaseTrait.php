@@ -270,6 +270,15 @@ trait FieldableEdgeEntityBaseTrait {
         $field_name = $this->getFieldName($field_name);
       }
 
+      if (array_key_exists($field_name, TYPE_EXCEPTIONS) && TYPE_EXCEPTIONS[$field_name] === 'timestamp') {
+        if (is_array($value)) {
+          $value = array_map(function ($item) { return ((int) $item) / 1000; }, $value);
+        }
+        else {
+          $value = ((int) $value) / 1000;
+        }
+      }
+
       /** @var \Drupal\Core\Field\FieldTypePluginManagerInterface $manager */
       $manager = \Drupal::service('plugin.manager.field.field_type');
       $this->fields[$field_name] = $manager->createFieldItemList($this, $field_name, $value);
@@ -321,6 +330,14 @@ trait FieldableEdgeEntityBaseTrait {
         }
 
         $this->maybeTypeCastFirstParameterValue($rc->getMethod($setter), $value);
+        if (array_key_exists($field_name, TYPE_EXCEPTIONS) && TYPE_EXCEPTIONS[$field_name] === 'timestamp') {
+          if (is_array($value)) {
+            $value = array_map(function ($item) { return ((int) $item) * 1000; }, $value);
+          }
+          else {
+            $value = ((int) $value) * 1000;
+          }
+        }
         call_user_func([$this, $setter], $value);
       }
       else {
