@@ -14,7 +14,7 @@ const TYPE_EXCEPTIONS = [
   'apps' => 'string[]',
   'companies' => 'string[]',
   'createdAt' => 'timestamp',
-  'description' => 'text_long',
+  'description' => 'string_long',
   'environments' => 'string[]',
   'expiresAt' => 'timestamp',
   'issuedAt' => 'timestamp',
@@ -398,6 +398,24 @@ trait FieldableEdgeEntityBaseTrait {
    */
   public function setValidationRequired($required) {
     $this->validationRequired = (bool) $required;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getIterator() {
+    return new \ArrayIterator($this->getFields());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function toArray() {
+    $values = [];
+    foreach ($this->getFields() as $name => $property) {
+      $values[$name] = $property->getValue();
+    }
+    return $values;
   }
 
   /**

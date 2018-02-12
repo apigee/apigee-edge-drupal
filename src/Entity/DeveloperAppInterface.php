@@ -10,6 +10,6 @@ use Drupal\user\EntityOwnerInterface;
 /**
  * Defines an interface for developer app entity objects.
  */
-interface DeveloperAppInterface extends EdgeDeveloperAppInterface, EntityInterface, EntityOwnerInterface, FieldableEntityInterface {
+interface DeveloperAppInterface extends EdgeDeveloperAppInterface, EntityInterface, EntityOwnerInterface, FieldableEntityInterface, \IteratorAggregate {
 
 }
