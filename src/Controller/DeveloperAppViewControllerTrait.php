@@ -234,7 +234,7 @@ trait DeveloperAppViewControllerTrait {
         ];
 
         if ($settings['value_type'] === 'plain') {
-          $secret_attribute ='<span>';
+          $secret_attribute = '<span>';
           if (in_array($element, $hidden_value_types)) {
             $secret_attribute = '<span class="secret" data-secret-type="' . $element . '">';
           };
