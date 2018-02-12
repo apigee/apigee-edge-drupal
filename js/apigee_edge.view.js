@@ -11,23 +11,26 @@
 
   Drupal.apigeeEdgeDetails = {
     editActions: function (context, settings) {
-      $('.apigee-edge--form .button--edit', context).on('click', function (event) {
-        event.preventDefault();
-        var clickedID = $(this).attr('id');
-        var currentContainer = clickedID.split('-')[1];
-        var currentCancelID = '#edit-' + currentContainer + '-cancel-button';
-        var currentSaveID = '#edit-' + currentContainer + '-save-button';
+      var secrets = $('.secret', context);
+      for (var i = 0; i < secrets.length; i++) {
+        var secret = secrets[i];
+        $(secret).addClass('secret-hidden').attr('data-value', $(secret).html()).html('<span>&#149;&#149;&#149;&#149;&#149;&#149;&#149;&#149;<br><a href="#" class="secret-show-hide">' + Drupal.t('Show') + '</a></span>').show();
+      }
 
-        $('#' + clickedID).toggleClass('hidden');
-        $(currentCancelID).toggleClass('hidden');
-        $(currentSaveID).toggleClass('hidden');
-
-        var disabledElements = [
-          ['form-item-display-name-value', 'edit-display-name-value'],
-          ['edit-display-name-value', 'edit-display-name-value'],
-          ['edit-display-name-value', 'edit-display-name-value']
-        ];
+      $('.item-property', context).on('click', 'a.secret-show-hide', function (event) {
+        secretToggle(event, $(this).parent().parent());
       });
+
+      function secretToggle(event, secret) {
+        event.preventDefault();
+        if ($(secret).hasClass('secret-hidden')) {
+          $(secret).html(secret.attr('data-value') + '<br><span><a href="#" class="secret-show-hide">' + Drupal.t('Hide') + '</a></span>');
+        }
+        else {
+          $(secret).html('<span>&#149;&#149;&#149;&#149;&#149;&#149;&#149;&#149;<br><a href="#" class="secret-show-hide">' + Drupal.t('Show') + '</a></span>');
+        }
+        $(secret).toggleClass('secret-hidden');
+      }
     }
   };
 })(jQuery, Drupal);

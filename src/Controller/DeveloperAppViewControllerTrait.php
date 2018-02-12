@@ -209,6 +209,10 @@ trait DeveloperAppViewControllerTrait {
   protected function getContainerRenderArray(EntityInterface $entity, array $elements): array {
     $build = [];
     $ro = new \ReflectionObject($entity);
+    $hidden_value_types = [
+      'consumerKey',
+      'consumerSecret',
+    ];
     foreach ($elements as $element => $settings) {
       $getter = 'get' . ucfirst($element);
       if (!$ro->hasMethod($getter)) {
@@ -230,8 +234,12 @@ trait DeveloperAppViewControllerTrait {
         ];
 
         if ($settings['value_type'] === 'plain') {
+          $secret_attribute = '<span>';
+          if (in_array($element, $hidden_value_types)) {
+            $secret_attribute = '<span class="secret" data-secret-type="' . $element . '">';
+          };
           $build[$element]['wrapper']['value'] = [
-            '#prefix' => '<span>',
+            '#prefix' => $secret_attribute,
             '#markup' => Xss::filter(call_user_func([$entity, $getter])),
             '#suffix' => '</span>',
           ];
