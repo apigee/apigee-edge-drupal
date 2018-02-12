@@ -31,6 +31,7 @@ const FIELD_BLACKLIST = [
 trait FieldableEdgeEntityBaseTrait {
   use EdgeEntityBaseTrait {
     preSave as private traitPreSave;
+    postSave as private traitPostSave;
   }
 
   /**
@@ -312,6 +313,18 @@ trait FieldableEdgeEntityBaseTrait {
         $this->attributes->add($attribute_name, json_encode($value));
       }
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    $this->traitPostSave($storage, $update);
+
+    // Cleans stale data from the field instance cache.
+    // If edge updates a property, then the updated property won't be copied
+    // into the field instance cache.
+    $this->fields = [];
   }
 
   /**

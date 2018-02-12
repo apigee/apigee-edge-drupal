@@ -14,11 +14,9 @@ use Drupal\apigee_edge\Entity\DeveloperApp;
 class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
-   * {@inheritdoc}
+   * @var \Drupal\user\UserInterface
    */
-  public static $modules = [
-    'apigee_edge',
-  ];
+  protected $account;
 
   /**
    * @var \Drupal\apigee_edge\Entity\Developer
@@ -29,15 +27,11 @@ class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function setUp() {
+    $this->profile = 'standard';
     parent::setUp();
-    $this->developer = Developer::create([
-      'email' => $this->randomMachineName() . '@example.com',
-      'userName' => $this->randomMachineName(),
-      'firstName' => $this->randomMachineName(),
-      'lastName' => $this->randomMachineName(),
-      'status' => Developer::STATUS_ACTIVE,
-    ]);
-    $this->developer->save();
+
+    $this->account = $this->createAccount();
+    $this->developer = Developer::load($this->account->getEmail());
   }
 
   /**
@@ -60,6 +54,7 @@ class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
       'status' => App::STATUS_APPROVED,
       'developerId' => $this->developer->getDeveloperId(),
     ]);
+    $app->setOwner($this->account);
     $app->save();
 
     $this->assertNotEmpty($app->getAppId());
