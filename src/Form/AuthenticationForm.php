@@ -78,6 +78,8 @@ class AuthenticationForm extends ConfigFormBase {
    *   The manager for credentials storage plugins.
    * @param \Drupal\Component\Plugin\PluginManagerInterface $authentication_method_plugin_manager
    *   The manager for authentication method plugins.
+   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
+   *   SDK connector service.
    */
   public function __construct(ConfigFactoryInterface $config_factory,
                               PluginManagerInterface $credentials_storage_plugin_manager,

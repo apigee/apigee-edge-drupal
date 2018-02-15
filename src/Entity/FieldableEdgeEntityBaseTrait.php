@@ -76,6 +76,9 @@ trait FieldableEdgeEntityBaseTrait {
     return $this->fieldDefinitions;
   }
 
+  /**
+   * @inheritdoc
+   */
   public function __sleep() {
     $this->fieldDefinitions = NULL;
   }
@@ -286,7 +289,7 @@ trait FieldableEdgeEntityBaseTrait {
           $value = array_map(function ($item) {
             /** @var \DateTimeImmutable $item */
             return $item->getTimestamp();
-            }, $value);
+          }, $value);
         }
         else {
           /** @var \DateTimeImmutable $value */
@@ -350,7 +353,7 @@ trait FieldableEdgeEntityBaseTrait {
           if (is_array($value)) {
             $value = array_map(function ($item, $date) {
               return $date->setTimestamp($item);
-              }, $value);
+            }, $value);
           }
           else {
             $value = $date->setTimestamp($value);
@@ -443,12 +446,14 @@ trait FieldableEdgeEntityBaseTrait {
   /**
    * {@inheritdoc}
    */
-  public function onChange($field_name) {}
+  public function onChange($field_name) {
+  }
 
   /**
    * {@inheritdoc}
    */
-  public function validate() {}
+  public function validate() {
+  }
 
   /**
    * {@inheritdoc}
