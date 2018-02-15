@@ -1,5 +1,5 @@
 ARG PHP_VERSION="7.1"
-ARG PHP_IMAGE_VERSION="-3.3.1"
+ARG PHP_IMAGE_VERSION="-4.0.2"
 
 FROM wodby/drupal-php:${PHP_VERSION}${PHP_IMAGE_VERSION}
 
@@ -18,5 +18,3 @@ RUN if [[ "$DEPENDENCIES" = --prefer-lowest ]]; then \
   fi
 
 COPY --chown=www-data:www-data . /opt/drupal-module
-
-CMD ["php-fpm"]
