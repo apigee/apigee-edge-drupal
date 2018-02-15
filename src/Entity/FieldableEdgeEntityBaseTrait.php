@@ -46,6 +46,7 @@ const FIELD_BLACKLIST = [
 ];
 
 trait FieldableEdgeEntityBaseTrait {
+
   use EdgeEntityBaseTrait {
     preSave as private traitPreSave;
     postSave as private traitPostSave;
@@ -117,6 +118,7 @@ trait FieldableEdgeEntityBaseTrait {
    *   Type of the property.
    *
    * @return \Drupal\Core\Field\BaseFieldDefinition|null
+   *   Base field definition if found, null otherwise.
    */
   protected static function getBaseFieldDefinition(string $name, string $type): ?BaseFieldDefinition {
     $label = ucwords(preg_replace('/([a-z])([A-Z])/', '$1 $2', $name));
@@ -148,6 +150,7 @@ trait FieldableEdgeEntityBaseTrait {
    *   Entity type to test.
    *
    * @return bool
+   *   True if the entity type exists, false otherwise.
    */
   protected static function entityTypeExists(string $type): bool {
     try {
@@ -202,6 +205,7 @@ trait FieldableEdgeEntityBaseTrait {
    * Returns the field UI's field name prefix.
    *
    * @return string
+   *   Prefix of the field.
    */
   protected function getFieldPrefix(): string {
     return (string) \Drupal::config('field_ui.settings')->get('field_prefix');
@@ -211,8 +215,10 @@ trait FieldableEdgeEntityBaseTrait {
    * Converts a field name to an attribute name.
    *
    * @param string $field_name
+   *   Machine name of a field.
    *
    * @return string
+   *   Name of the mapped attribute.
    */
   protected function getAttributeName(string $field_name): string {
     $field_prefix = $this->getFieldPrefix();
@@ -227,8 +233,10 @@ trait FieldableEdgeEntityBaseTrait {
    * Converts an attribute name to a field name.
    *
    * @param string $attribute_name
+   *   Name of an attribute.
    *
    * @return string
+   *   Machine name of the mapped field.
    */
   protected function getFieldName(string $attribute_name): string {
     $prefix = $this->getFieldPrefix();
@@ -238,13 +246,15 @@ trait FieldableEdgeEntityBaseTrait {
   }
 
   /**
-   * Returns the orignal (stored in edge) data from the field.
+   * Returns the original (stored in Edge) data from the field.
    *
-   * @param $field_name
+   * @param string $field_name
+   *   Machine name of a field.
    *
    * @return mixed|null
+   *   Value of a field from the mapped Edge attribute.
    */
-  protected function getOriginalFieldData($field_name) {
+  protected function getOriginalFieldData(string $field_name) {
     $getter = 'get' . ucfirst($field_name);
     if (method_exists($this, $getter)) {
       return call_user_func([$this, $getter]);
@@ -372,14 +382,13 @@ trait FieldableEdgeEntityBaseTrait {
    * Type casts a value to match the setter's type hint.
    *
    * Sometimes there are differences between how a value is stored by the field
-   * and the edge sdk connector. A good example is the timestamp: it is stored
+   * and the Edge SDK connector. A good example is the timestamp: it is stored
    * as an integer in Drupal, and as a string by the SDK.
    *
    * @param \ReflectionMethod $method
    *   Method to get the type hint.
-   *
-   * @param $value
-   *   Value to type cast
+   * @param mixed $value
+   *   Value to type cast.
    */
   private function maybeTypeCastFirstParameterValue(\ReflectionMethod $method, &$value) {
     static $castable = [

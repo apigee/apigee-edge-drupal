@@ -49,10 +49,15 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    * DeveloperAppListBuilderForDeveloper constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
+   *   The entity storage.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   The entity type manager.
    * @param \Drupal\Core\Render\RendererInterface $render
+   *   The render.
    * @param \Drupal\Core\Session\AccountInterface $currentUser
+   *   Currently logged-in user.
    */
   public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, EntityTypeManagerInterface $entityTypeManager, RendererInterface $render, AccountInterface $currentUser) {
     parent::__construct($entity_type, $storage, $entityTypeManager, $render);

@@ -166,6 +166,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    *   Name of the app.
    *
    * @return \Drupal\apigee_edge\Entity\DeveloperApp|null
+   *   Developer app or null.
    */
   protected function assertDeveloperAppExists(string $name) : ?DeveloperApp {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp[] $apps */
@@ -308,10 +309,10 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   /**
    * Creates an app with no products.
    */
-  public function testAppCRUDNoProducts() {
+  public function testAppCrudNoProducts() {
     $this->submitAdminForm(['associate_apps' => FALSE]);
 
-    $this->assertAppCRUD();
+    $this->assertAppCrud();
   }
 
   /**
@@ -328,7 +329,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
       $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
     };
 
-    $this->assertAppCRUD(NULL, $asserts, NULL, $asserts);
+    $this->assertAppCrud(NULL, $asserts, NULL, $asserts);
   }
 
   /**
@@ -351,16 +352,16 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
       $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
     };
 
-    $this->assertAppCRUD(NULL, $asserts, NULL, $asserts);
+    $this->assertAppCrud(NULL, $asserts, NULL, $asserts);
   }
 
   /**
    * Creates an app with a single product and then removes the product.
    */
-  public function testAppCRUDSingleProductRemove() {
+  public function testAppCrudSingleProductRemove() {
     $this->submitAdminForm(['display_as_select' => TRUE, 'multiple_products' => FALSE]);
 
-    $this->assertAppCRUD(
+    $this->assertAppCrud(
       function (array $data): array {
         $data['api_products'] = $this->products[0]->getName();
         return $data;
@@ -381,10 +382,10 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   /**
    * Creates an app with no products and then adds one.
    */
-  public function testAppCRUDSingleProductAdd() {
+  public function testAppCrudSingleProductAdd() {
     $this->submitAdminForm(['multiple_products' => FALSE]);
 
-    $this->assertAppCRUD(
+    $this->assertAppCrud(
       function (array $data): array {
         $data['api_products'] = '';
         return $data;
@@ -405,12 +406,12 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   /**
    * Creates an app with multiple products and then removes them.
    */
-  public function testAppCRUDMultiplePruductsRemove() {
+  public function testAppCrudMultiplePruductsRemove() {
     $this->submitAdminForm(['display_as_select' => TRUE]);
     $this->products[] = $this->createProduct();
     $this->products[] = $this->createProduct();
 
-    $this->assertAppCRUD(
+    $this->assertAppCrud(
       function (array $data): array {
         $data['api_products[]'] = [
           $this->products[0]->getName(),
@@ -438,12 +439,12 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   /**
    * Creates an app with no products and then adds multiple ones.
    */
-  public function testAppCRUDMultipleProductsAdd() {
+  public function testAppCrudMultipleProductsAdd() {
     $this->submitAdminForm([]);
     $this->products[] = $this->createProduct();
     $this->products[] = $this->createProduct();
 
-    $this->assertAppCRUD(
+    $this->assertAppCrud(
       function (array $data): array {
         return $data;
       },
@@ -478,7 +479,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    *   Additional asserts after the app is created.
    * @param \Drupal\user\UserInterface|null $account
    */
-  protected function assertAppCRUD(?callable $beforeCreate = NULL, ?callable $afterCreate = NULL, ?callable $beforeUpdate = NULL, ?callable $afterUpdate = NULL, ?UserInterface $account = NULL) {
+  protected function assertAppCrud(?callable $beforeCreate = NULL, ?callable $afterCreate = NULL, ?callable $beforeUpdate = NULL, ?callable $afterUpdate = NULL, ?UserInterface $account = NULL) {
     if ($account === NULL) {
       $account = $this->account;
     }
@@ -564,7 +565,11 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    *   Display the products as a select box.
    */
   protected function assertAppCreationWithProduct(array $products = [], bool $require = FALSE, bool $multiple = TRUE, bool $display_as_select = FALSE) {
-    $this->submitAdminForm(['multiple_products' => $multiple, 'require' => $require, 'display_as_select' => $display_as_select]);
+    $this->submitAdminForm([
+      'multiple_products' => $multiple,
+      'require' => $require,
+      'display_as_select' => $display_as_select,
+    ]);
     $name = strtolower($this->randomMachineName());
 
     $productnum = count($products);

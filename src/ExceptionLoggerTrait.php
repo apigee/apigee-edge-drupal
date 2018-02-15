@@ -23,11 +23,15 @@ use Drupal\Core\Logger\RfcLogLevel;
 use Drupal\Core\Utility\Error;
 use Psr\Log\LoggerAwareTrait;
 
+/**
+ * @deprecated
+ * Use watchdog_exception() instead.
+ */
 trait ExceptionLoggerTrait {
   use LoggerAwareTrait;
 
   /**
-   *
+   * Logs exception.
    */
   protected function logException(\Exception $ex, ?string $message = NULL, array $variables = [], int $severity = RfcLogLevel::ERROR, ?string $link = NULL) {
     if (empty($message)) {

@@ -51,8 +51,10 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
    * Creates a developer app controller.
    *
    * @param \Apigee\Edge\Api\Management\Entity\DeveloperApp $app
+   *   Developer app object from the SDK.
    *
    * @return \Apigee\Edge\Api\Management\Controller\DeveloperAppControllerInterface
+   *   Developer app controller from the SDK.
    */
   protected function createDeveloperAppController(EdgeDeveloperApp $app): EdgeDeveloperAppControllerInterface {
     return new EdgeDeveloperAppController($this->getOrganisation(), $app->getDeveloperId(), $this->client);
@@ -67,8 +69,10 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
    * those cases a conversion to the superclass is needed.
    *
    * @param \Drupal\apigee_edge\Entity\DeveloperApp $app
+   *   Drupal Developer app entity.
    *
    * @return \Apigee\Edge\Api\Management\Entity\DeveloperApp
+   *   SDK Developer app entity.
    */
   protected function convertEntity(DeveloperApp $app): EdgeDeveloperApp {
     $normalizer = new EntityNormalizer();
@@ -81,8 +85,9 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
    * Copies all properties to $destination from $source.
    *
    * @param \Drupal\apigee_edge\Entity\DeveloperApp $destination
-   *
+   *   Drupal developer app entity.
    * @param \Apigee\Edge\Api\Management\Entity\DeveloperApp $source
+   *   SDK developer app entity.
    */
   protected function applyChanges(DeveloperApp $destination, EdgeDeveloperApp $source) {
     $rodst = new \ReflectionObject($destination);

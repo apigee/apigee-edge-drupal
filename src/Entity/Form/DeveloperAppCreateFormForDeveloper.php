@@ -38,7 +38,9 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
   protected $entity;
 
   /**
-   * @var null|intDrupaluseridwhoisgoingtoowntheentity
+   * Id of the Drupal user who owns the entity.
+   *
+   * @var null|int
    */
   protected $userId;
 
@@ -46,10 +48,15 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
    * DeveloperCreateDeveloperAppForm constructor.
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $sdkConnector
+   *   SDK connector service.
    * @param \Drupal\Core\Config\ConfigFactory $configFactory
+   *   Config factory.
    * @param \Drupal\Core\Entity\EntityManagerInterface $entityManager
+   *   Entity manager.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   Entity type manager.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+   *   Module handler service.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
@@ -77,8 +84,12 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
   }
 
   /**
-   * {@inheritdoc}
+   * Form constructor.
    *
+   * @param array $form
+   *   An associative array containing the structure of the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
    * @param int|null $user
    *   User id, up-casting is not working, because _entity_form is used instead
    *   of _form in routing.yml.

@@ -76,6 +76,7 @@ class UserSyncController extends ControllerBase {
    * Returns the user sync filter.
    *
    * @return null|string
+   *   Filter condition or null if not set.
    */
   protected static function getFilter(): ?string {
     return ((string) \Drupal::config('apigee_edge.sync')->get('filter')) ?: NULL;

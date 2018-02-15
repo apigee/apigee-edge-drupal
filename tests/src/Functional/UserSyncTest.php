@@ -39,11 +39,36 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
   ];
 
   protected $edgeDevelopers = [
-    ['email' => 'test00@example.com', 'userName' => 'test00', 'firstName' => 'Test00', 'lastName' => 'User00'],
-    ['email' => 'test01@example.com', 'userName' => 'test01', 'firstName' => 'Test01', 'lastName' => 'User01'],
-    ['email' => 'test02@example.com', 'userName' => 'test02', 'firstName' => 'Test02', 'lastName' => 'User02'],
-    ['email' => 'test03@example.com', 'userName' => 'test03', 'firstName' => 'Test03', 'lastName' => 'User03'],
-    ['email' => 'test04@example.com', 'userName' => 'test04', 'firstName' => 'Test04', 'lastName' => 'User04'],
+    [
+      'email' => 'test00@example.com',
+      'userName' => 'test00',
+      'firstName' => 'Test00',
+      'lastName' => 'User00',
+    ],
+    [
+      'email' => 'test01@example.com',
+      'userName' => 'test01',
+      'firstName' => 'Test01',
+      'lastName' => 'User01',
+    ],
+    [
+      'email' => 'test02@example.com',
+      'userName' => 'test02',
+      'firstName' => 'Test02',
+      'lastName' => 'User02',
+    ],
+    [
+      'email' => 'test03@example.com',
+      'userName' => 'test03',
+      'firstName' => 'Test03',
+      'lastName' => 'User03',
+    ],
+    [
+      'email' => 'test04@example.com',
+      'userName' => 'test04',
+      'firstName' => 'Test04',
+      'lastName' => 'User04',
+    ],
   ];
 
   /**

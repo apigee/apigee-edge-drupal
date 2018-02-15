@@ -40,6 +40,7 @@ class DeveloperAppAccessCheck implements AccessInterface {
    * DeveloperAppAccessCheck constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   Entity type manager.
    */
   public function __construct(EntityTypeManagerInterface $entityTypeManager) {
     $this->entityTypeManager = $entityTypeManager;
@@ -52,9 +53,9 @@ class DeveloperAppAccessCheck implements AccessInterface {
    * pattern: '/developer-apps/{developer_app}/edit'
    * requirements:
    *   _developer_app_access: 'edit'
-   * @endcode
+   *
    * or
-   * @code
+   *
    * pattern: '/user/{user}/{app}'
    * requirements:
    *   _developer_app_access: 'view'

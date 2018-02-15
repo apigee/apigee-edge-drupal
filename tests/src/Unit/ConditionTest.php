@@ -166,6 +166,7 @@ class ConditionTest extends UnitTestCase {
    * Returns a random data row.
    *
    * @return array
+   *   Random data row.
    */
   protected function randomData() : array {
     return $this->entityData[mt_rand(0, count($this->entityData) - 1)];
@@ -177,6 +178,7 @@ class ConditionTest extends UnitTestCase {
    * @param string $conjunction
    *
    * @return \Drupal\apigee_edge\Entity\Query\Condition
+   *   Mock conditional object.
    */
   protected function mockCondition($conjunction = 'AND') : Condition {
     return new Condition($conjunction, new class implements QueryInterface {
@@ -249,7 +251,11 @@ class ConditionTest extends UnitTestCase {
     parent::setUp();
 
     for ($i = 0; $i < 1024; $i++) {
-      $this->entityData[] = [$this->getRandomGenerator()->name(), (int) mt_rand(1, 1024 * 1024 * 1024), (bool) mt_rand(0, 1)];
+      $this->entityData[] = [
+        $this->getRandomGenerator()->name(),
+        (int) mt_rand(1, 1024 * 1024 * 1024),
+        (bool) mt_rand(0, 1),
+      ];
     }
 
     $this->entities = array_map(function ($data) {
@@ -292,6 +298,7 @@ class ConditionTest extends UnitTestCase {
 
         /**
          * @return int
+         *   Returns an int.
          */
         public function getFooBar(): int {
           return $this->fooBar;
@@ -306,6 +313,7 @@ class ConditionTest extends UnitTestCase {
 
         /**
          * @return bool
+         *   Returns true of false.
          */
         public function isFooBaz(): bool {
           return $this->foo_baz;

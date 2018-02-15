@@ -37,6 +37,7 @@ class DeveloperAppNameParameterConverter implements ParamConverterInterface {
    * DeveloperAppNameParameterConverter constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   Entity type manager.
    */
   public function __construct(EntityTypeManagerInterface $entityTypeManager) {
     $this->entityTypeManager = $entityTypeManager;

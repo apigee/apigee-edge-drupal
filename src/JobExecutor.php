@@ -53,8 +53,11 @@ class JobExecutor {
    * JobExecutor constructor.
    *
    * @param \Drupal\Core\Database\Connection $connection
+   *   Database connection.
    * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   Time interface.
    * @param \Drupal\Core\Queue\QueueFactory $queueFactory
+   *   Queue factory.
    */
   public function __construct(Connection $connection, TimeInterface $time, QueueFactory $queueFactory) {
     $this->connection = $connection;
@@ -66,7 +69,9 @@ class JobExecutor {
    * Ensures that a job exists with a given status.
    *
    * @param \Drupal\apigee_edge\Job $job
+   *   Job object.
    * @param int $status
+   *   Job status.
    */
   protected function ensure(Job $job, int $status) {
     if ($job->getStatus() !== $status) {
@@ -79,6 +84,9 @@ class JobExecutor {
    * Saves a job.
    *
    * @param \Drupal\apigee_edge\Job $job
+   *   Job object.
+   *
+   * @throws \Exception
    */
   public function save(Job $job) {
     $now = $this->time->getCurrentTime();
@@ -103,8 +111,10 @@ class JobExecutor {
    * Loads a job from the database.
    *
    * @param string $id
+   *   Job id.
    *
    * @return \Drupal\apigee_edge\Job|null
+   *   Loaded job object or null if it does not exit.
    */
   public function load(string $id) : ? Job {
     $query = $this->connection->select('apigee_edge_job', 'j')
@@ -122,6 +132,7 @@ class JobExecutor {
    *   Optional tag to filter with.
    *
    * @return \Drupal\apigee_edge\Job|null
+   *   Job object or null if there is no available.
    */
   public function select(?string $tag = NULL) : ? Job {
     // TODO handle race conditions.
@@ -156,6 +167,8 @@ class JobExecutor {
    *   Setting this to false means that it is the caller's responsibility to
    *   save the job into the database, else the job will be stuck in the
    *   "running" state.
+   *
+   * @throws \Exception
    */
   public function call(Job $job, bool $update = TRUE) {
     $this->ensure($job, Job::RUNNING);
@@ -182,6 +195,8 @@ class JobExecutor {
    *
    * @param \Drupal\apigee_edge\Job $job
    *   The job to execute later.
+   *
+   * @throws \Exception
    */
   public function cast(Job $job) {
     $this->save($job);

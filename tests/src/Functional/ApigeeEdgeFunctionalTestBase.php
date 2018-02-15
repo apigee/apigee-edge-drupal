@@ -42,6 +42,7 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
    * @param string $prefix
    *
    * @return \Drupal\user\UserInterface
+   *   Drupal user.
    */
   protected function createAccount(array $permissions = [], bool $status = TRUE, string $prefix = '') : ?UserInterface {
     $rid = NULL;
@@ -85,6 +86,7 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
    * Creates a product.
    *
    * @return \Drupal\apigee_edge\Entity\ApiProduct
+   *   (SDK) API product object.
    */
   protected function createProduct() : ApiProduct {
     /** @var \Drupal\apigee_edge\Entity\ApiProduct $product */
@@ -102,8 +104,13 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
    * Loads all apps for a given user.
    *
    * @param string $email
+   *   Email address of a user.
    *
    * @return \Drupal\apigee_edge\Entity\DeveloperApp[]|null
+   *   Array of developer apps of the user or if user does not exist as
+   *   developer on Edge.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   protected function getApps(string $email): ?array {
     $developer = Developer::load($email);
@@ -127,6 +134,7 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
    *   Additional http headers.
    *
    * @return string
+   *   The retrieved HTML string, also available as $this->getRawContent()
    */
   protected function drupalGetNoMetaRefresh(string $path, array $options = [], array $headers = []) {
     $options['absolute'] = TRUE;
