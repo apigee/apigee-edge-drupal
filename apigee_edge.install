@@ -23,7 +23,8 @@
  * Install, update and uninstall functions for Apigee Edge.
  */
 
-use \Drupal\Core\Url;
+use Drupal\Core\Url;
+use Drupal\user\RoleInterface;
 
 /**
  * Implements hook_requirements().
@@ -84,6 +85,21 @@ function apigee_edge_requirements($phase) {
   }
 
   return $requirements;
+}
+
+/**
+ * Implements hook_install().
+ */
+function apigee_edge_install() {
+  if (\Drupal::moduleHandler()->moduleExists('user')) {
+    $authenticated_user_permissions = [
+      'view own developer_app',
+      'create developer_app',
+      'update own developer_app',
+      'delete own developer_app',
+    ];
+    user_role_grant_permissions(RoleInterface::AUTHENTICATED_ID, $authenticated_user_permissions);
+  }
 }
 
 /**
