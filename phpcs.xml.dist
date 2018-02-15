@@ -6,6 +6,7 @@
   <exclude-pattern>*/css/*</exclude-pattern>
   <exclude-pattern>*/js/*</exclude-pattern>
   <exclude-pattern>*/vendor/*</exclude-pattern>
+  <exclude-pattern>\.md</exclude-pattern>
 
   <rule ref="Drupal"/>
 
@@ -13,8 +14,15 @@
   <rule ref="Drupal.Commenting.ClassComment.Missing">
     <severity>0</severity>
   </rule>
+  <rule ref="Drupal.Commenting.DocComment.MissingShort">
+    <severity>0</severity>
+  </rule>
   <!-- Copyright header must be visible on all PHP files, including classes in a namespace. -->
   <rule ref="Drupal.Commenting.FileComment.NamespaceNoFileDoc">
+    <severity>0</severity>
+  </rule>
+  <!-- Annotation classes still contains snake case variable names. -->
+  <rule ref="Drupal.NamingConventions.ValidVariableName.LowerCamelName">
     <severity>0</severity>
   </rule>
 
