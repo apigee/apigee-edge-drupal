@@ -1,18 +1,19 @@
 <?php
+
 /**
  * Copyright 2018 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License version 2 as published by the 
+ * the terms of the GNU General Public License version 2 as published by the
  * Free Software Foundation.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
  * License for more details.
  *
- * You should have received a copy of the GNU General Public License along 
- * with this program; if not, write to the Free Software Foundation, Inc., 51 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
@@ -244,7 +245,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->submitForm([], 'Delete');
 
     $this->assertSession()->pageTextContains("The {$name} developer app has been deleted.");
-    $apps = array_filter($this->getApps(), function(DeveloperApp $app) use($name): bool {
+    $apps = array_filter($this->getApps(), function (DeveloperApp $app) use ($name): bool {
       return $app->getName() === $name;
     });
     $this->assertEquals([], $apps, 'App is deleted');
@@ -323,7 +324,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
       "default_api_product_multiple[{$this->products[0]->getName()}]" => $this->products[0]->getName(),
     ]);
 
-    $asserts = function() {
+    $asserts = function () {
       $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
     };
 
@@ -344,7 +345,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
       "default_api_product_multiple[{$this->products[1]->getName()}]" => $this->products[1]->getName(),
     ]);
 
-    $asserts = function() {
+    $asserts = function () {
       $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
       $this->assertSession()->pageTextContains($this->products[1]->getDisplayName());
       $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
@@ -360,18 +361,18 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->submitAdminForm(['display_as_select' => TRUE, 'multiple_products' => FALSE]);
 
     $this->assertAppCRUD(
-      function(array $data): array {
+      function (array $data): array {
         $data['api_products'] = $this->products[0]->getName();
         return $data;
       },
-      function() {
+      function () {
         $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
       },
-      function(array $data, string $credential_id): array {
+      function (array $data, string $credential_id): array {
         $data["credential[{$credential_id}][api_products]"] = '';
         return $data;
       },
-      function() {
+      function () {
         $this->assertSession()->pageTextNotContains($this->products[0]->getDisplayName());
       }
     );
@@ -384,18 +385,18 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->submitAdminForm(['multiple_products' => FALSE]);
 
     $this->assertAppCRUD(
-      function(array $data): array {
+      function (array $data): array {
         $data['api_products'] = '';
         return $data;
       },
-      function() {
+      function () {
         $this->assertSession()->pageTextNotContains($this->products[0]->getDisplayName());
       },
-      function(array $data, string $credential_id): array {
+      function (array $data, string $credential_id): array {
         $data["credential[{$credential_id}][api_products]"] = $this->products[0]->getName();
         return $data;
       },
-      function() {
+      function () {
         $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
       }
     );
@@ -410,23 +411,23 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->products[] = $this->createProduct();
 
     $this->assertAppCRUD(
-      function(array $data): array {
+      function (array $data): array {
         $data['api_products[]'] = [
           $this->products[0]->getName(),
           $this->products[1]->getName(),
         ];
         return $data;
       },
-      function() {
+      function () {
         $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
         $this->assertSession()->pageTextContains($this->products[1]->getDisplayName());
         $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
       },
-      function(array $data, string $credential_id): array {
+      function (array $data, string $credential_id): array {
         $data["credential[{$credential_id}][api_products][]"] = [];
         return $data;
       },
-      function() {
+      function () {
         $this->assertSession()->pageTextNotContains($this->products[0]->getDisplayName());
         $this->assertSession()->pageTextNotContains($this->products[1]->getDisplayName());
         $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
@@ -443,20 +444,20 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->products[] = $this->createProduct();
 
     $this->assertAppCRUD(
-      function(array $data): array {
+      function (array $data): array {
         return $data;
       },
-      function() {
+      function () {
         $this->assertSession()->pageTextNotContains($this->products[0]->getDisplayName());
         $this->assertSession()->pageTextNotContains($this->products[1]->getDisplayName());
         $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
       },
-      function(array $data, string $credential_id): array {
+      function (array $data, string $credential_id): array {
         $data["credential[{$credential_id}][api_products][{$this->products[0]->getName()}]"] = $this->products[0]->getName();
         $data["credential[{$credential_id}][api_products][{$this->products[1]->getName()}]"] = $this->products[1]->getName();
         return $data;
       },
-      function() {
+      function () {
         $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
         $this->assertSession()->pageTextContains($this->products[1]->getDisplayName());
         $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
@@ -554,7 +555,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   /**
    * Creates an app and assigns products to it.
    *
-   * @param ApiProduct[] $products
+   * @param \Drupal\apigee_edge\Entity\ApiProduct[] $products
    * @param bool $require
    *   Set the product required on the form.
    * @param bool $multiple

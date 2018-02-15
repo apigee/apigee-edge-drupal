@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2018 Google Inc.
  *
@@ -155,21 +156,37 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
     }
 
     $app->preSave(new class() implements EntityStorageInterface {
+
       public function resetCache(array $ids = NULL) {}
+
       public function loadMultiple(array $ids = NULL) {}
+
       public function load($id) {}
+
       public function loadUnchanged($id) {}
+
       public function loadRevision($revision_id) {}
+
       public function deleteRevision($revision_id) {}
+
       public function loadByProperties(array $values = []) {}
+
       public function create(array $values = []) {}
+
       public function delete(array $entities) {}
+
       public function save(EntityInterface $entity) {}
+
       public function hasData() {}
+
       public function getQuery($conjunction = 'AND') {}
+
       public function getAggregateQuery($conjunction = 'AND') {}
+
       public function getEntityTypeId() {}
+
       public function getEntityType() {}
+
     });
 
     foreach ($field_values as $field_name => $field_value) {

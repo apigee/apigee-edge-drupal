@@ -1,18 +1,19 @@
 <?php
+
 /**
  * Copyright 2018 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License version 2 as published by the 
+ * the terms of the GNU General Public License version 2 as published by the
  * Free Software Foundation.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
  * License for more details.
  *
- * You should have received a copy of the GNU General Public License along 
- * with this program; if not, write to the Free Software Foundation, Inc., 51 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
@@ -36,7 +37,7 @@ class ConditionTest extends UnitTestCase {
   protected $entityData = [];
 
   /**
-   * @var EntityInterface[]
+   * @var \Apigee\Edge\Entity\EntityInterface[]
    */
   protected $entities = [];
 
@@ -179,33 +180,56 @@ class ConditionTest extends UnitTestCase {
    */
   protected function mockCondition($conjunction = 'AND') : Condition {
     return new Condition($conjunction, new class implements QueryInterface {
+
       public function addTag($tag) {}
+
       public function hasTag($tag) {}
+
       public function hasAllTags() {}
+
       public function hasAnyTag() {}
+
       public function addMetaData($key, $object) {}
+
       public function getMetaData($key) {}
+
       public function getEntityTypeId() {}
+
       public function condition($field, $value = NULL, $operator = NULL, $langcode = NULL) {}
+
       public function exists($field, $langcode = NULL) {}
+
       public function notExists($field, $langcode = NULL) {}
+
       public function pager($limit = 10, $element = NULL) {}
+
       public function range($start = NULL, $length = NULL) {}
+
       public function sort($field, $direction = 'ASC', $langcode = NULL) {}
+
       public function count() {}
+
       public function tableSort(&$headers) {}
+
       public function accessCheck($access_check = TRUE) {}
+
       public function execute() {}
+
       public function andConditionGroup() {}
+
       public function orConditionGroup() {}
+
       public function currentRevision() {}
+
       public function allRevisions() {}
+
       public function latestRevision() {}
+
     });
   }
 
   /**
-   * Asserts that a Condition object
+   * Asserts that a Condition object.
    *
    * @param \Drupal\apigee_edge\Entity\Query\Condition $condition
    *   A Condition object to test.

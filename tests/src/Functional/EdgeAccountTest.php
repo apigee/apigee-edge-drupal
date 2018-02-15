@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2018 Google Inc.
  *
@@ -111,7 +112,7 @@ class EdgeAccountTest extends BrowserTestBase {
 
     $this->resetCache();
 
-    /** @var Developer $developer */
+    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
     $developer = Developer::load($developer_data['email']);
     $this->assertEquals($developer->getEmail(), $developer_data['email']);
 

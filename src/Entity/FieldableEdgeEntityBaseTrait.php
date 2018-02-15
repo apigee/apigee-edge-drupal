@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2018 Google Inc.
  *
@@ -74,6 +75,9 @@ trait FieldableEdgeEntityBaseTrait {
     return $this->fieldDefinitions;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function __sleep() {
     $this->fieldDefinitions = NULL;
   }
@@ -272,7 +276,9 @@ trait FieldableEdgeEntityBaseTrait {
 
       if (array_key_exists($field_name, TYPE_EXCEPTIONS) && TYPE_EXCEPTIONS[$field_name] === 'timestamp') {
         if (is_array($value)) {
-          $value = array_map(function ($item) { return ((int) $item) / 1000; }, $value);
+          $value = array_map(function ($item) {
+            return ((int) $item) / 1000;
+          }, $value);
         }
         else {
           $value = ((int) $value) / 1000;
@@ -332,7 +338,9 @@ trait FieldableEdgeEntityBaseTrait {
         $this->maybeTypeCastFirstParameterValue($rc->getMethod($setter), $value);
         if (array_key_exists($field_name, TYPE_EXCEPTIONS) && TYPE_EXCEPTIONS[$field_name] === 'timestamp') {
           if (is_array($value)) {
-            $value = array_map(function ($item) { return ((int) $item) * 1000; }, $value);
+            $value = array_map(function ($item) {
+              return ((int) $item) * 1000;
+            }, $value);
           }
           else {
             $value = ((int) $value) * 1000;
@@ -426,12 +434,14 @@ trait FieldableEdgeEntityBaseTrait {
   /**
    * {@inheritdoc}
    */
-  public function onChange($field_name) {}
+  public function onChange($field_name) {
+  }
 
   /**
    * {@inheritdoc}
    */
-  public function validate() {}
+  public function validate() {
+  }
 
   /**
    * {@inheritdoc}

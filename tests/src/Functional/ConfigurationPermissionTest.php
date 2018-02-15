@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2018 Google Inc.
  *
@@ -88,7 +89,7 @@ class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
   protected function assertPaths(bool $access) {
     $expected_code = $access ? 200 : 403;
 
-    $visit_path = function(string $path, array $query = []) use($expected_code) {
+    $visit_path = function (string $path, array $query = []) use ($expected_code) {
       $options = [];
       if ($query) {
         $options['query'] = $query;

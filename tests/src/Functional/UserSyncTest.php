@@ -1,18 +1,19 @@
 <?php
+
 /**
  * Copyright 2018 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License version 2 as published by the 
+ * the terms of the GNU General Public License version 2 as published by the
  * Free Software Foundation.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
  * License for more details.
  *
- * You should have received a copy of the GNU General Public License along 
- * with this program; if not, write to the Free Software Foundation, Inc., 51 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
@@ -55,7 +56,7 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * Array of Drupal users.
    *
-   * @var UserInterface[]
+   * @var \Drupal\user\Entity\UserInterface[]
    */
   protected $drupalUsers = [];
 
@@ -96,10 +97,10 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function tearDown() {
-    $remote_ids = array_map(function($record): string {
+    $remote_ids = array_map(function ($record): string {
       return $record['email'];
     }, $this->edgeDevelopers);
-    $drupal_emails = array_map(function(UserInterface $user): string {
+    $drupal_emails = array_map(function (UserInterface $user): string {
       return $user->getEmail();
     }, $this->drupalUsers);
     $ids = array_merge($remote_ids, $drupal_emails);
@@ -114,7 +115,7 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
    */
   protected function verify() {
     $all_users = [];
-    /** @var UserInterface $account */
+    /** @var \Drupal\user\Entity\UserInterface $account */
     foreach (User::loadMultiple() as $account) {
       $email = $account->getEmail();
       if ($email && $email !== 'admin@example.com') {
@@ -126,7 +127,7 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
     unset($all_users[$this->rootUser->getEmail()]);
 
     foreach ($this->edgeDevelopers as $edgeDeveloper) {
-      /** @var User $account */
+      /** @var \Drupal\user\Entity\User $account */
       $account = user_load_by_mail($edgeDeveloper['email']);
       $this->assertNotEmpty($account, 'Account found: ' . $edgeDeveloper['email']);
       $this->assertEquals($edgeDeveloper['userName'], $account->getAccountName());
@@ -137,7 +138,7 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
     }
 
     foreach ($this->drupalUsers as $drupalUser) {
-      /** @var Developer $dev */
+      /** @var \Drupal\apigee_edge\Entity\Developer $dev */
       $dev = Developer::load($drupalUser->getEmail());
       $this->assertNotEmpty($dev, 'Developer found on edge.');
       $this->assertEquals($drupalUser->getAccountName(), $dev->getUserName());

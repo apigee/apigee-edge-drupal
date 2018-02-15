@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2018 Google Inc.
  *
@@ -69,7 +70,7 @@ class DeveloperTest extends BrowserTestBase {
     $account = user_load_by_mail($test_user['email']);
     $this->assertNotEmpty($account, 'Account is created');
 
-    /** @var Developer $developer */
+    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
     $developer = Developer::load($test_user['email']);
     $this->assertNotEmpty($developer);
 
@@ -135,7 +136,7 @@ class DeveloperTest extends BrowserTestBase {
     $account = user_load_by_mail($test_user['email']);
     $this->assertNotEmpty($account);
 
-    /** @var Developer $developer */
+    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
     $developer = Developer::load($test_user['email']);
     $this->assertNotEmpty($developer);
 

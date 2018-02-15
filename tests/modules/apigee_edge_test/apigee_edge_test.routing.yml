@@ -11,4 +11,3 @@ apigee_edge_test.api_exception:
     _controller: '\Drupal\apigee_edge_test\Controller\ExceptionController::api'
   requirements:
     _access: 'TRUE'
-
