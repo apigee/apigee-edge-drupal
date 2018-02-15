@@ -19,10 +19,9 @@
 
 namespace Drupal\apigee_edge\Form;
 
-use Apigee\Edge\Api\Management\Controller\OrganizationController;
-use Apigee\Edge\HttpClient\Client;
 use Drupal\apigee_edge\Credentials;
 use Drupal\apigee_edge\CredentialsInterface;
+use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
@@ -64,6 +63,13 @@ class AuthenticationForm extends ConfigFormBase {
   protected $authenticationStoragePluginManager;
 
   /**
+   * The SDK connector service.
+   *
+   * @var \Drupal\apigee_edge\SDKConnectorInterface
+   */
+  protected $sdkConnector;
+
+  /**
    * Constructs a new AuthenticationForm.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -75,10 +81,12 @@ class AuthenticationForm extends ConfigFormBase {
    */
   public function __construct(ConfigFactoryInterface $config_factory,
                               PluginManagerInterface $credentials_storage_plugin_manager,
-                              PluginManagerInterface $authentication_method_plugin_manager) {
+                              PluginManagerInterface $authentication_method_plugin_manager,
+                              SDKConnectorInterface $sdk_connector) {
     parent::__construct($config_factory);
     $this->credentialsStoragePluginManager = $credentials_storage_plugin_manager;
     $this->authenticationStoragePluginManager = $authentication_method_plugin_manager;
+    $this->sdkConnector = $sdk_connector;
 
     foreach ($credentials_storage_plugin_manager->getDefinitions() as $key => $value) {
       /** @var \Drupal\Core\StringTranslation\TranslatableMarkup $plugin_name */
@@ -100,7 +108,8 @@ class AuthenticationForm extends ConfigFormBase {
     return new static(
       $container->get('config.factory'),
       $container->get('plugin.manager.apigee_edge.credentials_storage'),
-      $container->get('plugin.manager.apigee_edge.authentication_method')
+      $container->get('plugin.manager.apigee_edge.authentication_method'),
+      $container->get('apigee_edge.sdk_connector')
     );
   }
 
@@ -305,7 +314,7 @@ class AuthenticationForm extends ConfigFormBase {
     $credentials_storage = $this->credentialsStoragePluginManager
       ->createInstance($form_state->getValue('credentials_storage_type'));
     $credentials_storage_error = $credentials_storage->hasRequirements();
-    if (!empty($credentials_storage_error)) {
+    if (isset($credentials_storage_error)) {
       $form_state->setErrorByName('credentials_storage_type', $credentials_storage_error);
     }
 
@@ -319,12 +328,7 @@ class AuthenticationForm extends ConfigFormBase {
       $credentials = $this->createCredentials($form_state);
     }
     try {
-      $auth = $this->authenticationStoragePluginManager
-        ->createInstance($form_state->getValue('authentication_method_type'))
-        ->createAuthenticationObject($credentials);
-      $client = new Client($auth, NULL, $credentials->getEndpoint());
-      $oc = new OrganizationController($client);
-      $oc->load($credentials->getOrganization());
+      $this->sdkConnector->testConnection($credentials);
     }
     catch (\Exception $exception) {
       watchdog_exception('apigee_edge', $exception);
@@ -413,7 +417,7 @@ class AuthenticationForm extends ConfigFormBase {
   protected function buildUrl(string $route_name) {
     $url = Url::fromRoute($route_name);
     $token = \Drupal::csrfToken()->get($url->getInternalPath());
-    $url->setOptions(['query' => ['destination' => '/admin/config/apigee-edge', 'token' => $token]]);
+    $url->setOptions(['query' => ['destination' => '/admin/config/apigee-edge/settings', 'token' => $token]]);
     return $url;
   }
 

@@ -54,4 +54,15 @@ interface SDKConnectorInterface {
    */
   public function getControllerByEntity(string $entity_type) : EntityCrudOperationsControllerInterface;
 
+  /**
+   * Test connection with the Edge Management Server.
+   *
+   * @param \Drupal\apigee_edge\CredentialsInterface $credentials
+   *   Credentials object to check connection with Edge,
+   *   if NULL, then use the stored credentials.
+   *
+   * @throws \Exception
+   */
+  public function testConnection(CredentialsInterface $credentials = NULL);
+
 }

@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge;
 
+use Apigee\Edge\Api\Management\Controller\OrganizationController;
 use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Apigee\Edge\Exception\UnknownEndpointException;
 use Apigee\Edge\HttpClient\Client;
@@ -113,6 +114,17 @@ class SDKConnector implements SDKConnectorInterface {
     }
 
     throw new UnknownEndpointException($entity_type);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function testConnection(CredentialsInterface $credentials = NULL) {
+    $credentials = $credentials ?? $this->credentialsStoragePlugin->loadCredentials();
+    $auth = $this->authenticationMethodPlugin->createAuthenticationObject($credentials);
+    $client = new Client($auth, NULL, $credentials->getEndpoint());
+    $oc = new OrganizationController($client);
+    $oc->load($credentials->getOrganization());
   }
 
 }

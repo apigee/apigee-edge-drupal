@@ -46,11 +46,11 @@ interface CredentialsStoragePluginInterface extends PluginInspectionInterface {
   /**
    * Checks the requirements of the storage.
    *
-   * @return string
-   *   Empty string if every requirement is satisfied
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup|null
+   *   NULL if every requirement is satisfied
    *   else a warning message which describes the problem.
    */
-  public function hasRequirements() : string;
+  public function hasRequirements() : ? TranslatableMarkup;
 
   /**
    * Tells the editing form if the credentials can be saved.

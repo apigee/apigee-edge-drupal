@@ -44,12 +44,26 @@ class EnvStorage extends CredentialsStoragePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function hasRequirements() : string {
+  public function hasRequirements() : ? TranslatableMarkup {
     if ($this->loadCredentials()->empty()) {
-      return (string) t('Necessary environment variables are not set.');
+      $missing_env_variables = [];
+
+      if (!getenv('APIGEE_EDGE_ORGANIZATION')) {
+        $missing_env_variables[] = 'APIGEE_EDGE_ORGANIZATION';
+      }
+      if (!getenv('APIGEE_EDGE_USERNAME')) {
+        $missing_env_variables[] = 'APIGEE_EDGE_USERNAME';
+      }
+      if (!getenv('APIGEE_EDGE_PASSWORD')) {
+        $missing_env_variables[] = 'APIGEE_EDGE_PASSWORD';
+      }
+
+      return t('Cannot connect to Edge server, because the following environment variables are not set: @missing_env_variables.', [
+        '@missing_env_variables' => implode(', ', $missing_env_variables),
+      ]);
     }
 
-    return '';
+    return NULL;
   }
 
   /**

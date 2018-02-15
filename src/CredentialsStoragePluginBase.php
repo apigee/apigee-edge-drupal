@@ -30,8 +30,8 @@ abstract class CredentialsStoragePluginBase extends PluginBase implements Creden
   /**
    * {@inheritdoc}
    */
-  public function hasRequirements() : string {
-    return '';
+  public function hasRequirements() : ? TranslatableMarkup {
+    return NULL;
   }
 
   /**

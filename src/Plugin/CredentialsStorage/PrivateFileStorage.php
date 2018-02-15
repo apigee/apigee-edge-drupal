@@ -24,6 +24,8 @@ use Drupal\apigee_edge\CredentialsInterface;
 use Drupal\apigee_edge\CredentialsSaveException;
 use Drupal\apigee_edge\CredentialsStoragePluginBase;
 use Drupal\Core\Site\Settings;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Url;
 
 /**
  * Stores the credentials in a private file.
@@ -40,12 +42,14 @@ class PrivateFileStorage extends CredentialsStoragePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function hasRequirements() : string {
+  public function hasRequirements() : ? TranslatableMarkup {
     $private_file_path = Settings::get('file_private_path');
     if (empty($private_file_path)) {
-      return 'The private file path must be set for storing credentials in a private file.';
+      return t('Cannot connect to Edge server, because your private file system is not configured properly. Visit the <a href=":url">File system</a> settings page to specify the private file system path.', [
+        ':url' => Url::fromRoute('system.file_system_settings')->toString(),
+      ]);
     }
-    return '';
+    return NULL;
   }
 
   /**
