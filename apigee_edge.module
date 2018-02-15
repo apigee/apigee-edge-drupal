@@ -186,11 +186,6 @@ function template_preprocess_developer_app(&$variables) {
 
   unset($variables['content']['credentials']);
   $variables['credentials'] = $variables['elements']['credentials'];
-
-  $variables['content']['status'][0] = [
-    '#type' => 'status_property',
-    '#value' => $variables['developer_app']->getStatus(),
-  ];
 }
 
 /**

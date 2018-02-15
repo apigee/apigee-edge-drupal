@@ -111,12 +111,16 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
         'label' => 'inline',
         'weight' => 0,
       ])
+      ->setDisplayOptions('form', [
+        'label' => 'inline',
+        'weight' => 0,
+      ])
       ->setLabel(t('@developer_app name', ['@developer_app' => $developer_app_singular_label]))
       ->setRequired(TRUE);
 
     $definitions['callbackUrl']
       ->setDisplayOptions('form', [
-        'weight' => 0,
+        'weight' => 1,
       ])
       ->setDisplayOptions('view', [
         'label' => 'inline',
@@ -126,7 +130,7 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
 
     $definitions['description']
       ->setDisplayOptions('form', [
-        'weight' => 1,
+        'weight' => 2,
       ])
       ->setDisplayOptions('view', [
         'label' => 'inline',
@@ -136,6 +140,7 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
     $definitions['status']
       ->setDisplayOptions('view', [
         'label' => 'inline',
+        'type' => 'status_property',
         'weight' => 1,
       ])
       ->setLabel(t('@developer_app status', ['@developer_app' => $developer_app_singular_label]));
@@ -161,7 +166,6 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
       'createdAt',
       'createdBy',
       'developerId',
-      'displayName',
       'lastModifiedAt',
       'lastModifiedBy',
       'name',
@@ -247,7 +251,18 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
   }
 
   /**
+   * Prevents "Call to undefined method" error.
    *
+   * The quickedit core module calls this function in
+   * quickedit_entity_view_alter() because the entity view
+   * controller is an instance of the EntitViewController class.
+   *
+   * @return bool
+   *   FALSE return value Prevents quickedit core module
+   *   from modifying the field structure in quickedit_preprocess_field().
+   *
+   * @see quickedit_entity_view_alter()
+   * @see quickedit_preprocess_field()
    */
   public function isLatestRevision() {
     return FALSE;

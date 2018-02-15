@@ -75,9 +75,6 @@ trait FieldableEdgeEntityBaseTrait {
     return $this->fieldDefinitions;
   }
 
-  /**
-   * {@inheritdoc}
-   */
   public function __sleep() {
     $this->fieldDefinitions = NULL;
   }
@@ -277,11 +274,13 @@ trait FieldableEdgeEntityBaseTrait {
       if (array_key_exists($field_name, TYPE_EXCEPTIONS) && TYPE_EXCEPTIONS[$field_name] === 'timestamp') {
         if (is_array($value)) {
           $value = array_map(function ($item) {
-            return ((int) $item) / 1000;
-          }, $value);
+            /** @var \DateTimeImmutable $item */
+            return $item->getTimestamp();
+            }, $value);
         }
         else {
-          $value = ((int) $value) / 1000;
+          /** @var \DateTimeImmutable $value */
+          $value = $value->getTimestamp();
         }
       }
 
@@ -337,13 +336,14 @@ trait FieldableEdgeEntityBaseTrait {
 
         $this->maybeTypeCastFirstParameterValue($rc->getMethod($setter), $value);
         if (array_key_exists($field_name, TYPE_EXCEPTIONS) && TYPE_EXCEPTIONS[$field_name] === 'timestamp') {
+          $date = new \DateTimeImmutable();
           if (is_array($value)) {
-            $value = array_map(function ($item) {
-              return ((int) $item) * 1000;
-            }, $value);
+            $value = array_map(function ($item, $date) {
+              return $date->setTimestamp($item);
+              }, $value);
           }
           else {
-            $value = ((int) $value) * 1000;
+            $value = $date->setTimestamp($value);
           }
         }
         call_user_func([$this, $setter], $value);
@@ -434,14 +434,12 @@ trait FieldableEdgeEntityBaseTrait {
   /**
    * {@inheritdoc}
    */
-  public function onChange($field_name) {
-  }
+  public function onChange($field_name) {}
 
   /**
    * {@inheritdoc}
    */
-  public function validate() {
-  }
+  public function validate() {}
 
   /**
    * {@inheritdoc}

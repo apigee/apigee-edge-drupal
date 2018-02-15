@@ -91,17 +91,9 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
     $form['developerId'] = [
       '#title' => $this->t('Owner'),
       '#type' => 'select',
-      '#weight' => -101,
+      '#weight' => -100,
       '#default_value' => $app->getDeveloperId(),
       '#options' => $developers,
-    ];
-
-    $form['displayName'] = [
-      '#title' => t('@devAppLabel name', ['@devAppLabel' => \Drupal::entityTypeManager()->getDefinition('developer_app')->getSingularLabel()]),
-      '#type' => 'textfield',
-      '#weight' => -100,
-      '#required' => TRUE,
-      '#default_value' => $app->getDisplayName(),
     ];
 
     $form['name'] = [
