@@ -50,5 +50,5 @@ script:
 # Do not report warnings (like Drupal.Semantics.FunctionT.NotLiteralString) on Travis CI. Use selective disabling
 # when Drupal Coder will support PHPCS >= 3.2.0.
 # https://github.com/squizlabs/PHP_CodeSniffer/wiki/Advanced-Usage#ignoring-parts-of-a-file
-  - docker-compose -f docker-compose.yml -f docker-compose.apigee_edge.yml run phpcs -s --colors --severity=3 --standard=/var/www/html/core/phpcs.xml.dist /opt/drupal-module
+  - docker-compose -f docker-compose.yml -f docker-compose.apigee_edge.yml run phpcs -s --colors --severity=3 --standard=/opt/drupal-module/phpcs.xml.dist /opt/drupal-module
   - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then docker-compose -f docker-compose.yml -f docker-compose.apigee_edge.yml run php sh /opt/drupal-module/test.sh; fi
