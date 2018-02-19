@@ -95,11 +95,11 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
     $config = $this->configFactory->get('apigee_edge.appsettings');
     $form = parent::form($form, $form_state);
 
+    unset($form['name']);
     $form['#tree'] = TRUE;
-    $form['name']['#access'] = FALSE;
     $form['developerId']['#access'] = FALSE;
     $form['product']['#access'] = !isset($form['product']) ?: FALSE;
-    $form['name']['#machine_name']['replace_pattern'] = '[^a-z0-9_-#%\.\$ ]+';
+    
     if ($config->get('associate_apps') && $config->get('user_select')) {
       $form['credential'] = [
         '#type' => 'container',
