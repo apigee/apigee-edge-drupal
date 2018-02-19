@@ -214,7 +214,8 @@ trait DeveloperAppViewControllerTrait {
           ];
         }
         elseif ($settings['value_type'] === 'date') {
-          $value = call_user_func([$entity, $getter]) !== '-1' ? $this->dateFormatter->format(call_user_func([$entity, $getter]) / 1000, 'custom', 'D, m/d/Y - H:i', drupal_get_user_timezone()) : 'Never';
+          $value = call_user_func([$entity, $getter]);
+          $value = isset($value) ? $this->dateFormatter->format($value->getTimestamp(), 'custom', 'D, m/d/Y - H:i', drupal_get_user_timezone()) : 'Never';
           $build[$element]['wrapper']['value'] = [
             '#markup' => Xss::filter($value),
           ];
