@@ -118,15 +118,6 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function buildHeader() {
-    $headers = parent::buildHeader();
-    unset($headers['operations']);
-    return $headers;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   protected function getAppDetailsLink(DeveloperAppInterface $app) {
     return $app->toLink(NULL, 'canonical-by-developer');
   }
@@ -166,22 +157,10 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
 
     $tableRows = [];
     foreach ($this->loadByUser($user, $this->buildHeader()) as $entity) {
-      /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
       if ($row = $this->buildRow($entity)) {
-        $rows = $this->buildRow($entity);
-        reset($rows);
-        $infoRow = key($rows);
-        unset($rows[$infoRow]['data']['operations']);
-        end($rows);
-        $warningRow = key($rows);
-        if (!empty($rows[$warningRow]['data'])) {
-          $rows[$warningRow]['data']['info']['colspan'] = 2;
-        }
-        $tableRows += $rows;
+        $build['table']['#rows'] += $this->buildRow($entity);
       }
     }
-
-    $build['table']['#rows'] = $tableRows;
 
     return $build;
   }
