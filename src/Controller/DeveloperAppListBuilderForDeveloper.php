@@ -155,7 +155,6 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
       $build['add_app']['link'] = $this->renderAddAppLink($user);
     }
 
-    $tableRows = [];
     foreach ($this->loadByUser($user, $this->buildHeader()) as $entity) {
       if ($row = $this->buildRow($entity)) {
         $build['table']['#rows'] += $this->buildRow($entity);
