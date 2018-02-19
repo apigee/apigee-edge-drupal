@@ -284,7 +284,7 @@ trait FieldableEdgeEntityBaseTrait {
         $field_name = $this->getFieldName($field_name);
       }
 
-      if (array_key_exists($field_name, TYPE_EXCEPTIONS) && TYPE_EXCEPTIONS[$field_name] === 'timestamp') {
+      if (isset($value) && array_key_exists($field_name, TYPE_EXCEPTIONS) && TYPE_EXCEPTIONS[$field_name] === 'timestamp') {
         if (is_array($value)) {
           $value = array_map(function ($item) {
             /** @var \DateTimeImmutable $item */

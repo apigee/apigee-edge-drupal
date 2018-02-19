@@ -99,7 +99,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
     $form['#tree'] = TRUE;
     $form['developerId']['#access'] = FALSE;
     $form['product']['#access'] = !isset($form['product']) ?: FALSE;
-    
+
     if ($config->get('associate_apps') && $config->get('user_select')) {
       $form['credential'] = [
         '#type' => 'container',

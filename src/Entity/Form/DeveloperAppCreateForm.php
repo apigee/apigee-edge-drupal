@@ -99,7 +99,7 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
     $form['name'] = [
       '#type' => 'machine_name',
       '#machine_name' => [
-        'source' => ['displayName'],
+        'source' => ['displayName', 'widget', 0, 'value'],
         'label' => $this->t('Internal name'),
         'exists' => [self::class, 'appExists'],
       ],
