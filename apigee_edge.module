@@ -159,8 +159,37 @@ function apigee_edge_entity_base_field_info_alter(&$fields, EntityTypeInterface 
  * Implements hook_form_alter().
  */
 function apigee_edge_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  if ($form_id === 'user_register_form' || $form_id === 'user_form') {
-    $form['account']['mail']['#required'] = TRUE;
+  switch ($form_id) {
+    case 'user_register_form':
+    case 'user_form':
+      $form['account']['mail']['#required'] = TRUE;
+      break;
+
+    case 'entity_form_display_edit_form':
+      $form['#validate'][] = '_apigee_edge_entity_form_display_edit_form_validate';
+      break;
+  }
+}
+
+/**
+ * Extra validation for the entity_form_display.edit form.
+ *
+ * This makes sure that fields marked as 'required' can't be disabled.
+ *
+ * @param array $form
+ *   Form array.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   Form state.
+ */
+function _apigee_edge_entity_form_display_edit_form_validate(array &$form, FormStateInterface $form_state) {
+  $required = \Drupal::config('apigee_edge.appsettings')->get('required_base_fields');
+
+  foreach ($form_state->getValue('fields') as $field_name => $data) {
+    if (in_array($field_name, $required) && $data['region'] === 'hidden') {
+      $form_state->setError($form['fields'][$field_name], t('%field-name is required', [
+        '%field-name' => $form['fields'][$field_name]['human_name']['#plain_text'],
+      ]));
+    }
   }
 }
 

@@ -115,8 +115,7 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
         'label' => 'inline',
         'weight' => 0,
       ])
-      ->setLabel(t('@developer_app name', ['@developer_app' => $developer_app_singular_label]))
-      ->setRequired(TRUE);
+      ->setLabel(t('@developer_app name', ['@developer_app' => $developer_app_singular_label]));
 
     $definitions['callbackUrl']
       ->setDisplayOptions('form', [
@@ -158,6 +157,11 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
         'weight' => 5,
       ])
       ->setLabel(t('Last updated'));
+
+    $appsettings = \Drupal::config('apigee_edge.appsettings');
+    foreach ($appsettings->get('required_base_fields') as $required) {
+      $definitions[$required]->setRequired(TRUE);
+    }
 
     // Hide readonly properties from Manage form display list.
     $read_only_fields = [

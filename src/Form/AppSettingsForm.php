@@ -157,52 +157,6 @@ class AppSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    $form['callback_url'] = [
-      '#type' => 'fieldset',
-      '#title' => $this->t('Callback URL'),
-      '#collapsible' => FALSE,
-    ];
-
-    $form['callback_url']['callback_url_visible'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Show callback URL field'),
-      '#default_value' => $config->get('callback_url_visible'),
-    ];
-
-    $form['callback_url']['callback_url_required'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Require callback URL'),
-      '#default_value' => $config->get('callback_url_required'),
-      '#states' => [
-        'visible' => [
-          ':input[name="callback_url_visible"]' => ['checked' => TRUE],
-        ],
-      ],
-    ];
-
-    $form['description'] = [
-      '#type' => 'fieldset',
-      '#title' => $this->t('App description'),
-      '#collapsible' => FALSE,
-    ];
-
-    $form['description']['description_visible'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Show description field'),
-      '#default_value' => $config->get('description_visible'),
-    ];
-
-    $form['description']['description_required'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Require app description'),
-      '#default_value' => $config->get('description_required'),
-      '#states' => [
-        'visible' => [
-          ':input[name="description_visible"]' => ['checked' => TRUE],
-        ],
-      ],
-    ];
-
     $form['label'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('How to refer to an Application on the UI'),
