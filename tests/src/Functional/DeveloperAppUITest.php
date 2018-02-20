@@ -33,13 +33,6 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   protected const DUPLICATE_MACHINE_NAME = 'The machine-readable name is already in use. It must be unique.';
 
   /**
-   * {@inheritdoc}
-   */
-  public static $modules = [
-    'apigee_edge',
-  ];
-
-  /**
    * Default user.
    *
    * @var \Drupal\user\Entity\User
@@ -117,10 +110,6 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
       'user_select' => TRUE,
       'multiple_products' => TRUE,
       'require' => FALSE,
-      'callback_url_visible' => TRUE,
-      'callback_url_required' => FALSE,
-      'description_visible' => TRUE,
-      'description_required' => FALSE,
     ], 'Save configuration');
   }
 
@@ -220,7 +209,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
     $this->postCreateAppForm([
       'name' => $name,
-      'displayName' => $name,
+      'displayName[0][value]' => $name,
     ]);
     $this->assertSession()->pageTextContains($name);
   }
@@ -233,7 +222,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
     $this->postCreateAppForm([
       'name' => $name,
-      'displayName' => $name,
+      'displayName[0][value]' => $name,
       "api_products[{$this->products[0]->getName()}]" => $this->products[0]->getName(),
     ]);
     $this->assertSession()->pageTextContains($name);
@@ -263,13 +252,13 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
     $this->postCreateAppForm([
       'name' => $name,
-      'displayName' => $name,
+      'displayName[0][value]' => $name,
     ]);
     $this->assertDeveloperAppExists($name);
 
     $this->postCreateAppForm([
       'name' => $name,
-      'displayName' => $name,
+      'displayName[0][value]' => $name,
     ]);
     $this->assertSession()->pageTextContains(static::DUPLICATE_MACHINE_NAME);
   }
@@ -281,14 +270,14 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $name = strtolower($this->randomMachineName());
     $this->postCreateAppForm([
       'name' => $name,
-      'displayName' => $name,
+      'displayName[0][value]' => $name,
     ]);
 
     $second_user = $this->createAccount(static::$permissions);
     $this->drupalLogin($second_user);
     $this->postCreateAppForm([
       'name' => $name,
-      'displayName' => $name,
+      'displayName[0][value]' => $name,
     ], $second_user);
     $this->assertSession()->pageTextNotContains(static::DUPLICATE_MACHINE_NAME);
 
@@ -491,9 +480,9 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
     $data = [
       'name' => $name,
-      'displayName' => $displayName,
-      'callbackUrl' => $callbackUrl,
-      'description' => $description,
+      'displayName[0][value]' => $displayName,
+      'callbackUrl[0][value]' => $callbackUrl,
+      'description[0][value]' => $description,
     ];
     if ($beforeCreate) {
       $data = $beforeCreate($data);
@@ -529,9 +518,9 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $callbackUrl = "{$callbackUrl}/{$this->randomMachineName()}";
     $description = trim($this->getRandomGenerator()->paragraphs(1));
     $data = [
-      'details[displayName]' => $displayName,
-      'details[callbackUrl]' => $callbackUrl,
-      'details[description]' => $description,
+      'displayName[0][value]' => $displayName,
+      'callbackUrl[0][value]' => $callbackUrl,
+      'description[0][value]' => $description,
     ];
     if ($beforeUpdate) {
       $data = $beforeUpdate($data, $credential_id);
@@ -576,7 +565,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
     $formdata = [
       'name' => $name,
-      'displayName' => $name,
+      'displayName[0][value]' => $name,
     ];
     if (count($products) === 1) {
       $formdata['api_products'] = reset($products)->getName();
