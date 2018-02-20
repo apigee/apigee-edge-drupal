@@ -26,6 +26,9 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\field_ui\Tests\FieldUiTestTrait;
 
+/**
+ * @group apigee_edge
+ */
 class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
 
   use FieldUiTestTrait;

@@ -19,6 +19,9 @@
 
 namespace Drupal\Tests\apigee_edge\Functional;
 
+/**
+ * @group apigee_edge
+ */
 class ErrorHandlerTest extends ApigeeEdgeFunctionalTestBase {
 
   public static $modules = [

@@ -192,10 +192,6 @@ class AppSettingsForm extends ConfigFormBase {
       'user_select',
       'multiple_products',
       'require',
-      'description_visible',
-      'description_required',
-      'callback_url_visible',
-      'callback_url_required',
     ];
 
     foreach ($config_names as $name) {

@@ -159,7 +159,7 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
       ->setLabel(t('Last updated'));
 
     $appsettings = \Drupal::config('apigee_edge.appsettings');
-    foreach ($appsettings->get('required_base_fields') as $required) {
+    foreach ((array) $appsettings->get('required_base_fields') as $required) {
       $definitions[$required]->setRequired(TRUE);
     }
 
