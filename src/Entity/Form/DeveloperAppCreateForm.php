@@ -230,7 +230,7 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
     $entity = $this->getEntity();
     if ($entity->hasLinkTemplate('collection')) {
       // If available, return the collection URL.
-      return $entity->urlInfo('collection');
+      return $entity->toUrl('collection');
     }
     else {
       // Otherwise fall back to the front page.

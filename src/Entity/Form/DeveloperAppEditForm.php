@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge\Entity\Form;
 use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController;
 use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\ApiProduct;
+use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -37,6 +38,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * General form handler for the developer app edit forms.
  */
 class DeveloperAppEditForm extends DeveloperAppCreateForm {
+
+  use DeveloperStatusCheckTrait;
 
   /**
    * The renderer service.
@@ -92,6 +95,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
    * {@inheritdoc}
    */
   public function form(array $form, FormStateInterface $form_state) {
+    $this->checkDeveloperStatus($this->entity->getOwner());
     $config = $this->configFactory->get('apigee_edge.appsettings');
     $form = parent::form($form, $form_state);
 
@@ -306,7 +310,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
     if ($this->getFormId() === 'developer_app_developer_app_edit_for_developer_form') {
       if ($entity->hasLinkTemplate('canonical-by-developer')) {
         // If available, return the collection URL.
-        return $entity->urlInfo('canonical-by-developer');
+        return $entity->toUrl('canonical-by-developer');
       }
       else {
         // Otherwise fall back to the front page.
@@ -316,7 +320,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
     else {
       if ($entity->hasLinkTemplate('canonical')) {
         // If available, return the collection URL.
-        return $entity->urlInfo('canonical');
+        return $entity->toUrl('canonical');
       }
       else {
         // Otherwise fall back to the front page.

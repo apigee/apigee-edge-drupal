@@ -48,14 +48,14 @@ apigee_edge.appsettings:
       type: boolean
     require:
       type: boolean
-    description_visible:
-      type: boolean
-    description_required:
-      type: boolean
-    callback_url_visible:
-      type: boolean
-    callback_url_required:
-      type: boolean
+    required_base_fields:
+      type: sequence
+      sequence:
+        type: string
+    locked_base_fields:
+      type: sequence
+      sequence:
+        type: string
     default_products:
       type: sequence
       sequence:

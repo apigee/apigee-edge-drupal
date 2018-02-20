@@ -20,6 +20,7 @@
 namespace Drupal\apigee_edge\Controller;
 
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
+use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -39,6 +40,8 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
  * @package Drupal\apigee_edge\Controller
  */
 class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
+
+  use DeveloperStatusCheckTrait;
 
   /**
    * @var \Drupal\Core\Session\AccountInterface
@@ -146,6 +149,7 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    * {@inheritdoc}
    */
   public function render(UserInterface $user = NULL) {
+    $this->checkDeveloperStatus($user);
     $build = parent::render();
 
     $build['table']['#empty'] = $this->t('Looks like you do not have any apps. Get started by adding one.');

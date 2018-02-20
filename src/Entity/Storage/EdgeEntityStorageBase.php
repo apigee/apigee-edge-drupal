@@ -23,7 +23,6 @@ use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Apigee\Edge\Entity\EntityDenormalizer;
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
 use Apigee\Edge\Entity\EntityNormalizer;
-use Drupal\apigee_edge\ExceptionLoggerTrait;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageBase;
@@ -36,8 +35,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Base class for Edge entity storage handlers.
  */
 abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEntityStorageInterface {
-
-  use ExceptionLoggerTrait;
 
   /**
    * The service container this object should use.
