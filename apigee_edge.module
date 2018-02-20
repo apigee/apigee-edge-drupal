@@ -148,10 +148,12 @@ function apigee_edge_entity_base_field_info(EntityTypeInterface $entity_type) {
  * Implements hook_entity_base_field_info_alter().
  */
 function apigee_edge_entity_base_field_info_alter(&$fields, EntityTypeInterface $entity_type) {
+  /** @var \Drupal\Core\Field\FieldDefinitionInterface[] $fields */
   if ($entity_type->id() === 'user') {
     /** @var \Drupal\Core\Field\BaseFieldDefinition $mail */
     $mail = $fields['mail'];
     $mail->setRequired(TRUE);
+    $mail->addConstraint('DeveloperMailUnique');
   }
 }
 
@@ -162,6 +164,26 @@ function apigee_edge_form_alter(&$form, FormStateInterface $form_state, $form_id
   if ($form_id === 'user_register_form' || $form_id === 'user_form') {
     $form['account']['mail']['#required'] = TRUE;
   }
+}
+
+/**
+ * After build callback for registration error message form element.
+ *
+ * @param array $form_element
+ *   Form element array.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   Form state object.
+ *
+ * @return array
+ *
+ * @see \Drupal\apigee_edge\Form\DeveloperSettingsForm::buildForm
+ */
+function apigee_edge_developer_settings_form_registration_mode_error_message_after_build(array $form_element, FormStateInterface $form_state) {
+  if (isset($form_element['format'])) {
+    // Hide input format settings when textarea itself is also hidden.
+    $form_element['format']['#states']['visible'] = $form_element['#states']['visible'];
+  }
+  return $form_element;
 }
 
 /**

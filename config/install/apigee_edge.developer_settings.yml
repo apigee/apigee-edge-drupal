@@ -1,0 +1,4 @@
+registration_mode: auto_create
+registration_mode_error_message_content:
+  value: 'This user is already registered through a different portal. Contact us if you have any questions.'
+  format: 'restricted_html'
