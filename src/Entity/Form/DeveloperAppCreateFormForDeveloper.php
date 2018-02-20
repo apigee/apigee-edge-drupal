@@ -19,18 +19,22 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
+use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\user\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Dedicated form handler that allows a developer to create an developer app.
  */
 class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
+
+  use DeveloperStatusCheckTrait;
 
   /**
    * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface
@@ -96,6 +100,8 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
    */
   public function buildForm(array $form, FormStateInterface $form_state, int $user = NULL) {
     $this->userId = $user;
+    $this->checkDeveloperStatus(User::load($user));
+
     $form = parent::buildForm($form, $form_state);
     $form['developerId'] = [
       '#type' => 'value',

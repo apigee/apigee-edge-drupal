@@ -20,9 +20,12 @@
 namespace Drupal\apigee_edge\Controller;
 
 use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
+use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\Core\Entity\Controller\EntityViewController;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\user\Entity\User;
+use Drupal\user\UserInterface;
 
 /**
  * Displays the view page of a developer app for a given user on the UI.
@@ -32,11 +35,14 @@ use Drupal\Core\Routing\RouteMatchInterface;
 class DeveloperAppViewControllerForDeveloper extends EntityViewController implements DeveloperAppPageTitleInterface {
 
   use DeveloperAppViewControllerTrait;
+  use DeveloperStatusCheckTrait;
 
   /**
    * {@inheritdoc}
    */
   public function view(EntityInterface $app, $view_mode = 'full') {
+    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $app */
+    $this->checkDeveloperStatus(User::load($app->getOwnerId()));
     $build = parent::view($app, $view_mode);
     $build['credentials'] = $this->getCredentialsRenderArray($build);
     return $build;

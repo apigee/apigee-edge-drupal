@@ -20,6 +20,7 @@
 namespace Drupal\apigee_edge\Entity\Form;
 
 use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
+use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\Core\Entity\EntityDeleteForm;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -30,6 +31,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * General form handler for the developer app delete forms.
  */
 class DeveloperAppDeleteForm extends EntityDeleteForm implements DeveloperAppPageTitleInterface {
+
+  use DeveloperStatusCheckTrait;
 
   /**
    * DeveloperAppDeleteForm constructor.
@@ -46,6 +49,16 @@ class DeveloperAppDeleteForm extends EntityDeleteForm implements DeveloperAppPag
    */
   public static function create(ContainerInterface $container) {
     return new static($container->get('entity_type.manager'));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm(array $form, FormStateInterface $form_state) {
+    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app */
+    $developer_app = $this->entity;
+    $this->checkDeveloperStatus($developer_app->getOwner());
+    return parent::buildForm($form, $form_state);
   }
 
   /**
