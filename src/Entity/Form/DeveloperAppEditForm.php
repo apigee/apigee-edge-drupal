@@ -310,7 +310,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
     if ($this->getFormId() === 'developer_app_developer_app_edit_for_developer_form') {
       if ($entity->hasLinkTemplate('canonical-by-developer')) {
         // If available, return the collection URL.
-        return $entity->urlInfo('canonical-by-developer');
+        return $entity->toUrl('canonical-by-developer');
       }
       else {
         // Otherwise fall back to the front page.
@@ -320,7 +320,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
     else {
       if ($entity->hasLinkTemplate('canonical')) {
         // If available, return the collection URL.
-        return $entity->urlInfo('canonical');
+        return $entity->toUrl('canonical');
       }
       else {
         // Otherwise fall back to the front page.

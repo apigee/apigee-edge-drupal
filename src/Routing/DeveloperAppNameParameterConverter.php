@@ -29,6 +29,8 @@ use Symfony\Component\Routing\Route;
 class DeveloperAppNameParameterConverter implements ParamConverterInterface {
 
   /**
+   * The entity type manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;

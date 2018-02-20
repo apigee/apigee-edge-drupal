@@ -45,6 +45,9 @@ const FIELD_BLACKLIST = [
   'attributes',
 ];
 
+/**
+ * Trait for making Edge entities fieldable.
+ */
 trait FieldableEdgeEntityBaseTrait {
 
   use EdgeEntityBaseTrait {
@@ -62,6 +65,8 @@ trait FieldableEdgeEntityBaseTrait {
   protected $validationRequired = FALSE;
 
   /**
+   * An array of field item lists, keyed by field definition name.
+   *
    * @var \Drupal\Core\Field\FieldItemListInterface[]
    */
   protected $fields = [];
@@ -77,7 +82,7 @@ trait FieldableEdgeEntityBaseTrait {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function __sleep() {
     $this->fieldDefinitions = NULL;
@@ -123,7 +128,7 @@ trait FieldableEdgeEntityBaseTrait {
    * @return \Drupal\Core\Field\BaseFieldDefinition|null
    *   Base field definition if found, null otherwise.
    */
-  protected static function getBaseFieldDefinition(string $name, string $type): ?BaseFieldDefinition {
+  protected static function getBaseFieldDefinition(string $name, string $type): ? BaseFieldDefinition {
     $label = ucwords(preg_replace('/([a-z])([A-Z])/', '$1 $2', $name));
     if (($is_array = strpos($type, '[]') === strlen($type) - 2)) {
       $type = substr($type, 0, -2);
@@ -482,6 +487,7 @@ trait FieldableEdgeEntityBaseTrait {
   public function toArray() {
     $values = [];
     foreach ($this->getFields() as $name => $property) {
+      /** @var \Drupal\Core\Field\FieldItemListInterface $property */
       $values[$name] = $property->getValue();
     }
     return $values;

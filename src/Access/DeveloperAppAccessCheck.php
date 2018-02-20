@@ -32,6 +32,8 @@ use Symfony\Component\Routing\Route;
 class DeveloperAppAccessCheck implements AccessInterface {
 
   /**
+   * The entity type manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   private $entityTypeManager;

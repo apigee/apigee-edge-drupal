@@ -6,6 +6,9 @@ use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 
+/**
+ * Provides a form for configuring custom base field settings.
+ */
 class DeveloperAppBaseFieldConfigForm extends FormBase {
 
   /**
