@@ -3,18 +3,21 @@ apigee_edge.admin:
   css:
     theme:
       css/apigee_edge.admin.css: {}
+apigee_edge.status_property:
+  version: 1.0
+  css:
+    theme:
+      css/apigee_edge.status_property.css: {}
 apigee_edge.components:
   version: 1.0
   css:
     theme:
       css/apigee_edge.components.css: {}
-      css/apigee_edge.status.css: {}
 apigee_edge.listing:
   version: 1.0
   css:
     theme:
       css/apigee_edge.listing.css: {}
-      css/apigee_edge.status.css: {}
   js:
     js/apigee_edge.listing.js: {}
 apigee_edge.view:
@@ -22,6 +25,5 @@ apigee_edge.view:
   css:
     theme:
       css/apigee_edge.view.css: {}
-      css/apigee_edge.status.css: {}
   js:
     js/apigee_edge.view.js: {}

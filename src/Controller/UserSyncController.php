@@ -23,6 +23,7 @@ use Drupal\apigee_edge\Job;
 use Drupal\apigee_edge\Job\DeveloperSync;
 use Drupal\apigee_edge\JobExecutor;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Messenger\MessengerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -40,23 +41,33 @@ class UserSyncController extends ControllerBase {
   protected $executor;
 
   /**
+   * The messenger service.
+   *
+   * @var \Drupal\Core\Messenger\MessengerInterface
+   */
+  protected $messenger;
+
+  /**
    * UserSyncController constructor.
    *
    * @param \Drupal\apigee_edge\JobExecutor $executor
    *   The job executor service.
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger service.
    */
-  public function __construct(JobExecutor $executor) {
+  public function __construct(JobExecutor $executor, MessengerInterface $messenger) {
     $this->executor = $executor;
+    $this->messenger = $messenger;
   }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    /** @var \Drupal\apigee_edge\JobExecutor $executor */
-    $executor = $container->get('apigee_edge.job_executor');
-
-    return new static($executor);
+    return new static(
+      $container->get('apigee_edge.job_executor'),
+      $container->get('messenger')
+    );
   }
 
   /**
@@ -78,7 +89,7 @@ class UserSyncController extends ControllerBase {
    * @return null|string
    *   Filter condition or null if not set.
    */
-  protected static function getFilter(): ?string {
+  protected static function getFilter(): ? string {
     return ((string) \Drupal::config('apigee_edge.sync')->get('filter')) ?: NULL;
   }
 
@@ -100,7 +111,7 @@ class UserSyncController extends ControllerBase {
     $job->setTag($this->generateTag('background'));
     apigee_edge_get_executor()->cast($job);
 
-    \drupal_set_message($this->t('User synchronization is scheduled.'));
+    $this->messenger->addStatus($this->t('User synchronization is scheduled.'));
 
     return new RedirectResponse($destination);
   }
@@ -192,7 +203,7 @@ class UserSyncController extends ControllerBase {
    * Batch finish callback.
    */
   public static function batchFinished() {
-    \drupal_set_message(t('Users are in sync with Edge.'));
+    \Drupal::messenger()->addStatus(t('Users are in sync with Edge.'));
   }
 
 }

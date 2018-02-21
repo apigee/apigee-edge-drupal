@@ -248,16 +248,8 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
     $warningRow = &$rows[$warningRowId]['data'];
     $infoRow['app_name'] = $this->getAppDetailsLink($entity);
     $infoRow['app_status']['data'] = [
-      '#prefix' => '<span class="' . Html::escape($entity->getStatus()) . ' wrapper--status">',
-      '#suffix' => '</span>',
-      '#type' => 'html_tag',
-      '#tag' => 'span',
+      '#type' => 'status_property',
       '#value' => $entity->getStatus(),
-      '#attributes' => [
-        'class' => [
-          'label--status',
-        ],
-      ],
     ];
     $infoRow += parent::buildRow($entity);
 
