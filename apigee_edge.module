@@ -238,9 +238,10 @@ function apigee_edge_developer_settings_form_verification_email_content_after_bu
 
 /**
  * Implements hook_mail().
+ *
+ * Based on user_mail().
  */
 function apigee_edge_mail($key, &$message, $params) {
-  // developer_email_verification.
   $token_service = \Drupal::token();
   $language_manager = \Drupal::languageManager();
   $langcode = $message['langcode'];
