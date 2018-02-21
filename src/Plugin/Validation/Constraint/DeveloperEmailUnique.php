@@ -35,7 +35,8 @@ use Symfony\Component\Validator\Constraint;
 class DeveloperEmailUnique extends Constraint {
 
   /**
-   * @var string*/
+   * @var string
+   */
   public $message;
 
   /**

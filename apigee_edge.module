@@ -332,7 +332,7 @@ function _apigee_edge_send_developer_email_verification_email(AccountInterface $
  * Implements hook_form_FORM_ID_alter().
  */
 function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  // Add out custom validation callback to the beginning of the chain.
+  // Add our custom validation callback to the beginning of the chain.
   // apigee_edge_module_implements_alter() ensures that form_alter hook is
   // called in the last time.
   array_unshift($form['#validate'], 'apigee_edge_form_user_register_form_developer_email_validate');
