@@ -14,7 +14,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 namespace Drupal\apigee_edge\Plugin\Validation\Constraint;
@@ -24,9 +25,16 @@ use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 
 /**
- * Validates that whether a user's email address is already taken on Apigee Edge.
+ * Validates that whether a user's email address is already taken on Edge.
  */
 class DeveloperEmailUniqueValidator extends ConstraintValidator {
+
+  /**
+   * Stores email addresses that should not be validated.
+   *
+   * @var array
+   */
+  private static $whitelist = [];
 
   /**
    * {@inheritdoc}
@@ -35,12 +43,25 @@ class DeveloperEmailUniqueValidator extends ConstraintValidator {
     if (!$item = $items->first()) {
       return;
     }
+    if (in_array($item->value, static::$whitelist)) {
+      return;
+    }
     $developer = Developer::load($item->value);
     if ($developer) {
       $this->context->addViolation($constraint->message, [
         '%email' => $item->value,
       ]);
     }
+  }
+
+  /**
+   * Whitelist email address for validation.
+   *
+   * @param string $email
+   *   Email address to whitelist.
+   */
+  public static function whitelist(string $email) {
+    static::$whitelist[] = $email;
   }
 
 }

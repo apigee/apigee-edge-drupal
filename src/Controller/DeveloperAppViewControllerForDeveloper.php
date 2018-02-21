@@ -25,7 +25,6 @@ use Drupal\Core\Entity\Controller\EntityViewController;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\user\Entity\User;
-use Drupal\user\UserInterface;
 
 /**
  * Displays the view page of a developer app for a given user on the UI.

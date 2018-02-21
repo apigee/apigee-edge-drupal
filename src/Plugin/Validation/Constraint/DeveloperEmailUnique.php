@@ -14,11 +14,13 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
  */
 
 namespace Drupal\apigee_edge\Plugin\Validation\Constraint;
 
+use Drupal\apigee_edge\Form\DeveloperSettingsForm;
 use Symfony\Component\Validator\Constraint;
 
 /**
@@ -41,7 +43,16 @@ class DeveloperEmailUnique extends Constraint {
    */
   public function __construct($options = NULL) {
     parent::__construct($options);
-    $this->message = \Drupal::config('apigee_edge.developer_settings')->get('registration_mode_error_message.value');
+    $config = \Drupal::config('apigee_edge.developer_settings');
+    switch ($config->get('registration_mode')) {
+      case DeveloperSettingsForm::REGISTRATION_MODE_DISPLAY_ERROR_ONLY:
+        $this->message = $config->get('display_only_error_message_content.value');
+        break;
+
+      case DeveloperSettingsForm::REGISTRATION_MODE_VERIFY_EMAIL:
+        $this->message = $config->get('verify_email_error_message_content.value');
+        break;
+    }
   }
 
 }
