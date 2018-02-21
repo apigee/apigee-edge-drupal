@@ -112,7 +112,6 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
         'weight' => 0,
       ])
       ->setDisplayOptions('form', [
-        'label' => 'inline',
         'weight' => 0,
       ])
       ->setLabel(t('@developer_app name', ['@developer_app' => $developer_app_singular_label]));

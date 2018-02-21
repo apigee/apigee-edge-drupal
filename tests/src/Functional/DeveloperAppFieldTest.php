@@ -194,7 +194,12 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
 
     foreach ($field_values as $field_name => $field_value) {
       $getter = 'get' . ucfirst($field_name);
-      $this->assertEquals($field_value, call_user_func([$app, $getter]));
+      $value = call_user_func([$app, $getter]);
+      if ($value instanceof \DateTimeImmutable) {
+        $value = $value->getTimestamp();
+      }
+
+      $this->assertEquals($field_value, $value);
     }
   }
 
