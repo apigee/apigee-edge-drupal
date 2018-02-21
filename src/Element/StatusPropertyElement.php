@@ -46,6 +46,7 @@ class StatusPropertyElement extends RenderElement {
    * Prepare the render array for the template.
    */
   public static function preRenderMyElement($element) {
+    $element['#attached']['library'][] = 'apigee_edge/apigee_edge.status_property';
     $element['value'] = [
       '#markup' => $element['#value'],
     ];

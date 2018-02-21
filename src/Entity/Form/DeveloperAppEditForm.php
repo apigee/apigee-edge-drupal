@@ -29,6 +29,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
@@ -63,6 +64,13 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
   protected $originalEntity;
 
   /**
+   * The messenger service.
+   *
+   * @var \Drupal\Core\Messenger\MessengerInterface
+   */
+  protected $messenger;
+
+  /**
    * Constructs DeveloperAppEditForm.
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
@@ -73,8 +81,10 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
    *   The entity type manager.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger service.
    */
-  public function __construct(SDKConnectorInterface $sdk_connector, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer) {
+  public function __construct(SDKConnectorInterface $sdk_connector, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, MessengerInterface $messenger) {
     parent::__construct($sdk_connector, $config_factory, $entity_type_manager);
     $this->renderer = $renderer;
   }
@@ -87,7 +97,8 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
       $container->get('apigee_edge.sdk_connector'),
       $container->get('config.factory'),
       $container->get('entity_type.manager'),
-      $container->get('renderer')
+      $container->get('renderer'),
+      $container->get('messenger')
     );
   }
 
@@ -270,7 +281,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
               }
 
               if ($product_list_changed) {
-                drupal_set_message($this->t("Credential's product list has been successfully updated."));
+                $this->messenger->addStatus($this->t("Credential's product list has been successfully updated."));
               }
               break;
             }
@@ -278,8 +289,8 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
         }
       }
       catch (\Exception $exception) {
-        drupal_set_message(t("Could not update credential's product list.",
-          ['@consumer_key' => $new_credential->getConsumerKey()]), 'error');
+        $this->messenger->addError(t("Could not update credential's product list.",
+          ['@consumer_key' => $new_credential->getConsumerKey()]));
         watchdog_exception('apigee_edge', $exception);
         $redirect_user = FALSE;
       }
@@ -287,13 +298,13 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
 
     try {
       $this->entity->save();
-      drupal_set_message($this->t('@developer_app details have been successfully updated.',
+      $this->messenger->addStatus($this->t('@developer_app details have been successfully updated.',
         ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel()]));
       $redirect_user = TRUE;
     }
     catch (\Exception $exception) {
-      drupal_set_message($this->t('Could not update @developer_app details.',
-        ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel()]), 'error');
+      $this->messenger->addError($this->t('Could not update @developer_app details.',
+        ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel()]));
       watchdog_exception('apigee_edge', $exception);
     }
 

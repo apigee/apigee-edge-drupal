@@ -26,6 +26,7 @@ use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -70,6 +71,13 @@ class AuthenticationForm extends ConfigFormBase {
   protected $sdkConnector;
 
   /**
+   * The messenger service.
+   *
+   * @var \Drupal\Core\Messenger\MessengerInterface
+   */
+  protected $messenger;
+
+  /**
    * Constructs a new AuthenticationForm.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -80,11 +88,14 @@ class AuthenticationForm extends ConfigFormBase {
    *   The manager for authentication method plugins.
    * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
    *   SDK connector service.
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger service.
    */
   public function __construct(ConfigFactoryInterface $config_factory,
                               PluginManagerInterface $credentials_storage_plugin_manager,
                               PluginManagerInterface $authentication_method_plugin_manager,
-                              SDKConnectorInterface $sdk_connector) {
+                              SDKConnectorInterface $sdk_connector,
+                              MessengerInterface $messenger) {
     parent::__construct($config_factory);
     $this->credentialsStoragePluginManager = $credentials_storage_plugin_manager;
     $this->authenticationStoragePluginManager = $authentication_method_plugin_manager;
@@ -111,7 +122,8 @@ class AuthenticationForm extends ConfigFormBase {
       $container->get('config.factory'),
       $container->get('plugin.manager.apigee_edge.credentials_storage'),
       $container->get('plugin.manager.apigee_edge.authentication_method'),
-      $container->get('apigee_edge.sdk_connector')
+      $container->get('apigee_edge.sdk_connector'),
+      $container->get('messenger')
     );
   }
 
@@ -371,7 +383,7 @@ class AuthenticationForm extends ConfigFormBase {
       parent::submitForm($form, $form_state);
     }
     catch (\Exception $exception) {
-      drupal_set_message($exception->getMessage(), 'error');
+      $this->messenger->addError($exception->getMessage());
     }
   }
 
@@ -440,7 +452,7 @@ class AuthenticationForm extends ConfigFormBase {
     // "Send request" button is not going to work because password field
     // value becomes empty. (Password form elements has no default values.)
     $form_state->set('ajax_credentials_api_password', $form_state->getValue('credentials_api_password', ''));
-    drupal_set_message($this->t('Connection successful.'));
+    $this->messenger->addStatus($this->t('Connection successful.'));
   }
 
 }

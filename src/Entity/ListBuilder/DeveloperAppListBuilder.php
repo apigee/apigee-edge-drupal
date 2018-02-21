@@ -24,7 +24,6 @@ use Apigee\Edge\Api\Management\Entity\AppCredential;
 use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
-use Drupal\Component\Utility\Html;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
@@ -248,16 +247,8 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
     $warningRow = &$rows[$warningRowId]['data'];
     $infoRow['app_name'] = $this->getAppDetailsLink($entity);
     $infoRow['app_status']['data'] = [
-      '#prefix' => '<span class="' . Html::escape($entity->getStatus()) . ' wrapper--status">',
-      '#suffix' => '</span>',
-      '#type' => 'html_tag',
-      '#tag' => 'span',
+      '#type' => 'status_property',
       '#value' => $entity->getStatus(),
-      '#attributes' => [
-        'class' => [
-          'label--status',
-        ],
-      ],
     ];
     $infoRow += parent::buildRow($entity);
 
