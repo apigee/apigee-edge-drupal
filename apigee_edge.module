@@ -204,7 +204,6 @@ function _apigee_edge_entity_form_display_edit_form_validate(array &$form, FormS
 function template_preprocess_developer_app(array &$variables) {
   $variables['#attached']['library'][] = 'apigee_edge/apigee_edge.components';
   $variables['#attached']['library'][] = 'apigee_edge/apigee_edge.view';
-  $variables['view_mode'] = $variables['elements']['#view_mode'];
   $variables['developer_app'] = $variables['elements']['#developer_app'];
 
   // Helpful $content variable for templates.
