@@ -23,7 +23,7 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Provides a form for changing the entity labels.
+ * Provides a form for changing API Products related settings.
  */
 class ProductSettingsForm extends ConfigFormBase {
 

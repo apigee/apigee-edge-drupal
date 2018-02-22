@@ -10,14 +10,20 @@ apigee_edge.settings:
   route_name: apigee_edge.settings
   weight: -10
 
-apigee_edge.product:
-  title: 'Product'
-  description: 'API Product settings'
+apigee_edge.developer:
+  title: 'Developer'
+  description: 'Developer settings'
   parent: system.admin_config_edge
-  route_name: apigee_edge.settings.product
+  route_name: apigee_edge.settings.developer
 
 apigee_edge.app:
   title: 'Developer app'
   description: 'Developer application settings'
   parent: system.admin_config_edge
   route_name: apigee_edge.settings.app
+
+apigee_edge.product:
+  title: 'Product'
+  description: 'API Product settings'
+  parent: system.admin_config_edge
+  route_name: apigee_edge.settings.product

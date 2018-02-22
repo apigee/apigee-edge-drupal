@@ -23,6 +23,14 @@ apigee_edge.settings:
   requirements:
     _permission: 'administer apigee edge'
 
+apigee_edge.settings.developer:
+  path: '/admin/config/apigee-edge/developer-settings'
+  defaults:
+    _form: '\Drupal\apigee_edge\Form\DeveloperSettingsForm'
+    _title: 'Developer Settings'
+  requirements:
+    _permission: 'administer apigee edge'
+
 apigee_edge.settings.product:
   path: '/admin/config/apigee-edge/product-settings'
   defaults:
