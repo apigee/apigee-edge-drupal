@@ -38,6 +38,7 @@ use Drupal\Core\Render\Element;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Site\Settings;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\TempStore\TempStoreException;
 use Drupal\Core\Url;
 use Drupal\user\UserInterface;
 
@@ -256,7 +257,7 @@ function apigee_edge_mail($key, &$message, $params) {
 
   $token_options = [
     'langcode' => $langcode,
-    'callback' => 'apigee_edge_existing_developer_mail_tokens',
+    'callback' => '_apigee_edge_existing_developer_mail_tokens',
     'clear' => TRUE,
   ];
   $message['subject'] .= PlainTextOutput::renderFromHtml($token_service->replace($config->get('verification_email_subject'), $variables, $token_options));
@@ -352,6 +353,19 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
       ];
     }
   }
+  else {
+    $config = Drupal::config('apigee_edge.developer_settings');
+    if ($config->get('registration_mode') === DeveloperSettingsForm::REGISTRATION_MODE_VERIFY_EMAIL) {
+      $developer = Developer::load($userInput['mail']);
+      if ($developer) {
+        $form['account']['apigee_edge_developer_unreceived_mail'] = [
+          '#type' => 'checkbox',
+          '#title' => t('I did not get an email. Please send me a new one.'),
+          '#weight' => 0,
+        ];
+      }
+    }
+  }
   $form['#after_build'][] = 'apigee_edge_form_user_register_form_after_build';
 }
 
@@ -369,6 +383,9 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
 function apigee_edge_form_user_register_form_after_build(array $form, FormStateInterface $form_state) {
   if (isset($form['account']['apigee_edge_developer_exists']) && isset($form['account']['mail'])) {
     $form['account']['apigee_edge_developer_exists']['#weight'] = $form['account']['mail']['#weight'] + 0.0001;
+  }
+  if (isset($form['account']['apigee_edge_developer_unreceived_mail']) && isset($form['account']['mail'])) {
+    $form['account']['apigee_edge_developer_unreceived_mail']['#weight'] = $form['account']['mail']['#weight'] + 0.0001;
   }
   return $form;
 }
@@ -431,8 +448,26 @@ function apigee_edge_form_user_register_form_developer_email_validate(array $for
   }
 
   if ($developerExists) {
-    // Send verification email to the user.
-    _apigee_edge_send_developer_email_verification_email($account, $account->getPreferredLangcode());
+    // Use shared storage to keep track of sent verification emails.
+    // Form state's storage can not be used for this purpose because its values
+    // are being cleared for every new requests. Private storage is too private
+    // in case of anonymous user because every page request creates a new, empty
+    // private temp storage.
+    $storage = \Drupal::service('tempstore.shared');
+    /** @var \Drupal\Core\TempStore\PrivateTempStore $sendNotifications */
+    $sendNotifications = $storage->get('apigee_edge_developer_email_verification_sent');
+    // Do not send multiple email verifications to the same email address
+    // every time when form validation fails with an error.
+    if (!$sendNotifications->get($account->getEmail()) || $form_state->getValue('apigee_edge_developer_unreceived_mail')) {
+      // Send verification email to the user.
+      $result = _apigee_edge_send_developer_email_verification_email($account, $account->getPreferredLangcode());
+      try {
+        $sendNotifications->set($account->getEmail(), $result);
+      }
+      catch (TempStoreException $e) {
+        watchdog_exception(__FUNCTION__, $e);
+      }
+    }
   }
 }
 
