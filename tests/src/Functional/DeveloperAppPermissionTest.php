@@ -22,6 +22,7 @@ namespace Drupal\Tests\apigee_edge\Functional;
 use Apigee\Edge\Api\Management\Entity\App;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
+use Drupal\user\RoleInterface;
 
 /**
  * @group apigee_edge
@@ -99,6 +100,8 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
     $this->profile = 'standard';
     parent::setUp();
 
+    $this->revokeExtraPermissions();
+
     $this->myAccount = $this->createAccount([]);
     $this->otherAccount = $this->createAccount([]);
 
@@ -141,6 +144,24 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
     $this->myAccount->delete();
 
     parent::tearDown();
+  }
+
+  /**
+   * Revokes extra permissions that are granted to authenticated user.
+   *
+   * These permissions are granted in apigee_edge_install(), and while they make
+   * sense from an UX point of view, they make testing permissions more
+   * difficult.
+   */
+  protected function revokeExtraPermissions() {
+    $authenticated_user_permissions = [
+      'view own developer_app',
+      'create developer_app',
+      'update own developer_app',
+      'delete own developer_app',
+    ];
+
+    user_role_revoke_permissions(RoleInterface::AUTHENTICATED_ID, $authenticated_user_permissions);
   }
 
   /**

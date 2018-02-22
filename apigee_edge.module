@@ -209,7 +209,7 @@ function _apigee_edge_entity_form_display_edit_form_validate(array &$form, FormS
 
   foreach ($form_state->getValue('fields') as $field_name => $data) {
     if (in_array($field_name, $required) && $data['region'] === 'hidden') {
-      $form_state->setError($form['fields'][$field_name], t('%field-name is required', [
+      $form_state->setError($form['fields'][$field_name], t('%field-name is required.', [
         '%field-name' => $form['fields'][$field_name]['human_name']['#plain_text'],
       ]));
     }

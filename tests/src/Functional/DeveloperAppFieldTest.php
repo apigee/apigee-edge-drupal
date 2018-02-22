@@ -43,6 +43,9 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
    */
   protected $developer;
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp() {
     $this->profile = 'standard';
     parent::setUp();
@@ -59,6 +62,9 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalLogin($this->account);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function tearDown() {
     $this->drupalLogout();
     $this->account->delete();
@@ -194,8 +200,112 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
 
     foreach ($field_values as $field_name => $field_value) {
       $getter = 'get' . ucfirst($field_name);
-      $this->assertEquals($field_value, call_user_func([$app, $getter]));
+      $value = call_user_func([$app, $getter]);
+      if ($value instanceof \DateTimeImmutable) {
+        $value = $value->getTimestamp();
+      }
+
+      $this->assertEquals($field_value, $value);
     }
+  }
+
+  /**
+   * Saves the developer app's base field config form.
+   *
+   * @param bool $description_required
+   *   Whether the description must be required.
+   * @param bool $callback_url_required
+   *   Whether the callback url must be required.
+   * @param bool $expect_success
+   *   Whether to expect success or a validation error.
+   */
+  protected function submitBaseFieldConfigForm(bool $description_required = FALSE, bool $callback_url_required = FALSE, bool $expect_success = TRUE) {
+    $this->drupalPostForm('/admin/config/apigee-edge/app-settings/fields', [
+      'table[description][required]' => $description_required,
+      'table[callbackUrl][required]' => $callback_url_required,
+    ], 'Save');
+
+    if ($expect_success) {
+      $this->assertSession()->pageTextContains('Field settings have been saved successfully.');
+    }
+    else {
+      $this->assertSession()->pageTextContains('is hidden on the default form display.');
+    }
+  }
+
+  /**
+   * Saves the developer app's form display settings.
+   *
+   * @param array $region_overrides
+   *   Which field's regions should be changed. Key is the field name, value is
+   *   the region.
+   * @param bool $expect_success
+   *   Whether to expect success or a validation error.
+   *
+   * @throws \Behat\Mink\Exception\ResponseTextException
+   */
+  protected function submitFormDisplay(array $region_overrides = [], bool $expect_success = TRUE) {
+    $edit = [];
+
+    foreach ($region_overrides as $field => $region) {
+      $edit["fields[{$field}][region]"] = $region;
+    }
+
+    $this->drupalPostForm('/admin/config/apigee-edge/app-settings/form-display', $edit, 'Save');
+
+    if ($expect_success) {
+      $this->assertSession()->pageTextContains('Your settings have been saved.');
+    }
+    else {
+      $this->assertSession()->pageTextContains('is required.');
+    }
+  }
+
+  /**
+   * Tests settings base fields required.
+   */
+  public function testRequired() {
+    // The form can be saved with default settings.
+    $this->submitBaseFieldConfigForm();
+    // Move the callbackUrl to hidden.
+    $this->submitFormDisplay(['callbackUrl' => 'hidden']);
+    // The callbackUrl can't be required.
+    $this->submitBaseFieldConfigForm(TRUE, TRUE, FALSE);
+    // Move back callbackUrl to visible.
+    $this->submitFormDisplay(['callbackUrl' => 'content']);
+    // callbackUrl can be required.
+    $this->submitBaseFieldConfigForm(TRUE, TRUE);
+    // callbackUrl can't be hidden.
+    $this->submitFormDisplay(['callbackUrl' => 'hidden'], FALSE);
+  }
+
+  /**
+   * Asserts whether a field is visible on the entity form.
+   *
+   * @param string $field_label
+   *   Label of the field.
+   * @param bool $visible
+   *   Whether it should be visible or not.
+   */
+  protected function assertFieldVisibleOnEntityForm(string $field_label, bool $visible = TRUE) {
+    $this->drupalGet("/user/{$this->account->id()}/apps/create");
+    if ($visible) {
+      $this->assertSession()->pageTextContains($field_label);
+    }
+    else {
+      $this->assertSession()->pageTextNotContains($field_label);
+    }
+  }
+
+  /**
+   * Tests form regions.
+   */
+  public function testFormRegion() {
+    $this->assertFieldVisibleOnEntityForm('Callback URL');
+    $this->submitFormDisplay(['callbackUrl' => 'hidden']);
+    $this->assertFieldVisibleOnEntityForm('Callback URL', FALSE);
+    $this->submitFormDisplay(['callbackUrl' => 'content']);
+    $this->assertFieldVisibleOnEntityForm('Callback URL');
   }
 
 }

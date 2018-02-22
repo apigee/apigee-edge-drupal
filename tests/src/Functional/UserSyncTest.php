@@ -81,7 +81,7 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * Array of Drupal users.
    *
-   * @var \Drupal\user\Entity\UserInterface[]
+   * @var \Drupal\user\UserInterface[]
    */
   protected $drupalUsers = [];
 

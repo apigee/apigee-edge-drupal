@@ -3,6 +3,7 @@
 namespace Drupal\apigee_edge\Form;
 
 use Drupal\apigee_edge\Entity\DeveloperApp;
+use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 
@@ -65,6 +66,25 @@ class DeveloperAppBaseFieldConfigForm extends FormBase {
   /**
    * {@inheritdoc}
    */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    parent::validateForm($form, $form_state);
+
+    $display = EntityFormDisplay::load('developer_app.developer_app.default');
+    if ($display) {
+      foreach ($form_state->getValue('table') as $name => $data) {
+        $component = $display->getComponent($name);
+        if ($data['required'] && !($component && $component['region'] !== 'hidden')) {
+          $form_state->setError($form['table'][$name]['required'], $this->t('%field-name is hidden on the default form display.', [
+            '%field-name' => $form['table'][$name]['name']['#markup'],
+          ]));
+        }
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $required = [];
 
@@ -80,6 +100,8 @@ class DeveloperAppBaseFieldConfigForm extends FormBase {
       ->save();
 
     drupal_flush_all_caches();
+
+    $this->messenger()->addStatus($this->t('Field settings have been saved successfully.'));
   }
 
 }
