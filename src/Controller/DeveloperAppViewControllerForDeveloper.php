@@ -33,7 +33,6 @@ use Drupal\user\Entity\User;
  */
 class DeveloperAppViewControllerForDeveloper extends EntityViewController implements DeveloperAppPageTitleInterface {
 
-  use DeveloperAppViewControllerTrait;
   use DeveloperStatusCheckTrait;
 
   /**
@@ -43,7 +42,6 @@ class DeveloperAppViewControllerForDeveloper extends EntityViewController implem
     /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $app */
     $this->checkDeveloperStatus(User::load($app->getOwnerId()));
     $build = parent::view($app, $view_mode);
-    $build['credentials'] = $this->getCredentialsRenderArray($build);
     return $build;
   }
 

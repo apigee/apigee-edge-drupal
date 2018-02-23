@@ -52,11 +52,11 @@
   margin-bottom: 1rem;
 }
 
-.apigee-edge-developer-app-view .api-product-list-row .api-product-name {
+.api-product-list-row .api-product-name {
   float: left;
 }
 
-.apigee-edge-developer-app-view .api-product-list-row .wrapper--status {
+.api-product-list-row .wrapper--status {
   float: right;
 }
 
