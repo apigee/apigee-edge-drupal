@@ -168,6 +168,7 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
    * Returns the list of the permissions.
    *
    * @return array
+   *   List of function arguments.
    */
   public function permissionProvider() {
     return array_map(function (string $permission): array {
