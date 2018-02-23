@@ -24,7 +24,7 @@ use Drupal\apigee_edge\Form\DeveloperSettingsForm;
 use Symfony\Component\Validator\Constraint;
 
 /**
- * Checks if a user's email address is unique on Apigee Edge.
+ * Checks if an email address already belongs to a developer on Apigee Edge.
  *
  * @Constraint(
  *   id = "DeveloperMailUnique",

@@ -1,20 +1,20 @@
 registration_mode: verify_email
 display_only_error_message_content:
-  value: 'This user is already registered through a different portal. Contact us if you have any questions.'
+  value: 'This email address already exists in our system. Contact us if you have any questions.'
   format: 'restricted_html'
 verify_email_error_message_content:
-  value: 'This user is already registered through a different portal. We have sent you an verification email to %email.'
+  value: 'This email address already exists in our system. We have sent you an verification email to %email.'
   format: 'restricted_html'
 verification_email_subject: 'Developer email address verification'
 verification_email_content: |
   Dear [user:display-name],
 
-  Somebody tried to register a new user with your [user:mail] email address on [site:url]. This user is already registered through on our API management server.
+  You tried to use this email address in [site:url]. This email address is already registered in our system.
 
-  You may confirm your email address by clicking this link or copying and pasting it into your browser:
+  You may confirm this email address by clicking this link or copying and pasting it into your browser:
 
   [user:developer-email-verification-url]
 
   --  [site:name] team
-verification_token: developer-registration-token
+verification_token: developer-verification-token
 verification_token_expires: 86400

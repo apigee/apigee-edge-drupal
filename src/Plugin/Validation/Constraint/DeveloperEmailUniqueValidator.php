@@ -21,13 +21,21 @@
 namespace Drupal\apigee_edge\Plugin\Validation\Constraint;
 
 use Drupal\apigee_edge\Entity\Developer;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 
 /**
- * Validates that whether a user's email address is already taken on Edge.
+ * Checks if an email address already belongs to a developer on Edge.
  */
-class DeveloperEmailUniqueValidator extends ConstraintValidator {
+class DeveloperEmailUniqueValidator extends ConstraintValidator implements ContainerInjectionInterface {
+
+  /**
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  private $entityTypeManager;
 
   /**
    * Stores email addresses that should not be validated.
@@ -37,19 +45,35 @@ class DeveloperEmailUniqueValidator extends ConstraintValidator {
   private static $whitelist = [];
 
   /**
+   * DeveloperEmailUniqueValidator constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   Entity type manager.
+   */
+  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
+    $this->entityTypeManager = $entityTypeManager;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function validate($items, Constraint $constraint) {
-    if (!$item = $items->first()) {
+    if (in_array($items->value, static::$whitelist)) {
       return;
     }
-    if (in_array($item->value, static::$whitelist)) {
-      return;
+    /** @var \Drupal\Core\Entity\EntityInterface $entity */
+    $entity = $items->getEntity();
+    // If field's value has not changed do not validate it.
+    if (!$entity->isNew()) {
+      $original = $this->entityTypeManager->getStorage($entity->getEntityType()->id())->load($entity->id());
+      if ($original->{$items->getName()}->value === $items->value) {
+        return;
+      }
     }
-    $developer = Developer::load($item->value);
+    $developer = Developer::load($items->value);
     if ($developer) {
       $this->context->addViolation($constraint->message, [
-        '%email' => $item->value,
+        '%email' => $items->value,
       ]);
     }
   }
@@ -62,6 +86,13 @@ class DeveloperEmailUniqueValidator extends ConstraintValidator {
    */
   public static function whitelist(string $email) {
     static::$whitelist[] = $email;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static($container->get('entity_type.manager'));
   }
 
 }
