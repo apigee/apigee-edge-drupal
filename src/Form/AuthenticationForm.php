@@ -100,6 +100,7 @@ class AuthenticationForm extends ConfigFormBase {
     $this->credentialsStoragePluginManager = $credentials_storage_plugin_manager;
     $this->authenticationStoragePluginManager = $authentication_method_plugin_manager;
     $this->sdkConnector = $sdk_connector;
+    $this->messenger = $messenger;
 
     foreach ($credentials_storage_plugin_manager->getDefinitions() as $key => $value) {
       /** @var \Drupal\Core\StringTranslation\TranslatableMarkup $plugin_name */
