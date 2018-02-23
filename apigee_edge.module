@@ -23,7 +23,10 @@
  * Main module file for Apigee Edge.
  */
 
+use Apigee\Edge\Entity\EntityNormalizer;
 use Apigee\Edge\Exception\ClientErrorException;
+use Apigee\Edge\Structure\CredentialProduct;
+use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Form\DeveloperSettingsForm;
 use Drupal\apigee_edge\JobExecutor;
@@ -31,6 +34,9 @@ use Drupal\apigee_edge\Plugin\Validation\Constraint\DeveloperEmailUnique;
 use Drupal\apigee_edge\Plugin\Validation\Constraint\DeveloperEmailUniqueValidator;
 use Drupal\Component\Render\PlainTextOutput;
 use Drupal\Component\Utility\Crypt;
+use Drupal\Component\Utility\Xss;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
@@ -76,6 +82,12 @@ function apigee_edge_module_implements_alter(&$implementations, $hook) {
 function apigee_edge_theme() {
   return [
     'developer_app' => [
+      'render element' => 'elements',
+    ],
+    'app_credential' => [
+      'render element' => 'elements',
+    ],
+    'app_credential_product_list' => [
       'render element' => 'elements',
     ],
     'status_property' => [
@@ -175,6 +187,46 @@ function apigee_edge_entity_base_field_info_alter(&$fields, EntityTypeInterface 
     $mail = $fields['mail'];
     $mail->setRequired(TRUE);
     $mail->addConstraint('DeveloperMailUnique');
+  }
+}
+
+/**
+ * Implements hook_entity_extra_field_info().
+ */
+function apigee_edge_entity_extra_field_info() {
+  $extra = [];
+  $entityType = \Drupal::entityTypeManager()->getDefinition('developer_app');
+  $extra['developer_app']['developer_app']['display']['credentials'] = [
+    'label' => new TranslatableMarkup('Credentials'),
+    'description' => new TranslatableMarkup('Displays credentials provided by a @label', ['@label' => $entityType->getSingularLabel()]),
+    // By default it should be displayed in the end of the view.
+    'weight' => 100,
+    'visible' => TRUE,
+  ];
+  return $extra;
+}
+
+/**
+ * Implements hook_entity_view().
+ */
+function apigee_edge_developer_app_view(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
+  /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
+  if ($display->getComponent('credentials')) {
+    $defaults = [
+      '#cache' => [
+        'contexts' => $entity->getCacheContexts(),
+        'tags' => $entity->getCacheTags(),
+      ],
+    ];
+    foreach ($entity->getCredentials() as $credential) {
+      $build['credentials'][] = [
+        '#type' => 'app_credential',
+        '#credential' => $credential,
+        '#attributes' => [
+          'class' => 'items--inline',
+        ],
+      ] + $defaults;
+    }
   }
 }
 
@@ -595,6 +647,180 @@ function template_preprocess_developer_app(array &$variables) {
 
   unset($variables['content']['credentials']);
   $variables['credentials'] = $variables['elements']['credentials'];
+}
+
+/**
+ * Prepares variables for app_credential_product_list templates.
+ *
+ * Default template: app-credential-product-list.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - elements: An associative array containing the credential information.
+ *     Properties used:
+ *     - #credential_products: An \Apigee\Edge\Structure\CredentialProduct[]
+ *       array. Array of products included in an app credential.
+ *   - attributes: HTML attributes for the containing element.
+ */
+function template_preprocess_app_credential_product_list(array &$variables) {
+  /** @var \Apigee\Edge\Structure\CredentialProduct[] $cred_products */
+  $cred_products = $variables['elements']['#credential_products'];
+  $cred_product_ids = array_map(function ($product) {
+    /** @var \Apigee\Edge\Structure\CredentialProduct $product */
+    return $product->getApiproduct();
+  }, $cred_products);
+  /** @var \Drupal\apigee_edge\Entity\ApiProduct[] $allProducts */
+  $variables['#api_product_entities'] = $allProducts = ApiProduct::loadMultiple($cred_product_ids);
+  $variables += ['content' => []];
+  foreach ($cred_products as $product) {
+    $value = '';
+    switch ($product->getStatus()) {
+      case CredentialProduct::STATUS_APPROVED:
+        $value = t('enabled');
+        break;
+
+      case CredentialProduct::STATUS_REVOKED:
+        $value = t('disabled');
+        break;
+
+      case CredentialProduct::STATUS_PENDING:
+        $value = t('pending');
+        break;
+    }
+    $variables['content'][$product->getApiproduct()] = [
+      '#type' => 'container',
+      '#attributes' => ['class' => 'api-product-list-row clearfix'],
+      'label' => [
+        '#type' => 'html_tag',
+        '#tag' => 'span',
+        '#value' => $allProducts[$product->getApiproduct()]->getDisplayName(),
+        '#attributes' => ['class' => 'api-product-name'],
+      ],
+      'status' => [
+        '#type' => 'status_property',
+        '#value' => $value,
+      ],
+    ];
+  }
+}
+
+/**
+ * Prepares variables for app_credential templates.
+ *
+ * Default template: app-credential.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - elements: An associative array containing the credential information.
+ *     Properties used:
+ *     - #credential: A \Apigee\Edge\Api\Management\Entity\AppCredential object.
+ *       A developer app credential.
+ *   - attributes: HTML attributes for the containing element.
+ */
+function template_preprocess_app_credential(array &$variables) {
+  /** @var \Apigee\Edge\Api\Management\Entity\AppCredentialInterface $credential */
+  $credential = $variables['elements']['#credential'];
+  /** @var \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter */
+  $dateFormatter = Drupal::service('date.formatter');
+  // Convert app entity to an array.
+  $normalized = (array) (new EntityNormalizer())->normalize($credential);
+
+  $properties_in_primary = [
+    'consumerKey' => [
+      'label' => t('Consumer Key'),
+      'value_type' => 'plain',
+    ],
+    'consumerSecret' => [
+      'label' => t('Consumer Secret'),
+      'value_type' => 'plain',
+    ],
+    'issuedAt' => [
+      'label' => t('Issued'),
+      'value_type' => 'date',
+    ],
+    'expiresAt' => [
+      'label' => t('Expires'),
+      'value_type' => 'date',
+    ],
+    'status' => [
+      'label' => t('Key Status'),
+      'value_type' => 'status',
+    ],
+  ];
+
+  $secret_properties = [
+    'consumerKey',
+    'consumerSecret',
+  ];
+
+  $variables['primary_wrapper'] = [
+    '#type' => 'container',
+    '#attributes' => [
+      'class' => 'wrapper--primary',
+    ],
+  ];
+
+  foreach ($properties_in_primary as $property => $def) {
+    $variables['primary_wrapper'][$property] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => 'item-property',
+      ],
+    ];
+    $variables['primary_wrapper'][$property]['label'] = [
+      '#type' => 'label',
+      '#title' => $def['label'],
+      '#title_display' => 'before',
+    ];
+    $value = array_key_exists($property, $normalized) ? $normalized[$property] : NULL;
+    if ($def['value_type'] == 'date') {
+      // TODO Should we make format configurable?
+      /** @var \DateTimeInterface $value */
+      $value = $value ? $dateFormatter->format(intval($value / 1000), 'medium', NULL, drupal_get_user_timezone()) : t('Never');
+    }
+
+    if (in_array($property, $secret_properties)) {
+      $variables['primary_wrapper'][$property]['value'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'span',
+        '#attributes' => [
+          'class' => 'secret',
+          'data-secret-type' => $property,
+        ],
+        '#value' => Xss::filter($value),
+      ];
+    }
+    elseif ($def['value_type'] === 'status') {
+      $variables['primary_wrapper'][$property]['value'] = [
+        '#type' => 'status_property',
+        '#value' => $value,
+      ];
+    }
+    else {
+      $variables['primary_wrapper'][$property]['value'] = [
+        '#markup' => Xss::filter($value),
+      ];
+    }
+  }
+
+  $variables['secondary_wrapper'] = [
+    '#type' => 'container',
+    '#attributes' => [
+      'class' => 'wrapper--secondary',
+    ],
+    'title' => [
+      '#type' => 'label',
+      '#title_display' => 'before',
+      '#title' => \Drupal::entityTypeManager()->getDefinition('api_product')->getPluralLabel(),
+    ],
+    'list' => [
+      '#type' => 'app_credential_product_list',
+      '#credential_products' => $credential->getApiProducts(),
+    ],
+  ];
+
+  // Helpful $content variable for templates.
+  $variables['content'] = $normalized;
 }
 
 /**
