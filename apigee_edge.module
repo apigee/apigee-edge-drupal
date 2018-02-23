@@ -183,11 +183,6 @@ function apigee_edge_entity_base_field_info_alter(&$fields, EntityTypeInterface 
  */
 function apigee_edge_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   switch ($form_id) {
-    case 'user_register_form':
-    case 'user_form':
-      $form['account']['mail']['#required'] = TRUE;
-      break;
-
     case 'entity_form_display_edit_form':
       $form['#validate'][] = '_apigee_edge_entity_form_display_edit_form_validate';
       break;
@@ -201,7 +196,7 @@ function apigee_edge_form_alter(&$form, FormStateInterface $form_state, $form_id
  *
  * @param array $form
  *   Form array.
- * @param \Drupal\Core\Form\FormStateInterface $form_state
+ * @param Drupal\Core\Form\FormStateInterface $form_state
  *   Form state.
  */
 function _apigee_edge_entity_form_display_edit_form_validate(array &$form, FormStateInterface $form_state) {
@@ -221,7 +216,7 @@ function _apigee_edge_entity_form_display_edit_form_validate(array &$form, FormS
  *
  * @param array $form_element
  *   Form element array.
- * @param \Drupal\Core\Form\FormStateInterface $form_state
+ * @param Drupal\Core\Form\FormStateInterface $form_state
  *   Form state object.
  *
  * @return array
@@ -332,7 +327,24 @@ function _apigee_edge_send_developer_email_verification_email(AccountInterface $
 /**
  * Implements hook_form_FORM_ID_alter().
  */
+function apigee_edge_form_user_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $user = \Drupal::currentUser();
+  // Make the same information available here as on user_register_form.
+  // @see \Drupal\user\RegisterForm::form()
+  $form['administer_users'] = [
+    '#type' => 'value',
+    '#value' => $user->hasPermission('administer users'),
+  ];
+  apigee_edge_form_user_register_form_alter($form, $form_state, $form_id);
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
 function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // The email field should be always required because it is required on
+  // Apigee Edge.
+  $form['account']['mail']['#required'] = TRUE;
   // Add our custom validation callback to the beginning of the chain.
   // apigee_edge_module_implements_alter() ensures that form_alter hook is
   // called in the last time.
@@ -342,27 +354,29 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
   // (and the entity validations by user module) we have to use raw
   // user input here to check whether this form element should be visible
   // next time when the form is displayed on the UI with validation errors.
-  if ($form['administer_users']['#value'] && !empty($userInput['mail'])) {
-    $developer = Developer::load($userInput['mail']);
-    if ($developer) {
-      $form['account']['apigee_edge_developer_exists'] = [
-        '#type' => 'checkbox',
-        '#title' => t('I understand the provided email address belongs to a developer on Apigee Edge and I confirm user creation'),
-        '#required' => TRUE,
-        '#weight' => 0,
-      ];
-    }
-  }
-  else {
-    $config = Drupal::config('apigee_edge.developer_settings');
-    if ($config->get('registration_mode') === DeveloperSettingsForm::REGISTRATION_MODE_VERIFY_EMAIL) {
+  if (!empty($userInput['mail'])) {
+    if ($form['administer_users']['#value']) {
       $developer = Developer::load($userInput['mail']);
       if ($developer) {
-        $form['account']['apigee_edge_developer_unreceived_mail'] = [
+        $form['account']['apigee_edge_developer_exists'] = [
           '#type' => 'checkbox',
-          '#title' => t('I did not get an email. Please send me a new one.'),
+          '#title' => t('I understand the provided email address belongs to a developer on Apigee Edge and I confirm user creation'),
+          '#required' => TRUE,
           '#weight' => 0,
         ];
+      }
+    }
+    else {
+      $config = Drupal::config('apigee_edge.developer_settings');
+      if ($config->get('registration_mode') === DeveloperSettingsForm::REGISTRATION_MODE_VERIFY_EMAIL) {
+        $developer = Developer::load($userInput['mail']);
+        if ($developer) {
+          $form['account']['apigee_edge_developer_unreceived_mail'] = [
+            '#type' => 'checkbox',
+            '#title' => t('I did not get an email. Please send me a new one.'),
+            '#weight' => 0,
+          ];
+        }
       }
     }
   }
@@ -374,7 +388,7 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
  *
  * @param array $form
  *   Form array.
- * @param \Drupal\Core\Form\FormStateInterface $form_state
+ * @param Drupal\Core\Form\FormStateInterface $form_state
  *   Form state object.
  *
  * @return array
@@ -395,17 +409,21 @@ function apigee_edge_form_user_register_form_after_build(array $form, FormStateI
  *
  * @param array $form
  *   Form array.
- * @param \Drupal\Core\Form\FormStateInterface $form_state
+ * @param Drupal\Core\Form\FormStateInterface $form_state
  *   Form state object.
  */
 function apigee_edge_form_user_register_form_developer_email_validate(array $form, FormStateInterface $form_state) {
   // Do nothing if user has administer users permission.
   // (Form is probably displayed on admin/people/create.)
   if ($form_state->getValue('administer_users')) {
-    // Add email to the whitelist if administrator confirmed that s/he would
-    // like to create a user in Drupal.
-    if ($form_state->getValue('apigee_edge_developer_exists')) {
-      DeveloperEmailUniqueValidator::whitelist($form_state->getValue('mail'));
+    // Add email address to the whitelist because we do not want to
+    // display the same error message for an admin user as a regular user.
+    DeveloperEmailUniqueValidator::whitelist($form_state->getValue('mail'));
+    // If administrator has not confirmed that s/he would like to create a user
+    // in Drupal with an existing developer id on Edge then add a custom
+    // error to the field.
+    if (!$form_state->getValue('apigee_edge_developer_exists')) {
+      $form_state->setErrorByName('mail', t('This email address already exists on Apigee Edge.'));
     }
     return;
   }
@@ -429,7 +447,7 @@ function apigee_edge_form_user_register_form_developer_email_validate(array $for
     else {
       // Let user known that the token in the url has expired.
       // Drupal sends a new verification email.
-      $form_state->setErrorByName('mail', t('Registration token has expired or invalid.'));
+      $form_state->setErrorByName('mail', t('Registration token expired or invalid. We have sent you a new link.'));
     }
   }
 
@@ -495,10 +513,17 @@ function _apigee_edge_existing_developer_email_verification_link(UserInterface $
   $timestamp = \Drupal::time()->getRequestTime();
   $langcode = isset($options['langcode']) ? $options['langcode'] : $account->getPreferredLangcode();
   $url_options = ['absolute' => TRUE, 'language' => $languageManager->getLanguage($langcode)];
-  return Url::fromRoute('user.register', [
-    \Drupal::config('apigee_edge.developer_settings')->get('verification_token') => apigee_edge_existing_developer_registration_hash($account, $timestamp),
-    'timestamp' => $timestamp,
-  ], $url_options)->toString();
+  $url_options['query'][\Drupal::config('apigee_edge.developer_settings')->get('verification_token')] = apigee_edge_existing_developer_registration_hash($account, $timestamp);
+  $url_options['query']['timestamp'] = $timestamp;
+  // For now, use this method for generating url to the user register and
+  // edit forms.
+  $route = 'user.register';
+  $route_params = [];
+  if (!$account->isAnonymous()) {
+    $route = 'entity.user.edit_form';
+    $route_params['user'] = $account->id();
+  }
+  return Url::fromRoute($route, $route_params, $url_options)->toString();
 }
 
 /**
