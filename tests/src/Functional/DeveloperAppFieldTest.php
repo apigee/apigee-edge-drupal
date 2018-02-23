@@ -363,7 +363,7 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
     ], 'Add developer app');
     $this->assertSession()->pageTextContains($name);
 
-    $assert = function(bool $visible = TRUE) use($name, $callbackUrl) {
+    $assert = function (bool $visible = TRUE) use ($name, $callbackUrl) {
       $this->assertFieldVisibleOnEntityDisplay($name, 'Callback URL', $callbackUrl, $visible);
     };
 
