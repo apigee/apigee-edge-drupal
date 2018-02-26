@@ -508,4 +508,22 @@ trait FieldableEdgeEntityBaseTrait {
     return NULL;
   }
 
+  /**
+   * Prevents "Call to undefined method" error.
+   *
+   * The quickedit core module calls this function in
+   * quickedit_entity_view_alter() because the entity view
+   * controller is an instance of the EntitViewController class.
+   *
+   * @return bool
+   *   FALSE return value Prevents quickedit core module
+   *   from modifying the field structure in quickedit_preprocess_field().
+   *
+   * @see quickedit_entity_view_alter()
+   * @see quickedit_preprocess_field()
+   */
+  public function isLatestRevision() {
+    return FALSE;
+  }
+
 }

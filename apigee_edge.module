@@ -397,18 +397,24 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
   // The email field should be always required because it is required on
   // Apigee Edge.
   $form['account']['mail']['#required'] = TRUE;
-  // Add our custom validation callback to the beginning of the chain.
-  // apigee_edge_module_implements_alter() ensures that form_alter hook is
-  // called in the last time.
-  array_unshift($form['#validate'], 'apigee_edge_form_user_register_form_developer_email_validate');
   $userInput = $form_state->getUserInput();
   // Because this form alter is called earlier than the validation callback
   // (and the entity validations by user module) we have to use raw
   // user input here to check whether this form element should be visible
   // next time when the form is displayed on the UI with validation errors.
   if (!empty($userInput['mail']) && $form['account']['mail']['#default_value'] !== $userInput['mail']) {
+    // Add our custom validation callback to the beginning of the chain.
+    // apigee_edge_module_implements_alter() ensures that form_alter hook is
+    // called in the last time.
+    array_unshift($form['#validate'], 'apigee_edge_form_user_register_form_developer_email_validate');
+
+    $developer = Developer::load($userInput['mail']);
+    $form['developer_exists'] = [
+      '#type' => 'value',
+      '#value' => (bool) $developer,
+    ];
+
     if ($form['administer_users']['#value']) {
-      $developer = Developer::load($userInput['mail']);
       if ($developer) {
         $form['account']['apigee_edge_developer_exists'] = [
           '#type' => 'checkbox',
@@ -421,7 +427,6 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
     else {
       $config = Drupal::config('apigee_edge.developer_settings');
       if ($config->get('registration_mode') === DeveloperSettingsForm::REGISTRATION_MODE_VERIFY_EMAIL) {
-        $developer = Developer::load($userInput['mail']);
         if ($developer) {
           $form['account']['apigee_edge_developer_unreceived_mail'] = [
             '#type' => 'checkbox',
@@ -465,6 +470,11 @@ function apigee_edge_form_user_register_form_after_build(array $form, FormStateI
  *   Form state object.
  */
 function apigee_edge_form_user_register_form_developer_email_validate(array $form, FormStateInterface $form_state) {
+  // Do nothing if the developer does not exists.
+  if (empty($form_state->getValue('developer_exists'))) {
+    return;
+  }
+
   // Do nothing if user has administer users permission.
   // (Form is probably displayed on admin/people/create.)
   if ($form_state->getValue('administer_users')) {
@@ -646,7 +656,7 @@ function template_preprocess_developer_app(array &$variables) {
   }
 
   unset($variables['content']['credentials']);
-  $variables['credentials'] = $variables['elements']['credentials'];
+  $variables['credentials'] = isset($variables['elements']['credentials']) ? $variables['elements']['credentials'] : [];
 }
 
 /**

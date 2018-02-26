@@ -339,6 +339,27 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
+   * Creates an app with the UI.
+   *
+   * @param array $extra_values
+   *   Extra value for the form, besides name and displayName.
+   *
+   * @return string
+   *   The machine name of the app.
+   */
+  protected function createApp(array $extra_values = []): string {
+    $name = strtolower($this->randomMachineName());
+
+    $this->drupalPostForm("/user/{$this->account->id()}/apps/create", $extra_values + [
+      'displayName[0][value]' => $name,
+      'name' => $name,
+    ], 'Add developer app');
+    $this->assertSession()->pageTextContains($name);
+
+    return $name;
+  }
+
+  /**
    * Tests form regions.
    */
   public function testFormRegion() {
@@ -353,15 +374,10 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
    * Tests the view regions.
    */
   public function testViewRegion() {
-    $name = strtolower($this->randomMachineName());
     $callbackUrl = 'https://' . strtolower($this->randomMachineName()) . '.example.com';
-
-    $this->drupalPostForm("/user/{$this->account->id()}/apps/create", [
-      'displayName[0][value]' => $name,
+    $name = $this->createApp([
       'callbackUrl[0][value]' => $callbackUrl,
-      'name' => $name,
-    ], 'Add developer app');
-    $this->assertSession()->pageTextContains($name);
+    ]);
 
     $assert = function (bool $visible = TRUE) use ($name, $callbackUrl) {
       $this->assertFieldVisibleOnEntityDisplay($name, 'Callback URL', $callbackUrl, $visible);
@@ -371,6 +387,21 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
     $assert(TRUE);
     $this->submitViewDisplay(['callbackUrl' => 'hidden']);
     $assert(FALSE);
+  }
+
+  /**
+   * Tests showing and hiding credentials on the developer app view.
+   */
+  public function testCredentialsView() {
+    $name = $this->createApp();
+    $assert = function (bool $visible = TRUE) use ($name) {
+      $this->assertFieldVisibleOnEntityDisplay($name, 'Credential', 'Key Status', $visible);
+    };
+
+    $this->submitViewDisplay(['credentials' => 'hidden']);
+    $assert(FALSE);
+    $this->submitViewDisplay(['credentials' => 'content']);
+    $assert(TRUE);
   }
 
 }
