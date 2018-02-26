@@ -3,7 +3,14 @@ ARG PHP_IMAGE_VERSION="-4.0.2"
 
 FROM wodby/drupal-php:${PHP_VERSION}${PHP_IMAGE_VERSION}
 
-ARG DRUPAL_CORE="8.4"
+USER root
+
+# For manipulating JSON files if necessary.
+RUN apk add --update jq
+
+USER wodby
+
+ARG DRUPAL_CORE="8.5"
 ENV DRUPAL_CORE=${DRUPAL_CORE}
 ARG DEPENDENCIES=""
 ENV DEPENDENCIES=${DEPENDENCIES}

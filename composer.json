@@ -10,6 +10,9 @@
         "drupal/core": "^8.4",
         "drupal/entity": "^1.0"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^6.1"
+    },
     "config": {
         "sort-packages": true
     },
