@@ -406,7 +406,7 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
   // (and the entity validations by user module) we have to use raw
   // user input here to check whether this form element should be visible
   // next time when the form is displayed on the UI with validation errors.
-  if (!empty($userInput['mail'])) {
+  if (!empty($userInput['mail']) && $form['account']['mail']['#default_value'] !== $userInput['mail']) {
     if ($form['administer_users']['#value']) {
       $developer = Developer::load($userInput['mail']);
       if ($developer) {
@@ -474,7 +474,7 @@ function apigee_edge_form_user_register_form_developer_email_validate(array $for
     // If administrator has not confirmed that s/he would like to create a user
     // in Drupal with an existing developer id on Edge then add a custom
     // error to the field.
-    if (!$form_state->getValue('apigee_edge_developer_exists')) {
+    if (empty($form_state->getValue('apigee_edge_developer_exists'))) {
       $form_state->setErrorByName('mail', t('This email address already exists on Apigee Edge.'));
     }
     return;
