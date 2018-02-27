@@ -191,7 +191,7 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
    */
   public function testUserAsync() {
     $this->drupalGet('/admin/config/apigee-edge/settings');
-    $this->clickLinkProperly(t('Background...'));
+    $this->clickLinkProperly(t('Background'));
     $this->assertSession()->pageTextContains(t('User synchronization is scheduled.'));
     /** @var \Drupal\Core\Queue\QueueFactory $queue_service */
     $queue_service = \Drupal::service('queue');
