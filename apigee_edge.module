@@ -218,6 +218,9 @@ function apigee_edge_developer_app_view(array &$build, EntityInterface $entity, 
         'tags' => $entity->getCacheTags(),
       ],
     ];
+    $build['credentials'] = [
+      '#type' => 'container',
+    ];
     foreach ($entity->getCredentials() as $credential) {
       $build['credentials'][] = [
         '#type' => 'app_credential',
@@ -397,6 +400,10 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
   // The email field should be always required because it is required on
   // Apigee Edge.
   $form['account']['mail']['#required'] = TRUE;
+  // Add our custom validation callback to the beginning of the chain.
+  // apigee_edge_module_implements_alter() ensures that form_alter hook is
+  // called in the last time.
+  array_unshift($form['#validate'], 'apigee_edge_form_user_register_form_developer_email_validate');
   $userInput = $form_state->getUserInput();
   // Because this form alter is called earlier than the validation callback
   // (and the entity validations by user module) we have to use raw
@@ -654,9 +661,6 @@ function template_preprocess_developer_app(array &$variables) {
   foreach (Element::children($variables['elements']) as $key) {
     $variables['content'][$key] = $variables['elements'][$key];
   }
-
-  unset($variables['content']['credentials']);
-  $variables['credentials'] = isset($variables['elements']['credentials']) ? $variables['elements']['credentials'] : [];
 }
 
 /**
