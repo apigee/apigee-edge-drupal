@@ -173,12 +173,13 @@ class AuthenticationForm extends ConfigFormBase {
       '#attributes' => [
         'class' => [
           'button',
+          'button--primary',
         ],
       ],
     ];
 
     $form['sync']['background_sync_submit'] = [
-      '#title' => $this->t('Background...'),
+      '#title' => $this->t('Background'),
       '#type' => 'link',
       '#url' => $this->buildUrl('apigee_edge.user_sync.schedule'),
       '#attributes' => [
@@ -188,15 +189,14 @@ class AuthenticationForm extends ConfigFormBase {
       ],
     ];
 
-    $form['sync']['sync_wrapper'] = [
-      '#type' => 'container',
+    $form['sync']['sync_info'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'span',
+      '#value' => '?',
       '#attributes' => [
-        'class' => 'help--button',
+        'class' => 'info-circle',
+        'title' => t('A background sync is recommended for large numbers of developers.'),
       ],
-    ];
-
-    $form['sync']['sync_wrapper']['background_sync_text'] = [
-      '#markup' => $this->t('A background sync is recommended for large numbers of developers.'),
     ];
 
     $form['credentials_storage'] = [
