@@ -41,7 +41,11 @@ class DebugLogger extends SysLog {
    * {@inheritdoc}
    */
   protected function syslogWrapper($level, $entry) {
-    error_log($entry . PHP_EOL, 3, DRUPAL_ROOT . '/apigee_edge_debug.log');
+    $log_path = getenv('APIGEE_EDGE_TEST_LOG_FILE');
+    if (!$log_path) {
+      $log_path = \Drupal::service('file_system')->realpath('public://apigee_edge_debug.log');
+    }
+    error_log($entry . PHP_EOL, 3, $log_path);
   }
 
 }
