@@ -1,5 +1,22 @@
 <?php
 
+/**
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Apigee\Edge\Api\Management\Entity\App;
@@ -14,11 +31,9 @@ use Drupal\apigee_edge\Entity\DeveloperApp;
 class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
-   * {@inheritdoc}
+   * @var \Drupal\user\UserInterface
    */
-  public static $modules = [
-    'apigee_edge',
-  ];
+  protected $account;
 
   /**
    * @var \Drupal\apigee_edge\Entity\Developer
@@ -29,15 +44,11 @@ class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function setUp() {
+    $this->profile = 'standard';
     parent::setUp();
-    $this->developer = Developer::create([
-      'email' => $this->randomMachineName() . '@example.com',
-      'userName' => $this->randomMachineName(),
-      'firstName' => $this->randomMachineName(),
-      'lastName' => $this->randomMachineName(),
-      'status' => Developer::STATUS_ACTIVE,
-    ]);
-    $this->developer->save();
+
+    $this->account = $this->createAccount();
+    $this->developer = Developer::load($this->account->getEmail());
   }
 
   /**
@@ -54,12 +65,13 @@ class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   public function testCrud() {
-    /** @var DeveloperApp $app */
+    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
     $app = DeveloperApp::create([
       'name' => $this->randomMachineName(),
       'status' => App::STATUS_APPROVED,
       'developerId' => $this->developer->getDeveloperId(),
     ]);
+    $app->setOwner($this->account);
     $app->save();
 
     $this->assertNotEmpty($app->getAppId());
@@ -77,7 +89,7 @@ class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
 
     $this->resetCache();
 
-    /** @var DeveloperApp $loadedApp */
+    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $loadedApp */
     $loadedApp = DeveloperApp::load($app->id());
     $this->assertEquals($value, $loadedApp->getAttributeValue('test'));
 

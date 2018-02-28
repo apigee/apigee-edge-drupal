@@ -1,5 +1,22 @@
 <?php
 
+/**
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 namespace Drupal\apigee_edge\Entity\Form;
 
 use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController;
@@ -8,8 +25,6 @@ use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Entity\EntityForm;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -19,7 +34,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * General form handler for the developer app create forms.
  */
-class DeveloperAppCreateForm extends EntityForm implements DeveloperAppPageTitleInterface {
+class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements DeveloperAppPageTitleInterface {
 
   /**
    * The SDK Connector service.
@@ -60,43 +75,12 @@ class DeveloperAppCreateForm extends EntityForm implements DeveloperAppPageTitle
    */
   public function form(array $form, FormStateInterface $form_state) {
     $config = $this->configFactory->get('apigee_edge.appsettings');
-
+    $form = parent::form($form, $form_state);
     $form['#attached']['library'][] = 'apigee_edge/apigee_edge.components';
+    $form['#attributes']['class'][] = 'apigee-edge--form';
 
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
     $app = $this->entity;
-
-    $form['#attributes']['class'][] = 'apigee-edge--form';
-
-    $form['details'] = [
-      '#type' => 'fieldset',
-      '#title' => $this->t('Details'),
-      '#collapsible' => FALSE,
-      '#attributes' => [
-        'class' => [
-          'items--inline',
-        ],
-      ],
-    ];
-
-    $form['details']['displayName'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('@devAppLabel name', ['@devAppLabel' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel()]),
-      '#required' => TRUE,
-      '#default_value' => $app->getDisplayName(),
-    ];
-
-    $form['details']['name'] = [
-      '#type' => 'machine_name',
-      '#machine_name' => [
-        'source' => ['details', 'displayName'],
-        'label' => $this->t('Internal name'),
-        'exists' => [self::class, 'appExists'],
-      ],
-      '#title' => $this->t('Internal name'),
-      '#disabled' => !$app->isNew(),
-      '#default_value' => $app->getName(),
-    ];
 
     $developers = [];
     /** @var \Drupal\apigee_edge\Entity\Developer $developer */
@@ -104,28 +88,24 @@ class DeveloperAppCreateForm extends EntityForm implements DeveloperAppPageTitle
       $developers[$developer->uuid()] = "{$developer->getFirstName()} {$developer->getLastName()}";
     }
 
-    $form['details']['developerId'] = [
+    $form['developerId'] = [
       '#title' => $this->t('Owner'),
       '#type' => 'select',
+      '#weight' => -100,
       '#default_value' => $app->getDeveloperId(),
       '#options' => $developers,
     ];
 
-    $form['details']['callbackUrl'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Callback URL'),
-      '#default_value' => $app->getCallbackUrl(),
-      '#access' => (bool) $config->get('callback_url_visible'),
-      '#required' => (bool) $config->get('callback_url_required'),
-    ];
-
-    $form['details']['description'] = [
-      '#type' => 'textarea',
-      '#title' => $this->t('Description'),
-      '#default_value' => $app->getDescription(),
-      '#access' => (bool) $config->get('description_visible'),
-      '#required' => (bool) $config->get('description_required'),
-      '#resizable' => 'none',
+    $form['name'] = [
+      '#type' => 'machine_name',
+      '#machine_name' => [
+        'source' => ['displayName', 'widget', 0, 'value'],
+        'label' => $this->t('Internal name'),
+        'exists' => [self::class, 'appExists'],
+      ],
+      '#title' => $this->t('Internal name'),
+      '#disabled' => !$app->isNew(),
+      '#default_value' => $app->getName(),
     ];
 
     if ($config->get('associate_apps')) {
@@ -136,6 +116,7 @@ class DeveloperAppCreateForm extends EntityForm implements DeveloperAppPageTitle
         '#title' => $this->entityTypeManager->getDefinition('api_product')->getSingularLabel(),
         '#collapsible' => FALSE,
         '#access' => $user_select,
+        '#weight' => 100,
         '#attributes' => [
           'class' => $required ? ['form-required'] : [],
         ],
@@ -173,7 +154,7 @@ class DeveloperAppCreateForm extends EntityForm implements DeveloperAppPageTitle
       }
     }
 
-    return parent::form($form, $form_state);
+    return $form;
   }
 
   /**
@@ -207,18 +188,6 @@ class DeveloperAppCreateForm extends EntityForm implements DeveloperAppPageTitle
     ]);
 
     return $actions;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function copyFormValuesToEntity(EntityInterface $entity, array $form, FormStateInterface $form_state) {
-    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
-    $entity->setName($form_state->getValue('name'));
-    $entity->setDisplayName($form_state->getValue('displayName'));
-    $entity->setDeveloperId($form_state->getValue('developerId'));
-    $entity->setCallbackUrl($form_state->getValue('callbackUrl'));
-    $entity->setDescription($form_state->getValue('description'));
   }
 
   /**
@@ -261,7 +230,7 @@ class DeveloperAppCreateForm extends EntityForm implements DeveloperAppPageTitle
     $entity = $this->getEntity();
     if ($entity->hasLinkTemplate('collection')) {
       // If available, return the collection URL.
-      return $entity->urlInfo('collection');
+      return $entity->toUrl('collection');
     }
     else {
       // Otherwise fall back to the front page.

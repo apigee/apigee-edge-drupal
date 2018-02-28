@@ -1,0 +1,29 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a developer app.
+ *
+ * Available variables:
+ * - developer_app: The developer app entity with limited access to object properties and methods.
+ * - content: All developer app items. Use {{ content }} to print them all,
+ *   or print a subset such as {{ content.field_example }}. Use
+ *   {{ content|without('field_example') }} to temporarily suppress the printing
+ *   of a given child element.
+ * - attributes: HTML attributes for the containing element.
+ * - content_attributes: Same as attributes, except applied to the main
+ *   content tag that appears in the template.
+ * - logged_in: Flag for authenticated user status. Will be true when the
+ *   current user is a logged-in member.
+ * - is_admin: Flag for admin user status. Will be true when the current user
+ *   is an administrator.
+ *
+ * @see template_preprocess_developer_app()
+ *
+ * @ingroup themeable
+ */
+#}
+<article{{ attributes }}>
+  <div{{ content_attributes }}>
+    {{ content }}
+  </div>
+</article>

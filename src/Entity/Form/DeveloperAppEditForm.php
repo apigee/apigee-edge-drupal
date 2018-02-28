@@ -1,16 +1,35 @@
 <?php
 
+/**
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 namespace Drupal\apigee_edge\Entity\Form;
 
 use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController;
 use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\ApiProduct;
+use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
@@ -20,6 +39,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * General form handler for the developer app edit forms.
  */
 class DeveloperAppEditForm extends DeveloperAppCreateForm {
+
+  use DeveloperStatusCheckTrait;
 
   /**
    * The renderer service.
@@ -43,6 +64,13 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
   protected $originalEntity;
 
   /**
+   * The messenger service.
+   *
+   * @var \Drupal\Core\Messenger\MessengerInterface
+   */
+  protected $messenger;
+
+  /**
    * Constructs DeveloperAppEditForm.
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
@@ -53,10 +81,13 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
    *   The entity type manager.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger service.
    */
-  public function __construct(SDKConnectorInterface $sdk_connector, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer) {
+  public function __construct(SDKConnectorInterface $sdk_connector, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, MessengerInterface $messenger) {
     parent::__construct($sdk_connector, $config_factory, $entity_type_manager);
     $this->renderer = $renderer;
+    $this->messenger = $messenger;
   }
 
   /**
@@ -67,7 +98,8 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
       $container->get('apigee_edge.sdk_connector'),
       $container->get('config.factory'),
       $container->get('entity_type.manager'),
-      $container->get('renderer')
+      $container->get('renderer'),
+      $container->get('messenger')
     );
   }
 
@@ -75,23 +107,28 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
    * {@inheritdoc}
    */
   public function form(array $form, FormStateInterface $form_state) {
+    $this->checkDeveloperStatus($this->entity->getOwner());
     $config = $this->configFactory->get('apigee_edge.appsettings');
     $form = parent::form($form, $form_state);
 
-    unset($form['#after_build']);
+    unset($form['name']);
     $form['#tree'] = TRUE;
-    $form['details']['name']['#access'] = FALSE;
-    $form['details']['developerId']['#access'] = FALSE;
+    $form['developerId']['#access'] = FALSE;
     $form['product']['#access'] = !isset($form['product']) ?: FALSE;
 
     if ($config->get('associate_apps') && $config->get('user_select')) {
+      $form['credential'] = [
+        '#type' => 'container',
+        '#weight' => 100,
+      ];
+
       foreach ($this->entity->getCredentials() as $credential) {
         $credential_status_element = [
           '#type' => 'status_property',
           '#value' => Xss::filter($credential->getStatus()),
         ];
         $rendered_credential_status = $this->renderer->render($credential_status_element);
-        $credential_title = $rendered_credential_status . ' Credential - ' . $credential->getConsumerKey();
+        $credential_title = $rendered_credential_status . ' Credential';
 
         $form['credential'][$credential->getConsumerKey()] = [
           '#type' => 'fieldset',
@@ -171,19 +208,11 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
    * {@inheritdoc}
    */
   protected function copyFormValuesToEntity(EntityInterface $entity, array $form, FormStateInterface $form_state) {
+    parent::copyFormValuesToEntity($entity, $form, $form_state);
     $config = $this->configFactory->get('apigee_edge.appsettings');
     $this->originalEntity = clone $this->entity;
 
     /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
-    $entity->setDisplayName($form_state->getValue(['details', 'displayName']));
-
-    if ($config->get('callback_url_visible')) {
-      $entity->setCallbackUrl($form_state->getValue(['details', 'callbackUrl']));
-    }
-    if ((bool) $config->get('description_visible')) {
-      $entity->setDescription($form_state->getValue(['details', 'description']));
-    }
-
     if ($config->get('associate_apps') && $config->get('user_select')) {
       foreach ($form_state->getValue(['credential']) as $consumer_key => $api_products) {
         foreach ($entity->getCredentials() as $credential) {
@@ -253,7 +282,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
               }
 
               if ($product_list_changed) {
-                drupal_set_message($this->t("Credential's product list has been successfully updated."));
+                $this->messenger->addStatus($this->t("Credential's product list has been successfully updated."));
               }
               break;
             }
@@ -261,30 +290,23 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
         }
       }
       catch (\Exception $exception) {
-        drupal_set_message(t("Could not update credential's product list.",
-          ['@consumer_key' => $new_credential->getConsumerKey()]), 'error');
+        $this->messenger->addError(t("Could not update credential's product list.",
+          ['@consumer_key' => $new_credential->getConsumerKey()]));
         watchdog_exception('apigee_edge', $exception);
         $redirect_user = FALSE;
       }
     }
 
-    // Update the app details after updating the product lists, because the
-    // entity->save() function override every entity property.
-    if ($this->entity->getDisplayName() !== $this->originalEntity->getDisplayName() ||
-      $this->entity->getCallbackUrl() !== $this->originalEntity->getCallbackUrl() ||
-      $this->entity->getDescription() !== $this->originalEntity->getDescription()) {
-      try {
-        $this->entity->save();
-        drupal_set_message($this->t('@developer_app details have been successfully updated.',
-          ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel()]));
-        $redirect_user = TRUE;
-      }
-      catch (\Exception $exception) {
-        drupal_set_message($this->t('Could not update @developer_app details.',
-          ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel()]), 'error');
-        watchdog_exception('apigee_edge', $exception);
-        $redirect_user = FALSE;
-      }
+    try {
+      $this->entity->save();
+      $this->messenger->addStatus($this->t('@developer_app details have been successfully updated.',
+        ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel()]));
+      $redirect_user = TRUE;
+    }
+    catch (\Exception $exception) {
+      $this->messenger->addError($this->t('Could not update @developer_app details.',
+        ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel()]));
+      watchdog_exception('apigee_edge', $exception);
     }
 
     if ($redirect_user) {
@@ -300,7 +322,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
     if ($this->getFormId() === 'developer_app_developer_app_edit_for_developer_form') {
       if ($entity->hasLinkTemplate('canonical-by-developer')) {
         // If available, return the collection URL.
-        return $entity->urlInfo('canonical-by-developer');
+        return $entity->toUrl('canonical-by-developer');
       }
       else {
         // Otherwise fall back to the front page.
@@ -310,7 +332,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
     else {
       if ($entity->hasLinkTemplate('canonical')) {
         // If available, return the collection URL.
-        return $entity->urlInfo('canonical');
+        return $entity->toUrl('canonical');
       }
       else {
         // Otherwise fall back to the front page.

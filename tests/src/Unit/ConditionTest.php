@@ -1,5 +1,22 @@
 <?php
 
+/**
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 namespace Drupal\Tests\apigee_edge\Unit;
 
 use Apigee\Edge\Entity\EntityInterface;
@@ -20,7 +37,7 @@ class ConditionTest extends UnitTestCase {
   protected $entityData = [];
 
   /**
-   * @var EntityInterface[]
+   * @var \Apigee\Edge\Entity\EntityInterface[]
    */
   protected $entities = [];
 
@@ -149,6 +166,7 @@ class ConditionTest extends UnitTestCase {
    * Returns a random data row.
    *
    * @return array
+   *   Random data row.
    */
   protected function randomData() : array {
     return $this->entityData[mt_rand(0, count($this->entityData) - 1)];
@@ -160,35 +178,60 @@ class ConditionTest extends UnitTestCase {
    * @param string $conjunction
    *
    * @return \Drupal\apigee_edge\Entity\Query\Condition
+   *   Mock conditional object.
    */
   protected function mockCondition($conjunction = 'AND') : Condition {
     return new Condition($conjunction, new class implements QueryInterface {
+
       public function addTag($tag) {}
+
       public function hasTag($tag) {}
+
       public function hasAllTags() {}
+
       public function hasAnyTag() {}
+
       public function addMetaData($key, $object) {}
+
       public function getMetaData($key) {}
+
       public function getEntityTypeId() {}
+
       public function condition($field, $value = NULL, $operator = NULL, $langcode = NULL) {}
+
       public function exists($field, $langcode = NULL) {}
+
       public function notExists($field, $langcode = NULL) {}
+
       public function pager($limit = 10, $element = NULL) {}
+
       public function range($start = NULL, $length = NULL) {}
+
       public function sort($field, $direction = 'ASC', $langcode = NULL) {}
+
       public function count() {}
+
       public function tableSort(&$headers) {}
+
       public function accessCheck($access_check = TRUE) {}
+
       public function execute() {}
+
       public function andConditionGroup() {}
+
       public function orConditionGroup() {}
+
       public function currentRevision() {}
+
       public function allRevisions() {}
+
+      public function latestRevision() {}
+
     });
   }
 
   /**
-   * Asserts that a Condition object
+   * Asserts that a Condition object.
    *
    * @param \Drupal\apigee_edge\Entity\Query\Condition $condition
    *   A Condition object to test.
@@ -208,7 +251,11 @@ class ConditionTest extends UnitTestCase {
     parent::setUp();
 
     for ($i = 0; $i < 1024; $i++) {
-      $this->entityData[] = [$this->getRandomGenerator()->name(), (int) mt_rand(1, 1024 * 1024 * 1024), (bool) mt_rand(0, 1)];
+      $this->entityData[] = [
+        $this->getRandomGenerator()->name(),
+        (int) mt_rand(1, 1024 * 1024 * 1024),
+        (bool) mt_rand(0, 1),
+      ];
     }
 
     $this->entities = array_map(function ($data) {
@@ -251,6 +298,7 @@ class ConditionTest extends UnitTestCase {
 
         /**
          * @return int
+         *   Returns an int.
          */
         public function getFooBar(): int {
           return $this->fooBar;
@@ -265,6 +313,7 @@ class ConditionTest extends UnitTestCase {
 
         /**
          * @return bool
+         *   Returns true of false.
          */
         public function isFooBaz(): bool {
           return $this->foo_baz;

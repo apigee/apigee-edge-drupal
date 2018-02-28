@@ -1,7 +1,25 @@
 <?php
 
+/**
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 namespace Drupal\Tests\apigee_edge\Functional;
 
+use Apigee\Edge\Api\Management\Controller\DeveloperController;
 use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
@@ -14,13 +32,6 @@ use Drupal\user\UserInterface;
 class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
   protected const DUPLICATE_MACHINE_NAME = 'The machine-readable name is already in use. It must be unique.';
-
-  /**
-   * {@inheritdoc}
-   */
-  public static $modules = [
-    'apigee_edge',
-  ];
 
   /**
    * Default user.
@@ -100,10 +111,6 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
       'user_select' => TRUE,
       'multiple_products' => TRUE,
       'require' => FALSE,
-      'callback_url_visible' => TRUE,
-      'callback_url_required' => FALSE,
-      'description_visible' => TRUE,
-      'description_required' => FALSE,
     ], 'Save configuration');
   }
 
@@ -149,6 +156,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    *   Name of the app.
    *
    * @return \Drupal\apigee_edge\Entity\DeveloperApp|null
+   *   Developer app or null.
    */
   protected function assertDeveloperAppExists(string $name) : ?DeveloperApp {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp[] $apps */
@@ -202,7 +210,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
     $this->postCreateAppForm([
       'name' => $name,
-      'displayName' => $name,
+      'displayName[0][value]' => $name,
     ]);
     $this->assertSession()->pageTextContains($name);
   }
@@ -215,7 +223,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
     $this->postCreateAppForm([
       'name' => $name,
-      'displayName' => $name,
+      'displayName[0][value]' => $name,
       "api_products[{$this->products[0]->getName()}]" => $this->products[0]->getName(),
     ]);
     $this->assertSession()->pageTextContains($name);
@@ -228,7 +236,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->submitForm([], 'Delete');
 
     $this->assertSession()->pageTextContains("The {$name} developer app has been deleted.");
-    $apps = array_filter($this->getApps(), function(DeveloperApp $app) use($name): bool {
+    $apps = array_filter($this->getApps(), function (DeveloperApp $app) use ($name): bool {
       return $app->getName() === $name;
     });
     $this->assertEquals([], $apps, 'App is deleted');
@@ -245,13 +253,13 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
     $this->postCreateAppForm([
       'name' => $name,
-      'displayName' => $name,
+      'displayName[0][value]' => $name,
     ]);
     $this->assertDeveloperAppExists($name);
 
     $this->postCreateAppForm([
       'name' => $name,
-      'displayName' => $name,
+      'displayName[0][value]' => $name,
     ]);
     $this->assertSession()->pageTextContains(static::DUPLICATE_MACHINE_NAME);
   }
@@ -263,14 +271,14 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $name = strtolower($this->randomMachineName());
     $this->postCreateAppForm([
       'name' => $name,
-      'displayName' => $name,
+      'displayName[0][value]' => $name,
     ]);
 
     $second_user = $this->createAccount(static::$permissions);
     $this->drupalLogin($second_user);
     $this->postCreateAppForm([
       'name' => $name,
-      'displayName' => $name,
+      'displayName[0][value]' => $name,
     ], $second_user);
     $this->assertSession()->pageTextNotContains(static::DUPLICATE_MACHINE_NAME);
 
@@ -291,10 +299,10 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   /**
    * Creates an app with no products.
    */
-  public function testAppCRUDNoProducts() {
+  public function testAppCrudNoProducts() {
     $this->submitAdminForm(['associate_apps' => FALSE]);
 
-    $this->assertAppCRUD();
+    $this->assertAppCrud();
   }
 
   /**
@@ -307,11 +315,11 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
       "default_api_product_multiple[{$this->products[0]->getName()}]" => $this->products[0]->getName(),
     ]);
 
-    $asserts = function() {
+    $asserts = function () {
       $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
     };
 
-    $this->assertAppCRUD(NULL, $asserts, NULL, $asserts);
+    $this->assertAppCrud(NULL, $asserts, NULL, $asserts);
   }
 
   /**
@@ -328,34 +336,34 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
       "default_api_product_multiple[{$this->products[1]->getName()}]" => $this->products[1]->getName(),
     ]);
 
-    $asserts = function() {
+    $asserts = function () {
       $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
       $this->assertSession()->pageTextContains($this->products[1]->getDisplayName());
       $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
     };
 
-    $this->assertAppCRUD(NULL, $asserts, NULL, $asserts);
+    $this->assertAppCrud(NULL, $asserts, NULL, $asserts);
   }
 
   /**
    * Creates an app with a single product and then removes the product.
    */
-  public function testAppCRUDSingleProductRemove() {
+  public function testAppCrudSingleProductRemove() {
     $this->submitAdminForm(['display_as_select' => TRUE, 'multiple_products' => FALSE]);
 
-    $this->assertAppCRUD(
-      function(array $data): array {
+    $this->assertAppCrud(
+      function (array $data): array {
         $data['api_products'] = $this->products[0]->getName();
         return $data;
       },
-      function() {
+      function () {
         $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
       },
-      function(array $data, string $credential_id): array {
+      function (array $data, string $credential_id): array {
         $data["credential[{$credential_id}][api_products]"] = '';
         return $data;
       },
-      function() {
+      function () {
         $this->assertSession()->pageTextNotContains($this->products[0]->getDisplayName());
       }
     );
@@ -364,22 +372,22 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   /**
    * Creates an app with no products and then adds one.
    */
-  public function testAppCRUDSingleProductAdd() {
+  public function testAppCrudSingleProductAdd() {
     $this->submitAdminForm(['multiple_products' => FALSE]);
 
-    $this->assertAppCRUD(
-      function(array $data): array {
+    $this->assertAppCrud(
+      function (array $data): array {
         $data['api_products'] = '';
         return $data;
       },
-      function() {
+      function () {
         $this->assertSession()->pageTextNotContains($this->products[0]->getDisplayName());
       },
-      function(array $data, string $credential_id): array {
+      function (array $data, string $credential_id): array {
         $data["credential[{$credential_id}][api_products]"] = $this->products[0]->getName();
         return $data;
       },
-      function() {
+      function () {
         $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
       }
     );
@@ -388,29 +396,29 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   /**
    * Creates an app with multiple products and then removes them.
    */
-  public function testAppCRUDMultiplePruductsRemove() {
+  public function testAppCrudMultiplePruductsRemove() {
     $this->submitAdminForm(['display_as_select' => TRUE]);
     $this->products[] = $this->createProduct();
     $this->products[] = $this->createProduct();
 
-    $this->assertAppCRUD(
-      function(array $data): array {
+    $this->assertAppCrud(
+      function (array $data): array {
         $data['api_products[]'] = [
           $this->products[0]->getName(),
           $this->products[1]->getName(),
         ];
         return $data;
       },
-      function() {
+      function () {
         $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
         $this->assertSession()->pageTextContains($this->products[1]->getDisplayName());
         $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
       },
-      function(array $data, string $credential_id): array {
+      function (array $data, string $credential_id): array {
         $data["credential[{$credential_id}][api_products][]"] = [];
         return $data;
       },
-      function() {
+      function () {
         $this->assertSession()->pageTextNotContains($this->products[0]->getDisplayName());
         $this->assertSession()->pageTextNotContains($this->products[1]->getDisplayName());
         $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
@@ -421,31 +429,73 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   /**
    * Creates an app with no products and then adds multiple ones.
    */
-  public function testAppCRUDMultipleProductsAdd() {
+  public function testAppCrudMultipleProductsAdd() {
     $this->submitAdminForm([]);
     $this->products[] = $this->createProduct();
     $this->products[] = $this->createProduct();
 
-    $this->assertAppCRUD(
-      function(array $data): array {
+    $this->assertAppCrud(
+      function (array $data): array {
         return $data;
       },
-      function() {
+      function () {
         $this->assertSession()->pageTextNotContains($this->products[0]->getDisplayName());
         $this->assertSession()->pageTextNotContains($this->products[1]->getDisplayName());
         $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
       },
-      function(array $data, string $credential_id): array {
+      function (array $data, string $credential_id): array {
         $data["credential[{$credential_id}][api_products][{$this->products[0]->getName()}]"] = $this->products[0]->getName();
         $data["credential[{$credential_id}][api_products][{$this->products[1]->getName()}]"] = $this->products[1]->getName();
         return $data;
       },
-      function() {
+      function () {
         $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
         $this->assertSession()->pageTextContains($this->products[1]->getDisplayName());
         $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
       }
     );
+  }
+
+  /**
+   * Tests the case when an account just got disabled on the edge UI.
+   */
+  public function testNotificationsWhenAccountIsInactiveOnEdge() {
+    /** @var \Drupal\apigee_edge\SDKConnectorInterface $connector */
+    $connector = \Drupal::service('apigee_edge.sdk_connector');
+    $controller = new DeveloperController($connector->getOrganization(), $connector->getClient());
+
+    $controller->setStatus($this->account->getEmail(), Developer::STATUS_INACTIVE);
+
+    $this->drupalGet("/user/{$this->account->id()}/apps");
+    $this->assertSession()->pageTextContains('Your developer account has inactive status so you will not be able to use your credentials until your account is enabled. Please contact the Developer Portal support for further assistance.');
+
+    $this->drupalLogin($this->rootUser);
+    $this->drupalGet("/user/{$this->account->id()}/apps");
+    $this->assertSession()->pageTextContains("The developer account of {$this->account->getAccountName()} has inactive status so this user has invalid credentials until the account is enabled.");
+  }
+
+  /**
+   * Loads a developer app by name.
+   *
+   * @param string $name
+   *   Name of the developer app.
+   *
+   * @return \Drupal\apigee_edge\Entity\DeveloperApp|null
+   *   Loaded developer app or null if not found.
+   */
+  protected function loadDeveloperApp(string $name): ?DeveloperApp {
+    \Drupal::entityTypeManager()->getStorage('developer_app')->resetCache();
+
+    /** @var \Drupal\apigee_edge\Entity\DeveloperApp[] $apps */
+    $apps = DeveloperApp::loadMultiple();
+
+    foreach ($apps as $app) {
+      if ($app->getName() === $name) {
+        return $app;
+      }
+    }
+
+    return NULL;
   }
 
   /**
@@ -461,27 +511,32 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    *   Additional asserts after the app is created.
    * @param \Drupal\user\UserInterface|null $account
    */
-  protected function assertAppCRUD(?callable $beforeCreate = NULL, ?callable $afterCreate = NULL, ?callable $beforeUpdate = NULL, ?callable $afterUpdate = NULL, ?UserInterface $account = NULL) {
+  protected function assertAppCrud(?callable $beforeCreate = NULL, ?callable $afterCreate = NULL, ?callable $beforeUpdate = NULL, ?callable $afterUpdate = NULL, ?UserInterface $account = NULL) {
     if ($account === NULL) {
       $account = $this->account;
     }
 
     $name = strtolower($this->randomMachineName());
-    $displayName = $this->randomString();
+    $displayName = $this->getRandomGenerator()->word(16);
     $callbackUrl = "http://example.com/{$this->randomMachineName()}";
     $description = trim($this->getRandomGenerator()->paragraphs(1));
 
     $data = [
       'name' => $name,
-      'displayName' => $displayName,
-      'callbackUrl' => $callbackUrl,
-      'description' => $description,
+      'displayName[0][value]' => $displayName,
+      'callbackUrl[0][value]' => $callbackUrl,
+      'description[0][value]' => $description,
     ];
     if ($beforeCreate) {
       $data = $beforeCreate($data);
     }
 
     $this->postCreateAppForm($data, $account);
+
+    $app = $this->loadDeveloperApp($name);
+
+    $this->assertSession()->linkByHrefExists("/developer-apps/{$app->id()}/edit?destination=/user/{$account->id()}/apps");
+    $this->assertSession()->linkByHrefExists("/developer-apps/{$app->id()}/delete?destination=/user/{$account->id()}/apps");
     $this->clickLink($displayName);
     $this->assertSession()->pageTextContains($displayName);
     $this->assertSession()->pageTextContains($callbackUrl);
@@ -507,13 +562,13 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $credential = reset($credentials);
     $credential_id = $credential->id();
 
-    $displayName = $this->randomString();
+    $displayName = $this->getRandomGenerator()->word(16);
     $callbackUrl = "{$callbackUrl}/{$this->randomMachineName()}";
     $description = trim($this->getRandomGenerator()->paragraphs(1));
     $data = [
-      'details[displayName]' => $displayName,
-      'details[callbackUrl]' => $callbackUrl,
-      'details[description]' => $description,
+      'displayName[0][value]' => $displayName,
+      'callbackUrl[0][value]' => $callbackUrl,
+      'description[0][value]' => $description,
     ];
     if ($beforeUpdate) {
       $data = $beforeUpdate($data, $credential_id);
@@ -538,7 +593,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   /**
    * Creates an app and assigns products to it.
    *
-   * @param ApiProduct[] $products
+   * @param \Drupal\apigee_edge\Entity\ApiProduct[] $products
    * @param bool $require
    *   Set the product required on the form.
    * @param bool $multiple
@@ -547,14 +602,18 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    *   Display the products as a select box.
    */
   protected function assertAppCreationWithProduct(array $products = [], bool $require = FALSE, bool $multiple = TRUE, bool $display_as_select = FALSE) {
-    $this->submitAdminForm(['multiple_products' => $multiple, 'require' => $require, 'display_as_select' => $display_as_select]);
+    $this->submitAdminForm([
+      'multiple_products' => $multiple,
+      'require' => $require,
+      'display_as_select' => $display_as_select,
+    ]);
     $name = strtolower($this->randomMachineName());
 
     $productnum = count($products);
 
     $formdata = [
       'name' => $name,
-      'displayName' => $name,
+      'displayName[0][value]' => $name,
     ];
     if (count($products) === 1) {
       $formdata['api_products'] = reset($products)->getName();

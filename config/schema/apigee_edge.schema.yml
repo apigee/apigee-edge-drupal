@@ -48,18 +48,46 @@ apigee_edge.appsettings:
       type: boolean
     require:
       type: boolean
-    description_visible:
-      type: boolean
-    description_required:
-      type: boolean
-    callback_url_visible:
-      type: boolean
-    callback_url_required:
-      type: boolean
+    required_base_fields:
+      type: sequence
+      sequence:
+        type: string
+    locked_base_fields:
+      type: sequence
+      sequence:
+        type: string
     default_products:
       type: sequence
       sequence:
         type: string
+
+apigee_edge.developer_settings:
+  type: config_object
+  mapping:
+    registration_mode:
+      type: string
+    display_only_error_message_content:
+      type: mapping
+      mapping:
+        format:
+          type: string
+        value:
+          type: text
+    verify_email_error_message_content:
+      type: mapping
+      mapping:
+        format:
+          type: string
+        value:
+          type: text
+    verification_email_subject:
+      type: string
+    verification_email_content:
+      type: text
+    verification_token:
+      type: string
+    verification_token_expires:
+      type: integer
 
 apigee_edge.sync:
   type: config_object

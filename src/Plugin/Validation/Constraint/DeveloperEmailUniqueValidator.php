@@ -1,0 +1,98 @@
+<?php
+
+/**
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ * USA.
+ */
+
+namespace Drupal\apigee_edge\Plugin\Validation\Constraint;
+
+use Drupal\apigee_edge\Entity\Developer;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Validator\Constraint;
+use Symfony\Component\Validator\ConstraintValidator;
+
+/**
+ * Checks if an email address already belongs to a developer on Edge.
+ */
+class DeveloperEmailUniqueValidator extends ConstraintValidator implements ContainerInjectionInterface {
+
+  /**
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  private $entityTypeManager;
+
+  /**
+   * Stores email addresses that should not be validated.
+   *
+   * @var array
+   */
+  private static $whitelist = [];
+
+  /**
+   * DeveloperEmailUniqueValidator constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   Entity type manager.
+   */
+  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
+    $this->entityTypeManager = $entityTypeManager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validate($items, Constraint $constraint) {
+    if (in_array($items->value, static::$whitelist)) {
+      return;
+    }
+    /** @var \Drupal\Core\Entity\EntityInterface $entity */
+    $entity = $items->getEntity();
+    // If field's value has not changed do not validate it.
+    if (!$entity->isNew()) {
+      $original = $this->entityTypeManager->getStorage($entity->getEntityType()->id())->load($entity->id());
+      if ($original->{$items->getName()}->value === $items->value) {
+        return;
+      }
+    }
+    $developer = Developer::load($items->value);
+    if ($developer) {
+      $this->context->addViolation($constraint->message, [
+        '%email' => $items->value,
+      ]);
+    }
+  }
+
+  /**
+   * Whitelist email address for validation.
+   *
+   * @param string $email
+   *   Email address to whitelist.
+   */
+  public static function whitelist(string $email) {
+    static::$whitelist[] = $email;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static($container->get('entity_type.manager'));
+  }
+
+}

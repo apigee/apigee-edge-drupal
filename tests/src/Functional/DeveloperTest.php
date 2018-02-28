@@ -1,5 +1,22 @@
 <?php
 
+/**
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Drupal\apigee_edge\Entity\Developer;
@@ -36,8 +53,8 @@ class DeveloperTest extends BrowserTestBase {
 
     $test_user = [
       'username' => $this->randomMachineName(),
-      'first_name' => $this->randomString(),
-      'last_name' => $this->randomString(),
+      'first_name' => $this->getRandomGenerator()->word(16),
+      'last_name' => $this->getRandomGenerator()->word(16),
     ];
     $test_user['email'] = "{$test_user['username']}@example.com";
 
@@ -53,7 +70,7 @@ class DeveloperTest extends BrowserTestBase {
     $account = user_load_by_mail($test_user['email']);
     $this->assertNotEmpty($account, 'Account is created');
 
-    /** @var Developer $developer */
+    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
     $developer = Developer::load($test_user['email']);
     $this->assertNotEmpty($developer);
 
@@ -94,8 +111,8 @@ class DeveloperTest extends BrowserTestBase {
     $this->drupalGet('/admin/people/create');
 
     $test_user = [
-      'first_name' => $this->randomString(),
-      'last_name' => $this->randomString(),
+      'first_name' => $this->getRandomGenerator()->word(16),
+      'last_name' => $this->getRandomGenerator()->word(16),
       'username' => $this->randomMachineName(),
       'password' => user_password(),
       'status' => '0',
@@ -119,7 +136,7 @@ class DeveloperTest extends BrowserTestBase {
     $account = user_load_by_mail($test_user['email']);
     $this->assertNotEmpty($account);
 
-    /** @var Developer $developer */
+    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
     $developer = Developer::load($test_user['email']);
     $this->assertNotEmpty($developer);
 

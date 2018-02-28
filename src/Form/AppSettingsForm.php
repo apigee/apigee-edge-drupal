@@ -1,5 +1,22 @@
 <?php
 
+/**
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 namespace Drupal\apigee_edge\Form;
 
 use Drupal\apigee_edge\Entity\ApiProduct;
@@ -140,52 +157,6 @@ class AppSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    $form['callback_url'] = [
-      '#type' => 'fieldset',
-      '#title' => $this->t('Callback URL'),
-      '#collapsible' => FALSE,
-    ];
-
-    $form['callback_url']['callback_url_visible'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Show callback URL field'),
-      '#default_value' => $config->get('callback_url_visible'),
-    ];
-
-    $form['callback_url']['callback_url_required'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Require callback URL'),
-      '#default_value' => $config->get('callback_url_required'),
-      '#states' => [
-        'visible' => [
-          ':input[name="callback_url_visible"]' => ['checked' => TRUE],
-        ],
-      ],
-    ];
-
-    $form['description'] = [
-      '#type' => 'fieldset',
-      '#title' => $this->t('App description'),
-      '#collapsible' => FALSE,
-    ];
-
-    $form['description']['description_visible'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Show description field'),
-      '#default_value' => $config->get('description_visible'),
-    ];
-
-    $form['description']['description_required'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Require app description'),
-      '#default_value' => $config->get('description_required'),
-      '#states' => [
-        'visible' => [
-          ':input[name="description_visible"]' => ['checked' => TRUE],
-        ],
-      ],
-    ];
-
     $form['label'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('How to refer to an Application on the UI'),
@@ -221,10 +192,6 @@ class AppSettingsForm extends ConfigFormBase {
       'user_select',
       'multiple_products',
       'require',
-      'description_visible',
-      'description_required',
-      'callback_url_visible',
-      'callback_url_required',
     ];
 
     foreach ($config_names as $name) {

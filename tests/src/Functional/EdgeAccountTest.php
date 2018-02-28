@@ -1,5 +1,22 @@
 <?php
 
+/**
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Drupal\apigee_edge\Entity\Developer;
@@ -67,7 +84,7 @@ class EdgeAccountTest extends BrowserTestBase {
    */
   public function testCredentialsStorages() {
     // Test private file storage.
-    $this->drupalGet('/admin/config/apigee-edge');
+    $this->drupalGet('/admin/config/apigee-edge/settings');
 
     $formdata = [
       'credentials_storage_type' => 'credentials_storage_private_file',
@@ -85,8 +102,8 @@ class EdgeAccountTest extends BrowserTestBase {
 
     $developer_data = [
       'userName' => $this->randomMachineName(),
-      'firstName' => $this->randomString(),
-      'lastName' => $this->randomString(),
+      'firstName' => $this->getRandomGenerator()->word(16),
+      'lastName' => $this->getRandomGenerator()->word(16),
     ];
     $developer_data['email'] = "{$developer_data['userName']}@example.com";
 
@@ -95,12 +112,12 @@ class EdgeAccountTest extends BrowserTestBase {
 
     $this->resetCache();
 
-    /** @var Developer $developer */
+    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
     $developer = Developer::load($developer_data['email']);
     $this->assertEquals($developer->getEmail(), $developer_data['email']);
 
     // Test env storage.
-    $this->drupalGet('/admin/config/apigee-edge');
+    $this->drupalGet('/admin/config/apigee-edge/settings');
 
     $formdata = [
       'credentials_storage_type' => 'credentials_storage_env',

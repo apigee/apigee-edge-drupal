@@ -1,15 +1,32 @@
 <?php
 
+/**
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 namespace Drupal\apigee_edge\Form;
 
-use Apigee\Edge\Api\Management\Controller\OrganizationController;
-use Apigee\Edge\HttpClient\Client;
 use Drupal\apigee_edge\Credentials;
 use Drupal\apigee_edge\CredentialsInterface;
+use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -47,6 +64,20 @@ class AuthenticationForm extends ConfigFormBase {
   protected $authenticationStoragePluginManager;
 
   /**
+   * The SDK connector service.
+   *
+   * @var \Drupal\apigee_edge\SDKConnectorInterface
+   */
+  protected $sdkConnector;
+
+  /**
+   * The messenger service.
+   *
+   * @var \Drupal\Core\Messenger\MessengerInterface
+   */
+  protected $messenger;
+
+  /**
    * Constructs a new AuthenticationForm.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -55,13 +86,21 @@ class AuthenticationForm extends ConfigFormBase {
    *   The manager for credentials storage plugins.
    * @param \Drupal\Component\Plugin\PluginManagerInterface $authentication_method_plugin_manager
    *   The manager for authentication method plugins.
+   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
+   *   SDK connector service.
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger service.
    */
   public function __construct(ConfigFactoryInterface $config_factory,
                               PluginManagerInterface $credentials_storage_plugin_manager,
-                              PluginManagerInterface $authentication_method_plugin_manager) {
+                              PluginManagerInterface $authentication_method_plugin_manager,
+                              SDKConnectorInterface $sdk_connector,
+                              MessengerInterface $messenger) {
     parent::__construct($config_factory);
     $this->credentialsStoragePluginManager = $credentials_storage_plugin_manager;
     $this->authenticationStoragePluginManager = $authentication_method_plugin_manager;
+    $this->sdkConnector = $sdk_connector;
+    $this->messenger = $messenger;
 
     foreach ($credentials_storage_plugin_manager->getDefinitions() as $key => $value) {
       /** @var \Drupal\Core\StringTranslation\TranslatableMarkup $plugin_name */
@@ -83,7 +122,9 @@ class AuthenticationForm extends ConfigFormBase {
     return new static(
       $container->get('config.factory'),
       $container->get('plugin.manager.apigee_edge.credentials_storage'),
-      $container->get('plugin.manager.apigee_edge.authentication_method')
+      $container->get('plugin.manager.apigee_edge.authentication_method'),
+      $container->get('apigee_edge.sdk_connector'),
+      $container->get('messenger')
     );
   }
 
@@ -132,12 +173,13 @@ class AuthenticationForm extends ConfigFormBase {
       '#attributes' => [
         'class' => [
           'button',
+          'button--primary',
         ],
       ],
     ];
 
     $form['sync']['background_sync_submit'] = [
-      '#title' => $this->t('Background...'),
+      '#title' => $this->t('Background'),
       '#type' => 'link',
       '#url' => $this->buildUrl('apigee_edge.user_sync.schedule'),
       '#attributes' => [
@@ -147,15 +189,14 @@ class AuthenticationForm extends ConfigFormBase {
       ],
     ];
 
-    $form['sync']['sync_wrapper'] = [
-      '#type' => 'container',
+    $form['sync']['sync_info'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'span',
+      '#value' => '?',
       '#attributes' => [
-        'class' => 'help--button',
+        'class' => 'info-circle',
+        'title' => t('A background sync is recommended for large numbers of developers.'),
       ],
-    ];
-
-    $form['sync']['sync_wrapper']['background_sync_text'] = [
-      '#markup' => $this->t('A background sync is recommended for large numbers of developers.'),
     ];
 
     $form['credentials_storage'] = [
@@ -288,7 +329,7 @@ class AuthenticationForm extends ConfigFormBase {
     $credentials_storage = $this->credentialsStoragePluginManager
       ->createInstance($form_state->getValue('credentials_storage_type'));
     $credentials_storage_error = $credentials_storage->hasRequirements();
-    if (!empty($credentials_storage_error)) {
+    if (isset($credentials_storage_error)) {
       $form_state->setErrorByName('credentials_storage_type', $credentials_storage_error);
     }
 
@@ -302,12 +343,7 @@ class AuthenticationForm extends ConfigFormBase {
       $credentials = $this->createCredentials($form_state);
     }
     try {
-      $auth = $this->authenticationStoragePluginManager
-        ->createInstance($form_state->getValue('authentication_method_type'))
-        ->createAuthenticationObject($credentials);
-      $client = new Client($auth, NULL, $credentials->getEndpoint());
-      $oc = new OrganizationController($client);
-      $oc->load($credentials->getOrganization());
+      $this->sdkConnector->testConnection($credentials);
     }
     catch (\Exception $exception) {
       watchdog_exception('apigee_edge', $exception);
@@ -348,7 +384,7 @@ class AuthenticationForm extends ConfigFormBase {
       parent::submitForm($form, $form_state);
     }
     catch (\Exception $exception) {
-      drupal_set_message($exception->getMessage(), 'error');
+      $this->messenger->addError($exception->getMessage());
     }
   }
 
@@ -396,7 +432,7 @@ class AuthenticationForm extends ConfigFormBase {
   protected function buildUrl(string $route_name) {
     $url = Url::fromRoute($route_name);
     $token = \Drupal::csrfToken()->get($url->getInternalPath());
-    $url->setOptions(['query' => ['destination' => '/admin/config/apigee-edge', 'token' => $token]]);
+    $url->setOptions(['query' => ['destination' => '/admin/config/apigee-edge/settings', 'token' => $token]]);
     return $url;
   }
 
@@ -417,7 +453,7 @@ class AuthenticationForm extends ConfigFormBase {
     // "Send request" button is not going to work because password field
     // value becomes empty. (Password form elements has no default values.)
     $form_state->set('ajax_credentials_api_password', $form_state->getValue('credentials_api_password', ''));
-    drupal_set_message($this->t('Connection successful.'));
+    $this->messenger->addStatus($this->t('Connection successful.'));
   }
 
 }

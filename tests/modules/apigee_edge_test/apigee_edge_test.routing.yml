@@ -1,0 +1,13 @@
+apigee_edge_test.entity_storage_exception:
+  path: '/exception/entity-storage'
+  defaults:
+    _controller: '\Drupal\apigee_edge_test\Controller\ExceptionController::entityStorage'
+  requirements:
+    _access: 'TRUE'
+
+apigee_edge_test.api_exception:
+  path: '/exception/api'
+  defaults:
+    _controller: '\Drupal\apigee_edge_test\Controller\ExceptionController::api'
+  requirements:
+    _access: 'TRUE'

@@ -1,5 +1,22 @@
 <?php
 
+/**
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 namespace Drupal\apigee_edge\Entity\Controller;
 
 use Apigee\Edge\Api\Management\Controller\AppController;
@@ -34,8 +51,10 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
    * Creates a developer app controller.
    *
    * @param \Apigee\Edge\Api\Management\Entity\DeveloperApp $app
+   *   Developer app object from the SDK.
    *
    * @return \Apigee\Edge\Api\Management\Controller\DeveloperAppControllerInterface
+   *   Developer app controller from the SDK.
    */
   protected function createDeveloperAppController(EdgeDeveloperApp $app): EdgeDeveloperAppControllerInterface {
     return new EdgeDeveloperAppController($this->getOrganisation(), $app->getDeveloperId(), $this->client);
@@ -50,8 +69,10 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
    * those cases a conversion to the superclass is needed.
    *
    * @param \Drupal\apigee_edge\Entity\DeveloperApp $app
+   *   Drupal Developer app entity.
    *
    * @return \Apigee\Edge\Api\Management\Entity\DeveloperApp
+   *   SDK Developer app entity.
    */
   protected function convertEntity(DeveloperApp $app): EdgeDeveloperApp {
     $normalizer = new EntityNormalizer();
@@ -64,8 +85,9 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
    * Copies all properties to $destination from $source.
    *
    * @param \Drupal\apigee_edge\Entity\DeveloperApp $destination
-   *
+   *   Drupal developer app entity.
    * @param \Apigee\Edge\Api\Management\Entity\DeveloperApp $source
+   *   SDK developer app entity.
    */
   protected function applyChanges(DeveloperApp $destination, EdgeDeveloperApp $source) {
     $rodst = new \ReflectionObject($destination);

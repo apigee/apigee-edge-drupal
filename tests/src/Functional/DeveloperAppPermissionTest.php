@@ -1,10 +1,28 @@
 <?php
 
+/**
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Apigee\Edge\Api\Management\Entity\App;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
+use Drupal\user\RoleInterface;
 
 /**
  * @group apigee_edge
@@ -25,7 +43,11 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
     'update any developer_app' => ['edit-form', 'edit-form-for-developer'],
     'update own developer_app' => ['edit-form', 'edit-form-for-developer'],
     'view any developer_app' => ['canonical', 'canonical-by-developer'],
-    'view own developer_app' => ['canonical', 'canonical-by-developer', 'collection-by-developer'],
+    'view own developer_app' => [
+      'canonical',
+      'canonical-by-developer',
+      'collection-by-developer',
+    ],
     'access developer_app overview' => ['collection'],
     'administer developer_app' => [
       'canonical',
@@ -75,7 +97,10 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function setUp() {
+    $this->profile = 'standard';
     parent::setUp();
+
+    $this->revokeExtraPermissions();
 
     $this->myAccount = $this->createAccount([]);
     $this->otherAccount = $this->createAccount([]);
@@ -122,20 +147,44 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
-   * Tests the permission matrix.
+   * Revokes extra permissions that are granted to authenticated user.
+   *
+   * These permissions are granted in apigee_edge_install(), and while they make
+   * sense from an UX point of view, they make testing permissions more
+   * difficult.
    */
-  public function testPermissions() {
-    foreach (array_keys(static::PERMISSION_MATRIX) as $permission) {
-      $this->assertAccount($permission);
-    }
+  protected function revokeExtraPermissions() {
+    $authenticated_user_permissions = [
+      'view own developer_app',
+      'create developer_app',
+      'update own developer_app',
+      'delete own developer_app',
+    ];
+
+    user_role_revoke_permissions(RoleInterface::AUTHENTICATED_ID, $authenticated_user_permissions);
+  }
+
+  /**
+   * Returns the list of the permissions.
+   *
+   * @return array
+   *   List of function arguments.
+   */
+  public function permissionProvider() {
+    return array_map(function (string $permission): array {
+      return [$permission];
+    }, array_keys(static::PERMISSION_MATRIX));
   }
 
   /**
    * Asserts that an account with a given permission can or can't access pages.
    *
    * @param string $permission
+   *   Name of the permission to test.
+   *
+   * @dataProvider permissionProvider
    */
-  protected function assertAccount(string $permission) {
+  public function testPermission(string $permission) {
     if ($this->loggedInUser) {
       $this->drupalLogout();
     }

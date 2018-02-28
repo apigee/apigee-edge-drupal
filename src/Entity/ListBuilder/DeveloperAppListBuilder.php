@@ -1,5 +1,22 @@
 <?php
 
+/**
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 namespace Drupal\apigee_edge\Entity\ListBuilder;
 
 use Apigee\Edge\Api\Management\Entity\App;
@@ -7,7 +24,6 @@ use Apigee\Edge\Api\Management\Entity\AppCredential;
 use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
-use Drupal\Component\Utility\Html;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
@@ -231,16 +247,8 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
     $warningRow = &$rows[$warningRowId]['data'];
     $infoRow['app_name'] = $this->getAppDetailsLink($entity);
     $infoRow['app_status']['data'] = [
-      '#prefix' => '<span class="' . Html::escape($entity->getStatus()) . ' wrapper--status">',
-      '#suffix' => '</span>',
-      '#type' => 'html_tag',
-      '#tag' => 'span',
+      '#type' => 'status_property',
       '#value' => $entity->getStatus(),
-      '#attributes' => [
-        'class' => [
-          'label--status',
-        ],
-      ],
     ];
     $infoRow += parent::buildRow($entity);
 
@@ -378,7 +386,7 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
       '#rows' => [],
       '#empty' => $this->t('There is no @label yet.', ['@label' => $this->entityType->getLabel()]),
       '#cache' => [
-        // TODO
+        // TODO.
         'contexts' => $this->entityType->getListCacheContexts(),
         'tags' => $this->entityType->getListCacheTags(),
       ],

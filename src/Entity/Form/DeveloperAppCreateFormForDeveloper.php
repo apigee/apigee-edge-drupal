@@ -1,13 +1,32 @@
 <?php
 
+/**
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 namespace Drupal\apigee_edge\Entity\Form;
 
+use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\user\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -15,13 +34,17 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
 
+  use DeveloperStatusCheckTrait;
+
   /**
    * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface
    */
   protected $entity;
 
   /**
-   * @var null|int Drupal user id, who is going to own the entity.
+   * Id of the Drupal user who owns the entity.
+   *
+   * @var null|int
    */
   protected $userId;
 
@@ -29,10 +52,15 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
    * DeveloperCreateDeveloperAppForm constructor.
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $sdkConnector
+   *   SDK connector service.
    * @param \Drupal\Core\Config\ConfigFactory $configFactory
+   *   Config factory.
    * @param \Drupal\Core\Entity\EntityManagerInterface $entityManager
+   *   Entity manager.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   Entity type manager.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+   *   Module handler service.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
@@ -60,16 +88,22 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
   }
 
   /**
-   * {@inheritdoc}
+   * Form constructor.
    *
+   * @param array $form
+   *   An associative array containing the structure of the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
    * @param int|null $user
    *   User id, up-casting is not working, because _entity_form is used instead
    *   of _form in routing.yml.
    */
   public function buildForm(array $form, FormStateInterface $form_state, int $user = NULL) {
     $this->userId = $user;
+    $this->checkDeveloperStatus(User::load($user));
+
     $form = parent::buildForm($form, $form_state);
-    $form['details']['developerId'] = [
+    $form['developerId'] = [
       '#type' => 'value',
       '#value' => $this->entity->getDeveloperId(),
     ];

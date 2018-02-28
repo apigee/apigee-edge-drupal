@@ -1,5 +1,6 @@
 {
     "name": "drupal/apigee_edge",
+    "license": "MIT",
     "type": "drupal-module",
     "description": "Apigee Edge Drupal integration.",
     "require": {
@@ -8,6 +9,9 @@
         "apigee/edge": "dev-2.x-dev",
         "drupal/core": "^8.4",
         "drupal/entity": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^6.1"
     },
     "config": {
         "sort-packages": true

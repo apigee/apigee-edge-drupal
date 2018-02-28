@@ -7,11 +7,27 @@ apigee_edge.error_page:
     _permission: 'access content'
     _user_is_logged_in: 'TRUE'
 
-apigee_edge.settings:
+apigee_edge.admin_config_edge:
   path: '/admin/config/apigee-edge'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Apigee Edge'
+  requirements:
+    _permission: 'administer apigee edge'
+
+apigee_edge.settings:
+  path: '/admin/config/apigee-edge/settings'
   defaults:
     _form: '\Drupal\apigee_edge\Form\AuthenticationForm'
     _title: 'Apigee Edge Configuration'
+  requirements:
+    _permission: 'administer apigee edge'
+
+apigee_edge.settings.developer:
+  path: '/admin/config/apigee-edge/developer-settings'
+  defaults:
+    _form: '\Drupal\apigee_edge\Form\DeveloperSettingsForm'
+    _title: 'Developer Settings'
   requirements:
     _permission: 'administer apigee edge'
 
@@ -66,7 +82,7 @@ apigee_edge.user.my_apps:
 entity.developer_app.canonical:
   path: '/developer-apps/{developer_app}'
   defaults:
-    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppViewController::render'
+    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppViewController::view'
     _title_callback: '\Drupal\apigee_edge\Controller\DeveloperAppViewController::getPageTitle'
   requirements:
     _entity_access: 'developer_app.view'
@@ -107,7 +123,7 @@ entity.developer_app.delete_form:
 entity.developer_app.canonical_by_developer:
   path: '/user/{user}/apps/{app}'
   defaults:
-    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppViewControllerForDeveloper::render'
+    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppViewControllerForDeveloper::view'
     _title_callback: '\Drupal\apigee_edge\Controller\DeveloperAppViewControllerForDeveloper::getPageTitle'
   requirements:
     user: '\d+'

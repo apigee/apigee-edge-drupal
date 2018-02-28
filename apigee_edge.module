@@ -2,16 +2,50 @@
 
 /**
  * @file
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
+/**
+ * @file
  * Main module file for Apigee Edge.
  */
 
+use Apigee\Edge\Entity\EntityNormalizer;
 use Apigee\Edge\Exception\ClientErrorException;
+use Apigee\Edge\Structure\CredentialProduct;
+use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
+use Drupal\apigee_edge\Form\DeveloperSettingsForm;
 use Drupal\apigee_edge\JobExecutor;
+use Drupal\apigee_edge\Plugin\Validation\Constraint\DeveloperEmailUnique;
+use Drupal\apigee_edge\Plugin\Validation\Constraint\DeveloperEmailUniqueValidator;
+use Drupal\Component\Render\PlainTextOutput;
+use Drupal\Component\Utility\Crypt;
+use Drupal\Component\Utility\Xss;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Site\Settings;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\TempStore\TempStoreException;
+use Drupal\Core\Url;
 use Drupal\user\UserInterface;
 
 /**
@@ -31,10 +65,31 @@ function apigee_edge_menu_links_discovered_alter(array &$links) {
 }
 
 /**
+ * Implements hook_module_implements_alter().
+ */
+function apigee_edge_module_implements_alter(&$implementations, $hook) {
+  if ($hook == 'form_user_register_form_alter') {
+    // Move apigee_edge_form_user_register_form_alter() to the end of the list.
+    $group = $implementations['apigee_edge'];
+    unset($implementations['apigee_edge']);
+    $implementations['apigee_edge'] = $group;
+  }
+}
+
+/**
  * Implements hook_theme().
  */
 function apigee_edge_theme() {
   return [
+    'developer_app' => [
+      'render element' => 'elements',
+    ],
+    'app_credential' => [
+      'render element' => 'elements',
+    ],
+    'app_credential_product_list' => [
+      'render element' => 'elements',
+    ],
     'status_property' => [
       'render element' => 'element',
     ],
@@ -126,10 +181,55 @@ function apigee_edge_entity_base_field_info(EntityTypeInterface $entity_type) {
  * Implements hook_entity_base_field_info_alter().
  */
 function apigee_edge_entity_base_field_info_alter(&$fields, EntityTypeInterface $entity_type) {
+  /** @var \Drupal\Core\Field\FieldDefinitionInterface[] $fields */
   if ($entity_type->id() === 'user') {
     /** @var \Drupal\Core\Field\BaseFieldDefinition $mail */
     $mail = $fields['mail'];
     $mail->setRequired(TRUE);
+    $mail->addConstraint('DeveloperMailUnique');
+  }
+}
+
+/**
+ * Implements hook_entity_extra_field_info().
+ */
+function apigee_edge_entity_extra_field_info() {
+  $extra = [];
+  $entityType = \Drupal::entityTypeManager()->getDefinition('developer_app');
+  $extra['developer_app']['developer_app']['display']['credentials'] = [
+    'label' => new TranslatableMarkup('Credentials'),
+    'description' => new TranslatableMarkup('Displays credentials provided by a @label', ['@label' => $entityType->getSingularLabel()]),
+    // By default it should be displayed in the end of the view.
+    'weight' => 100,
+    'visible' => TRUE,
+  ];
+  return $extra;
+}
+
+/**
+ * Implements hook_entity_view().
+ */
+function apigee_edge_developer_app_view(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
+  /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
+  if ($display->getComponent('credentials')) {
+    $defaults = [
+      '#cache' => [
+        'contexts' => $entity->getCacheContexts(),
+        'tags' => $entity->getCacheTags(),
+      ],
+    ];
+    $build['credentials'] = [
+      '#type' => 'container',
+    ];
+    foreach ($entity->getCredentials() as $credential) {
+      $build['credentials'][] = [
+        '#type' => 'app_credential',
+        '#credential' => $credential,
+        '#attributes' => [
+          'class' => 'items--inline',
+        ],
+      ] + $defaults;
+    }
   }
 }
 
@@ -137,9 +237,604 @@ function apigee_edge_entity_base_field_info_alter(&$fields, EntityTypeInterface 
  * Implements hook_form_alter().
  */
 function apigee_edge_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  if ($form_id === 'user_register_form' || $form_id === 'user_form') {
-    $form['account']['mail']['#required'] = TRUE;
+  switch ($form_id) {
+    case 'entity_form_display_edit_form':
+      $form['#validate'][] = '_apigee_edge_entity_form_display_edit_form_validate';
+      break;
   }
+}
+
+/**
+ * Extra validation for the entity_form_display.edit form.
+ *
+ * This makes sure that fields marked as 'required' can't be disabled.
+ *
+ * @param array $form
+ *   Form array.
+ * @param Drupal\Core\Form\FormStateInterface $form_state
+ *   Form state.
+ */
+function _apigee_edge_entity_form_display_edit_form_validate(array &$form, FormStateInterface $form_state) {
+  $required = \Drupal::config('apigee_edge.appsettings')->get('required_base_fields');
+
+  foreach ($form_state->getValue('fields') as $field_name => $data) {
+    if (in_array($field_name, $required) && $data['region'] === 'hidden') {
+      $form_state->setError($form['fields'][$field_name], t('%field-name is required.', [
+        '%field-name' => $form['fields'][$field_name]['human_name']['#plain_text'],
+      ]));
+    }
+  }
+}
+
+/**
+ * After build callback for verification email content form element.
+ *
+ * @param array $form_element
+ *   Form element array.
+ * @param Drupal\Core\Form\FormStateInterface $form_state
+ *   Form state object.
+ *
+ * @return array
+ *   Form array.
+ *
+ * @see \Drupal\apigee_edge\Form\DeveloperSettingsForm::buildForm
+ */
+function apigee_edge_developer_settings_form_verification_email_content_after_build(array $form_element, FormStateInterface $form_state) {
+  if (isset($form_element['format'])) {
+    // Hide input format settings when textarea itself is also hidden.
+    $form_element['format']['#states']['visible'] = $form_element['#states']['visible'];
+  }
+  return $form_element;
+}
+
+/**
+ * Implements hook_mail().
+ *
+ * Based on user_mail().
+ */
+function apigee_edge_mail($key, &$message, $params) {
+  $token_service = \Drupal::token();
+  $language_manager = \Drupal::languageManager();
+  $langcode = $message['langcode'];
+  /** @var \Drupal\Core\Session\AccountInterface $account */
+  $account = $params['account'];
+  $variables = ['user' => $account];
+
+  $language = $language_manager->getLanguage($account->getPreferredLangcode());
+  $original_language = $language_manager->getConfigOverrideLanguage();
+  $language_manager->setConfigOverrideLanguage($language);
+  $config = \Drupal::config('apigee_edge.developer_settings');
+
+  $token_options = [
+    'langcode' => $langcode,
+    'callback' => '_apigee_edge_existing_developer_mail_tokens',
+    'clear' => TRUE,
+  ];
+  $message['subject'] .= PlainTextOutput::renderFromHtml($token_service->replace($config->get('verification_email_subject'), $variables, $token_options));
+  $message['body'][] = $token_service->replace($config->get('verification_email_content'), $variables, $token_options);
+
+  $language_manager->setConfigOverrideLanguage($original_language);
+}
+
+/**
+ * Token callback to add unsafe tokens for existing developer user mails.
+ *
+ * This function is used by \Drupal\Core\Utility\Token::replace() to set up
+ * some additional tokens that can be used in email messages generated by
+ * apigee_edge_mail().
+ *
+ * @param array $replacements
+ *   An associative array variable containing mappings from token names to
+ *   values (for use with strtr()).
+ * @param array $data
+ *   An associative array of token replacement values. If the 'user' element
+ *   exists, it must contain a user account object with the following
+ *   properties:
+ *   - login: The UNIX timestamp of the user's last login.
+ *   - pass: The hashed account login password.
+ * @param array $options
+ *   A keyed array of settings and flags to control the token replacement
+ *   process. See \Drupal\Core\Utility\Token::replace().
+ */
+function _apigee_edge_existing_developer_mail_tokens(array &$replacements, array $data, array $options) {
+  if (isset($data['user'])) {
+    $replacements['[user:developer-email-verification-url]'] = _apigee_edge_existing_developer_email_verification_link($data['user'], $options);
+  }
+}
+
+/**
+ * Sends a verification email to the developer email that is already taken.
+ *
+ * @param \Drupal\Core\Session\AccountInterface $account
+ *   The user object of the account being notified. Must contain at
+ *   least the fields 'uid', 'name', and 'mail'.
+ * @param string $langcode
+ *   (optional) Language code to use for the notification, overriding account
+ *   language.
+ *
+ * @return array
+ *   An array containing various information about the message.
+ *   See \Drupal\Core\Mail\MailManagerInterface::mail() for details.
+ *
+ * @see \_apigee_edge_existing_developer_mail_tokens()
+ */
+function _apigee_edge_send_developer_email_verification_email(AccountInterface $account, $langcode = NULL) {
+  if (\Drupal::config('apigee_edge.developer_settings')->get('registration_mode') === DeveloperSettingsForm::REGISTRATION_MODE_VERIFY_EMAIL) {
+    $params['account'] = $account;
+    $langcode = $langcode ? $langcode : $account->getPreferredLangcode();
+    // Get the custom site notification email to use as the from email address
+    // if it has been set.
+    $site_mail = \Drupal::config('system.site')->get('mail_notification');
+    // If the custom site notification email has not been set, we use the site
+    // default for this.
+    if (empty($site_mail)) {
+      $site_mail = \Drupal::config('system.site')->get('mail');
+    }
+    if (empty($site_mail)) {
+      $site_mail = ini_get('sendmail_from');
+    }
+    $mail = \Drupal::service('plugin.manager.mail')->mail('apigee_edge', 'developer_email_verification', $account->getEmail(), $langcode, $params, $site_mail);
+    // TODO Should we notify admins about this?
+  }
+  return empty($mail) ? NULL : $mail['result'];
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function apigee_edge_form_user_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $user = \Drupal::currentUser();
+  // Make the same information available here as on user_register_form.
+  // @see \Drupal\user\RegisterForm::form()
+  $form['administer_users'] = [
+    '#type' => 'value',
+    '#value' => $user->hasPermission('administer users'),
+  ];
+  apigee_edge_form_user_register_form_alter($form, $form_state, $form_id);
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // The email field should be always required because it is required on
+  // Apigee Edge.
+  $form['account']['mail']['#required'] = TRUE;
+  // Add our custom validation callback to the beginning of the chain.
+  // apigee_edge_module_implements_alter() ensures that form_alter hook is
+  // called in the last time.
+  array_unshift($form['#validate'], 'apigee_edge_form_user_register_form_developer_email_validate');
+  $userInput = $form_state->getUserInput();
+  // Because this form alter is called earlier than the validation callback
+  // (and the entity validations by user module) we have to use raw
+  // user input here to check whether this form element should be visible
+  // next time when the form is displayed on the UI with validation errors.
+  if (!empty($userInput['mail']) && $form['account']['mail']['#default_value'] !== $userInput['mail']) {
+    // Add our custom validation callback to the beginning of the chain.
+    // apigee_edge_module_implements_alter() ensures that form_alter hook is
+    // called in the last time.
+    array_unshift($form['#validate'], 'apigee_edge_form_user_register_form_developer_email_validate');
+
+    $developer = Developer::load($userInput['mail']);
+    $form['developer_exists'] = [
+      '#type' => 'value',
+      '#value' => (bool) $developer,
+    ];
+
+    if ($form['administer_users']['#value']) {
+      if ($developer) {
+        $form['account']['apigee_edge_developer_exists'] = [
+          '#type' => 'checkbox',
+          '#title' => t('I understand the provided email address belongs to a developer on Apigee Edge and I confirm user creation'),
+          '#required' => TRUE,
+          '#weight' => 0,
+        ];
+      }
+    }
+    else {
+      $config = Drupal::config('apigee_edge.developer_settings');
+      if ($config->get('registration_mode') === DeveloperSettingsForm::REGISTRATION_MODE_VERIFY_EMAIL) {
+        if ($developer) {
+          $form['account']['apigee_edge_developer_unreceived_mail'] = [
+            '#type' => 'checkbox',
+            '#title' => t('I did not get an email. Please send me a new one.'),
+            '#weight' => 0,
+          ];
+        }
+      }
+    }
+  }
+  $form['#after_build'][] = 'apigee_edge_form_user_register_form_after_build';
+}
+
+/**
+ * After build function for user_registration_form.
+ *
+ * @param array $form
+ *   Form array.
+ * @param Drupal\Core\Form\FormStateInterface $form_state
+ *   Form state object.
+ *
+ * @return array
+ *   Form array.
+ */
+function apigee_edge_form_user_register_form_after_build(array $form, FormStateInterface $form_state) {
+  if (isset($form['account']['apigee_edge_developer_exists']) && isset($form['account']['mail'])) {
+    $form['account']['apigee_edge_developer_exists']['#weight'] = $form['account']['mail']['#weight'] + 0.0001;
+  }
+  if (isset($form['account']['apigee_edge_developer_unreceived_mail']) && isset($form['account']['mail'])) {
+    $form['account']['apigee_edge_developer_unreceived_mail']['#weight'] = $form['account']['mail']['#weight'] + 0.0001;
+  }
+  return $form;
+}
+
+/**
+ * Validates whether the provided email address is already taken on Edge or not.
+ *
+ * @param array $form
+ *   Form array.
+ * @param Drupal\Core\Form\FormStateInterface $form_state
+ *   Form state object.
+ */
+function apigee_edge_form_user_register_form_developer_email_validate(array $form, FormStateInterface $form_state) {
+  // Do nothing if the developer does not exists.
+  if (empty($form_state->getValue('developer_exists'))) {
+    return;
+  }
+
+  // Do nothing if user has administer users permission.
+  // (Form is probably displayed on admin/people/create.)
+  if ($form_state->getValue('administer_users')) {
+    // Add email address to the whitelist because we do not want to
+    // display the same error message for an admin user as a regular user.
+    DeveloperEmailUniqueValidator::whitelist($form_state->getValue('mail'));
+    // If administrator has not confirmed that s/he would like to create a user
+    // in Drupal with an existing developer id on Edge then add a custom
+    // error to the field.
+    if (empty($form_state->getValue('apigee_edge_developer_exists'))) {
+      $form_state->setErrorByName('mail', t('This email address already exists on Apigee Edge.'));
+    }
+    return;
+  }
+
+  $config = \Drupal::config('apigee_edge.developer_settings');
+  $request = \Drupal::request();
+  $token = $request->query->get($config->get('verification_token'));
+  $timestamp = $request->query->get('timestamp');
+  /** @var \Drupal\user\UserInterface $account */
+  // Build user object from the submitted form values.
+  $account = $form_state->getBuildInfo()['callback_object']->buildEntity($form, $form_state);
+  // If required parameters are available in the url.
+  if ($token && $timestamp) {
+    // If token is (still) valid then account's email to the whitelist of the
+    // validator. This way it is not going to throw a validation error for this
+    // email this time.
+    if (apigee_edge_existing_developer_registration_hash_validate($account, $token, $timestamp)) {
+      DeveloperEmailUniqueValidator::whitelist($account->getEmail());
+      return;
+    }
+    else {
+      // Let user known that the token in the url has expired.
+      // Drupal sends a new verification email.
+      $form_state->setErrorByName('mail', t('Registration token expired or invalid. We have sent you a new link.'));
+    }
+  }
+
+  // Validate user object.
+  $violations = $account->validate();
+  /** @var \Drupal\Core\Entity\EntityConstraintViolationList $emailViolations */
+  // Get mail field validation errors.
+  $emailViolations = $violations->getByField('mail');
+  $developerExists = FALSE;
+  foreach ($emailViolations as $violation) {
+    // If our validator yelled and error.
+    if (get_class($violation->getConstraint()) === DeveloperEmailUnique::class) {
+      $developerExists = TRUE;
+      break;
+    }
+  }
+
+  if ($developerExists) {
+    // Use shared storage to keep track of sent verification emails.
+    // Form state's storage can not be used for this purpose because its values
+    // are being cleared for every new requests. Private storage is too private
+    // in case of anonymous user because every page request creates a new, empty
+    // private temp storage.
+    $storage = \Drupal::service('tempstore.shared');
+    /** @var \Drupal\Core\TempStore\PrivateTempStore $sendNotifications */
+    $sendNotifications = $storage->get('apigee_edge_developer_email_verification_sent');
+    // Do not send multiple email verifications to the same email address
+    // every time when form validation fails with an error.
+    if (!$sendNotifications->get($account->getEmail()) || $form_state->getValue('apigee_edge_developer_unreceived_mail')) {
+      // Send verification email to the user.
+      $result = _apigee_edge_send_developer_email_verification_email($account, $account->getPreferredLangcode());
+      try {
+        $sendNotifications->set($account->getEmail(), $result);
+      }
+      catch (TempStoreException $e) {
+        watchdog_exception(__FUNCTION__, $e);
+      }
+    }
+  }
+}
+
+/**
+ * Generates an URL to confirm identity of a user with existing developer mail.
+ *
+ * Based on user_cancel_url().
+ *
+ * @param \Drupal\user\UserInterface $account
+ *   User object.
+ * @param array $options
+ *   (optional) A keyed array of settings. Supported options are:
+ *   - langcode: A language code to be used when generating locale-sensitive
+ *     URLs. If langcode is NULL the users preferred language is used.
+ *
+ * @return string
+ *   A unique URL that may be used to confirm the cancellation of the user
+ *   account.
+ *
+ * @see \_apigee_edge_existing_developer_mail_tokens()
+ * @see \Drupal\user\Controller\UserController::confirmCancel()
+ */
+function _apigee_edge_existing_developer_email_verification_link(UserInterface $account, array $options = []) {
+  $languageManager = \Drupal::languageManager();
+  $timestamp = \Drupal::time()->getRequestTime();
+  $langcode = isset($options['langcode']) ? $options['langcode'] : $account->getPreferredLangcode();
+  $url_options = ['absolute' => TRUE, 'language' => $languageManager->getLanguage($langcode)];
+  $url_options['query'][\Drupal::config('apigee_edge.developer_settings')->get('verification_token')] = apigee_edge_existing_developer_registration_hash($account, $timestamp);
+  $url_options['query']['timestamp'] = $timestamp;
+  // For now, use this method for generating url to the user register and
+  // edit forms.
+  $route = 'user.register';
+  $route_params = [];
+  if (!$account->isAnonymous()) {
+    $route = 'entity.user.edit_form';
+    $route_params['user'] = $account->id();
+  }
+  return Url::fromRoute($route, $route_params, $url_options)->toString();
+}
+
+/**
+ * Generates a token for an email address that is already taken on Edge.
+ *
+ * We do not want to enforce user to use the same first name, last name,
+ * username when this token is generated and whe s/he re-opens the registration
+ * form by clicking on the link (that includes this token) from the verification
+ * email. Therefore we only use the email address for token generation.
+ *
+ * Based on user_pass_rehash().
+ *
+ * @param \Drupal\user\UserInterface $account
+ *   User object.
+ * @param string $timestamp
+ *   Timestamp for seed.
+ *
+ * @return string
+ *   Generated token.
+ */
+function apigee_edge_existing_developer_registration_hash(UserInterface $account, string $timestamp) {
+  $data = $account->getEmail();
+  $data .= $timestamp;
+  // TODO Should we increase entropy by generating a random value for an email
+  // address and temporary storing it with State API?
+  return Crypt::hmacBase64($data, Settings::getHashSalt());
+}
+
+/**
+ * Validates token for a registration with an existing developer email on Edge.
+ *
+ * @param \Drupal\user\UserInterface $account
+ *   User object.
+ * @param string $token
+ *   Generated token from the url.
+ * @param string $timestamp
+ *   Timestamp from url.
+ *
+ * @return bool
+ *   TRUE if token valid, false otherwise.
+ */
+function apigee_edge_existing_developer_registration_hash_validate(UserInterface $account, string $token, string $timestamp) {
+  $current = \Drupal::time()->getRequestTime();
+  $timeout = \Drupal::config('apigee_edge.developer_settings')->get('verification_token_expires');
+  if ($timestamp <= $current && $current - $timestamp < $timeout && Crypt::hashEquals($token, apigee_edge_existing_developer_registration_hash($account, $timestamp))) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Prepares variables for developer app templates.
+ *
+ * Default template: developer_app.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing the elements.
+ */
+function template_preprocess_developer_app(array &$variables) {
+  $variables['#attached']['library'][] = 'apigee_edge/apigee_edge.components';
+  $variables['#attached']['library'][] = 'apigee_edge/apigee_edge.view';
+  $variables['developer_app'] = $variables['elements']['#developer_app'];
+
+  // Helpful $content variable for templates.
+  $variables += ['content' => []];
+  foreach (Element::children($variables['elements']) as $key) {
+    $variables['content'][$key] = $variables['elements'][$key];
+  }
+}
+
+/**
+ * Prepares variables for app_credential_product_list templates.
+ *
+ * Default template: app-credential-product-list.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - elements: An associative array containing the credential information.
+ *     Properties used:
+ *     - #credential_products: An \Apigee\Edge\Structure\CredentialProduct[]
+ *       array. Array of products included in an app credential.
+ *   - attributes: HTML attributes for the containing element.
+ */
+function template_preprocess_app_credential_product_list(array &$variables) {
+  /** @var \Apigee\Edge\Structure\CredentialProduct[] $cred_products */
+  $cred_products = $variables['elements']['#credential_products'];
+  $cred_product_ids = array_map(function ($product) {
+    /** @var \Apigee\Edge\Structure\CredentialProduct $product */
+    return $product->getApiproduct();
+  }, $cred_products);
+  /** @var \Drupal\apigee_edge\Entity\ApiProduct[] $allProducts */
+  $variables['#api_product_entities'] = $allProducts = ApiProduct::loadMultiple($cred_product_ids);
+  $variables += ['content' => []];
+  foreach ($cred_products as $product) {
+    $value = '';
+    switch ($product->getStatus()) {
+      case CredentialProduct::STATUS_APPROVED:
+        $value = t('enabled');
+        break;
+
+      case CredentialProduct::STATUS_REVOKED:
+        $value = t('disabled');
+        break;
+
+      case CredentialProduct::STATUS_PENDING:
+        $value = t('pending');
+        break;
+    }
+    $variables['content'][$product->getApiproduct()] = [
+      '#type' => 'container',
+      '#attributes' => ['class' => 'api-product-list-row clearfix'],
+      'label' => [
+        '#type' => 'html_tag',
+        '#tag' => 'span',
+        '#value' => $allProducts[$product->getApiproduct()]->getDisplayName(),
+        '#attributes' => ['class' => 'api-product-name'],
+      ],
+      'status' => [
+        '#type' => 'status_property',
+        '#value' => $value,
+      ],
+    ];
+  }
+}
+
+/**
+ * Prepares variables for app_credential templates.
+ *
+ * Default template: app-credential.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - elements: An associative array containing the credential information.
+ *     Properties used:
+ *     - #credential: A \Apigee\Edge\Api\Management\Entity\AppCredential object.
+ *       A developer app credential.
+ *   - attributes: HTML attributes for the containing element.
+ */
+function template_preprocess_app_credential(array &$variables) {
+  /** @var \Apigee\Edge\Api\Management\Entity\AppCredentialInterface $credential */
+  $credential = $variables['elements']['#credential'];
+  /** @var \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter */
+  $dateFormatter = Drupal::service('date.formatter');
+  // Convert app entity to an array.
+  $normalized = (array) (new EntityNormalizer())->normalize($credential);
+
+  $properties_in_primary = [
+    'consumerKey' => [
+      'label' => t('Consumer Key'),
+      'value_type' => 'plain',
+    ],
+    'consumerSecret' => [
+      'label' => t('Consumer Secret'),
+      'value_type' => 'plain',
+    ],
+    'issuedAt' => [
+      'label' => t('Issued'),
+      'value_type' => 'date',
+    ],
+    'expiresAt' => [
+      'label' => t('Expires'),
+      'value_type' => 'date',
+    ],
+    'status' => [
+      'label' => t('Key Status'),
+      'value_type' => 'status',
+    ],
+  ];
+
+  $secret_properties = [
+    'consumerKey',
+    'consumerSecret',
+  ];
+
+  $variables['primary_wrapper'] = [
+    '#type' => 'container',
+    '#attributes' => [
+      'class' => 'wrapper--primary',
+    ],
+  ];
+
+  foreach ($properties_in_primary as $property => $def) {
+    $variables['primary_wrapper'][$property] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => 'item-property',
+      ],
+    ];
+    $variables['primary_wrapper'][$property]['label'] = [
+      '#type' => 'label',
+      '#title' => $def['label'],
+      '#title_display' => 'before',
+    ];
+    $value = array_key_exists($property, $normalized) ? $normalized[$property] : NULL;
+    if ($def['value_type'] == 'date') {
+      // TODO Should we make format configurable?
+      /** @var \DateTimeInterface $value */
+      $value = $value ? $dateFormatter->format(intval($value / 1000), 'medium', NULL, drupal_get_user_timezone()) : t('Never');
+    }
+
+    if (in_array($property, $secret_properties)) {
+      $variables['primary_wrapper'][$property]['value'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'span',
+        '#attributes' => [
+          'class' => 'secret',
+          'data-secret-type' => $property,
+        ],
+        '#value' => Xss::filter($value),
+      ];
+    }
+    elseif ($def['value_type'] === 'status') {
+      $variables['primary_wrapper'][$property]['value'] = [
+        '#type' => 'status_property',
+        '#value' => $value,
+      ];
+    }
+    else {
+      $variables['primary_wrapper'][$property]['value'] = [
+        '#markup' => Xss::filter($value),
+      ];
+    }
+  }
+
+  $variables['secondary_wrapper'] = [
+    '#type' => 'container',
+    '#attributes' => [
+      'class' => 'wrapper--secondary',
+    ],
+    'title' => [
+      '#type' => 'label',
+      '#title_display' => 'before',
+      '#title' => \Drupal::entityTypeManager()->getDefinition('api_product')->getPluralLabel(),
+    ],
+    'list' => [
+      '#type' => 'app_credential_product_list',
+      '#credential_products' => $credential->getApiProducts(),
+    ],
+  ];
+
+  // Helpful $content variable for templates.
+  $variables['content'] = $normalized;
 }
 
 /**

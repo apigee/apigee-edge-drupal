@@ -1,5 +1,22 @@
 <?php
 
+/**
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 namespace Drupal\apigee_edge\Access;
 
 use Drupal\Core\Access\AccessResult;
@@ -15,6 +32,8 @@ use Symfony\Component\Routing\Route;
 class DeveloperAppAccessCheck implements AccessInterface {
 
   /**
+   * The entity type manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   private $entityTypeManager;
@@ -23,6 +42,7 @@ class DeveloperAppAccessCheck implements AccessInterface {
    * DeveloperAppAccessCheck constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   Entity type manager.
    */
   public function __construct(EntityTypeManagerInterface $entityTypeManager) {
     $this->entityTypeManager = $entityTypeManager;
@@ -35,9 +55,9 @@ class DeveloperAppAccessCheck implements AccessInterface {
    * pattern: '/developer-apps/{developer_app}/edit'
    * requirements:
    *   _developer_app_access: 'edit'
-   * @endcode
+   *
    * or
-   * @code
+   *
    * pattern: '/user/{user}/{app}'
    * requirements:
    *   _developer_app_access: 'view'

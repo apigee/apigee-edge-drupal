@@ -1,9 +1,16 @@
 ARG PHP_VERSION="7.1"
-ARG PHP_IMAGE_VERSION="-3.3.1"
+ARG PHP_IMAGE_VERSION="-4.0.2"
 
 FROM wodby/drupal-php:${PHP_VERSION}${PHP_IMAGE_VERSION}
 
-ARG DRUPAL_CORE="8.4"
+USER root
+
+# For manipulating JSON files if necessary.
+RUN apk add --update jq
+
+USER wodby
+
+ARG DRUPAL_CORE="8.5"
 ENV DRUPAL_CORE=${DRUPAL_CORE}
 ARG DEPENDENCIES=""
 ENV DEPENDENCIES=${DEPENDENCIES}
@@ -18,5 +25,3 @@ RUN if [[ "$DEPENDENCIES" = --prefer-lowest ]]; then \
   fi
 
 COPY --chown=www-data:www-data . /opt/drupal-module
-
-CMD ["php-fpm"]

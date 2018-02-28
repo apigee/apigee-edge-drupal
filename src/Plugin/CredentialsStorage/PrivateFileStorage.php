@@ -1,5 +1,22 @@
 <?php
 
+/**
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 namespace Drupal\apigee_edge\Plugin\CredentialsStorage;
 
 use Drupal\apigee_edge\Credentials;
@@ -7,6 +24,8 @@ use Drupal\apigee_edge\CredentialsInterface;
 use Drupal\apigee_edge\CredentialsSaveException;
 use Drupal\apigee_edge\CredentialsStoragePluginBase;
 use Drupal\Core\Site\Settings;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Url;
 
 /**
  * Stores the credentials in a private file.
@@ -23,12 +42,14 @@ class PrivateFileStorage extends CredentialsStoragePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function hasRequirements() : string {
+  public function hasRequirements() : ? TranslatableMarkup {
     $private_file_path = Settings::get('file_private_path');
     if (empty($private_file_path)) {
-      return 'The private file path must be set for storing credentials in a private file.';
+      return t('Cannot connect to Edge server, because your private file system is not configured properly. Visit the <a href=":url">File system</a> settings page to specify the private file system path.', [
+        ':url' => Url::fromRoute('system.file_system_settings')->toString(),
+      ]);
     }
-    return '';
+    return NULL;
   }
 
   /**

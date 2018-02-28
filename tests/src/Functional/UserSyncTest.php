@@ -1,5 +1,22 @@
 <?php
 
+/**
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Drupal\apigee_edge\Entity\Developer;
@@ -22,11 +39,36 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
   ];
 
   protected $edgeDevelopers = [
-    ['email' => 'test00@example.com', 'userName' => 'test00', 'firstName' => 'Test00', 'lastName' => 'User00'],
-    ['email' => 'test01@example.com', 'userName' => 'test01', 'firstName' => 'Test01', 'lastName' => 'User01'],
-    ['email' => 'test02@example.com', 'userName' => 'test02', 'firstName' => 'Test02', 'lastName' => 'User02'],
-    ['email' => 'test03@example.com', 'userName' => 'test03', 'firstName' => 'Test03', 'lastName' => 'User03'],
-    ['email' => 'test04@example.com', 'userName' => 'test04', 'firstName' => 'Test04', 'lastName' => 'User04'],
+    [
+      'email' => 'test00@example.com',
+      'userName' => 'test00',
+      'firstName' => 'Test00',
+      'lastName' => 'User00',
+    ],
+    [
+      'email' => 'test01@example.com',
+      'userName' => 'test01',
+      'firstName' => 'Test01',
+      'lastName' => 'User01',
+    ],
+    [
+      'email' => 'test02@example.com',
+      'userName' => 'test02',
+      'firstName' => 'Test02',
+      'lastName' => 'User02',
+    ],
+    [
+      'email' => 'test03@example.com',
+      'userName' => 'test03',
+      'firstName' => 'Test03',
+      'lastName' => 'User03',
+    ],
+    [
+      'email' => 'test04@example.com',
+      'userName' => 'test04',
+      'firstName' => 'Test04',
+      'lastName' => 'User04',
+    ],
   ];
 
   /**
@@ -39,7 +81,7 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * Array of Drupal users.
    *
-   * @var UserInterface[]
+   * @var \Drupal\user\UserInterface[]
    */
   protected $drupalUsers = [];
 
@@ -80,10 +122,10 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function tearDown() {
-    $remote_ids = array_map(function($record): string {
+    $remote_ids = array_map(function ($record): string {
       return $record['email'];
     }, $this->edgeDevelopers);
-    $drupal_emails = array_map(function(UserInterface $user): string {
+    $drupal_emails = array_map(function (UserInterface $user): string {
       return $user->getEmail();
     }, $this->drupalUsers);
     $ids = array_merge($remote_ids, $drupal_emails);
@@ -98,7 +140,7 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
    */
   protected function verify() {
     $all_users = [];
-    /** @var UserInterface $account */
+    /** @var \Drupal\user\Entity\UserInterface $account */
     foreach (User::loadMultiple() as $account) {
       $email = $account->getEmail();
       if ($email && $email !== 'admin@example.com') {
@@ -110,7 +152,7 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
     unset($all_users[$this->rootUser->getEmail()]);
 
     foreach ($this->edgeDevelopers as $edgeDeveloper) {
-      /** @var User $account */
+      /** @var \Drupal\user\Entity\User $account */
       $account = user_load_by_mail($edgeDeveloper['email']);
       $this->assertNotEmpty($account, 'Account found: ' . $edgeDeveloper['email']);
       $this->assertEquals($edgeDeveloper['userName'], $account->getAccountName());
@@ -121,7 +163,7 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
     }
 
     foreach ($this->drupalUsers as $drupalUser) {
-      /** @var Developer $dev */
+      /** @var \Drupal\apigee_edge\Entity\Developer $dev */
       $dev = Developer::load($drupalUser->getEmail());
       $this->assertNotEmpty($dev, 'Developer found on edge.');
       $this->assertEquals($drupalUser->getAccountName(), $dev->getUserName());
@@ -138,7 +180,7 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
    * Tests Drupal user synchronization.
    */
   public function testUserSync() {
-    $this->drupalGet('/admin/config/apigee-edge');
+    $this->drupalGet('/admin/config/apigee-edge/settings');
     $this->clickLinkProperly(t('Now'));
     $this->assertSession()->pageTextContains(t('Users are in sync with Edge.'));
     $this->verify();
@@ -148,8 +190,8 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
    * Tests scheduled Drupal user synchronization.
    */
   public function testUserAsync() {
-    $this->drupalGet('/admin/config/apigee-edge');
-    $this->clickLinkProperly(t('Background...'));
+    $this->drupalGet('/admin/config/apigee-edge/settings');
+    $this->clickLinkProperly(t('Background'));
     $this->assertSession()->pageTextContains(t('User synchronization is scheduled.'));
     /** @var \Drupal\Core\Queue\QueueFactory $queue_service */
     $queue_service = \Drupal::service('queue');

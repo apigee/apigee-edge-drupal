@@ -1,8 +1,26 @@
 <?php
 
+/**
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 namespace Drupal\apigee_edge\Controller;
 
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
+use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -23,6 +41,8 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
  */
 class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
 
+  use DeveloperStatusCheckTrait;
+
   /**
    * @var \Drupal\Core\Session\AccountInterface
    */
@@ -32,10 +52,15 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    * DeveloperAppListBuilderForDeveloper constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
+   *   The entity storage.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   The entity type manager.
    * @param \Drupal\Core\Render\RendererInterface $render
+   *   The render.
    * @param \Drupal\Core\Session\AccountInterface $currentUser
+   *   Currently logged-in user.
    */
   public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, EntityTypeManagerInterface $entityTypeManager, RendererInterface $render, AccountInterface $currentUser) {
     parent::__construct($entity_type, $storage, $entityTypeManager, $render);
@@ -96,15 +121,6 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function buildHeader() {
-    $headers = parent::buildHeader();
-    unset($headers['operations']);
-    return $headers;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   protected function getAppDetailsLink(DeveloperAppInterface $app) {
     return $app->toLink(NULL, 'canonical-by-developer');
   }
@@ -133,6 +149,7 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    * {@inheritdoc}
    */
   public function render(UserInterface $user = NULL) {
+    $this->checkDeveloperStatus($user);
     $build = parent::render();
 
     $build['table']['#empty'] = $this->t('Looks like you do not have any apps. Get started by adding one.');
@@ -142,24 +159,11 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
       $build['add_app']['link'] = $this->renderAddAppLink($user);
     }
 
-    $tableRows = [];
     foreach ($this->loadByUser($user, $this->buildHeader()) as $entity) {
-      /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
       if ($row = $this->buildRow($entity)) {
-        $rows = $this->buildRow($entity);
-        reset($rows);
-        $infoRow = key($rows);
-        unset($rows[$infoRow]['data']['operations']);
-        end($rows);
-        $warningRow = key($rows);
-        if (!empty($rows[$warningRow]['data'])) {
-          $rows[$warningRow]['data']['info']['colspan'] = 2;
-        }
-        $tableRows += $rows;
+        $build['table']['#rows'] += $this->buildRow($entity);
       }
     }
-
-    $build['table']['#rows'] = $tableRows;
 
     return $build;
   }
