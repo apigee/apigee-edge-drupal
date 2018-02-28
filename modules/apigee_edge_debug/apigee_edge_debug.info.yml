@@ -1,0 +1,11 @@
+name: Debug helper Apigee Edge
+description: Debug helper for Apigee Edge Drupal integration.
+package: Apigee
+
+type: module
+core: 8.x
+
+dependencies:
+  - apigee_edge:apigee_edge
+
+php: "7.1"
