@@ -17,3 +17,5 @@ composer require ${DEPENDENCIES} "drupal/${DRUPAL_MODULE_NAME}"
 composer require ${DEPENDENCIES} limedeck/phpunit-detailed-printer:^3.2.0
 composer show
 php vendor/bin/phpunit -c core --group apigee_edge -v --debug --printer '\LimeDeck\Testing\Printer'
+# Print API calls and performance data.
+cat apigee_edge_debug.log
