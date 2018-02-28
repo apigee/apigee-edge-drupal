@@ -6,3 +6,5 @@ package: Testing
 
 dependencies:
   - apigee_edge:apigee_edge
+  - apigee_edge_debug:apigee_edge_debug
+  - syslog:syslog
