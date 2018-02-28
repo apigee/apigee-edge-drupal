@@ -54,8 +54,8 @@ class AuthenticationMethodManager extends DefaultPluginManager {
       AuthenticationMethod::class
     );
 
-    $this->alterInfo('authetnication_method_info');
-    $this->setCacheBackend($cache_backend, 'authentication_method');
+    $this->alterInfo('apigee_edge_authentication_method_info');
+    $this->setCacheBackend($cache_backend, 'apigee_edge_authentication_methods');
     $this->factory = new DefaultFactory($this->getDiscovery());
   }
 

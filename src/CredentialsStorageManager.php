@@ -54,8 +54,8 @@ class CredentialsStorageManager extends DefaultPluginManager {
       CredentialsStorage::class
     );
 
-    $this->alterInfo('credentials_storage_info');
-    $this->setCacheBackend($cache_backend, 'credentials_storage');
+    $this->alterInfo('apigee_edge_credentials_storage_info');
+    $this->setCacheBackend($cache_backend, 'apigee_edge_credentials_storages');
     $this->factory = new DefaultFactory($this->getDiscovery());
   }
 
