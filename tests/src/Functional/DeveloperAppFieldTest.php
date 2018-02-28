@@ -28,6 +28,8 @@ use Drupal\field_ui\Tests\FieldUiTestTrait;
 
 /**
  * @group apigee_edge
+ * @group apigee_edge_developer_app
+ * @group apigee_edge_field
  */
 class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
 

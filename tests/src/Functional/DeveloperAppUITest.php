@@ -28,6 +28,7 @@ use Drupal\user\UserInterface;
 
 /**
  * @group apigee_edge
+ * @group apigee_edge_developer_app
  */
 class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 

@@ -21,6 +21,8 @@ namespace Drupal\Tests\apigee_edge\Functional;
 
 /**
  * @group apigee_edge
+ * @group apigee_edge_configuration
+ * @group apigee_edge_permissions
  */
 class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
 
@@ -30,6 +32,7 @@ class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
   public static $modules = [
     'block',
     'apigee_edge',
+    'apigee_edge_test',
   ];
 
   /**

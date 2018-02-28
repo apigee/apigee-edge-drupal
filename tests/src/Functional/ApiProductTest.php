@@ -21,21 +21,14 @@ namespace Drupal\Tests\apigee_edge\Functional;
 
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
-use Drupal\Tests\BrowserTestBase;
 
 /**
  * Create, delete, update API Product entity tests.
  *
  * @group apigee_edge
+ * @group apigee_edge_api_product
  */
-class ApiProductTest extends BrowserTestBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static $modules = [
-    'apigee_edge',
-  ];
+class ApiProductTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * @var \Drupal\apigee_edge\Entity\Developer

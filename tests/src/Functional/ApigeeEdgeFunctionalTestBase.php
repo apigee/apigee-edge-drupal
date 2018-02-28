@@ -32,6 +32,7 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
    */
   public static $modules = [
     'apigee_edge',
+    'apigee_edge_test',
   ];
 
   /**
