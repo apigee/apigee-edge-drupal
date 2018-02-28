@@ -69,7 +69,7 @@ class SDKConnector extends OriginalSDKConnector {
   public function __construct(ClientFactory $clientFactory, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, CredentialsStorageManager $credentials_storage_plugin_manager, AuthenticationMethodManager $authentication_method_plugin_manager, ModuleHandlerInterface $moduleHandler, InfoParserInterface $infoParser) {
     $config = [
       'headers' => [
-        static::HEADER => self::HEADER,
+        static::HEADER => static::HEADER,
       ],
     ];
     $httpClient = $clientFactory->fromOptions($config);
