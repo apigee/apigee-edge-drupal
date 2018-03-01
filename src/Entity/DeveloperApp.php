@@ -48,6 +48,8 @@ use Drupal\user\UserInterface;
  *       "edit_for_developer" = "Drupal\apigee_edge\Entity\Form\DeveloperAppEditForm",
  *       "delete" = "Drupal\apigee_edge\Entity\Form\DeveloperAppDeleteForm",
  *       "delete_for_developer" = "Drupal\apigee_edge\Entity\Form\DeveloperAppDeleteFormForDeveloper",
+ *       "analytics" = "Drupal\apigee_edge\Form\DeveloperAppAnalyticsForm",
+ *       "analytics_for_developer" = "Drupal\apigee_edge\Form\DeveloperAppAnalyticsFormForDeveloper",
  *     },
  *     "list_builder" = "Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder",
  *   },
@@ -57,11 +59,13 @@ use Drupal\user\UserInterface;
  *     "add-form" = "/developer-apps/add",
  *     "edit-form" = "/developer-apps/{developer_app}/edit",
  *     "delete-form" = "/developer-apps/{developer_app}/delete",
+ *     "analytics" = "/developer-apps/{developer_app}/analytics",
  *     "canonical-by-developer" = "/user/{user}/apps/{app}",
  *     "collection-by-developer" = "/user/{user}/apps",
  *     "add-form-for-developer" = "/user/{user}/apps/add",
  *     "edit-form-for-developer" = "/user/{user}/apps/{app}/edit",
  *     "delete-form-for-developer" = "/user/{user}/apps/{app}/delete",
+ *     "analytics-for-developer" = "/user/{user}/apps/{app}/analytics",
  *   },
  *   entity_keys = {
  *     "id" = "appId",
@@ -241,6 +245,7 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
       'canonical-by-developer',
       'edit-form-for-developer',
       'delete-form-for-developer',
+      'analytics-for-developer',
     ])) {
       $params['user'] = $this->drupalUserId;
       $params['app'] = $this->getName();
