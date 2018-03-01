@@ -36,6 +36,7 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
   public static $modules = [
     'block',
     'apigee_edge',
+    'apigee_edge_test',
   ];
 
   protected $edgeDevelopers = [

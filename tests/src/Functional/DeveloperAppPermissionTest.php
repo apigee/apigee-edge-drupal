@@ -34,6 +34,7 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
    */
   public static $modules = [
     'apigee_edge',
+    'apigee_edge_test',
   ];
 
   protected const PERMISSION_MATRIX = [

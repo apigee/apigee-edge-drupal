@@ -1,5 +1,5 @@
 ARG PHP_VERSION="7.1"
-ARG PHP_IMAGE_VERSION="-4.0.2"
+ARG PHP_IMAGE_VERSION="-4.1.0"
 
 FROM wodby/drupal-php:${PHP_VERSION}${PHP_IMAGE_VERSION}
 
@@ -24,4 +24,24 @@ RUN if [[ "$DEPENDENCIES" = --prefer-lowest ]]; then \
   composer create-project drupal/drupal:^$DRUPAL_CORE $COMPOSER_OPTIONS && composer update -o --with-dependencies; \
   fi
 
-COPY --chown=www-data:www-data . /opt/drupal-module
+USER root
+
+# Based on https://www.drupal.org/node/244924.
+RUN chown -R wodby:www-data . \
+    && find . -type d -exec chmod 6750 '{}' \; \
+    && find . -type f -exec chmod 0640 '{}' \; \
+    # Fix permissions on directory and .htaccess file.
+    && chmod 755 . \
+    && chmod 644 .htaccess
+
+RUN mkdir -p /var/www/html/sites/default/files \
+    && chown -R wodby:www-data /var/www/html/sites/default/files \
+    && chmod 6770 /var/www/html/sites/default/files
+
+# Fix permission issues when running unit tests inside the container.
+# https://github.com/wodby/drupal-php/issues/52
+RUN adduser www-data wodby
+
+USER wodby
+
+COPY --chown=wodby:www-data . /opt/drupal-module

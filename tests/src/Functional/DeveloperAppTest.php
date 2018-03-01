@@ -27,6 +27,7 @@ use Drupal\apigee_edge\Entity\DeveloperApp;
  * Create, delete, update Developer App entity tests.
  *
  * @group apigee_edge
+ * @group apigee_edge_developer_app
  */
 class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
 
