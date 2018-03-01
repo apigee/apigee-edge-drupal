@@ -20,6 +20,7 @@
 namespace Drupal\apigee_edge_test\Controller;
 
 use Apigee\Edge\Exception\ApiException;
+use Apigee\Edge\Exception\ApiRequestException;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityStorageException;
 use GuzzleHttp\Psr7\Request;
@@ -36,7 +37,7 @@ class ExceptionController extends ControllerBase {
   }
 
   public function api() {
-    throw new ApiException(new Request('GET', ''));
+    throw new ApiRequestException(new Request('GET', ''));
   }
 
 }
