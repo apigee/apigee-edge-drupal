@@ -26,6 +26,7 @@ use Drupal\Tests\BrowserTestBase;
  * Create, delete, update Developer entity tests.
  *
  * @group apigee_edge
+ * @group apigee_edge_developer
  */
 class DeveloperTest extends BrowserTestBase {
 

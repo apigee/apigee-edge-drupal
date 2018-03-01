@@ -87,6 +87,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
   public function __construct(SDKConnectorInterface $sdk_connector, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, MessengerInterface $messenger) {
     parent::__construct($sdk_connector, $config_factory, $entity_type_manager);
     $this->renderer = $renderer;
+    $this->messenger = $messenger;
   }
 
   /**

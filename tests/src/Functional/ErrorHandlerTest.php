@@ -24,11 +24,6 @@ namespace Drupal\Tests\apigee_edge\Functional;
  */
 class ErrorHandlerTest extends ApigeeEdgeFunctionalTestBase {
 
-  public static $modules = [
-    'apigee_edge',
-    'apigee_edge_test',
-  ];
-
   public function testErrorPage() {
     $this->drupalLogin($this->rootUser);
     $errorPageTitle = $this->getRandomGenerator()->word(16);

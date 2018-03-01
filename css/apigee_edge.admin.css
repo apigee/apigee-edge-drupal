@@ -19,6 +19,12 @@
   margin-left: 0;
 }
 
-.help--button {
-  padding-top: 10px;
+.info-circle {
+  border-radius: 50%;
+  color: white;
+  width: 16px;
+  height: 16px;
+  background: #5c5c5b;
+  display: inline-block;
+  text-align: center;
 }

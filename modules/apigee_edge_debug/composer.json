@@ -1,0 +1,16 @@
+{
+    "name": "drupal/apigee_edge_debug",
+    "description": "Debug helper Apigee Edge Drupal integration.",
+    "type": "drupal-module",
+    "license": "MIT",
+    "require": {
+        "php": ">=7.1",
+        "drupal/apigee_edge": "*",
+        "guzzlehttp/guzzle": "^6.1.0"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

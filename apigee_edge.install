@@ -32,7 +32,7 @@ use Drupal\user\RoleInterface;
 function apigee_edge_requirements($phase) {
   $requirements = [];
 
-  if ($phase == 'install') {
+  if ($phase === 'install') {
     $missing_mails = \Drupal::entityQuery('user')
       ->notExists('mail')
       ->condition('uid', '0', '<>')
@@ -45,8 +45,7 @@ function apigee_edge_requirements($phase) {
       ];
     }
   }
-
-  if ($phase == 'runtime') {
+  elseif ($phase === 'runtime') {
     $credentials_storage_plugin_manager = \Drupal::service('plugin.manager.apigee_edge.credentials_storage');
     $config = \Drupal::config('apigee_edge.credentials_storage');
     $credentials_storage_plugin = $credentials_storage_plugin_manager->createInstance($config->get('credentials_storage_type'));

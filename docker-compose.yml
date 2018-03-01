@@ -13,10 +13,10 @@ services:
     build:
       context: .
       args:
-        - DRUPAL_CORE=${DRUPAL_CORE:-8.4}
+        - DRUPAL_CORE=${DRUPAL_CORE:-8.5}
         - DEPENDENCIES=${DEPENDENCIES}
         - PHP_VERSION=${PHP_VERSION:-7.1}
-        - PHP_IMAGE_VERSION=${PHP_IMAGE_VERSION--4.0.2}
+        - PHP_IMAGE_VERSION=${PHP_IMAGE_VERSION--4.1.0}
     environment:
       PHP_FPM_CLEAR_ENV: "no"
       SIMPLETEST_BASE_URL: http://webserver
@@ -29,7 +29,7 @@ services:
 
   webserver:
     # Note: By using Nginx, the environment variables passed to the PHP container are missing from the BrowserTests.
-    image: wodby/php-apache:${APACHE_IMAGE_VERSION:-2.4-2.0.2}
+    image: wodby/php-apache:${APACHE_IMAGE_VERSION:-2.4-3.0.0}
     environment:
       APACHE_SERVER_ROOT: /var/www/html
       APACHE_BACKEND_HOST: php

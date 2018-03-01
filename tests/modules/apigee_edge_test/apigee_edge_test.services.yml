@@ -1,0 +1,7 @@
+services:
+  logger.apigee_edge_test:
+    parent: logger.syslog
+    class: Drupal\apigee_edge_test\Logger\DebugLogger
+    arguments: ['@config.factory', '@logger.log_message_parser']
+    tags:
+      - { name: logger }

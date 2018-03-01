@@ -19,6 +19,7 @@
 
 namespace Drupal\Tests\apigee_edge\Functional;
 
+use Apigee\Edge\Api\Management\Controller\DeveloperController;
 use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
@@ -27,6 +28,7 @@ use Drupal\user\UserInterface;
 
 /**
  * @group apigee_edge
+ * @group apigee_edge_developer_app
  */
 class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
@@ -456,6 +458,48 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
+   * Tests the case when an account just got disabled on the edge UI.
+   */
+  public function testNotificationsWhenAccountIsInactiveOnEdge() {
+    /** @var \Drupal\apigee_edge\SDKConnectorInterface $connector */
+    $connector = \Drupal::service('apigee_edge.sdk_connector');
+    $controller = new DeveloperController($connector->getOrganization(), $connector->getClient());
+
+    $controller->setStatus($this->account->getEmail(), Developer::STATUS_INACTIVE);
+
+    $this->drupalGet("/user/{$this->account->id()}/apps");
+    $this->assertSession()->pageTextContains('Your developer account has inactive status so you will not be able to use your credentials until your account is enabled. Please contact the Developer Portal support for further assistance.');
+
+    $this->drupalLogin($this->rootUser);
+    $this->drupalGet("/user/{$this->account->id()}/apps");
+    $this->assertSession()->pageTextContains("The developer account of {$this->account->getAccountName()} has inactive status so this user has invalid credentials until the account is enabled.");
+  }
+
+  /**
+   * Loads a developer app by name.
+   *
+   * @param string $name
+   *   Name of the developer app.
+   *
+   * @return \Drupal\apigee_edge\Entity\DeveloperApp|null
+   *   Loaded developer app or null if not found.
+   */
+  protected function loadDeveloperApp(string $name): ?DeveloperApp {
+    \Drupal::entityTypeManager()->getStorage('developer_app')->resetCache();
+
+    /** @var \Drupal\apigee_edge\Entity\DeveloperApp[] $apps */
+    $apps = DeveloperApp::loadMultiple();
+
+    foreach ($apps as $app) {
+      if ($app->getName() === $name) {
+        return $app;
+      }
+    }
+
+    return NULL;
+  }
+
+  /**
    * Goes through a typical CRUD cycle for an app.
    *
    * @param callable|null $beforeCreate
@@ -489,6 +533,11 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     }
 
     $this->postCreateAppForm($data, $account);
+
+    $app = $this->loadDeveloperApp($name);
+
+    $this->assertSession()->linkByHrefExists("/developer-apps/{$app->id()}/edit?destination=/user/{$account->id()}/apps");
+    $this->assertSession()->linkByHrefExists("/developer-apps/{$app->id()}/delete?destination=/user/{$account->id()}/apps");
     $this->clickLink($displayName);
     $this->assertSession()->pageTextContains($displayName);
     $this->assertSession()->pageTextContains($callbackUrl);

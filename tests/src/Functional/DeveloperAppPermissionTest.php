@@ -34,6 +34,7 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
    */
   public static $modules = [
     'apigee_edge',
+    'apigee_edge_test',
   ];
 
   protected const PERMISSION_MATRIX = [
@@ -165,20 +166,26 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
-   * Tests the permission matrix.
+   * Returns the list of the permissions.
+   *
+   * @return array
+   *   List of function arguments.
    */
-  public function testPermissions() {
-    foreach (array_keys(static::PERMISSION_MATRIX) as $permission) {
-      $this->assertAccount($permission);
-    }
+  public function permissionProvider() {
+    return array_map(function (string $permission): array {
+      return [$permission];
+    }, array_keys(static::PERMISSION_MATRIX));
   }
 
   /**
    * Asserts that an account with a given permission can or can't access pages.
    *
    * @param string $permission
+   *   Name of the permission to test.
+   *
+   * @dataProvider permissionProvider
    */
-  protected function assertAccount(string $permission) {
+  public function testPermission(string $permission) {
     if ($this->loggedInUser) {
       $this->drupalLogout();
     }

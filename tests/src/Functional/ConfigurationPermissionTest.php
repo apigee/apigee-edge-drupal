@@ -21,6 +21,8 @@ namespace Drupal\Tests\apigee_edge\Functional;
 
 /**
  * @group apigee_edge
+ * @group apigee_edge_configuration
+ * @group apigee_edge_permissions
  */
 class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
 
@@ -30,6 +32,7 @@ class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
   public static $modules = [
     'block',
     'apigee_edge',
+    'apigee_edge_test',
   ];
 
   /**
@@ -101,7 +104,7 @@ class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
     $visit_path('/admin/config/apigee-edge');
     $visit_path('/admin/config/apigee-edge/settings');
     if ($access) {
-      list($schedule_path, $schedule_query) = $this->findLink('Background...');
+      list($schedule_path, $schedule_query) = $this->findLink('Background');
       list($run_path, $run_query) = $this->findLink('Now');
       $visit_path($schedule_path, $schedule_query);
       $visit_path($run_path, $run_query);
