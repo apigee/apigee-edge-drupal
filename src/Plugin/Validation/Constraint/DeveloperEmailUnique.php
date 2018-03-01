@@ -45,13 +45,13 @@ class DeveloperEmailUnique extends Constraint {
   public function __construct($options = NULL) {
     parent::__construct($options);
     $config = \Drupal::config('apigee_edge.developer_settings');
-    switch ($config->get('registration_mode')) {
-      case DeveloperSettingsForm::REGISTRATION_MODE_DISPLAY_ERROR_ONLY:
+    switch ($config->get('verification_action')) {
+      case DeveloperSettingsForm::VERIFICATION_ACTION_DISPLAY_ERROR_ONLY:
         $this->message = $config->get('display_only_error_message_content.value');
         break;
 
-      case DeveloperSettingsForm::REGISTRATION_MODE_VERIFY_EMAIL:
-        $this->message = $config->get('verify_email_error_message_content.value');
+      case DeveloperSettingsForm::VERIFICATION_ACTION_VERIFY_EMAIL:
+        $this->message = $config->get('verify_email_error_message.value');
         break;
     }
   }
