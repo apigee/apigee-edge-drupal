@@ -125,7 +125,7 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
         'max_response_time' => $this->t('Max response time'),
         'min_response_time' => $this->t('Min response time'),
         'message_count' => $this->t('Message count'),
-        'sum(is_error)' => $this->t('Error count'),
+        'error_count' => $this->t('Error count'),
       ],
       '#default_value' => 'total_response_time',
     ];

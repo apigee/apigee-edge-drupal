@@ -33,7 +33,7 @@
    * @prop {Drupal~behaviorAttach} attach
    *   Attaches Apigee Edge analytics draw behavior.
    *
-   * @see {@link https://developers.google.com/chart/|Google Charts}
+   * @see {@link https://developers.google.com/chart|Google Charts}
    */
   Drupal.behaviors.apigeeEdgeAnalyticsDraw = {
     attach: function attach(context, drupalSettings) {
