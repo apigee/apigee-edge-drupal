@@ -37,7 +37,7 @@ class ExceptionController extends ControllerBase {
   }
 
   public function api() {
-    throw new ApiRequestException(new Request('GET', ''));
+    throw new ApiException();
   }
 
 }
