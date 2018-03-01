@@ -1,3 +1,11 @@
 administer apigee edge:
   title: 'Administer Apigee Edge'
   restricted access: true
+
+view own developer app analytics:
+  title: 'View own Developer Apps analytics'
+  restricted access: true
+
+view any developer app analytics:
+  title: 'View any Developer Apps analytics'
+  restricted access: true
