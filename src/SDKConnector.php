@@ -24,7 +24,7 @@ use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Apigee\Edge\Exception\UnknownEndpointException;
 use Apigee\Edge\HttpClient\Client;
 use Apigee\Edge\HttpClient\ClientInterface;
-use Apigee\Edge\HttpClient\Util\Builder;
+use Apigee\Edge\HttpClient\Utility\Builder;
 use Drupal\apigee_edge\Entity\Storage\EdgeEntityStorageInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
