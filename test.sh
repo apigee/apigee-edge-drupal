@@ -19,6 +19,9 @@ composer require ${DEPENDENCIES} "drupal/${DRUPAL_MODULE_NAME}"
 # Install this to get more detailed output from PHPUnit.
 composer require ${DEPENDENCIES} limedeck/phpunit-detailed-printer:^3.2.0
 composer show
+# Do not exit if any phpunit tests fail, we still want to see the performance
+# information.
+set +x
 php vendor/bin/phpunit -c core --group apigee_edge -v --debug --printer '\LimeDeck\Testing\Printer'
 # Print API calls and performance data.
 cat ${APIGEE_EDGE_TEST_LOG_FILE}
