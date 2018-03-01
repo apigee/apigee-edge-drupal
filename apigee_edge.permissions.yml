@@ -4,7 +4,6 @@ administer apigee edge:
 
 view own developer app analytics:
   title: 'View own Developer Apps analytics'
-  restricted access: true
 
 view any developer app analytics:
   title: 'View any Developer Apps analytics'
