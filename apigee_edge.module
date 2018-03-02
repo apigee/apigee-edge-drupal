@@ -24,13 +24,13 @@
  */
 
 use Apigee\Edge\Entity\EntityNormalizer;
+use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\ClientErrorException;
 use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Form\DeveloperSettingsForm;
 use Drupal\apigee_edge\JobExecutor;
-use Drupal\apigee_edge\Plugin\Validation\Constraint\DeveloperEmailUnique;
 use Drupal\apigee_edge\Plugin\Validation\Constraint\DeveloperEmailUniqueValidator;
 use Drupal\Component\Render\PlainTextOutput;
 use Drupal\Component\Utility\Crypt;
@@ -47,6 +47,8 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\TempStore\TempStoreException;
 use Drupal\Core\Url;
 use Drupal\user\UserInterface;
+
+define('APIGEE_EDGE_USER_REGISTRATION_SOURCE', 'apigee_edge_user_registration_source');
 
 /**
  * Implements hook_menu_links_discovered_alter().
@@ -68,8 +70,10 @@ function apigee_edge_menu_links_discovered_alter(array &$links) {
  * Implements hook_module_implements_alter().
  */
 function apigee_edge_module_implements_alter(&$implementations, $hook) {
-  if ($hook == 'form_user_register_form_alter') {
-    // Move apigee_edge_form_user_register_form_alter() to the end of the list.
+  if (in_array($hook, ['form_user_register_form_alter', 'form_user_form_alter'])) {
+    // Move apigee_edge_form_user_register_form_alter() and
+    // apigee_edge_form_user_form_alter() alter hook implementations to the
+    // end of the list.
     $group = $implementations['apigee_edge'];
     unset($implementations['apigee_edge']);
     $implementations['apigee_edge'] = $group;
@@ -359,7 +363,7 @@ function _apigee_edge_existing_developer_mail_tokens(array &$replacements, array
  * @see \_apigee_edge_existing_developer_mail_tokens()
  */
 function _apigee_edge_send_developer_email_verification_email(AccountInterface $account, $langcode = NULL) {
-  if (\Drupal::config('apigee_edge.developer_settings')->get('registration_mode') === DeveloperSettingsForm::REGISTRATION_MODE_VERIFY_EMAIL) {
+  if (\Drupal::config('apigee_edge.developer_settings')->get('verification_action') === DeveloperSettingsForm::VERIFICATION_ACTION_VERIFY_EMAIL) {
     $params['account'] = $account;
     $langcode = $langcode ? $langcode : $account->getPreferredLangcode();
     // Get the custom site notification email to use as the from email address
@@ -383,6 +387,13 @@ function _apigee_edge_send_developer_email_verification_email(AccountInterface $
  * Implements hook_form_FORM_ID_alter().
  */
 function apigee_edge_form_user_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Only alter the user edit form.
+  if ($form_id === 'user_register_form') {
+    return;
+  }
+  // The email field should be always required because it is required on
+  // Apigee Edge.
+  $form['account']['mail']['#required'] = TRUE;
   $user = \Drupal::currentUser();
   // Make the same information available here as on user_register_form.
   // @see \Drupal\user\RegisterForm::form()
@@ -390,7 +401,38 @@ function apigee_edge_form_user_form_alter(&$form, FormStateInterface $form_state
     '#type' => 'value',
     '#value' => $user->hasPermission('administer users'),
   ];
-  apigee_edge_form_user_register_form_alter($form, $form_state, $form_id);
+  // Add our custom validation callback to the beginning of the chain.
+  // apigee_edge_module_implements_alter() ensures that form_alter hook is
+  // called in the last time.
+  array_unshift($form['#validate'], 'apigee_edge_form_user_form_developer_email_validate');
+}
+
+/**
+ * Validates whether the provided email address is already taken on Edge or not.
+ *
+ * @param array $form
+ *   Form array.
+ * @param Drupal\Core\Form\FormStateInterface $form_state
+ *   Form state object.
+ */
+function apigee_edge_form_user_form_developer_email_validate(array $form, FormStateInterface $form_state) {
+  // If email address was changed.
+  if ($form_state->getValue('mail') !== $form_state->getBuildInfo()['callback_object']->getEntity()->mail->value) {
+    $developer = Developer::load($form_state->getValue('mail'));
+    if ($developer) {
+      // Add email address to the whitelist because we would like to
+      // display a custom error message instead of what this
+      // field validation handler returns.
+      DeveloperEmailUniqueValidator::whitelist($form_state->getValue('mail'));
+      if ($form_state->getValue('administer_users')) {
+        $form_state->setErrorByName('mail', t('This email address already belongs to a developer on Apigee Edge.'));
+      }
+      else {
+        $config = Drupal::config('apigee_edge.developer_settings');
+        $form_state->setErrorByName('mail', $config->get('user_edit_error_message.value'));
+      }
+    }
+  }
 }
 
 /**
@@ -433,7 +475,7 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
     }
     else {
       $config = Drupal::config('apigee_edge.developer_settings');
-      if ($config->get('registration_mode') === DeveloperSettingsForm::REGISTRATION_MODE_VERIFY_EMAIL) {
+      if ($config->get('verification_action') === DeveloperSettingsForm::VERIFICATION_ACTION_VERIFY_EMAIL) {
         if ($developer) {
           $form['account']['apigee_edge_developer_unreceived_mail'] = [
             '#type' => 'checkbox',
@@ -482,6 +524,11 @@ function apigee_edge_form_user_register_form_developer_email_validate(array $for
     return;
   }
 
+  /** @var \Drupal\user\RegisterForm $registerForm */
+  $registerForm = $form_state->getFormObject();
+  // Pass this information to hook_user_presave() in case if we would get
+  // there.
+  $registerForm->getEntity()->{APIGEE_EDGE_USER_REGISTRATION_SOURCE} = 'user_register_form';
   // Do nothing if user has administer users permission.
   // (Form is probably displayed on admin/people/create.)
   if ($form_state->getValue('administer_users')) {
@@ -503,7 +550,7 @@ function apigee_edge_form_user_register_form_developer_email_validate(array $for
   $timestamp = $request->query->get('timestamp');
   /** @var \Drupal\user\UserInterface $account */
   // Build user object from the submitted form values.
-  $account = $form_state->getBuildInfo()['callback_object']->buildEntity($form, $form_state);
+  $account = $registerForm->buildEntity($form, $form_state);
   // If required parameters are available in the url.
   if ($token && $timestamp) {
     // If token is (still) valid then account's email to the whitelist of the
@@ -520,40 +567,24 @@ function apigee_edge_form_user_register_form_developer_email_validate(array $for
     }
   }
 
-  // Validate user object.
-  $violations = $account->validate();
-  /** @var \Drupal\Core\Entity\EntityConstraintViolationList $emailViolations */
-  // Get mail field validation errors.
-  $emailViolations = $violations->getByField('mail');
-  $developerExists = FALSE;
-  foreach ($emailViolations as $violation) {
-    // If our validator yelled and error.
-    if (get_class($violation->getConstraint()) === DeveloperEmailUnique::class) {
-      $developerExists = TRUE;
-      break;
+  // Use shared storage to keep track of sent verification emails.
+  // Form state's storage can not be used for this purpose because its values
+  // are being cleared for every new requests. Private storage is too private
+  // in case of anonymous user because every page request creates a new, empty
+  // private temp storage.
+  $storage = \Drupal::service('tempstore.shared');
+  /** @var \Drupal\Core\TempStore\PrivateTempStore $sendNotifications */
+  $sendNotifications = $storage->get('apigee_edge_developer_email_verification_sent');
+  // Do not send multiple email verifications to the same email address
+  // every time when form validation fails with an error.
+  if (!$sendNotifications->get($account->getEmail()) || $form_state->getValue('apigee_edge_developer_unreceived_mail')) {
+    // Send verification email to the user.
+    $result = _apigee_edge_send_developer_email_verification_email($account, $account->getPreferredLangcode());
+    try {
+      $sendNotifications->set($account->getEmail(), $result);
     }
-  }
-
-  if ($developerExists) {
-    // Use shared storage to keep track of sent verification emails.
-    // Form state's storage can not be used for this purpose because its values
-    // are being cleared for every new requests. Private storage is too private
-    // in case of anonymous user because every page request creates a new, empty
-    // private temp storage.
-    $storage = \Drupal::service('tempstore.shared');
-    /** @var \Drupal\Core\TempStore\PrivateTempStore $sendNotifications */
-    $sendNotifications = $storage->get('apigee_edge_developer_email_verification_sent');
-    // Do not send multiple email verifications to the same email address
-    // every time when form validation fails with an error.
-    if (!$sendNotifications->get($account->getEmail()) || $form_state->getValue('apigee_edge_developer_unreceived_mail')) {
-      // Send verification email to the user.
-      $result = _apigee_edge_send_developer_email_verification_email($account, $account->getPreferredLangcode());
-      try {
-        $sendNotifications->set($account->getEmail(), $result);
-      }
-      catch (TempStoreException $e) {
-        watchdog_exception(__FUNCTION__, $e);
-      }
+    catch (TempStoreException $e) {
+      watchdog_exception(__FUNCTION__, $e);
     }
   }
 }
@@ -884,9 +915,23 @@ function apigee_edge_user_presave(UserInterface $account) {
         $developer = Developer::load($account->getEmail());
         if ($developer) {
           $developer_id = $developer->getDeveloperId();
+          // If a user could register on the portal with an email address
+          // that already belongs to a developer on Apigee Edge then override
+          // its stored developer data there with the new one.
+          if (isset($account->{APIGEE_EDGE_USER_REGISTRATION_SOURCE}) && $account->{APIGEE_EDGE_USER_REGISTRATION_SOURCE} === 'user_register_form') {
+            $developer = Developer::createFromDrupalUser($account);
+            $developer->setDeveloperId($developer_id);
+            $developer->enforceIsNew(FALSE);
+            try {
+              $developer->save();
+            }
+            catch (ApiException $e) {
+              \Drupal::logger('apigee_edge')->error("Unable to update existing @developer developer's data after registered on the portal.", $context);
+            }
+          }
         }
         else {
-          \Drupal::logger('apigee_edge')->error("Unable to save @developer developer's developer id on user", $context);
+          \Drupal::logger('apigee_edge')->error("Unable to save @developer developer's developer id on user.", $context);
         }
       }
     }

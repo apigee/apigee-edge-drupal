@@ -64,7 +64,7 @@ apigee_edge.appsettings:
 apigee_edge.developer_settings:
   type: config_object
   mapping:
-    registration_mode:
+    verification_action:
       type: string
     display_only_error_message_content:
       type: mapping
@@ -73,7 +73,7 @@ apigee_edge.developer_settings:
           type: string
         value:
           type: text
-    verify_email_error_message_content:
+    verify_email_error_message:
       type: mapping
       mapping:
         format:
@@ -88,6 +88,13 @@ apigee_edge.developer_settings:
       type: string
     verification_token_expires:
       type: integer
+    user_edit_error_message:
+      type: mapping
+      mapping:
+        format:
+          type: string
+        value:
+          type: text
 
 apigee_edge.sync:
   type: config_object
