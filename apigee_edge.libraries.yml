@@ -3,16 +3,37 @@ apigee_edge.admin:
   css:
     theme:
       css/apigee_edge.admin.css: {}
-apigee_edge.status_property:
+
+apigee_edge.analytics:
   version: 1.0
   css:
     theme:
-      css/apigee_edge.status_property.css: {}
+      css/apigee_edge.analytics.css: {}
+  js:
+    js/apigee_edge.analytics.js: {}
+  drupalSettings:
+    analytics:
+      metric: null
+      timestamps: null
+      values: null
+      skip_zero_values: null
+      visualization_options: null
+      version: null
+      language: null
+      chart_container: null
+  dependencies:
+    - apigee_edge/charts
+    - core/drupal
+    - core/jquery
+    - core/jquery.once
+    - core/drupalSettings
+
 apigee_edge.components:
   version: 1.0
   css:
     theme:
       css/apigee_edge.components.css: {}
+
 apigee_edge.listing:
   version: 1.0
   css:
@@ -20,6 +41,13 @@ apigee_edge.listing:
       css/apigee_edge.listing.css: {}
   js:
     js/apigee_edge.listing.js: {}
+
+apigee_edge.status_property:
+  version: 1.0
+  css:
+    theme:
+      css/apigee_edge.status_property.css: {}
+
 apigee_edge.view:
   version: 1.0
   css:
@@ -27,3 +55,13 @@ apigee_edge.view:
       css/apigee_edge.view.css: {}
   js:
     js/apigee_edge.view.js: {}
+
+charts:
+  remote: https://www.gstatic.com/charts/loader.js
+  version: 1.0
+  license:
+    name: Copyright Google, free to use
+    url: https://www.google.com/intl/en/policies/terms
+    gpl-compatible: false
+  js:
+    https://www.gstatic.com/charts/loader.js: { type: external, minified: true }
