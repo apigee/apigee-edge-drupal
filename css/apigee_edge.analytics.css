@@ -22,7 +22,6 @@
 
 .controls-label, .date-separator {
   font-weight: bold;
-  font-size: 110%;
 }
 
 .controls-label, .form-item-metrics, .form-item-quick-date-picker {
@@ -31,12 +30,4 @@
 
 .apigee-edge-developer-app-analytics > div > div {
   display: inline-block;
-}
-
-.apigee-edge-developer-app-analytics .container-inline div {
-  margin-bottom: 2px;
-}
-
-.apigee-edge-developer-app-analytics button {
-  margin-bottom: 2px;
 }
