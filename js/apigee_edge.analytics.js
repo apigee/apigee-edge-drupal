@@ -43,6 +43,7 @@
         var values = drupalSettings.analytics.values;
         var skipZeroValues = drupalSettings.analytics.skip_zero_values;
         var visualizationOptions = drupalSettings.analytics.visualization_options;
+        var visualizationOptionsToDate = drupalSettings.analytics.visualization_options_to_date;
         var version = drupalSettings.analytics.version;
         var language = drupalSettings.analytics.language;
         var chartContainer = drupalSettings.analytics.chart_container;
@@ -56,6 +57,10 @@
         google.charts.load(version === null ? 'current' : version, {'packages':['corechart'], 'language': language});
         google.charts.setOnLoadCallback(callback);
 
+        /**
+         * A callback function that will be called once the Google Charts library
+         * packages have been loaded.
+         */
         function callback() {
           var data = new google.visualization.DataTable();
           data.addColumn('datetime');
@@ -68,9 +73,28 @@
           }
 
           var options = visualizationOptions === null ? {} : JSON.parse(visualizationOptions);
+          for (i = 0; i < visualizationOptionsToDate.length; i++) {
+            setNestedObjectDateProperty(options, visualizationOptionsToDate[i]);
+          }
 
           var chart = new google.visualization.LineChart(document.getElementById(chartContainer));
           chart.draw(data, options);
+        }
+
+        /**
+         * A helper recursive function that convert timestamp
+         * property values of nested objects to JS Date objects.
+         */
+        function setNestedObjectDateProperty(object, route) {
+          if (typeof(route) === 'string') {
+            route = route.split('.');
+          }
+          if (route.length > 1){
+            setNestedObjectDateProperty(object[route.shift()], route);
+          }
+          else {
+            object[route[0]] = new Date(object[route[0]]);
+          }
         }
       });
     }
@@ -101,12 +125,16 @@
           default:
             return;
         }
-        $('#edit-since-date').val(since.toISOString().slice(0, 10));
-        $('#edit-since-time').val(since.toISOString().slice(11, 19));
+        var sinceLocalDateString = since.getFullYear() + '-' + (('0' + (since.getMonth() + 1)).slice(-2)) + '-' + (('0' + since.getDate()).slice(-2));
+        var sinceLocalTimeString = (('0' + (since.getHours())).slice(-2)) + ':' + (('0' + (since.getMinutes())).slice(-2)) + ':' + (('0' + since.getSeconds()).slice(-2));
+        $('#edit-since-date').val(sinceLocalDateString);
+        $('#edit-since-time').val(sinceLocalTimeString);
 
         var until = new Date();
-        $('#edit-until-date').val(until.toISOString().slice(0, 10));
-        $('#edit-until-time').val(until.toISOString().slice(11, 19));
+        var untilLocalDateString = until.getFullYear() + '-' + (('0' + (until.getMonth() + 1)).slice(-2)) + '-' + (('0' + until.getDate()).slice(-2));
+        var untilLocalTimeString = (('0' + (until.getHours())).slice(-2)) + ':' + (('0' + (until.getMinutes())).slice(-2)) + ':' + (('0' + until.getSeconds()).slice(-2));
+        $('#edit-until-date').val(untilLocalDateString);
+        $('#edit-until-time').val(untilLocalTimeString);
       });
     }
   };
