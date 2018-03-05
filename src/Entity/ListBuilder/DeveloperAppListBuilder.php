@@ -163,6 +163,22 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
   }
 
   /**
+   * {@inheritdoc}
+   */
+  protected function getDefaultOperations(EntityInterface $entity) {
+    $operations = parent::getDefaultOperations($entity);
+    if ($entity->access('any_analytics') && $entity->hasLinkTemplate('analytics')) {
+      $operations['analytics'] = [
+        'title' => $this->t('Analytics'),
+        'weight' => 50,
+        'url' => $entity->toUrl('analytics'),
+      ];
+    }
+
+    return $operations;
+  }
+
+  /**
    * Returns the link if user can view an app otherwise the label of the app.
    *
    * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $app

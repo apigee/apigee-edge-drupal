@@ -23,6 +23,7 @@ use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder;
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -116,6 +117,22 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
   protected function loadByUser(UserInterface $user, array $headers = []) {
     $entity_ids = $this->getEntityIds($headers, $user);
     return $this->storage->loadMultiple($entity_ids);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getDefaultOperations(EntityInterface $entity) {
+    $operations = parent::getDefaultOperations($entity);
+    if ($entity->access('own_analytics') && $entity->hasLinkTemplate('analytics-for-developer')) {
+      $operations['analytics'] = [
+        'title' => $this->t('Analytics'),
+        'weight' => 50,
+        'url' => $entity->toUrl('analytics-for-developer'),
+      ];
+    }
+
+    return $operations;
   }
 
   /**
