@@ -170,7 +170,7 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
     if ($entity->access('any_analytics') && $entity->hasLinkTemplate('analytics')) {
       $operations['analytics'] = [
         'title' => $this->t('Analytics'),
-        'weight' => 50,
+        'weight' => 150,
         'url' => $entity->toUrl('analytics'),
       ];
     }

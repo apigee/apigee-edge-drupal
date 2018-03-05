@@ -127,7 +127,7 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
     if ($entity->access('own_analytics') && $entity->hasLinkTemplate('analytics-for-developer')) {
       $operations['analytics'] = [
         'title' => $this->t('Analytics'),
-        'weight' => 50,
+        'weight' => 150,
         'url' => $entity->toUrl('analytics-for-developer'),
       ];
     }
