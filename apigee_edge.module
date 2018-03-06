@@ -171,11 +171,12 @@ function apigee_edge_entity_base_field_info(EntityTypeInterface $entity_type) {
       ])
       ->setDisplayConfigurable('form', TRUE);
 
-    $fields['apigee_edge_developer_id'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Apigee Edge developer ID'))
-      ->setSettings([
-        'target_type' => 'developer_app',
-      ]);
+    $fields['apigee_edge_developer_id'] = BaseFieldDefinition::create('string')
+      ->setName('apigee_edge_developer_id')
+      ->setLabel(t('Apigee Edge developer id'))
+      ->setComputed(TRUE)
+      ->setClass('\Drupal\apigee_edge\Entity\ApigeeEdgeDeveloperIdField')
+      ->setDisplayConfigurable('view', TRUE);
   }
 
   return $fields;
@@ -880,7 +881,6 @@ function apigee_edge_user_presave(UserInterface $account) {
     /** @var \Drupal\apigee_edge\Entity\Developer $developer */
     $developer = Developer::createFromDrupalUser($account);
     $developer->save();
-    $account->set('apigee_edge_developer_id', $developer->getDeveloperId());
   }
   catch (\Exception $exception) {
     $previous = $exception->getPrevious();
@@ -938,10 +938,6 @@ function apigee_edge_user_presave(UserInterface $account) {
     else {
       watchdog_exception('apigee_edge', $exception, 'Could not @operation developer entity: @developer. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
     }
-  }
-
-  if ($developer_id !== NULL) {
-    $account->set('apigee_edge_developer_id', $developer_id);
   }
 }
 
