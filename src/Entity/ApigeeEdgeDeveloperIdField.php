@@ -47,4 +47,20 @@ class ApigeeEdgeDeveloperIdField extends TypedData {
   public function setLangcode(string $langcode) {
   }
 
+  /**
+   * We had to add this method because it is expected to exist.
+   *
+   * @link https://www.drupal.org/project/drupal/issues/2950450
+   */
+  public function preSave() {
+  }
+
+  /**
+   * We had to add this method because it is expected to exist.
+   *
+   * @link https://www.drupal.org/project/drupal/issues/2950450
+   */
+  public function postSave() {
+  }
+
 }
