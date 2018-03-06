@@ -206,12 +206,7 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
    * @internal
    */
   public function setOwner(UserInterface $account) {
-    $this->drupalUserId = $account->id();
-    $developer = Developer::load($account->getEmail());
-    // TODO What should we do if developer does not exists on Edge.
-    if ($developer) {
-      $this->developerId = $developer->uuid();
-    }
+    $this->setOwnerId($account->id());
   }
 
   /**
@@ -229,12 +224,19 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
   public function setOwnerId($uid) {
     $this->drupalUserId = $uid;
     $user = User::load($uid);
-    // TODO What should we do if developer does not exists on Edge.
     if ($user) {
       $developer = Developer::load($user->getEmail());
       if ($developer) {
         $this->developerId = $developer->uuid();
       }
+      else {
+        // Sanity check, probably someone called this method with invalid data.
+        throw new \InvalidArgumentException(sprintf('Developer with %s email does not exist on Apigee Edge.', $user->getEmail()));
+      }
+    }
+    else {
+      // Sanity check, probably someone called this method with invalid data.
+      throw new \InvalidArgumentException(sprintf('User with %d id does not exist.', $uid));
     }
   }
 
