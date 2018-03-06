@@ -171,7 +171,7 @@ entity.developer_app.delete_form_for_developer:
     _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppDeleteFormForDeveloper::getPageTitle'
   requirements:
      user: '\d+'
-     _entity_access: 'developer_app.delete'
+     _developer_app_access: 'delete'
 
 entity.developer_app.analytics_for_developer:
   path: '/user/{user}/apps/{app}/analytics'

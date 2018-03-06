@@ -171,11 +171,24 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
       $operations['analytics'] = [
         'title' => $this->t('Analytics'),
         'weight' => 150,
-        'url' => $entity->toUrl('analytics'),
+        'url' => $this->getDeveloperAppAnalyticsLinkUrl($entity),
       ];
     }
 
     return $operations;
+  }
+
+  /**
+   * Gets the developer app analytics link URL.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity the operations are for.
+   *
+   * @return \Drupal\Core\Url
+   *   The URL object.
+   */
+  protected function getDeveloperAppAnalyticsLinkUrl(EntityInterface $entity) {
+    return $entity->toUrl('analytics');
   }
 
   /**
