@@ -122,8 +122,8 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
   /**
    * {@inheritdoc}
    */
-  protected function getDeveloperAppAnalyticsLinkUrl(EntityInterface $entity) {
-    return $entity->toUrl('analytics-for-developer');
+  protected function getDeveloperAppAnalyticsLink() {
+    return 'analytics-for-developer';
   }
 
   /**
