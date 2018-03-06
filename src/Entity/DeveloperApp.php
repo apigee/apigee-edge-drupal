@@ -38,8 +38,8 @@ use Drupal\user\UserInterface;
  *   ),
  *   handlers = {
  *     "storage" = "Drupal\apigee_edge\Entity\Storage\DeveloperAppStorage",
- *     "access" = "Drupal\apigee_edge\Entity\DeveloperAppAccessControlHandler",
- *     "permission_provider" = "Drupal\apigee_edge\Entity\EdgeEntityPermissionProviderBase",
+ *     "access" = "Drupal\apigee_edge\Entity\EdgeEntityAccessControlHandler",
+ *     "permission_provider" = "Drupal\apigee_edge\Entity\DeveloperAppPermissionProvider",
  *     "form" = {
  *       "default" = "Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm",
  *       "add" = "Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm",

@@ -124,7 +124,7 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    */
   protected function getDefaultOperations(EntityInterface $entity) {
     $operations = parent::getDefaultOperations($entity);
-    if ($entity->access('own_analytics') && $entity->hasLinkTemplate('analytics-for-developer')) {
+    if ($entity->access('analytics') && $entity->hasLinkTemplate('analytics-for-developer')) {
       $operations['analytics'] = [
         'title' => $this->t('Analytics'),
         'weight' => 150,
@@ -166,7 +166,7 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    * {@inheritdoc}
    */
   public function render(UserInterface $user = NULL) {
-    $this->checkDeveloperStatus($user);
+    $this->checkDeveloperStatus($user->id());
     $build = parent::render();
 
     $build['table']['#empty'] = $this->t('Looks like you do not have any apps. Get started by adding one.');

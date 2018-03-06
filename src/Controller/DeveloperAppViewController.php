@@ -40,7 +40,7 @@ class DeveloperAppViewController extends EntityViewController implements Develop
    */
   public function view(EntityInterface $developer_app, $view_mode = 'full') {
     /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app */
-    $this->checkDeveloperStatus(User::load($developer_app->getOwnerId()));
+    $this->checkDeveloperStatus($developer_app->getOwnerId());
     $build = parent::view($developer_app, $view_mode);
     return $build;
   }

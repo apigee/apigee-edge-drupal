@@ -24,8 +24,12 @@
   font-weight: bold;
 }
 
-.controls-label, .form-item-metrics, .form-item-quick-date-picker {
+.form-item-metrics, .form-item-quick-date-picker {
   margin-right: 30px;
+}
+
+.controls-label {
+  margin-right: 5px;
 }
 
 .apigee-edge-developer-app-analytics > div > div {

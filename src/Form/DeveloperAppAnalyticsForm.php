@@ -96,7 +96,7 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
    */
   public function buildForm(array $form, FormStateInterface $form_state, DeveloperAppInterface $developer_app = NULL) {
     $this->developerApp = $developer_app;
-    $this->checkDeveloperStatus($developer_app->getOwner());
+    $this->checkDeveloperStatus($developer_app->getOwnerId());
 
     $form_state->disableRedirect();
     $form['#attached']['library'][] = 'apigee_edge/apigee_edge.analytics';

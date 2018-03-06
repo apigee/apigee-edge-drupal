@@ -167,7 +167,7 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
    */
   protected function getDefaultOperations(EntityInterface $entity) {
     $operations = parent::getDefaultOperations($entity);
-    if ($entity->access('any_analytics') && $entity->hasLinkTemplate('analytics')) {
+    if ($entity->access('analytics') && $entity->hasLinkTemplate('analytics')) {
       $operations['analytics'] = [
         'title' => $this->t('Analytics'),
         'weight' => 150,
