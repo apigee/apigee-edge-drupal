@@ -40,9 +40,9 @@ before_install:
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
-  - docker-compose -f docker-compose.yml -f docker-compose.apigee_edge.yml pull
-  - docker-compose -f docker-compose.yml -f docker-compose.apigee_edge.yml build php
-  - docker-compose -f docker-compose.yml -f docker-compose.apigee_edge.yml up -d
+  - docker-compose pull
+  - docker-compose build php
+  - docker-compose up -d
   - docker-compose ps
 
 script:
@@ -50,5 +50,5 @@ script:
 # Do not report warnings (like Drupal.Semantics.FunctionT.NotLiteralString) on Travis CI. Use selective disabling
 # when Drupal Coder will support PHPCS >= 3.2.0.
 # https://github.com/squizlabs/PHP_CodeSniffer/wiki/Advanced-Usage#ignoring-parts-of-a-file
-  - docker-compose -f docker-compose.yml -f docker-compose.apigee_edge.yml run phpcs -s -n --colors --standard=/opt/drupal-module/phpcs.xml.dist /opt/drupal-module
-  - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then docker-compose -f docker-compose.yml -f docker-compose.apigee_edge.yml run php sh /opt/drupal-module/test.sh; fi
+  - docker-compose run phpcs -s -n --colors --standard=/opt/drupal-module/phpcs.xml.dist /opt/drupal-module
+  - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then docker-compose run php sh /opt/drupal-module/test.sh; fi
