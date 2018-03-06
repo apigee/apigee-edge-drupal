@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge\Entity;
 
+use Drupal\Core\Url;
 use Drupal\user\Entity\User;
 
 /**
@@ -47,7 +48,10 @@ trait DeveloperStatusCheckTrait {
       // Displays different warning message for admin users.
       $message = $user->id() === \Drupal::currentUser()->id()
         ? t('Your developer account has inactive status so you will not be able to use your credentials until your account is enabled. Please contact the Developer Portal support for further assistance.')
-        : t('The developer account of @username (@email) has inactive status so this user has invalid credentials until the account is enabled.', ['@username' => $user->getAccountName(), '@email' => $user->getEmail()]);
+        : t('The developer account of <a href=":url">@username</a> has inactive status so this user has invalid credentials until the account is enabled.', [
+          ':url' => Url::fromRoute('entity.user.edit_form', ['user' => $uid])->toString(),
+          '@username' => $user->getAccountName(),
+        ]);
       \Drupal::messenger()->addWarning($message);
     }
   }
