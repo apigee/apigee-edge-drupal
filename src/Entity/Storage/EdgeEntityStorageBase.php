@@ -50,9 +50,9 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
    * from Apigee Edge first and filters the returned result that Drupal's built
    * in static cache stores in the end.
    *
-   * @see \Drupal\apigee_edge\Entity\Query\Query::execute()
-   *
    * @var array
+   *
+   * @see \Drupal\apigee_edge\Entity\Query\Query::execute()
    */
   protected $entityCache = [];
 
