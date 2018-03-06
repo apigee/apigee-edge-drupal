@@ -202,11 +202,16 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * @internal
    */
   public function setOwner(UserInterface $account) {
     $this->drupalUserId = $account->id();
-    // TODO What should we do if id is missing from the user?
-    $this->developerId = $account->get('apigee_edge_developer_id')->target_id;
+    $developer = Developer::load($account->getEmail());
+    // TODO What should we do if developer does not exists on Edge.
+    if ($developer) {
+      $this->developerId = $developer->uuid();
+    }
   }
 
   /**
@@ -218,13 +223,18 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * @internal
    */
   public function setOwnerId($uid) {
     $this->drupalUserId = $uid;
     $user = User::load($uid);
-    // TODO Should we throw an exception if the user can not be loaded?
+    // TODO What should we do if developer does not exists on Edge.
     if ($user) {
-      $this->developerId = $user->get('apigee_edge_developer_id')->target_id;
+      $developer = Developer::load($user->getEmail());
+      if ($developer) {
+        $this->developerId = $developer->uuid();
+      }
     }
   }
 

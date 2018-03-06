@@ -55,7 +55,7 @@ class DeveloperAppNameParameterConverter implements ParamConverterInterface {
     /** @var \Drupal\user\UserInterface $user */
     $user = $this->entityTypeManager->getStorage('user')->load($defaults['user']);
     if ($user) {
-      $storedDeveloperId = $user->get('apigee_edge_developer_id')->target_id;
+      $storedDeveloperId = $user->get('apigee_edge_developer_id')->getValue();
       if ($storedDeveloperId) {
         $ids = $this->entityTypeManager->getStorage('developer_app')->getQuery()
           ->condition('developerId', $storedDeveloperId)

@@ -19,13 +19,10 @@
 
 namespace Drupal\apigee_edge\Entity\Storage;
 
-use Apigee\Edge\Api\Management\Controller\DeveloperController;
-use Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface;
 use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppController;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\user\UserInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -42,6 +39,10 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
   protected $entityTypeManager;
 
   /**
+   * @var \Drupal\Core\Database\Connection*/
+  protected $database;
+
+  /**
    * DeveloperAppStorage constructor.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
@@ -53,20 +54,8 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
    */
   public function __construct(ContainerInterface $container, EntityTypeInterface $entity_type, LoggerInterface $logger) {
     $this->entityTypeManager = $container->get('entity_type.manager');
+    $this->database = $container->get('database');
     parent::__construct($container, $entity_type, $logger);
-  }
-
-  /**
-   * Gets a DeveloperController instance.
-   *
-   * @return \Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface
-   *   The DeveloperController instance.
-   */
-  protected function getDeveloperController(): DeveloperControllerInterface {
-    return new DeveloperController(
-      $this->getConnector()->getOrganization(),
-      $this->getConnector()->getClient()
-    );
   }
 
   /**
@@ -99,19 +88,24 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
    * Adds Drupal user information to loaded entities.
    */
   protected function postLoad(array &$entities) {
-    $appid_developerid_map = [];
+    $developerIds = [];
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
     foreach ($entities as $entity) {
-      $appid_developerid_map[$entity->getAppId()] = $entity->getDeveloperId();
+      $developerIds[] = $entity->getDeveloperId();
+    }
+    $developerIds = array_unique($developerIds);
+    $developerId_mail_map = [];
+    /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperStorageInterface $developerStorage */
+    $developerStorage = $this->entityTypeManager->getStorage('developer');
+    foreach ($developerStorage->loadByProperties(['developerId' => $developerIds]) as $developer) {
+      /** @var \Drupal\apigee_edge\Entity\Developer $developer */
+      $developerId_mail_map[$developer->uuid()] = $developer->getEmail();
     }
 
-    $appid_developerid_map = array_unique($appid_developerid_map);
-    $users = $this->entityTypeManager->getStorage('user')
-      ->loadByProperties(['apigee_edge_developer_id' => $appid_developerid_map]);
-    $uid_devid_map = array_map(function (UserInterface $user) {
-      return $user->get('apigee_edge_developer_id')->target_id;
-    }, $users);
-    $devid_uid_map = array_flip($uid_devid_map);
+    $query = $this->database->select('users_field_data', 'ufd');
+    $query->fields('ufd', ['mail', 'uid'])
+      ->condition('mail', $developerId_mail_map, 'IN');
+    $mail_uid_map = $query->execute()->fetchAllKeyed();
 
     foreach ($entities as $entity) {
       // If developer id is not in this map it means the developer does
@@ -123,8 +117,8 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
       // created in Drupal before Edge connected was configured.
       // Although, this could be a result of a previous error
       // but there should be a log about that.
-      if (isset($devid_uid_map[$entity->getDeveloperId()])) {
-        $entity->setOwnerId($devid_uid_map[$entity->getDeveloperId()]);
+      if (isset($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]])) {
+        $entity->setOwnerId($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]]);
       }
     }
     // Call parent post load and with that call hook_developer_app_load()
