@@ -63,4 +63,12 @@ class ApigeeEdgeDeveloperIdField extends TypedData {
   public function postSave() {
   }
 
+  /**
+   * We had to add this method because it is expected to exist.
+   *
+   * @link https://www.drupal.org/project/drupal/issues/2950450
+   */
+  public function delete() {
+  }
+
 }
