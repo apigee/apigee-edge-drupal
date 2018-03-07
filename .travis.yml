@@ -10,11 +10,6 @@ addons:
     packages:
       - docker-ce
 
-matrix:
-  fast_finish: true
-  allow_failures:
-    - php: nightly
-
 cache:
   directories:
     - $HOME/.composer/cache/files
@@ -33,6 +28,7 @@ env:
 matrix:
   allow_failures:
     - env: PHP_VERSION=7.1 DRUPAL_CORE=8.5.x-dev DEPENDENCIES="--prefer-lowest"
+  fast_finish: true
 
 # TODO Cache Docker images and PHP service build (common parts of the built, like Drupal core install, for a day).
 before_install:
@@ -47,8 +43,12 @@ before_install:
 
 script:
   - set -e
-# Do not report warnings (like Drupal.Semantics.FunctionT.NotLiteralString) on Travis CI. Use selective disabling
-# when Drupal Coder will support PHPCS >= 3.2.0.
-# https://github.com/squizlabs/PHP_CodeSniffer/wiki/Advanced-Usage#ignoring-parts-of-a-file
+  # Do not report warnings (like Drupal.Semantics.FunctionT.NotLiteralString) on Travis CI. Use selective disabling
+  # when Drupal Coder will support PHPCS >= 3.2.0.
+  # https://github.com/squizlabs/PHP_CodeSniffer/wiki/Advanced-Usage#ignoring-parts-of-a-file
   - docker-compose run phpcs -s -n --colors --standard=/opt/drupal-module/phpcs.xml.dist /opt/drupal-module
   - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then docker-compose run php sh /opt/drupal-module/test.sh; fi
+
+after_script:
+  # Display the content of the log file that contains performance data.
+  - docker-compose run php /bin/bash -c 'cat ${APIGEE_EDGE_TEST_LOG_FILE}'
