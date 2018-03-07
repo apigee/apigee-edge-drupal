@@ -30,6 +30,8 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\InfoParserInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\key\KeyInterface;
+use Drupal\key\KeyRepositoryInterface;
 use GuzzleHttp\ClientInterface as GuzzleClientInterface;
 use Http\Adapter\Guzzle6\Client as GuzzleClientAdapter;
 
@@ -39,16 +41,39 @@ use Http\Adapter\Guzzle6\Client as GuzzleClientAdapter;
 class SDKConnector implements SDKConnectorInterface {
 
   /**
-   * @var null|\Http\Client\HttpClient*/
+   * The client object.
+   *
+   * @var null|\Http\Client\HttpClient
+   */
   private static $client = NULL;
 
   /**
-   * @var null|\Drupal\apigee_edge\CredentialsInterface*/
-  private static $credentials = NULL;
+   * The currently used key entity.
+   *
+   * @var null|\Drupal\key\KeyInterface
+   */
+  private static $key = NULL;
 
   /**
-   * @var null|string*/
+   * Custom user agent prefix.
+   *
+   * @var null|string
+   */
   private static $userAgentPrefix = NULL;
+
+  /**
+   * The key repository.
+   *
+   * @var \Drupal\key\KeyRepositoryInterface
+   */
+  protected $keyRepository;
+
+  /**
+   * The active key ID.
+   *
+   * @var string
+   */
+  protected $keyId;
 
   /**
    * The entity type manager.
@@ -58,30 +83,22 @@ class SDKConnector implements SDKConnectorInterface {
   protected $entityTypeManager;
 
   /**
-   * The currently used credentials storage plugin.
+   * The Guzzle client.
    *
-   * @var \Drupal\apigee_edge\CredentialsStoragePluginInterface
-   */
-  protected $credentialsStoragePlugin;
-
-  /**
-   * The currently used authentication method plugin.
-   *
-   * @var \Drupal\apigee_edge\AuthenticationMethodPluginInterface
-   */
-  protected $authenticationMethodPlugin;
-
-  /**
    * @var \Http\Client\HttpClient
    */
   protected $httpClient;
 
   /**
+   * The module handler service.
+   *
    * @var \Drupal\Core\Extension\ModuleHandlerInterface
    */
   protected $moduleHandler;
 
   /**
+   * The info parser.
+   *
    * @var \Drupal\Core\Extension\InfoParserInterface
    */
   protected $infoParser;
@@ -91,24 +108,22 @@ class SDKConnector implements SDKConnectorInterface {
    *
    * @param \GuzzleHttp\ClientInterface $httpClient
    *   Http client.
+   * @param \Drupal\key\KeyRepositoryInterface $key_repository
+   *   The key repository.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   Entity type manager service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
-   * @param \Drupal\apigee_edge\CredentialsStorageManager $credentials_storage_plugin_manager
-   *   The manager for credentials storage plugins.
-   * @param \Drupal\apigee_edge\AuthenticationMethodManager $authentication_method_plugin_manager
-   *   The manager for authentication method plugins.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   Module handler service.
    * @param \Drupal\Core\Extension\InfoParserInterface $infoParser
    *   Info file parser service.
    */
-  public function __construct(GuzzleClientInterface $httpClient, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, CredentialsStorageManager $credentials_storage_plugin_manager, AuthenticationMethodManager $authentication_method_plugin_manager, ModuleHandlerInterface $moduleHandler, InfoParserInterface $infoParser) {
+  public function __construct(GuzzleClientInterface $httpClient, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $moduleHandler, InfoParserInterface $infoParser) {
     $this->httpClient = new GuzzleClientAdapter($httpClient);
     $this->entityTypeManager = $entity_type_manager;
-    $this->credentialsStoragePlugin = $credentials_storage_plugin_manager->createInstance($config_factory->get('apigee_edge.credentials_storage')->get('credentials_storage_type'));
-    $this->authenticationMethodPlugin = $authentication_method_plugin_manager->createInstance($config_factory->get('apigee_edge.authentication_method')->get('authentication_method'));
+    $this->keyRepository = $key_repository;
+    $this->keyId = $config_factory->get('apigee_edge.authentication')->get('active_key');
     $this->moduleHandler = $moduleHandler;
     $this->infoParser = $infoParser;
   }
@@ -117,7 +132,9 @@ class SDKConnector implements SDKConnectorInterface {
    * {@inheritdoc}
    */
   public function getOrganization(): string {
-    return $this->getCredentials()->getOrganization();
+    /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $key_type */
+    $key_type = $this->getKey()->getKeyType();
+    return $key_type->get($this->getKey(), 'organization');
   }
 
   /**
@@ -126,36 +143,36 @@ class SDKConnector implements SDKConnectorInterface {
   public function getClient() : ClientInterface {
     if (NULL === self::$client) {
       $builder = new Builder($this->httpClient);
-      $credentials = $this->credentialsStoragePlugin->loadCredentials();
-      $auth = $this->authenticationMethodPlugin->createAuthenticationObject($credentials);
-      self::$client = new Client($auth, $builder, $credentials->getEndpoint(), $this->userAgentPrefix());
+      /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $key_type */
+      $key_type = $this->getKey()->getKeyType();
+      self::$client = new Client($key_type->getAuthenticationMethod($this->getKey()), $builder, $key_type->get($this->getKey(), 'endpoint'), $this->userAgentPrefix());
     }
     return self::$client;
   }
 
   /**
-   * Returns credentials used by the API client.
+   * Returns the key object used by the API client.
    *
-   * @return \Drupal\apigee_edge\CredentialsInterface
-   *   Credential object.
+   * @return null|\Drupal\key\KeyInterface
+   *   The key entity.
    */
-  private function getCredentials() : CredentialsInterface {
-    if (NULL === self::$credentials) {
-      self::$credentials = $this->credentialsStoragePlugin->loadCredentials();
+  private function getKey() : ? KeyInterface {
+    if (NULL === self::$key) {
+      self::$key = $this->keyRepository->getKey($this->keyId);
     }
 
-    return self::$credentials;
+    return self::$key;
   }
 
   /**
-   * Changes credentials used by the API client.
+   * Changes key used by the API client.
    *
-   * @param \Drupal\apigee_edge\CredentialsInterface $credentials
-   *   Credentials object.
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
    */
-  private function setCredentials(CredentialsInterface $credentials) {
-    self::$credentials = $credentials;
-    // Ensure that client will be rebuilt with the new credentials.
+  private function setKey(KeyInterface $key) {
+    self::$key = $key;
+    // Ensure that client will be rebuilt with the new key.
     self::$client = NULL;
   }
 
@@ -189,21 +206,23 @@ class SDKConnector implements SDKConnectorInterface {
   /**
    * {@inheritdoc}
    */
-  public function testConnection(CredentialsInterface $credentials = NULL) {
-    if (NULL !== $credentials) {
-      $originalCredentials = self::getCredentials();
-      self::setCredentials($credentials);
+  public function testConnection(KeyInterface $key = NULL) {
+    if (NULL !== $key) {
+      $originalKey = self::getKey();
+      self::setKey($key);
     }
     $oc = new OrganizationController($this->getClient());
     try {
-      $oc->load($this->getCredentials()->getOrganization());
+      /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $key_type */
+      $key_type = $this->getKey()->getKeyType();
+      $oc->load($key_type->get($this->getKey(), 'organization'));
     }
     catch (\Exception $e) {
       throw $e;
     }
     finally {
-      if (isset($originalCredentials)) {
-        self::setCredentials($originalCredentials);
+      if (isset($originalKey)) {
+        self::setKey($originalKey);
       }
     }
   }

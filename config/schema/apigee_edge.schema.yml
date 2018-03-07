@@ -11,16 +11,12 @@ apigee_edge.error_page:
         value:
           type: text
 
-apigee_edge.authentication_method:
+apigee_edge.authentication:
   type: config_object
   mapping:
-    authentication_method:
+    active_key:
       type: string
-
-apigee_edge.credentials_storage:
-  type: config_object
-  mapping:
-    credentials_storage_type:
+    default_endpoint:
       type: string
 
 apigee_edge.entity_labels:
