@@ -26,6 +26,9 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
 
+/**
+ * Provides a debug message formatter plugin manager.
+ */
 class DebugMessageFormatterPluginManager extends DefaultPluginManager {
 
   /**

@@ -35,18 +35,29 @@ use Psr\Log\LogLevel;
 class ApiClientProfiler {
 
   /**
-   * @var \Psr\Log\LoggerInterface*/
+   * A logger instance.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
   private $logger;
 
   /**
-   * @var \Drupal\apigee_edge_debug\Plugin\DebugMessageFormatter\DebugMessageFormatterPluginInterface*/
+   * The debug message formatter plugin.
+   *
+   * @var \Drupal\apigee_edge_debug\Plugin\DebugMessageFormatter\DebugMessageFormatterPluginInterface
+   */
   private $formatter;
 
   /**
-   * @var string*/
+   * The format of the log entry.
+   *
+   * @var string
+   */
   private $logFormat;
 
   /**
+   * The debug message formatter plugin manager.
+   *
    * @var \Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager
    */
   private $debugMessageFormatterPlugin;

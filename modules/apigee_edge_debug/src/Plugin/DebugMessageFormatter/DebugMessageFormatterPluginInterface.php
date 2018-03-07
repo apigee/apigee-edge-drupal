@@ -23,6 +23,9 @@ namespace Drupal\apigee_edge_debug\Plugin\DebugMessageFormatter;
 use GuzzleHttp\TransferStats;
 use Http\Message\Formatter;
 
+/**
+ * Defines an interface for debug message formatter plugins.
+ */
 interface DebugMessageFormatterPluginInterface extends Formatter {
 
   /**
