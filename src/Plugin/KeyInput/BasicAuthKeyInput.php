@@ -70,7 +70,7 @@ class BasicAuthKeyInput extends KeyInputBase {
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $config = $this->configFactory->get('apigee_edge.credentials_storage');
+    $config = $this->configFactory->get('apigee_edge.authentication');
 
     /** @var \Drupal\key\Entity\Key $key */
     $key = $form_state->getFormObject()->getEntity();

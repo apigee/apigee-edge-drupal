@@ -25,6 +25,7 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Url;
+use Drupal\key\Exception\KeyValueNotRetrievedException;
 use Drupal\key\KeyRepositoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -109,6 +110,7 @@ class AuthenticationForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('apigee_edge.authentication');
+    $form = parent::buildForm($form, $form_state);
     $form['#prefix'] = '<div id="apigee-edge-auth-form">';
     $form['#suffix'] = '</div>';
     $form['#attached']['library'][] = 'apigee_edge/apigee_edge.admin';
@@ -155,13 +157,18 @@ class AuthenticationForm extends ConfigFormBase {
     $form['authentication'] = [
       '#type' => 'details',
       '#title' => $this->t('Authentication key'),
-      '#description' => t('Choose an available key. If the desired key is not listed, <a href=":link">create a new key</a>.', [
+      '#description' => t('Select an available key. If the desired key is not listed, <a href=":link">create a new key</a>.', [
         ':link' => Url::fromRoute('entity.key.add_form')->toString(),
       ]),
       '#open' => TRUE,
     ];
 
     $options = $this->keyRepository->getKeyNamesAsOptions(['type_group' => 'apigee_edge']);
+    if (empty($options)) {
+      $this->messenger->addWarning(t('There is no available key for connecting to Apigee Edge API server. <a href=":link">Create a new key.</a>', [
+        ':link' => Url::fromRoute('entity.key.add_form')->toString(),
+      ]));
+    }
     $default_value = in_array($config->get('active_key'), $options) ? $config->get('active_key') : NULL;
     $form['authentication']['key'] = [
       '#type' => 'radios',
@@ -184,6 +191,7 @@ class AuthenticationForm extends ConfigFormBase {
     $form['test_connection']['test_connection_submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Send request'),
+      '#disabled' => !$form['authentication']['key']['#access'],
       '#ajax' => [
         'callback' => '::ajaxCallback',
         'wrapper' => 'apigee-edge-auth-form',
@@ -192,10 +200,26 @@ class AuthenticationForm extends ConfigFormBase {
           'message' => $this->t('Waiting for response...'),
         ],
       ],
+      '#states' => [
+        'enabled' => [
+          ':input[name="key"]' => [
+            'checked' => TRUE,
+          ],
+        ],
+      ],
       '#submit' => ['::submitTestConnection'],
     ];
 
-    return parent::buildForm($form, $form_state);
+    $form['actions']['submit']['#disabled'] = !$form['authentication']['key']['#access'];
+    $form['actions']['submit']['#states'] = [
+      'enabled' => [
+        ':input[name="key"]' => [
+          'checked' => TRUE,
+        ],
+      ],
+    ];
+
+    return $form;
   }
 
   /**
@@ -203,12 +227,19 @@ class AuthenticationForm extends ConfigFormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     if ($form_state->getValue('key') === NULL) {
+      if ($form['authentication']['key']['#access'] === FALSE) {
+        $form_state->setError($form, $this->t('Select an authentication key.'));
+      }
       return;
     }
 
     $key = $this->keyRepository->getKey($form_state->getValue('key'));
     try {
       $this->sdkConnector->testConnection($key);
+    }
+    catch (KeyValueNotRetrievedException $exception) {
+      watchdog_exception('apigee_edge', $exception);
+      $form_state->setError($form, $this->t('Could not read key storage.'));
     }
     catch (\Exception $exception) {
       watchdog_exception('apigee_edge', $exception);

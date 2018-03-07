@@ -21,6 +21,7 @@ namespace Drupal\apigee_edge;
 
 use Apigee\Edge\Api\Management\Controller\OrganizationController;
 use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
+use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\UnknownEndpointException;
 use Apigee\Edge\HttpClient\Client;
 use Apigee\Edge\HttpClient\ClientInterface;
@@ -30,6 +31,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\InfoParserInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\key\Exception\KeyValueNotRetrievedException;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
 use GuzzleHttp\ClientInterface as GuzzleClientInterface;
@@ -140,7 +142,11 @@ class SDKConnector implements SDKConnectorInterface {
   /**
    * {@inheritdoc}
    */
-  public function getClient() : ClientInterface {
+  public function getClient() : ? ClientInterface {
+    if ($this->getKey() === NULL) {
+      self::$client = NULL;
+      return NULL;
+    }
     if (NULL === self::$client) {
       $builder = new Builder($this->httpClient);
       /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $key_type */
@@ -158,7 +164,11 @@ class SDKConnector implements SDKConnectorInterface {
    */
   private function getKey() : ? KeyInterface {
     if (NULL === self::$key) {
-      self::$key = $this->keyRepository->getKey($this->keyId);
+      $key = $this->keyRepository->getKey($this->keyId);
+      if ($key === NULL) {
+        throw new ApiException('Apigee Edge authentication key is not set.');
+      }
+      self::$key = $key;
     }
 
     return self::$key;
@@ -172,6 +182,7 @@ class SDKConnector implements SDKConnectorInterface {
    */
   private function setKey(KeyInterface $key) {
     self::$key = $key;
+    $this->keyId = $key->id();
     // Ensure that client will be rebuilt with the new key.
     self::$client = NULL;
   }
@@ -179,7 +190,7 @@ class SDKConnector implements SDKConnectorInterface {
   /**
    * Generates a custom user agent prefix.
    */
-  protected function userAgentPrefix(): string {
+  protected function userAgentPrefix() : string {
     if (NULL === self::$userAgentPrefix) {
       $moduleInfo = $this->infoParser->parse($this->moduleHandler->getModule('apigee_edge')->getPathname());
       if (!isset($moduleInfo['version'])) {
@@ -208,14 +219,23 @@ class SDKConnector implements SDKConnectorInterface {
    */
   public function testConnection(KeyInterface $key = NULL) {
     if (NULL !== $key) {
-      $originalKey = self::getKey();
+      try {
+        $originalKey = self::getKey();
+      }
+      catch (ApiException $e) {
+        // Skip key not set exception if there is no currently used key.
+      }
       self::setKey($key);
     }
-    $oc = new OrganizationController($this->getClient());
     try {
+      $oc = new OrganizationController($this->getClient());
       /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $key_type */
       $key_type = $this->getKey()->getKeyType();
-      $oc->load($key_type->get($this->getKey(), 'organization'));
+
+      if (($organization = $key_type->get($this->getKey(), 'organization')) === NULL) {
+        throw new KeyValueNotRetrievedException('Could not read key storage. Key ID: ' . $this->getKey()->id());
+      }
+      $oc->load($organization);
     }
     catch (\Exception $e) {
       throw $e;
