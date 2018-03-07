@@ -86,7 +86,7 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    */
   protected function getEntityIds(array $headers = [], UserInterface $user = NULL) {
     $query = $this->storage->getQuery()
-      ->condition('developerId', $user->get('apigee_edge_developer_id')->getValue());
+      ->condition('developerId', $user->get('apigee_edge_developer_id')->value);
     $query->tableSort($headers);
     return $query->execute();
   }

@@ -173,10 +173,9 @@ function apigee_edge_entity_base_field_info(EntityTypeInterface $entity_type) {
 
     $fields['apigee_edge_developer_id'] = BaseFieldDefinition::create('string')
       ->setName('apigee_edge_developer_id')
-      ->setLabel(t('Apigee Edge developer id'))
+      ->setLabel(t('Apigee Edge Developer ID'))
       ->setComputed(TRUE)
-      ->setClass('\Drupal\apigee_edge\Entity\ApigeeEdgeDeveloperIdField')
-      ->setDisplayConfigurable('view', TRUE);
+      ->setClass('\Drupal\apigee_edge\Plugin\Field\FieldType\ApigeeEdgeDeveloperIdFieldItem');
   }
 
   return $fields;
