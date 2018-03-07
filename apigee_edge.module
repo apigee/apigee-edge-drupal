@@ -890,8 +890,7 @@ function apigee_edge_user_presave(UserInterface $account) {
     ];
     if ($previous instanceof ClientErrorException && $previous->getEdgeErrorCode()) {
       if ($previous->getEdgeErrorCode() === Developer::APIGEE_EDGE_ERROR_CODE_DEVELOPER_DOES_NOT_EXISTS) {
-        \Drupal::logger('apigee_edge')
-          ->info('Could not update @developer developer entity because it does not exist on Edge. Automatically trying to create a new developer entity.', $context);
+        \Drupal::service('logger.channel.apigee_edge')->info('Could not update @developer developer entity because it does not exist on Edge. Automatically trying to create a new developer entity.', $context);
         try {
           // Forcibly mark developer entity as new to send POST request to Edge
           // instead of PUT. This should be a better way then clearing
@@ -909,8 +908,7 @@ function apigee_edge_user_presave(UserInterface $account) {
         }
       }
       elseif ($previous->getEdgeErrorCode() === Developer::APIGEE_EDGE_ERROR_CODE_DEVELOPER_ALREADY_EXISTS) {
-        \Drupal::logger('apigee_edge')
-          ->info($previous->getMessage());
+        \Drupal::service('logger.channel.apigee_edge')->info($previous->getMessage());
         $developer = Developer::load($account->getEmail());
         if ($developer) {
           $developer_id = $developer->getDeveloperId();
@@ -925,12 +923,12 @@ function apigee_edge_user_presave(UserInterface $account) {
               $developer->save();
             }
             catch (ApiException $e) {
-              \Drupal::logger('apigee_edge')->error("Unable to update existing @developer developer's data after registered on the portal.", $context);
+              \Drupal::service('logger.channel.apigee_edge')->error("Unable to update existing @developer developer's data after registered on the portal.", $context);
             }
           }
         }
         else {
-          \Drupal::logger('apigee_edge')->error("Unable to save @developer developer's developer id on user.", $context);
+          \Drupal::service('logger.channel.apigee_edge')->error("Unable to save @developer developer's developer id on user.", $context);
         }
       }
     }

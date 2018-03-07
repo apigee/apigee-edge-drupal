@@ -83,9 +83,9 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
    * {@inheritdoc}
    */
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
-    /** @var \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory */
-    $logger_factory = $container->get('logger.factory');
-    return new static($container, $entity_type, $logger_factory->get('edge_entity'));
+    /** @var \Psr\Log\LoggerInterface $logger */
+    $logger = $container->get('logger.channel.apigee_edge');
+    return new static($container, $entity_type, $logger);
   }
 
   /**
