@@ -68,6 +68,11 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
   ];
 
   /**
+   * @var \Drupal\Core\Entity\EntityTypeInterface
+   */
+  protected $entityType;
+
+  /**
    * @var \Drupal\user\UserInterface
    */
   protected $myAccount;
@@ -104,7 +109,10 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
     $this->profile = 'standard';
     parent::setUp();
 
-    $this->revokeExtraPermissions();
+    $this->entityType = \Drupal::entityTypeManager()->getDefinition('developer_app');
+    $this->entityRoutes = array_keys($this->entityType->get('links'));
+
+    $this->revokeDefaultAuthUserPermissions();
 
     $this->myAccount = $this->createAccount([]);
     $this->otherAccount = $this->createAccount([]);
@@ -133,9 +141,6 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
     foreach (array_keys(static::PERMISSION_MATRIX) as $permission) {
       $this->roles[$permission] = $this->createRole([$permission]);
     }
-
-    $definition = \Drupal::entityTypeManager()->getDefinition('developer_app');
-    $this->entityRoutes = array_keys($definition->get('links'));
   }
 
   /**
@@ -157,14 +162,13 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
    * sense from an UX point of view, they make testing permissions more
    * difficult.
    */
-  protected function revokeExtraPermissions() {
-    $authenticated_user_permissions = [
-      'view own developer_app',
-      'create developer_app',
-      'update own developer_app',
-      'delete own developer_app',
-    ];
-
+  protected function revokeDefaultAuthUserPermissions() {
+    $definition = $this->entityType;
+    $user_permissions = user_role_permissions([RoleInterface::AUTHENTICATED_ID]);
+    $authenticated_user_permissions = array_filter($user_permissions[RoleInterface::AUTHENTICATED_ID], function ($perm) use ($definition) {
+      return preg_match("/own {$definition->id()}$/", $perm);
+    });
+    $authenticated_user_permissions[] = "create {$definition->id()}";
     user_role_revoke_permissions(RoleInterface::AUTHENTICATED_ID, $authenticated_user_permissions);
   }
 
