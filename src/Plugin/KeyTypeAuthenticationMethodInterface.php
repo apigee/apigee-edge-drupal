@@ -20,6 +20,7 @@
 namespace Drupal\apigee_edge\Plugin;
 
 use Drupal\key\KeyInterface;
+use Http\Message\Authentication;
 
 /**
  * Interface for creating the required authentication method object.
@@ -35,6 +36,6 @@ interface KeyTypeAuthenticationMethodInterface {
    * @return \Http\Message\Authentication
    *   The authentication object.
    */
-  public function getAuthenticationMethod(KeyInterface $key);
+  public function getAuthenticationMethod(KeyInterface $key) : Authentication;
 
 }

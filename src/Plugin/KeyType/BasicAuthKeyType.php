@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge\Plugin\KeyType;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\key\KeyInterface;
+use Http\Message\Authentication;
 use Http\Message\Authentication\BasicAuth;
 
 /**
@@ -46,7 +47,7 @@ use Http\Message\Authentication\BasicAuth;
  *   }
  * )
  */
-class BasicAuthEdgeKeyType extends EdgeKeyTypeBase {
+class BasicAuthKeyType extends EdgeKeyTypeBase {
 
   /**
    * {@inheritdoc}
@@ -85,7 +86,7 @@ class BasicAuthEdgeKeyType extends EdgeKeyTypeBase {
   /**
    * {@inheritdoc}
    */
-  public function getAuthenticationMethod(KeyInterface $key) {
+  public function getAuthenticationMethod(KeyInterface $key) : Authentication {
     $key_values = $key->getKeyValues();
     return new BasicAuth($key_values['username'], $key_values['password']);
   }

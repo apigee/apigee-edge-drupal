@@ -155,20 +155,27 @@ class AuthenticationForm extends ConfigFormBase {
     $form['authentication'] = [
       '#type' => 'details',
       '#title' => $this->t('Authentication key'),
+      '#description' => t('Choose an available key. If the desired key is not listed, <a href=":link">create a new key</a>.', [
+        ':link' => Url::fromRoute('entity.key.add_form')->toString(),
+      ]),
       '#open' => TRUE,
     ];
 
+    $options = $this->keyRepository->getKeyNamesAsOptions(['type_group' => 'apigee_edge']);
+    $default_value = in_array($config->get('active_key'), $options) ? $config->get('active_key') : NULL;
     $form['authentication']['key'] = [
-      '#type' => 'key_select',
-      '#default_value' => $config->get('active_key'),
-      '#key_filters' => ['type_group' => 'apigee_edge'],
+      '#type' => 'radios',
+      '#title' => t('Keys'),
+      '#options' => $options,
+      '#access' => !empty($options),
+      '#default_value' => $default_value,
       '#required' => TRUE,
     ];
 
     $form['test_connection'] = [
       '#type' => 'details',
       '#title' => $this->t('Test connection'),
-      '#description' => 'Send request using the given authentication key.',
+      '#description' => 'Send request using the selected authentication key.',
       '#open' => TRUE,
     ];
     $form['test_connection']['test_connection_response'] = [
@@ -195,6 +202,10 @@ class AuthenticationForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
+    if ($form_state->getValue('key') === NULL) {
+      return;
+    }
+
     $key = $this->keyRepository->getKey($form_state->getValue('key'));
     try {
       $this->sdkConnector->testConnection($key);
