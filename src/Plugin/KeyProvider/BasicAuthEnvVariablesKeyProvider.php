@@ -110,7 +110,7 @@ class BasicAuthEnvVariablesKeyProvider extends KeyProviderBase implements KeyPlu
    * {@inheritdoc}
    */
   public function getKeyValue(KeyInterface $key) {
-    $config = $this->configFactory->get('apigee_edge.credentials_storage');
+    $config = $this->configFactory->get('apigee_edge.authentication');
 
     return Json::encode([
       'endpoint' => getenv('APIGEE_EDGE_ENDPOINT') ?: $config->get('default_endpoint'),

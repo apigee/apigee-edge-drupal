@@ -19,10 +19,10 @@
 
 namespace Drupal\apigee_edge\Plugin\KeyType;
 
-use Drupal\Component\Serialization\Json;
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\key\Plugin\KeyTypeBase;
-use Drupal\key\Plugin\KeyTypeMultivalueInterface;
+use Drupal\key\KeyInterface;
+use Http\Message\Authentication\BasicAuth;
 
 /**
  * Key type for Apigee Edge basic auth credentials.
@@ -46,7 +46,7 @@ use Drupal\key\Plugin\KeyTypeMultivalueInterface;
  *   }
  * )
  */
-class BasicAuthKeyType extends KeyTypeBase implements KeyTypeMultivalueInterface {
+class BasicAuthEdgeKeyType extends EdgeKeyTypeBase {
 
   /**
    * {@inheritdoc}
@@ -85,15 +85,9 @@ class BasicAuthKeyType extends KeyTypeBase implements KeyTypeMultivalueInterface
   /**
    * {@inheritdoc}
    */
-  public function serialize(array $array) {
-    return Json::encode($array);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function unserialize($value) {
-    return Json::decode($value);
+  public function getAuthenticationMethod(KeyInterface $key) {
+    $key_values = $key->getKeyValues();
+    return new BasicAuth($key_values['username'], $key_values['password']);
   }
 
 }
