@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -e
-
 # Ensure that we are in the correct directory.
 cd /var/www/html
 
@@ -21,7 +19,6 @@ composer require ${DEPENDENCIES} limedeck/phpunit-detailed-printer:^3.2.0
 composer show
 # Do not exit if any phpunit tests fail, we still want to see the performance
 # information.
-set +x
-php vendor/bin/phpunit -c core --group apigee_edge -v --debug --printer '\LimeDeck\Testing\Printer'
+sudo -u root -E sudo -u www-data -E php vendor/bin/phpunit -c core --group apigee_edge -v --debug --printer='\Drupal\Tests\Listeners\HtmlOutputPrinter'
 # Print API calls and performance data.
 cat ${APIGEE_EDGE_TEST_LOG_FILE}
