@@ -167,11 +167,11 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
    */
   protected function getDefaultOperations(EntityInterface $entity) {
     $operations = parent::getDefaultOperations($entity);
-    if ($entity->access('analytics') && $entity->hasLinkTemplate($this->getDeveloperAppAnalyticsLink())) {
+    if ($entity->access('analytics')) {
       $operations['analytics'] = [
         'title' => $this->t('Analytics'),
         'weight' => 150,
-        'url' => $entity->toUrl($this->getDeveloperAppAnalyticsLink()),
+        'url' => $this->getDeveloperAppAnalyticsLinkUrl($entity),
       ];
     }
 
@@ -179,13 +179,16 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
   }
 
   /**
-   * Gets the developer app analytics link.
+   * Gets the developer app analytics link URL.
    *
-   * @return string
-   *   The link name.
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity the operations are for.
+   *
+   * @return \Drupal\Core\Url
+   *   The URL object.
    */
-  protected function getDeveloperAppAnalyticsLink() {
-    return 'analytics';
+  protected function getDeveloperAppAnalyticsLinkUrl(EntityInterface $entity) {
+    return $entity->toUrl('analytics');
   }
 
   /**
