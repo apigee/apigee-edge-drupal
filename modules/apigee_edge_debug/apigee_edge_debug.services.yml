@@ -2,6 +2,7 @@ services:
   logger.channel.apigee_edge_debug:
     parent: logger.channel_base
     arguments: ['apigee_edge_debug']
+
   apigee_edge_debug.sdk_connector:
     class: Drupal\apigee_edge_debug\SDKConnector
     decorates: apigee_edge.sdk_connector
@@ -13,9 +14,11 @@ services:
     '@plugin.manager.apigee_edge.authentication_method',
     '@module_handler', '@info_parser'
     ]
+
   plugin.manager.apigee_edge_debug.debug_message_formatter:
     class: Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager
     parent: default_plugin_manager
+
   apigee_edge_debug.client_profiler:
     class: Drupal\apigee_edge_debug\HttpClientMiddleware\ApiClientProfiler
     arguments: [

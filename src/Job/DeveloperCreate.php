@@ -23,7 +23,6 @@ use Apigee\Edge\Exception\ClientErrorException;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperInterface;
 use Drupal\apigee_edge\Job;
-use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
 /**
@@ -60,9 +59,6 @@ class DeveloperCreate extends EdgeJob {
   protected function executeRequest() {
     try {
       $this->developer->save();
-      $user = User::load($this->developer->getOwnerId());
-      $user->set('apigee_edge_developer_id', $this->developer->getDeveloperId());
-      $user->save();
     }
     catch (ClientErrorException $ex) {
       if ($this->failWhenExists || $ex->getEdgeErrorCode() !== Developer::APIGEE_EDGE_ERROR_CODE_DEVELOPER_ALREADY_EXISTS) {

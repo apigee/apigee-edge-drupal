@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -e
-
 # Ensure that we are in the correct directory.
 cd /var/www/html
 
@@ -19,9 +17,8 @@ composer require ${DEPENDENCIES} "drupal/${DRUPAL_MODULE_NAME}"
 # Install this to get more detailed output from PHPUnit.
 composer require ${DEPENDENCIES} limedeck/phpunit-detailed-printer:^3.2.0
 composer show
+# Make sure that the log folder is writable for www-data.
+sudo -u root chown www-data:wodby /mnt/files/log
 # Do not exit if any phpunit tests fail, we still want to see the performance
 # information.
-set +x
-php vendor/bin/phpunit -c core --group apigee_edge -v --debug --printer '\LimeDeck\Testing\Printer'
-# Print API calls and performance data.
-cat ${APIGEE_EDGE_TEST_LOG_FILE}
+sudo -u root -E sudo -u www-data -E php vendor/bin/phpunit -c core --group apigee_edge -v --debug --printer='\LimeDeck\Testing\Printer'

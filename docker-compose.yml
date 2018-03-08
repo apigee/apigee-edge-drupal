@@ -16,7 +16,7 @@ services:
         - DRUPAL_CORE=${DRUPAL_CORE:-8.5}
         - DEPENDENCIES=${DEPENDENCIES}
         - PHP_VERSION=${PHP_VERSION:-7.1}
-        - PHP_IMAGE_VERSION=${PHP_IMAGE_VERSION--4.1.0}
+        - PHP_IMAGE_VERSION=${PHP_IMAGE_VERSION--dev-4.1.1}
     environment:
       PHP_FPM_CLEAR_ENV: "no"
       SIMPLETEST_BASE_URL: http://webserver

@@ -1,5 +1,5 @@
 ARG PHP_VERSION="7.1"
-ARG PHP_IMAGE_VERSION="-4.1.0"
+ARG PHP_IMAGE_VERSION="-dev-4.1.1"
 
 FROM wodby/drupal-php:${PHP_VERSION}${PHP_IMAGE_VERSION}
 
@@ -38,9 +38,10 @@ RUN mkdir -p /var/www/html/sites/default/files \
     && chown -R wodby:www-data /var/www/html/sites/default/files \
     && chmod 6770 /var/www/html/sites/default/files
 
-# Fix permission issues when running unit tests inside the container.
-# https://github.com/wodby/drupal-php/issues/52
-RUN adduser www-data wodby
+# Create simpletest directory with correct permissions.
+RUN mkdir -p /var/www/html/sites/simpletest \
+    && chown -R www-data:wodby /var/www/html/sites/simpletest \
+    && chmod 6750 /var/www/html/sites/simpletest
 
 USER wodby
 
