@@ -21,8 +21,8 @@ env:
   global:
     - DOCKER_COMPOSE_VERSION=1.18.0
   matrix:
-    - PHP_VERSION=7.1 DRUPAL_CORE=8.5.0-rc1 DEPENDENCIES="--prefer-lowest"
-    - PHP_VERSION=7.1 DRUPAL_CORE=8.5.0-rc1 DEPENDENCIES=""
+    - PHP_VERSION=7.1 DRUPAL_CORE=8.5 DEPENDENCIES="--prefer-lowest"
+    - PHP_VERSION=7.1 DRUPAL_CORE=8.5 DEPENDENCIES=""
     - PHP_VERSION=7.1 DRUPAL_CORE=8.5.x-dev DEPENDENCIES="--prefer-lowest"
 
 matrix:
