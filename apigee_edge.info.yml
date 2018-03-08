@@ -10,6 +10,8 @@ dependencies:
   - core:user
   - core:field_ui
   - entity:entity
+  - core:filter
+  - core:options
 
 configure: apigee_edge.settings
 
