@@ -231,12 +231,12 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
       }
       else {
         // Sanity check, probably someone called this method with invalid data.
-        throw new \InvalidArgumentException(sprintf('Developer with %s email does not exist on Apigee Edge.', $user->getEmail()));
+        throw new \InvalidArgumentException("Developer with {$user->getEmail()} email does not exist on Apigee Edge.");
       }
     }
     else {
       // Sanity check, probably someone called this method with invalid data.
-      throw new \InvalidArgumentException(sprintf('User with %d id does not exist.', $uid));
+      throw new \InvalidArgumentException("User with {$uid} id does not exist.");
     }
   }
 
