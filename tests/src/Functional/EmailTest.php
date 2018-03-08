@@ -30,12 +30,6 @@ class EmailTest extends ApigeeEdgeFunctionalTestBase {
 
   use AssertMailTrait;
 
-  public static $modules = [
-    'apigee_edge',
-    'apigee_edge_test',
-    'filter',
-  ];
-
   /**
    * @var \Drupal\apigee_edge\Entity\Developer
    */
