@@ -29,12 +29,12 @@ use Drupal\key\KeyInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Storing Apigee Edge basic auth credentials in environment variables.
+ * Stores Apigee Edge basic authentication credentials in environment variables.
  *
  * @KeyProvider(
  *   id = "apigee_edge_basic_auth_env_variables",
- *   label = @Translation("Apigee Edge Basic Auth: Environment Variables"),
- *   description = @Translation("Stores Apigee Edge basic auth credentials in the following environment variables: APIGEE_EDGE_ENDPOINT, APIGEE_EDGE_ORGANIZATION, APIGEE_EDGE_USERNAME, APIGEE_EDGE_PASSWORD"),
+ *   label = @Translation("Apigee Edge Basic Authentication: Environment Variables"),
+ *   description = @Translation("Stores Apigee Edge basic authentication credentials in the following environment variables: APIGEE_EDGE_ENDPOINT, APIGEE_EDGE_ORGANIZATION, APIGEE_EDGE_USERNAME, APIGEE_EDGE_PASSWORD"),
  *   storage_method = "apigee_edge",
  *   key_value = {
  *     "accepted" = FALSE,

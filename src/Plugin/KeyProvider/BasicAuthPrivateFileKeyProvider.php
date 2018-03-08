@@ -29,12 +29,12 @@ use Drupal\key\Plugin\KeyProviderSettableValueInterface;
 use Drupal\key\KeyInterface;
 
 /**
- * Storing Apigee Edge basic auth credentials in a private file.
+ * Stores Apigee Edge basic authentication credentials in a private file.
  *
  * @KeyProvider(
  *   id = "apigee_edge_basic_auth_private_file",
- *   label = @Translation("Apigee Edge Basic Auth: Private File"),
- *   description = @Translation("Stores Apigee Edge basic auth credentials in a private file."),
+ *   label = @Translation("Apigee Edge Basic Authentication: Private File"),
+ *   description = @Translation("Stores Apigee Edge basic authentication credentials in a private file."),
  *   storage_method = "apigee_edge",
  *   key_value = {
  *     "accepted" = TRUE,

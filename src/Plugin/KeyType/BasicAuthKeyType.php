@@ -26,12 +26,12 @@ use Http\Message\Authentication;
 use Http\Message\Authentication\BasicAuth;
 
 /**
- * Key type for Apigee Edge basic auth credentials.
+ * Key type for Apigee Edge basic authentication credentials.
  *
  * @KeyType(
  *   id = "apigee_edge_basic_auth",
- *   label = @Translation("Apigee Edge Basic Auth"),
- *   description = @Translation("Key type to use for Apigee Edge basic auth credentials."),
+ *   label = @Translation("Apigee Edge Basic Authentication"),
+ *   description = @Translation("Key type to use for Apigee Edge basic authentication credentials."),
  *   group = "apigee_edge",
  *   key_value = {
  *     "plugin" = "apigee_edge_basic_auth_input"

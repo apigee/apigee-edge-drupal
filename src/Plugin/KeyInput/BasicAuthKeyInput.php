@@ -26,15 +26,15 @@ use Drupal\key\Plugin\KeyInputBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Apigee Edge basic auth credentials input text fields.
+ * Apigee Edge basic authentication credentials input text fields.
  *
  * Defines a key input that provides input text fields
- * and value preprocessors for Apigee Edge basic auth credentials.
+ * and value preprocessors for Apigee Edge basic authentication credentials.
  *
  * @KeyInput(
  *   id = "apigee_edge_basic_auth_input",
- *   label = @Translation("Apigee Edge basic auth credentials input fields."),
- *   description = @Translation("Provides input text fields for Apigee Edge basic auth credentials.")
+ *   label = @Translation("Apigee Edge basic authentication credentials input fields."),
+ *   description = @Translation("Provides input text fields for Apigee Edge basic authentication credentials.")
  * )
  */
 class BasicAuthKeyInput extends KeyInputBase {
