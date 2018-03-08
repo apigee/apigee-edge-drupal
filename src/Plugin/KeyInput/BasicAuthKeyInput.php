@@ -108,10 +108,10 @@ class BasicAuthKeyInput extends KeyInputBase {
       '#attributes' => ['autocomplete' => 'off'],
     ];
 
-    $form['key_value'] = array(
+    $form['key_value'] = [
       '#type' => 'value',
       '#value' => $form_state->get('key_value')['current'],
-    );
+    ];
 
     return $form;
   }

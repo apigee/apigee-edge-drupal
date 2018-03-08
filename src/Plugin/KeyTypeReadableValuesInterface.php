@@ -29,7 +29,7 @@ interface KeyTypeReadableValuesInterface {
   /**
    * Gets the value of the given key field.
    *
-   * @param KeyInterface $key
+   * @param \Drupal\key\KeyInterface $key
    *   The key entity.
    * @param string $field
    *   The field name.

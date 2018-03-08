@@ -27,17 +27,23 @@ interface KeyProviderEncryptedValueInterface {
   /**
    * Encrypts key value.
    *
+   * @param string $key_value
+   *   The plaintext.
+   *
    * @return string
-   *   The encrypted key value.
+   *   The ciphertext.
    */
-  public function encrypt();
+  public function encrypt(string $key_value);
 
   /**
    * Decrypts key value.
    *
+   * @param string $key_value
+   *   The ciphertext.
+   *
    * @return string
-   *   The decrypted key value.
+   *   The plaintext.
    */
-  public function decrypt();
+  public function decrypt(string $key_value);
 
 }
