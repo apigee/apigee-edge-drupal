@@ -94,7 +94,7 @@ class BasicAuthEnvVariablesKeyProvider extends KeyProviderBase implements KeyPlu
       $missing_env_variables[] = 'APIGEE_EDGE_PASSWORD';
     }
 
-    return t('The following environment variables are not set: @missing_env_variables.', [
+    return $this->t('The following environment variables are not set: @missing_env_variables.', [
       '@missing_env_variables' => implode(', ', $missing_env_variables),
     ]);
   }

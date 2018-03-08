@@ -164,6 +164,9 @@ class SDKConnector implements SDKConnectorInterface {
    */
   private function getKey() : ? KeyInterface {
     if (NULL === self::$key) {
+      if ($this->keyId === NULL) {
+        throw new ApiException('Apigee Edge authentication key is not set.');
+      }
       $key = $this->keyRepository->getKey($this->keyId);
       if ($key === NULL) {
         throw new ApiException('Apigee Edge authentication key is not set.');
@@ -182,7 +185,7 @@ class SDKConnector implements SDKConnectorInterface {
    */
   private function setKey(KeyInterface $key) {
     self::$key = $key;
-    $this->keyId = $key->id();
+    $this->keyId = $key === NULL ?: $key->id();
     // Ensure that client will be rebuilt with the new key.
     self::$client = NULL;
   }
@@ -233,7 +236,7 @@ class SDKConnector implements SDKConnectorInterface {
       $key_type = $this->getKey()->getKeyType();
 
       if (($organization = $key_type->get($this->getKey(), 'organization')) === NULL) {
-        throw new KeyValueNotRetrievedException('Could not read key storage. Key ID: ' . $this->getKey()->id());
+        throw new KeyValueNotRetrievedException('Could not read the key storage. Key ID: ' . $this->getKey()->id());
       }
       $oc->load($organization);
     }

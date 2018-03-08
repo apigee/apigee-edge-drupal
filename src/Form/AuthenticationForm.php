@@ -239,7 +239,7 @@ class AuthenticationForm extends ConfigFormBase {
     }
     catch (KeyValueNotRetrievedException $exception) {
       watchdog_exception('apigee_edge', $exception);
-      $form_state->setError($form, $this->t('Could not read key storage.'));
+      $form_state->setError($form, $this->t('Could not read the key storage. Check the key provider and settings.'));
     }
     catch (\Exception $exception) {
       watchdog_exception('apigee_edge', $exception);
