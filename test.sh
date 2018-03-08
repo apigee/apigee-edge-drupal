@@ -21,4 +21,4 @@ composer show
 sudo -u root chown www-data:wodby /mnt/files/log
 # Do not exit if any phpunit tests fail, we still want to see the performance
 # information.
-sudo -u root -E sudo -u www-data -E php vendor/bin/phpunit -c core --group apigee_edge -v --debug --printer='\Drupal\Tests\Listeners\HtmlOutputPrinter'
+sudo -u root -E sudo -u www-data -E php vendor/bin/phpunit -c core --group apigee_edge -v --debug --printer='\LimeDeck\Testing\Printer'
