@@ -2,6 +2,8 @@ version: "3"
 
 services:
   php:
+    volumes:
+      - log:/mnt/files/log
     environment:
       # We can not pass these environment variables with `docker-compose run -e` until
       # this has not been improved. https://github.com/wodby/php/pull/21#issuecomment-361200733
@@ -10,7 +12,10 @@ services:
       APIGEE_EDGE_USERNAME: ${APIGEE_EDGE_USERNAME}
       APIGEE_EDGE_PASSWORD: ${APIGEE_EDGE_PASSWORD}
       APIGEE_EDGE_ORGANIZATION: ${APIGEE_EDGE_ORGANIZATION}
-      APIGEE_EDGE_TEST_LOG_FILE: "/mnt/files/apigee_edge_debug.log"
+      APIGEE_EDGE_TEST_LOG_FILE: "/mnt/files/log/apigee_edge_debug.log"
       # Suppress deprecation warnings.
       # https://api.drupal.org/api/drupal/vendor%21symfony%21phpunit-bridge%21DeprecationErrorHandler.php/8.5.x
       SYMFONY_DEPRECATIONS_HELPER: disabled
+
+volumes:
+  log:

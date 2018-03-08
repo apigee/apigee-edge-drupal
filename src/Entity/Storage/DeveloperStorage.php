@@ -25,7 +25,6 @@ use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\user\UserInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -42,6 +41,10 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
   protected $entityTypeManager;
 
   /**
+   * @var \Drupal\Core\Database\Connection*/
+  protected $database;
+
+  /**
    * DeveloperAppStorage constructor.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
@@ -53,6 +56,7 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
    */
   public function __construct(ContainerInterface $container, EntityTypeInterface $entity_type, LoggerInterface $logger) {
     $this->entityTypeManager = $container->get('entity_type.manager');
+    $this->database = $container->get('database');
     parent::__construct($container, $entity_type, $logger);
   }
 
@@ -91,19 +95,16 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
    */
   protected function postLoad(array &$entities) {
     parent::postLoad($entities);
-    $email_developerid_map = [];
+    $developerId_mail_map = [];
     /** @var \Drupal\apigee_edge\Entity\Developer $entity */
     foreach ($entities as $entity) {
-      $email_developerid_map[$entity->getEmail()] = $entity->getDeveloperId();
+      $developerId_mail_map[$entity->getDeveloperId()] = $entity->getEmail();
     }
 
-    $email_developerid_map = array_unique($email_developerid_map);
-    $users = $this->entityTypeManager->getStorage('user')
-      ->loadByProperties(['apigee_edge_developer_id' => $email_developerid_map]);
-    $uid_mail_map = array_map(function (UserInterface $user) {
-      return $user->getEmail();
-    }, $users);
-    $mail_uid_map = array_flip($uid_mail_map);
+    $query = $this->database->select('users_field_data', 'ufd');
+    $query->fields('ufd', ['mail', 'uid'])
+      ->condition('mail', $developerId_mail_map, 'IN');
+    $mail_uid_map = $query->execute()->fetchAllKeyed();
 
     foreach ($entities as $entity) {
       // If developer id is not in this map it means the developer does
@@ -115,8 +116,8 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
       // created in Drupal before Edge connected was configured.
       // Although, this could be a result of a previous error
       // but there should be a log about that.
-      if (isset($mail_uid_map[$entity->getEmail()])) {
-        $entity->setOwnerId($mail_uid_map[$entity->getEmail()]);
+      if (isset($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]])) {
+        $entity->setOwnerId($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]]);
       }
     }
   }

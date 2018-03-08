@@ -171,11 +171,11 @@ function apigee_edge_entity_base_field_info(EntityTypeInterface $entity_type) {
       ])
       ->setDisplayConfigurable('form', TRUE);
 
-    $fields['apigee_edge_developer_id'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Apigee Edge developer ID'))
-      ->setSettings([
-        'target_type' => 'developer_app',
-      ]);
+    $fields['apigee_edge_developer_id'] = BaseFieldDefinition::create('string')
+      ->setName('apigee_edge_developer_id')
+      ->setLabel(t('Apigee Edge Developer ID'))
+      ->setComputed(TRUE)
+      ->setClass('\Drupal\apigee_edge\Plugin\Field\FieldType\ApigeeEdgeDeveloperIdFieldItem');
   }
 
   return $fields;
@@ -880,7 +880,6 @@ function apigee_edge_user_presave(UserInterface $account) {
     /** @var \Drupal\apigee_edge\Entity\Developer $developer */
     $developer = Developer::createFromDrupalUser($account);
     $developer->save();
-    $account->set('apigee_edge_developer_id', $developer->getDeveloperId());
   }
   catch (\Exception $exception) {
     $previous = $exception->getPrevious();
@@ -891,8 +890,7 @@ function apigee_edge_user_presave(UserInterface $account) {
     ];
     if ($previous instanceof ClientErrorException && $previous->getEdgeErrorCode()) {
       if ($previous->getEdgeErrorCode() === Developer::APIGEE_EDGE_ERROR_CODE_DEVELOPER_DOES_NOT_EXISTS) {
-        \Drupal::logger('apigee_edge')
-          ->info('Could not update @developer developer entity because it does not exist on Edge. Automatically trying to create a new developer entity.', $context);
+        \Drupal::service('logger.channel.apigee_edge')->info('Could not update @developer developer entity because it does not exist on Edge. Automatically trying to create a new developer entity.', $context);
         try {
           // Forcibly mark developer entity as new to send POST request to Edge
           // instead of PUT. This should be a better way then clearing
@@ -910,8 +908,7 @@ function apigee_edge_user_presave(UserInterface $account) {
         }
       }
       elseif ($previous->getEdgeErrorCode() === Developer::APIGEE_EDGE_ERROR_CODE_DEVELOPER_ALREADY_EXISTS) {
-        \Drupal::logger('apigee_edge')
-          ->info($previous->getMessage());
+        \Drupal::service('logger.channel.apigee_edge')->info($previous->getMessage());
         $developer = Developer::load($account->getEmail());
         if ($developer) {
           $developer_id = $developer->getDeveloperId();
@@ -926,22 +923,18 @@ function apigee_edge_user_presave(UserInterface $account) {
               $developer->save();
             }
             catch (ApiException $e) {
-              \Drupal::logger('apigee_edge')->error("Unable to update existing @developer developer's data after registered on the portal.", $context);
+              \Drupal::service('logger.channel.apigee_edge')->error("Unable to update existing @developer developer's data after registered on the portal.", $context);
             }
           }
         }
         else {
-          \Drupal::logger('apigee_edge')->error("Unable to save @developer developer's developer id on user.", $context);
+          \Drupal::service('logger.channel.apigee_edge')->error("Unable to save @developer developer's developer id on user.", $context);
         }
       }
     }
     else {
       watchdog_exception('apigee_edge', $exception, 'Could not @operation developer entity: @developer. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
     }
-  }
-
-  if ($developer_id !== NULL) {
-    $account->set('apigee_edge_developer_id', $developer_id);
   }
 }
 

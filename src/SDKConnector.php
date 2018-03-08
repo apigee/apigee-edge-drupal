@@ -166,7 +166,7 @@ class SDKConnector implements SDKConnectorInterface {
     if (NULL === self::$userAgentPrefix) {
       $moduleInfo = $this->infoParser->parse($this->moduleHandler->getModule('apigee_edge')->getPathname());
       if (!isset($moduleInfo['version'])) {
-        $moduleInfo['version'] = '1.0-dev';
+        $moduleInfo['version'] = '8.x-1.0-dev';
       }
       self::$userAgentPrefix = $moduleInfo['name'] . ' ' . $moduleInfo['version'];
     }
