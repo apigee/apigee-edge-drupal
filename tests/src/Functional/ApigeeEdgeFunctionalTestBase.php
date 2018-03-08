@@ -36,17 +36,6 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
   ];
 
   /**
-   * {@inheritdoc}
-   */
-  protected function setUp() {
-    parent::setUp();
-    \Drupal::configFactory()->getEditable('apigee_edge_debug.settings')
-      ->set('debug_message_format', '{request_formatted} {response_formatted}<p>Transfer statistics: <pre>{stats}</pre></p>')
-      ->set('debug_message_formatter', 'full_html')
-      ->save();
-  }
-
-  /**
    * Creates a Drupal account.
    *
    * @param array $permissions

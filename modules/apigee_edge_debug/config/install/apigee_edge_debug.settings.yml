@@ -1,5 +1,9 @@
-debug_message_formatter: simple
+debug_message_formatter: full_html
 debug_message_format: |
-  {request_formatted}<p>Transfer statistics: <pre>{stats}</pre></p>
+  <pre>{request_formatted}</pre>
+
+  <pre>{response_formatted}</pre>
+
+  <p>Transfer statistics: <pre>{stats}</pre></p>
 masquerade_organization: true
 remove_authorization_header: true
