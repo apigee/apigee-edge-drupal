@@ -36,6 +36,17 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
   ];
 
   /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+    \Drupal::configFactory()->getEditable('apigee_edge_debug.settings')
+      ->set('debug_message_format', '{request_formatted} {response_formatted}<p>Transfer statistics: <pre>{stats}</pre></p>')
+      ->set('debug_message_formatter', 'full_html')
+      ->save();
+  }
+
+  /**
    * Creates a Drupal account.
    *
    * @param array $permissions
@@ -168,7 +179,7 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
    */
   protected function clickLinkProperly(string $name) {
     list($path, $query) = $this->findLink($name);
-    $this->drupalGet($path, [
+    $this->drupalGet(static::fixUrl($path), [
       'query' => $query,
     ]);
   }
@@ -194,6 +205,13 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
     parse_str($parts['query'], $query);
 
     return [$parts['path'], $query];
+  }
+
+  protected static function fixUrl(string $url): string {
+    if (strpos($url, 'http:') === 0 || strpos($url, 'https:') === 0) {
+      return $url;
+    }
+    return (strpos($url, '/') === 0) ? $url : "/{$url}";
   }
 
 }

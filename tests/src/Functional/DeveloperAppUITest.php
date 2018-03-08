@@ -105,8 +105,8 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    *   Settings to save.
    */
   protected function submitAdminForm(array $changes = []) {
-    $this->drupalGet('admin/config/apigee-edge/app-settings');
-    $this->drupalPostForm('admin/config/apigee-edge/app-settings', $changes + [
+    $this->drupalGet('/admin/config/apigee-edge/app-settings');
+    $this->drupalPostForm('/admin/config/apigee-edge/app-settings', $changes + [
       'display_as_select' => FALSE,
       'associate_apps' => TRUE,
       'user_select' => TRUE,
@@ -128,7 +128,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
       $account = $this->account;
     }
 
-    $this->drupalPostForm("user/{$account->id()}/apps/create", $data, 'Add developer app');
+    $this->drupalPostForm("/user/{$account->id()}/apps/create", $data, 'Add developer app');
   }
 
   protected function postEditAppForm(array $data, string $app_name, ?UserInterface $account = NULL) {
@@ -136,7 +136,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
       $account = $this->account;
     }
 
-    $this->drupalPostForm("user/{$account->id()}/apps/{$app_name}/edit", $data, 'Save');
+    $this->drupalPostForm("/user/{$account->id()}/apps/{$app_name}/edit", $data, 'Save');
   }
 
   /**
