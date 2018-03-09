@@ -23,6 +23,7 @@ use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder;
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -117,6 +118,13 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
   /**
    * {@inheritdoc}
    */
+  protected function getDeveloperAppAnalyticsLinkUrl(EntityInterface $entity) {
+    return $entity->toUrl('analytics-for-developer');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function getAppDetailsLink(DeveloperAppInterface $app) {
     return $app->toLink(NULL, 'canonical-by-developer');
   }
@@ -145,7 +153,7 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    * {@inheritdoc}
    */
   public function render(UserInterface $user = NULL) {
-    $this->checkDeveloperStatus($user);
+    $this->checkDeveloperStatus($user->id());
     $build = parent::render();
 
     $build['table']['#empty'] = $this->t('Looks like you do not have any apps. Get started by adding one.');

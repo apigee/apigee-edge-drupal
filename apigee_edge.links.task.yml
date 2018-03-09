@@ -19,21 +19,21 @@ apigee_edge.developer_app.view:
   base_route: entity.developer_app.canonical
   weight: -4
 
-apigee_edge.developer_app.analytics:
-  route_name: entity.developer_app.analytics
-  title: 'Analytics'
-  base_route: entity.developer_app.canonical
-  weight: -3
-
 apigee_edge.developer_app.edit:
   route_name: entity.developer_app.edit_form
   title: 'Edit'
   base_route: entity.developer_app.canonical
-  weight: -2
+  weight: -3
 
 apigee_edge.developer_app.delete:
   route_name: entity.developer_app.delete_form
   title: 'Delete'
+  base_route: entity.developer_app.canonical
+  weight: -2
+
+apigee_edge.developer_app.analytics:
+  route_name: entity.developer_app.analytics
+  title: 'Analytics'
   base_route: entity.developer_app.canonical
   weight: -1
 
@@ -43,20 +43,20 @@ apigee_edge.developer_app.view_by_developer:
   base_route: entity.developer_app.canonical_by_developer
   weight: -4
 
-apigee_edge.developer_app.analytics_for_developer:
-  route_name: entity.developer_app.analytics_for_developer
-  title: 'Analytics'
-  base_route: entity.developer_app.canonical_by_developer
-  weight: -3
-
 apigee_edge.developer_app.edit_for_developer:
   route_name: entity.developer_app.edit_form_for_developer
   title: 'Edit'
   base_route: entity.developer_app.canonical_by_developer
-  weight: -2
+  weight: -3
 
 apigee_edge.developer_app.delete_for_developer:
   route_name: entity.developer_app.delete_form_for_developer
   title: 'Delete'
+  base_route: entity.developer_app.canonical_by_developer
+  weight: -2
+
+apigee_edge.developer_app.analytics_for_developer:
+  route_name: entity.developer_app.analytics_for_developer
+  title: 'Analytics'
   base_route: entity.developer_app.canonical_by_developer
   weight: -1

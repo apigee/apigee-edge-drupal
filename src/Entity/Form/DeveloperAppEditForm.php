@@ -107,7 +107,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
    * {@inheritdoc}
    */
   public function form(array $form, FormStateInterface $form_state) {
-    $this->checkDeveloperStatus($this->entity->getOwner());
+    $this->checkDeveloperStatus($this->entity->getOwnerId());
     $config = $this->configFactory->get('apigee_edge.appsettings');
     $form = parent::form($form, $form_state);
 
