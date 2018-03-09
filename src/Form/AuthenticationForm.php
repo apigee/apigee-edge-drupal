@@ -169,7 +169,7 @@ class AuthenticationForm extends ConfigFormBase {
         ':link' => Url::fromRoute('entity.key.add_form')->toString(),
       ]));
     }
-    $default_value = in_array($config->get('active_key'), $options) ? $config->get('active_key') : NULL;
+    $default_value = array_key_exists($config->get('active_key'), $options) ? $config->get('active_key') : NULL;
     $form['authentication']['key'] = [
       '#type' => 'radios',
       '#title' => t('Keys'),
