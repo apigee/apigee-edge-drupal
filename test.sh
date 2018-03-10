@@ -19,6 +19,8 @@ composer require ${DEPENDENCIES} limedeck/phpunit-detailed-printer:^3.2.0
 composer show
 # Make sure that the log folder is writable for www-data.
 sudo -u root chown www-data:wodby /mnt/files/log
+# Download the test runner
+curl -L -o testrunner https://github.com/Pronovix/testrunner/releases/download/v0.1/testrunner-linux-amd64
 # Do not exit if any phpunit tests fail, we still want to see the performance
 # information.
-sudo -u root -E sudo -u www-data -E php vendor/bin/phpunit -c core --group apigee_edge -v --debug --printer='\LimeDeck\Testing\Printer'
+sudo -u root -E sudo -u www-data -E ./testrunner -threads=4 -root=./modules/custom/apigee_edge/tests -command="./vendor/bin/phpunit -c core -v --debug --printer \LimeDeck\Testing\Printer"
