@@ -1,0 +1,16 @@
+<?php
+
+/**
+ * Implements hook_install().
+ */
+function apigee_edge_test_install() {
+  \Drupal::configFactory()->getEditable('apigee_edge_debug.settings')
+    ->set('debug_message_format', "
+<pre>{request_formatted}</pre>
+
+<pre>{response_formatted}</pre>
+
+<p>Transfer statistics: <pre>{stats}</pre></p>")
+    ->set('debug_message_formatter', 'full_html')
+    ->save();
+}
