@@ -24,4 +24,4 @@ curl -L -o testrunner https://github.com/Pronovix/testrunner/releases/download/v
 chmod +x ./testrunner
 # Do not exit if any phpunit tests fail, we still want to see the performance
 # information.
-sudo -u root -E sudo -u www-data -E ./testrunner -threads=4 -root=./modules/custom/apigee_edge/tests -command="./vendor/bin/phpunit -c core -v --debug --printer \LimeDeck\Testing\Printer"
+sudo -u root -E sudo -u www-data -E ./testrunner -threads=4 -root=./modules/contrib/apigee_edge/tests -command="./vendor/bin/phpunit -c core -v --debug --printer \LimeDeck\Testing\Printer"
