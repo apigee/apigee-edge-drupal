@@ -28,3 +28,7 @@
   display: inline-block;
   text-align: center;
 }
+
+.table--developer-attributes {
+  margin-top: 20px;
+}

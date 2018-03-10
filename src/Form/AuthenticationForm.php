@@ -115,45 +115,6 @@ class AuthenticationForm extends ConfigFormBase {
     $form['#suffix'] = '</div>';
     $form['#attached']['library'][] = 'apigee_edge/apigee_edge.admin';
 
-    $form['sync'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Sync developers'),
-      '#open' => TRUE,
-    ];
-
-    $form['sync']['sync_submit'] = [
-      '#title' => $this->t('Now'),
-      '#type' => 'link',
-      '#url' => $this->buildUrl('apigee_edge.user_sync.run'),
-      '#attributes' => [
-        'class' => [
-          'button',
-          'button--primary',
-        ],
-      ],
-    ];
-
-    $form['sync']['background_sync_submit'] = [
-      '#title' => $this->t('Background'),
-      '#type' => 'link',
-      '#url' => $this->buildUrl('apigee_edge.user_sync.schedule'),
-      '#attributes' => [
-        'class' => [
-          'button',
-        ],
-      ],
-    ];
-
-    $form['sync']['sync_info'] = [
-      '#type' => 'html_tag',
-      '#tag' => 'span',
-      '#value' => '?',
-      '#attributes' => [
-        'class' => 'info-circle',
-        'title' => t('A background sync is recommended for large numbers of developers.'),
-      ],
-    ];
-
     $form['authentication'] = [
       '#type' => 'details',
       '#title' => $this->t('Authentication key'),
@@ -271,22 +232,6 @@ class AuthenticationForm extends ConfigFormBase {
    */
   public function ajaxCallback(array $form): array {
     return $form;
-  }
-
-  /**
-   * Build URL for user synchronization processes, using CSRF protection.
-   *
-   * @param string $route_name
-   *   The name of the route.
-   *
-   * @return \Drupal\Core\Url
-   *   The URL to redirect to.
-   */
-  protected function buildUrl(string $route_name) {
-    $url = Url::fromRoute($route_name);
-    $token = \Drupal::csrfToken()->get($url->getInternalPath());
-    $url->setOptions(['query' => ['destination' => '/admin/config/apigee-edge/settings', 'token' => $token]]);
-    return $url;
   }
 
   /**
