@@ -978,6 +978,8 @@ function apigee_edge_user_delete(UserInterface $account) {
 
 /**
  * Implements hook_field_config_delete().
+ *
+ * Removes field name from the module's configuration after deleting the field.
  */
 function apigee_edge_field_config_delete(EntityInterface $entity) {
   /** @var \Drupal\field\FieldConfigInterface $entity */
@@ -989,6 +991,39 @@ function apigee_edge_field_config_delete(EntityInterface $entity) {
     ->getEditable('apigee_edge.sync')
     ->set('user_fields_to_sync', array_diff($user_fields_to_sync, [$entity->getName()]))
     ->save();
+}
+
+/**
+ * Implements hook_form_field_ui_field_storage_add_form_alter().
+ */
+function apigee_edge_form_field_ui_field_storage_add_form_alter(array &$form, FormStateInterface &$form_state) {
+  $form['apigee_edge_sync'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Synchronised to Apigee Edge'),
+  ];
+  $form['#submit'][] = 'apigee_edge_field_ui_field_storage_add_form_submit';
+}
+
+/**
+ * Custom submit handler for field_ui_field_storage_add_form.
+ *
+ * @param array $form
+ *   An associative array containing the structure of the form.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The current state of the form.
+ */
+function apigee_edge_field_ui_field_storage_add_form_submit(array &$form, FormStateInterface &$form_state) {
+  if ($form_state->getValue('apigee_edge_sync') === 1) {
+    $user_fields_to_sync = \Drupal::configFactory()
+      ->get('apigee_edge.sync')
+      ->get('user_fields_to_sync');
+    $user_fields_to_sync[] = $form_state->getValue('field_name');
+
+    \Drupal::configFactory()
+      ->getEditable('apigee_edge.sync')
+      ->set('user_fields_to_sync', $user_fields_to_sync)
+      ->save();
+  }
 }
 
 /**
