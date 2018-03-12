@@ -20,6 +20,7 @@ notifications:
 env:
   global:
     - DOCKER_COMPOSE_VERSION=1.18.0
+    - THREADS=4
   matrix:
     - PHP_VERSION=7.1 DRUPAL_CORE=8.5 DEPENDENCIES="--prefer-lowest"
     - PHP_VERSION=7.1 DRUPAL_CORE=8.5 DEPENDENCIES=""
