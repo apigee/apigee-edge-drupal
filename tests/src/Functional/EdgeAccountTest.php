@@ -27,7 +27,7 @@ use Drupal\Tests\BrowserTestBase;
  *
  * @group apigee_edge
  */
-class EdgeAccountTest extends BrowserTestBase {
+class EdgeAccountTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * Credential storage.

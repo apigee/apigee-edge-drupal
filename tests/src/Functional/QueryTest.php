@@ -25,7 +25,7 @@ use Drupal\Tests\BrowserTestBase;
 /**
  * @group apigee_edge
  */
-class QueryTest extends BrowserTestBase {
+class QueryTest extends ApigeeEdgeFunctionalTestBase {
 
   public static $modules = [
     'apigee_edge',

@@ -20,7 +20,6 @@
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Drupal\apigee_edge\Entity\Developer;
-use Drupal\Tests\BrowserTestBase;
 
 /**
  * Create, delete, update Developer entity tests.
@@ -28,7 +27,7 @@ use Drupal\Tests\BrowserTestBase;
  * @group apigee_edge
  * @group apigee_edge_developer
  */
-class DeveloperTest extends BrowserTestBase {
+class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
 
   public static $modules = [
     'apigee_edge',
