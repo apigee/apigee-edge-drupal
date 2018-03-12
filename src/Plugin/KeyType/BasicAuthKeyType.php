@@ -87,8 +87,7 @@ class BasicAuthKeyType extends EdgeKeyTypeBase {
    * {@inheritdoc}
    */
   public function getAuthenticationMethod(KeyInterface $key) : Authentication {
-    $key_values = $key->getKeyValues();
-    return new BasicAuth($key_values['username'], $key_values['password']);
+    return new BasicAuth($this->getUsername($key), $this->getPassword($key));
   }
 
 }

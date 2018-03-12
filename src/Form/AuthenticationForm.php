@@ -165,11 +165,18 @@ class AuthenticationForm extends ConfigFormBase {
 
     $options = $this->keyRepository->getKeyNamesAsOptions(['type_group' => 'apigee_edge']);
     if (empty($options)) {
-      $this->messenger->addWarning(t('There is no available key for connecting to Apigee Edge API server. <a href=":link">Create a new key.</a>', [
+      $this->messenger->addWarning(t('There is no available key for connecting to Apigee Edge server. <a href=":link">Create a new key.</a>', [
         ':link' => Url::fromRoute('entity.key.add_form')->toString(),
       ]));
     }
+    foreach ($options as $key_id => $key_name) {
+      $options[$key_id] = $this->t('@key_name <a href=":url">Edit</a>', [
+        '@key_name' => $key_name,
+        ':url' => Url::fromRoute('entity.key.edit_form', ['key' => $key_id])->toString(),
+      ]);
+    }
     $default_value = array_key_exists($config->get('active_key'), $options) ? $config->get('active_key') : NULL;
+
     $form['authentication']['key'] = [
       '#type' => 'radios',
       '#title' => t('Keys'),

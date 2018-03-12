@@ -21,7 +21,6 @@ namespace Drupal\apigee_edge;
 
 use Apigee\Edge\Api\Management\Controller\OrganizationController;
 use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
-use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\UnknownEndpointException;
 use Apigee\Edge\HttpClient\Client;
 use Apigee\Edge\HttpClient\ClientInterface;
@@ -31,7 +30,6 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\InfoParserInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\key\Exception\KeyValueNotRetrievedException;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
 use GuzzleHttp\ClientInterface as GuzzleClientInterface;
@@ -50,11 +48,11 @@ class SDKConnector implements SDKConnectorInterface {
   private static $client = NULL;
 
   /**
-   * The currently used key entity.
+   * The currently used credentials object.
    *
-   * @var null|\Drupal\key\KeyInterface
+   * @var null|\Drupal\apigee_edge\CredentialsInterface
    */
-  private static $key = NULL;
+  private static $credentials = NULL;
 
   /**
    * Custom user agent prefix.
@@ -64,18 +62,18 @@ class SDKConnector implements SDKConnectorInterface {
   private static $userAgentPrefix = NULL;
 
   /**
+   * The config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
    * The key repository.
    *
    * @var \Drupal\key\KeyRepositoryInterface
    */
   protected $keyRepository;
-
-  /**
-   * The active key ID.
-   *
-   * @var string
-   */
-  protected $keyId;
 
   /**
    * The entity type manager.
@@ -125,7 +123,7 @@ class SDKConnector implements SDKConnectorInterface {
     $this->httpClient = new GuzzleClientAdapter($httpClient);
     $this->entityTypeManager = $entity_type_manager;
     $this->keyRepository = $key_repository;
-    $this->keyId = $config_factory->get('apigee_edge.authentication')->get('active_key');
+    $this->configFactory = $config_factory;
     $this->moduleHandler = $moduleHandler;
     $this->infoParser = $infoParser;
   }
@@ -134,58 +132,47 @@ class SDKConnector implements SDKConnectorInterface {
    * {@inheritdoc}
    */
   public function getOrganization(): string {
-    /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $key_type */
-    $key_type = $this->getKey()->getKeyType();
-    return $key_type->get($this->getKey(), 'organization');
+    return $this->getCredentials()->getOrganization();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getClient() : ? ClientInterface {
-    if ($this->getKey() === NULL) {
-      self::$client = NULL;
-      return NULL;
-    }
-    if (NULL === self::$client) {
+  public function getClient(): ClientInterface {
+    if (self::$client === NULL) {
       $builder = new Builder($this->httpClient);
       /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $key_type */
-      $key_type = $this->getKey()->getKeyType();
-      self::$client = new Client($key_type->getAuthenticationMethod($this->getKey()), $builder, $key_type->get($this->getKey(), 'endpoint'), $this->userAgentPrefix());
+      self::$client = new Client($this->getCredentials()->getAuthentication(), $builder, $this->getCredentials()->getEndpoint(), $this->userAgentPrefix());
     }
     return self::$client;
   }
 
   /**
-   * Returns the key object used by the API client.
+   * Returns the credentials object used by the API client.
    *
-   * @return null|\Drupal\key\KeyInterface
+   * @return \Drupal\apigee_edge\CredentialsInterface
    *   The key entity.
    */
-  private function getKey() : ? KeyInterface {
-    if (NULL === self::$key) {
-      if ($this->keyId === NULL) {
-        throw new ApiException('Apigee Edge authentication key is not set.');
-      }
-      $key = $this->keyRepository->getKey($this->keyId);
+  private function getCredentials(): CredentialsInterface {
+    if (self::$credentials === NULL) {
+      $key = $this->keyRepository->getKey($this->configFactory->get('apigee_edge.authentication')->get('active_key'));
       if ($key === NULL) {
-        throw new ApiException('Apigee Edge authentication key is not set.');
+        throw new KeyNotFoundException();
       }
-      self::$key = $key;
+      self::$credentials = new Credentials($key);
     }
 
-    return self::$key;
+    return self::$credentials;
   }
 
   /**
-   * Changes key used by the API client.
+   * Changes credentials used by the API client.
    *
-   * @param \Drupal\key\KeyInterface $key
-   *   The key entity.
+   * @param \Drupal\apigee_edge\CredentialsInterface $credentials
+   *   The new credentials object.
    */
-  private function setKey(KeyInterface $key) {
-    self::$key = $key;
-    $this->keyId = $key === NULL ?: $key->id();
+  private function setCredentials(CredentialsInterface $credentials) {
+    self::$credentials = $credentials;
     // Ensure that client will be rebuilt with the new key.
     self::$client = NULL;
   }
@@ -221,31 +208,25 @@ class SDKConnector implements SDKConnectorInterface {
    * {@inheritdoc}
    */
   public function testConnection(KeyInterface $key = NULL) {
-    if (NULL !== $key) {
+    if ($key !== NULL) {
       try {
-        $originalKey = self::getKey();
+        $originalCredentials = self::getCredentials();
       }
-      catch (ApiException $e) {
+      catch (KeyNotFoundException $e) {
         // Skip key not set exception if there is no currently used key.
       }
-      self::setKey($key);
+      self::setCredentials(new Credentials($key));
     }
     try {
       $oc = new OrganizationController($this->getClient());
-      /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $key_type */
-      $key_type = $this->getKey()->getKeyType();
-
-      if (($organization = $key_type->get($this->getKey(), 'organization')) === NULL) {
-        throw new KeyValueNotRetrievedException('Could not read the key storage. Key ID: ' . $this->getKey()->id());
-      }
-      $oc->load($organization);
+      $oc->load($this->getCredentials()->getOrganization());
     }
     catch (\Exception $e) {
       throw $e;
     }
     finally {
-      if (isset($originalKey)) {
-        self::setKey($originalKey);
+      if (isset($originalCredentials)) {
+        self::$credentials = $this->setCredentials($originalCredentials);
       }
     }
   }
