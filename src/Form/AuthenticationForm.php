@@ -19,13 +19,13 @@
 
 namespace Drupal\apigee_edge\Form;
 
+use Drupal\apigee_edge\KeyValueMalformedException;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Url;
-use Drupal\key\Exception\KeyValueNotRetrievedException;
 use Drupal\key\KeyRepositoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -158,7 +158,7 @@ class AuthenticationForm extends ConfigFormBase {
       '#type' => 'details',
       '#title' => $this->t('Authentication key'),
       '#description' => t('Select an available key. If the desired key is not listed, <a href=":link">create a new key</a>.', [
-        ':link' => Url::fromRoute('entity.key.add_form')->toString(),
+        ':link' => Url::fromRoute('entity.key.add_form', ['destination' => 'admin/config/apigee-edge/settings'])->toString(),
       ]),
       '#open' => TRUE,
     ];
@@ -166,13 +166,13 @@ class AuthenticationForm extends ConfigFormBase {
     $options = $this->keyRepository->getKeyNamesAsOptions(['type_group' => 'apigee_edge']);
     if (empty($options)) {
       $this->messenger->addWarning(t('There is no available key for connecting to Apigee Edge server. <a href=":link">Create a new key.</a>', [
-        ':link' => Url::fromRoute('entity.key.add_form')->toString(),
+        ':link' => Url::fromRoute('entity.key.add_form', ['destination' => 'admin/config/apigee-edge/settings'])->toString(),
       ]));
     }
     foreach ($options as $key_id => $key_name) {
       $options[$key_id] = $this->t('@key_name <a href=":url">Edit</a>', [
         '@key_name' => $key_name,
-        ':url' => Url::fromRoute('entity.key.edit_form', ['key' => $key_id])->toString(),
+        ':url' => Url::fromRoute('entity.key.edit_form', ['key' => $key_id, 'destination' => 'admin/config/apigee-edge/settings'])->toString(),
       ]);
     }
     $default_value = array_key_exists($config->get('active_key'), $options) ? $config->get('active_key') : NULL;
@@ -244,7 +244,7 @@ class AuthenticationForm extends ConfigFormBase {
     try {
       $this->sdkConnector->testConnection($key);
     }
-    catch (KeyValueNotRetrievedException $exception) {
+    catch (KeyValueMalformedException $exception) {
       watchdog_exception('apigee_edge', $exception);
       $form_state->setError($form, $this->t('Could not read the key storage. Check the key provider and settings.'));
     }

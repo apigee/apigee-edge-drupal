@@ -25,7 +25,7 @@ use Drupal\key\Plugin\KeyTypeMultivalueInterface;
 /**
  * Defines an interface for Apigee Edge Key Type plugins.
  */
-interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthenticationMethodInterface, KeyTypeReadableValuesInterface {
+interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthenticationMethodInterface {
 
   /**
    * Gets the API endpoint.

@@ -19,11 +19,7 @@
 
 namespace Drupal\apigee_edge;
 
-use Apigee\Edge\Exception\ApiException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
-use Drupal\Driver\Exception\Exception;
-use Drupal\key\Exception\KeyException;
-use Drupal\key\Exception\KeyValueNotRetrievedException;
 use Drupal\key\KeyInterface;
 use Http\Message\Authentication;
 
@@ -69,23 +65,21 @@ class Credentials implements CredentialsInterface {
 
   /**
    * Credentials constructor.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
    */
   public function __construct(KeyInterface $key) {
     if (!(($key_type = $key->getKeyType()) instanceof EdgeKeyTypeInterface)) {
       throw new \InvalidArgumentException();
     }
 
-    try {
-      /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $key_type */
-      $this->authentication = $key_type->getAuthenticationMethod($key);
-      $this->endpoint = $key_type->getEndpoint($key);
-      $this->organization = $key_type->getOrganization($key);
-      $this->username = $key_type->getUsername($key);
-      $this->password = $key_type->getPassword($key);
-    }
-    catch (KeyValueNotRetrievedException $e) {
-      throw new KeyValueMalformedException();
-    }
+    /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $key_type */
+    $this->authentication = $key_type->getAuthenticationMethod($key);
+    $this->endpoint = $key_type->getEndpoint($key);
+    $this->organization = $key_type->getOrganization($key);
+    $this->username = $key_type->getUsername($key);
+    $this->password = $key_type->getPassword($key);
   }
 
   /**

@@ -83,7 +83,7 @@ class SDKConnector implements SDKConnectorInterface {
   protected $entityTypeManager;
 
   /**
-   * The Guzzle client.
+   * The HttpClient.
    *
    * @var \Http\Client\HttpClient
    */
@@ -157,7 +157,7 @@ class SDKConnector implements SDKConnectorInterface {
     if (self::$credentials === NULL) {
       $key = $this->keyRepository->getKey($this->configFactory->get('apigee_edge.authentication')->get('active_key'));
       if ($key === NULL) {
-        throw new KeyNotFoundException();
+        throw new KeyNotFoundException($this->configFactory->get('apigee_edge.authentication')->get('active_key'));
       }
       self::$credentials = new Credentials($key);
     }
