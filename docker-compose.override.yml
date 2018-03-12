@@ -16,6 +16,7 @@ services:
       # Suppress deprecation warnings.
       # https://api.drupal.org/api/drupal/vendor%21symfony%21phpunit-bridge%21DeprecationErrorHandler.php/8.5.x
       SYMFONY_DEPRECATIONS_HELPER: disabled
+      THREADS: ${THREADS:-2}
 
 volumes:
   log:
