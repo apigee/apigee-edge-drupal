@@ -27,6 +27,7 @@ use Drupal\key\Plugin\KeyProviderBase;
 use Drupal\key\Plugin\KeyPluginFormInterface;
 use Drupal\key\Plugin\KeyProviderSettableValueInterface;
 use Drupal\key\KeyInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Stores Apigee Edge basic authentication credentials in a private file.
@@ -45,6 +46,33 @@ use Drupal\key\KeyInterface;
 class BasicAuthPrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInterface, KeyProviderSettableValueInterface {
 
   /**
+   * Site settings.
+   *
+   * @var \Drupal\Core\Site\Settings
+   */
+  protected $settings;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, Settings $settings) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->settings = $settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('settings')
+    );
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
@@ -55,9 +83,9 @@ class BasicAuthPrivateFileKeyProvider extends KeyProviderBase implements KeyPlug
    * {@inheritdoc}
    */
   public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
-    if (empty(Settings::get('file_private_path'))) {
+    if (empty($this->settings->get('file_private_path'))) {
       $form_state->setError($form, $this->t('The private file system is not configured properly. Visit the <a href=":url">File system</a> settings page to specify the private file system path.', [
-        ':url' => Url::fromRoute('system.file_system_settings')->toString(),
+        ':url' => Url::fromRoute('system.file_system_settings', ['destination' => 'admin/config/system/keys/add'])->toString(),
       ]));
       return;
     }

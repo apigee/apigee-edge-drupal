@@ -66,7 +66,7 @@ class BasicAuthKeyType extends EdgeKeyTypeBase {
 
     $value = $this->unserialize($key_value);
     if ($value === NULL) {
-      $form_state->setError($form, $this->t('The key value does not contain valid JSON.'));
+      $form_state->setError($form, $this->t('The key value does not contain valid JSON: @error', ['@error' => json_last_error_msg()]));
       return;
     }
 
