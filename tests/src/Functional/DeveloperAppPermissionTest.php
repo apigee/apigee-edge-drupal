@@ -166,15 +166,12 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
-   * Returns the list of the permissions.
-   *
-   * @return array
-   *   List of function arguments.
+   * Tests pages and permissions.
    */
-  public function permissionProvider() {
-    return array_map(function (string $permission): array {
-      return [$permission];
-    }, array_keys(static::PERMISSION_MATRIX));
+  public function testPermissions() {
+    foreach (array_keys(static::PERMISSION_MATRIX) as $permission) {
+      $this->assertPermission($permission);
+    }
   }
 
   /**
@@ -182,10 +179,8 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
    *
    * @param string $permission
    *   Name of the permission to test.
-   *
-   * @dataProvider permissionProvider
    */
-  public function testPermission(string $permission) {
+  public function assertPermission(string $permission) {
     if ($this->loggedInUser) {
       $this->drupalLogout();
     }
