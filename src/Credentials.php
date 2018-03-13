@@ -68,10 +68,14 @@ class Credentials implements CredentialsInterface {
    *
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
+   *
+   * @throws \InvalidArgumentException
+   *   An InvalidArgumentException is thrown if the key type
+   *   does not implement EdgeKeyTypeInterface.
    */
   public function __construct(KeyInterface $key) {
     if (!(($key_type = $key->getKeyType()) instanceof EdgeKeyTypeInterface)) {
-      throw new \InvalidArgumentException();
+      throw new \InvalidArgumentException("Type of {$key->id()} key does not implement EdgeKeyTypeInterface.");
     }
 
     /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $key_type */
