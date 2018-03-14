@@ -37,6 +37,8 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
   use DeveloperStatusCheckTrait;
 
   /**
+   * The developer app entity.
+   *
    * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface
    */
   protected $entity;
@@ -97,10 +99,13 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
    * @param int|null $user
    *   User id, up-casting is not working, because _entity_form is used instead
    *   of _form in routing.yml.
+   *
+   * @return array
+   *   The form structure.
    */
   public function buildForm(array $form, FormStateInterface $form_state, int $user = NULL) {
     $this->userId = $user;
-    $this->checkDeveloperStatus(User::load($user));
+    $this->checkDeveloperStatus($user);
 
     $form = parent::buildForm($form, $form_state);
     $form['developerId'] = [

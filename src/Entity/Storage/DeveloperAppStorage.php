@@ -117,7 +117,7 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
       // created in Drupal before Edge connected was configured.
       // Although, this could be a result of a previous error
       // but there should be a log about that.
-      if (isset($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]])) {
+      if (isset($developerId_mail_map[$entity->getDeveloperId()]) && isset($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]])) {
         $entity->setOwnerId($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]]);
       }
     }

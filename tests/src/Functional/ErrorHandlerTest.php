@@ -29,6 +29,7 @@ class ErrorHandlerTest extends ApigeeEdgeFunctionalTestBase {
     $errorPageTitle = $this->getRandomGenerator()->word(16);
     $this->drupalPostForm('/admin/config/apigee-edge/error-page-settings', [
       'error_page_title' => $errorPageTitle,
+      'error_page_content[format]' => 'plain_text',
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('The configuration options have been saved.');
 

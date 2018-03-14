@@ -185,7 +185,7 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
    */
   protected function clickLinkProperly(string $name) {
     list($path, $query) = $this->findLink($name);
-    $this->drupalGet($path, [
+    $this->drupalGet(static::fixUrl($path), [
       'query' => $query,
     ]);
   }
@@ -211,6 +211,13 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
     parse_str($parts['query'], $query);
 
     return [$parts['path'], $query];
+  }
+
+  protected static function fixUrl(string $url): string {
+    if (strpos($url, 'http:') === 0 || strpos($url, 'https:') === 0) {
+      return $url;
+    }
+    return (strpos($url, '/') === 0) ? $url : "/{$url}";
   }
 
 }

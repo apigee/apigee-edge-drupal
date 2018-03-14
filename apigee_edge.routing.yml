@@ -126,7 +126,12 @@ entity.developer_app.analytics:
     _form: '\Drupal\apigee_edge\Form\DeveloperAppAnalyticsForm'
     _title_callback: '\Drupal\apigee_edge\Form\DeveloperAppAnalyticsForm::getPageTitle'
   requirements:
-    _permission: 'view any developer app analytics'
+    _entity_access: 'developer_app.analytics'
+    _permission: 'analytics any developer_app'
+  options:
+    parameters:
+      developer_app:
+        type: entity:developer_app
 
 entity.developer_app.canonical_by_developer:
   path: '/user/{user}/apps/{app}'
@@ -180,4 +185,5 @@ entity.developer_app.analytics_for_developer:
     _title_callback: '\Drupal\apigee_edge\Form\DeveloperAppAnalyticsFormForDeveloper::getPageTitle'
   requirements:
     user: '\d+'
-    _permission: 'view own developer app analytics'
+    _developer_app_access: 'analytics'
+    _permission: 'analytics own developer_app'

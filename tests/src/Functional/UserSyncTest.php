@@ -141,7 +141,7 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
    */
   protected function verify() {
     $all_users = [];
-    /** @var \Drupal\user\Entity\UserInterface $account */
+    /** @var \Drupal\user\UserInterface $account */
     foreach (User::loadMultiple() as $account) {
       $email = $account->getEmail();
       if ($email && $email !== 'admin@example.com') {

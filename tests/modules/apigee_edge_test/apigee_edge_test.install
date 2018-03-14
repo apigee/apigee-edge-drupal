@@ -1,4 +1,7 @@
-/*
+<?php
+
+/**
+ * @file
  * Copyright 2018 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -16,26 +19,16 @@
  */
 
 /**
- * @file
- * Styles for developer app analytics pages.
+ * Implements hook_install().
  */
+function apigee_edge_test_install() {
+  \Drupal::configFactory()->getEditable('apigee_edge_debug.settings')
+    ->set('debug_message_format', "
+<pre>{request_formatted}</pre>
 
-.controls-label, .date-separator {
-  font-weight: bold;
-}
+<pre>{response_formatted}</pre>
 
-.form-item-metrics, .form-item-quick-date-picker {
-  margin-right: 30px;
-}
-
-.controls-label {
-  margin-right: 5px;
-}
-
-.apigee-edge-developer-app-analytics > div > div {
-  display: inline-block;
-}
-
-.chart-container-no-data {
-  text-align: center;
+<p>Transfer statistics: <pre>{stats}</pre></p>")
+    ->set('debug_message_formatter', 'full_html')
+    ->save();
 }

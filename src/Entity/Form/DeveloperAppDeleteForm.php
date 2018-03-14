@@ -57,7 +57,7 @@ class DeveloperAppDeleteForm extends EntityDeleteForm implements DeveloperAppPag
   public function buildForm(array $form, FormStateInterface $form_state) {
     /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app */
     $developer_app = $this->entity;
-    $this->checkDeveloperStatus($developer_app->getOwner());
+    $this->checkDeveloperStatus($developer_app->getOwnerId());
     return parent::buildForm($form, $form_state);
   }
 
