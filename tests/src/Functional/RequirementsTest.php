@@ -19,8 +19,13 @@
 
 namespace Drupal\Tests\apigee_edge\Functional;
 
+use Drupal\Component\Serialization\Json;
+use Drupal\key\Entity\Key;
+
 /**
- * @group apigee_edge
+ * Status report test.
+ *
+ * @group apigee_edge2
  */
 class RequirementsTest extends ApigeeEdgeFunctionalTestBase {
 
@@ -34,25 +39,54 @@ class RequirementsTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * Tests invalid credentials.
+   *
+   * @throws \Behat\Mink\Exception\ResponseTextException
    */
   public function testInvalidCredentials() {
-    \Drupal::configFactory()->getEditable('apigee_edge.credentials_storage')
-      ->set('credentials_storage_type', 'credentials_storage_private_file')
-      ->save();
+    // Ensure that pre-defined credentials are correctly set.
+    $this->drupalGet('/admin/reports/status');
+    $this->assertSession()->pageTextNotContains('Cannot connect to Edge server.');
+
+    // Delete authentication key.
+    Key::load('test')->delete();
 
     $this->drupalGet('/admin/reports/status');
-    $this->assertSession()->pageTextContains('Cannot connect to Edge server. You have either given wrong credential details or the Edge server is unreachable.');
-  }
+    $this->assertSession()->pageTextContains('Apigee Edge API authentication key is not set.');
+    $this->assertSession()->pageTextContains('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Edge server is unreachable. Visit the Apigee Edge Configuration page to get more information.');
 
-  /**
-   * Tests invalid private file storage.
-   */
-  public function testInvalidPrivateFileStorage() {
-    \Drupal::configFactory()->getEditable('apigee_edge.credentials_storage')
-      ->set('credentials_storage_type', 'credentials_storage_private_file')
-      ->save();
+    // Create new Apigee Edge key with private file provider.
+    $key = Key::create([
+      'id' => 'private_file',
+      'label' => 'Private file',
+      'key_type' => 'apigee_edge_basic_auth',
+      'key_provider' => 'apigee_edge_basic_auth_private_file',
+      'key_input' => 'apigee_edge_basic_auth_input',
+    ]);
+    $key->setKeyValue(Json::encode([
+      'endpoint' => getenv('APIGEE_EDGE_ENDPOINT'),
+      'organization' => getenv('APIGEE_EDGE_ORGANIZATION'),
+      'username' => getenv('APIGEE_EDGE_USERNAME'),
+      'password' => getenv('APIGEE_EDGE_PASSWORD'),
+    ]));
+    $key->save();
+    $this->config('apigee_edge.authentication')->set('active_key', 'private_file')->save();
 
-    // Taken from Drupal\Tests\system\Functional\File\ConfigTest::testFileConfigurationPage().
+    $this->assertSession()->pageTextNotContains('Cannot connect to Edge server.');
+
+    // Use wrong credentials.
+    $key->setKeyValue(Json::encode([
+      'endpoint' => getenv('APIGEE_EDGE_ENDPOINT'),
+      'organization' => getenv('APIGEE_EDGE_ORGANIZATION'),
+      'username' => getenv('APIGEE_EDGE_USERNAME'),
+      'password' => $this->getRandomGenerator()->string(),
+    ]));
+    $key->save();
+
+    $this->drupalGet('/admin/reports/status');
+    $this->assertSession()->pageTextContains('Unauthorized');
+    $this->assertSession()->pageTextContains('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Edge server is unreachable. Visit the Apigee Edge Configuration page to get more information.');
+
+    // Unset private file path.
     $settings['settings']['file_private_path'] = (object) [
       'value' => '',
       'required' => TRUE,
@@ -61,7 +95,8 @@ class RequirementsTest extends ApigeeEdgeFunctionalTestBase {
     $this->rebuildContainer();
 
     $this->drupalGet('/admin/reports/status');
-    $this->assertSession()->pageTextContains('Cannot connect to Edge server, because your private file system is not configured properly.');
+    $this->assertSession()->pageTextContains('Apigee Edge API authentication key is malformed or not readable.');
+    $this->assertSession()->pageTextContains('Cannot connect to Apigee Edge server. Check the settings and the requirements of the active key\'s provider. Visit the Key Configuration page to get more information.');
   }
 
 }

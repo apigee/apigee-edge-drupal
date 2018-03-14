@@ -192,9 +192,6 @@ class AuthenticationForm extends ConfigFormBase {
       '#description' => 'Send request using the selected authentication key.',
       '#open' => TRUE,
     ];
-    $form['test_connection']['test_connection_response'] = [
-      '#type' => 'item',
-    ];
     $form['test_connection']['test_connection_submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Send request'),

@@ -102,7 +102,7 @@ class BasicAuthPrivateFileKeyProvider extends KeyProviderBase implements KeyPlug
    * {@inheritdoc}
    */
   public function getKeyValue(KeyInterface $key) {
-    if (!is_file($this->getFileUri($key)) || !is_readable($this->getFileUri($key))) {
+    if (empty($this->settings->get('file_private_path')) || !is_file($this->getFileUri($key)) || !is_readable($this->getFileUri($key))) {
       return NULL;
     }
 
