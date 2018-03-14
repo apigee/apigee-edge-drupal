@@ -25,7 +25,7 @@ use Drupal\key\Entity\Key;
 /**
  * Status report test.
  *
- * @group apigee_edge2
+ * @group apigee_edge
  */
 class RequirementsTest extends ApigeeEdgeFunctionalTestBase {
 
