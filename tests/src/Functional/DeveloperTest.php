@@ -48,7 +48,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalGet('/user/register');
 
     $test_user = [
-      'username' => $this->randomMachineName(),
+      'username' => 'abcabcabc',
       'first_name' => $this->getRandomGenerator()->word(16),
       'last_name' => $this->getRandomGenerator()->word(16),
     ];
