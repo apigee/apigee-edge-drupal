@@ -12,6 +12,7 @@ dependencies:
   - entity:entity
   - core:filter
   - core:options
+  - key
 
 configure: apigee_edge.settings
 

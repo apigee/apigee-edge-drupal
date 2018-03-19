@@ -35,7 +35,10 @@ use Http\Message\Formatter\SimpleFormatter as OriginalSimpleFormatter;
 class SimpleFormatter extends DebugMessageFormatterPluginBase {
 
   /**
-   * @var \Http\Message\Formatter\SimpleFormatter*/
+   * The original simple formatter.
+   *
+   * @var \Http\Message\Formatter\SimpleFormatter
+   */
   private static $formatter;
 
   /**

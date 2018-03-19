@@ -17,27 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge;
+namespace Drupal\apigee_edge\Plugin;
 
-use Drupal\Component\Plugin\PluginBase;
+use Drupal\key\KeyInterface;
+use Http\Message\Authentication;
 
 /**
- * Defines the AuthenticationMethodPluginBase abstract class.
+ * Interface for creating the required authentication method object.
  */
-abstract class AuthenticationMethodPluginBase extends PluginBase implements AuthenticationMethodPluginInterface {
+interface KeyTypeAuthenticationMethodInterface {
 
   /**
-   * {@inheritdoc}
+   * Gets the authentication method object.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
+   *
+   * @return \Http\Message\Authentication
+   *   The authentication object.
    */
-  public function getId() : string {
-    return $this->pluginDefinition['id'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getName() : string {
-    return $this->pluginDefinition['name'];
-  }
+  public function getAuthenticationMethod(KeyInterface $key) : Authentication;
 
 }

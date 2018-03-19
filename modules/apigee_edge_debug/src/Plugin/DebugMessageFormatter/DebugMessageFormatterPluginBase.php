@@ -29,15 +29,24 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Defines base class for debug message formatter plugins.
+ */
 abstract class DebugMessageFormatterPluginBase extends PluginBase implements ContainerFactoryPluginInterface, DebugMessageFormatterPluginInterface {
 
   /**
-   * @var bool*/
-  protected $masquerade_organization;
+   * Whether to masquerade the organization in the request URI or not.
+   *
+   * @var bool
+   */
+  protected $masqueradeOrganization;
 
   /**
-   * @var bool*/
-  protected $remove_authorization_header;
+   * Whether to remove the authorization header from the request or not.
+   *
+   * @var bool
+   */
+  protected $removeAuthorizationHeader;
 
   /**
    * DebugMessageFormatterPluginBase constructor.
@@ -53,18 +62,18 @@ abstract class DebugMessageFormatterPluginBase extends PluginBase implements Con
    */
   public function __construct(ConfigFactoryInterface $config, array $configuration, string $plugin_id, $plugin_definition) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->masquerade_organization = $config->get('apigee_edge_debug.settings')->get('masquerade_organization');
-    $this->remove_authorization_header = $config->get('apigee_edge_debug.settings')->get('remove_authorization_header');
+    $this->masqueradeOrganization = $config->get('apigee_edge_debug.settings')->get('masquerade_organization');
+    $this->removeAuthorizationHeader = $config->get('apigee_edge_debug.settings')->get('remove_authorization_header');
   }
 
   /**
    * {@inheritdoc}
    */
   public function formatRequest(RequestInterface $request) {
-    if ($this->remove_authorization_header) {
+    if ($this->removeAuthorizationHeader) {
       $request = $request->withoutHeader('Authorization');
     }
-    if ($this->masquerade_organization) {
+    if ($this->masqueradeOrganization) {
       $pattern = '/(\/v\d+\/(?:o|organizations))(?:\/)([^\/]+)(?:\/?)(.*)/';
       $path = rtrim(preg_replace($pattern, '$1/***organization***/$3', $request->getUri()
         ->getPath()), '/');

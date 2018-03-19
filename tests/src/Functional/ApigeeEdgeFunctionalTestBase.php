@@ -21,19 +21,38 @@ namespace Drupal\Tests\apigee_edge\Functional;
 
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
+use Drupal\key\Entity\Key;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
+/**
+ * Base class for functional tests.
+ */
 abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
 
   /**
    * {@inheritdoc}
    */
   public static $modules = [
-    'apigee_edge',
     'apigee_edge_test',
   ];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+    $key = Key::create([
+      'id' => 'test',
+      'label' => 'test',
+      'key_type' => 'apigee_edge_basic_auth',
+      'key_provider' => 'apigee_edge_basic_auth_env_variables',
+      'key_input' => 'apigee_edge_basic_auth_input',
+    ]);
+    $key->save();
+    $this->config('apigee_edge.authentication')->set('active_key', 'test')->save();
+  }
 
   /**
    * Creates a Drupal account.

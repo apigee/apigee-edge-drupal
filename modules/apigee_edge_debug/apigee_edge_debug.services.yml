@@ -8,11 +8,12 @@ services:
     decorates: apigee_edge.sdk_connector
     decoration_priority: -10
     arguments: [
-    '@http_client_factory', '@entity_type.manager',
+    '@http_client_factory',
+    '@key.repository',
+    '@entity_type.manager',
     '@config.factory',
-    '@plugin.manager.apigee_edge.credentials_storage',
-    '@plugin.manager.apigee_edge.authentication_method',
-    '@module_handler', '@info_parser'
+    '@module_handler',
+    '@info_parser'
     ]
 
   plugin.manager.apigee_edge_debug.debug_message_formatter:
@@ -22,9 +23,9 @@ services:
   apigee_edge_debug.client_profiler:
     class: Drupal\apigee_edge_debug\HttpClientMiddleware\ApiClientProfiler
     arguments: [
-        '@config.factory',
-        '@logger.channel.apigee_edge_debug',
-        '@plugin.manager.apigee_edge_debug.debug_message_formatter'
+      '@config.factory',
+      '@logger.channel.apigee_edge_debug',
+      '@plugin.manager.apigee_edge_debug.debug_message_formatter'
     ]
     tags:
       - { name: http_client_middleware }

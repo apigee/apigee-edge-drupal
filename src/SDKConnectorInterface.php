@@ -21,6 +21,7 @@ namespace Drupal\apigee_edge;
 
 use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Apigee\Edge\HttpClient\ClientInterface;
+use Drupal\key\KeyInterface;
 
 /**
  * Defines an interface for SDK controller classes.
@@ -46,8 +47,7 @@ interface SDKConnectorInterface {
   /**
    * Gets the requested controller object.
    *
-   * Creates the requested controller object using the stored credentials
-   * and the configured authentication method.
+   * Creates the requested controller object using the stored key.
    *
    * @param string $entity_type
    *   Entity type.
@@ -60,12 +60,12 @@ interface SDKConnectorInterface {
   /**
    * Test connection with the Edge Management Server.
    *
-   * @param \Drupal\apigee_edge\CredentialsInterface $credentials
-   *   Credentials object to check connection with Edge,
-   *   if NULL, then use the stored credentials.
+   * @param \Drupal\key\KeyInterface $key
+   *   Key entity to check connection with Edge,
+   *   if NULL, then use the stored key.
    *
    * @throws \Exception
    */
-  public function testConnection(CredentialsInterface $credentials = NULL);
+  public function testConnection(KeyInterface $key = NULL);
 
 }

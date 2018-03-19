@@ -19,12 +19,21 @@
 
 namespace Drupal\apigee_edge;
 
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
+use Drupal\key\KeyInterface;
+use Http\Message\Authentication;
+
 /**
  * The API credentials.
  */
 class Credentials implements CredentialsInterface {
 
-  public const ENTERPRISE_ENDPOINT = 'https://api.enterprise.apigee.com/v1';
+  /**
+   * The authentication object.
+   *
+   * @var \Http\Message\Authentication
+   */
+  protected $authentication;
 
   /**
    * The Edge API endpoint.
@@ -56,9 +65,32 @@ class Credentials implements CredentialsInterface {
 
   /**
    * Credentials constructor.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
+   *
+   * @throws \InvalidArgumentException
+   *   An InvalidArgumentException is thrown if the key type
+   *   does not implement EdgeKeyTypeInterface.
    */
-  public function __construct() {
-    $this->endpoint = self::ENTERPRISE_ENDPOINT;
+  public function __construct(KeyInterface $key) {
+    if (!(($key_type = $key->getKeyType()) instanceof EdgeKeyTypeInterface)) {
+      throw new \InvalidArgumentException("Type of {$key->id()} key does not implement EdgeKeyTypeInterface.");
+    }
+
+    /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $key_type */
+    $this->authentication = $key_type->getAuthenticationMethod($key);
+    $this->endpoint = $key_type->getEndpoint($key);
+    $this->organization = $key_type->getOrganization($key);
+    $this->username = $key_type->getUsername($key);
+    $this->password = $key_type->getPassword($key);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getAuthentication(): Authentication {
+    return $this->authentication;
   }
 
   /**
@@ -87,43 +119,6 @@ class Credentials implements CredentialsInterface {
    */
   public function getPassword(): string {
     return $this->password;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setEndpoint(string $endpoint) {
-    // Automatically fall-back to the enterprise endpoint if empty endpoint is
-    // passed.
-    $this->endpoint = $endpoint ?: self::ENTERPRISE_ENDPOINT;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setOrganization(string $organization) {
-    $this->organization = $organization;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setUsername(string $username) {
-    $this->username = $username;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setPassword(string $password) {
-    $this->password = $password;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function empty(): bool {
-    return !$this->endpoint || !$this->organization || !$this->username || !$this->password;
   }
 
 }

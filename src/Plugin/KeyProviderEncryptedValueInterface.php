@@ -17,31 +17,33 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Annotation;
-
-use Drupal\Component\Annotation\Plugin;
+namespace Drupal\apigee_edge\Plugin;
 
 /**
- * Defines an authentication method plugin annotation object.
- *
- * @Annotation
+ * Defines an interface for provider plugins that allow encrypt a key value.
  */
-class AuthenticationMethod extends Plugin {
+interface KeyProviderEncryptedValueInterface {
 
   /**
-   * The plugin ID.
+   * Encrypts key value.
    *
-   * @var string
+   * @param string $key_value
+   *   The plaintext.
+   *
+   * @return string
+   *   The ciphertext.
    */
-  public $id;
+  public function encrypt(string $key_value);
 
   /**
-   * The name of the storage plugin.
+   * Decrypts key value.
    *
-   * @var \Drupal\Core\Annotation\Translation
+   * @param string $key_value
+   *   The ciphertext.
    *
-   * @ingroup plugin_translatable
+   * @return string
+   *   The plaintext.
    */
-  public $name;
+  public function decrypt(string $key_value);
 
 }
