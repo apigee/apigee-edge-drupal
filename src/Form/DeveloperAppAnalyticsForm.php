@@ -166,6 +166,14 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
       '#value' => $this->t('Apply'),
     ];
 
+    $form['timezone'] = [
+      '#type' => 'container',
+    ];
+
+    $form['timezone']['timezone_text'] = [
+      '#markup' => 'Your timezone: ' . $this->currentUser()->getTimeZone(),
+    ];
+
     $form['chart'] = [
       '#type' => 'container',
       '#attributes' => [

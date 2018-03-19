@@ -37,13 +37,6 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
   protected $credentials = [];
 
   /**
-   * {@inheritdoc}
-   */
-  public static $modules = [
-    'apigee_edge',
-  ];
-
-  /**
    * Initializes the credentials property.
    *
    * @return bool

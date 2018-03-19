@@ -32,6 +32,10 @@
   margin-right: 5px;
 }
 
+.apigee-edge-developer-app-analytics > div {
+  margin-bottom: 5px;
+}
+
 .apigee-edge-developer-app-analytics > div > div {
   display: inline-block;
 }

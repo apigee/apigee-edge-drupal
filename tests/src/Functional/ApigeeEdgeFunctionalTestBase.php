@@ -26,13 +26,15 @@ use Drupal\Tests\BrowserTestBase;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
+/**
+ * Base class for functional tests.
+ */
 abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
 
   /**
    * {@inheritdoc}
    */
   public static $modules = [
-    'apigee_edge',
     'apigee_edge_test',
   ];
 
