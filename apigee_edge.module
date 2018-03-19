@@ -1027,6 +1027,22 @@ function apigee_edge_field_ui_field_storage_add_form_submit(array &$form, FormSt
 }
 
 /**
+ * Implements hook_key_delete().
+ */
+function apigee_edge_key_delete(EntityInterface $entity) {
+  /** @var \Drupal\key\KeyInterface $entity */
+  $active_key = \Drupal::configFactory()
+    ->get('apigee_edge.authentication')
+    ->get('active_key');
+
+  if ($active_key === $entity->id()) {
+    \Drupal::configFactory()
+      ->getEditable('apigee_edge.authentication')
+      ->set('active_key', '')->save();
+  }
+}
+
+/**
  * Implements hook_cron().
  */
 function apigee_edge_cron() {

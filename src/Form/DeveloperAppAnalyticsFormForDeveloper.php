@@ -19,6 +19,8 @@
 
 namespace Drupal\apigee_edge\Form;
 
+use Drupal\apigee_edge\Entity\DeveloperAppInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
@@ -34,5 +36,18 @@ class DeveloperAppAnalyticsFormForDeveloper extends DeveloperAppAnalyticsForm {
       '@name' => $routeMatch->getParameter('app')->getDisplayName(),
     ]);
   }
+
+  // @codingStandardsIgnoreStart
+  /**
+   * {@inheritdoc}
+   *
+   * This override here is important because the name of the third parameter is
+   * different. This way, Drupal's routing system can correctly identify it and
+   * pass the parameter from the URL.
+   */
+  public function buildForm(array $form, FormStateInterface $form_state, ?DeveloperAppInterface $app = NULL) {
+    return parent::buildForm($form, $form_state, $app);
+  }
+  // @codingStandardsIgnoreEnd
 
 }

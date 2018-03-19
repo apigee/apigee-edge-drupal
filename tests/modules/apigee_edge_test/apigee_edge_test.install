@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Copyright 2018 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -17,26 +18,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Plugin;
-
-use Drupal\key\KeyInterface;
-
 /**
- * Provides an interface for Key Type plugins that support multivalue keys.
+ * Implements hook_install().
  */
-interface KeyTypeReadableValuesInterface {
+function apigee_edge_test_install() {
+  \Drupal::configFactory()->getEditable('apigee_edge_debug.settings')
+    ->set('debug_message_format', "
+<pre>{request_formatted}</pre>
 
-  /**
-   * Gets the value of the given key field.
-   *
-   * @param \Drupal\key\KeyInterface $key
-   *   The key entity.
-   * @param string $field
-   *   The field name.
-   *
-   * @return string
-   *   The key field value.
-   */
-  public function get(KeyInterface $key, string $field);
+<pre>{response_formatted}</pre>
 
+<p>Transfer statistics: <pre>{stats}</pre></p>")
+    ->set('debug_message_formatter', 'full_html')
+    ->save();
 }

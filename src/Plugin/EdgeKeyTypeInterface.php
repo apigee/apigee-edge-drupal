@@ -19,11 +19,56 @@
 
 namespace Drupal\apigee_edge\Plugin;
 
+use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyTypeMultivalueInterface;
 
 /**
  * Defines an interface for Apigee Edge Key Type plugins.
  */
-interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthenticationMethodInterface, KeyTypeReadableValuesInterface {
+interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthenticationMethodInterface {
+
+  /**
+   * Gets the API endpoint.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
+   *
+   * @return string
+   *   The API endpoint.
+   */
+  public function getEndpoint(KeyInterface $key) : string;
+
+  /**
+   * Gets the API organization.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
+   *
+   * @return string
+   *   The API organization.
+   */
+  public function getOrganization(KeyInterface $key) : string;
+
+  /**
+   * Gets the API username.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
+   *
+   * @return string
+   *   The API username.
+   */
+  public function getUsername(KeyInterface $key) : string;
+
+  /**
+   * Gets the API password.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
+   *
+   * @return string
+   *   The API password.
+   */
+  public function getPassword(KeyInterface $key) : string;
 
 }

@@ -32,11 +32,15 @@ use Drupal\apigee_edge\Entity\DeveloperApp;
 class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
+   * The Drupal user that belongs to the developer app's developer.
+   *
    * @var \Drupal\user\UserInterface
    */
   protected $account;
 
   /**
+   * The owner of the developer app.
+   *
    * @var \Drupal\apigee_edge\Entity\Developer
    */
   protected $developer;
@@ -61,10 +65,20 @@ class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
     parent::tearDown();
   }
 
+  /**
+   * Resets the internal, static developer app entity cache.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   */
   protected function resetCache() {
     \Drupal::entityTypeManager()->getStorage('developer_app')->resetCache();
   }
 
+  /**
+   * Tests developer app entity.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   */
   public function testCrud() {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
     $app = DeveloperApp::create([

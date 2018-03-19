@@ -94,7 +94,7 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, DeveloperAppInterface $developer_app = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?DeveloperAppInterface $developer_app = NULL) {
     $this->developerApp = $developer_app;
     $this->checkDeveloperStatus($developer_app->getOwnerId());
 
@@ -164,6 +164,10 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
     $form['controls']['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Apply'),
+    ];
+
+    $form['timezone'] = [
+      '#markup' => $this->t('Your timezone: @timezone', ['@timezone' => $this->currentUser()->getTimeZone()]),
     ];
 
     $form['chart'] = [

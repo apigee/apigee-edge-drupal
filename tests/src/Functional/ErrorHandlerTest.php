@@ -20,15 +20,23 @@
 namespace Drupal\Tests\apigee_edge\Functional;
 
 /**
+ * Apigee Edge API connection error page tests.
+ *
  * @group apigee_edge
  */
 class ErrorHandlerTest extends ApigeeEdgeFunctionalTestBase {
 
+  /**
+   * Tests connection error page configuration.
+   *
+   * @throws \Behat\Mink\Exception\ResponseTextException
+   */
   public function testErrorPage() {
     $this->drupalLogin($this->rootUser);
     $errorPageTitle = $this->getRandomGenerator()->word(16);
     $this->drupalPostForm('/admin/config/apigee-edge/error-page-settings', [
       'error_page_title' => $errorPageTitle,
+      'error_page_content[format]' => 'plain_text',
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('The configuration options have been saved.');
 

@@ -101,3 +101,15 @@ apigee_edge.sync:
       type: sequence
       sequence:
         type: string
+
+key.type.apigee_edge_basic_auth:
+  type: sequence
+
+key.input.apigee_edge_basic_auth_input:
+  type: sequence
+
+key.provider.apigee_edge_basic_auth_env_variables:
+  type: sequence
+
+key.provider.apigee_edge_basic_auth_private_file:
+  type: sequence

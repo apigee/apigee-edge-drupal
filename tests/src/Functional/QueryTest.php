@@ -20,23 +20,24 @@
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Drupal\apigee_edge\Entity\Developer;
-use Drupal\Tests\BrowserTestBase;
 
 /**
+ * Developer entity query test.
+ *
  * @group apigee_edge
  */
-class QueryTest extends BrowserTestBase {
-
-  public static $modules = [
-    'apigee_edge',
-  ];
+class QueryTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
+   * The developer entity storage.
+   *
    * @var \Drupal\apigee_edge\Entity\Storage\DeveloperStorageInterface
    */
   protected $storage;
 
   /**
+   * Random string for property prefixes.
+   *
    * @var string
    */
   protected $prefix;
@@ -90,6 +91,9 @@ class QueryTest extends BrowserTestBase {
     $this->storage = \Drupal::entityTypeManager()->getStorage('developer');
   }
 
+  /**
+   * Tests developer entity queries.
+   */
   public function testQuery() {
     $query = $this->storage->getQuery();
     $query->condition('email', "{$this->prefix}.test", 'STARTS_WITH');

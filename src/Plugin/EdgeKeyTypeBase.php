@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge\Plugin;
 
+use Drupal\apigee_edge\KeyValueMalformedException;
 use Drupal\Component\Serialization\Json;
 use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyTypeBase;
@@ -45,8 +46,39 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
   /**
    * {@inheritdoc}
    */
-  public function get(KeyInterface $key, string $field) {
-    return $key->getKeyValues()[$field];
+  protected function get(KeyInterface $key, string $field) {
+    if (($value = $key->getKeyValues()[$field]) === NULL) {
+      throw new KeyValueMalformedException($field);
+    }
+    return $value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEndpoint(KeyInterface $key): string {
+    return $this->get($key, 'endpoint');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getOrganization(KeyInterface $key): string {
+    return $this->get($key, 'organization');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getUsername(KeyInterface $key): string {
+    return $this->get($key, 'username');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPassword(KeyInterface $key): string {
+    return $this->get($key, 'password');
   }
 
 }

@@ -32,14 +32,6 @@ use Drupal\user\RoleInterface;
 class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
-   * {@inheritdoc}
-   */
-  public static $modules = [
-    'apigee_edge',
-    'apigee_edge_test',
-  ];
-
-  /**
    * A user with this permission has access to all routes by this entity.
    */
   protected const ADMINISTER_PERMISSION = 'administer developer_app';
@@ -61,6 +53,8 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
       'canonical-by-developer',
       'collection-by-developer',
     ],
+    'analytics any developer_app' => ['analytics'],
+    'analytics own developer_app' => ['analytics-for-developer'],
     'access developer_app overview' => ['collection'],
     // We leave this empty because we add entity links to this data set
     // later.
@@ -106,7 +100,6 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function setUp() {
-    $this->profile = 'standard';
     parent::setUp();
 
     $this->entityType = \Drupal::entityTypeManager()->getDefinition('developer_app');
@@ -173,15 +166,12 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
-   * Returns the list of the permissions.
-   *
-   * @return array
-   *   List of function arguments.
+   * Tests pages and permissions.
    */
-  public function permissionProvider() {
-    return array_map(function (string $permission): array {
-      return [$permission];
-    }, array_keys(static::PERMISSION_MATRIX));
+  public function testPermissions() {
+    foreach (array_keys(static::PERMISSION_MATRIX) as $permission) {
+      $this->assertPermission($permission);
+    }
   }
 
   /**
@@ -189,10 +179,8 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
    *
    * @param string $permission
    *   Name of the permission to test.
-   *
-   * @dataProvider permissionProvider
    */
-  public function testPermission(string $permission) {
+  public function assertPermission(string $permission) {
     if ($this->loggedInUser) {
       $this->drupalLogout();
     }
@@ -211,8 +199,8 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
     }
 
     foreach ($this->entityRoutes as $rel) {
-      $myUrl = (string) $this->myApp->url($rel);
-      $otherUrl = (string) $this->otherApp->url($rel);
+      $myUrl = static::fixUrl((string) $this->myApp->url($rel));
+      $otherUrl = static::fixUrl((string) $this->otherApp->url($rel));
       $shouldAccess = in_array($rel, $routesWithAccess);
       if (strpos($permission, ' any ') !== FALSE) {
         $this->visitPages($myUrl, $shouldAccess, $rel, $permission);
@@ -265,17 +253,10 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
     }
     $debug = "{$url} ({$rel}) with \"{$permission}\" as {$username}";
     if ($access) {
-      if ($code !== 200) {
-        $this->fail(sprintf("Couldn't access {$debug} when it should have. Got HTTP %d, expected HTTP %d.", $code, 200));
-      }
+      $this->assertEquals(200, $code, "Couldn't access {$debug} when it should have. Got HTTP {$code}, expected HTTP 200.");
     }
     else {
-      if ($code < 400) {
-        $this->fail(sprintf("Could access {$debug} when it should not have. Got HTTP %d, expected HTTP %d.", $code, 403));
-      }
-      elseif ($code !== 403) {
-        $this->fail(sprintf("Invalid HTTP code on {$debug}. Got HTTP %d, expected HTTP %d.", $code, 403));
-      }
+      $this->assertEquals(403, $code, "Could access {$debug} when it should not have. Got HTTP {$code}, expected HTTP 403.");
     }
   }
 
