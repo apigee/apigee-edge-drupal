@@ -23,6 +23,7 @@ use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Apigee\Edge\Entity\EntityDenormalizer;
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
 use Apigee\Edge\Entity\EntityNormalizer;
+use Apigee\Edge\Exception\ApiException;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\Cache;
@@ -147,9 +148,14 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
     if ($ids === NULL || $ids) {
       $this->withController(function ($controller) use ($ids, &$entities) {
         /** @var \Drupal\apigee_edge\Entity\Controller\DrupalEntityControllerInterface $controller */
-        $entities = $controller->loadMultiple($ids);
-        $this->invokeStorageLoadHook($entities);
-        $this->setPersistentCache($entities);
+        try {
+          $entities = $controller->loadMultiple($ids);
+          $this->invokeStorageLoadHook($entities);
+          $this->setPersistentCache($entities);
+        }
+        catch (ApiException $e) {
+          // Entity with id may not exists.
+        }
       });
     }
 
