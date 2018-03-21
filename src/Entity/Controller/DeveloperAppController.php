@@ -28,12 +28,13 @@ use Apigee\Edge\Entity\EntityInterface;
 use Apigee\Edge\Entity\EntityNormalizer;
 use Apigee\Edge\Structure\CpsListLimitInterface;
 use Drupal\apigee_edge\Entity\DeveloperApp;
+use Drupal\apigee_edge\Entity\DrupalAppDenormalizer;
 
 /**
  * Advanced version of Apigee Edge SDK's developer app controller.
  *
  * It combines the bests of the DeveloperAppController and AppController
- * classes and also provides additional features than the SDK's built in
+ * classes and also provides additional features that the SDK's built in
  * classes.
  *
  * @package Drupal\apigee_edge\Entity\Controller
@@ -50,14 +51,14 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   /**
    * Creates a developer app controller.
    *
-   * @param \Apigee\Edge\Api\Management\Entity\DeveloperApp $app
-   *   Developer app object from the SDK.
+   * @param string $developerId
+   *   UUID or email address of a developer.
    *
    * @return \Apigee\Edge\Api\Management\Controller\DeveloperAppControllerInterface
    *   Developer app controller from the SDK.
    */
-  protected function createDeveloperAppController(EdgeDeveloperApp $app): EdgeDeveloperAppControllerInterface {
-    return new EdgeDeveloperAppController($this->getOrganisation(), $app->getDeveloperId(), $this->client);
+  protected function createDeveloperAppController(string $developerId): EdgeDeveloperAppControllerInterface {
+    return new EdgeDeveloperAppController($this->getOrganisation(), $developerId, $this->client, NULL, [new DrupalAppDenormalizer()]);
   }
 
   /**
@@ -88,6 +89,8 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
    *   Drupal developer app entity.
    * @param \Apigee\Edge\Api\Management\Entity\DeveloperApp $source
    *   SDK developer app entity.
+   *
+   * @throws \ReflectionException
    */
   protected function applyChanges(DeveloperApp $destination, EdgeDeveloperApp $source) {
     $rodst = new \ReflectionObject($destination);
@@ -110,7 +113,7 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
    */
   public function create(EntityInterface $entity): void {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
-    $controller = $this->createDeveloperAppController($entity);
+    $controller = $this->createDeveloperAppController($entity->getDeveloperId());
     $converted = $this->convertEntity($entity);
     $controller->create($converted);
     $this->applyChanges($entity, $converted);
@@ -121,7 +124,7 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
    */
   public function update(EntityInterface $entity): void {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
-    $controller = $this->createDeveloperAppController($entity);
+    $controller = $this->createDeveloperAppController($entity->getDeveloperId());
     $converted = $this->convertEntity($entity);
     $controller->update($converted);
     $this->applyChanges($entity, $converted);
@@ -133,7 +136,7 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   public function delete(string $entityId): EntityInterface {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
     $entity = $this->loadApp($entityId);
-    $controller = $this->createDeveloperAppController($entity);
+    $controller = $this->createDeveloperAppController($entity->getDeveloperId());
     return $controller->delete($entity->getName());
   }
 
@@ -151,6 +154,55 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
    */
   public function getEntityIds(CpsListLimitInterface $cpsLimit = NULL): array {
     return $this->listAppIdsByType('developer', $cpsLimit);
+  }
+
+  /**
+   * Loads multiple entities.
+   *
+   * @param array|null $ids
+   *   Array of entity ids.
+   *
+   * @return \Apigee\Edge\Entity\EntityInterface[]
+   *   Array of entities.
+   */
+  public function loadMultiple(array $ids = NULL): array {
+    if ($ids !== NULL && count($ids) === 1) {
+      $app = $this->loadApp(reset($ids));
+      return [$app->id() => $app];
+    }
+
+    $allEntities = $this->getEntities();
+    if ($ids === NULL) {
+      return $allEntities;
+    }
+
+    return array_intersect_key($allEntities, array_flip($ids));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function loadByAppName(string $developerId, string $appName) : EntityInterface {
+    $controller = $this->createDeveloperAppController($developerId);
+    return $controller->load($appName);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEntitiesByDeveloper(string $developerId): array {
+    /** @var \Apigee\Edge\Api\Management\Controller\DeveloperAppControllerInterface $controller */
+    $controller = $this->createDeveloperAppController($developerId);
+    return $controller->getEntities();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEntityIdsByDeveloper(string $developerId): array {
+    /** @var \Apigee\Edge\Api\Management\Controller\DeveloperAppControllerInterface $controller */
+    $controller = $this->createDeveloperAppController($developerId);
+    return $controller->getEntityIds();
   }
 
 }

@@ -23,6 +23,7 @@ use Apigee\Edge\Entity\EntityNormalizer;
 use Apigee\Edge\Entity\Property\DisplayNamePropertyInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\RefinableCacheableDependencyTrait;
+use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -35,13 +36,15 @@ use Drupal\Core\Url;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 /**
- * Trait to implement EntityInterface for Drupal side Edge entities.
+ * Allows to use Apigee Edge entities from the SDK as Drupal entities.
  *
+ * @see \Drupal\Core\Entity\Entity
  * @see \Drupal\Core\Entity\EntityInterface
  */
 trait EdgeEntityBaseTrait {
 
   use RefinableCacheableDependencyTrait;
+  use DependencySerializationTrait;
 
   /**
    * The entity type.

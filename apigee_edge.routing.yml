@@ -111,6 +111,10 @@ entity.developer_app.edit_form:
     _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppEditForm::getPageTitle'
   requirements:
     _entity_access: 'developer_app.update'
+  options:
+    # We must load the entity from Apigee Edge directly and omit cached
+    # version on edit forms.
+    apigee_edge_load_unchanged_entity: 'true'
 
 entity.developer_app.delete_form:
   path: '/developer-apps/{developer_app}/delete'
@@ -168,6 +172,10 @@ entity.developer_app.edit_form_for_developer:
   requirements:
      user: '\d+'
      _developer_app_access: 'update'
+  options:
+    # We must load the entity from Apigee Edge directly and omit cached
+    # version on edit forms.
+    apigee_edge_load_unchanged_entity: 'true'
 
 entity.developer_app.delete_form_for_developer:
   path: '/user/{user}/apps/{app}/delete'

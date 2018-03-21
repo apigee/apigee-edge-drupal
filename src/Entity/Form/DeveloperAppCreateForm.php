@@ -83,9 +83,14 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
     $app = $this->entity;
 
     $developers = [];
-    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
-    foreach (Developer::loadMultiple() as $developer) {
-      $developers[$developer->uuid()] = "{$developer->getFirstName()} {$developer->getLastName()}";
+    // This is little bit hackish, but do not load all developer data on the
+    // add/edit app form for developer forms and with that increase the speed
+    // of these pages.
+    if (!preg_match('/_for_developer$/', $this->getRouteMatch()->getRouteName())) {
+      /** @var \Drupal\apigee_edge\Entity\Developer $developer */
+      foreach (Developer::loadMultiple() as $developer) {
+        $developers[$developer->uuid()] = "{$developer->getFirstName()} {$developer->getLastName()}";
+      }
     }
 
     $form['developerId'] = [

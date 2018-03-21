@@ -56,6 +56,8 @@ apigee_edge.appsettings:
       type: sequence
       sequence:
         type: string
+    cache_expiration:
+      type: integer
 
 apigee_edge.developer_settings:
   type: config_object
@@ -91,6 +93,14 @@ apigee_edge.developer_settings:
           type: string
         value:
           type: text
+    cache_expiration:
+      type: integer
+
+apigee_edge.api_product_settings:
+  type: config_object
+  mapping:
+    cache_expiration:
+      type: integer
 
 apigee_edge.sync:
   type: config_object
