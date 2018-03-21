@@ -37,12 +37,19 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     parent::setUp();
   }
 
+  /**
+   * Resets the internal, static developer entity cache.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   */
   protected function resetCache() {
     \Drupal::entityTypeManager()->getStorage('developer')->resetCache();
   }
 
   /**
    * Tests user/developer registration and edit.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   public function testDeveloperRegister() {
     $this->drupalGet('/user/register');
@@ -100,6 +107,9 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
    *
    * Tests creating, editing and deleting developer entity
    * if the Drupal user registered by the admin.
+   *
+   * @throws \Behat\Mink\Exception\ElementNotFoundException
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   public function testDeveloperRegisteredByAdmin() {
     // Create blocked user by the admin.

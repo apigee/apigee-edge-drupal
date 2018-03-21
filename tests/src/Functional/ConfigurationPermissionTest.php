@@ -31,8 +31,6 @@ class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
    */
   public static $modules = [
     'block',
-    'apigee_edge',
-    'apigee_edge_test',
   ];
 
   /**
@@ -59,7 +57,12 @@ class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
    * Tests access to the admin pages with an admin account.
    */
   public function testAdminAccess() {
-    $account = $this->createAccount(['administer apigee edge']);
+    $account = $this->createAccount([
+      'administer apigee edge',
+      'administer developer_app fields',
+      'administer developer_app form display',
+      'administer developer_app display',
+    ]);
     $this->drupalLogin($account);
     $this->assertPaths(TRUE);
   }
@@ -74,7 +77,7 @@ class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
-   * Tests access to the admin pages as an anonoymous user.
+   * Tests access to the admin pages as an anonymous user.
    */
   public function testAnonymousAccess() {
     if ($this->loggedInUser) {
@@ -101,8 +104,14 @@ class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
       $this->assertEquals($expected_code, $this->getSession()->getStatusCode(), $path);
     };
 
+    // General settings related admin pages.
     $visit_path('/admin/config/apigee-edge');
+    $visit_path('/admin/config/apigee-edge/error-page-settings');
     $visit_path('/admin/config/apigee-edge/settings');
+
+    // Developer entity related admin pages.
+    $visit_path('/admin/config/apigee-edge/developer-settings/email-validation');
+    $visit_path('/admin/config/apigee-edge/developer-settings');
     if ($access) {
       list($schedule_path, $schedule_query) = $this->findLink('Background');
       list($run_path, $run_query) = $this->findLink('Now');
@@ -114,9 +123,14 @@ class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
       $visit_path('/admin/config/apigee-edge/sync/run');
     }
 
+    // API Product entity related admin pages.
     $visit_path('/admin/config/apigee-edge/product-settings');
+
+    // Developer app entity related admin pages.
     $visit_path('/admin/config/apigee-edge/app-settings');
-    $visit_path('/admin/config/apigee-edge/error-page-settings');
+    $visit_path('/admin/config/apigee-edge/app-settings/fields');
+    $visit_path('/admin/config/apigee-edge/app-settings/form-display');
+    $visit_path('/admin/config/apigee-edge/app-settings/display');
   }
 
 }
