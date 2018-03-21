@@ -27,7 +27,7 @@ use Symfony\Component\Routing\Route;
 /**
  * Param converter that loads the unchanged (non cached) entity if needed.
  *
- * EntityConverter always load the cached version of an entity. In our case
+ * EntityConverter always loads the cached version of an entity. In our case
  * this could cause inconsistency problems, especially on the entity edit forms.
  * For example, a developer could easily remove a previously added API product
  * (on Apigee Edge) from his/her app when modifies it on the Developer Portal.

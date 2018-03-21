@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge\Entity\Query;
 
+use Apigee\Edge\Exception\ApiException;
 use Drupal\Core\Entity\EntityStorageException;
 
 /**
@@ -83,11 +84,18 @@ class DeveloperAppQuery extends Query {
           }
         }
 
-        /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
-        $entity = $controller->loadByAppName($developerId, $appName);
-        // We have to use the storage because it ensures that next time the
-        // app can be found in the cache (and various other things as well).
-        return [$storage->load($entity->getAppId())];
+        try {
+          /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
+          $entity = $controller->loadByAppName($developerId, $appName);
+          // We have to use the storage because it ensures that next time the
+          // app can be found in the cache (and various other things as well).
+          return [$storage->load($entity->getAppId())];
+        }
+        catch (ApiException $e) {
+          // App does not exists with name.
+        }
+
+        return [];
       }
       else {
         // Get the name of apps that the developer owns. Apigee Edge only
