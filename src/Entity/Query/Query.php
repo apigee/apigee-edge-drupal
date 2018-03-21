@@ -131,7 +131,7 @@ class Query extends QueryBase implements QueryInterface {
     // The worst case: load all entities from Apigee Edge.
     $ids = NULL;
     foreach ($this->condition->conditions() as $condition) {
-      if (in_array($condition['field'], $this->getEntityIdProperties())) {
+      if (in_array($condition['field'], $this->getEntityIdProperties()) && in_array($condition['operator'], [NULL, '='])) {
         if (!is_array($condition['value'])) {
           $ids = [$condition['value']];
         }

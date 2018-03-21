@@ -39,7 +39,7 @@ class DeveloperAppQuery extends Query {
     $appName = NULL;
     $developerIdProperties = ['developerId', 'email'];
     foreach ($this->condition->conditions() as $condition) {
-      if (in_array($condition['field'], $developerIdProperties)) {
+      if (in_array($condition['field'], $developerIdProperties) && in_array($condition['operator'], [NULL, '='])) {
         if (!is_array($condition['value'])) {
           $developerId = $condition['value'];
         }
@@ -49,7 +49,7 @@ class DeveloperAppQuery extends Query {
       }
       // TODO Add support to IN conditions (multiple app names) when it
       // becomes necessary.
-      elseif ($condition['field'] === 'name') {
+      elseif ($condition['field'] === 'name' && in_array($condition['operator'], [NULL, '='])) {
         if (!is_array($condition['value'])) {
           $appName = $condition['value'];
         }
