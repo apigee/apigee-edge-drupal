@@ -3,21 +3,22 @@
 /**
  * Copyright 2018 Google Inc.
  *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * version 2 as published by the Free Software Foundation.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
- * License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Routing;
+namespace Drupal\apigee_edge\ParamConverter;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\ParamConverter\ParamConverterInterface;
@@ -26,7 +27,7 @@ use Symfony\Component\Routing\Route;
 /**
  * Resolves "developer_app_by_name" type parameters in path.
  */
-class DeveloperAppNameParameterConverter implements ParamConverterInterface {
+class DeveloperAppNameConverter implements ParamConverterInterface {
 
   /**
    * The entity type manager.
@@ -36,7 +37,7 @@ class DeveloperAppNameParameterConverter implements ParamConverterInterface {
   protected $entityTypeManager;
 
   /**
-   * DeveloperAppNameParameterConverter constructor.
+   * Constructs a DeveloperAppNameParameterConverter.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   Entity type manager.
@@ -63,8 +64,16 @@ class DeveloperAppNameParameterConverter implements ParamConverterInterface {
           ->execute();
         if (!empty($ids)) {
           $id = reset($ids);
-          $entity = $this->entityTypeManager->getStorage('developer_app')
-            ->load($id);
+          // Load the entity directly from Apigee Edge if needed.
+          // @see \Drupal\apigee_edge\ParamConverter\ApigeeEdgeLoadUnchangedEntity
+          if (!empty($defaults['_route_object']->getOption('apigee_edge_load_unchanged_entity'))) {
+            $entity = $this->entityTypeManager->getStorage('developer_app')
+              ->loadUnchanged($id);
+          }
+          else {
+            $entity = $this->entityTypeManager->getStorage('developer_app')
+              ->load($id);
+          }
           return $entity;
         }
       }

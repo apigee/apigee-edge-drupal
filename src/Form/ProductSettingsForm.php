@@ -27,6 +27,8 @@ use Drupal\Core\Form\FormStateInterface;
  */
 class ProductSettingsForm extends ConfigFormBase {
 
+  use CachedEntityConfigurationFormAwareTrait;
+
   /**
    * {@inheritdoc}
    */
@@ -39,6 +41,7 @@ class ProductSettingsForm extends ConfigFormBase {
    */
   protected function getEditableConfigNames() {
     return [
+      'apigee_edge.api_product_settings',
       'apigee_edge.entity_labels',
     ];
   }
@@ -69,6 +72,8 @@ class ProductSettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('api_product_label_plural'),
     ];
 
+    $form += $this->addCacheConfigElements($form, $form_state);
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -88,7 +93,23 @@ class ProductSettingsForm extends ConfigFormBase {
       drupal_flush_all_caches();
     }
 
+    $this->saveCacheConfiguration($form, $form_state);
+
     parent::submitForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConfigNameWithCacheSettings() {
+    return 'apigee_edge.api_product_settings';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEntityType() {
+    return 'api_product';
   }
 
 }

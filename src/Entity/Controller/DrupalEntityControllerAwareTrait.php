@@ -18,23 +18,30 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Controller;
+namespace Drupal\apigee_edge\Entity\Controller;
 
-use Drupal\apigee_edge\Form\DeveloperAppBaseFieldConfigForm;
-use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\field_ui\Controller\FieldConfigListController;
-
-class DeveloperAppFieldConfigListController extends FieldConfigListController {
+/**
+ * Contains general implementations for Drupal entity controllers.
+ *
+ * @see \Drupal\apigee_edge\Entity\Controller\DrupalEntityControllerInterface
+ */
+trait DrupalEntityControllerAwareTrait {
 
   /**
    * {@inheritdoc}
    */
-  public function listing($entity_type_id = NULL, $bundle = NULL, RouteMatchInterface $route_match = NULL) {
-    $page = parent::listing($entity_type_id, $bundle, $route_match);
+  public function loadMultiple(array $ids = NULL) : array {
+    if ($ids !== NULL && count($ids) === 1) {
+      $entity = $this->load(reset($ids));
+      return [$entity->id() => $entity];
+    }
 
-    $page['base_field_config'] = $this->formBuilder()->getForm(DeveloperAppBaseFieldConfigForm::class);
+    $allEntities = $this->getEntities();
+    if ($ids === NULL) {
+      return $allEntities;
+    }
 
-    return $page;
+    return array_intersect_key($allEntities, array_flip($ids));
   }
 
 }

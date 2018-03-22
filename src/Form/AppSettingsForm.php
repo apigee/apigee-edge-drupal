@@ -28,6 +28,8 @@ use Drupal\Core\Form\FormStateInterface;
  */
 class AppSettingsForm extends ConfigFormBase {
 
+  use CachedEntityConfigurationFormAwareTrait;
+
   /**
    * {@inheritdoc}
    */
@@ -177,6 +179,8 @@ class AppSettingsForm extends ConfigFormBase {
       '#description' => $this->t('Leave empty to use the default "Developer Apps" label.'),
     ];
 
+    $form += $this->addCacheConfigElements($form, $form_state);
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -228,7 +232,23 @@ class AppSettingsForm extends ConfigFormBase {
       drupal_flush_all_caches();
     }
 
+    $this->saveCacheConfiguration($form, $form_state);
+
     parent::submitForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConfigNameWithCacheSettings() {
+    return 'apigee_edge.appsettings';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEntityType() {
+    return 'developer_app';
   }
 
 }

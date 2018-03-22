@@ -18,23 +18,20 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Controller;
+namespace Drupal\apigee_edge\Entity\Query;
 
-use Drupal\apigee_edge\Form\DeveloperAppBaseFieldConfigForm;
-use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\field_ui\Controller\FieldConfigListController;
-
-class DeveloperAppFieldConfigListController extends FieldConfigListController {
+/**
+ * Defines an entity query class for Apigee Edge developer entities.
+ */
+class DeveloperQuery extends Query {
 
   /**
    * {@inheritdoc}
    */
-  public function listing($entity_type_id = NULL, $bundle = NULL, RouteMatchInterface $route_match = NULL) {
-    $page = parent::listing($entity_type_id, $bundle, $route_match);
-
-    $page['base_field_config'] = $this->formBuilder()->getForm(DeveloperAppBaseFieldConfigForm::class);
-
-    return $page;
+  protected function getEntityIdProperties() {
+    $ids = parent::getEntityIdProperties();
+    $ids[] = 'email';
+    return $ids;
   }
 
 }

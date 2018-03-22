@@ -17,11 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\EventSubscriber;
+namespace Drupal\apigee_edge\Routing;
 
 use Drupal\Core\Routing\RouteBuildEvent;
+use Drupal\Core\Routing\RouteSubscriberBase;
 use Drupal\Core\Routing\RoutingEvents;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Registers the 'type' of the 'app' route parameter if 'user' is also in path.
@@ -30,7 +31,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * EntityResolvedManager, but in that case the value of in the path is the app
  * id and not the name of the app.
  */
-class DeveloperAppByNameRouteAlterSubscriber implements EventSubscriberInterface {
+class DeveloperAppByNameRouteAlterSubscriber extends RouteSubscriberBase {
 
   /**
    * {@inheritdoc}
@@ -48,6 +49,18 @@ class DeveloperAppByNameRouteAlterSubscriber implements EventSubscriberInterface
    */
   public function onRoutingRouteAlterSetType(RouteBuildEvent $event) {
     foreach ($event->getRouteCollection() as $route) {
+      if (in_array('user', $route->compile()->getPathVariables()) && in_array('app', $route->compile()->getPathVariables())) {
+        $route->setOption('parameters', ['app' => ['type' => 'developer_app_by_name']]);
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function alterRoutes(RouteCollection $collection) {
+    print 0;
+    foreach ($collection as $route) {
       if (in_array('user', $route->compile()->getPathVariables()) && in_array('app', $route->compile()->getPathVariables())) {
         $route->setOption('parameters', ['app' => ['type' => 'developer_app_by_name']]);
       }
