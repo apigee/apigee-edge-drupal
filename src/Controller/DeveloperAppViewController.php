@@ -24,7 +24,6 @@ use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\Core\Entity\Controller\EntityViewController;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\user\Entity\User;
 
 /**
  * Displays the view page of a developer app on the UI.

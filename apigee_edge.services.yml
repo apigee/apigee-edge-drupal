@@ -1,7 +1,14 @@
 services:
   logger.channel.apigee_edge:
     parent: logger.channel_base
-    arguments: ['search_api']
+    arguments: ['apigee_edge']
+
+  cache.apigee_edge_entity:
+    class: Drupal\Core\Cache\CacheBackendInterface
+    tags:
+      - { name: cache.bin }
+    factory: cache_factory:get
+    arguments: [apigee_edge_entity]
 
   apigee_edge.cli:
     class: Drupal\apigee_edge\CliService
@@ -34,17 +41,24 @@ services:
       - { name: event_subscriber }
 
   route_subscriber.apigee_edge.developer_app_by_name:
-    class: Drupal\apigee_edge\EventSubscriber\DeveloperAppByNameRouteAlterSubscriber
+    class: Drupal\apigee_edge\Routing\DeveloperAppByNameRouteAlterSubscriber
     tags:
       - { name: event_subscriber }
 
-  apigee_edge.subscriber:
-    class: Drupal\apigee_edge\Routing\RouteSubscriber
+  route_subscriber.apigee_edge.developer_app_field_ui:
+    class: Drupal\apigee_edge\Routing\DeveloperAppFieldUIRouteSubscriber
     tags:
       - { name: event_subscriber }
 
-  developer_app_name_converter:
-    class: Drupal\apigee_edge\Routing\DeveloperAppNameParameterConverter
+  paramconverter.developer_app_name:
+    class: Drupal\apigee_edge\ParamConverter\DeveloperAppNameConverter
     arguments: ['@entity_type.manager']
     tags:
       - { name: paramconverter }
+
+  paramconverter.apigee_edge_load_unchanged_entity:
+    class: Drupal\apigee_edge\ParamConverter\ApigeeEdgeLoadUnchangedEntity
+    arguments: ['@entity_type.manager']
+    tags:
+      # Use a higher priority than EntityConverter, see the class for details.
+      - { name: paramconverter, priority: 10 }

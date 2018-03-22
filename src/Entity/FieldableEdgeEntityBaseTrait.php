@@ -26,6 +26,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 
+// TODO Find a better way to store these.
 const TYPE_EXCEPTIONS = [
   'apiResources' => 'string[]',
   'apps' => 'string[]',
@@ -46,13 +47,19 @@ const FIELD_BLACKLIST = [
 ];
 
 /**
- * Trait for making Edge entities fieldable.
+ * Trait that allows to make Apigee Edge entities fieldable.
+ *
+ * Contains implementations that were only available for content entities.
+ *
+ * @see \Drupal\Core\Entity\ContentEntityBase
+ * @see \Drupal\Core\Entity\FieldableEntityStorageInterface
  */
 trait FieldableEdgeEntityBaseTrait {
 
   use EdgeEntityBaseTrait {
     preSave as private traitPreSave;
     postSave as private traitPostSave;
+    __sleep as private traitSleep;
   }
 
   /**
@@ -86,6 +93,7 @@ trait FieldableEdgeEntityBaseTrait {
    */
   public function __sleep() {
     $this->fieldDefinitions = NULL;
+    return $this->traitSleep();
   }
 
   /**
@@ -94,6 +102,8 @@ trait FieldableEdgeEntityBaseTrait {
    * @return array
    *   The key is the property name, the value is its type, declared in the
    *   docblocks.
+   *
+   * @throws \ReflectionException
    */
   protected static function getProperties(): array {
     $rc = new \ReflectionClass(parent::class);

@@ -19,10 +19,16 @@
 
 namespace Drupal\apigee_edge\Entity\Storage;
 
-use Apigee\Edge\Api\Management\Controller\DeveloperController;
 use Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface;
 use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\DeveloperController;
+use Drupal\apigee_edge\Entity\DrupalEntityFactory;
 use Drupal\apigee_edge\SDKConnectorInterface;
+use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Psr\Log\LoggerInterface;
@@ -34,37 +40,55 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorageInterface {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * @var \Drupal\Core\Database\Connection*/
   protected $database;
 
   /**
-   * DeveloperAppStorage constructor.
+   * Constructs an DeveloperStorage instance.
    *
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
-   *   The service container.
+   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdkConnector
+   *   The SDK connector service.
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
+   *   The cache backend to be used.
    * @param \Psr\Log\LoggerInterface $logger
-   *   The logger service.
+   *   The logger to be used.
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database connection.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config
+   *   Configuration factory.
+   * @param \Drupal\Component\Datetime\TimeInterface $systemTime
+   *   System time.
    */
-  public function __construct(ContainerInterface $container, EntityTypeInterface $entity_type, LoggerInterface $logger) {
-    $this->entityTypeManager = $container->get('entity_type.manager');
-    $this->database = $container->get('database');
-    parent::__construct($container, $entity_type, $logger);
+  public function __construct(SDKConnectorInterface $sdkConnector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, Connection $database, ConfigFactoryInterface $config, TimeInterface $systemTime) {
+    parent::__construct($sdkConnector, $entity_type, $cache, $logger, $systemTime);
+    $this->database = $database;
+    $this->cacheExpiration = $config->get('apigee_edge.developer_settings')->get('cache_expiration');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+    /** @var \Psr\Log\LoggerInterface $logger */
+    $logger = $container->get('logger.channel.apigee_edge');
+    return new static(
+      $container->get('apigee_edge.sdk_connector'),
+      $entity_type,
+      $container->get('cache.apigee_edge_entity'),
+      $logger,
+      $container->get('database'),
+      $container->get('config.factory'),
+      $container->get('datetime.time')
+    );
   }
 
   /**
    * {@inheritdoc}
    */
   public function getController(SDKConnectorInterface $connector): EntityCrudOperationsControllerInterface {
-    return new DeveloperController($connector->getOrganization(), $connector->getClient());
+    return new DeveloperController($connector->getOrganization(), $connector->getClient(), new DrupalEntityFactory());
   }
 
   /**
@@ -119,6 +143,64 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
       if (isset($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]])) {
         $entity->setOwnerId($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]]);
       }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getPersistentCacheTags(EntityInterface $entity) {
+    /** @var \Drupal\apigee_edge\Entity\Developer $entity */
+    $cacheTags = parent::getPersistentCacheTags($entity);
+    $cacheTags = array_map(function ($cid) use ($entity) {
+      // Sanitize accented characters in developer's email addresses.
+      return str_replace($entity->id(), filter_var($entity->id(), FILTER_SANITIZE_ENCODED), $cid);
+    }, $cacheTags);
+    // Add developerId (besides email address) as a cache tag too.
+    $cacheTags[] = "{$this->entityTypeId}:{$entity->uuid()}";
+    $cacheTags[] = "{$this->entityTypeId}:{$entity->uuid()}:values";
+    // Also add Drupal user id to ensure that cached developer data is
+    // invalidated when the related Drupal user has changed or deleted.
+    if ($entity->getOwnerId()) {
+      $cacheTags[] = "user:{$entity->getOwnerId()}";
+    }
+    return $cacheTags;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setPersistentCache(array $entities) {
+    parent::setPersistentCache($entities);
+
+    if (!$this->entityType->isPersistentlyCacheable()) {
+      return;
+    }
+
+    // Create a separate cache entry that uses developer id in the cache id
+    // instead of the email address. This way we can load a developer from
+    // cache by using both ids.
+    foreach ($entities as $id => $entity) {
+      /** @var \Drupal\apigee_edge\Entity\Developer $entity */
+      $this->cacheBackend->set($this->buildCacheId($entity->getDeveloperId()), $entity, $this->getPersistentCacheExpiration(), $this->getPersistentCacheTags($entity));
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function resetCache(array $ids = NULL) {
+    parent::resetCache($ids);
+
+    // Ensure that if ids contains email addresses we also invalidate cache
+    // entries that refers to the same entities by developer id and vice-versa.
+    // See getPersistentCacheTags() for more insight.
+    if ($ids && $this->entityType->isPersistentlyCacheable()) {
+      $cids = [];
+      foreach ($ids as $id) {
+        $cids[] = "{$this->entityTypeId}:{$id}:values";
+      }
+      Cache::invalidateTags([$this->entityTypeId . ':values']);
     }
   }
 

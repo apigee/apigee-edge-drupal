@@ -8,3 +8,4 @@ locked_base_fields:
 required_base_fields:
   - displayName
 default_products: []
+cache_expiration: 900

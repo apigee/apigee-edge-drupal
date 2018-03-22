@@ -21,3 +21,4 @@ verification_token_expires: 86400
 user_edit_error_message:
   value: 'This email address already exists in our system. You can register a new account if you would like to use it on the Developer Portal.'
   format: 'restricted_html'
+cache_expiration: 900
