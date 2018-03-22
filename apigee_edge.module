@@ -999,7 +999,7 @@ function apigee_edge_field_config_delete(EntityInterface $entity) {
 function apigee_edge_form_field_ui_field_storage_add_form_alter(array &$form, FormStateInterface &$form_state) {
   $form['apigee_edge_sync'] = [
     '#type' => 'checkbox',
-    '#title' => t('Synchronised to Apigee Edge'),
+    '#title' => t('Synchronise to Apigee Edge'),
   ];
   $form['#submit'][] = 'apigee_edge_field_ui_field_storage_add_form_submit';
 }
@@ -1013,7 +1013,7 @@ function apigee_edge_form_field_ui_field_storage_add_form_alter(array &$form, Fo
  *   The current state of the form.
  */
 function apigee_edge_field_ui_field_storage_add_form_submit(array &$form, FormStateInterface &$form_state) {
-  if ($form_state->getValue('apigee_edge_sync') === 1) {
+  if ($form_state->getValue('apigee_edge_sync')) {
     $user_fields_to_sync = \Drupal::configFactory()
       ->get('apigee_edge.sync')
       ->get('user_fields_to_sync');

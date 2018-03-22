@@ -85,7 +85,7 @@ class DeveloperAttributesSettingsForm extends ConfigFormBase {
       '#value' => '?',
       '#attributes' => [
         'class' => 'info-circle',
-        'title' => t('A background sync is recommended for large numbers of developers.'),
+        'title' => $this->t('A background sync is recommended for large numbers of developers.'),
       ],
     ];
 
@@ -122,10 +122,8 @@ class DeveloperAttributesSettingsForm extends ConfigFormBase {
     $form['developer_attributes']['attributes'] = [
       '#type' => 'tableselect',
       '#header' => [
-        'field_name' => $this
-          ->t('User field name'),
-        'attribute_name' => $this
-          ->t('Developer attribute name'),
+        'field_name' => $this->t('User field name'),
+        'attribute_name' => $this->t('Developer attribute name'),
       ],
       '#options' => $options,
       '#default_value' => $default_values,
