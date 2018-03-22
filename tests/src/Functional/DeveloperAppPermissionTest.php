@@ -28,7 +28,6 @@ use Drupal\user\RoleInterface;
  * @group apigee_edge
  * @group apigee_edge_developer_app
  * @group apigee_edge_permissions
- * @group hm
  */
 class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
 
