@@ -152,6 +152,10 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
   protected function getPersistentCacheTags(EntityInterface $entity) {
     /** @var \Drupal\apigee_edge\Entity\Developer $entity */
     $cacheTags = parent::getPersistentCacheTags($entity);
+    $cacheTags = array_map(function($cid) use ($entity) {
+      // Sanitize accented characters in developer's email addresses.
+      return str_replace($entity->id(), filter_var($entity->id(), FILTER_SANITIZE_ENCODED), $cid);
+    }, $cacheTags);
     // Add developerId (besides email address) as a cache tag too.
     $cacheTags[] = "{$this->entityTypeId}:{$entity->uuid()}";
     $cacheTags[] = "{$this->entityTypeId}:{$entity->uuid()}:values";

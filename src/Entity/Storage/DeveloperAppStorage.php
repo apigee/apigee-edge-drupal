@@ -248,18 +248,10 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
    *   Unique cache cid.
    */
   private function buildCacheIdForAppName(string $developerId, string $appName) {
-    // Ensure that the complete cache cid less than 255 characters.
-    $cid = "app_names:{$this->entityTypeId}:{$developerId}:{$appName}";
-    if (strlen($cid) > 255) {
-      $id = sha1($appName);
-      // Without $id part the string length should be 59 characters long,
-      // because developerId is a UUID (36 characters long string).
-      // SHA1 is maximum 160 characters long, so if the generated $cid here
-      // is still too long that something nasty is going on that we do not
-      // want handle here.
-      $cid = "app_names:{$this->entityTypeId}:{$developerId}:{$id}";
-    }
-    return $cid;
+    // We do not need to worry about the length of the cid because the cache
+    // backend should ensure that the length of the cid is not too long.
+    // @see \Drupal\Core\Cache\DatabaseBackend::normalizeCid()
+    return "app_names:{$this->entityTypeId}:{$developerId}:{$appName}";
   }
 
   /**
