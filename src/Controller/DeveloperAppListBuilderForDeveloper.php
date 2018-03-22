@@ -120,14 +120,13 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    */
   protected function getDefaultOperations(EntityInterface $entity) {
     $operations = parent::getDefaultOperations($entity);
-    if (isset($operations['edit'])) {
-      $operations['edit']['url'] = $this->ensureDestination($entity->toUrl('edit-form-for-developer'));
-    }
-    if (isset($operations['delete'])) {
-      $operations['delete']['url'] = $this->ensureDestination($entity->toUrl('delete-form-for-developer'));
-    }
-    if (isset($operations['analytics'])) {
-      $operations['analytics']['url'] = $entity->toUrl('analytics-for-developer');
+    foreach ($operations as $operation => $parameters) {
+      if ($entity->hasLinkTemplate("{$operation}-for-developer")) {
+        $operations[$operation]['url'] = $entity->toUrl("{$operation}-for-developer");
+      }
+      if ($entity->hasLinkTemplate("{$operation}-form-for-developer")) {
+        $operations[$operation]['url'] = $this->ensureDestination($entity->toUrl('edit-form-for-developer'));
+      }
     }
 
     return $operations;
