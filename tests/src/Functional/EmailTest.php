@@ -107,7 +107,7 @@ class EmailTest extends ApigeeEdgeFunctionalTestBase {
   public function testRegisterWithAlreadyExistingEmailErrorMessage() {
     $this->drupalLogin($this->rootUser);
     $errormsg = trim($this->getRandomGenerator()->paragraphs(1));
-    $this->drupalPostForm('/admin/config/apigee-edge/developer-settings/email-validation', [
+    $this->drupalPostForm('/admin/config/apigee-edge/developer-settings', [
       'verification_action' => DeveloperSettingsForm::VERIFICATION_ACTION_DISPLAY_ERROR_ONLY,
       'display_only_error_message_content[value]' => $errormsg,
       'display_only_error_message_content[format]' => 'plain_text',

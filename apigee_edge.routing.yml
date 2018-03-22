@@ -26,16 +26,16 @@ apigee_edge.settings:
 apigee_edge.settings.developer:
   path: '/admin/config/apigee-edge/developer-settings'
   defaults:
-    _form: '\Drupal\apigee_edge\Form\DeveloperAttributesSettingsForm'
+    _form: '\Drupal\apigee_edge\Form\DeveloperSettingsForm'
     _title: 'Developer Settings'
   requirements:
     _permission: 'administer apigee edge'
 
 apigee_edge.settings.developer.email_validation:
-  path: '/admin/config/apigee-edge/developer-settings/email-validation'
+  path: '/admin/config/apigee-edge/developer-settings/attributes'
   defaults:
-    _form: '\Drupal\apigee_edge\Form\DeveloperSettingsForm'
-    _title: 'Email Validation'
+    _form: '\Drupal\apigee_edge\Form\DeveloperAttributesSettingsForm'
+    _title: 'Sync & Custom Attributes'
   requirements:
     _permission: 'administer apigee edge'
 

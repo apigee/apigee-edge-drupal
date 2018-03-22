@@ -15,12 +15,12 @@ apigee_edge.settings.error_page:
 
 apigee_edge.settings.developer:
   route_name: apigee_edge.settings.developer
-  title: 'Sync & Custom Attributes'
+  title: 'General'
   base_route: apigee_edge.settings.developer
 
-apigee_edge.settings.developer.error_page:
+apigee_edge.settings.developer.attributes:
   route_name: apigee_edge.settings.developer.email_validation
-  title: 'Email Validation'
+  title: 'Sync & Custom Attributes'
   base_route: apigee_edge.settings.developer
 
 apigee_edge.developer_app.view:

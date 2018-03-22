@@ -110,8 +110,8 @@ class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
     $visit_path('/admin/config/apigee-edge/settings');
 
     // Developer entity related admin pages.
-    $visit_path('/admin/config/apigee-edge/developer-settings/email-validation');
     $visit_path('/admin/config/apigee-edge/developer-settings');
+    $visit_path('/admin/config/apigee-edge/developer-settings/attributes');
     if ($access) {
       list($schedule_path, $schedule_query) = $this->findLink('Background');
       list($run_path, $run_query) = $this->findLink('Now');
