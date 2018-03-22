@@ -125,7 +125,7 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
         $operations[$operation]['url'] = $entity->toUrl("{$operation}-for-developer");
       }
       if ($entity->hasLinkTemplate("{$operation}-form-for-developer")) {
-        $operations[$operation]['url'] = $this->ensureDestination($entity->toUrl('edit-form-for-developer'));
+        $operations[$operation]['url'] = $this->ensureDestination($entity->toUrl("{$operation}-form-for-developer"));
       }
     }
 
