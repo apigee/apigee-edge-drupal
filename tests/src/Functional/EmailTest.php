@@ -24,6 +24,8 @@ use Drupal\apigee_edge\Form\DeveloperSettingsForm;
 use Drupal\Core\Test\AssertMailTrait;
 
 /**
+ * Developer email already exists related tests.
+ *
  * @group apigee_edge
  */
 class EmailTest extends ApigeeEdgeFunctionalTestBase {
@@ -31,11 +33,15 @@ class EmailTest extends ApigeeEdgeFunctionalTestBase {
   use AssertMailTrait;
 
   /**
-   * @var \Drupal\apigee_edge\Entity\Developer
+   * The developer entity.
+   *
+   * @var \Drupal\apigee_edge\Entity\DeveloperInterface
    */
   protected $developer;
 
   /**
+   * The Drupal user to be edited.
+   *
    * @var \Drupal\user\UserInterface
    */
   protected $account;
@@ -66,6 +72,11 @@ class EmailTest extends ApigeeEdgeFunctionalTestBase {
     parent::tearDown();
   }
 
+  /**
+   * Tests user registration with email that already exists in Edge.
+   *
+   * @throws \Behat\Mink\Exception\ResponseTextException
+   */
   public function testRegisterWithAlreadyExistingEmail() {
     $edit = [
       'name' => $this->developer->getUserName(),
@@ -88,10 +99,15 @@ class EmailTest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->pageTextContains('A welcome message with further instructions has been sent to your email address.');
   }
 
-  public function testRegisterWithAlreadyExististingEmailErrorMessage() {
+  /**
+   * Tests configurable already existing email address error message.
+   *
+   * @throws \Behat\Mink\Exception\ResponseTextException
+   */
+  public function testRegisterWithAlreadyExistingEmailErrorMessage() {
     $this->drupalLogin($this->rootUser);
     $errormsg = trim($this->getRandomGenerator()->paragraphs(1));
-    $this->drupalPostForm('admin/config/apigee-edge/developer-settings', [
+    $this->drupalPostForm('/admin/config/apigee-edge/developer-settings', [
       'verification_action' => DeveloperSettingsForm::VERIFICATION_ACTION_DISPLAY_ERROR_ONLY,
       'display_only_error_message_content[value]' => $errormsg,
       'display_only_error_message_content[format]' => 'plain_text',
@@ -112,6 +128,11 @@ class EmailTest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->pageTextContains($errormsg);
   }
 
+  /**
+   * Tests changing user's email to an already existing email address in Edge.
+   *
+   * @throws \Behat\Mink\Exception\ResponseTextException
+   */
   public function testEditUserWithAlreadyExistingEmail() {
     $this->account = $this->createAccount();
     $this->drupalLogin($this->account);
@@ -119,7 +140,7 @@ class EmailTest extends ApigeeEdgeFunctionalTestBase {
       'mail' => $this->developer->getEmail(),
       'current_pass' => $this->account->passRaw,
     ], 'Save');
-    $this->assertSession()->pageTextContains('This email address already exists in Edge. You can register a new account if you want to use it on the Developer Portal.');
+    $this->assertSession()->pageTextContains('This email address already exists in our system. You can register a new account if you would like to use it on the Developer Portal.');
 
     $this->drupalLogin($this->rootUser);
     $this->drupalPostForm("user/{$this->account->id()}/edit", [

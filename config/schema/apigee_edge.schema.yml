@@ -107,6 +107,10 @@ apigee_edge.sync:
   mapping:
     filter:
       type: string
+    user_fields_to_sync:
+      type: sequence
+      sequence:
+        type: string
 
 key.type.apigee_edge_basic_auth:
   type: sequence

@@ -31,6 +31,14 @@ apigee_edge.settings.developer:
   requirements:
     _permission: 'administer apigee edge'
 
+apigee_edge.settings.developer.email_validation:
+  path: '/admin/config/apigee-edge/developer-settings/attributes'
+  defaults:
+    _form: '\Drupal\apigee_edge\Form\DeveloperAttributesSettingsForm'
+    _title: 'Sync & Custom Attributes'
+  requirements:
+    _permission: 'administer apigee edge'
+
 apigee_edge.settings.product:
   path: '/admin/config/apigee-edge/product-settings'
   defaults:

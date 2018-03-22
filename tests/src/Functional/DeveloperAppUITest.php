@@ -536,8 +536,8 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
     $app = $this->loadDeveloperApp($name);
 
-    $this->assertSession()->linkByHrefExists("/developer-apps/{$app->id()}/edit?destination=/user/{$account->id()}/apps");
-    $this->assertSession()->linkByHrefExists("/developer-apps/{$app->id()}/delete?destination=/user/{$account->id()}/apps");
+    $this->assertSession()->linkByHrefExists("/user/{$account->id()}/apps/{$app->getName()}/edit?destination=/user/{$account->id()}/apps");
+    $this->assertSession()->linkByHrefExists("/user/{$account->id()}/apps/{$app->getName()}/delete?destination=/user/{$account->id()}/apps");
     $this->clickLink($displayName);
     $this->assertSession()->pageTextContains($displayName);
     $this->assertSession()->pageTextContains($callbackUrl);

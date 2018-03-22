@@ -179,7 +179,7 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
    * Implements link clicking properly.
    *
    * The clickLink() function uses Mink, not drupalGet(). This means that
-   * certain features (like chekcing for meta refresh) are not working at all.
+   * certain features (like checking for meta refresh) are not working at all.
    * This is a problem, because batch api works with meta refresh when JS is not
    * available.
    *

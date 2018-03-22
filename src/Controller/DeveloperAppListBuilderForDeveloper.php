@@ -118,8 +118,18 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
   /**
    * {@inheritdoc}
    */
-  protected function getDeveloperAppAnalyticsLinkUrl(EntityInterface $entity) {
-    return $entity->toUrl('analytics-for-developer');
+  protected function getDefaultOperations(EntityInterface $entity) {
+    $operations = parent::getDefaultOperations($entity);
+    foreach ($operations as $operation => $parameters) {
+      if ($entity->hasLinkTemplate("{$operation}-for-developer")) {
+        $operations[$operation]['url'] = $entity->toUrl("{$operation}-for-developer");
+      }
+      if ($entity->hasLinkTemplate("{$operation}-form-for-developer")) {
+        $operations[$operation]['url'] = $this->ensureDestination($entity->toUrl("{$operation}-form-for-developer"));
+      }
+    }
+
+    return $operations;
   }
 
   /**
