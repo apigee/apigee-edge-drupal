@@ -20,7 +20,7 @@ composer show
 # Make sure that the log folder is writable for www-data.
 sudo -u root chown www-data:wodby /mnt/files/log
 # Download the test runner
-curl -L -o testrunner https://github.com/Pronovix/testrunner/releases/download/v0.3/testrunner-linux-amd64
+curl -L -o testrunner https://github.com/Pronovix/testrunner/releases/download/v0.4/testrunner-linux-amd64
 chmod +x ./testrunner
 # Do not exit if any phpunit tests fail, we still want to see the performance
 # information.
