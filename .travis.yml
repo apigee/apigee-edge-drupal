@@ -50,6 +50,9 @@ script:
   - docker-compose run phpcs -s -n --colors --standard=/opt/drupal-module/phpcs.xml.dist /opt/drupal-module
   - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then docker-compose run php sh /opt/drupal-module/test.sh; fi
 
-after_script:
-  # Display the content of the log file that contains performance data.
+# In case of build failure.
+# TODO Exclude when not PHPUnit tests were failed.
+after_failure:
   - docker-compose run php /bin/bash -c 'cat ${APIGEE_EDGE_TEST_LOG_FILE}'
+  # TODO Upload files to somewhere.
+  - docker-compose run php /bin/bash -c 'ls /mnt/files/log/simpletest/browser_output'

@@ -1,44 +1,57 @@
 version: "3"
 
 services:
-  mariadb:
-    image: wodby/mariadb:${DB_IMAGE_VERSION:-10.2-3.0.2}
+
+  database:
+    image: ${DB_IMAGE:-wodby/mariadb:10.2-3.1.2}
+    container_name: "${PROJECT_NAME:-my_project}_database"
+    stop_grace_period: 30s
     environment:
-      MYSQL_RANDOM_ROOT_PASSWORD: 1
-      MYSQL_DATABASE: drupal
-      MYSQL_USER: drupal
-      MYSQL_PASSWORD: drupal
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-password}
+      MYSQL_DATABASE: ${DB_NAME:-drupal}
+      MYSQL_USER: ${DB_USER:-drupal}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-drupal}
+      POSTGRES_USER: ${DB_USER:-drupal}
 
   php:
     build:
       context: .
       args:
-        - DRUPAL_CORE=${DRUPAL_CORE:-8.5}
-        - DEPENDENCIES=${DEPENDENCIES}
-        - PHP_VERSION=${PHP_VERSION:-7.1}
-        - PHP_IMAGE_VERSION=${PHP_IMAGE_VERSION--dev-4.1.1}
+        - PHP_IMAGE=${PHP_IMAGE:-wodby/drupal-php:7.1-dev-4.2.2}
+    container_name: "${PROJECT_NAME:-my_project}_php"
     environment:
-      PHP_FPM_CLEAR_ENV: "no"
+      DB_HOST: ${DB_HOST:-database}
+      DB_USER: ${DB_USER:-drupal}
+      DB_PASSWORD: ${DB_PASSWORD-password}
+      DB_NAME: ${DB_NAME:-drupal}
+      DB_DRIVER: ${DB_DRIVER:-mysql}
       SIMPLETEST_BASE_URL: http://webserver
-      SIMPLETEST_DB: mysql://drupal:drupal@mariadb/drupal
+      SIMPLETEST_DB: ${DB_DRIVER:-mysql}://${DB_USER:-drupal}:${DB_PASSWORD-password}@${DB_HOST:-database}/${DB_NAME:-drupal}
     volumes:
       - codebase:/var/www/html
-    depends_on:
-      - mariadb
-      - webserver
+      - $HOME/.composer/cache/files:/home/wodby/.composer/cache/files
 
   webserver:
-    # Note: By using Nginx, the environment variables passed to the PHP container are missing from the BrowserTests.
-    image: wodby/php-apache:${APACHE_IMAGE_VERSION:-2.4-3.0.0}
+    image: ${WEBSERVER_IMAGE:-wodby/php-apache:2.4-3.0.1}
+    container_name: "${PROJECT_NAME:-my_project}_webserver"
+    depends_on:
+      - php
     environment:
-      APACHE_SERVER_ROOT: /var/www/html
-      APACHE_BACKEND_HOST: php
       APACHE_LOG_LEVEL: debug
+      APACHE_BACKEND_HOST: php
+      APACHE_SERVER_ROOT: /var/www/html/web
+      NGINX_STATIC_CONTENT_OPEN_FILE_CACHE: "off"
+      NGINX_ERROR_LOG_LEVEL: debug
+      NGINX_BACKEND_HOST: php
+      NGINX_SERVER_ROOT: /var/www/html/web
     volumes:
       - codebase:/var/www/html
 
   phpcs:
     image: mxr576/docker-phpcs
+    container_name: "${PROJECT_NAME:-my_project}_phpcs"
     volumes:
       - .:/opt/drupal-module
       - codebase:/var/www/html
