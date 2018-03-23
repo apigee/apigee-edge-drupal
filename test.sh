@@ -1,4 +1,6 @@
-﻿#!/usr/bin/env bash
+﻿#!/bin/bash
+# Because bash is missing from any defined path in PATH (like /usr/bin).
+# #!/usr/bin/env bash
 
 set -e
 
