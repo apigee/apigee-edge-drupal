@@ -33,7 +33,7 @@ sudo -u root sh -c "mkdir -p $SITE_ROOT/sites/default/files \
     && chmod 6770 $SITE_ROOT/sites/default/files"
 
 ## Pre-create simpletest directory.
-sudo -u root mkdir -p /var/www/html/web/sites/simpletest
+sudo -u root mkdir -p ${SITE_ROOT}/sites/simpletest
 
 # Make sure that the log folder is writable for both www-data and wodby users.
 # Also create a dedicated folder for PHPUnit outputs.
@@ -72,4 +72,4 @@ chmod +x /var/www/html/testrunner
 # Do not exit if any phpunit tests fail, we still want to see the performance
 # information.
 set +e
-sudo -u root -E sudo -u www-data -E /var/www/html/testrunner -threads=$THREADS -root=./web/modules/contrib/apigee_edge/tests -command="./web/vendor/bin/phpunit -c web/core -v --debug --printer \Drupal\Tests\Listeners\HtmlOutputPrinter"
+sudo -u root -E sudo -u www-data -E /var/www/html/testrunner -threads=$THREADS -root=${SITE_ROOT}/modules/contrib/apigee_edge/tests -command="$SITE_ROOT/vendor/bin/phpunit -c $SITE_ROOT/core -v --debug --printer \Drupal\Tests\Listeners\HtmlOutputPrinter"
