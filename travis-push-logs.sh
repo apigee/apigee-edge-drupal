@@ -12,8 +12,8 @@ docker cp my_project_php:/mnt/files/log .
 cd log
 # Commit and push logs to the git repo.
 git init
-git checkout -b ${TRAVIS_BUILD_NUMBER}
+git checkout -b ${TRAVIS_JOB_NUMBER}
 git add .
-git commit -am "Travis build: $TRAVIS_BUILD_NUMBER"
+git commit -am "Travis build: $TRAVIS_JOB_NUMBER"
 git remote add origin https://${LOGS_REPO_USER}:${LOGS_REPO_PASSWORD}@${LOGS_REPO_HOST}/${LOGS_REPO_USER}/${LOGS_REPO_NAME}.git
-git push -u origin ${TRAVIS_BUILD_NUMBER}
+git push -u origin ${TRAVIS_JOB_NUMBER}

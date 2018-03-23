@@ -55,4 +55,4 @@ script:
 
 after_failure:
 # Push log file and browser output to an our logs repository.
-  - travis-push-logs.sh
+  - ./travis-push-logs.sh
