@@ -2,7 +2,8 @@
 .gitignore                      export-ignore
 /Dockerfile                     export-ignore
 /docker-compose.yml             export-ignore
-/docker-compose.apigee_edge.yml export-ignore
+/docker-compose.override.yml    export-ignore
 /.travis.yml                    export-ignore
 /tests/                         export-ignore
-/test.sh                        export-ignore
+/docker-run-tests.sh            export-ignore
+/travis-push-logs.sh            export-ignore

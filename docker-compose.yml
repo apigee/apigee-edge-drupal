@@ -28,6 +28,7 @@ services:
       DB_DRIVER: ${DB_DRIVER:-mysql}
       SIMPLETEST_BASE_URL: http://webserver
       SIMPLETEST_DB: ${DB_DRIVER:-mysql}://${DB_USER:-drupal}:${DB_PASSWORD-password}@${DB_HOST:-database}/${DB_NAME:-drupal}
+      BROWSERTEST_OUTPUT_DIRECTORY: "/mnt/files/log/simpletest"
     volumes:
       - codebase:/var/www/html
       - $HOME/.composer/cache/files:/home/wodby/.composer/cache/files
