@@ -1,7 +1,6 @@
 version: "3"
 
 services:
-
   database:
     image: ${DB_IMAGE:-wodby/mariadb:10.2-3.1.2}
     container_name: "${PROJECT_NAME:-my_project}_database"

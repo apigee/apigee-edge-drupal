@@ -2,14 +2,16 @@
 
 set -e
 
+SITE_ROOT="/var/www/html/web"
+
 # We mounted the cache/files folder from the host so we have to fix permissions
 # on the parent cache folder because it did not exist before.
 sudo -u root sh -c "chown -R wodby:wodby /home/wodby/.composer/cache"
 
 # Ensure that we are in the correct directory.
-mkdir -p /var/www/html/web && cd /var/www/html/web
+mkdir -p ${SITE_ROOT} && cd ${SITE_ROOT}
 
-COMPOSER_OPTIONS="/var/www/html/web --no-interaction --prefer-dist"
+COMPOSER_OPTIONS="$SITE_ROOT --no-interaction --prefer-dist"
 
 # We are using drupal-composer/drupal-project instead of drupal/drupal because we would like to update all
 # libraries, including Drupal, to the latest version when doing "highest" testing.
@@ -26,21 +28,29 @@ sudo -u root sh -c "chown -R wodby:www-data . \
     && chmod 755 . \
     && chmod 644 .htaccess"
 
-sudo -u root sh -c "mkdir -p /var/www/html/web/sites/default/files \
-    && chown -R wodby:www-data /var/www/html/web/sites/default/files \
-    && chmod 6770 /var/www/html/web/sites/default/files"
+sudo -u root sh -c "mkdir -p $SITE_ROOT/sites/default/files \
+    && chown -R wodby:www-data $SITE_ROOT/sites/default/files \
+    && chmod 6770 $SITE_ROOT/sites/default/files"
+
+## Pre-create simpletest directory.
+sudo -u root mkdir -p /var/www/html/web/sites/simpletest
 
 # Make sure that the log folder is writable for both www-data and wodby users.
+# Also create a dedicated folder for PHPUnit outputs.
 sudo -u root sh -c "chown -R www-data:wodby /mnt/files/log \
  && chmod -R 6750 /mnt/files/log \
- && mkdir -p /mnt/files/log/simpletest \
+ && mkdir -p /mnt/files/log/simpletest/browser_output \
  && chown -R www-data:wodby /mnt/files/log/simpletest \
- && chmod 6750 /mnt/files/log/simpletest"
+ && chmod -R 6750 /mnt/files/log/simpletest"
 
-# Change location of the simpletest folder, because it seems even if
+# Change location of the browser_output folder, because it seems even if
 # BROWSERTEST_OUTPUT_DIRECTORY is set the html output is printed out to
 # https://github.com/drupal/core/blob/8.5.0/tests/Drupal/Tests/BrowserTestBase.php#L1086
-ln -s /mnt/files/log/simpletest /var/www/html/web/sites/simpletest
+sudo -u root ln -s /mnt/files/log/simpletest/browser_output ${SITE_ROOT}/sites/simpletest/browser_output
+
+# Fix permissions on on simpletest and its subfolders.
+sudo -u root sh -c "chown -R www-data:wodby $SITE_ROOT/sites/simpletest \
+    && chmod -R 6750 $SITE_ROOT/sites/simpletest"
 
 # This library has to be updated to the latest version, because the lowest installed 2.0.4 is in conflict with
 # one of the Apigee PHP SDK's required library's (symfony/property-info:^3.2) minimum requirement.
