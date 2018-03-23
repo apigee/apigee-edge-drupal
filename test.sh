@@ -71,7 +71,6 @@ composer show
 # Download the test runner
 curl -L -o /var/www/html/testrunner https://github.com/Pronovix/testrunner/releases/download/v0.2/testrunner-linux-amd64
 chmod +x /var/www/html/testrunner
-# Do not exit if any phpunit tests fail, we still want to see the performance
-# information.
+# Do not exit if any PHPUnit test fails.
 set +e
 sudo -u root -E sudo -u www-data -E /var/www/html/testrunner -threads=$THREADS -root=${SITE_ROOT}/modules/contrib/apigee_edge/tests -command="$SITE_ROOT/vendor/bin/phpunit -c $SITE_ROOT/core -v --debug --printer \Drupal\Tests\Listeners\HtmlOutputPrinter"

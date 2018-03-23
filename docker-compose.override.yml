@@ -18,6 +18,7 @@ services:
       # Suppress deprecation warnings.
       # https://api.drupal.org/api/drupal/vendor%21symfony%21phpunit-bridge%21DeprecationErrorHandler.php/8.5.x
       SYMFONY_DEPRECATIONS_HELPER: disabled
+      BROWSERTEST_OUTPUT_DIRECTORY: "/mnt/files/log/simpletest"
       THREADS: ${THREADS:-2}
   webserver:
     environment:
