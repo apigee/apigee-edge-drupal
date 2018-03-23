@@ -79,8 +79,11 @@ class DeveloperAppDeleteForm extends EntityDeleteForm implements DeveloperAppPag
    * Element validate callback for the id verification field.
    *
    * @param array $element
+   *   Element to validate.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state.
    * @param array $complete_form
+   *   The complete form.
    */
   public function validateVerification(array &$element, FormStateInterface $form_state, array &$complete_form) {
     /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app */
