@@ -235,6 +235,11 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
     $this->clickLink('Delete');
     $this->submitForm([], 'Delete');
+    $this->assertSession()->pageTextContains('App name does not match app you are attempting to delete');
+
+    $this->submitForm([
+      'id_verification' => $name,
+    ], 'Delete');
 
     $this->assertSession()->pageTextContains("The {$name} developer app has been deleted.");
     $apps = array_filter($this->getApps(), function (DeveloperApp $app) use ($name): bool {
@@ -585,7 +590,9 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     }
 
     $this->clickLink('Delete');
-    $this->submitForm([], 'Delete');
+    $this->submitForm([
+      'id_verification' => $name,
+    ], 'Delete');
 
     $this->drupalGet("/user/{$account->id()}/apps");
     $this->assertSession()->pageTextNotContains($displayName);
