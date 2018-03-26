@@ -1,3 +1,6 @@
+langcode: en
+developer_app_label_singular: ''
+developer_app_label_plural: ''
 display_as_select: false
 associate_apps: true
 user_select: true

@@ -71,7 +71,7 @@ class DeveloperSettingsForm extends ConfigFormBase {
     $form['email_verification_on_registration']['verification_email_subject'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Verification email subject'),
-      '#default_value' => $config->get('verification_email_subject'),
+      '#default_value' => $config->get('verification_email.subject'),
       '#states' => [
         'visible' => [
           [':input[name="verification_action"]' => ['value' => self::VERIFICATION_ACTION_VERIFY_EMAIL]],
@@ -82,13 +82,13 @@ class DeveloperSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    $form['email_verification_on_registration']['verification_email_content'] = [
+    $form['email_verification_on_registration']['verification_email_body'] = [
       // By default Drupal does not support HTML mails therefore this is
       // just a simple textarea.
       '#type' => 'textarea',
       '#title' => $this->t('Verification email content'),
       '#description' => $this->t('Available tokens: [site:name], [site:url], [user:display-name], [user:account-name], [user:mail], [site:login-url], [site:url-brief], [user:developer-email-verification-url]'),
-      '#default_value' => $config->get('verification_email_content'),
+      '#default_value' => $config->get('verification_email.content'),
       '#rows' => 10,
       '#states' => [
         'visible' => [
@@ -98,7 +98,7 @@ class DeveloperSettingsForm extends ConfigFormBase {
           [':input[name="verification_action"]' => ['value' => self::VERIFICATION_ACTION_VERIFY_EMAIL]],
         ],
       ],
-      '#after_build' => ['apigee_edge_developer_settings_form_verification_email_content_after_build'],
+      '#after_build' => ['apigee_edge_developer_settings_form_verification_email_body_after_build'],
     ];
 
     $form['email_verification_on_registration']['verification_token'] = [
@@ -198,8 +198,8 @@ class DeveloperSettingsForm extends ConfigFormBase {
       ->set('display_only_error_message_content.format', $form_state->getValue(['display_only_error_message_content', 'format']))
       ->set('verify_email_error_message.value', $form_state->getValue(['verify_email_error_message', 'value']))
       ->set('verify_email_error_message.format', $form_state->getValue(['verify_email_error_message', 'format']))
-      ->set('verification_email_subject', $form_state->getValue(['verification_email_subject']))
-      ->set('verification_email_content', $form_state->getValue(['verification_email_content']))
+      ->set('verification_email.subject', $form_state->getValue(['verification_email_subject']))
+      ->set('verification_email.body', $form_state->getValue(['verification_email_body']))
       ->set('verification_token', $form_state->getValue(['verification_token']))
       ->set('verification_token_expires', $form_state->getValue(['verification_token_expires']))
       ->set('user_edit_error_message.value', $form_state->getValue(['user_edit_error_message', 'value']))

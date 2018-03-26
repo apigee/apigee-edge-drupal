@@ -1,1 +1,4 @@
+langcode: en
+api_product_label_singular: ''
+api_product_label_plural: ''
 cache_expiration: 900

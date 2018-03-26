@@ -188,8 +188,8 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
    */
   protected function actions(array $form, FormStateInterface $form_state) {
     $actions = parent::actions($form, $form_state);
-    $actions['submit']['#value'] = $this->t('Add @devAppLabel', [
-      '@devAppLabel' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel(),
+    $actions['submit']['#value'] = $this->t('Add @developer_app', [
+      '@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel(),
     ]);
 
     return $actions;
@@ -247,7 +247,7 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
    * {@inheritdoc}
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
-    return $this->t('Add @devAppLabel', ['@devAppLabel' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel()]);
+    return $this->t('Add @developer_app', ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel()]);
   }
 
 }

@@ -186,13 +186,13 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    * {@inheritdoc}
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
-    $args['@devAppLabel'] = $this->getDeveloperAppEntityDefinition()->getPluralLabel();
+    $args['@developer_app'] = $this->getDeveloperAppEntityDefinition()->getPluralLabel();
     $account = $routeMatch->getParameter('user');
     if ($account->id() == $this->currentUser->id()) {
-      return t('My @devAppLabel', $args);
+      return t('My @developer_app', $args);
     }
     $args['@user'] = $account->getDisplayName();
-    return t('@devAppLabel of @user', $args);
+    return t('@developer_app of @user', $args);
   }
 
   /**
