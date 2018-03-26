@@ -110,10 +110,6 @@ class EmailTest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalPostForm('/admin/config/apigee-edge/developer-settings', [
       'verification_action' => DeveloperSettingsForm::VERIFICATION_ACTION_DISPLAY_ERROR_ONLY,
       'display_only_error_message_content[value]' => $errormsg,
-      'display_only_error_message_content[format]' => 'plain_text',
-      // These are needed because all text format fields are required.
-      'verify_email_error_message[format]' => 'plain_text',
-      'user_edit_error_message[format]' => 'plain_text',
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('The configuration options have been saved.');
     $this->drupalLogout();
