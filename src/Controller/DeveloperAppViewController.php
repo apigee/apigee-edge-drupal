@@ -48,9 +48,9 @@ class DeveloperAppViewController extends EntityViewController implements Develop
    * {@inheritdoc}
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
-    return t('@name @devAppLabel', [
+    return t('@name @developer_app', [
       '@name' => $routeMatch->getParameter('developer_app')->getDisplayName(),
-      '@devAppLabel' => $this->entityManager->getDefinition('developer_app')->getSingularLabel(),
+      '@developer_app' => $this->entityManager->getDefinition('developer_app')->getSingularLabel(),
     ]);
   }
 
