@@ -998,11 +998,13 @@ function apigee_edge_field_config_delete(EntityInterface $entity) {
  * Implements hook_form_field_ui_field_storage_add_form_alter().
  */
 function apigee_edge_form_field_ui_field_storage_add_form_alter(array &$form, FormStateInterface &$form_state) {
-  $form['apigee_edge_sync'] = [
-    '#type' => 'checkbox',
-    '#title' => t('Synchronise to Apigee Edge'),
-  ];
-  $form['#submit'][] = 'apigee_edge_field_ui_field_storage_add_form_submit';
+  if ($form_state->get('entity_type_id') === 'user') {
+    $form['apigee_edge_sync'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Synchronise to Apigee Edge'),
+    ];
+    $form['#submit'][] = 'apigee_edge_field_ui_field_storage_add_form_submit';
+  }
 }
 
 /**
