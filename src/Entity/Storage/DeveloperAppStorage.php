@@ -144,10 +144,15 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
       $developerId_mail_map[$developer->uuid()] = $developer->getEmail();
     }
 
-    $query = $this->database->select('users_field_data', 'ufd');
-    $query->fields('ufd', ['mail', 'uid'])
-      ->condition('mail', $developerId_mail_map, 'IN');
-    $mail_uid_map = $query->execute()->fetchAllKeyed();
+    if ($developerId_mail_map) {
+      $query = $this->database->select('users_field_data', 'ufd');
+      $query->fields('ufd', ['mail', 'uid'])
+        ->condition('mail', $developerId_mail_map, 'IN');
+      $mail_uid_map = $query->execute()->fetchAllKeyed();
+    }
+    else {
+      $mail_uid_map = [];
+    }
 
     foreach ($entities as $entity) {
       // If developer id is not in this map it means the developer does

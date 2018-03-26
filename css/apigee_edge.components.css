@@ -37,7 +37,7 @@
 }
 
 .items--inline .form-item label + *,
-.items--inline .item-property label + * {
+.items--inline .item-property label + *:not(.wrapper--status) {
   width: 100%;
 }
 
