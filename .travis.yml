@@ -48,8 +48,11 @@ script:
   # when Drupal Coder will support PHPCS >= 3.2.0.
   # https://github.com/squizlabs/PHP_CodeSniffer/wiki/Advanced-Usage#ignoring-parts-of-a-file
   - docker-compose run phpcs -s -n --colors --standard=/opt/drupal-module/phpcs.xml.dist /opt/drupal-module
-  - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then docker-compose run php sh /opt/drupal-module/test.sh; fi
+  # Do not exist if a PHPUnit test fails, we would like to run everything from
+  # after_* sections.
+  - set +e
+  - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then docker-compose run php sh /opt/drupal-module/docker-run-tests.sh; fi
 
-after_script:
-  # Display the content of the log file that contains performance data.
-  - docker-compose run php /bin/bash -c 'cat ${APIGEE_EDGE_TEST_LOG_FILE}'
+after_failure:
+# Push log file and browser output to an our logs repository.
+  - sh ./travis-push-logs.sh
