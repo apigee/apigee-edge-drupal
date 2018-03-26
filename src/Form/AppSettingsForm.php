@@ -20,8 +20,10 @@
 namespace Drupal\apigee_edge\Form;
 
 use Drupal\apigee_edge\Entity\ApiProduct;
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 
 /**
  * Provides configuration form builder for changing app settings.
@@ -36,7 +38,6 @@ class AppSettingsForm extends ConfigFormBase {
   protected function getEditableConfigNames() {
     return [
       'apigee_edge.appsettings',
-      'apigee_edge.entity_labels',
     ];
   }
 
@@ -52,7 +53,6 @@ class AppSettingsForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('apigee_edge.appsettings');
-    $label_config = $this->config('apigee_edge.entity_labels');
 
     $form['api_product'] = [
       '#type' => 'fieldset',
@@ -111,13 +111,23 @@ class AppSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    /** @var \Drupal\apigee_edge\Entity\ApiProduct[] $products */
-    $products = ApiProduct::loadMultiple();
     /** @var string[] $default_products */
     $default_products = $config->get('default_products') ?: [];
     $product_list = [];
-    foreach ($products as $product) {
-      $product_list[$product->id()] = $product->getDisplayName();
+    /** @var \Drupal\apigee_edge\Entity\ApiProduct[] $products */
+    try {
+      $products = ApiProduct::loadMultiple();
+      foreach ($products as $product) {
+        $product_list[$product->id()] = $product->getDisplayName();
+      }
+    }
+    catch (EntityStorageException $e) {
+      // Apigee Edge credentials are missing/incorrect or something else went
+      // wrong. Do not redirect the user to the error page.
+      $product_list = [];
+      $this->messenger()->addError($this->t('Unable to retrieve API product list from Apigee Edge. Please ensure that <a href=":link">Apigee Edge connection settings</a> are correct.'), [
+        ':link' => Url::fromRoute('apigee_edge.settings')->toString(),
+      ]);
     }
 
     $form['api_product']['default_api_product_single'] = [
@@ -165,17 +175,17 @@ class AppSettingsForm extends ConfigFormBase {
       '#collapsible' => FALSE,
     ];
 
-    $form['label']['app_label_singular'] = [
+    $form['label']['developer_app_label_singular'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Singular format'),
-      '#default_value' => $label_config->get('app_label_singular'),
+      '#default_value' => $config->get('developer_app_label_singular'),
       '#description' => $this->t('Leave empty to use the default "Developer App" label.'),
     ];
 
-    $form['label']['app_label_plural'] = [
+    $form['label']['developer_app_label_plural'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Plural format'),
-      '#default_value' => $label_config->get('app_label_plural'),
+      '#default_value' => $config->get('developer_app_label_plural'),
       '#description' => $this->t('Leave empty to use the default "Developer Apps" label.'),
     ];
 
@@ -188,7 +198,11 @@ class AppSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $appSettingsConfig = \Drupal::configFactory()->getEditable('apigee_edge.appsettings');
+    // TODO Empty Default API products list should not be saved when form
+    // builder was not able to retrieve API Product list from Apigee Edge.
+    // We do not want to override (clear) previously configured list of
+    // default API product.
+    $config = \Drupal::configFactory()->getEditable('apigee_edge.appsettings');
 
     $config_names = [
       'display_as_select',
@@ -199,7 +213,7 @@ class AppSettingsForm extends ConfigFormBase {
     ];
 
     foreach ($config_names as $name) {
-      $appSettingsConfig->set($name, $form_state->getValue($name));
+      $config->set($name, $form_state->getValue($name));
     }
 
     $default_products = [];
@@ -218,14 +232,13 @@ class AppSettingsForm extends ConfigFormBase {
     }
     $default_products = array_values(array_filter($default_products));
 
-    $appSettingsConfig->set('default_products', $default_products);
-    $appSettingsConfig->save();
+    $config->set('default_products', $default_products);
+    $config->save();
 
-    $storedLabels = $this->configFactory->get('apigee_edge.entity_labels');
-    if ($storedLabels->get('app_label_singular') !== $form_state->getValue('app_label_singular') || $storedLabels->get('app_label_plural') !== $form_state->getValue('app_label_plural')) {
-      $this->configFactory->getEditable('apigee_edge.entity_labels')
-        ->set('app_label_singular', $form_state->getValue('app_label_singular'))
-        ->set('app_label_plural', $form_state->getValue('app_label_plural'))
+    if ($config->get('developer_app_label_singular') !== $form_state->getValue('developer_app_label_singular') || $config->get('developer_app_label_plural') !== $form_state->getValue('developer_app_label_plural')) {
+      $this->configFactory->getEditable('apigee_edge.appsettings')
+        ->set('developer_app_label_singular', $form_state->getValue('developer_app_label_singular'))
+        ->set('developer_app_label_plural', $form_state->getValue('developer_app_label_plural'))
         ->save();
 
       // Clearing required caches.

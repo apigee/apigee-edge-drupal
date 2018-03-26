@@ -42,7 +42,6 @@ class ProductSettingsForm extends ConfigFormBase {
   protected function getEditableConfigNames() {
     return [
       'apigee_edge.api_product_settings',
-      'apigee_edge.entity_labels',
     ];
   }
 
@@ -50,7 +49,7 @@ class ProductSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $config = $this->config('apigee_edge.entity_labels');
+    $config = $this->config('apigee_edge.api_product_settings');
 
     $form['label'] = [
       '#type' => 'fieldset',
@@ -81,10 +80,10 @@ class ProductSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $savedLabels = $this->configFactory->get('apigee_edge.entity_labels');
+    $savedLabels = $this->configFactory->get('apigee_edge.api_product_settings');
 
     if ($savedLabels->get('api_product_label_singular') !== $form_state->getValue('api_product_label_singular') || $savedLabels->get('api_product_label_plural') !== $form_state->getValue('api_product_label_plural')) {
-      $this->configFactory->getEditable('apigee_edge.entity_labels')
+      $this->configFactory->getEditable('apigee_edge.api_product_settings')
         ->set('api_product_label_singular', $form_state->getValue('api_product_label_singular'))
         ->set('api_product_label_plural', $form_state->getValue('api_product_label_plural'))
         ->save();

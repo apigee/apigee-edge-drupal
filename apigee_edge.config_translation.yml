@@ -1,0 +1,23 @@
+apigee_edge.error_page:
+  title: 'Apigee Edge: Error page'
+  base_route_name: apigee_edge.settings.error_page
+  names:
+    - apigee_edge.error_page
+
+apigee_edge.developer_settings:
+  title: 'Apigee Edge: Developer settings'
+  base_route_name: apigee_edge.settings.developer
+  names:
+    - apigee_edge.developer_settings
+
+apigee_edge.app_settings:
+  title: 'Apigee Edge: App settings'
+  base_route_name: apigee_edge.settings.app
+  names:
+    - apigee_edge.appsettings
+
+apigee_edge.api_product_settings:
+  title: 'Apigee Edge: API product settings'
+  base_route_name: apigee_edge.settings.product
+  names:
+    - apigee_edge.api_product_settings

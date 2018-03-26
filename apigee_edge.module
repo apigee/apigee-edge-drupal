@@ -104,21 +104,22 @@ function apigee_edge_theme() {
  * Implements hook_entity_type_alter().
  */
 function apigee_edge_entity_type_alter(array &$entity_types) {
-  $config = \Drupal::config('apigee_edge.entity_labels');
+  $developer_app_config = \Drupal::config('apigee_edge.appsettings');
+  $api_product_config = \Drupal::config('apigee_edge.api_product_settings');
 
-  $app_label_singular = $config->get('app_label_singular');
-  $app_label_plural = $config->get('app_label_plural');
-  $api_product_label_singular = $config->get('api_product_label_singular');
-  $api_product_label_plural = $config->get('api_product_label_plural');
+  $developer_app_label_singular = $developer_app_config->get('developer_app_label_singular');
+  $developer_app_label_plural = $developer_app_config->get('developer_app_label_plural');
+  $api_product_label_singular = $api_product_config->get('api_product_label_singular');
+  $api_product_label_plural = $api_product_config->get('api_product_label_plural');
 
-  if ($app_label_singular && $app_label_plural) {
+  if ($developer_app_label_singular && $developer_app_label_plural) {
     // Also set the label for consistency reasons.
-    $entity_types['developer_app']->set('label', new TranslatableMarkup($app_label_singular));
-    $entity_types['developer_app']->set('label_singular', new TranslatableMarkup($app_label_singular));
-    $entity_types['developer_app']->set('label_plural', new TranslatableMarkup($app_label_plural));
+    $entity_types['developer_app']->set('label', new TranslatableMarkup($developer_app_label_singular));
+    $entity_types['developer_app']->set('label_singular', new TranslatableMarkup($developer_app_label_singular));
+    $entity_types['developer_app']->set('label_plural', new TranslatableMarkup($developer_app_label_plural));
     $entity_types['developer_app']->set('label_count', [
-      'singular' => "@count {$app_label_singular}",
-      'plural' => "@count {$app_label_plural}",
+      'singular' => "@count {$developer_app_label_singular}",
+      'plural' => "@count {$developer_app_label_plural}",
     ]);
   }
 
@@ -283,7 +284,7 @@ function _apigee_edge_entity_form_display_edit_form_validate(array &$form, FormS
  *
  * @see \Drupal\apigee_edge\Form\DeveloperSettingsForm::buildForm
  */
-function apigee_edge_developer_settings_form_verification_email_content_after_build(array $form_element, FormStateInterface $form_state) {
+function apigee_edge_developer_settings_form_verification_email_body_after_build(array $form_element, FormStateInterface $form_state) {
   if (isset($form_element['format'])) {
     // Hide input format settings when textarea itself is also hidden.
     $form_element['format']['#states']['visible'] = $form_element['#states']['visible'];
@@ -314,8 +315,8 @@ function apigee_edge_mail($key, &$message, $params) {
     'callback' => '_apigee_edge_existing_developer_mail_tokens',
     'clear' => TRUE,
   ];
-  $message['subject'] .= PlainTextOutput::renderFromHtml($token_service->replace($config->get('verification_email_subject'), $variables, $token_options));
-  $message['body'][] = $token_service->replace($config->get('verification_email_content'), $variables, $token_options);
+  $message['subject'] .= PlainTextOutput::renderFromHtml($token_service->replace($config->get('verification_email.subject'), $variables, $token_options));
+  $message['body'][] = $token_service->replace($config->get('verification_email.body'), $variables, $token_options);
 
   $language_manager->setConfigOverrideLanguage($original_language);
 }
