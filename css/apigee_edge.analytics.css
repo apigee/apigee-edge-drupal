@@ -40,6 +40,10 @@
   display: inline-block;
 }
 
+.apigee-edge-developer-app-analytics .form-item {
+  display: inline-block;
+}
+
 .chart-container-no-data {
   text-align: center;
 }
