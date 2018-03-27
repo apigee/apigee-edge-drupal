@@ -210,3 +210,4 @@ apigee_edge.export_analytics.csv:
     _controller: '\Drupal\apigee_edge\Controller\ExportAnalyticsController::exportAsCSV'
   requirements:
     _csrf_token: 'TRUE'
+    _custom_access: '\Drupal\apigee_edge\Controller\ExportAnalyticsController::access'
