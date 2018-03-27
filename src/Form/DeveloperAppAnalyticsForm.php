@@ -25,12 +25,15 @@ use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\apigee_edge\SDKConnectorInterface;
+use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\TempStore\PrivateTempStoreFactory;
+use Drupal\Core\TempStore\TempStoreException;
 use Drupal\Core\Url;
 use League\Period\Period;
 use Moment\MomentException;
@@ -58,6 +61,13 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
   protected $developerApp;
 
   /**
+   * The PrivateTempStore factory.
+   *
+   * @var \Drupal\Core\TempStore\PrivateTempStore
+   */
+  protected $store;
+
+  /**
    * Constructs a new DeveloperAppAnalyticsForm.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -66,11 +76,14 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
    *   The SDK connector service.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
+   * @param \Drupal\Core\TempStore\PrivateTempStoreFactory $tempstore_private
+   *   The private tempstore factory.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, SDKConnectorInterface $sdk_connector, MessengerInterface $messenger) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, SDKConnectorInterface $sdk_connector, MessengerInterface $messenger, PrivateTempStoreFactory $tempstore_private) {
     $this->entityTypeManager = $entity_type_manager;
     $this->sdkConnector = $sdk_connector;
     $this->messenger = $messenger;
+    $this->store = $tempstore_private->get('apigee_edge.analytics');
   }
 
   /**
@@ -80,7 +93,8 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
     return new static(
       $container->get('entity_type.manager'),
       $container->get('apigee_edge.sdk_connector'),
-      $container->get('messenger')
+      $container->get('messenger'),
+      $container->get('tempstore.private')
     );
   }
 
@@ -167,7 +181,17 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
     ];
 
     $form['timezone'] = [
-      '#markup' => $this->t('Your timezone: @timezone', ['@timezone' => $this->currentUser()->getTimeZone()]),
+      '#type' => 'html_tag',
+      '#tag' => 'div',
+      '#value' => $this->t('Your timezone: @timezone', ['@timezone' => $this->currentUser()->getTimeZone()]),
+    ];
+
+    $form['export_csv'] = [
+      '#type' => 'link',
+      '#title' => $this->t('Export CSV'),
+      '#attributes' => [
+        'role' => 'button',
+      ],
     ];
 
     $form['chart'] = [
@@ -276,6 +300,8 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
    *
    * @see apigee_edge.libraries.yml
    * @see apigee_edge.analytics.js
+   *
+   * @throws TempStoreException
    */
   protected function generateResponse(array &$form, $metric, $since, $until) {
     // TODO There are no results from Edge with the correct UUID of a developer,
@@ -305,6 +331,11 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
     // - language: to load a chart formatted for a specific locale,
     // - chart_container: ID attribute of the chart's HTML container element.
     if (isset($analytics['stats']['data'][0]['metric'][0]['values'])) {
+      // Store analytics data in private temp storage.
+      $analytics['metric'] = $form['controls']['metrics']['#options'][$metric];
+      $this->store->set($data_id = Crypt::randomBytesBase64(), $analytics);
+      $form['export_csv']['#url'] = Url::fromRoute('apigee_edge.export_analytics.csv', ['data_id' => $data_id]);
+
       $form['#attached']['drupalSettings']['analytics']['metric'] = $form['controls']['metrics']['#options'][$metric];
       $form['#attached']['drupalSettings']['analytics']['timestamps'] = $analytics['TimeUnit'];
       $form['#attached']['drupalSettings']['analytics']['values'] = $analytics['stats']['data'][0]['metric'][0]['values'];
