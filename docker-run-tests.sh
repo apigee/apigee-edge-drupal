@@ -62,11 +62,11 @@ if [[ "$DEPENDENCIES" = --prefer-lowest ]]; then composer require phpdocumentor/
 # Drupal core issue has not been fixed:
 # https://www.drupal.org/project/drupal/issues/2947888
 if [[ "$DEPENDENCIES" = --prefer-lowest ]]; then jq '. + { "conflict": { "phpunit/phpunit": ">6.5.0" }}' composer.json > tmp.json && mv tmp.json composer.json; fi;
+composer drupal-phpunit-upgrade
 # Fix failing tests caused by the recent changes in the behat/mink library.
 # https://github.com/minkphp/Mink/pull/760
 # https://www.drupal.org/project/drupal/issues/2956279
-jq '.["require-dev"]["behat/mink"]="dev-master#9ea1cebe"' composer.json > tmp.json && mv tmp.json composer.json
-composer drupal-phpunit-upgrade
+composer require --dev behat/mink:dev-master#9ea1cebe
 composer config repositories.library path /opt/drupal-module
 composer require ${DEPENDENCIES} "drupal/${DRUPAL_MODULE_NAME}"
 # Install this to get more detailed output from PHPUnit.
