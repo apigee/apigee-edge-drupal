@@ -181,7 +181,7 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
     ];
 
     $form['timezone'] = [
-      '#markup' => $this->t('Your timezone: @timezone', ['@timezone' => $this->currentUser()->getTimeZone()]),
+      '#markup' => '<div>' . $this->t('Your timezone: @timezone', ['@timezone' => $this->currentUser()->getTimeZone()]) . '</div>',
     ];
 
     $form['export_csv'] = [
