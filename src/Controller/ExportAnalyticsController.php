@@ -25,6 +25,7 @@ use Drupal\Core\TempStore\PrivateTempStoreFactory;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\Serializer\Encoder\CsvEncoder;
 
 /**
  * Defines a controller for exporting and downloading the requested analytics data.
@@ -69,28 +70,18 @@ class ExportAnalyticsController extends ControllerBase {
     }
 
     $file_name = "{$analytics['stats']['data'][0]['identifier']['values'][0]}_{$analytics['stats']['data'][0]['metric'][0]['name']}_analytics.csv";
-
-    // Do not create a file, attempt to use memory instead.
-    $fh = fopen('php://temp', 'rw');
-
-    // Write out the headers.
-    fputcsv($fh, [
-      $this->t('Date'),
-      $analytics['metric'],
-    ]);
+    $data = [];
 
     // Write out the data.
     for ($i = 0; $i < count($analytics['TimeUnit']); $i++) {
-      fputcsv($fh, [
-        new DrupalDateTime('@' . $analytics['TimeUnit'][$i] / 1000),
-        $analytics['stats']['data'][0]['metric'][0]['values'][$i],
-      ]);
+      $data[] = [
+        $this->t('Date')->render() => new DrupalDateTime('@' . $analytics['TimeUnit'][$i] / 1000),
+        $analytics['metric']->render() => $analytics['stats']['data'][0]['metric'][0]['values'][$i],
+      ];
     }
 
-    // Rewind the position of the file pointer and get the data.
-    rewind($fh);
-    $file_content = stream_get_contents($fh);
-    fclose($fh);
+    $csv_encoder = new CsvEncoder();
+    $file_content = $csv_encoder->encode($data, 'csv');
 
     $response = new Response($file_content);
     $disposition = $response->headers->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $file_name);
