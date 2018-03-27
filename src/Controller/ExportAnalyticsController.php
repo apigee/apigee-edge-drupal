@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge\Controller;
 
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\TempStore\PrivateTempStoreFactory;
@@ -56,6 +57,19 @@ class ExportAnalyticsController extends ControllerBase {
   }
 
   /**
+   * Checks access for downloading exported analytics data.
+   *
+   * @param $data_id
+   *   The ID of the stored analytics data.
+   *
+   * @return \Drupal\Core\Access\AccessResultInterface
+   *   The access result.
+   */
+  public function access($data_id) {
+    return AccessResult::allowedIf($this->store->get($data_id) !== NULL);
+  }
+
+  /**
    * Exports as CSV and downloads the requested analytics data.
    *
    * @param int $data_id
@@ -65,9 +79,7 @@ class ExportAnalyticsController extends ControllerBase {
    *   The response object.
    */
   public function exportAsCsv($data_id) {
-    if (($analytics = $this->store->get($data_id)) === NULL) {
-      return new Response();
-    }
+    $analytics = $this->store->get($data_id);
 
     $file_name = "{$analytics['stats']['data'][0]['identifier']['values'][0]}_{$analytics['stats']['data'][0]['metric'][0]['name']}_analytics.csv";
     $data = [];
