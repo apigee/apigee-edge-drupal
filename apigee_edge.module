@@ -827,7 +827,8 @@ function template_preprocess_app_credential(array &$variables) {
         $value = $time_diff > 0
           ? t('@time ago', ['@time' => $dateFormatter->formatTimeDiffSince(intval($value / 1000))])
           : t('@time hence', ['@time' => $dateFormatter->formatTimeDiffUntil(intval($value / 1000))]);
-      } else {
+      }
+      else {
         $value = t('Never');
       }
     }
