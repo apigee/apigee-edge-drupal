@@ -64,12 +64,11 @@ class ExportAnalyticsController extends ControllerBase {
    *   The response object.
    */
   public function exportAsCsv($data_id) {
-    $analytics = $this->store->get($data_id);
+    if (($analytics = $this->store->get($data_id)) === NULL) {
+      return new Response();
+    }
 
-    $file_name = $this->t('@app_@metric_analytics.csv', [
-      '@app' => $analytics['stats']['data'][0]['identifier']['values'][0],
-      '@metric' => $analytics['stats']['data'][0]['metric'][0]['name'],
-    ]);
+    $file_name = "{$analytics['stats']['data'][0]['identifier']['values'][0]}_{$analytics['stats']['data'][0]['metric'][0]['name']}_analytics.csv";
 
     // Do not create a file, attempt to use memory instead.
     $fh = fopen('php://temp', 'rw');
