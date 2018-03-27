@@ -188,9 +188,7 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
       '#type' => 'link',
       '#title' => $this->t('Export CSV'),
       '#attributes' => [
-        'class' => [
-          'button',
-        ],
+        'role' => 'button',
       ],
     ];
 
