@@ -59,7 +59,7 @@ class ExportAnalyticsController extends ControllerBase {
   /**
    * Checks access for downloading exported analytics data.
    *
-   * @param $data_id
+   * @param int $data_id
    *   The ID of the stored analytics data.
    *
    * @return \Drupal\Core\Access\AccessResultInterface
