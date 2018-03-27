@@ -63,7 +63,7 @@ class ExportAnalyticsController extends ControllerBase {
    * @return \Symfony\Component\HttpFoundation\Response
    *   The response object.
    */
-  public function exportAsCSV($data_id) {
+  public function exportAsCsv($data_id) {
     $analytics = $this->store->get($data_id);
 
     $file_name = $this->t('@app_@metric_analytics.csv', [
