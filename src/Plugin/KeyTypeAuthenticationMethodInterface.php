@@ -17,13 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Entity\Type;
+namespace Drupal\apigee_edge\Plugin;
 
-use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\key\KeyInterface;
+use Http\Message\Authentication;
 
 /**
- * Provides an interface for an Edge entity type and its metadata.
+ * Interface for creating the required authentication method object.
  */
-interface EdgeEntityTypeInterface extends EntityTypeInterface {
+interface KeyTypeAuthenticationMethodInterface {
+
+  /**
+   * Gets the authentication method object.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
+   *
+   * @return \Http\Message\Authentication
+   *   The authentication object.
+   */
+  public function getAuthenticationMethod(KeyInterface $key) : Authentication;
 
 }

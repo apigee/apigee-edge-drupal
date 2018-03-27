@@ -83,9 +83,14 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
     $app = $this->entity;
 
     $developers = [];
-    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
-    foreach (Developer::loadMultiple() as $developer) {
-      $developers[$developer->uuid()] = "{$developer->getFirstName()} {$developer->getLastName()}";
+    // This is little bit hackish, but do not load all developer data on the
+    // add/edit app form for developer forms and with that increase the speed
+    // of these pages.
+    if (!preg_match('/_for_developer$/', $this->getRouteMatch()->getRouteName())) {
+      /** @var \Drupal\apigee_edge\Entity\Developer $developer */
+      foreach (Developer::loadMultiple() as $developer) {
+        $developers[$developer->uuid()] = "{$developer->getFirstName()} {$developer->getLastName()}";
+      }
     }
 
     $form['developerId'] = [
@@ -183,8 +188,8 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
    */
   protected function actions(array $form, FormStateInterface $form_state) {
     $actions = parent::actions($form, $form_state);
-    $actions['submit']['#value'] = $this->t('Add @devAppLabel', [
-      '@devAppLabel' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel(),
+    $actions['submit']['#value'] = $this->t('Add @developer_app', [
+      '@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel(),
     ]);
 
     return $actions;
@@ -242,7 +247,7 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
    * {@inheritdoc}
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
-    return $this->t('Add @devAppLabel', ['@devAppLabel' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel()]);
+    return $this->t('Add @developer_app', ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel()]);
   }
 
 }

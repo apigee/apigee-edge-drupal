@@ -20,6 +20,7 @@
 namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Api\Management\Entity\Developer as EdgeDeveloper;
+use Drupal\Component\Serialization\Json;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
@@ -104,6 +105,12 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
     $developer = !isset($user->original) ? static::create($developer_data) : new static($developer_data);
     $developer->setOwnerId($user->id());
 
+    foreach (\Drupal::config('apigee_edge.sync')->get('user_fields_to_sync') as $field_to_sync) {
+      $developer->setAttribute(
+        preg_replace('/^field_(.*)$/', '${1}', $field_to_sync),
+        Json::encode($user->get($field_to_sync)->getValue())
+      );
+    }
     return $developer;
   }
 

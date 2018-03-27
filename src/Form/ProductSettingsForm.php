@@ -27,6 +27,8 @@ use Drupal\Core\Form\FormStateInterface;
  */
 class ProductSettingsForm extends ConfigFormBase {
 
+  use CachedEntityConfigurationFormAwareTrait;
+
   /**
    * {@inheritdoc}
    */
@@ -39,7 +41,7 @@ class ProductSettingsForm extends ConfigFormBase {
    */
   protected function getEditableConfigNames() {
     return [
-      'apigee_edge.entity_labels',
+      'apigee_edge.api_product_settings',
     ];
   }
 
@@ -47,7 +49,7 @@ class ProductSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $config = $this->config('apigee_edge.entity_labels');
+    $config = $this->config('apigee_edge.api_product_settings');
 
     $form['label'] = [
       '#type' => 'fieldset',
@@ -69,6 +71,8 @@ class ProductSettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('api_product_label_plural'),
     ];
 
+    $form += $this->addCacheConfigElements($form, $form_state);
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -76,10 +80,10 @@ class ProductSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $savedLabels = $this->configFactory->get('apigee_edge.entity_labels');
+    $savedLabels = $this->configFactory->get('apigee_edge.api_product_settings');
 
     if ($savedLabels->get('api_product_label_singular') !== $form_state->getValue('api_product_label_singular') || $savedLabels->get('api_product_label_plural') !== $form_state->getValue('api_product_label_plural')) {
-      $this->configFactory->getEditable('apigee_edge.entity_labels')
+      $this->configFactory->getEditable('apigee_edge.api_product_settings')
         ->set('api_product_label_singular', $form_state->getValue('api_product_label_singular'))
         ->set('api_product_label_plural', $form_state->getValue('api_product_label_plural'))
         ->save();
@@ -88,7 +92,23 @@ class ProductSettingsForm extends ConfigFormBase {
       drupal_flush_all_caches();
     }
 
+    $this->saveCacheConfiguration($form, $form_state);
+
     parent::submitForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConfigNameWithCacheSettings() {
+    return 'apigee_edge.api_product_settings';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEntityType() {
+    return 'api_product';
   }
 
 }

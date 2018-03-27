@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Copyright 2018 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -17,27 +18,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge;
-
-use Drupal\Component\Plugin\PluginBase;
-
 /**
- * Defines the AuthenticationMethodPluginBase abstract class.
+ * Implements hook_install().
  */
-abstract class AuthenticationMethodPluginBase extends PluginBase implements AuthenticationMethodPluginInterface {
+function apigee_edge_test_install() {
+  \Drupal::configFactory()->getEditable('apigee_edge_debug.settings')
+    ->set('debug_message_format', "
+<pre>{request_formatted}</pre>
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getId() : string {
-    return $this->pluginDefinition['id'];
-  }
+<pre>{response_formatted}</pre>
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getName() : string {
-    return $this->pluginDefinition['name'];
-  }
-
+<p>Transfer statistics: <pre>{stats}</pre></p>")
+    ->set('debug_message_formatter', 'full_html')
+    ->save();
 }

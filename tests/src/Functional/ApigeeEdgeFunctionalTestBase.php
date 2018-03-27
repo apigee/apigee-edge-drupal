@@ -21,19 +21,38 @@ namespace Drupal\Tests\apigee_edge\Functional;
 
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
+use Drupal\key\Entity\Key;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
+/**
+ * Base class for functional tests.
+ */
 abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
 
   /**
    * {@inheritdoc}
    */
   public static $modules = [
-    'apigee_edge',
     'apigee_edge_test',
   ];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+    $key = Key::create([
+      'id' => 'test',
+      'label' => 'test',
+      'key_type' => 'apigee_edge_basic_auth',
+      'key_provider' => 'apigee_edge_basic_auth_env_variables',
+      'key_input' => 'apigee_edge_basic_auth_input',
+    ]);
+    $key->save();
+    $this->config('apigee_edge.authentication')->set('active_key', 'test')->save();
+  }
 
   /**
    * Creates a Drupal account.
@@ -160,7 +179,7 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
    * Implements link clicking properly.
    *
    * The clickLink() function uses Mink, not drupalGet(). This means that
-   * certain features (like chekcing for meta refresh) are not working at all.
+   * certain features (like checking for meta refresh) are not working at all.
    * This is a problem, because batch api works with meta refresh when JS is not
    * available.
    *
@@ -168,7 +187,7 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
    */
   protected function clickLinkProperly(string $name) {
     list($path, $query) = $this->findLink($name);
-    $this->drupalGet($path, [
+    $this->drupalGet(static::fixUrl($path), [
       'query' => $query,
     ]);
   }
@@ -194,6 +213,13 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
     parse_str($parts['query'], $query);
 
     return [$parts['path'], $query];
+  }
+
+  protected static function fixUrl(string $url): string {
+    if (strpos($url, 'http:') === 0 || strpos($url, 'https:') === 0) {
+      return $url;
+    }
+    return (strpos($url, '/') === 0) ? $url : "/{$url}";
   }
 
 }

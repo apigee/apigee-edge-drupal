@@ -24,7 +24,6 @@ use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\Core\Entity\Controller\EntityViewController;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\user\Entity\User;
 
 /**
  * Displays the view page of a developer app on the UI.
@@ -40,7 +39,7 @@ class DeveloperAppViewController extends EntityViewController implements Develop
    */
   public function view(EntityInterface $developer_app, $view_mode = 'full') {
     /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app */
-    $this->checkDeveloperStatus(User::load($developer_app->getOwnerId()));
+    $this->checkDeveloperStatus($developer_app->getOwnerId());
     $build = parent::view($developer_app, $view_mode);
     return $build;
   }
@@ -49,9 +48,9 @@ class DeveloperAppViewController extends EntityViewController implements Develop
    * {@inheritdoc}
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
-    return t('@name @devAppLabel', [
+    return t('@name @developer_app', [
       '@name' => $routeMatch->getParameter('developer_app')->getDisplayName(),
-      '@devAppLabel' => $this->entityManager->getDefinition('developer_app')->getSingularLabel(),
+      '@developer_app' => $this->entityManager->getDefinition('developer_app')->getSingularLabel(),
     ]);
   }
 

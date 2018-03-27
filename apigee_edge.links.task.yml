@@ -1,6 +1,6 @@
 apigee_edge.settings:
   route_name: apigee_edge.settings
-  title: 'General'
+  title: 'Authentication'
   base_route: apigee_edge.settings
 
 apigee_edge.settings.app:
@@ -13,27 +13,37 @@ apigee_edge.settings.error_page:
   title: 'Error Page Settings'
   base_route: apigee_edge.settings
 
+apigee_edge.settings.developer:
+  route_name: apigee_edge.settings.developer
+  title: 'General'
+  base_route: apigee_edge.settings.developer
+
+apigee_edge.settings.developer.attributes:
+  route_name: apigee_edge.settings.developer.email_validation
+  title: 'Sync & Custom Attributes'
+  base_route: apigee_edge.settings.developer
+
 apigee_edge.developer_app.view:
   route_name: entity.developer_app.canonical
   title: 'View'
   base_route: entity.developer_app.canonical
   weight: -4
 
-apigee_edge.developer_app.analytics:
-  route_name: entity.developer_app.analytics
-  title: 'Analytics'
-  base_route: entity.developer_app.canonical
-  weight: -3
-
 apigee_edge.developer_app.edit:
   route_name: entity.developer_app.edit_form
   title: 'Edit'
   base_route: entity.developer_app.canonical
-  weight: -2
+  weight: -3
 
 apigee_edge.developer_app.delete:
   route_name: entity.developer_app.delete_form
   title: 'Delete'
+  base_route: entity.developer_app.canonical
+  weight: -2
+
+apigee_edge.developer_app.analytics:
+  route_name: entity.developer_app.analytics
+  title: 'Analytics'
   base_route: entity.developer_app.canonical
   weight: -1
 
@@ -43,20 +53,20 @@ apigee_edge.developer_app.view_by_developer:
   base_route: entity.developer_app.canonical_by_developer
   weight: -4
 
-apigee_edge.developer_app.analytics_for_developer:
-  route_name: entity.developer_app.analytics_for_developer
-  title: 'Analytics'
-  base_route: entity.developer_app.canonical_by_developer
-  weight: -3
-
 apigee_edge.developer_app.edit_for_developer:
   route_name: entity.developer_app.edit_form_for_developer
   title: 'Edit'
   base_route: entity.developer_app.canonical_by_developer
-  weight: -2
+  weight: -3
 
 apigee_edge.developer_app.delete_for_developer:
   route_name: entity.developer_app.delete_form_for_developer
   title: 'Delete'
+  base_route: entity.developer_app.canonical_by_developer
+  weight: -2
+
+apigee_edge.developer_app.analytics_for_developer:
+  route_name: entity.developer_app.analytics_for_developer
+  title: 'Analytics'
   base_route: entity.developer_app.canonical_by_developer
   weight: -1

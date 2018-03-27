@@ -23,6 +23,7 @@
  * Install, update and uninstall functions for Apigee Edge.
  */
 
+use Drupal\apigee_edge\KeyValueMalformedException;
 use Drupal\Core\Url;
 use Drupal\user\RoleInterface;
 
@@ -46,39 +47,25 @@ function apigee_edge_requirements($phase) {
     }
   }
   elseif ($phase === 'runtime') {
-    $credentials_storage_plugin_manager = \Drupal::service('plugin.manager.apigee_edge.credentials_storage');
-    $config = \Drupal::config('apigee_edge.credentials_storage');
-    $credentials_storage_plugin = $credentials_storage_plugin_manager->createInstance($config->get('credentials_storage_type'));
-    /** @var \Drupal\apigee_edge\CredentialsStoragePluginInterface $credentials_storage_plugin */
-    if ($credentials_storage_plugin->hasRequirements() !== NULL) {
-      $requirements['apigee_edge_credentials_storage'] = [
+    /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
+    $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
+    try {
+      $sdk_connector->testConnection();
+    }
+    catch (\Exception $exception) {
+      $requirements['apigee_edge_connection_error'] = [
         'title' => t('Apigee Edge'),
-        'description' => $credentials_storage_plugin->hasRequirements(),
+        'value' => $exception->getMessage(),
+        'description' => t('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Edge server is unreachable. Visit the <a href=":url">Apigee Edge Configuration</a> page to get more information.', [
+          ':url' => Url::fromRoute('apigee_edge.settings', ['destination' => 'admin/reports/status'])->toString(),
+        ]),
         'severity' => REQUIREMENT_WARNING,
       ];
-      if ($credentials_storage_plugin->getId() === 'credentials_storage_env') {
-        $extended_description = t('@description If you want to store your credentials in your private file system instead, visit the <a href=":url">Apigee Edge Configuration</a> page to configure your credential storage.', [
-          '@description' => $requirements['apigee_edge_credentials_storage']['description'],
-          ':url' => Url::fromRoute('apigee_edge.settings')->toString(),
-        ]);
-        $requirements['apigee_edge_credentials_storage']['description'] = $extended_description;
-      }
-    }
 
-    if (!array_key_exists('apigee_edge_credentials_storage', $requirements)) {
-      /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
-      $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
-      try {
-        $sdk_connector->testConnection();
-      }
-      catch (\Exception $exception) {
-        $requirements['apigee_edge_connection_error'] = [
-          'title' => t('Apigee Edge'),
-          'value' => $exception->getMessage(),
-          'description' => t('Cannot connect to Edge server. You have either given wrong credential details or the Edge server is unreachable. Visit the <a href=":url">Apigee Edge Configuration</a> page to get more information.',
-            [':url' => Url::fromRoute('apigee_edge.settings')->toString()]),
-          'severity' => REQUIREMENT_WARNING,
-        ];
+      if ($exception instanceof KeyValueMalformedException) {
+        $requirements['apigee_edge_connection_error']['description'] = t('Cannot connect to Apigee Edge server. Check the settings and the requirements of the active key\'s provider. Visit the <a href=":url">Key Configuration</a> page to get more information.', [
+          ':url' => Url::fromRoute('entity.key.collection', ['destination' => 'admin/reports/status'])->toString(),
+        ]);
       }
     }
   }
@@ -96,22 +83,9 @@ function apigee_edge_install() {
       'create developer_app',
       'update own developer_app',
       'delete own developer_app',
-      'view own developer app analytics',
+      'analytics own developer app',
     ];
     user_role_grant_permissions(RoleInterface::AUTHENTICATED_ID, $authenticated_user_permissions);
-  }
-}
-
-/**
- * Implements hook_uninstall().
- */
-function apigee_edge_uninstall() {
-  $credentials_storage_plugin_manager = \Drupal::service('plugin.manager.apigee_edge.credentials_storage');
-
-  foreach ($credentials_storage_plugin_manager->getDefinitions() as $key => $value) {
-    $credentials_storage_plugin = $credentials_storage_plugin_manager->createInstance($key);
-    /** @var \Drupal\apigee_edge\CredentialsStoragePluginInterface $credentials_storage_plugin */
-    $credentials_storage_plugin->deleteCredentials();
   }
 }
 

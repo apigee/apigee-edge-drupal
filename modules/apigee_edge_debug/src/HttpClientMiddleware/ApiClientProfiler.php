@@ -35,18 +35,29 @@ use Psr\Log\LogLevel;
 class ApiClientProfiler {
 
   /**
-   * @var \Psr\Log\LoggerInterface*/
+   * A logger instance.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
   private $logger;
 
   /**
-   * @var \Drupal\apigee_edge_debug\Plugin\DebugMessageFormatter\DebugMessageFormatterPluginInterface*/
+   * The debug message formatter plugin.
+   *
+   * @var \Drupal\apigee_edge_debug\Plugin\DebugMessageFormatter\DebugMessageFormatterPluginInterface
+   */
   private $formatter;
 
   /**
-   * @var string*/
+   * The format of the log entry.
+   *
+   * @var string
+   */
   private $logFormat;
 
   /**
+   * The debug message formatter plugin manager.
+   *
    * @var \Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager
    */
   private $debugMessageFormatterPlugin;
@@ -62,7 +73,14 @@ class ApiClientProfiler {
    *   Debug message formatter plugin manager.
    */
   public function __construct(ConfigFactoryInterface $configFactory, LoggerInterface $logger, DebugMessageFormatterPluginManager $debugMessageFormatterPlugin) {
-    $this->formatter = $debugMessageFormatterPlugin->createInstance($configFactory->get('apigee_edge_debug.settings')->get('debug_message_formatter'));
+    // On module install, this constructor is called earlier than
+    // the module's configuration would have been imported to the database.
+    // In that case the $formatterPluginId is missing and it causes fatal
+    // errors.
+    $formatterPluginId = $configFactory->get('apigee_edge_debug.settings')->get('debug_message_formatter');
+    if ($formatterPluginId) {
+      $this->formatter = $debugMessageFormatterPlugin->createInstance($formatterPluginId);
+    }
     $this->logFormat = $configFactory->get('apigee_edge_debug.settings')->get('debug_message_format');
     $this->logger = $logger;
     $this->debugMessageFormatterPlugin = $debugMessageFormatterPlugin;
@@ -72,6 +90,14 @@ class ApiClientProfiler {
    * {@inheritdoc}
    */
   public function __invoke() {
+    // If the formatter has been initialized yet then do nothing.
+    if (!$this->formatter) {
+      return function ($handler) {
+        return function (RequestInterface $request, array $options) use ($handler) {
+          return $handler($request, $options);
+        };
+      };
+    }
     return function ($handler) {
       return function (RequestInterface $request, array $options) use ($handler) {
 

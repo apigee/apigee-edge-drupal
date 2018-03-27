@@ -35,7 +35,7 @@ class Query extends QueryBase implements QueryInterface {
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $manager;
+  protected $entityTypeManager;
 
   /**
    * Constructs a Query object.
@@ -52,16 +52,15 @@ class Query extends QueryBase implements QueryInterface {
    */
   public function __construct(EntityTypeInterface $entity_type, string $conjunction, array $namespaces, EntityTypeManagerInterface $manager) {
     parent::__construct($entity_type, $conjunction, $namespaces);
-    $this->manager = $manager;
+    $this->entityTypeManager = $manager;
   }
 
   /**
    * {@inheritdoc}
    */
   public function execute() {
-    $storage = $this->manager->getStorage($this->entityTypeId);
     $filter = $this->condition->compile($this);
-    $all_records = $storage->loadMultiple();
+    $all_records = $this->getFromStorage();
 
     $result = array_filter($all_records, $filter);
     if ($this->count) {
@@ -98,6 +97,55 @@ class Query extends QueryBase implements QueryInterface {
     return array_map(function (EntityInterface $entity) : string {
       return (string) $entity->id();
     }, $result);
+  }
+
+  /**
+   * Returns an array of properties that should be considered as entity ids.
+   *
+   * Usually one entity has one primary id, but in case of Apigee Edge
+   * entities one entity could have multiple ids (primary keys).
+   * Ex.: Developer => ['email', 'developerId'].
+   *
+   * @return string[]
+   *   Array of property names that should be considered as primary entity ids.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   */
+  protected function getEntityIdProperties() {
+    $storage = $this->entityTypeManager->getStorage($this->entityTypeId);
+    /** @var \Apigee\Edge\Entity\EntityInterface $entity */
+    $entity = $storage->create();
+    return [$entity->idProperty()];
+  }
+
+  /**
+   * Loads entities from the entity storage for queering.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface[]
+   *   Array of matching entities.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   */
+  protected function getFromStorage() {
+    $storage = $this->entityTypeManager->getStorage($this->entityTypeId);
+    // The worst case: load all entities from Apigee Edge.
+    $ids = NULL;
+    foreach ($this->condition->conditions() as $condition) {
+      if (in_array($condition['field'], $this->getEntityIdProperties()) && in_array($condition['operator'], [NULL, '='])) {
+        if (!is_array($condition['value'])) {
+          $ids = [$condition['value']];
+        }
+        elseif (is_array($condition['value']) && count($condition['value']) === 1) {
+          $ids = [reset($condition['value'])];
+        }
+        // If we found an id field in the query do not look for an another
+        // because that would not make any sense to query one entity by
+        // both id fields. (Where in theory both id field could refer to a
+        // different entity.)
+        break;
+      }
+    }
+    return $storage->loadMultiple($ids);
   }
 
 }

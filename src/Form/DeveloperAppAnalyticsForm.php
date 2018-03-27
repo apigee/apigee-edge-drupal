@@ -94,9 +94,9 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, DeveloperAppInterface $developer_app = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?DeveloperAppInterface $developer_app = NULL) {
     $this->developerApp = $developer_app;
-    $this->checkDeveloperStatus($developer_app->getOwner());
+    $this->checkDeveloperStatus($developer_app->getOwnerId());
 
     $form_state->disableRedirect();
     $form['#attached']['library'][] = 'apigee_edge/apigee_edge.analytics';
@@ -164,6 +164,10 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
     $form['controls']['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Apply'),
+    ];
+
+    $form['timezone'] = [
+      '#markup' => $this->t('Your timezone: @timezone', ['@timezone' => $this->currentUser()->getTimeZone()]),
     ];
 
     $form['chart'] = [
@@ -242,12 +246,16 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
       $since = DrupalDateTime::createFromTimestamp($since);
       $until = DrupalDateTime::createFromTimestamp($until);
       if ($since->diff($until)->invert === 1) {
-        $this->messenger->addWarning($this->t('Invalid URL query parameters.'));
+        $this->messenger->addError($this->t('The end date cannot be before the start date.'));
+        return FALSE;
+      }
+      if ($since->diff(new DrupalDateTime())->invert === 1) {
+        $this->messenger->addError($this->t('Start date cannot be in future.'));
         return FALSE;
       }
     }
     catch (\InvalidArgumentException $exception) {
-      $this->messenger->addWarning($this->t('Invalid URL query parameters.'));
+      $this->messenger->addError($this->t('Invalid URL query parameters.'));
       return FALSE;
     }
 
@@ -281,7 +289,7 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
       $analytics = $stats_controller->getOptimizedMetricsByDimensions(['apps'], $stats_query);
     }
     catch (MomentException $exception) {
-      $this->messenger->addWarning($this->t('Invalid datetime parameters.'));
+      $this->messenger->addError($this->t('Invalid datetime parameters.'));
     }
 
     // Pass every necessary data to JavaScript.
@@ -291,6 +299,8 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
     // - values: returned optimized metrics data.
     // - skip_zero_values: skip the zero analytics values or not,
     // - visualization_options: options for Google Charts draw() function,
+    // - visualization_options_to_date: which property values should be
+    // converted to JavaScript Date object on the client-side (timestamps),
     // - version: Google Charts library version (default is the current stable),
     // - language: to load a chart formatted for a specific locale,
     // - chart_container: ID attribute of the chart's HTML container element.
@@ -302,6 +312,16 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
       $form['#attached']['drupalSettings']['analytics']['language'] = $this->currentUser()->getPreferredLangcode();
       $form['#attached']['drupalSettings']['analytics']['chart_container'] = $form['chart']['#attributes']['id'];
 
+      $viewWindowMin = $viewWindowMax = 0;
+      for ($i = count($analytics['TimeUnit']) - 1; $i > 0; $i--) {
+        if ($analytics['stats']['data'][0]['metric'][0]['values'][$i] !== 0) {
+          $viewWindowMin = $i;
+        }
+        if ($viewWindowMax === 0 && $analytics['stats']['data'][0]['metric'][0]['values'][$i] !== 0) {
+          $viewWindowMax = $i;
+        }
+      }
+
       // Visualization options for Google Charts draw() function,
       // must be JSON encoded before passing.
       // @see: https://developers.google.com/chart/interactive/docs/gallery/linechart#configuration-options
@@ -309,10 +329,38 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
         'width' => '100%',
         'legend' => 'none',
         'interpolateNulls' => 'true',
+        'hAxis' => [
+          'viewWindow' => [
+            'min' => $analytics['TimeUnit'][$viewWindowMin],
+            'max' => $analytics['TimeUnit'][$viewWindowMax],
+          ],
+          'gridlines' => [
+            'count' => -1,
+            'units' => [
+              'days' => [
+                'format' => ['MMM dd'],
+              ],
+              'hours' => [
+                'format' => ['HH:mm', 'ha'],
+              ],
+            ],
+          ],
+          'minorGridlines' => [
+            'units' => [
+              'hours' => [
+                'format' => ['hh:mm:ss a', 'ha'],
+              ],
+            ],
+          ],
+        ],
       ];
       $form['#attached']['drupalSettings']['analytics']['visualization_options'] = json_encode($visualization_options);
+
+      $visualization_options_to_date = ['hAxis.viewWindow.min', 'hAxis.viewWindow.max'];
+      $form['#attached']['drupalSettings']['analytics']['visualization_options_to_date'] = $visualization_options_to_date;
     }
     else {
+      $form['chart']['#attributes']['class'][] = 'chart-container-no-data';
       $form['chart']['no_data_text'] = [
         '#markup' => $this->t('No performance data is available for the criteria you supplied.'),
       ];

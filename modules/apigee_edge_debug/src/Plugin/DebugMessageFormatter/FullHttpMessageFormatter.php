@@ -33,8 +33,12 @@ use Http\Message\Formatter\FullHttpMessageFormatter as OriginalFullHttpMessageFo
  * )
  */
 class FullHttpMessageFormatter extends DebugMessageFormatterPluginBase implements Formatter {
+
   /**
-   * @var \Http\Message\Formatter\FullHttpMessageFormatter*/
+   * The original full HTTP message formatter.
+   *
+   * @var \Http\Message\Formatter\FullHttpMessageFormatter
+   */
   private static $formatter;
 
   /**

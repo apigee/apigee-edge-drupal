@@ -28,6 +28,7 @@ use Drupal\Component\Annotation\Plugin;
  * @Annotation
  */
 class DebugMessageFormatter extends Plugin {
+
   /**
    * The plugin ID.
    *

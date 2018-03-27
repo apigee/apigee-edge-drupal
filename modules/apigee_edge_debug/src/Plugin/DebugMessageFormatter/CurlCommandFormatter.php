@@ -24,9 +24,16 @@ use GuzzleHttp\TransferStats;
 use Http\Message\Formatter;
 use Http\Message\Formatter\CurlCommandFormatter as OriginalCurlCommandFormatter;
 
+/**
+ * Debug message formatter plugin for cURL commands.
+ */
 class CurlCommandFormatter extends DebugMessageFormatterPluginBase implements Formatter {
+
   /**
-   * @var \Http\Message\Formatter\CurlCommandFormatter*/
+   * The original cURL command formatter.
+   *
+   * @var \Http\Message\Formatter\CurlCommandFormatter
+   */
   private static $formatter;
 
   /**

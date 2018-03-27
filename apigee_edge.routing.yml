@@ -31,6 +31,14 @@ apigee_edge.settings.developer:
   requirements:
     _permission: 'administer apigee edge'
 
+apigee_edge.settings.developer.email_validation:
+  path: '/admin/config/apigee-edge/developer-settings/attributes'
+  defaults:
+    _form: '\Drupal\apigee_edge\Form\DeveloperAttributesSettingsForm'
+    _title: 'Sync & Custom Attributes'
+  requirements:
+    _permission: 'administer apigee edge'
+
 apigee_edge.settings.product:
   path: '/admin/config/apigee-edge/product-settings'
   defaults:
@@ -43,7 +51,7 @@ apigee_edge.settings.app:
   path: '/admin/config/apigee-edge/app-settings'
   defaults:
     _form: '\Drupal\apigee_edge\Form\AppSettingsForm'
-    _title: 'Application Settings'
+    _title: 'App Settings'
   requirements:
     _permission: 'administer apigee edge'
 
@@ -111,6 +119,10 @@ entity.developer_app.edit_form:
     _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppEditForm::getPageTitle'
   requirements:
     _entity_access: 'developer_app.update'
+  options:
+    # We must load the entity from Apigee Edge directly and omit cached
+    # version on edit forms.
+    apigee_edge_load_unchanged_entity: 'true'
 
 entity.developer_app.delete_form:
   path: '/developer-apps/{developer_app}/delete'
@@ -126,7 +138,12 @@ entity.developer_app.analytics:
     _form: '\Drupal\apigee_edge\Form\DeveloperAppAnalyticsForm'
     _title_callback: '\Drupal\apigee_edge\Form\DeveloperAppAnalyticsForm::getPageTitle'
   requirements:
-    _permission: 'view any developer app analytics'
+    _entity_access: 'developer_app.analytics'
+    _permission: 'analytics any developer_app+administer developer_app'
+  options:
+    parameters:
+      developer_app:
+        type: entity:developer_app
 
 entity.developer_app.canonical_by_developer:
   path: '/user/{user}/apps/{app}'
@@ -163,6 +180,10 @@ entity.developer_app.edit_form_for_developer:
   requirements:
      user: '\d+'
      _developer_app_access: 'update'
+  options:
+    # We must load the entity from Apigee Edge directly and omit cached
+    # version on edit forms.
+    apigee_edge_load_unchanged_entity: 'true'
 
 entity.developer_app.delete_form_for_developer:
   path: '/user/{user}/apps/{app}/delete'
@@ -180,4 +201,5 @@ entity.developer_app.analytics_for_developer:
     _title_callback: '\Drupal\apigee_edge\Form\DeveloperAppAnalyticsFormForDeveloper::getPageTitle'
   requirements:
     user: '\d+'
-    _permission: 'view own developer app analytics'
+    _developer_app_access: 'analytics'
+    _permission: 'analytics own developer_app+administer developer_app'

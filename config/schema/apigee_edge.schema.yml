@@ -1,8 +1,10 @@
 apigee_edge.error_page:
   type: config_object
+  label: 'Apigee Edge: Error page'
   mapping:
     error_page_title:
-      type: string
+      type: label
+      label: 'Error page title'
     error_page_content:
       type: mapping
       mapping:
@@ -10,34 +12,26 @@ apigee_edge.error_page:
           type: string
         value:
           type: text
+          label: 'Error page content'
 
-apigee_edge.authentication_method:
+apigee_edge.authentication:
   type: config_object
   mapping:
-    authentication_method:
+    active_key:
       type: string
-
-apigee_edge.credentials_storage:
-  type: config_object
-  mapping:
-    credentials_storage_type:
-      type: string
-
-apigee_edge.entity_labels:
-  type: config_object
-  mapping:
-    app_label_singular:
-      type: string
-    app_label_plural:
-      type: string
-    api_product_label_singular:
-      type: string
-    api_product_label_plural:
+    default_endpoint:
       type: string
 
 apigee_edge.appsettings:
   type: config_object
+  label: 'Developer app settings'
   mapping:
+    developer_app_label_singular:
+      type: label
+      label: 'How to refer to a Developer App on the UI (singular)'
+    developer_app_label_plural:
+      type: label
+      label: 'How to refer to a Developer App on the UI (plural)'
     display_as_select:
       type: boolean
     associate_apps:
@@ -60,19 +54,24 @@ apigee_edge.appsettings:
       type: sequence
       sequence:
         type: string
+    cache_expiration:
+      type: integer
 
 apigee_edge.developer_settings:
   type: config_object
+  label: 'Developer settings'
   mapping:
     verification_action:
       type: string
     display_only_error_message_content:
       type: mapping
+      label: 'Error message when a new user registers and the developer email address is already taken on Edge but not in Drupal'
       mapping:
         format:
           type: string
         value:
           type: text
+          label: 'Message'
     verify_email_error_message:
       type: mapping
       mapping:
@@ -80,24 +79,56 @@ apigee_edge.developer_settings:
           type: string
         value:
           type: text
-    verification_email_subject:
-      type: string
-    verification_email_content:
-      type: text
+    verification_email:
+      type: 'mail'
+      label: 'Verification email'
     verification_token:
       type: string
     verification_token_expires:
       type: integer
     user_edit_error_message:
       type: mapping
+      label: 'Error message displayed to a user when the email address is already taken on Edge but not in Drupal'
       mapping:
         format:
           type: string
         value:
           type: text
+          label: 'Message'
+    cache_expiration:
+      type: integer
+
+apigee_edge.api_product_settings:
+  type: config_object
+  label: 'API Product settings'
+  mapping:
+    api_product_label_singular:
+      type: label
+      label: 'How to refer to an API Product on the UI (singular)'
+    api_product_label_plural:
+      type: label
+      label: 'How to refer to an API Product on the UI (plural)'
+    cache_expiration:
+      type: integer
 
 apigee_edge.sync:
   type: config_object
   mapping:
     filter:
       type: string
+    user_fields_to_sync:
+      type: sequence
+      sequence:
+        type: string
+
+key.type.apigee_edge_basic_auth:
+  type: sequence
+
+key.input.apigee_edge_basic_auth_input:
+  type: sequence
+
+key.provider.apigee_edge_basic_auth_env_variables:
+  type: sequence
+
+key.provider.apigee_edge_basic_auth_private_file:
+  type: sequence

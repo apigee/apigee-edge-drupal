@@ -20,14 +20,13 @@
 
 namespace Drupal\apigee_edge_debug;
 
-use Drupal\apigee_edge\AuthenticationMethodManager;
-use Drupal\apigee_edge\CredentialsStorageManager;
 use Drupal\apigee_edge\SDKConnector as OriginalSDKConnector;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\InfoParserInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Http\ClientFactory;
+use Drupal\key\KeyRepositoryInterface;
 
 /**
  * Service decorator for SDKConnector.
@@ -45,7 +44,10 @@ class SDKConnector extends OriginalSDKConnector {
   public const HEADER = 'X-Apigee-Edge-Api-Client-Profiler';
 
   /**
-   * @var \Drupal\apigee_edge\SDKConnector*/
+   * The inner SDK connector service.
+   *
+   * @var \Drupal\apigee_edge\SDKConnector
+   */
   private $innerService;
 
   /**
@@ -53,27 +55,25 @@ class SDKConnector extends OriginalSDKConnector {
    *
    * @param \Drupal\Core\Http\ClientFactory $clientFactory
    *   Http Client factory service.
+   * @param \Drupal\key\KeyRepositoryInterface $key_repository
+   *   The key repository.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   Entity Type manager service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   Config factory service.
-   * @param \Drupal\apigee_edge\CredentialsStorageManager $credentials_storage_plugin_manager
-   *   Credential storage plugin manager.
-   * @param \Drupal\apigee_edge\AuthenticationMethodManager $authentication_method_plugin_manager
-   *   Authentication method plugin manager.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   Module handler service.
    * @param \Drupal\Core\Extension\InfoParserInterface $infoParser
    *   Info file parser service.
    */
-  public function __construct(ClientFactory $clientFactory, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, CredentialsStorageManager $credentials_storage_plugin_manager, AuthenticationMethodManager $authentication_method_plugin_manager, ModuleHandlerInterface $moduleHandler, InfoParserInterface $infoParser) {
+  public function __construct(ClientFactory $clientFactory, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $moduleHandler, InfoParserInterface $infoParser) {
     $config = [
       'headers' => [
         static::HEADER => static::HEADER,
       ],
     ];
     $httpClient = $clientFactory->fromOptions($config);
-    parent::__construct($httpClient, $entity_type_manager, $config_factory, $credentials_storage_plugin_manager, $authentication_method_plugin_manager, $moduleHandler, $infoParser);
+    parent::__construct($httpClient, $key_repository, $entity_type_manager, $config_factory, $moduleHandler, $infoParser);
   }
 
   /**

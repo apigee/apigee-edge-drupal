@@ -23,6 +23,7 @@ use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder;
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -117,6 +118,23 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
   /**
    * {@inheritdoc}
    */
+  protected function getDefaultOperations(EntityInterface $entity) {
+    $operations = parent::getDefaultOperations($entity);
+    foreach ($operations as $operation => $parameters) {
+      if ($entity->hasLinkTemplate("{$operation}-for-developer")) {
+        $operations[$operation]['url'] = $entity->toUrl("{$operation}-for-developer");
+      }
+      if ($entity->hasLinkTemplate("{$operation}-form-for-developer")) {
+        $operations[$operation]['url'] = $this->ensureDestination($entity->toUrl("{$operation}-form-for-developer"));
+      }
+    }
+
+    return $operations;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function getAppDetailsLink(DeveloperAppInterface $app) {
     return $app->toLink(NULL, 'canonical-by-developer');
   }
@@ -145,7 +163,7 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    * {@inheritdoc}
    */
   public function render(UserInterface $user = NULL) {
-    $this->checkDeveloperStatus($user);
+    $this->checkDeveloperStatus($user->id());
     $build = parent::render();
 
     $build['table']['#empty'] = $this->t('Looks like you do not have any apps. Get started by adding one.');
@@ -168,13 +186,13 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    * {@inheritdoc}
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
-    $args['@devAppLabel'] = $this->getDeveloperAppEntityDefinition()->getPluralLabel();
+    $args['@developer_app'] = $this->getDeveloperAppEntityDefinition()->getPluralLabel();
     $account = $routeMatch->getParameter('user');
     if ($account->id() == $this->currentUser->id()) {
-      return t('My @devAppLabel', $args);
+      return t('My @developer_app', $args);
     }
     $args['@user'] = $account->getDisplayName();
-    return t('@devAppLabel of @user', $args);
+    return t('@developer_app of @user', $args);
   }
 
   /**

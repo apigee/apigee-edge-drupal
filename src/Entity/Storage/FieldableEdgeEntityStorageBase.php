@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge\Entity\Storage;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
@@ -127,6 +128,15 @@ abstract class FieldableEdgeEntityStorageBase extends EdgeEntityStorageBase impl
     }
 
     return $count;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getPersistentCacheTags(EntityInterface $entity) {
+    $cacheTags = parent::getPersistentCacheTags($entity);
+    $cacheTags[] = 'entity_field_info';
+    return $cacheTags;
   }
 
 }

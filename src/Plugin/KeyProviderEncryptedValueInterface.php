@@ -17,11 +17,33 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge;
+namespace Drupal\apigee_edge\Plugin;
 
 /**
- * Defines the credentials save exception class.
+ * Defines an interface for provider plugins that allow encrypt a key value.
  */
-class CredentialsSaveException extends \Exception {
+interface KeyProviderEncryptedValueInterface {
+
+  /**
+   * Encrypts key value.
+   *
+   * @param string $key_value
+   *   The plaintext.
+   *
+   * @return string
+   *   The ciphertext.
+   */
+  public function encrypt(string $key_value);
+
+  /**
+   * Decrypts key value.
+   *
+   * @param string $key_value
+   *   The ciphertext.
+   *
+   * @return string
+   *   The plaintext.
+   */
+  public function decrypt(string $key_value);
 
 }

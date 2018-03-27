@@ -17,31 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Annotation;
+namespace Drupal\apigee_edge\Entity;
 
-use Drupal\Component\Annotation\Plugin;
+use Drupal\Core\Entity\EntityTypeInterface;
 
 /**
- * Defines an authentication method plugin annotation object.
- *
- * @Annotation
+ * Provides an interface for an Edge entity type and its metadata.
  */
-class AuthenticationMethod extends Plugin {
-
-  /**
-   * The plugin ID.
-   *
-   * @var string
-   */
-  public $id;
-
-  /**
-   * The name of the storage plugin.
-   *
-   * @var \Drupal\Core\Annotation\Translation
-   *
-   * @ingroup plugin_translatable
-   */
-  public $name;
+interface EdgeEntityTypeInterface extends EntityTypeInterface {
 
 }

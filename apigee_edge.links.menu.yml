@@ -12,18 +12,18 @@ apigee_edge.settings:
 
 apigee_edge.developer:
   title: 'Developer'
-  description: 'Developer settings'
+  description: 'Developer settings.'
   parent: system.admin_config_edge
   route_name: apigee_edge.settings.developer
 
 apigee_edge.app:
   title: 'Developer app'
-  description: 'Developer application settings'
+  description: 'Developer application settings.'
   parent: system.admin_config_edge
   route_name: apigee_edge.settings.app
 
 apigee_edge.product:
   title: 'Product'
-  description: 'API Product settings'
+  description: 'API Product settings.'
   parent: system.admin_config_edge
   route_name: apigee_edge.settings.product

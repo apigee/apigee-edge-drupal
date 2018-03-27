@@ -37,8 +37,6 @@ class DeveloperAppDeleteFormForDeveloper extends DeveloperAppDeleteForm {
    *   The entity type manager.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler) {
     parent::__construct($entity_type_manager);
@@ -94,7 +92,7 @@ class DeveloperAppDeleteFormForDeveloper extends DeveloperAppDeleteForm {
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
     return $this->pageTitle([
       '@name' => $routeMatch->getParameter('app')->getDisplayName(),
-      '@devAppLabel' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel(),
+      '@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel(),
     ]);
   }
 

@@ -31,7 +31,9 @@ use Drupal\apigee_edge\Entity\Developer;
 class ApiProductTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
-   * @var \Drupal\apigee_edge\Entity\Developer
+   * The developer entity.
+   *
+   * @var \Drupal\apigee_edge\Entity\DeveloperInterface
    */
   protected $developer;
 
@@ -59,10 +61,20 @@ class ApiProductTest extends ApigeeEdgeFunctionalTestBase {
     parent::tearDown();
   }
 
+  /**
+   * Resets the internal, static api product entity cache.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   */
   protected function resetCache() {
     \Drupal::entityTypeManager()->getStorage('api_product')->resetCache();
   }
 
+  /**
+   * Tests API product entity.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   */
   public function testCrud() {
     /** @var \Drupal\apigee_edge\Entity\ApiProduct $apiproduct */
     $apiproduct = ApiProduct::create([

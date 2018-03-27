@@ -19,7 +19,8 @@
 
 namespace Drupal\apigee_edge\Entity;
 
-use Drupal\user\UserInterface;
+use Drupal\Core\Url;
+use Drupal\user\Entity\User;
 
 /**
  * Provides a trait for checking developer status.
@@ -32,17 +33,25 @@ trait DeveloperStatusCheckTrait {
    * Checks the status of the developer assigned to the given Drupal user
    * and notifies the current user if the developer's status is inactive.
    *
-   * @param \Drupal\user\UserInterface $user
-   *   The Drupal user entity.
+   * @param int|null $uid
+   *   The user ID.
    */
-  private function checkDeveloperStatus(UserInterface $user) {
+  private function checkDeveloperStatus(?int $uid) {
+    if ($uid === NULL) {
+      return;
+    }
+
+    $user = User::load($uid);
     /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
     $developer = Developer::load($user->getEmail());
     if (!isset($developer) || $developer->getStatus() === Developer::STATUS_INACTIVE) {
       // Displays different warning message for admin users.
       $message = $user->id() === \Drupal::currentUser()->id()
         ? t('Your developer account has inactive status so you will not be able to use your credentials until your account is enabled. Please contact the Developer Portal support for further assistance.')
-        : t('The developer account of @username has inactive status so this user has invalid credentials until the account is enabled.', ['@username' => $user->getAccountName()]);
+        : t('The developer account of <a href=":url">@username</a> has inactive status so this user has invalid credentials until the account is enabled.', [
+          ':url' => Url::fromRoute('entity.user.edit_form', ['user' => $uid])->toString(),
+          '@username' => $user->getAccountName(),
+        ]);
       \Drupal::messenger()->addWarning($message);
     }
   }

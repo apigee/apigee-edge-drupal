@@ -105,8 +105,8 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    *   Settings to save.
    */
   protected function submitAdminForm(array $changes = []) {
-    $this->drupalGet('admin/config/apigee-edge/app-settings');
-    $this->drupalPostForm('admin/config/apigee-edge/app-settings', $changes + [
+    $this->drupalGet('/admin/config/apigee-edge/app-settings');
+    $this->drupalPostForm('/admin/config/apigee-edge/app-settings', $changes + [
       'display_as_select' => FALSE,
       'associate_apps' => TRUE,
       'user_select' => TRUE,
@@ -128,7 +128,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
       $account = $this->account;
     }
 
-    $this->drupalPostForm("user/{$account->id()}/apps/create", $data, 'Add developer app');
+    $this->drupalPostForm("/user/{$account->id()}/apps/create", $data, 'Add developer app');
   }
 
   protected function postEditAppForm(array $data, string $app_name, ?UserInterface $account = NULL) {
@@ -136,7 +136,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
       $account = $this->account;
     }
 
-    $this->drupalPostForm("user/{$account->id()}/apps/{$app_name}/edit", $data, 'Save');
+    $this->drupalPostForm("/user/{$account->id()}/apps/{$app_name}/edit", $data, 'Save');
   }
 
   /**
@@ -179,8 +179,8 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    */
   public function testDeveloperAppLabel() {
     $this->submitAdminForm([
-      'app_label_singular' => 'API',
-      'app_label_plural' => 'APIs',
+      'developer_app_label_singular' => 'API',
+      'developer_app_label_plural' => 'APIs',
     ]);
 
     \Drupal::entityTypeManager()->clearCachedDefinitions();
@@ -235,6 +235,11 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
     $this->clickLink('Delete');
     $this->submitForm([], 'Delete');
+    $this->assertSession()->pageTextContains('App name does not match app you are attempting to delete');
+
+    $this->submitForm([
+      'id_verification' => $name,
+    ], 'Delete');
 
     $this->assertSession()->pageTextContains("The {$name} developer app has been deleted.");
     $apps = array_filter($this->getApps(), function (DeveloperApp $app) use ($name): bool {
@@ -536,8 +541,8 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
     $app = $this->loadDeveloperApp($name);
 
-    $this->assertSession()->linkByHrefExists("/developer-apps/{$app->id()}/edit?destination=/user/{$account->id()}/apps");
-    $this->assertSession()->linkByHrefExists("/developer-apps/{$app->id()}/delete?destination=/user/{$account->id()}/apps");
+    $this->assertSession()->linkByHrefExists("/user/{$account->id()}/apps/{$app->getName()}/edit?destination=/user/{$account->id()}/apps");
+    $this->assertSession()->linkByHrefExists("/user/{$account->id()}/apps/{$app->getName()}/delete?destination=/user/{$account->id()}/apps");
     $this->clickLink($displayName);
     $this->assertSession()->pageTextContains($displayName);
     $this->assertSession()->pageTextContains($callbackUrl);
@@ -585,7 +590,9 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     }
 
     $this->clickLink('Delete');
-    $this->submitForm([], 'Delete');
+    $this->submitForm([
+      'id_verification' => $name,
+    ], 'Delete');
 
     $this->drupalGet("/user/{$account->id()}/apps");
     $this->assertSession()->pageTextNotContains($displayName);

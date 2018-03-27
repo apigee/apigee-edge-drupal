@@ -1,23 +1,26 @@
+langcode: en
 verification_action: verify_email
 display_only_error_message_content:
   value: 'This email address already exists in our system. Contact us if you have any questions.'
-  format: 'restricted_html'
+  format: 'plain_text'
 verify_email_error_message:
   value: 'This email address already exists in our system. We have sent you an verification email to %email.'
-  format: 'restricted_html'
-verification_email_subject: 'Developer email address verification'
-verification_email_content: |
-  Dear [user:display-name],
+  format: 'plain_text'
+verification_email:
+  subject: 'Developer email address verification'
+  body: |
+    Dear [user:display-name],
 
-  You tried to use this email address in [site:url]. This email address is already registered in our system.
+    You tried to use this email address in [site:url]. This email address is already registered in our system.
 
-  You may confirm this email address by clicking this link or copying and pasting it into your browser:
+    You may confirm this email address by clicking this link or copying and pasting it into your browser:
 
-  [user:developer-email-verification-url]
+    [user:developer-email-verification-url]
 
-  --  [site:name] team
+    --  [site:name] team
 verification_token: developer-verification-token
 verification_token_expires: 86400
 user_edit_error_message:
   value: 'This email address already exists in our system. You can register a new account if you would like to use it on the Developer Portal.'
-  format: 'restricted_html'
+  format: 'plain_text'
+cache_expiration: 900

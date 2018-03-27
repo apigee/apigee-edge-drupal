@@ -163,6 +163,22 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
   }
 
   /**
+   * {@inheritdoc}
+   */
+  protected function getDefaultOperations(EntityInterface $entity) {
+    $operations = parent::getDefaultOperations($entity);
+    if ($entity->access('analytics')) {
+      $operations['analytics'] = [
+        'title' => $this->t('Analytics'),
+        'weight' => 150,
+        'url' => $entity->toUrl('analytics'),
+      ];
+    }
+
+    return $operations;
+  }
+
+  /**
    * Returns the link if user can view an app otherwise the label of the app.
    *
    * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $app
@@ -187,8 +203,8 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
   public function buildHeader() {
     $headers = [];
     $headers['app_name'] = [
-      'data' => $this->t('@app name', [
-        '@app' => ucfirst($this->getDeveloperAppEntityDefinition()->get('label_singular')),
+      'data' => $this->t('@developer_app name', [
+        '@developer_app' => ucfirst($this->getDeveloperAppEntityDefinition()->get('label_singular')),
       ]),
       'specifier' => 'displayName',
       'field' => 'displayName',
@@ -314,24 +330,24 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
 
       if ($hasRevokedCred) {
         $args = [
-          '@app' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
+          '@developer_app' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
         ];
         if (count($entity->getCredentials()) > 1) {
           $warningRow['info']['data'] = $this->t(
-            'One of the credentials associated with this @app is in revoked status.',
+            'One of the credentials associated with this @developer_app is in revoked status.',
             $args
           );
         }
         else {
           $warningRow['info']['data'] = $this->t(
-            'The credential associated with this @app is in revoked status.',
+            'The credential associated with this @developer_app is in revoked status.',
             $args
           );
         }
       }
       elseif ($hasRevokedCredProduct || $hasPendingCredProduct) {
         $args = [
-          '@app' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
+          '@developer_app' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
           '@apiproduct' => $this->getApiProductEntityDefinition()->getLowercaseLabel(),
           '@status' => $hasPendingCredProduct ? $this->t('pending') : $this->t('revoked'),
         ];
@@ -339,10 +355,10 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
           /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $apiProduct */
           $apiProduct = $this->getApiProductStorage()->load($problematicApiProductName);
           $args['%name'] = $apiProduct->getDisplayName();
-          $warningRow['info']['data'] = $this->t("%name @apiproduct associated with this @app is in @status status.", $args);
+          $warningRow['info']['data'] = $this->t("%name @apiproduct associated with this @developer_app is in @status status.", $args);
         }
         else {
-          $warningRow['info']['data'] = $this->t("At least one @apiproduct associated with one of the credentials of this @app is in @status status.", $args);
+          $warningRow['info']['data'] = $this->t("At least one @apiproduct associated with one of the credentials of this @developer_app is in @status status.", $args);
         }
       }
     }
@@ -357,8 +373,8 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
    *   Render array.
    */
   protected function renderAddAppLink() {
-    return Link::createFromRoute($this->t('Add @devAppLabel', [
-      '@devAppLabel' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
+    return Link::createFromRoute($this->t('Add @developer_app', [
+      '@developer_app' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
     ]), 'entity.developer_app.add_form', [], ['attributes' => ['class' => 'btn btn-primary btn--add-app']])->toRenderable();
   }
 
@@ -411,7 +427,7 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
    * {@inheritdoc}
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
-    return $this->t('@devAppLabel', ['@devAppLabel' => $this->getDeveloperAppEntityDefinition()->getPluralLabel()]);
+    return $this->t('@developer_app', ['@developer_app' => $this->getDeveloperAppEntityDefinition()->getPluralLabel()]);
   }
 
 }

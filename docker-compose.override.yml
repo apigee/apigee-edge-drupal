@@ -5,6 +5,8 @@ services:
     volumes:
       - log:/mnt/files/log
     environment:
+      DRUPAL_CORE: ${DRUPAL_CORE:-8.5}
+      DEPENDENCIES: ${DEPENDENCIES:-}
       # We can not pass these environment variables with `docker-compose run -e` until
       # this has not been improved. https://github.com/wodby/php/pull/21#issuecomment-361200733
       DRUPAL_MODULE_NAME: apigee_edge
@@ -16,6 +18,10 @@ services:
       # Suppress deprecation warnings.
       # https://api.drupal.org/api/drupal/vendor%21symfony%21phpunit-bridge%21DeprecationErrorHandler.php/8.5.x
       SYMFONY_DEPRECATIONS_HELPER: disabled
+      THREADS: ${THREADS:-2}
+  webserver:
+    environment:
+      APACHE_FCGI_PROXY_TIMEOUT: 180 # Just in case, wait more than usual in tests.
 
 volumes:
   log:

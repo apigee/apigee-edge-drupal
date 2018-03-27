@@ -1,3 +1,6 @@
+langcode: en
+developer_app_label_singular: ''
+developer_app_label_plural: ''
 display_as_select: false
 associate_apps: true
 user_select: true
@@ -8,3 +11,4 @@ locked_base_fields:
 required_base_fields:
   - displayName
 default_products: []
+cache_expiration: 900

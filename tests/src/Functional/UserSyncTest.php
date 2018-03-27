@@ -35,8 +35,6 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
 
   public static $modules = [
     'block',
-    'apigee_edge',
-    'apigee_edge_test',
   ];
 
   protected $edgeDevelopers = [
@@ -141,7 +139,7 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
    */
   protected function verify() {
     $all_users = [];
-    /** @var \Drupal\user\Entity\UserInterface $account */
+    /** @var \Drupal\user\UserInterface $account */
     foreach (User::loadMultiple() as $account) {
       $email = $account->getEmail();
       if ($email && $email !== 'admin@example.com') {
@@ -179,9 +177,11 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * Tests Drupal user synchronization.
+   *
+   * @throws \Behat\Mink\Exception\ResponseTextException
    */
   public function testUserSync() {
-    $this->drupalGet('/admin/config/apigee-edge/settings');
+    $this->drupalGet('/admin/config/apigee-edge/developer-settings/attributes');
     $this->clickLinkProperly(t('Now'));
     $this->assertSession()->pageTextContains(t('Users are in sync with Edge.'));
     $this->verify();
@@ -189,9 +189,13 @@ class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * Tests scheduled Drupal user synchronization.
+   *
+   * @throws \Behat\Mink\Exception\ResponseTextException
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
+   * @throws \Exception
    */
   public function testUserAsync() {
-    $this->drupalGet('/admin/config/apigee-edge/settings');
+    $this->drupalGet('/admin/config/apigee-edge/developer-settings/attributes');
     $this->clickLinkProperly(t('Background'));
     $this->assertSession()->pageTextContains(t('User synchronization is scheduled.'));
     /** @var \Drupal\Core\Queue\QueueFactory $queue_service */
