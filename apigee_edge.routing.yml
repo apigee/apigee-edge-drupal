@@ -203,3 +203,11 @@ entity.developer_app.analytics_for_developer:
     user: '\d+'
     _developer_app_access: 'analytics'
     _permission: 'analytics own developer_app+administer developer_app'
+
+apigee_edge.export_analytics.csv:
+  path: '/analytics/export/{data_id}/csv'
+  defaults:
+    _controller: '\Drupal\apigee_edge\Controller\ExportAnalyticsController::exportAsCSV'
+  requirements:
+    _csrf_token: 'TRUE'
+    _custom_access: '\Drupal\apigee_edge\Controller\ExportAnalyticsController::access'
