@@ -207,9 +207,9 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
 
     if ($this->validateQueryString($form, $metric, $since, $until)) {
       $form['controls']['metrics']['#default_value'] = $metric;
-      $since_datetime = DrupalDatetime::createFromTimestamp((int)$since);
+      $since_datetime = DrupalDatetime::createFromTimestamp($since);
       $since_datetime->setTimezone(new \Datetimezone($this->currentUser()->getTimeZone()));
-      $until_datetime = DrupalDatetime::createFromTimestamp((int)$until);
+      $until_datetime = DrupalDatetime::createFromTimestamp($until);
       $until_datetime->setTimezone(new \Datetimezone($this->currentUser()->getTimeZone()));
       $form['controls']['since']['#default_value'] = $since_datetime;
       $form['controls']['until']['#default_value'] = $until_datetime;
