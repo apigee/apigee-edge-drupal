@@ -274,7 +274,9 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
         return FALSE;
       }
       if ($since->diff(new DrupalDateTime())->invert === 1) {
-        $this->messenger->addError($this->t('Start date cannot be in future.'));
+        $this->messenger->addError($this->t('Start date cannot be in future. The current local time of the Developer Portal: @time', [
+            '@time' => new DrupalDateTime(),
+          ]));
         return FALSE;
       }
     }
@@ -317,6 +319,10 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
     catch (MomentException $exception) {
       $this->messenger->addError($this->t('Invalid datetime parameters.'));
     }
+
+    $date_time_zone = new \DateTimeZone($this->currentUser()->getTimeZone());
+    $timezone_offset = $date_time_zone->getOffset(new \DateTime());
+    $form['#attached']['drupalSettings']['analytics']['timezone_offset'] = $timezone_offset / 60;
 
     // Pass every necessary data to JavaScript.
     // Possible parameters:
