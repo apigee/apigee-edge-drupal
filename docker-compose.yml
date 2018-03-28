@@ -3,7 +3,7 @@ version: "3"
 services:
   database:
     image: ${DB_IMAGE:-wodby/mariadb:10.2-3.1.2}
-    container_name: "${PROJECT_NAME:-my_project}_database"
+    container_name: "${COMPOSER_PROJECT_NAME:-my_project}_database"
     stop_grace_period: 30s
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-password}
@@ -19,7 +19,7 @@ services:
       context: .
       args:
         - PHP_IMAGE=${PHP_IMAGE:-wodby/drupal-php:7.1-dev-4.2.2}
-    container_name: "${PROJECT_NAME:-my_project}_php"
+    container_name: "${COMPOSER_PROJECT_NAME:-my_project}_php"
     environment:
       DB_HOST: ${DB_HOST:-database}
       DB_USER: ${DB_USER:-drupal}
@@ -35,7 +35,7 @@ services:
 
   webserver:
     image: ${WEBSERVER_IMAGE:-wodby/php-apache:2.4-3.0.1}
-    container_name: "${PROJECT_NAME:-my_project}_webserver"
+    container_name: "${COMPOSER_PROJECT_NAME:-my_project}_webserver"
     depends_on:
       - php
     environment:
@@ -51,7 +51,7 @@ services:
 
   phpcs:
     image: mxr576/docker-phpcs
-    container_name: "${PROJECT_NAME:-my_project}_phpcs"
+    container_name: "${COMPOSER_PROJECT_NAME:-my_project}_phpcs"
     volumes:
       - .:/opt/drupal-module
       - codebase:/var/www/html
