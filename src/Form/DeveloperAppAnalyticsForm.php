@@ -207,8 +207,12 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
 
     if ($this->validateQueryString($form, $metric, $since, $until)) {
       $form['controls']['metrics']['#default_value'] = $metric;
-      $form['controls']['since']['#default_value'] = new DrupalDateTime('@' . $since);
-      $form['controls']['until']['#default_value'] = new DrupalDateTime('@' . $until);
+      $since_datetime = DrupalDatetime::createFromTimestamp((int)$since);
+      $since_datetime->setTimezone(new \Datetimezone($this->currentUser()->getTimeZone()));
+      $until_datetime = DrupalDatetime::createFromTimestamp((int)$until);
+      $until_datetime->setTimezone(new \Datetimezone($this->currentUser()->getTimeZone()));
+      $form['controls']['since']['#default_value'] = $since_datetime;
+      $form['controls']['until']['#default_value'] = $until_datetime;
       $form['controls']['quick_date_picker']['#default_value'] = 'custom';
     }
     else {
@@ -275,8 +279,8 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
       }
       if ($since->diff(new DrupalDateTime())->invert === 1) {
         $this->messenger->addError($this->t('Start date cannot be in future. The current local time of the Developer Portal: @time', [
-            '@time' => new DrupalDateTime(),
-          ]));
+          '@time' => new DrupalDateTime(),
+        ]));
         return FALSE;
       }
     }
