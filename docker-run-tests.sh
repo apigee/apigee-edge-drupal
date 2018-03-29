@@ -67,6 +67,11 @@ composer drupal-phpunit-upgrade
 # https://github.com/minkphp/Mink/pull/760
 # https://www.drupal.org/project/drupal/issues/2956279
 composer require --dev behat/mink:dev-master#9ea1cebe
+# Install a required patch to fix failing tests.
+# "Time Ago summary does not render on Manage Display for Datetime"
+# http://dgo.to/2686409
+wget https://www.drupal.org/files/issues/2686409-45.patch
+git apply -v < 2686409-45.patch
 composer config repositories.library path /opt/drupal-module
 composer require ${DEPENDENCIES} "drupal/${DRUPAL_MODULE_NAME}"
 # Install this to get more detailed output from PHPUnit.
