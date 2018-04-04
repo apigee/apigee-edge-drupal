@@ -23,6 +23,7 @@ class DeveloperAppBaseFieldConfigForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $form['#attached']['library'][] = 'apigee_edge/apigee_edge.admin';
     $baseFields = DeveloperApp::baseFieldDefinitions(\Drupal::entityTypeManager()->getDefinition('developer_app'));
 
     $form['table'] = [
