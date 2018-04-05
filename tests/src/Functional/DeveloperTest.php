@@ -177,6 +177,10 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $this->getSession()->getPage()->checkField('edit-user-bulk-form-0');
     $this->getSession()->getPage()->pressButton('edit-submit');
 
+    // Ensure that entity static cache is also invalidated in this scope
+    // too. TODO Maybe introduce a loadUnchanged() method on developer or
+    // use storage's loadUnchanged() instead.
+    \Drupal::entityTypeManager()->getStorage('developer')->resetCache([$test_user['email']]);
     $developer = Developer::load($test_user['email']);
     $this->assertEquals($developer->getStatus(), $developer::STATUS_INACTIVE);
 
