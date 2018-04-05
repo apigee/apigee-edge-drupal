@@ -239,6 +239,10 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     ];
     $this->submitForm($formdata, 'Cancel account');
 
+    // Ensure that entity static cache is also invalidated in this scope
+    // too. TODO Maybe introduce a loadUnchanged() method on developer or
+    // use storage's loadUnchanged() instead.
+    \Drupal::entityTypeManager()->getStorage('developer')->resetCache([$test_user['email']]);
     $this->assertFalse(Developer::load($test_user['email']), 'Developer does not exists anymore.');
   }
 
