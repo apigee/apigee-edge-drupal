@@ -103,9 +103,9 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
     if ($result === SAVED_UPDATED) {
       $entity->setOriginalEmail($entity->getEmail());
     }
-
     $this->withController(function (DeveloperControllerInterface $controller) use ($entity, $developer_status) {
       $controller->setStatus($entity->id(), $developer_status);
+      $entity->setStatus($developer_status);
     });
 
     return $result;
