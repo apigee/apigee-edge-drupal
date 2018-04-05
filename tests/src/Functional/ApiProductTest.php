@@ -62,15 +62,6 @@ class ApiProductTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
-   * Resets the internal, static api product entity cache.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   */
-  protected function resetCache() {
-    \Drupal::entityTypeManager()->getStorage('api_product')->resetCache();
-  }
-
-  /**
    * Tests API product entity.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
@@ -87,16 +78,12 @@ class ApiProductTest extends ApigeeEdgeFunctionalTestBase {
 
     $this->assertNotEmpty($apiproduct->id());
 
-    $this->resetCache();
-
     $apiproductlist = ApiProduct::loadMultiple();
     $this->assertContains($apiproduct->id(), array_keys($apiproductlist));
 
     $value = $this->randomMachineName();
     $apiproduct->setAttribute('test', $value);
     $apiproduct->save();
-
-    $this->resetCache();
 
     /** @var \Drupal\apigee_edge\Entity\ApiProduct $loadedApiProduct */
     $loadedApiProduct = ApiProduct::load($apiproduct->id());
