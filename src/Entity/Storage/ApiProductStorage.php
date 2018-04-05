@@ -21,7 +21,6 @@ namespace Drupal\apigee_edge\Entity\Storage;
 
 use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\ApiProductController;
-use Drupal\apigee_edge\Entity\DrupalEntityFactory;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
@@ -76,7 +75,7 @@ class ApiProductStorage extends EdgeEntityStorageBase implements ApiProductStora
    * {@inheritdoc}
    */
   public function getController(SDKConnectorInterface $connector) : EntityCrudOperationsControllerInterface {
-    return new ApiProductController($connector->getOrganization(), $connector->getClient(), new DrupalEntityFactory());
+    return new ApiProductController($connector->getOrganization(), $connector->getClient());
   }
 
 }

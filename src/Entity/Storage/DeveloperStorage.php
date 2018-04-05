@@ -22,7 +22,6 @@ namespace Drupal\apigee_edge\Entity\Storage;
 use Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface;
 use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperController;
-use Drupal\apigee_edge\Entity\DrupalEntityFactory;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\Cache;
@@ -88,7 +87,7 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
    * {@inheritdoc}
    */
   public function getController(SDKConnectorInterface $connector): EntityCrudOperationsControllerInterface {
-    return new DeveloperController($connector->getOrganization(), $connector->getClient(), new DrupalEntityFactory());
+    return new DeveloperController($connector->getOrganization(), $connector->getClient());
   }
 
   /**

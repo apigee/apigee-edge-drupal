@@ -18,22 +18,21 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Entity\Controller;
+namespace Drupal\apigee_edge\Entity\Denormalizer;
 
-use Apigee\Edge\Api\Management\Controller\ApiProductController as EdgeApiProductController;
-use Drupal\apigee_edge\Entity\ApiProduct;
+use Apigee\Edge\Api\Management\Denormalizer\AppDenormalizer;
+use Drupal\apigee_edge\Entity\DeveloperApp;
 
 /**
- * Advanced version of Apigee Edge SDK's API product controller.
+ * Ensures that loaded apps in Drupal are always Drupal entities.
  */
-class ApiProductController extends EdgeApiProductController implements DrupalEntityControllerInterface {
-  use DrupalEntityControllerAwareTrait;
+class DrupalAppDenormalizer extends AppDenormalizer {
 
   /**
    * {@inheritdoc}
    */
-  protected function getEntityClass(): string {
-    return ApiProduct::class;
-  }
+  protected $developerAppClass = DeveloperApp::class;
 
+  // TODO Override this when company apps support comes.
+  // protected $companyAppClass = CompanyApp::class;.
 }

@@ -60,6 +60,7 @@ trait FieldableEdgeEntityBaseTrait {
     preSave as private traitPreSave;
     postSave as private traitPostSave;
     __sleep as private traitSleep;
+    toArray as private traitToArray;
   }
 
   /**
@@ -496,11 +497,19 @@ trait FieldableEdgeEntityBaseTrait {
    */
   public function toArray() {
     $values = [];
+
     foreach ($this->getFields() as $name => $property) {
       /** @var \Drupal\Core\Field\FieldItemListInterface $property */
-      $values[$name] = $property->getValue();
+      $values[$name] = $property->value;
     }
-    return $values;
+
+    // Keep the original values and only add new values from fields.
+    // This order is important because for example the array from traitToArray
+    // contains date properties as proper DateTimeImmutable objects but the new
+    // one contains them as timestamps. Because this function called by
+    // DrupalEntityControllerAwareTrait::convertToSdkEntity() that missmatch
+    // could cause errors.
+    return array_merge($values, $this->traitToArray());
   }
 
   /**
