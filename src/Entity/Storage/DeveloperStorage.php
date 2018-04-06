@@ -27,7 +27,6 @@ use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Psr\Log\LoggerInterface;
@@ -53,16 +52,13 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
    *   The cache backend to be used.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger to be used.
-   * @param \Drupal\Core\Database\Connection $database
-   *   The database connection.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config
    *   Configuration factory.
    * @param \Drupal\Component\Datetime\TimeInterface $systemTime
    *   System time.
    */
-  public function __construct(SDKConnectorInterface $sdkConnector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, Connection $database, ConfigFactoryInterface $config, TimeInterface $systemTime) {
+  public function __construct(SDKConnectorInterface $sdkConnector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, ConfigFactoryInterface $config, TimeInterface $systemTime) {
     parent::__construct($sdkConnector, $entity_type, $cache, $logger, $systemTime);
-    $this->database = $database;
     $this->cacheExpiration = $config->get('apigee_edge.developer_settings')->get('cache_expiration');
   }
 
@@ -77,7 +73,6 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
       $entity_type,
       $container->get('cache.apigee_edge_entity'),
       $logger,
-      $container->get('database'),
       $container->get('config.factory'),
       $container->get('datetime.time')
     );
@@ -109,40 +104,6 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
     });
 
     return $result;
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * Adds Drupal user information to loaded entities.
-   */
-  protected function postLoad(array &$entities) {
-    parent::postLoad($entities);
-    $developerId_mail_map = [];
-    /** @var \Drupal\apigee_edge\Entity\Developer $entity */
-    foreach ($entities as $entity) {
-      $developerId_mail_map[$entity->getDeveloperId()] = $entity->getEmail();
-    }
-
-    $query = $this->database->select('users_field_data', 'ufd');
-    $query->fields('ufd', ['mail', 'uid'])
-      ->condition('mail', $developerId_mail_map, 'IN');
-    $mail_uid_map = $query->execute()->fetchAllKeyed();
-
-    foreach ($entities as $entity) {
-      // If developer id is not in this map it means the developer does
-      // not exist in Drupal yet (developer syncing between Edge and Drupal is
-      // required) or the developer id has not been stored in
-      // related Drupal user yet.
-      // This can be fixed with running developer sync too,
-      // because it could happen that the user had been
-      // created in Drupal before Edge connected was configured.
-      // Although, this could be a result of a previous error
-      // but there should be a log about that.
-      if (isset($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]])) {
-        $entity->setOwnerId($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]]);
-      }
-    }
   }
 
   /**

@@ -27,7 +27,6 @@ use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -68,17 +67,14 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
    *   The logger to be used.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Database\Connection $database
-   *   The database connection.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config
    *   Configuration factory.
    * @param \Drupal\Component\Datetime\TimeInterface $systemTime
    *   System time.
    */
-  public function __construct(SDKConnectorInterface $sdkConnector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, EntityTypeManagerInterface $entityTypeManager, Connection $database, ConfigFactoryInterface $config, TimeInterface $systemTime) {
+  public function __construct(SDKConnectorInterface $sdkConnector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, EntityTypeManagerInterface $entityTypeManager, ConfigFactoryInterface $config, TimeInterface $systemTime) {
     parent::__construct($sdkConnector, $entity_type, $cache, $logger, $systemTime);
     $this->entityTypeManager = $entityTypeManager;
-    $this->database = $database;
     $this->cacheExpiration = $config->get('apigee_edge.appsettings')->get('cache_expiration');
   }
 
@@ -94,7 +90,6 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
       $container->get('cache.apigee_edge_entity'),
       $logger,
       $container->get('entity_type.manager'),
-      $container->get('database'),
       $container->get('config.factory'),
       $container->get('datetime.time')
     );
@@ -123,55 +118,6 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
       ->condition('developerId', $developerId)
       ->execute();
     return $this->loadMultiple(array_values($ids));
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * Adds Drupal user information to loaded entities.
-   */
-  protected function postLoad(array &$entities) {
-    $developerIds = [];
-    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
-    foreach ($entities as $entity) {
-      $developerIds[] = $entity->getDeveloperId();
-    }
-    $developerIds = array_unique($developerIds);
-    $developerId_mail_map = [];
-    /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperStorageInterface $developerStorage */
-    $developerStorage = $this->entityTypeManager->getStorage('developer');
-    foreach ($developerStorage->loadByProperties(['developerId' => $developerIds]) as $developer) {
-      /** @var \Drupal\apigee_edge\Entity\Developer $developer */
-      $developerId_mail_map[$developer->uuid()] = $developer->getEmail();
-    }
-
-    if ($developerId_mail_map) {
-      $query = $this->database->select('users_field_data', 'ufd');
-      $query->fields('ufd', ['mail', 'uid'])
-        ->condition('mail', $developerId_mail_map, 'IN');
-      $mail_uid_map = $query->execute()->fetchAllKeyed();
-    }
-    else {
-      $mail_uid_map = [];
-    }
-
-    foreach ($entities as $entity) {
-      // If developer id is not in this map it means the developer does
-      // not exist in Drupal yet (developer syncing between Edge and Drupal is
-      // required) or the developer id has not been stored in
-      // related Drupal user yet.
-      // This can be fixed with running developer sync too,
-      // because it could happen that the user had been
-      // created in Drupal before Edge connected was configured.
-      // Although, this could be a result of a previous error
-      // but there should be a log about that.
-      if (isset($developerId_mail_map[$entity->getDeveloperId()]) && isset($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]])) {
-        $entity->setOwnerId($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]]);
-      }
-    }
-    // Call parent post load and with that call hook_developer_app_load()
-    // implementations.
-    parent::postLoad($entities);
   }
 
   /**
