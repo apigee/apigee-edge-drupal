@@ -135,6 +135,12 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
     parent::postLoad($entities);
   }
 
+  /**
+   * Sets the owner ids on developer apps.
+   *
+   * @param array $entities
+   *   List of developer apps.
+   */
   public function setOwnerIdsOnApps(array &$entities) {
     $developerIds = [];
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
