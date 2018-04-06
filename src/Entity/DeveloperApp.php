@@ -45,7 +45,7 @@ use Drupal\user\UserInterface;
  *       "add" = "Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm",
  *       "add_for_developer" = "Drupal\apigee_edge\Entity\Form\DeveloperAppCreateFormForDeveloper",
  *       "edit" = "Drupal\apigee_edge\Entity\Form\DeveloperAppEditForm",
- *       "edit_for_developer" = "Drupal\apigee_edge\Entity\Form\DeveloperAppEditForm",
+ *       "edit_for_developer" = "Drupal\apigee_edge\Entity\Form\DeveloperAppEditFormForDeveloper",
  *       "delete" = "Drupal\apigee_edge\Entity\Form\DeveloperAppDeleteForm",
  *       "delete_for_developer" = "Drupal\apigee_edge\Entity\Form\DeveloperAppDeleteFormForDeveloper",
  *       "analytics" = "Drupal\apigee_edge\Form\DeveloperAppAnalyticsForm",

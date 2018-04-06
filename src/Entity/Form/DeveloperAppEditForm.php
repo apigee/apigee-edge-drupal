@@ -195,12 +195,6 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
   protected function actions(array $form, FormStateInterface $form_state) {
     $actions = parent::actions($form, $form_state);
     $actions['submit']['#value'] = $this->t('Save');
-
-    $actions['delete']['#access'] = $this->entity->access('delete');
-    $actions['delete']['#url'] = $this->getFormId() === 'developer_app_developer_app_edit_for_developer_form'
-      ? $this->entity->toUrl('delete-form-for-developer')
-      : $this->entity->toUrl('delete-form');
-
     return $actions;
   }
 
@@ -311,33 +305,6 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
 
     if ($redirect_user) {
       $form_state->setRedirectUrl($this->getRedirectUrl());
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getRedirectUrl() {
-    $entity = $this->getEntity();
-    if ($this->getFormId() === 'developer_app_developer_app_edit_for_developer_form') {
-      if ($entity->hasLinkTemplate('canonical-by-developer')) {
-        // If available, return the collection URL.
-        return $entity->toUrl('canonical-by-developer');
-      }
-      else {
-        // Otherwise fall back to the front page.
-        return Url::fromRoute('<front>');
-      }
-    }
-    else {
-      if ($entity->hasLinkTemplate('canonical')) {
-        // If available, return the collection URL.
-        return $entity->toUrl('canonical');
-      }
-      else {
-        // Otherwise fall back to the front page.
-        return Url::fromRoute('<front>');
-      }
     }
   }
 
