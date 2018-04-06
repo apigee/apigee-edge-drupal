@@ -20,10 +20,14 @@
 
 namespace Drupal\apigee_edge\Entity\Controller;
 
+use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
+use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
+use Drupal\Core\Entity\EntityInterface;
+
 /**
  * Provides enhancements for Apigee Edge PHP SDK's built in entity controllers.
  */
-interface DrupalEntityControllerInterface {
+interface DrupalEntityControllerInterface extends EntityCrudOperationsControllerInterface {
 
   /**
    * Loads multiple entities.
@@ -41,5 +45,18 @@ interface DrupalEntityControllerInterface {
    *   Array of entities that are both Drupal and SDK entities in the same time.
    */
   public function loadMultiple(array $ids = NULL) : array;
+
+  /**
+   * Converts a Drupal entity into an SDK entity.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $drupal_entity
+   *   Apigee Edge entity in Drupal.
+   *
+   * @return \Apigee\Edge\Entity\EntityInterface
+   *   Apigee Edge entity in the SDK.
+   *
+   * @throws \ReflectionException
+   */
+  public function convertToSdkEntity(EntityInterface $drupal_entity): EdgeEntityInterface;
 
 }

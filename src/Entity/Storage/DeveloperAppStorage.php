@@ -21,8 +21,7 @@ namespace Drupal\apigee_edge\Entity\Storage;
 
 use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppController;
-use Drupal\apigee_edge\Entity\DrupalAppDenormalizer;
-use Drupal\apigee_edge\Entity\DrupalEntityFactory;
+use Drupal\apigee_edge\Entity\Denormalizer\DrupalAppDenormalizer;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\Cache;
@@ -111,7 +110,7 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
    * @method listByDeveloper
    */
   public function getController(SDKConnectorInterface $connector): EntityCrudOperationsControllerInterface {
-    return new DeveloperAppController($connector->getOrganization(), $connector->getClient(), new DrupalEntityFactory(), [new DrupalAppDenormalizer()]);
+    return new DeveloperAppController($connector->getOrganization(), $connector->getClient(), [new DrupalAppDenormalizer()]);
   }
 
   /**

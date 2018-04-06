@@ -23,9 +23,11 @@
  * Main module file for Apigee Edge.
  */
 
-use Apigee\Edge\Entity\EntityNormalizer;
+use Apigee\Edge\Api\Management\Normalizer\AppCredentialNormalizer;
+use Apigee\Edge\Entity\EntityTransformer;
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\ClientErrorException;
+use Apigee\Edge\Normalizer\CredentialProductNormalizer;
 use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
@@ -772,8 +774,9 @@ function template_preprocess_app_credential(array &$variables) {
   $credential = $variables['elements']['#credential'];
   /** @var \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter */
   $dateFormatter = Drupal::service('date.formatter');
+  $normalizer = new EntityTransformer([new AppCredentialNormalizer(), new CredentialProductNormalizer()]);
   // Convert app entity to an array.
-  $normalized = (array) (new EntityNormalizer())->normalize($credential);
+  $normalized = (array) $normalizer->normalize($credential);
 
   $properties_in_primary = [
     'consumerKey' => [

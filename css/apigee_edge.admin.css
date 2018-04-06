@@ -32,3 +32,9 @@
 .table--developer-attributes {
   margin-top: 20px;
 }
+
+.developer-app-base-field-config-form table caption {
+  font-weight: bold;
+  margin: 2rem 0 1rem;
+  text-transform: uppercase;
+}

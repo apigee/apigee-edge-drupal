@@ -23,12 +23,10 @@ use Apigee\Edge\Api\Management\Controller\AppController;
 use Apigee\Edge\Api\Management\Controller\DeveloperAppController as EdgeDeveloperAppController;
 use Apigee\Edge\Api\Management\Controller\DeveloperAppControllerInterface as EdgeDeveloperAppControllerInterface;
 use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
-use Apigee\Edge\Entity\EntityDenormalizer;
 use Apigee\Edge\Entity\EntityInterface;
-use Apigee\Edge\Entity\EntityNormalizer;
 use Apigee\Edge\Structure\CpsListLimitInterface;
+use Drupal\apigee_edge\Entity\Denormalizer\DrupalAppDenormalizer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
-use Drupal\apigee_edge\Entity\DrupalAppDenormalizer;
 
 /**
  * Advanced version of Apigee Edge SDK's developer app controller.
@@ -40,6 +38,15 @@ use Drupal\apigee_edge\Entity\DrupalAppDenormalizer;
  * @package Drupal\apigee_edge\Entity\Controller
  */
 class DeveloperAppController extends AppController implements DeveloperAppControllerInterface {
+
+  use DrupalEntityControllerAwareTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getEntityClass(): string {
+    return DeveloperApp::class;
+  }
 
   /**
    * {@inheritdoc}
@@ -58,54 +65,7 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
    *   Developer app controller from the SDK.
    */
   protected function createDeveloperAppController(string $developerId): EdgeDeveloperAppControllerInterface {
-    return new EdgeDeveloperAppController($this->getOrganisation(), $developerId, $this->client, NULL, [new DrupalAppDenormalizer()]);
-  }
-
-  /**
-   * Converts a Drupal entity into an Edge entity.
-   *
-   * The reason to do this is because the Drupal query overrides the id()
-   * method, so that it works with the listing endpoints. However, using
-   * the appId won't work with the create/update/delete endpoints. So in
-   * those cases a conversion to the superclass is needed.
-   *
-   * @param \Drupal\apigee_edge\Entity\DeveloperApp $app
-   *   Drupal Developer app entity.
-   *
-   * @return \Apigee\Edge\Api\Management\Entity\DeveloperApp
-   *   SDK Developer app entity.
-   */
-  protected function convertEntity(DeveloperApp $app): EdgeDeveloperApp {
-    $normalizer = new EntityNormalizer();
-    $denormalizer = new EntityDenormalizer();
-    $normalized = $normalizer->normalize($app);
-    return $denormalizer->denormalize($normalized, EdgeDeveloperApp::class);
-  }
-
-  /**
-   * Copies all properties to $destination from $source.
-   *
-   * @param \Drupal\apigee_edge\Entity\DeveloperApp $destination
-   *   Drupal developer app entity.
-   * @param \Apigee\Edge\Api\Management\Entity\DeveloperApp $source
-   *   SDK developer app entity.
-   *
-   * @throws \ReflectionException
-   */
-  protected function applyChanges(DeveloperApp $destination, EdgeDeveloperApp $source) {
-    $rodst = new \ReflectionObject($destination);
-    $rosrc = new \ReflectionObject($source);
-    foreach ($rodst->getProperties() as $property) {
-      $setter = 'set' . ucfirst($property->getName());
-      $getter = 'get' . ucfirst($property->getName());
-      if ($rodst->hasMethod($setter) && $rosrc->hasMethod($getter)) {
-        $rm = new \ReflectionMethod($destination, $setter);
-        $value = $source->{$getter}();
-        if ($value !== NULL) {
-          $rm->invoke($destination, $value);
-        }
-      }
-    }
+    return new EdgeDeveloperAppController($this->getOrganisation(), $developerId, $this->client, [new DrupalAppDenormalizer()]);
   }
 
   /**
@@ -114,9 +74,7 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   public function create(EntityInterface $entity): void {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
     $controller = $this->createDeveloperAppController($entity->getDeveloperId());
-    $converted = $this->convertEntity($entity);
-    $controller->create($converted);
-    $this->applyChanges($entity, $converted);
+    $controller->create($entity);
   }
 
   /**
@@ -125,9 +83,7 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   public function update(EntityInterface $entity): void {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
     $controller = $this->createDeveloperAppController($entity->getDeveloperId());
-    $converted = $this->convertEntity($entity);
-    $controller->update($converted);
-    $this->applyChanges($entity, $converted);
+    $controller->update($entity);
   }
 
   /**
@@ -157,29 +113,6 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   }
 
   /**
-   * Loads multiple entities.
-   *
-   * @param array|null $ids
-   *   Array of entity ids.
-   *
-   * @return \Apigee\Edge\Entity\EntityInterface[]
-   *   Array of entities.
-   */
-  public function loadMultiple(array $ids = NULL): array {
-    if ($ids !== NULL && count($ids) === 1) {
-      $app = $this->loadApp(reset($ids));
-      return [$app->id() => $app];
-    }
-
-    $allEntities = $this->getEntities();
-    if ($ids === NULL) {
-      return $allEntities;
-    }
-
-    return array_intersect_key($allEntities, array_flip($ids));
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function loadByAppName(string $developerId, string $appName) : EntityInterface {
@@ -203,6 +136,13 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
     /** @var \Apigee\Edge\Api\Management\Controller\DeveloperAppControllerInterface $controller */
     $controller = $this->createDeveloperAppController($developerId);
     return $controller->getEntityIds();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getOriginalEntityClass(): string {
+    return EdgeDeveloperApp::class;
   }
 
 }
