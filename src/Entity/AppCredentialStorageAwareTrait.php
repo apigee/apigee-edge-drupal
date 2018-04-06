@@ -32,6 +32,22 @@ namespace Drupal\apigee_edge\Entity;
 trait AppCredentialStorageAwareTrait {
 
   /**
+   * Returns the currently available best storage implementation.
+   *
+   * @return \Drupal\Core\TempStore\SharedTempStoreFactory|\Drupal\Core\TempStore\PrivateTempStoreFactory
+   *   The storage object.
+   */
+  private function getStore() {
+    // If there is no open session then private temp storage is not working.
+    // This could happen if someone uses the Drupal entity controllers from
+    // code (ex.: update hooks, tests, Drush commands, etc.).
+    if (\Drupal::requestStack()->getCurrentRequest()->getSession() === NULL) {
+      return \Drupal::service('apigee_edge.tempstore.shared.app_credentials');
+    }
+    return \Drupal::service('apigee_edge.tempstore.private.app_credentials');
+  }
+
+  /**
    * Generates a collection id for an app.
    *
    * @param string $ownerId
@@ -61,7 +77,7 @@ trait AppCredentialStorageAwareTrait {
    */
   protected function getAppCredentialsFromStorage(string $ownerId, string $appName) {
     /** @var \Drupal\Core\TempStore\PrivateTempStore $store */
-    $store = \Drupal::service('apigee_edge.tempstore.private.app_credentials')->get($this->generateCollectionForApp($ownerId, $appName));
+    $store = $this->getStore()->get($this->generateCollectionForApp($ownerId, $appName));
     return $store->get('credentials');
   }
 
@@ -80,7 +96,7 @@ trait AppCredentialStorageAwareTrait {
    */
   protected function saveAppCredentialsToStorage(string $ownerId, string $appName, array $credentials) : void {
     /** @var \Drupal\Core\TempStore\PrivateTempStore $store */
-    $store = \Drupal::service('apigee_edge.tempstore.private.app_credentials')->get($this->generateCollectionForApp($ownerId, $appName));
+    $store = $this->getStore()->get($this->generateCollectionForApp($ownerId, $appName));
     $store->set('credentials', $credentials);
   }
 
@@ -107,8 +123,12 @@ trait AppCredentialStorageAwareTrait {
    */
   protected function clearAppCredentialsFromStorage(string $ownerId, string $appName) : bool {
     /** @var \Drupal\Core\TempStore\PrivateTempStore $store */
-    $store = \Drupal::service('apigee_edge.tempstore.private.app_credentials')->get($this->generateCollectionForApp($ownerId, $appName));
-    return $store->delete('credentials');
+    $store = $this->getStore()->get($this->generateCollectionForApp($ownerId, $appName));
+    $return = $store->delete('credentials');
+    // Shared store's delete method does not return anything.
+    // Why these storages do not implement a common interface to ensure their
+    // common parts are compatible with each other?
+    return $return === NULL ? TRUE : $return;
   }
 
 }

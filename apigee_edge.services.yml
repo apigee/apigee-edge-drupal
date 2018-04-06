@@ -76,3 +76,8 @@ services:
     parent: tempstore.private
     arguments:
       index_0: '@apigee_edge.keyvalue.expirable.app_credentials'
+
+  apigee_edge.tempstore.shared.app_credentials:
+    parent: tempstore.shared
+    arguments:
+      index_0: '@apigee_edge.keyvalue.expirable.app_credentials'
