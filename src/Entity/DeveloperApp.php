@@ -239,7 +239,8 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
    * {@inheritdoc}
    */
   public function getOwner() {
-    return $this->drupalUserId === NULL ? NULL : User::load($this->drupalUserId);
+    $owner = $this->getOwnerId();
+    return $owner === NULL ? NULL : User::load($owner);
   }
 
   /**
@@ -255,6 +256,13 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
    * {@inheritdoc}
    */
   public function getOwnerId() {
+    if (!$this->drupalUserId) {
+      /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperAppStorage $storage */
+      $storage = \Drupal::entityTypeManager()->getStorage($this->entityTypeId);
+      $entities = [$this];
+      $storage->setOwnerIdsOnApps($entities);
+    }
+
     return $this->drupalUserId;
   }
 

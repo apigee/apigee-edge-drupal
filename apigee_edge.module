@@ -33,6 +33,7 @@ use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Form\DeveloperSettingsForm;
 use Drupal\apigee_edge\JobExecutor;
+use Drupal\apigee_edge\Plugin\Field\FieldType\ApigeeEdgeDeveloperIdFieldItem;
 use Drupal\apigee_edge\Plugin\Validation\Constraint\DeveloperEmailUniqueValidator;
 use Drupal\Component\Render\PlainTextOutput;
 use Drupal\Component\Utility\Crypt;
@@ -178,7 +179,7 @@ function apigee_edge_entity_base_field_info(EntityTypeInterface $entity_type) {
       ->setName('apigee_edge_developer_id')
       ->setLabel(t('Apigee Edge Developer ID'))
       ->setComputed(TRUE)
-      ->setClass('\Drupal\apigee_edge\Plugin\Field\FieldType\ApigeeEdgeDeveloperIdFieldItem');
+      ->setClass(ApigeeEdgeDeveloperIdFieldItem::class);
   }
 
   return $fields;
