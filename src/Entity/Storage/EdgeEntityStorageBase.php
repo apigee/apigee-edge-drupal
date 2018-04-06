@@ -212,7 +212,9 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
     $this->withController(function (DrupalEntityControllerInterface $controller) use ($id, $entity, &$result) {
       // Convert Drupal entity back to an SDK entity and with that:
       // - prevent sending additional Drupal-only properties to Apigee Edge
-      // - prevent serialization/normalized errors caused by TypedData.
+      // - prevent serialization/normalization errors
+      //   (CircularReferenceException) caused by TypedData objects on Drupal
+      //   entities.
       $sdkEntity = $controller->convertToSdkEntity($entity);
       if ($entity->isNew()) {
         $controller->create($sdkEntity);

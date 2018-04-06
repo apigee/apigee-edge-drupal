@@ -62,3 +62,17 @@ services:
     tags:
       # Use a higher priority than EntityConverter, see the class for details.
       - { name: paramconverter, priority: 10 }
+
+  apigee_edge.keyvalue.app_credentials:
+    class: Drupal\apigee_edge\KeyValueStore\AppCredentialStorageFactory
+
+  apigee_edge.keyvalue.expirable.app_credentials:
+    parent: keyvalue.expirable
+    arguments:
+      index_1:
+        keyvalue_expirable_default: 'apigee_edge.keyvalue.app_credentials'
+
+  apigee_edge.tempstore.private.app_credentials:
+    parent: tempstore.private
+    arguments:
+      index_0: '@apigee_edge.keyvalue.expirable.app_credentials'

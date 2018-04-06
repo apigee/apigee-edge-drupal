@@ -27,8 +27,6 @@ use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
  * Displays the view page of a developer app for a given user on the UI.
- *
- * @package Drupal\apigee_edge\Controller
  */
 class DeveloperAppViewControllerForDeveloper extends EntityViewController implements DeveloperAppPageTitleInterface {
 

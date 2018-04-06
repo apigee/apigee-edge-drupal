@@ -77,6 +77,7 @@ use Drupal\user\UserInterface;
  */
 class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
 
+  use AppCredentialStorageAwareTrait;
   use FieldableEdgeEntityBaseTrait {
     id as private traitId;
     urlRouteParameters as private traitUrlRouteParameters;
@@ -191,6 +192,47 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
    */
   public function id(): ? string {
     return $this->getAppId();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setCredentials(array $credentials): void {
+    // We do not want to store credentials in the object because
+    // object properties get saved to the persistent cache.
+    // @see \Drupal\apigee_edge\Entity\Storage\EdgeEntityStorageBase::setPersistentCache()
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Try to load the app credential's from user's private credential storage
+   * or if those are missing load them from Apigee Edge.
+   *
+   * In Drupal this method always returns the actually saved credentials from
+   * Apigee Edge. It new returns what has been on the object!
+   *
+   * @see \Drupal\apigee_edge\KeyValueStore\AppCredentialStorageFactoryInterface
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   */
+  public function getCredentials(): array {
+    // When an app is created the app id is empty.
+    if (empty($this->appId)) {
+      return [];
+    }
+    if ($this->getAppCredentialsFromStorage($this->developerId, $this->name) === NULL) {
+      /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdkConnector */
+      $sdkConnector = \Drupal::service('apigee_edge.sdk_connector');
+      /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperAppStorageInterface $developerAppStorage */
+      $developerAppStorage = $this->entityTypeManager()->getStorage('developer_app');
+      // Use our own developer controller because it ensures that loaded app
+      // credentials also get stored in user's private credential storage.
+      $dac = $developerAppStorage->getController($sdkConnector);
+      /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $app */
+      $dac->load($this->appId);
+    }
+    return $this->getAppCredentialsFromStorage($this->developerId, $this->name);
   }
 
   /**

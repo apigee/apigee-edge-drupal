@@ -20,8 +20,8 @@
 namespace Drupal\apigee_edge\Entity\Storage;
 
 use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
+use Drupal\apigee_edge\Entity\AppCredentialStorageAwareTrait;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppController;
-use Drupal\apigee_edge\Entity\Denormalizer\DrupalAppDenormalizer;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\Cache;
@@ -38,6 +38,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Controller class for developer apps.
  */
 class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements DeveloperAppStorageInterface {
+
+  use AppCredentialStorageAwareTrait;
 
   /**
    * The entity type manager.
@@ -110,7 +112,7 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
    * @method listByDeveloper
    */
   public function getController(SDKConnectorInterface $connector): EntityCrudOperationsControllerInterface {
-    return new DeveloperAppController($connector->getOrganization(), $connector->getClient(), [new DrupalAppDenormalizer()]);
+    return new DeveloperAppController($connector->getOrganization(), $connector->getClient());
   }
 
   /**
@@ -170,6 +172,25 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
     // Call parent post load and with that call hook_developer_app_load()
     // implementations.
     parent::postLoad($entities);
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\TempStore\TempStoreException
+   */
+  protected function doDelete($entities) {
+    parent::doDelete($entities);
+    // We remove app credential from user's private app credential storage
+    // here instead of in resetCache(), because there we would only have
+    // appId-s but what we need is appName + developerId for this.
+    // Also, most cache invalidation happens in the controller level, but
+    // we do this here for the above discussed reasons.
+    // @see \Drupal\apigee_edge\Entity\Controller\DeveloperAppController
+    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
+    foreach ($entities as $entity) {
+      $this->clearAppCredentialsFromStorage($entity->getDeveloperId(), $entity->getName());
+    }
   }
 
   /**

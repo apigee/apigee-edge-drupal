@@ -27,8 +27,6 @@ use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
  * Displays the view page of a developer app on the UI.
- *
- * @package Drupal\apigee_edge\Controller
  */
 class DeveloperAppViewController extends EntityViewController implements DeveloperAppPageTitleInterface {
 
