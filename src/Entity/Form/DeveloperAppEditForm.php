@@ -211,7 +211,9 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
           if ($new_credential === $original_credential->getConsumerKey()) {
             try {
               $original_api_product_names = [];
-              $new_api_product_names = array_filter($new_credentail_data['api_products']);
+              // Cast it to array to be able handle the same way the single- and
+              // multi-select configuration.
+              $new_api_product_names = array_filter((array) $new_credentail_data['api_products']);
               foreach ($original_credential->getApiProducts() as $original_api_product) {
                 $original_api_product_names[] = $original_api_product->getApiproduct();
               }
