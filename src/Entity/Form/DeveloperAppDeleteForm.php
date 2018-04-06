@@ -62,8 +62,8 @@ class DeveloperAppDeleteForm extends EntityDeleteForm implements DeveloperAppPag
 
     $form['id_verification'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Enter the @developer_app name to confirm', [
-        '@developer_app' => $developer_app->label(),
+      '#title' => $this->t('Type "%developer_app" to proceed', [
+        '%developer_app' => $developer_app->getName(),
       ]),
       '#default_value' => '',
       '#required' => TRUE,

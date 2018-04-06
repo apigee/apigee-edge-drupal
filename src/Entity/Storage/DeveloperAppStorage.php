@@ -129,6 +129,13 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
    * Adds Drupal user information to loaded entities.
    */
   protected function postLoad(array &$entities) {
+    $this->setOwnerIdsOnApps($entities);
+    // Call parent post load and with that call hook_developer_app_load()
+    // implementations.
+    parent::postLoad($entities);
+  }
+
+  public function setOwnerIdsOnApps(array &$entities) {
     $developerIds = [];
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
     foreach ($entities as $entity) {
@@ -167,9 +174,6 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
         $entity->setOwnerId($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]]);
       }
     }
-    // Call parent post load and with that call hook_developer_app_load()
-    // implementations.
-    parent::postLoad($entities);
   }
 
   /**
