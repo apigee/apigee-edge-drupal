@@ -14,12 +14,16 @@ apigee_edge.error_page:
           type: text
           label: 'Error page content'
 
-apigee_edge.authentication:
+apigee_edge.client:
   type: config_object
   mapping:
     active_key:
       type: string
     default_endpoint:
+      type: string
+    http_client_timeout:
+      type: integer
+    http_client_proxy:
       type: string
 
 apigee_edge.appsettings:

@@ -21,12 +21,14 @@
 namespace Drupal\apigee_edge_debug;
 
 use Drupal\apigee_edge\SDKConnector as OriginalSDKConnector;
+use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\InfoParserInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Http\ClientFactory;
 use Drupal\key\KeyRepositoryInterface;
+use Http\Adapter\Guzzle6\Client as GuzzleClientAdapter;
 
 /**
  * Service decorator for SDKConnector.
@@ -67,13 +69,14 @@ class SDKConnector extends OriginalSDKConnector {
    *   Info file parser service.
    */
   public function __construct(ClientFactory $clientFactory, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $moduleHandler, InfoParserInterface $infoParser) {
+    parent::__construct($clientFactory, $key_repository, $entity_type_manager, $config_factory, $moduleHandler, $infoParser);
     $config = [
       'headers' => [
         static::HEADER => static::HEADER,
       ],
     ];
-    $httpClient = $clientFactory->fromOptions($config);
-    parent::__construct($httpClient, $key_repository, $entity_type_manager, $config_factory, $moduleHandler, $infoParser);
+    $config = NestedArray::mergeDeep($this->getHttpClientConfiguration($config_factory), $config);
+    $this->httpClient = new GuzzleClientAdapter($clientFactory->fromOptions($config));
   }
 
   /**
