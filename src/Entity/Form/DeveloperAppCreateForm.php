@@ -19,7 +19,7 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
-use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController;
+use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialController;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;

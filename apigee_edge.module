@@ -23,14 +23,17 @@
  * Main module file for Apigee Edge.
  */
 
-use Apigee\Edge\Entity\EntityNormalizer;
+use Apigee\Edge\Api\Management\Normalizer\AppCredentialNormalizer;
+use Apigee\Edge\Entity\EntityTransformer;
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\ClientErrorException;
+use Apigee\Edge\Normalizer\CredentialProductNormalizer;
 use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Form\DeveloperSettingsForm;
 use Drupal\apigee_edge\JobExecutor;
+use Drupal\apigee_edge\Plugin\Field\FieldType\ApigeeEdgeDeveloperIdFieldItem;
 use Drupal\apigee_edge\Plugin\Validation\Constraint\DeveloperEmailUniqueValidator;
 use Drupal\Component\Render\PlainTextOutput;
 use Drupal\Component\Utility\Crypt;
@@ -176,7 +179,7 @@ function apigee_edge_entity_base_field_info(EntityTypeInterface $entity_type) {
       ->setName('apigee_edge_developer_id')
       ->setLabel(t('Apigee Edge Developer ID'))
       ->setComputed(TRUE)
-      ->setClass('\Drupal\apigee_edge\Plugin\Field\FieldType\ApigeeEdgeDeveloperIdFieldItem');
+      ->setClass(ApigeeEdgeDeveloperIdFieldItem::class);
   }
 
   return $fields;
@@ -453,40 +456,44 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
   // user input here to check whether this form element should be visible
   // next time when the form is displayed on the UI with validation errors.
   if (!empty($userInput['mail']) && $form['account']['mail']['#default_value'] !== $userInput['mail']) {
-    // Add our custom validation callback to the beginning of the chain.
-    // apigee_edge_module_implements_alter() ensures that form_alter hook is
-    // called in the last time.
-    array_unshift($form['#validate'], 'apigee_edge_form_user_register_form_developer_email_validate');
+    // Only add our extra features to the form if the provided email does not
+    // belong to a user in Drupal yet. Otherwise let Drupal's build-in
+    // validation to handle this problem.
+    $user = user_load_by_mail($userInput['mail']);
+    if (!$user) {
+      // Add our custom validation callback to the beginning of the chain.
+      // apigee_edge_module_implements_alter() ensures that form_alter hook is
+      // called in the last time.
+      array_unshift($form['#validate'], 'apigee_edge_form_user_register_form_developer_email_validate');
 
-    $developer = Developer::load($userInput['mail']);
-    $form['developer_exists'] = [
-      '#type' => 'value',
-      '#value' => (bool) $developer,
-    ];
-
-    if ($form['administer_users']['#value']) {
+      $developer = Developer::load($userInput['mail']);
+      $form['developer_exists'] = [
+        '#type' => 'value',
+        '#value' => (bool) $developer,
+      ];
       if ($developer) {
-        $form['account']['apigee_edge_developer_exists'] = [
-          '#type' => 'checkbox',
-          '#title' => t('I understand the provided email address belongs to a developer on Apigee Edge and I confirm user creation'),
-          '#required' => TRUE,
-          '#weight' => 0,
-        ];
-      }
-    }
-    else {
-      $config = Drupal::config('apigee_edge.developer_settings');
-      if ($config->get('verification_action') === DeveloperSettingsForm::VERIFICATION_ACTION_VERIFY_EMAIL) {
-        if ($developer) {
-          $form['account']['apigee_edge_developer_unreceived_mail'] = [
+        if ($form['administer_users']['#value']) {
+          $form['account']['apigee_edge_developer_exists'] = [
             '#type' => 'checkbox',
-            '#title' => t('I did not get an email. Please send me a new one.'),
+            '#title' => t('I understand the provided email address belongs to a developer on Apigee Edge and I confirm user creation'),
+            '#required' => TRUE,
             '#weight' => 0,
           ];
+        }
+        else {
+          $config = Drupal::config('apigee_edge.developer_settings');
+          if ($config->get('verification_action') === DeveloperSettingsForm::VERIFICATION_ACTION_VERIFY_EMAIL) {
+            $form['account']['apigee_edge_developer_unreceived_mail'] = [
+              '#type' => 'checkbox',
+              '#title' => t('I did not get an email. Please send me a new one.'),
+              '#weight' => 0,
+            ];
+          }
         }
       }
     }
   }
+
   $form['#after_build'][] = 'apigee_edge_form_user_register_form_after_build';
 }
 
@@ -768,8 +775,9 @@ function template_preprocess_app_credential(array &$variables) {
   $credential = $variables['elements']['#credential'];
   /** @var \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter */
   $dateFormatter = Drupal::service('date.formatter');
+  $normalizer = new EntityTransformer([new AppCredentialNormalizer(), new CredentialProductNormalizer()]);
   // Convert app entity to an array.
-  $normalized = (array) (new EntityNormalizer())->normalize($credential);
+  $normalized = (array) $normalizer->normalize($credential);
 
   $properties_in_primary = [
     'consumerKey' => [
@@ -1092,6 +1100,87 @@ function apigee_edge_preprocess_table(&$variables) {
           $index++;
         }
       }
+    }
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_storage_load().
+ *
+ * Set Drupal owner ids on developers after they were loaded from Apigee
+ * Edge.
+ */
+function apigee_edge_developer_storage_load(array $entities) {
+  $developerId_mail_map = [];
+  /** @var \Drupal\apigee_edge\Entity\Developer $entity */
+  foreach ($entities as $entity) {
+    $developerId_mail_map[$entity->getDeveloperId()] = $entity->getEmail();
+  }
+
+  $query = \Drupal::database()->select('users_field_data', 'ufd');
+  $query->fields('ufd', ['mail', 'uid'])
+    ->condition('mail', $developerId_mail_map, 'IN');
+  $mail_uid_map = $query->execute()->fetchAllKeyed();
+
+  foreach ($entities as $entity) {
+    // If developer id is not in this map it means the developer does
+    // not exist in Drupal yet (developer syncing between Edge and Drupal is
+    // required) or the developer id has not been stored in
+    // related Drupal user yet.
+    // This can be fixed with running developer sync too,
+    // because it could happen that the user had been
+    // created in Drupal before Edge connected was configured.
+    // Although, this could be a result of a previous error
+    // but there should be a log about that.
+    if (isset($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]])) {
+      $entity->setOwnerId($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]]);
+    }
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_storage_load().
+ *
+ * Set Drupal owner ids on developer apps after they were loaded from Apigee
+ * Edge.
+ */
+function apigee_edge_developer_app_storage_load(array $entities) {
+  $developerIds = [];
+  /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
+  foreach ($entities as $entity) {
+    $developerIds[] = $entity->getDeveloperId();
+  }
+  $developerIds = array_unique($developerIds);
+  $developerId_mail_map = [];
+  /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperStorageInterface $developerStorage */
+  $developerStorage = \Drupal::entityTypeManager()->getStorage('developer');
+  foreach ($developerStorage->loadByProperties(['developerId' => $developerIds]) as $developer) {
+    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
+    $developerId_mail_map[$developer->uuid()] = $developer->getEmail();
+  }
+
+  if ($developerId_mail_map) {
+    $query = \Drupal::database()->select('users_field_data', 'ufd');
+    $query->fields('ufd', ['mail', 'uid'])
+      ->condition('mail', $developerId_mail_map, 'IN');
+    $mail_uid_map = $query->execute()->fetchAllKeyed();
+  }
+  else {
+    $mail_uid_map = [];
+  }
+
+  foreach ($entities as $entity) {
+    // If developer id is not in this map it means the developer does
+    // not exist in Drupal yet (developer syncing between Edge and Drupal is
+    // required) or the developer id has not been stored in
+    // related Drupal user yet.
+    // This can be fixed with running developer sync too,
+    // because it could happen that the user had been
+    // created in Drupal before Edge connected was configured.
+    // Although, this could be a result of a previous error
+    // but there should be a log about that.
+    if (isset($developerId_mail_map[$entity->getDeveloperId()]) && isset($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]])) {
+      $entity->setOwnerId($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]]);
     }
   }
 }

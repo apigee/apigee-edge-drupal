@@ -18,22 +18,31 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Entity\Controller;
+namespace Drupal\apigee_edge\Entity\Form;
 
-use Apigee\Edge\Api\Management\Controller\ApiProductController as EdgeApiProductController;
-use Drupal\apigee_edge\Entity\ApiProduct;
+use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Advanced version of Apigee Edge SDK's API product controller.
+ * Dedicated form handler that allows a developer to edit its developer app.
  */
-class ApiProductController extends EdgeApiProductController implements DrupalEntityControllerInterface {
-  use DrupalEntityControllerAwareTrait;
+class DeveloperAppEditFormForDeveloper extends DeveloperAppEditForm {
 
   /**
    * {@inheritdoc}
    */
-  protected function getEntityClass(): string {
-    return ApiProduct::class;
+  protected function getRedirectUrl() {
+    $entity = $this->getEntity();
+    return $entity->toUrl('canonical-by-developer');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function actions(array $form, FormStateInterface $form_state) {
+    $actions = parent::actions($form, $form_state);
+    $actions['delete']['#url'] = $this->getEntity()->toUrl('delete-form-for-developer');
+
+    return $actions;
   }
 
 }

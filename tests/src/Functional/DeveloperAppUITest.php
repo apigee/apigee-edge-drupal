@@ -490,8 +490,6 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    *   Loaded developer app or null if not found.
    */
   protected function loadDeveloperApp(string $name): ?DeveloperApp {
-    \Drupal::entityTypeManager()->getStorage('developer_app')->resetCache();
-
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp[] $apps */
     $apps = DeveloperApp::loadMultiple();
 

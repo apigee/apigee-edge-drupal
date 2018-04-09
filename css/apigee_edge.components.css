@@ -82,3 +82,7 @@
   height: 6px;
   margin: 0 0.3em;
 }
+
+#edit-details-displayname-machine-name-suffix {
+  display: none;
+}

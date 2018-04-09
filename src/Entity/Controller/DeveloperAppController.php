@@ -23,12 +23,12 @@ use Apigee\Edge\Api\Management\Controller\AppController;
 use Apigee\Edge\Api\Management\Controller\DeveloperAppController as EdgeDeveloperAppController;
 use Apigee\Edge\Api\Management\Controller\DeveloperAppControllerInterface as EdgeDeveloperAppControllerInterface;
 use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
-use Apigee\Edge\Entity\EntityDenormalizer;
-use Apigee\Edge\Entity\EntityInterface;
-use Apigee\Edge\Entity\EntityNormalizer;
+use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
 use Apigee\Edge\Structure\CpsListLimitInterface;
+use Drupal\apigee_edge\Entity\AppCredentialStorageAwareTrait;
 use Drupal\apigee_edge\Entity\DeveloperApp;
-use Drupal\apigee_edge\Entity\DrupalAppDenormalizer;
+use Drupal\apigee_edge\Entity\EntityConvertAwareTrait;
+use Drupal\Core\Entity\EntityInterface;
 
 /**
  * Advanced version of Apigee Edge SDK's developer app controller.
@@ -37,15 +37,49 @@ use Drupal\apigee_edge\Entity\DrupalAppDenormalizer;
  * classes and also provides additional features that the SDK's built in
  * classes.
  *
- * @package Drupal\apigee_edge\Entity\Controller
+ * We intentionally did not override the getEntityClass() here to get back
+ * Drupal developer app entities from SDK controllers. If we would do that
+ * then calling $app->getCredentials() here on a Drupal developer app would
+ * cause infinite loop.
+ *
+ * @see \Drupal\apigee_edge\Entity\DeveloperApp::getCredentials()
+ *
+ * EntityConvertAwareTrait can not be used in the same time with
+ * DrupalEntityControllerAwareTrait, because even if we try to alias the
+ * first one's convertToDrupalEntity as conflict resolution it in never become
+ * compatible with DrupalEntityControllerInterface::convertToSdkEntity.
+ * (PHP bug?)
  */
 class DeveloperAppController extends AppController implements DeveloperAppControllerInterface {
 
+  use AppCredentialStorageAwareTrait;
+  use DrupalEntityControllerAwareTrait;
+
   /**
    * {@inheritdoc}
+   *
+   * We had to override this because in this special case
+   * parent::getEntityClass() returns an empty string.
+   *
+   * @see AppController::getEntityClass()
    */
-  public function load(string $entityId): EntityInterface {
-    return $this->loadApp($entityId);
+  public function convertToSdkEntity(EntityInterface $drupal_entity): EdgeEntityInterface {
+    return EntityConvertAwareTrait::convertToSdkEntity($drupal_entity, EdgeDeveloperApp::class);
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\TempStore\TempStoreException
+   */
+  public function load(string $entityId): EdgeEntityInterface {
+    /** @var \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface $app */
+    $app = $this->loadApp($entityId);
+    // Store loaded credential's in user's private credential store to
+    // reduce number of API calls.
+    // @see \Drupal\apigee_edge\Entity\DeveloperApp::getCredentials()
+    $this->saveAppCredentialsToStorage($app->getDeveloperId(), $app->getName(), $app->getCredentials());
+    return EntityConvertAwareTrait::convertToDrupalEntity($app, DeveloperApp::class);
   }
 
   /**
@@ -58,82 +92,35 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
    *   Developer app controller from the SDK.
    */
   protected function createDeveloperAppController(string $developerId): EdgeDeveloperAppControllerInterface {
-    return new EdgeDeveloperAppController($this->getOrganisation(), $developerId, $this->client, NULL, [new DrupalAppDenormalizer()]);
-  }
-
-  /**
-   * Converts a Drupal entity into an Edge entity.
-   *
-   * The reason to do this is because the Drupal query overrides the id()
-   * method, so that it works with the listing endpoints. However, using
-   * the appId won't work with the create/update/delete endpoints. So in
-   * those cases a conversion to the superclass is needed.
-   *
-   * @param \Drupal\apigee_edge\Entity\DeveloperApp $app
-   *   Drupal Developer app entity.
-   *
-   * @return \Apigee\Edge\Api\Management\Entity\DeveloperApp
-   *   SDK Developer app entity.
-   */
-  protected function convertEntity(DeveloperApp $app): EdgeDeveloperApp {
-    $normalizer = new EntityNormalizer();
-    $denormalizer = new EntityDenormalizer();
-    $normalized = $normalizer->normalize($app);
-    return $denormalizer->denormalize($normalized, EdgeDeveloperApp::class);
-  }
-
-  /**
-   * Copies all properties to $destination from $source.
-   *
-   * @param \Drupal\apigee_edge\Entity\DeveloperApp $destination
-   *   Drupal developer app entity.
-   * @param \Apigee\Edge\Api\Management\Entity\DeveloperApp $source
-   *   SDK developer app entity.
-   *
-   * @throws \ReflectionException
-   */
-  protected function applyChanges(DeveloperApp $destination, EdgeDeveloperApp $source) {
-    $rodst = new \ReflectionObject($destination);
-    $rosrc = new \ReflectionObject($source);
-    foreach ($rodst->getProperties() as $property) {
-      $setter = 'set' . ucfirst($property->getName());
-      $getter = 'get' . ucfirst($property->getName());
-      if ($rodst->hasMethod($setter) && $rosrc->hasMethod($getter)) {
-        $rm = new \ReflectionMethod($destination, $setter);
-        $value = $source->{$getter}();
-        if ($value !== NULL) {
-          $rm->invoke($destination, $value);
-        }
-      }
-    }
+    return new EdgeDeveloperAppController($this->getOrganisation(), $developerId, $this->client);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function create(EntityInterface $entity): void {
+  public function create(EdgeEntityInterface $entity): void {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
     $controller = $this->createDeveloperAppController($entity->getDeveloperId());
-    $converted = $this->convertEntity($entity);
-    $controller->create($converted);
-    $this->applyChanges($entity, $converted);
+    $controller->create($entity);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function update(EntityInterface $entity): void {
+  public function update(EdgeEntityInterface $entity): void {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
     $controller = $this->createDeveloperAppController($entity->getDeveloperId());
-    $converted = $this->convertEntity($entity);
-    $controller->update($converted);
-    $this->applyChanges($entity, $converted);
+    $controller->update($entity);
   }
 
   /**
    * {@inheritdoc}
+   *
+   * App credential storage entries invalidated in the DeveloperAppStorage.
+   *
+   * @see \Drupal\apigee_edge\Entity\Storage\DeveloperAppStorage::doDelete()
    */
-  public function delete(string $entityId): EntityInterface {
+  public function delete(string $entityId): EdgeEntityInterface {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
     $entity = $this->loadApp($entityId);
     $controller = $this->createDeveloperAppController($entity->getDeveloperId());
@@ -146,7 +133,15 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   public function getEntities(CpsListLimitInterface $cpsLimit = NULL): array {
     $developerAppIds = $this->getEntityIds($cpsLimit);
     $apps = $this->listApps(TRUE, $cpsLimit);
-    return array_intersect_key($apps, array_flip($developerAppIds));
+    $apps = array_intersect_key($apps, array_flip($developerAppIds));
+    // Store loaded credential's in user's private credential store to
+    // reduce number of API calls.
+    // @see \Drupal\apigee_edge\Entity\DeveloperApp::getCredentials()
+    $converted = array_map(function (EdgeDeveloperApp $app) {
+      $this->saveAppCredentialsToStorage($app->getDeveloperId(), $app->getName(), $app->getCredentials());
+      return EntityConvertAwareTrait::convertToDrupalEntity($app, DeveloperApp::class);
+    }, $apps);
+    return $converted;
   }
 
   /**
@@ -157,34 +152,19 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   }
 
   /**
-   * Loads multiple entities.
-   *
-   * @param array|null $ids
-   *   Array of entity ids.
-   *
-   * @return \Apigee\Edge\Entity\EntityInterface[]
-   *   Array of entities.
-   */
-  public function loadMultiple(array $ids = NULL): array {
-    if ($ids !== NULL && count($ids) === 1) {
-      $app = $this->loadApp(reset($ids));
-      return [$app->id() => $app];
-    }
-
-    $allEntities = $this->getEntities();
-    if ($ids === NULL) {
-      return $allEntities;
-    }
-
-    return array_intersect_key($allEntities, array_flip($ids));
-  }
-
-  /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\TempStore\TempStoreException
    */
-  public function loadByAppName(string $developerId, string $appName) : EntityInterface {
+  public function loadByAppName(string $developerId, string $appName) : EdgeEntityInterface {
     $controller = $this->createDeveloperAppController($developerId);
-    return $controller->load($appName);
+    /** @var \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface $app */
+    $app = $controller->load($appName);
+    // Store loaded credential's in user's private credential store to
+    // reduce number of API calls.
+    // @see \Drupal\apigee_edge\Entity\DeveloperApp::getCredentials()
+    $this->saveAppCredentialsToStorage($app->getDeveloperId(), $app->getName(), $app->getCredentials());
+    return EntityConvertAwareTrait::convertToDrupalEntity($app, DeveloperApp::class);
   }
 
   /**
@@ -193,7 +173,15 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   public function getEntitiesByDeveloper(string $developerId): array {
     /** @var \Apigee\Edge\Api\Management\Controller\DeveloperAppControllerInterface $controller */
     $controller = $this->createDeveloperAppController($developerId);
-    return $controller->getEntities();
+    $apps = $controller->getEntities();
+    // Store loaded credential's in user's private credential store to
+    // reduce number of API calls.
+    // @see \Drupal\apigee_edge\Entity\DeveloperApp::getCredentials()
+    $converted = array_map(function (EdgeDeveloperApp $app) {
+      $this->saveAppCredentialsToStorage($app->getDeveloperId(), $app->getName(), $app->getCredentials());
+      return EntityConvertAwareTrait::convertToDrupalEntity($app, DeveloperApp::class);
+    }, $apps);
+    return $converted;
   }
 
   /**

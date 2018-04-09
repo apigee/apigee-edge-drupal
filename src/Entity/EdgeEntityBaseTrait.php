@@ -19,7 +19,6 @@
 
 namespace Drupal\apigee_edge\Entity;
 
-use Apigee\Edge\Entity\EntityNormalizer;
 use Apigee\Edge\Entity\Property\DisplayNamePropertyInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\RefinableCacheableDependencyTrait;
@@ -147,7 +146,7 @@ trait EdgeEntityBaseTrait {
    * {@inheritdoc}
    */
   public function label() {
-    if (class_implements($this, DisplayNamePropertyInterface::class) && !empty($this->getDisplayName())) {
+    if (in_array(DisplayNamePropertyInterface::class, class_implements($this)) && !empty($this->getDisplayName())) {
       return $this->getDisplayName();
     }
     return $this->id();
@@ -427,6 +426,7 @@ trait EdgeEntityBaseTrait {
    * {@inheritdoc}
    */
   public function createDuplicate() {
+    // TODO Finish its implementation.
   }
 
   /**
@@ -513,8 +513,27 @@ trait EdgeEntityBaseTrait {
    * {@inheritdoc}
    */
   public function toArray() {
-    $normalizer = new EntityNormalizer();
-    return $normalizer->normalize($this);
+    $values = [];
+    // The goal is to create an array that is 100% compatible with the
+    // structure an SDK entity's constructor can accept that is why we
+    // are not calling getter here.
+    $ro = new \ReflectionObject($this);
+    foreach ($ro->getProperties() as $property) {
+      $value = NULL;
+      $getter = 'get' . ucfirst($property->getName());
+      $isser = 'is' . ucfirst($property->getName());
+      if ($ro->hasMethod($getter)) {
+        $value = $this->{$getter}();
+      }
+      elseif ($ro->hasMethod($isser)) {
+        $value = $this->{$isser}();
+      }
+      if ($value !== NULL) {
+        $values[$property->getName()] = $value;
+      }
+    }
+
+    return $values;
   }
 
   /**

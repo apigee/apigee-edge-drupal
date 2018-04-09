@@ -19,8 +19,8 @@
 
 namespace Drupal\apigee_edge;
 
-use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Apigee\Edge\HttpClient\ClientInterface;
+use Drupal\apigee_edge\Entity\Controller\DrupalEntityControllerInterface;
 use Drupal\key\KeyInterface;
 
 /**
@@ -52,10 +52,10 @@ interface SDKConnectorInterface {
    * @param string $entity_type
    *   Entity type.
    *
-   * @return \Apigee\Edge\Controller\EntityCrudOperationsControllerInterface
+   * @return \Drupal\apigee_edge\Entity\Controller\DrupalEntityControllerInterface
    *   The controller object.
    */
-  public function getControllerByEntity(string $entity_type) : EntityCrudOperationsControllerInterface;
+  public function getControllerByEntity(string $entity_type) : DrupalEntityControllerInterface;
 
   /**
    * Test connection with the Edge Management Server.

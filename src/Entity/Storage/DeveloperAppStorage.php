@@ -20,15 +20,13 @@
 namespace Drupal\apigee_edge\Entity\Storage;
 
 use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
+use Drupal\apigee_edge\Entity\AppCredentialStorageAwareTrait;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppController;
-use Drupal\apigee_edge\Entity\DrupalAppDenormalizer;
-use Drupal\apigee_edge\Entity\DrupalEntityFactory;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -39,6 +37,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Controller class for developer apps.
  */
 class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements DeveloperAppStorageInterface {
+
+  use AppCredentialStorageAwareTrait;
 
   /**
    * The entity type manager.
@@ -67,17 +67,14 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
    *   The logger to be used.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Database\Connection $database
-   *   The database connection.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config
    *   Configuration factory.
    * @param \Drupal\Component\Datetime\TimeInterface $systemTime
    *   System time.
    */
-  public function __construct(SDKConnectorInterface $sdkConnector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, EntityTypeManagerInterface $entityTypeManager, Connection $database, ConfigFactoryInterface $config, TimeInterface $systemTime) {
+  public function __construct(SDKConnectorInterface $sdkConnector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, EntityTypeManagerInterface $entityTypeManager, ConfigFactoryInterface $config, TimeInterface $systemTime) {
     parent::__construct($sdkConnector, $entity_type, $cache, $logger, $systemTime);
     $this->entityTypeManager = $entityTypeManager;
-    $this->database = $database;
     $this->cacheExpiration = $config->get('apigee_edge.appsettings')->get('cache_expiration');
   }
 
@@ -93,7 +90,6 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
       $container->get('cache.apigee_edge_entity'),
       $logger,
       $container->get('entity_type.manager'),
-      $container->get('database'),
       $container->get('config.factory'),
       $container->get('datetime.time')
     );
@@ -111,7 +107,7 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
    * @method listByDeveloper
    */
   public function getController(SDKConnectorInterface $connector): EntityCrudOperationsControllerInterface {
-    return new DeveloperAppController($connector->getOrganization(), $connector->getClient(), new DrupalEntityFactory(), [new DrupalAppDenormalizer()]);
+    return new DeveloperAppController($connector->getOrganization(), $connector->getClient());
   }
 
   /**
@@ -127,50 +123,20 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
   /**
    * {@inheritdoc}
    *
-   * Adds Drupal user information to loaded entities.
+   * @throws \Drupal\Core\TempStore\TempStoreException
    */
-  protected function postLoad(array &$entities) {
-    $developerIds = [];
+  protected function doDelete($entities) {
+    parent::doDelete($entities);
+    // We remove app credential from user's private app credential storage
+    // here instead of in resetCache(), because there we would only have
+    // appId-s but what we need is appName + developerId for this.
+    // Also, most cache invalidation happens in the controller level, but
+    // we do this here for the above discussed reasons.
+    // @see \Drupal\apigee_edge\Entity\Controller\DeveloperAppController
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
     foreach ($entities as $entity) {
-      $developerIds[] = $entity->getDeveloperId();
+      $this->clearAppCredentialsFromStorage($entity->getDeveloperId(), $entity->getName());
     }
-    $developerIds = array_unique($developerIds);
-    $developerId_mail_map = [];
-    /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperStorageInterface $developerStorage */
-    $developerStorage = $this->entityTypeManager->getStorage('developer');
-    foreach ($developerStorage->loadByProperties(['developerId' => $developerIds]) as $developer) {
-      /** @var \Drupal\apigee_edge\Entity\Developer $developer */
-      $developerId_mail_map[$developer->uuid()] = $developer->getEmail();
-    }
-
-    if ($developerId_mail_map) {
-      $query = $this->database->select('users_field_data', 'ufd');
-      $query->fields('ufd', ['mail', 'uid'])
-        ->condition('mail', $developerId_mail_map, 'IN');
-      $mail_uid_map = $query->execute()->fetchAllKeyed();
-    }
-    else {
-      $mail_uid_map = [];
-    }
-
-    foreach ($entities as $entity) {
-      // If developer id is not in this map it means the developer does
-      // not exist in Drupal yet (developer syncing between Edge and Drupal is
-      // required) or the developer id has not been stored in
-      // related Drupal user yet.
-      // This can be fixed with running developer sync too,
-      // because it could happen that the user had been
-      // created in Drupal before Edge connected was configured.
-      // Although, this could be a result of a previous error
-      // but there should be a log about that.
-      if (isset($developerId_mail_map[$entity->getDeveloperId()]) && isset($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]])) {
-        $entity->setOwnerId($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]]);
-      }
-    }
-    // Call parent post load and with that call hook_developer_app_load()
-    // implementations.
-    parent::postLoad($entities);
   }
 
   /**

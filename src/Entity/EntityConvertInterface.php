@@ -18,47 +18,37 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Entity\Controller;
+namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
-use Drupal\apigee_edge\Entity\EntityConvertAwareTrait;
 use Drupal\Core\Entity\EntityInterface;
 
-/**
- * Contains general implementations for Drupal entity controllers.
- *
- * @see \Drupal\apigee_edge\Entity\Controller\DrupalEntityControllerInterface
- */
-trait DrupalEntityControllerAwareTrait {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function loadMultiple(array $ids = NULL) : array {
-    if ($ids !== NULL && count($ids) === 1) {
-      $entity = $this->load(reset($ids));
-      return [$entity->id() => $entity];
-    }
-
-    $allEntities = $this->getEntities();
-    if ($ids === NULL) {
-      return $allEntities;
-    }
-
-    return array_intersect_key($allEntities, array_flip($ids));
-  }
+interface EntityConvertInterface {
 
   /**
    * Converts a Drupal entity into an SDK entity.
    *
    * @param \Drupal\Core\Entity\EntityInterface $drupal_entity
    *   Apigee Edge entity in Drupal.
+   * @param string $sdkEntityClass
+   *   FQCN of the SDK entity class.
    *
    * @return \Apigee\Edge\Entity\EntityInterface
    *   Apigee Edge entity in the SDK.
    */
-  public function convertToSdkEntity(EntityInterface $drupal_entity): EdgeEntityInterface {
-    return EntityConvertAwareTrait::convertToSdkEntity($drupal_entity, parent::getEntityClass());
-  }
+  public function convertToSdkEntity(EntityInterface $drupal_entity, string $sdkEntityClass): EdgeEntityInterface;
+
+  /**
+   * Converts a SDK entity into an Drupal entity.
+   *
+   * @param \Apigee\Edge\Entity\EntityInterface $sdk_entity
+   *   Apigee Edge entity in the SDK.
+   * @param string $drupalEntityClass
+   *   FQCN of the Drupal entity class.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface
+   *   Apigee Edge entity in the Drupal.
+   */
+  public function convertToDrupalEntity(EdgeEntityInterface $sdk_entity, string $drupalEntityClass) : EntityInterface;
 
 }
