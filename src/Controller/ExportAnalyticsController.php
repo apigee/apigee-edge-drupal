@@ -29,7 +29,7 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Serializer\Encoder\CsvEncoder;
 
 /**
- * Defines a controller for exporting and downloading the requested analytics data.
+ * Defines a controller for exporting & downloading analytics data.
  */
 class ExportAnalyticsController extends ControllerBase {
 

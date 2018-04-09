@@ -455,40 +455,44 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
   // user input here to check whether this form element should be visible
   // next time when the form is displayed on the UI with validation errors.
   if (!empty($userInput['mail']) && $form['account']['mail']['#default_value'] !== $userInput['mail']) {
-    // Add our custom validation callback to the beginning of the chain.
-    // apigee_edge_module_implements_alter() ensures that form_alter hook is
-    // called in the last time.
-    array_unshift($form['#validate'], 'apigee_edge_form_user_register_form_developer_email_validate');
+    // Only add our extra features to the form if the provided email does not
+    // belong to a user in Drupal yet. Otherwise let Drupal's build-in
+    // validation to handle this problem.
+    $user = user_load_by_mail($userInput['mail']);
+    if (!$user) {
+      // Add our custom validation callback to the beginning of the chain.
+      // apigee_edge_module_implements_alter() ensures that form_alter hook is
+      // called in the last time.
+      array_unshift($form['#validate'], 'apigee_edge_form_user_register_form_developer_email_validate');
 
-    $developer = Developer::load($userInput['mail']);
-    $form['developer_exists'] = [
-      '#type' => 'value',
-      '#value' => (bool) $developer,
-    ];
-
-    if ($form['administer_users']['#value']) {
+      $developer = Developer::load($userInput['mail']);
+      $form['developer_exists'] = [
+        '#type' => 'value',
+        '#value' => (bool) $developer,
+      ];
       if ($developer) {
-        $form['account']['apigee_edge_developer_exists'] = [
-          '#type' => 'checkbox',
-          '#title' => t('I understand the provided email address belongs to a developer on Apigee Edge and I confirm user creation'),
-          '#required' => TRUE,
-          '#weight' => 0,
-        ];
-      }
-    }
-    else {
-      $config = Drupal::config('apigee_edge.developer_settings');
-      if ($config->get('verification_action') === DeveloperSettingsForm::VERIFICATION_ACTION_VERIFY_EMAIL) {
-        if ($developer) {
-          $form['account']['apigee_edge_developer_unreceived_mail'] = [
+        if ($form['administer_users']['#value']) {
+          $form['account']['apigee_edge_developer_exists'] = [
             '#type' => 'checkbox',
-            '#title' => t('I did not get an email. Please send me a new one.'),
+            '#title' => t('I understand the provided email address belongs to a developer on Apigee Edge and I confirm user creation'),
+            '#required' => TRUE,
             '#weight' => 0,
           ];
+        }
+        else {
+          $config = Drupal::config('apigee_edge.developer_settings');
+          if ($config->get('verification_action') === DeveloperSettingsForm::VERIFICATION_ACTION_VERIFY_EMAIL) {
+            $form['account']['apigee_edge_developer_unreceived_mail'] = [
+              '#type' => 'checkbox',
+              '#title' => t('I did not get an email. Please send me a new one.'),
+              '#weight' => 0,
+            ];
+          }
         }
       }
     }
   }
+
   $form['#after_build'][] = 'apigee_edge_form_user_register_form_after_build';
 }
 
