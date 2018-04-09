@@ -137,7 +137,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
    *   The path of the analytics page.
    * @param bool $appendQueryParameters
    *   A boolean indicating whether the URL query parameters should be appended.
-   * 
+   *
    * @throws \Behat\Mink\Exception\ResponseTextException
    */
   protected function visitAnalyticsPage(string $path, bool $appendQueryParameters = FALSE) {
