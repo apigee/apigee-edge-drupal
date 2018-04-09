@@ -18,21 +18,31 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Entity\Denormalizer;
+namespace Drupal\apigee_edge\Entity\Form;
 
-use Apigee\Edge\Api\Management\Denormalizer\AppDenormalizer;
-use Drupal\apigee_edge\Entity\DeveloperApp;
+use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Ensures that loaded apps in Drupal are always Drupal entities.
+ * Dedicated form handler that allows a developer to edit its developer app.
  */
-class DrupalAppDenormalizer extends AppDenormalizer {
+class DeveloperAppEditFormForDeveloper extends DeveloperAppEditForm {
 
   /**
    * {@inheritdoc}
    */
-  protected $developerAppClass = DeveloperApp::class;
+  protected function getRedirectUrl() {
+    $entity = $this->getEntity();
+    return $entity->toUrl('canonical-by-developer');
+  }
 
-  // TODO Override this when company apps support comes.
-  // protected $companyAppClass = CompanyApp::class;.
+  /**
+   * {@inheritdoc}
+   */
+  protected function actions(array $form, FormStateInterface $form_state) {
+    $actions = parent::actions($form, $form_state);
+    $actions['delete']['#url'] = $this->getEntity()->toUrl('delete-form-for-developer');
+
+    return $actions;
+  }
+
 }

@@ -60,10 +60,14 @@ class DeveloperAppDeleteForm extends EntityDeleteForm implements DeveloperAppPag
     $this->checkDeveloperStatus($developer_app->getOwnerId());
     $form = parent::buildForm($form, $form_state);
 
+    // TODO Move this verification to a reusable trait.
+    // Use entity id as a default value (developer: email, api product: name)
+    // and override this for developer apps where developer app name should be
+    // provided instead of developer app id here.
     $form['id_verification'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Enter the @developer_app name to confirm', [
-        '@developer_app' => $developer_app->label(),
+      '#title' => $this->t('Type "%developer_app" to proceed', [
+        '%developer_app' => $developer_app->getName(),
       ]),
       '#default_value' => '',
       '#required' => TRUE,
@@ -89,7 +93,7 @@ class DeveloperAppDeleteForm extends EntityDeleteForm implements DeveloperAppPag
     /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app */
     $developer_app = $this->entity;
     if ($element['#value'] !== $developer_app->getName()) {
-      $form_state->setError($element, $this->t('App name does not match app you are attempting to delete'));
+      $form_state->setError($element, $this->t('App name does not match app you are attempting to delete.'));
     }
   }
 
