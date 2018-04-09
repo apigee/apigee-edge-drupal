@@ -62,4 +62,11 @@
 
 .secret {
   display: none;
+  position: relative;
+  z-index: auto;
+}
+
+.secret:hover {
+  z-index: 999;
+  background-color: rgba(255,255,255,0.8);
 }
