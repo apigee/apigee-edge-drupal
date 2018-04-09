@@ -66,15 +66,6 @@ class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
-   * Resets the internal, static developer app entity cache.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   */
-  protected function resetCache() {
-    \Drupal::entityTypeManager()->getStorage('developer_app')->resetCache();
-  }
-
-  /**
    * Tests developer app entity.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
@@ -91,8 +82,6 @@ class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
 
     $this->assertNotEmpty($app->getAppId());
 
-    $this->resetCache();
-
     $this->assertNotEmpty(DeveloperApp::load($app->id()));
 
     $applist = DeveloperApp::loadMultiple();
@@ -101,8 +90,6 @@ class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
     $value = $this->randomMachineName();
     $app->setAttribute('test', $value);
     $app->save();
-
-    $this->resetCache();
 
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $loadedApp */
     $loadedApp = DeveloperApp::load($app->id());

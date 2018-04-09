@@ -38,15 +38,6 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
-   * Resets the internal, static developer entity cache.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   */
-  protected function resetCache() {
-    \Drupal::entityTypeManager()->getStorage('developer')->resetCache();
-  }
-
-  /**
    * Tests user/developer registration and edit.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
@@ -89,8 +80,9 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $formdata['status'] = '1';
     $this->submitForm($formdata, 'Save');
 
-    $this->resetCache();
-
+    // Ensure that entity static cache is also invalidated in this scope
+    // too.
+    \Drupal::entityTypeManager()->getStorage('developer')->resetCache([$test_user['email']]);
     $developer = Developer::load($test_user['email']);
 
     $this->assertEquals($developer->getEmail(), $test_user['email']);
@@ -136,8 +128,6 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     ];
     $this->submitForm($formdata, 'Create new account');
 
-    $this->resetCache();
-
     /** @var \Drupal\user\Entity\User $account */
     $account = user_load_by_mail($test_user['email']);
     $this->assertNotEmpty($account);
@@ -165,11 +155,13 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $formdata['status'] = $test_user['status'];
     $this->submitForm($formdata, 'Save');
 
-    $this->resetCache();
-
     $account = user_load_by_mail($test_user['email']);
     $this->assertNotEmpty($account);
 
+    // Ensure that entity static cache is also invalidated in this scope
+    // too. TODO Maybe introduce a loadUnchanged() method on developer or
+    // use storage's loadUnchanged() instead.
+    \Drupal::entityTypeManager()->getStorage('developer')->resetCache([$test_user['email']]);
     $developer = Developer::load($test_user['email']);
     $this->assertNotEmpty($developer);
 
@@ -185,8 +177,10 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $this->getSession()->getPage()->checkField('edit-user-bulk-form-0');
     $this->getSession()->getPage()->pressButton('edit-submit');
 
-    $this->resetCache();
-
+    // Ensure that entity static cache is also invalidated in this scope
+    // too. TODO Maybe introduce a loadUnchanged() method on developer or
+    // use storage's loadUnchanged() instead.
+    \Drupal::entityTypeManager()->getStorage('developer')->resetCache([$test_user['email']]);
     $developer = Developer::load($test_user['email']);
     $this->assertEquals($developer->getStatus(), $developer::STATUS_INACTIVE);
 
@@ -209,8 +203,6 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
       'user_cancel_method' => 'user_cancel_block',
     ];
     $this->submitForm($formdata, 'Cancel account');
-
-    $this->resetCache();
 
     $developer = Developer::load($test_user['email']);
     $this->assertNotEmpty($developer);
@@ -236,8 +228,6 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     ];
     $this->submitForm($formdata, 'Cancel account');
 
-    $this->resetCache();
-
     $developer = Developer::load($test_user['email']);
     $this->assertNotEmpty($developer);
     $this->assertEquals($developer->getStatus(), $developer::STATUS_INACTIVE);
@@ -249,8 +239,10 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     ];
     $this->submitForm($formdata, 'Cancel account');
 
-    $this->resetCache();
-
+    // Ensure that entity static cache is also invalidated in this scope
+    // too. TODO Maybe introduce a loadUnchanged() method on developer or
+    // use storage's loadUnchanged() instead.
+    \Drupal::entityTypeManager()->getStorage('developer')->resetCache([$test_user['email']]);
     $this->assertFalse(Developer::load($test_user['email']), 'Developer does not exists anymore.');
   }
 

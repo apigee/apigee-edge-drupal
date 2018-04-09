@@ -19,20 +19,17 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
-use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController;
-use Apigee\Edge\Structure\CredentialProduct;
+use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialController;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -55,13 +52,6 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
    * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface
    */
   protected $entity;
-
-  /**
-   * The original developer app entity state before the submission.
-   *
-   * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface
-   */
-  protected $originalEntity;
 
   /**
    * The messenger service.
@@ -195,47 +185,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
   protected function actions(array $form, FormStateInterface $form_state) {
     $actions = parent::actions($form, $form_state);
     $actions['submit']['#value'] = $this->t('Save');
-
-    $actions['delete']['#access'] = $this->entity->access('delete');
-    $actions['delete']['#url'] = $this->getFormId() === 'developer_app_developer_app_edit_for_developer_form'
-      ? $this->entity->toUrl('delete-form-for-developer')
-      : $this->entity->toUrl('delete-form');
-
     return $actions;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function copyFormValuesToEntity(EntityInterface $entity, array $form, FormStateInterface $form_state) {
-    parent::copyFormValuesToEntity($entity, $form, $form_state);
-    $config = $this->configFactory->get('apigee_edge.appsettings');
-    $this->originalEntity = clone $this->entity;
-
-    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
-    if ($config->get('associate_apps') && $config->get('user_select')) {
-      foreach ($form_state->getValue(['credential']) as $consumer_key => $api_products) {
-        foreach ($entity->getCredentials() as $credential) {
-          if ($credential->getConsumerKey() === $consumer_key) {
-            $selected_products = [];
-            if ($config->get('multiple_products')) {
-              foreach ($api_products['api_products'] as $api_product) {
-                if ($api_product !== 0) {
-                  $selected_products[] = new CredentialProduct($api_product, '');
-                }
-              }
-            }
-            else {
-              if (isset($api_products['api_products']) && $api_products['api_products'] !== '') {
-                $selected_products[] = new CredentialProduct($api_products['api_products'], '');
-              }
-            }
-            $credential->setApiProducts($selected_products);
-            break;
-          }
-        }
-      }
-    }
   }
 
   /**
@@ -243,26 +193,27 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
    */
   public function save(array $form, FormStateInterface $form_state) {
     $config = $this->configFactory->get('apigee_edge.appsettings');
-
     $redirect_user = FALSE;
 
     if ($config->get('associate_apps') && $config->get('user_select')) {
-      try {
-        $dacc = new DeveloperAppCredentialController(
-          $this->sdkConnector->getOrganization(),
-          $this->entity->getDeveloperId(),
-          $this->entity->getName(),
-          $this->sdkConnector->getClient()
-        );
+      $dacc = new DeveloperAppCredentialController(
+        $this->sdkConnector->getOrganization(),
+        $this->entity->getDeveloperId(),
+        $this->entity->getName(),
+        $this->sdkConnector->getClient()
+      );
 
-        foreach ($this->entity->getCredentials() as $new_credential) {
-          foreach ($this->originalEntity->getCredentials() as $original_credential) {
-            if ($new_credential->getConsumerKey() === $original_credential->getConsumerKey()) {
-              $new_api_product_names = [];
+      // $this->entity->getCredentials() always returns the already stored
+      // credentials on Apigee Edge.
+      // @see \Drupal\apigee_edge\Entity\DeveloperApp::getCredentials()
+      foreach ($form_state->getValue('credential', []) as $new_credential => $new_credentail_data) {
+        foreach ($this->entity->getCredentials() as $original_credential) {
+          if ($new_credential === $original_credential->getConsumerKey()) {
+            try {
               $original_api_product_names = [];
-              foreach ($new_credential->getApiProducts() as $new_api_product) {
-                $new_api_product_names[] = $new_api_product->getApiproduct();
-              }
+              // Cast it to array to be able handle the same way the single- and
+              // multi-select configuration.
+              $new_api_product_names = array_filter((array) $new_credentail_data['api_products']);
               foreach ($original_credential->getApiProducts() as $original_api_product) {
                 $original_api_product_names[] = $original_api_product->getApiproduct();
               }
@@ -270,13 +221,13 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
               $product_list_changed = FALSE;
               if (array_diff($original_api_product_names, $new_api_product_names)) {
                 foreach (array_diff($original_api_product_names, $new_api_product_names) as $api_product_to_remove) {
-                  $dacc->deleteApiProduct($new_credential->id(), $api_product_to_remove);
+                  $dacc->deleteApiProduct($new_credential, $api_product_to_remove);
                 }
                 $product_list_changed = TRUE;
                 $redirect_user = TRUE;
               }
               if (array_diff($new_api_product_names, $original_api_product_names)) {
-                $dacc->addProducts($new_credential->id(), array_values(array_diff($new_api_product_names, $original_api_product_names)));
+                $dacc->addProducts($new_credential, array_values(array_diff($new_api_product_names, $original_api_product_names)));
                 $product_list_changed = TRUE;
                 $redirect_user = TRUE;
               }
@@ -285,15 +236,16 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
                 $this->messenger->addStatus($this->t("Credential's product list has been successfully updated."));
               }
               break;
+
+            }
+            catch (\Exception $exception) {
+              $this->messenger->addError(t("Could not update credential's product list.",
+                ['@consumer_key' => $new_credential]));
+              watchdog_exception('apigee_edge', $exception);
+              $redirect_user = FALSE;
             }
           }
         }
-      }
-      catch (\Exception $exception) {
-        $this->messenger->addError(t("Could not update credential's product list.",
-          ['@consumer_key' => $new_credential->getConsumerKey()]));
-        watchdog_exception('apigee_edge', $exception);
-        $redirect_user = FALSE;
       }
     }
 
@@ -311,33 +263,6 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
 
     if ($redirect_user) {
       $form_state->setRedirectUrl($this->getRedirectUrl());
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getRedirectUrl() {
-    $entity = $this->getEntity();
-    if ($this->getFormId() === 'developer_app_developer_app_edit_for_developer_form') {
-      if ($entity->hasLinkTemplate('canonical-by-developer')) {
-        // If available, return the collection URL.
-        return $entity->toUrl('canonical-by-developer');
-      }
-      else {
-        // Otherwise fall back to the front page.
-        return Url::fromRoute('<front>');
-      }
-    }
-    else {
-      if ($entity->hasLinkTemplate('canonical')) {
-        // If available, return the collection URL.
-        return $entity->toUrl('canonical');
-      }
-      else {
-        // Otherwise fall back to the front page.
-        return Url::fromRoute('<front>');
-      }
     }
   }
 

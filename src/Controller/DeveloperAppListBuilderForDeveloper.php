@@ -37,8 +37,6 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
  * Lists developer apps of a developer on the UI.
- *
- * @package Drupal\apigee_edge\Controller
  */
 class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
 

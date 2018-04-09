@@ -28,7 +28,7 @@
 
   Drupal.apigeeEdgeListing = {
     tableToggle: function (context, settings) {
-      $('.toggle--warning').on('click', function (event) {
+      $('.toggle--warning').once('tableToggle').on('click', function (event) {
         event.preventDefault();
         var targetURL = $(this).attr('href');
         var targetID = '#' + targetURL.substr(targetURL.indexOf('#') + 1);

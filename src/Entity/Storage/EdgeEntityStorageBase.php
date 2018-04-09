@@ -20,10 +20,9 @@
 namespace Drupal\apigee_edge\Entity\Storage;
 
 use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
-use Apigee\Edge\Entity\EntityDenormalizer;
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
-use Apigee\Edge\Entity\EntityNormalizer;
 use Apigee\Edge\Exception\ApiException;
+use Drupal\apigee_edge\Entity\Controller\DrupalEntityControllerInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\Cache;
@@ -204,21 +203,66 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   protected function doSave($id, EntityInterface $entity) {
     $result = static::SAVED_UNKNOWN;
-    /** @var \Apigee\Edge\Entity\EntityInterface $entity */
-    $this->withController(function (EntityCrudOperationsControllerInterface $controller) use ($id, $entity, &$result) {
+    /** @var \Drupal\Core\Entity\EntityInterface $entity */
+    $this->withController(function (DrupalEntityControllerInterface $controller) use ($id, $entity, &$result) {
+      // Convert Drupal entity back to an SDK entity and with that:
+      // - prevent sending additional Drupal-only properties to Apigee Edge
+      // - prevent serialization/normalization errors
+      //   (CircularReferenceException) caused by TypedData objects on Drupal
+      //   entities.
+      $sdkEntity = $controller->convertToSdkEntity($entity);
       if ($entity->isNew()) {
-        $controller->create($entity);
+        $controller->create($sdkEntity);
+        $this->applyChanges($sdkEntity, $entity);
         $result = SAVED_NEW;
       }
       else {
-        $controller->update($entity);
+        $controller->update($sdkEntity);
+        $this->applyChanges($sdkEntity, $entity);
         $result = SAVED_UPDATED;
       }
     });
     return $result;
+  }
+
+  /**
+   * Copies all properties to $destination from $source.
+   *
+   * @param \Apigee\Edge\Entity\EntityInterface $source
+   *   The source SDK entity object.
+   * @param \Drupal\Core\Entity\EntityInterface $destination
+   *   The destination Drupal entity object.
+   *
+   * @throws \ReflectionException
+   */
+  protected function applyChanges(EdgeEntityInterface $source, EntityInterface $destination) {
+    $roDst = new \ReflectionObject($destination);
+    $roSrc = new \ReflectionObject($source);
+    foreach ($roDst->getProperties() as $property) {
+      $setter = 'set' . ucfirst($property->getName());
+      if ($roDst->hasMethod($setter)) {
+        $rm = new \ReflectionMethod($destination, $setter);
+        $value = NULL;
+        $getter = 'get' . ucfirst($property->getName());
+        $isser = 'is' . ucfirst($property->getName());
+        if ($roSrc->hasMethod($getter)) {
+          $value = $source->{$getter}();
+        }
+        elseif ($roSrc->hasMethod($isser)) {
+          $value = $source->{$isser}();
+        }
+
+        // Ignore problematic null values.
+        if ($value !== NULL) {
+          $rm->invoke($destination, $value);
+        }
+      }
+    }
   }
 
   /**
@@ -383,24 +427,6 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
     catch (\Exception $ex) {
       throw new EntityStorageException($ex->getMessage(), $ex->getCode(), $ex);
     }
-  }
-
-  /**
-   * Transforms an SDK entity to a Drupal entity.
-   *
-   * @param \Apigee\Edge\Entity\EntityInterface $edge_entity
-   *   SDK entity object.
-   *
-   * @return \Drupal\Core\Entity\EntityInterface
-   *   Drupal entity.
-   */
-  protected function toDrupalEntity(EdgeEntityInterface $edge_entity) {
-    $normalizer = new EntityNormalizer();
-    $denormalizer = new EntityDenormalizer();
-    /** @var \Apigee\Edge\Entity\EntityInterface $edge_entity */
-    $normalized = $normalizer->normalize($edge_entity);
-    /** @var \Drupal\Core\Entity\EntityInterface $drupal_entity */
-    return $denormalizer->denormalize($normalized, $this->entityClass);
   }
 
 }

@@ -119,7 +119,7 @@ class Query extends QueryBase implements QueryInterface {
   }
 
   /**
-   * Loads entities from the entity storage for queering.
+   * Loads entities from the entity storage for querying.
    *
    * @return \Drupal\Core\Entity\EntityInterface[]
    *   Array of matching entities.

@@ -33,7 +33,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\TempStore\PrivateTempStoreFactory;
-use Drupal\Core\TempStore\TempStoreException;
 use Drupal\Core\Url;
 use League\Period\Period;
 use Moment\MomentException;
@@ -307,7 +306,7 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
    * @see apigee_edge.libraries.yml
    * @see apigee_edge.analytics.js
    *
-   * @throws TempStoreException
+   * @throws \Drupal\Core\TempStore\TempStoreException
    */
   protected function generateResponse(array &$form, $metric, $since, $until) {
     // TODO There are no results from Edge with the correct UUID of a developer,

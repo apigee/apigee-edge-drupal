@@ -21,11 +21,36 @@
 namespace Drupal\apigee_edge\Entity\Controller;
 
 use Apigee\Edge\Api\Management\Controller\DeveloperController as EdgeDeveloperController;
+use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
+use Drupal\apigee_edge\Entity\Developer;
+use Drupal\Core\Entity\EntityInterface;
 
 /**
  * Advanced version of Apigee Edge SDK's developer controller.
  */
 class DeveloperController extends EdgeDeveloperController implements DrupalEntityControllerInterface {
-  use DrupalEntityControllerAwareTrait;
+  use DrupalEntityControllerAwareTrait {
+    convertToSdkEntity as privateConvertToSdkEntity;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getEntityClass(): string {
+    return Developer::class;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function convertToSdkEntity(EntityInterface $drupal_entity): EdgeEntityInterface {
+    $sdkEntity = $this->privateConvertToSdkEntity($drupal_entity, parent::getEntityClass());
+    // We use the email address as id to save developer entities, this way
+    // we do not need to load the developer by Apigee Edge always.
+    // \Drupal\apigee_edge\Entity\Developer::id() always returns the proper
+    // email address for this operation.
+    $sdkEntity->{'set' . $sdkEntity->idProperty()}($drupal_entity->id());
+    return $sdkEntity;
+  }
 
 }
