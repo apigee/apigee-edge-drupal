@@ -128,6 +128,7 @@ trait AppCredentialStorageAwareTrait {
     // Shared store's delete method does not return anything.
     // Why these storages do not implement a common interface to ensure their
     // common parts are compatible with each other?
+    // @link https://www.drupal.org/project/drupal/issues/2008884
     return $return === NULL ? TRUE : $return;
   }
 
