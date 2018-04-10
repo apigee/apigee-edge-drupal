@@ -830,7 +830,18 @@ function template_preprocess_app_credential(array &$variables) {
     if ($def['value_type'] == 'date') {
       // TODO Should we make format configurable?
       /** @var \DateTimeInterface $value */
-      $value = $value ? $dateFormatter->format(intval($value / 1000), 'medium', NULL, drupal_get_user_timezone()) : t('Never');
+      if ($value !== -1) {
+        $time_diff = \Drupal::time()->getRequestTime() - intval($value / 1000);
+        if ($time_diff > 0) {
+          $value = t('@time ago', ['@time' => $dateFormatter->formatTimeDiffSince(intval($value / 1000))]);
+        }
+        else {
+          $value = t('@time hence', ['@time' => $dateFormatter->formatTimeDiffUntil(intval($value / 1000))]);
+        }
+      }
+      else {
+        $value = t('Never');
+      }
     }
 
     if (in_array($property, $secret_properties)) {

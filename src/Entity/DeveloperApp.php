@@ -150,6 +150,7 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
 
     $definitions['createdAt']
       ->setDisplayOptions('view', [
+        'type' => 'timestamp_ago',
         'label' => 'inline',
         'weight' => 3,
       ])
@@ -157,6 +158,7 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
 
     $definitions['lastModifiedAt']
       ->setDisplayOptions('view', [
+        'type' => 'timestamp_ago',
         'label' => 'inline',
         'weight' => 5,
       ])
