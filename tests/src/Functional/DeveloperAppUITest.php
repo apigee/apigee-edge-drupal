@@ -178,10 +178,10 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    * Tests the developer app label modification.
    */
   public function testDeveloperAppLabel() {
-    $this->submitAdminForm([
+    $this->drupalPostForm('/admin/config/apigee-edge/app-settings/alias', [
       'developer_app_label_singular' => 'API',
       'developer_app_label_plural' => 'APIs',
-    ]);
+    ], 'Save configuration');
 
     \Drupal::entityTypeManager()->clearCachedDefinitions();
     menu_cache_clear_all();

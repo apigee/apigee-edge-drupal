@@ -4,26 +4,29 @@ system.admin_config_edge:
   route_name: apigee_edge.admin_config_edge
 
 apigee_edge.settings:
-  title: 'General settings'
+  title: 'General'
   description: 'Apigee Edge module settings.'
   parent: system.admin_config_edge
   route_name: apigee_edge.settings
   weight: -10
 
 apigee_edge.developer:
-  title: 'Developer'
+  title: 'Developers'
   description: 'Developer settings.'
   parent: system.admin_config_edge
   route_name: apigee_edge.settings.developer
+  weight: -5
 
 apigee_edge.app:
-  title: 'Developer app'
-  description: 'Developer application settings.'
+  title: 'Apps'
+  description: 'Developer app settings.'
   parent: system.admin_config_edge
   route_name: apigee_edge.settings.app
+  weight: -8
 
 apigee_edge.product:
-  title: 'Product'
+  title: 'API Products'
   description: 'API Product settings.'
   parent: system.admin_config_edge
-  route_name: apigee_edge.settings.product
+  route_name: apigee_edge.settings.product.alias
+  weight: -2

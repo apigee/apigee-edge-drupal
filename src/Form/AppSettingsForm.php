@@ -30,8 +30,6 @@ use Drupal\Core\Url;
  */
 class AppSettingsForm extends ConfigFormBase {
 
-  use CachedEntityConfigurationFormAwareTrait;
-
   /**
    * {@inheritdoc}
    */
@@ -169,28 +167,6 @@ class AppSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    $form['label'] = [
-      '#type' => 'fieldset',
-      '#title' => $this->t('How to refer to an Application on the UI'),
-      '#collapsible' => FALSE,
-    ];
-
-    $form['label']['developer_app_label_singular'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Singular format'),
-      '#default_value' => $config->get('developer_app_label_singular'),
-      '#description' => $this->t('Leave empty to use the default "Developer App" label.'),
-    ];
-
-    $form['label']['developer_app_label_plural'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Plural format'),
-      '#default_value' => $config->get('developer_app_label_plural'),
-      '#description' => $this->t('Leave empty to use the default "Developer Apps" label.'),
-    ];
-
-    $form += $this->addCacheConfigElements($form, $form_state);
-
     return parent::buildForm($form, $form_state);
   }
 
@@ -235,33 +211,7 @@ class AppSettingsForm extends ConfigFormBase {
     $config->set('default_products', $default_products);
     $config->save();
 
-    if ($config->get('developer_app_label_singular') !== $form_state->getValue('developer_app_label_singular') || $config->get('developer_app_label_plural') !== $form_state->getValue('developer_app_label_plural')) {
-      $this->configFactory->getEditable('apigee_edge.appsettings')
-        ->set('developer_app_label_singular', $form_state->getValue('developer_app_label_singular'))
-        ->set('developer_app_label_plural', $form_state->getValue('developer_app_label_plural'))
-        ->save();
-
-      // Clearing required caches.
-      drupal_flush_all_caches();
-    }
-
-    $this->saveCacheConfiguration($form, $form_state);
-
     parent::submitForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getConfigNameWithCacheSettings() {
-    return 'apigee_edge.appsettings';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getEntityType() {
-    return 'developer_app';
   }
 
 }
