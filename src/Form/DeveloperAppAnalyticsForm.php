@@ -265,11 +265,16 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
    *   TRUE if the parameters are correctly set, else FALSE.
    */
   protected function validateQueryString(array $form, $metric, $since, $until) : bool {
-    if ($metric === NULL || $since === NULL || $until === NULL || !array_key_exists($metric, $form['controls']['metrics']['#options'])) {
+    if ($metric === NULL || $since === NULL || $until === NULL) {
       return FALSE;
     }
 
     try {
+      if (!array_key_exists($metric, $form['controls']['metrics']['#options'])) {
+        $this->messenger->addError($this->t('Invalid parameter metric in the URL.'));
+        return FALSE;
+      }
+
       $since = DrupalDateTime::createFromTimestamp($since);
       $until = DrupalDateTime::createFromTimestamp($until);
       if ($since->diff($until)->invert === 1) {
