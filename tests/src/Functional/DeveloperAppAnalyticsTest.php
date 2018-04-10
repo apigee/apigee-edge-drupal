@@ -22,6 +22,7 @@ namespace Drupal\Tests\apigee_edge\Functional;
 use Apigee\Edge\Api\Management\Entity\App;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
+use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Datetime\DrupalDateTime;
 
 /**
@@ -69,11 +70,12 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
   protected function setUp() {
     parent::setUp();
 
-    $this->account = $this->createAccount(['analytics own developer app']);
+    $this->account = $this->createAccount(['analytics own developer_app']);
     $this->developer = Developer::createFromDrupalUser($this->account);
 
     $this->developerApp = DeveloperApp::create([
       'name' => $this->randomMachineName(),
+      'displayName' => $this->randomMachineName(),
       'status' => App::STATUS_APPROVED,
       'developerId' => $this->developer->getDeveloperId(),
     ]);
@@ -86,14 +88,16 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
     $this->queryParameters = [
       'query' => [
         'metric' => 'min_response_time',
-        'since' => $since->sub(new \DateInterval('P3D')),
-        'until' => $until->sub(new \DateInterval('P2D')),
+        'since' => $since->sub(new \DateInterval('P3D'))->getTimestamp(),
+        'until' => $until->sub(new \DateInterval('P2D'))->getTimestamp(),
       ],
     ];
   }
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   protected function tearDown() {
     $this->developer->delete();
@@ -131,6 +135,25 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
+   * Tests the export analytics route.
+   *
+   * @throws \Drupal\Core\TempStore\TempStoreException
+   */
+  public function testExportAnalytics() {
+    $this->drupalLogin($this->rootUser);
+    $data_id = Crypt::randomBytesBase64();
+    $this->drupalGet("/analytics/export/{$data_id}/csv");
+    $this->assertEquals(403, $this->getSession()->getStatusCode());
+
+    // Without CSRF token.
+    $store = $this->container->get('tempstore.private')->get('apigee_edge.analytics');
+    /** @var \Drupal\Core\TempStore\PrivateTempStore $store */
+    $store->set($data_id = Crypt::randomBytesBase64(), []);
+    $this->drupalGet("/analytics/export/{$data_id}/csv");
+    $this->assertEquals(403, $this->getSession()->getStatusCode());
+  }
+
+  /**
    * Visits the developer app analytics page using the given path.
    *
    * @param string $path
@@ -139,6 +162,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
    *   A boolean indicating whether the URL query parameters should be appended.
    *
    * @throws \Behat\Mink\Exception\ResponseTextException
+   * @throws \Exception
    */
   protected function visitAnalyticsPage(string $path, bool $appendQueryParameters = FALSE) {
     if ($appendQueryParameters) {
@@ -149,6 +173,55 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
     }
 
     $this->assertAnalyticsPage();
+    $this->assertSession()->pageTextNotContains('Invalid URL query parameters.');
+
+    // End date is before the start date.
+    $since_in_the_future = new DrupalDateTime();
+    $since_in_the_future->add(new \DateInterval('P3D'));
+    $until = new DrupalDateTime();
+    $this->drupalGet($path, [
+      'query' => [
+        'metric' => 'message_count',
+        'since' => $since_in_the_future->getTimestamp(),
+        'until' => $until->getTimestamp(),
+      ],
+    ]);
+    $this->assertAnalyticsPage();
+    $this->assertSession()->pageTextContains('The end date cannot be before the start date.');
+
+    // Start date is in the future.
+    $until = new DrupalDateTime();
+    $this->drupalGet($path, [
+      'query' => [
+        'metric' => 'message_count',
+        'since' => $since_in_the_future->getTimestamp(),
+        'until' => $until->add(new \DateInterval('P4D'))->getTimestamp(),
+      ],
+    ]);
+    $this->assertAnalyticsPage();
+    $this->assertSession()->pageTextContains('Start date cannot be in future. The current local time of the Developer Portal:');
+
+    // Invalid metric in the URL query.
+    $this->drupalGet($path, [
+      'query' => [
+        'metric' => $this->randomMachineName(),
+        'since' => $this->randomMachineName(),
+        'until' => $this->randomMachineName(),
+      ],
+    ]);
+    $this->assertAnalyticsPage();
+    $this->assertSession()->pageTextContains('Invalid parameter metric in the URL.');
+
+    // Invalid timestamp parameters in the URL query.
+    $this->drupalGet($path, [
+      'query' => [
+        'metric' => 'min_response_time',
+        'since' => $this->randomMachineName(),
+        'until' => $this->randomMachineName(),
+      ],
+    ]);
+    $this->assertAnalyticsPage();
+    $this->assertSession()->pageTextContains('Invalid URL query parameters.');
   }
 
   /**
@@ -157,7 +230,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
    * @throws \Behat\Mink\Exception\ResponseTextException
    */
   protected function assertAnalyticsPage() {
-    $this->assertSession()->pageTextNotContains("Analytics of {$this->developerApp->getDisplayName()}");
+    $this->assertSession()->pageTextContains("Analytics of {$this->developerApp->getDisplayName()}");
     $this->assertSession()->pageTextContains("Your timezone: {$this->loggedInUser->getTimeZone()}");
     $this->assertSession()->pageTextContains('No performance data is available for the criteria you supplied.');
     $this->assertSession()->pageTextNotContains('Export CSV');
