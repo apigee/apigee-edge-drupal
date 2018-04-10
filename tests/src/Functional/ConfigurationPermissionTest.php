@@ -128,7 +128,6 @@ class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
     $visit_path('/admin/config/apigee-edge/product-settings/alias');
     $visit_path('/admin/config/apigee-edge/product-settings/caching');
 
-
     // Developer app entity related admin pages.
     $visit_path('/admin/config/apigee-edge/app-settings');
     $visit_path('/admin/config/apigee-edge/app-settings/alias');
