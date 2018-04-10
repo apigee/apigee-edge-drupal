@@ -22,12 +22,15 @@ namespace Drupal\apigee_edge\Entity\Controller;
 use Apigee\Edge\Api\Management\Controller\AppController;
 use Apigee\Edge\Api\Management\Controller\DeveloperAppController as EdgeDeveloperAppController;
 use Apigee\Edge\Api\Management\Controller\DeveloperAppControllerInterface as EdgeDeveloperAppControllerInterface;
+use Apigee\Edge\Api\Management\Entity\AppInterface;
 use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
+use Apigee\Edge\Api\Management\Entity\DeveloperAppInterface as EdgeDeveloperAppInterface;
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
 use Apigee\Edge\Structure\CpsListLimitInterface;
 use Drupal\apigee_edge\Entity\AppCredentialStorageAwareTrait;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\apigee_edge\Entity\EntityConvertAwareTrait;
+use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\EntityInterface;
 
 /**
@@ -53,7 +56,27 @@ use Drupal\Core\Entity\EntityInterface;
 class DeveloperAppController extends AppController implements DeveloperAppControllerInterface {
 
   use AppCredentialStorageAwareTrait;
-  use DrupalEntityControllerAwareTrait;
+  use DrupalEntityControllerAwareTrait {
+    loadMultiple as private traitLoadMultiple;
+  }
+
+  /**
+   * Static cache for already loaded developer apps by developer app id.
+   *
+   * This is necessary to reduce API calls on the My apps page.
+   *
+   * @var \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface[]
+   */
+  private static $cacheByAppId = [];
+
+  /**
+   * Static cache for already loaded developer apps by developerId and app name.
+   *
+   * This is necessary to reduce API calls on the My apps page.
+   *
+   * @var \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface[]
+   */
+  private static $cacheByDeveloperIdAppName = [];
 
   /**
    * {@inheritdoc}
@@ -69,16 +92,16 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\TempStore\TempStoreException
    */
   public function load(string $entityId): EdgeEntityInterface {
-    /** @var \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface $app */
-    $app = $this->loadApp($entityId);
-    // Store loaded credential's in user's private credential store to
-    // reduce number of API calls.
-    // @see \Drupal\apigee_edge\Entity\DeveloperApp::getCredentials()
-    $this->saveAppCredentialsToStorage($app->getDeveloperId(), $app->getName(), $app->getCredentials());
+    if (isset(static::$cacheByAppId[$entityId])) {
+      $app = static::$cacheByAppId[$entityId];
+    }
+    else {
+      /** @var \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface $app */
+      $app = $this->loadApp($entityId);
+      $this->saveEntityToStaticCaches($app);
+    }
     return EntityConvertAwareTrait::convertToDrupalEntity($app, DeveloperApp::class);
   }
 
@@ -102,6 +125,7 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
     $controller = $this->createDeveloperAppController($entity->getDeveloperId());
     $controller->create($entity);
+    $this->saveEntityToStaticCaches($entity);
   }
 
   /**
@@ -111,6 +135,7 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
     $controller = $this->createDeveloperAppController($entity->getDeveloperId());
     $controller->update($entity);
+    $this->saveEntityToStaticCaches($entity);
   }
 
   /**
@@ -124,7 +149,10 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
     $entity = $this->loadApp($entityId);
     $controller = $this->createDeveloperAppController($entity->getDeveloperId());
-    return $controller->delete($entity->getName());
+    $return = $controller->delete($entity->getName());
+    unset(static::$cacheByAppId[$entity->getAppId()]);
+    unset(static::$cacheByAppId[$entity->getDeveloperId()][$entity->getName()]);
+    return $return;
   }
 
   /**
@@ -132,13 +160,13 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
    */
   public function getEntities(CpsListLimitInterface $cpsLimit = NULL): array {
     $developerAppIds = $this->getEntityIds($cpsLimit);
-    $apps = $this->listApps(TRUE, $cpsLimit);
-    $apps = array_intersect_key($apps, array_flip($developerAppIds));
-    // Store loaded credential's in user's private credential store to
-    // reduce number of API calls.
-    // @see \Drupal\apigee_edge\Entity\DeveloperApp::getCredentials()
+    // Do not care about what is in the static cache, we have to load all
+    // developer app entities anyway.
+    /** @var \Apigee\Edge\Api\Management\Entity\DeveloperApp[] $allApps */
+    $allApps = $this->listApps(TRUE, $cpsLimit);
+    $this->saveEntitiesToStaticCache($allApps);
+    $apps = array_intersect_key($allApps, array_flip($developerAppIds));
     $converted = array_map(function (EdgeDeveloperApp $app) {
-      $this->saveAppCredentialsToStorage($app->getDeveloperId(), $app->getName(), $app->getCredentials());
       return EntityConvertAwareTrait::convertToDrupalEntity($app, DeveloperApp::class);
     }, $apps);
     return $converted;
@@ -153,17 +181,17 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\TempStore\TempStoreException
    */
   public function loadByAppName(string $developerId, string $appName) : EdgeEntityInterface {
-    $controller = $this->createDeveloperAppController($developerId);
-    /** @var \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface $app */
-    $app = $controller->load($appName);
-    // Store loaded credential's in user's private credential store to
-    // reduce number of API calls.
-    // @see \Drupal\apigee_edge\Entity\DeveloperApp::getCredentials()
-    $this->saveAppCredentialsToStorage($app->getDeveloperId(), $app->getName(), $app->getCredentials());
+    if (isset(static::$cacheByDeveloperIdAppName[$developerId][$appName])) {
+      $app = static::$cacheByDeveloperIdAppName[$developerId][$appName];
+    }
+    else {
+      $controller = $this->createDeveloperAppController($developerId);
+      /** @var \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface $app */
+      $app = $controller->load($appName);
+      $this->saveEntityToStaticCaches($app);
+    }
     return EntityConvertAwareTrait::convertToDrupalEntity($app, DeveloperApp::class);
   }
 
@@ -171,14 +199,26 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
    * {@inheritdoc}
    */
   public function getEntitiesByDeveloper(string $developerId): array {
-    /** @var \Apigee\Edge\Api\Management\Controller\DeveloperAppControllerInterface $controller */
-    $controller = $this->createDeveloperAppController($developerId);
-    $apps = $controller->getEntities();
+    // This only works if the passed developer id is actually the developer id
+    // (uuid) of a developer and not the email address of it.
+    // Adding an additional cache layer that would use developer email
+    // + appName/appId as an index could introduce new problems, because for
+    // example in the delete() method we would need to load the developer
+    // entity to get the email address of the app owner and invalidate related
+    // entries in that cache too.
+    if (isset(static::$cacheByDeveloperIdAppName[$developerId])) {
+      $apps = static::$cacheByDeveloperIdAppName[$developerId];
+    }
+    else {
+      /** @var \Apigee\Edge\Api\Management\Controller\DeveloperAppControllerInterface $controller */
+      $controller = $this->createDeveloperAppController($developerId);
+      $apps = $controller->getEntities();
+      $this->saveEntitiesToStaticCache($apps);
+    }
     // Store loaded credential's in user's private credential store to
     // reduce number of API calls.
     // @see \Drupal\apigee_edge\Entity\DeveloperApp::getCredentials()
     $converted = array_map(function (EdgeDeveloperApp $app) {
-      $this->saveAppCredentialsToStorage($app->getDeveloperId(), $app->getName(), $app->getCredentials());
       return EntityConvertAwareTrait::convertToDrupalEntity($app, DeveloperApp::class);
     }, $apps);
     return $converted;
@@ -191,6 +231,108 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
     /** @var \Apigee\Edge\Api\Management\Controller\DeveloperAppControllerInterface $controller */
     $controller = $this->createDeveloperAppController($developerId);
     return $controller->getEntityIds();
+  }
+
+  /**
+   * Saves an app entity to caches.
+   *
+   * @param \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface $app
+   *   App entity.
+   *
+   * @throws \Drupal\Core\TempStore\TempStoreException
+   *   If saving credentials to the intermediate credential storage fails.
+   */
+  private function saveEntityToStaticCaches(EdgeDeveloperAppInterface $app) {
+    static::$cacheByAppId[$app->getAppId()] = $app;
+    NestedArray::setValue(static::$cacheByDeveloperIdAppName, [$app->getDeveloperId(), $app->getName()], $app);
+    // Store loaded credential's in user's private credential store to
+    // reduce number of API calls.
+    // @see \Drupal\apigee_edge\Entity\DeveloperApp::getCredentials()
+    // Do this here too because that is the easiest.
+    $this->saveAppCredentialsToStorage($app->getDeveloperId(), $app->getName(), $app->getCredentials());
+  }
+
+  /**
+   * Saves app entities to caches.
+   *
+   * @param \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface[] $apps
+   *   Array of app entities.
+   *
+   * @throws \Drupal\Core\TempStore\TempStoreException
+   *   If saving credentials to the intermediate credential storage fails.
+   */
+  private function saveEntitiesToStaticCache(array $apps) {
+    foreach ($apps as $app) {
+      $this->saveEntityToStaticCaches($app);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function loadMultiple(array $ids = NULL): array {
+    $apps = [];
+    if ($ids !== NULL) {
+      if (count($ids) === 1) {
+        $entity = $this->load(reset($ids));
+        return [$entity->id() => $entity];
+      }
+      else {
+        $apps = [];
+        foreach ($ids as $key => $id) {
+          if (isset(static::$cacheByAppId[$id])) {
+            $apps[$id] = static::$cacheByAppId[$id];
+            unset($ids[$key]);
+          }
+        }
+      }
+    }
+
+    // If we  have all entities in cache then were fine there is no need
+    // to get all entities from Apigee Edge to be able to filter that
+    // by ids.
+    if (!empty($ids)) {
+      $apps = $this->traitLoadMultiple($ids);
+      $this->saveEntitiesToStaticCache($apps);
+    }
+
+    $converted = array_map(function (EdgeDeveloperApp $app) {
+      return EntityConvertAwareTrait::convertToDrupalEntity($app, DeveloperApp::class);
+    }, $apps);
+    return $converted;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function loadApp(string $appId): AppInterface {
+    if (isset(static::$cacheByAppId[$appId])) {
+      $app = static::$cacheByAppId[$appId];
+    }
+    else {
+      /** @var \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface $app */
+      $app = parent::loadApp($appId);
+      $this->saveEntityToStaticCaches($app);
+    }
+    return $app;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function listApps(bool $includeCredentials = TRUE, CpsListLimitInterface $cpsLimit = NULL): array {
+    $apps = parent::listApps($includeCredentials, $cpsLimit);
+    $this->saveEntitiesToStaticCache($apps);
+    return $apps;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function listAppsByStatus(string $status, bool $includeCredentials = TRUE, CpsListLimitInterface $cpsLimit = NULL): array {
+    $apps = parent::listAppsByStatus($status, $includeCredentials, $cpsLimit);
+    $this->saveEntitiesToStaticCache($apps);
+    return $apps;
   }
 
 }
