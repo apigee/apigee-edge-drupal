@@ -33,10 +33,13 @@ class EdgeEntityConfigTranslationChangeSubscriber implements EventSubscriberInte
    * {@inheritdoc}
    */
   public static function getSubscribedEvents() {
-    return [
-      LanguageConfigOverrideEvents::SAVE_OVERRIDE => 'clearCache',
-      LanguageConfigOverrideEvents::DELETE_OVERRIDE => 'clearCache',
-    ];
+    if (class_exists('\Drupal\language\Config\LanguageConfigOverrideEvents')) {
+      return [
+        LanguageConfigOverrideEvents::SAVE_OVERRIDE => 'clearCache',
+        LanguageConfigOverrideEvents::DELETE_OVERRIDE => 'clearCache',
+      ];
+    }
+    return [];
   }
 
   /**
