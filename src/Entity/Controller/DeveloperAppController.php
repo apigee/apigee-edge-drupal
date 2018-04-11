@@ -291,7 +291,7 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
     // If we  have all entities in cache then were fine there is no need
     // to get all entities from Apigee Edge to be able to filter that
     // by ids.
-    if (!empty($ids)) {
+    if ($ids === NULL || !empty($ids)) {
       $apps = $this->traitLoadMultiple($ids);
       $this->saveEntitiesToStaticCache($apps);
     }
