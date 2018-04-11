@@ -239,7 +239,8 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
    * @param \Apigee\Edge\Api\Management\Entity\AppInterface $app
    *   App entity.
    *
-   * @throws \Drupal\Core\TempStore\TempStoreException If saving credentials to the intermediate credential storage fails.
+   * @throws \Drupal\Core\TempStore\TempStoreException
+   *   If saving credentials to the intermediate credential storage fails.
    */
   private function saveEntityToStaticCaches(AppInterface $app) {
     // Do not try to save non developer apps (ex.: company apps) to this cache.
