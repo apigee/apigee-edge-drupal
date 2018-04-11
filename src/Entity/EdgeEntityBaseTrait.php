@@ -110,7 +110,14 @@ trait EdgeEntityBaseTrait {
    * {@inheritdoc}
    */
   public function language() {
-    return new Language(['id' => Language::LANGCODE_NOT_SPECIFIED]);
+    // Our entities does not support translations as the way like content
+    // entities do, but we had to find a way to make them work together with the
+    // built-in translation features of Drupal 8 (ex.: language dependent
+    // link generation). Returning the language of the current seemed to be
+    // able to solve this problem.
+    // (\Drupal\apigee_edge\Entity\EdgeEntityBaseTrait::toUrl() uses the
+    // language of an entity to render an entity link.)
+    return \Drupal::languageManager()->getCurrentLanguage();
   }
 
   /**
