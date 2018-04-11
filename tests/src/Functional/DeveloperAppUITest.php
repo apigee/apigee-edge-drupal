@@ -179,8 +179,8 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    */
   public function testDeveloperAppLabel() {
     $this->submitAdminForm([
-      'developer_app_label_singular' => 'API',
-      'developer_app_label_plural' => 'APIs',
+      'entity_label_singular' => 'API',
+      'entity_label_plural' => 'APIs',
     ]);
 
     \Drupal::entityTypeManager()->clearCachedDefinitions();

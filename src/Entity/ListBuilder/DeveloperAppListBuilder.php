@@ -204,7 +204,7 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
     $headers = [];
     $headers['app_name'] = [
       'data' => $this->t('@developer_app name', [
-        '@developer_app' => ucfirst($this->getDeveloperAppEntityDefinition()->get('label_singular')),
+        '@developer_app' => ucfirst($this->getDeveloperAppEntityDefinition()->getSingularLabel()),
       ]),
       'specifier' => 'displayName',
       'field' => 'displayName',

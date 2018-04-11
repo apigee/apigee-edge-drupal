@@ -52,7 +52,7 @@ class DeveloperAppBaseFieldConfigForm extends FormBase {
       }
     }
 
-    foreach ($this->config('apigee_edge.appsettings')->get('locked_base_fields') as $locked) {
+    foreach ($this->config('apigee_edge.common_app_settings')->get('locked_base_fields') as $locked) {
       $form['table'][$locked]['required']['#disabled'] = TRUE;
     }
 
@@ -96,7 +96,7 @@ class DeveloperAppBaseFieldConfigForm extends FormBase {
     }
 
     $this->configFactory()
-      ->getEditable('apigee_edge.appsettings')
+      ->getEditable('apigee_edge.common_app_settings')
       ->set('required_base_fields', $required)
       ->save();
 

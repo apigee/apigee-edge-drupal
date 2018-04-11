@@ -30,6 +30,11 @@ services:
     tags:
       - { name: event_subscriber }
 
+  apigee_edge.edge_entity_config_translation_change_subscriber:
+    class: Drupal\apigee_edge\EventSubscriber\EdgeEntityConfigTranslationChangeSubscriber
+    tags:
+      - { name: event_subscriber }
+
   access_check.developer_app:
     class: Drupal\apigee_edge\Access\DeveloperAppAccessCheck
     arguments: ['@entity_type.manager']

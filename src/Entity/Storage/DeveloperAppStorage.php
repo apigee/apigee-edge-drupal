@@ -75,7 +75,7 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
   public function __construct(SDKConnectorInterface $sdkConnector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, EntityTypeManagerInterface $entityTypeManager, ConfigFactoryInterface $config, TimeInterface $systemTime) {
     parent::__construct($sdkConnector, $entity_type, $cache, $logger, $systemTime);
     $this->entityTypeManager = $entityTypeManager;
-    $this->cacheExpiration = $config->get('apigee_edge.appsettings')->get('cache_expiration');
+    $this->cacheExpiration = $config->get('apigee_edge.common_app_settings')->get('cache_expiration');
   }
 
   /**

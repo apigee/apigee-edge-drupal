@@ -26,16 +26,10 @@ apigee_edge.client:
     http_client_proxy:
       type: string
 
-apigee_edge.appsettings:
+apigee_edge.common_app_settings:
   type: config_object
-  label: 'Developer app settings'
+  label: 'Common app settings'
   mapping:
-    developer_app_label_singular:
-      type: label
-      label: 'How to refer to a Developer App on the UI (singular)'
-    developer_app_label_plural:
-      type: label
-      label: 'How to refer to a Developer App on the UI (plural)'
     display_as_select:
       type: boolean
     associate_apps:
@@ -58,6 +52,17 @@ apigee_edge.appsettings:
       type: sequence
       sequence:
         type: string
+
+apigee_edge.developer_app_settings:
+  type: config_object
+  label: 'Developer app settings'
+  mapping:
+    entity_label_singular:
+      type: label
+      label: 'How to refer to a Developer App on the UI (singular)'
+    entity_label_plural:
+      type: label
+      label: 'How to refer to a Developer App on the UI (plural)'
     cache_expiration:
       type: integer
 
@@ -106,10 +111,10 @@ apigee_edge.api_product_settings:
   type: config_object
   label: 'API Product settings'
   mapping:
-    api_product_label_singular:
+    entity_label_singular:
       type: label
       label: 'How to refer to an API Product on the UI (singular)'
-    api_product_label_plural:
+    entity_label_plural:
       type: label
       label: 'How to refer to an API Product on the UI (plural)'
     cache_expiration:
