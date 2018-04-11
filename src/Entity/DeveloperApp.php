@@ -244,7 +244,8 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
       /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $app */
       $dac->load($this->appId);
     }
-    return $this->getAppCredentialsFromStorage($this->developerId, $this->name);
+    $credentials = $this->getAppCredentialsFromStorage($this->developerId, $this->name);
+    return $credentials === NULL ? [] : $credentials;
   }
 
   /**
