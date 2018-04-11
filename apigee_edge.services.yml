@@ -1,3 +1,6 @@
+parameters:
+  factory.apigee_edge.app_credentials_storage: apigee_edge.keyvalue.app_credentials
+
 services:
   logger.channel.apigee_edge:
     parent: logger.channel_base
@@ -70,7 +73,7 @@ services:
     parent: keyvalue.expirable
     arguments:
       index_1:
-        keyvalue_expirable_default: 'apigee_edge.keyvalue.app_credentials'
+        keyvalue_expirable_default: '%factory.apigee_edge.app_credentials_storage%'
 
   apigee_edge.tempstore.private.app_credentials:
     parent: tempstore.private
