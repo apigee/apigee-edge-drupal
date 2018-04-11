@@ -98,7 +98,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
    */
   public function form(array $form, FormStateInterface $form_state) {
     $this->checkDeveloperStatus($this->entity->getOwnerId());
-    $config = $this->configFactory->get('apigee_edge.appsettings');
+    $config = $this->configFactory->get('apigee_edge.common_app_settings');
     $form = parent::form($form, $form_state);
 
     unset($form['name']);
@@ -118,11 +118,10 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
           '#value' => Xss::filter($credential->getStatus()),
         ];
         $rendered_credential_status = $this->renderer->render($credential_status_element);
-        $credential_title = $rendered_credential_status . ' Credential';
 
         $form['credential'][$credential->getConsumerKey()] = [
           '#type' => 'fieldset',
-          '#title' => $credential_title,
+          '#title' => $rendered_credential_status . $this->t('Credential'),
           '#collapsible' => FALSE,
         ];
 
@@ -192,7 +191,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    $config = $this->configFactory->get('apigee_edge.appsettings');
+    $config = $this->configFactory->get('apigee_edge.common_app_settings');
     $redirect_user = FALSE;
 
     if ($config->get('associate_apps') && $config->get('user_select')) {

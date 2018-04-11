@@ -74,7 +74,7 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
    * {@inheritdoc}
    */
   public function form(array $form, FormStateInterface $form_state) {
-    $config = $this->configFactory->get('apigee_edge.appsettings');
+    $config = $this->configFactory->get('apigee_edge.common_app_settings');
     $form = parent::form($form, $form_state);
     $form['#attached']['library'][] = 'apigee_edge/apigee_edge.components';
     $form['#attributes']['class'][] = 'apigee-edge--form';
@@ -202,7 +202,7 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
     $app = $this->entity;
     $app->save();
-    $config = $this->configFactory->get('apigee_edge.appsettings');
+    $config = $this->configFactory->get('apigee_edge.common_app_settings');
 
     if ($config->get('associate_apps')) {
       $dacc = new DeveloperAppCredentialController(

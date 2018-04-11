@@ -30,9 +30,9 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\InfoParserInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Http\ClientFactory;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
-use GuzzleHttp\ClientInterface as GuzzleClientInterface;
 use Http\Adapter\Guzzle6\Client as GuzzleClientAdapter;
 
 /**
@@ -106,7 +106,7 @@ class SDKConnector implements SDKConnectorInterface {
   /**
    * Constructs a new SDKConnector.
    *
-   * @param \GuzzleHttp\ClientInterface $httpClient
+   * @param \Drupal\Core\Http\ClientFactory $clientFactory
    *   Http client.
    * @param \Drupal\key\KeyRepositoryInterface $key_repository
    *   The key repository.
@@ -119,13 +119,35 @@ class SDKConnector implements SDKConnectorInterface {
    * @param \Drupal\Core\Extension\InfoParserInterface $infoParser
    *   Info file parser service.
    */
-  public function __construct(GuzzleClientInterface $httpClient, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $moduleHandler, InfoParserInterface $infoParser) {
+  public function __construct(ClientFactory $clientFactory, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $moduleHandler, InfoParserInterface $infoParser) {
+    $httpClient = $clientFactory->fromOptions($this->getHttpClientConfiguration($config_factory));
     $this->httpClient = new GuzzleClientAdapter($httpClient);
     $this->entityTypeManager = $entity_type_manager;
     $this->keyRepository = $key_repository;
     $this->configFactory = $config_factory;
     $this->moduleHandler = $moduleHandler;
     $this->infoParser = $infoParser;
+  }
+
+  /**
+   * Get HTTP client overrides for APIgee API client.
+   *
+   * Allows to override some configuration of the http client built by the
+   * factory for the API client.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   Config factory object.
+   *
+   * @return array
+   *   Associative array of configuration settings.
+   *
+   * @see http://docs.guzzlephp.org/en/stable/request-options.html
+   */
+  protected function getHttpClientConfiguration(ConfigFactoryInterface $config_factory) : array {
+    return [
+      'http_client_timeout' => $config_factory->get('apigee_edge.client')->get('http_client_timeout'),
+      'http_client_proxy' => $config_factory->get('apigee_edge.client')->get('http_client_proxy'),
+    ];
   }
 
   /**
@@ -155,9 +177,9 @@ class SDKConnector implements SDKConnectorInterface {
    */
   private function getCredentials(): CredentialsInterface {
     if (self::$credentials === NULL) {
-      $key = $this->keyRepository->getKey($this->configFactory->get('apigee_edge.authentication')->get('active_key'));
+      $key = $this->keyRepository->getKey($this->configFactory->get('apigee_edge.client')->get('active_key'));
       if ($key === NULL) {
-        throw new KeyNotFoundException($this->configFactory->get('apigee_edge.authentication')->get('active_key'));
+        throw new KeyNotFoundException($this->configFactory->get('apigee_edge.client')->get('active_key'));
       }
       self::$credentials = new Credentials($key);
     }

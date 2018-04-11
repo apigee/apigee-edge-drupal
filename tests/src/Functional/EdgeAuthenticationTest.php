@@ -81,7 +81,7 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
     // Delete pre-defined test key.
     $this->drupalPostForm('/admin/config/system/keys/manage/test/delete', [], 'Delete');
     $this->assertSession()->pageTextContains('The key test has been deleted.');
-    $this->assertEmpty($this->config('apigee_edge.authentication')->get('active_key'));
+    $this->assertEmpty($this->config('apigee_edge.client')->get('active_key'));
 
     // Create a key entity using key's default type and provider.
     $default_key = Key::create([
@@ -152,7 +152,7 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('The configuration options have been saved');
 
-    $this->assertEquals($this->config('apigee_edge.authentication')->get('active_key'), 'key_test_env_variables');
+    $this->assertEquals($this->config('apigee_edge.client')->get('active_key'), 'key_test_env_variables');
     $this->container->get('apigee_edge.sdk_connector')->testConnection();
 
     // Test key stored in private file.
@@ -166,7 +166,7 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('The configuration options have been saved');
 
-    $this->assertEquals($this->config('apigee_edge.authentication')->get('active_key'), 'key_test_private_file');
+    $this->assertEquals($this->config('apigee_edge.client')->get('active_key'), 'key_test_private_file');
     $this->container->get('apigee_edge.sdk_connector')->testConnection();
 
     // Test wrong key stored in private file.
@@ -180,14 +180,14 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('Connection failed.');
 
-    $this->assertEquals($this->config('apigee_edge.authentication')->get('active_key'), 'key_test_private_file');
+    $this->assertEquals($this->config('apigee_edge.client')->get('active_key'), 'key_test_private_file');
     $this->container->get('apigee_edge.sdk_connector')->testConnection();
 
     Key::load('key_test_env_variables')->delete();
     Key::load('key_test_private_file')->delete();
     Key::load('key_wrong_test_private_file')->delete();
     $this->drupalGet('/admin/config/apigee-edge/settings');
-    $this->assertEmpty($this->config('apigee_edge.authentication')->get('active_key'));
+    $this->assertEmpty($this->config('apigee_edge.client')->get('active_key'));
     $this->assertSession()->pageTextContains('There is no available key for connecting to Apigee Edge server. Create a new key.');
     $this->assertSession()->elementNotExists('css', '#edit-key--wrapper');
 

@@ -69,7 +69,7 @@ class RequirementsTest extends ApigeeEdgeFunctionalTestBase {
       'password' => getenv('APIGEE_EDGE_PASSWORD'),
     ]));
     $key->save();
-    $this->config('apigee_edge.authentication')->set('active_key', 'private_file')->save();
+    $this->config('apigee_edge.client')->set('active_key', 'private_file')->save();
 
     $this->assertSession()->pageTextNotContains('Cannot connect to Edge server.');
 
