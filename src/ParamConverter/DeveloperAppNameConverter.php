@@ -21,6 +21,7 @@
 namespace Drupal\apigee_edge\ParamConverter;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\ParamConverter\ParamConverterInterface;
 use Symfony\Component\Routing\Route;
 
@@ -37,13 +38,23 @@ class DeveloperAppNameConverter implements ParamConverterInterface {
   protected $entityTypeManager;
 
   /**
+   * The logger.
+   *
+   * @var \Drupal\Core\Logger\LoggerChannelInterface
+   */
+  private $logger;
+
+  /**
    * Constructs a DeveloperAppNameParameterConverter.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   Entity type manager.
+   * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
+   *   The logger.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
+  public function __construct(EntityTypeManagerInterface $entityTypeManager, LoggerChannelInterface $logger) {
     $this->entityTypeManager = $entityTypeManager;
+    $this->logger = $logger;
   }
 
   /**
@@ -53,13 +64,14 @@ class DeveloperAppNameConverter implements ParamConverterInterface {
     if (empty($defaults['user'])) {
       return NULL;
     }
+    $entity = NULL;
     /** @var \Drupal\user\UserInterface $user */
     $user = $this->entityTypeManager->getStorage('user')->load($defaults['user']);
     if ($user) {
-      $storedDeveloperId = $user->get('apigee_edge_developer_id')->value;
-      if ($storedDeveloperId) {
+      $developerId = $user->get('apigee_edge_developer_id')->value;
+      if ($developerId) {
         $ids = $this->entityTypeManager->getStorage('developer_app')->getQuery()
-          ->condition('developerId', $storedDeveloperId)
+          ->condition('developerId', $developerId)
           ->condition('name', $value)
           ->execute();
         if (!empty($ids)) {
@@ -74,11 +86,27 @@ class DeveloperAppNameConverter implements ParamConverterInterface {
             $entity = $this->entityTypeManager->getStorage('developer_app')
               ->load($id);
           }
-          return $entity;
+        }
+
+        if ($entity === NULL) {
+          // App may have been deleted on Apigee Edge, that is a smaller
+          // problem.
+          $this->logger->error('%class: Unable to load developer app with %name name owned by %email.', [
+            '%class' => get_called_class(),
+            '%name' => $value,
+            '%email' => $user->getEmail(),
+          ]);
         }
       }
+      else {
+        // Developer does not exists (anymore) on Apigee Edge however it seems
+        // it has existed before because someone knows the URL of the view
+        // app page of one of its app.
+        $this->logger->critical('%class: Unable to find developer id for %user user.', ['%class' => get_called_class(), '%user' => $user->getDisplayName()]);
+      }
     }
-    return NULL;
+
+    return $entity;
   }
 
   /**
