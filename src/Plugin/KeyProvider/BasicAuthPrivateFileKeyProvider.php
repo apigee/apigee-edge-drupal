@@ -20,6 +20,7 @@
 namespace Drupal\apigee_edge\Plugin\KeyProvider;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Site\Settings;
 use Drupal\Core\Url;
 use Drupal\key\Exception\KeyValueNotSetException;
@@ -35,7 +36,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @KeyProvider(
  *   id = "apigee_edge_basic_auth_private_file",
  *   label = @Translation("Apigee Edge Basic Authentication: Private File"),
- *   description = @Translation("Stores Apigee Edge basic authentication credentials in a private file."),
+ *   description = @Translation("Stores Apigee Edge basic authentication credentials in a private file.<br><strong>Warning! </strong>Private file storage is suitable only for testing environments. In production environments, use the <em>Apigee Edge Basic Authentication: Environment Variables</em> key provider."),
  *   storage_method = "apigee_edge",
  *   key_value = {
  *     "accepted" = TRUE,
