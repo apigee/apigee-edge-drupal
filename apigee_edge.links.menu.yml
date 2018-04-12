@@ -27,3 +27,9 @@ apigee_edge.product:
   description: 'API Product settings.'
   parent: system.admin_config_edge
   route_name: apigee_edge.settings.product
+
+apigee_edge.my_apps:
+  class: Drupal\apigee_edge\Plugin\Menu\MyAppsMenuLink
+  route_name: apigee_edge.user.my_apps
+  menu_name: account
+  weight: -30

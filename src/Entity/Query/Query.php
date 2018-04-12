@@ -131,12 +131,15 @@ class Query extends QueryBase implements QueryInterface {
     // The worst case: load all entities from Apigee Edge.
     $ids = NULL;
     foreach ($this->condition->conditions() as $condition) {
-      if (in_array($condition['field'], $this->getEntityIdProperties()) && in_array($condition['operator'], [NULL, '='])) {
-        if (!is_array($condition['value'])) {
-          $ids = [$condition['value']];
-        }
-        elseif (is_array($condition['value']) && count($condition['value']) === 1) {
+      // \Drupal\Core\Entity\EntityStorageBase::buildPropertyQuery() always adds
+      // conditions with IN that is why the last part of this condition
+      // is needed.
+      if (in_array($condition['field'], $this->getEntityIdProperties()) && (in_array($condition['operator'], [NULL, '=']) || ($condition['operator'] === 'IN' && count($condition['value']) === 1))) {
+        if (is_array($condition['value'])) {
           $ids = [reset($condition['value'])];
+        }
+        else {
+          $ids = [$condition['value']];
         }
         // If we found an id field in the query do not look for an another
         // because that would not make any sense to query one entity by

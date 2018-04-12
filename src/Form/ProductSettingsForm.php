@@ -57,18 +57,18 @@ class ProductSettingsForm extends ConfigFormBase {
       '#collapsible' => FALSE,
     ];
 
-    $form['label']['api_product_label_singular'] = [
+    $form['label']['entity_label_singular'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Singular format'),
       '#description' => 'Leave empty to use the default "API" label.',
-      '#default_value' => $config->get('api_product_label_singular'),
+      '#default_value' => $config->get('entity_label_singular'),
     ];
 
-    $form['label']['api_product_label_plural'] = [
+    $form['label']['entity_label_plural'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Plural format'),
       '#description' => 'Leave empty to use the default "APIs" label.',
-      '#default_value' => $config->get('api_product_label_plural'),
+      '#default_value' => $config->get('entity_label_plural'),
     ];
 
     $form += $this->addCacheConfigElements($form, $form_state);
@@ -82,10 +82,10 @@ class ProductSettingsForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $savedLabels = $this->configFactory->get('apigee_edge.api_product_settings');
 
-    if ($savedLabels->get('api_product_label_singular') !== $form_state->getValue('api_product_label_singular') || $savedLabels->get('api_product_label_plural') !== $form_state->getValue('api_product_label_plural')) {
+    if ($savedLabels->get('entity_label_singular') !== $form_state->getValue('entity_label_singular') || $savedLabels->get('entity_label_plural') !== $form_state->getValue('entity_label_plural')) {
       $this->configFactory->getEditable('apigee_edge.api_product_settings')
-        ->set('api_product_label_singular', $form_state->getValue('api_product_label_singular'))
-        ->set('api_product_label_plural', $form_state->getValue('api_product_label_plural'))
+        ->set('entity_label_singular', $form_state->getValue('entity_label_singular'))
+        ->set('entity_label_plural', $form_state->getValue('entity_label_plural'))
         ->save();
 
       // Clearing required caches.

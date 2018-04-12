@@ -31,4 +31,8 @@ function apigee_edge_test_install() {
 <p>Transfer statistics: <pre>{stats}</pre></p>")
     ->set('debug_message_formatter', 'full_html')
     ->save();
+
+  // Increase timeout of the API client to ensure tests do not fail.
+  \Drupal::configFactory()->getEditable('apigee_edge.client')
+    ->set('http_client_timeout', 60);
 }

@@ -27,6 +27,11 @@ use Drupal\Core\Url;
 
 /**
  * Provides configuration form builder for changing app settings.
+ *
+ * If we would like to call company apps and developer apps in the same name
+ * then this form should take care of the update of both configurations.
+ * In general, it is better that we are allowing to call them differently
+ * thanks to their dedicated entity label configurations.
  */
 class AppSettingsForm extends ConfigFormBase {
 
@@ -37,7 +42,8 @@ class AppSettingsForm extends ConfigFormBase {
    */
   protected function getEditableConfigNames() {
     return [
-      'apigee_edge.appsettings',
+      'apigee_edge.common_app_settings',
+      'apigee_edge.developer_app_settings',
     ];
   }
 
@@ -52,7 +58,8 @@ class AppSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $config = $this->config('apigee_edge.appsettings');
+    $generalConfig = $this->config('apigee_edge.common_app_settings');
+    $devAppConfig = $this->config('apigee_edge.developer_app_settings');
 
     $form['api_product'] = [
       '#type' => 'fieldset',
@@ -63,19 +70,19 @@ class AppSettingsForm extends ConfigFormBase {
     $form['api_product']['display_as_select'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Display the API Product widget as a select box (instead of checkboxes/radios)'),
-      '#default_value' => $config->get('display_as_select'),
+      '#default_value' => $generalConfig->get('display_as_select'),
     ];
 
     $form['api_product']['associate_apps'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Associate apps with API Products'),
-      '#default_value' => $config->get('associate_apps'),
+      '#default_value' => $generalConfig->get('associate_apps'),
     ];
 
     $form['api_product']['user_select'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Let user select the product(s)'),
-      '#default_value' => $config->get('user_select'),
+      '#default_value' => $generalConfig->get('user_select'),
       '#states' => [
         'visible' => [
           ':input[name="associate_apps"]' => ['checked' => TRUE],
@@ -86,7 +93,7 @@ class AppSettingsForm extends ConfigFormBase {
     $form['api_product']['multiple_products'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Allow selecting multiple products'),
-      '#default_value' => $config->get('multiple_products'),
+      '#default_value' => $generalConfig->get('multiple_products'),
       '#states' => [
         'visible' => [
           ':input[name="user_select"]' => [
@@ -100,7 +107,7 @@ class AppSettingsForm extends ConfigFormBase {
     $form['api_product']['require'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Require at least one product'),
-      '#default_value' => $config->get('require'),
+      '#default_value' => $generalConfig->get('require'),
       '#states' => [
         'visible' => [
           ':input[name="user_select"]' => [
@@ -112,7 +119,7 @@ class AppSettingsForm extends ConfigFormBase {
     ];
 
     /** @var string[] $default_products */
-    $default_products = $config->get('default_products') ?: [];
+    $default_products = $generalConfig->get('default_products') ?: [];
     $product_list = [];
     /** @var \Drupal\apigee_edge\Entity\ApiProduct[] $products */
     try {
@@ -175,17 +182,17 @@ class AppSettingsForm extends ConfigFormBase {
       '#collapsible' => FALSE,
     ];
 
-    $form['label']['developer_app_label_singular'] = [
+    $form['label']['entity_label_singular'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Singular format'),
-      '#default_value' => $config->get('developer_app_label_singular'),
+      '#default_value' => $devAppConfig->get('entity_label_singular'),
       '#description' => $this->t('Leave empty to use the default "Developer App" label.'),
     ];
 
-    $form['label']['developer_app_label_plural'] = [
+    $form['label']['entity_label_plural'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Plural format'),
-      '#default_value' => $config->get('developer_app_label_plural'),
+      '#default_value' => $devAppConfig->get('entity_label_plural'),
       '#description' => $this->t('Leave empty to use the default "Developer Apps" label.'),
     ];
 
@@ -202,7 +209,8 @@ class AppSettingsForm extends ConfigFormBase {
     // builder was not able to retrieve API Product list from Apigee Edge.
     // We do not want to override (clear) previously configured list of
     // default API product.
-    $config = \Drupal::configFactory()->getEditable('apigee_edge.appsettings');
+    $generalConfig = \Drupal::configFactory()->getEditable('apigee_edge.common_app_settings');
+    $devAppConfig = $this->config('apigee_edge.developer_app_settings');
 
     $config_names = [
       'display_as_select',
@@ -213,7 +221,7 @@ class AppSettingsForm extends ConfigFormBase {
     ];
 
     foreach ($config_names as $name) {
-      $config->set($name, $form_state->getValue($name));
+      $generalConfig->set($name, $form_state->getValue($name));
     }
 
     $default_products = [];
@@ -232,13 +240,13 @@ class AppSettingsForm extends ConfigFormBase {
     }
     $default_products = array_values(array_filter($default_products));
 
-    $config->set('default_products', $default_products);
-    $config->save();
+    $generalConfig->set('default_products', $default_products);
+    $generalConfig->save();
 
-    if ($config->get('developer_app_label_singular') !== $form_state->getValue('developer_app_label_singular') || $config->get('developer_app_label_plural') !== $form_state->getValue('developer_app_label_plural')) {
-      $this->configFactory->getEditable('apigee_edge.appsettings')
-        ->set('developer_app_label_singular', $form_state->getValue('developer_app_label_singular'))
-        ->set('developer_app_label_plural', $form_state->getValue('developer_app_label_plural'))
+    if ($devAppConfig->get('entity_label_singular') !== $form_state->getValue('entity_label_singular') || $devAppConfig->get('entity_label_plural') !== $form_state->getValue('entity_label_plural')) {
+      $this->configFactory->getEditable('apigee_edge.developer_app_settings')
+        ->set('entity_label_singular', $form_state->getValue('entity_label_singular'))
+        ->set('entity_label_plural', $form_state->getValue('entity_label_plural'))
         ->save();
 
       // Clearing required caches.
@@ -254,7 +262,7 @@ class AppSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function getConfigNameWithCacheSettings() {
-    return 'apigee_edge.appsettings';
+    return 'apigee_edge.developer_app_settings';
   }
 
   /**
