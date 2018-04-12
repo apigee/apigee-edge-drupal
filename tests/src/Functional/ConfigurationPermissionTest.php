@@ -112,6 +112,7 @@ class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
     // Developer entity related admin pages.
     $visit_path('/admin/config/apigee-edge/developer-settings');
     $visit_path('/admin/config/apigee-edge/developer-settings/attributes');
+    $visit_path('/admin/config/apigee-edge/developer-settings/sync');
     if ($access) {
       list($schedule_path, $schedule_query) = $this->findLink('Background');
       list($run_path, $run_query) = $this->findLink('Now');
@@ -124,10 +125,13 @@ class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
     }
 
     // API Product entity related admin pages.
-    $visit_path('/admin/config/apigee-edge/product-settings');
+    $visit_path('/admin/config/apigee-edge/product-settings/alias');
+    $visit_path('/admin/config/apigee-edge/product-settings/caching');
 
     // Developer app entity related admin pages.
     $visit_path('/admin/config/apigee-edge/app-settings');
+    $visit_path('/admin/config/apigee-edge/app-settings/alias');
+    $visit_path('/admin/config/apigee-edge/app-settings/caching');
     $visit_path('/admin/config/apigee-edge/app-settings/fields');
     $visit_path('/admin/config/apigee-edge/app-settings/form-display');
     $visit_path('/admin/config/apigee-edge/app-settings/display');
