@@ -51,7 +51,7 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
       'key_input' => 'apigee_edge_basic_auth_input',
     ]);
     $key->save();
-    $this->config('apigee_edge.authentication')->set('active_key', 'test')->save();
+    $this->config('apigee_edge.client')->set('active_key', 'test')->save();
   }
 
   /**

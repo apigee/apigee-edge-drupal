@@ -22,10 +22,10 @@ namespace Drupal\apigee_edge\Plugin\KeyProvider;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\key\Plugin\KeyProviderBase;
-use Drupal\key\Plugin\KeyPluginFormInterface;
-use Drupal\key\Plugin\KeyProviderSettableValueInterface;
 use Drupal\key\KeyInterface;
+use Drupal\key\Plugin\KeyPluginFormInterface;
+use Drupal\key\Plugin\KeyProviderBase;
+use Drupal\key\Plugin\KeyProviderSettableValueInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -110,7 +110,7 @@ class BasicAuthEnvVariablesKeyProvider extends KeyProviderBase implements KeyPlu
    * {@inheritdoc}
    */
   public function getKeyValue(KeyInterface $key) {
-    $config = $this->configFactory->get('apigee_edge.authentication');
+    $config = $this->configFactory->get('apigee_edge.client');
 
     return Json::encode([
       'endpoint' => getenv('APIGEE_EDGE_ENDPOINT') ?: $config->get('default_endpoint'),

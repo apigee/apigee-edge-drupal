@@ -54,22 +54,6 @@ use Drupal\user\UserInterface;
 define('APIGEE_EDGE_USER_REGISTRATION_SOURCE', 'apigee_edge_user_registration_source');
 
 /**
- * Implements hook_menu_links_discovered_alter().
- */
-function apigee_edge_menu_links_discovered_alter(array &$links) {
-  $devAppLabel = \Drupal::entityTypeManager()
-    ->getDefinition('developer_app')
-    ->getPluralLabel();
-
-  $links['apigee_edge.my_apps'] = [
-    'title' => t('My @developer_app', ['@developer_app' => $devAppLabel]),
-    'route_name' => 'apigee_edge.user.my_apps',
-    'weight' => -30,
-    'menu_name' => 'account',
-  ];
-}
-
-/**
  * Implements hook_module_implements_alter().
  */
 function apigee_edge_module_implements_alter(&$implementations, $hook) {
@@ -101,41 +85,6 @@ function apigee_edge_theme() {
       'render element' => 'element',
     ],
   ];
-}
-
-/**
- * Implements hook_entity_type_alter().
- */
-function apigee_edge_entity_type_alter(array &$entity_types) {
-  $developer_app_config = \Drupal::config('apigee_edge.appsettings');
-  $api_product_config = \Drupal::config('apigee_edge.api_product_settings');
-
-  $developer_app_label_singular = $developer_app_config->get('developer_app_label_singular');
-  $developer_app_label_plural = $developer_app_config->get('developer_app_label_plural');
-  $api_product_label_singular = $api_product_config->get('api_product_label_singular');
-  $api_product_label_plural = $api_product_config->get('api_product_label_plural');
-
-  if ($developer_app_label_singular && $developer_app_label_plural) {
-    // Also set the label for consistency reasons.
-    $entity_types['developer_app']->set('label', new TranslatableMarkup($developer_app_label_singular));
-    $entity_types['developer_app']->set('label_singular', new TranslatableMarkup($developer_app_label_singular));
-    $entity_types['developer_app']->set('label_plural', new TranslatableMarkup($developer_app_label_plural));
-    $entity_types['developer_app']->set('label_count', [
-      'singular' => "@count {$developer_app_label_singular}",
-      'plural' => "@count {$developer_app_label_plural}",
-    ]);
-  }
-
-  if ($api_product_label_singular && $api_product_label_plural) {
-    // Also set the label for consistency reasons.
-    $entity_types['api_product']->set('label', new TranslatableMarkup($api_product_label_singular));
-    $entity_types['api_product']->set('label_singular', new TranslatableMarkup($api_product_label_singular));
-    $entity_types['api_product']->set('label_plural', new TranslatableMarkup($api_product_label_plural));
-    $entity_types['api_product']->set('label_count', [
-      'singular' => "@count {$api_product_label_singular}",
-      'plural' => "@count {$api_product_label_plural}",
-    ]);
-  }
 }
 
 /**
@@ -263,7 +212,7 @@ function apigee_edge_form_alter(&$form, FormStateInterface $form_state, $form_id
  *   Form state.
  */
 function _apigee_edge_entity_form_display_edit_form_validate(array &$form, FormStateInterface $form_state) {
-  $required = \Drupal::config('apigee_edge.appsettings')->get('required_base_fields');
+  $required = \Drupal::config('apigee_edge.common_app_settings')->get('required_base_fields');
 
   foreach ($form_state->getValue('fields') as $field_name => $data) {
     if (in_array($field_name, $required) && $data['region'] === 'hidden') {
@@ -830,7 +779,18 @@ function template_preprocess_app_credential(array &$variables) {
     if ($def['value_type'] == 'date') {
       // TODO Should we make format configurable?
       /** @var \DateTimeInterface $value */
-      $value = $value ? $dateFormatter->format(intval($value / 1000), 'medium', NULL, drupal_get_user_timezone()) : t('Never');
+      if ($value !== -1) {
+        $time_diff = \Drupal::time()->getRequestTime() - intval($value / 1000);
+        if ($time_diff > 0) {
+          $value = t('@time ago', ['@time' => $dateFormatter->formatTimeDiffSince(intval($value / 1000))]);
+        }
+        else {
+          $value = t('@time hence', ['@time' => $dateFormatter->formatTimeDiffUntil(intval($value / 1000))]);
+        }
+      }
+      else {
+        $value = t('Never');
+      }
     }
 
     if (in_array($property, $secret_properties)) {
@@ -1043,12 +1003,12 @@ function apigee_edge_field_ui_field_storage_add_form_submit(array &$form, FormSt
 function apigee_edge_key_delete(EntityInterface $entity) {
   /** @var \Drupal\key\KeyInterface $entity */
   $active_key = \Drupal::configFactory()
-    ->get('apigee_edge.authentication')
+    ->get('apigee_edge.client')
     ->get('active_key');
 
   if ($active_key === $entity->id()) {
     \Drupal::configFactory()
-      ->getEditable('apigee_edge.authentication')
+      ->getEditable('apigee_edge.client')
       ->set('active_key', '')->save();
   }
 }
