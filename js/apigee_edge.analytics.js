@@ -74,7 +74,7 @@
           }
 
           // Create timezone date formatter.
-          var formatter_timezone = new google.visualization.DateFormat({timeZone: timezoneOffset / 60});
+          var formatter_timezone = new google.visualization.DateFormat({formatType: 'long', timeZone: timezoneOffset / 60});
           // Reformat the date values.
           formatter_timezone.format(data, 0);
 
