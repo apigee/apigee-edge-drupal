@@ -38,8 +38,6 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * Provides data set for our permission tests.
-   *
-   * @see permissionProvider()
    */
   protected const PERMISSION_MATRIX = [
     'create developer_app' => ['add-form-for-developer'],
@@ -58,7 +56,7 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
     'access developer_app overview' => ['collection'],
     // We leave this empty because we add entity links to this data set
     // later.
-    'administer developer_app' => [],
+    self::ADMINISTER_PERMISSION => [],
   ];
 
   /**
@@ -180,7 +178,7 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
    * @param string $permission
    *   Name of the permission to test.
    */
-  public function assertPermission(string $permission) {
+  protected function assertPermission(string $permission) {
     if ($this->loggedInUser) {
       $this->drupalLogout();
     }
