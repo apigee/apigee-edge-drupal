@@ -1,26 +1,53 @@
 apigee_edge.settings:
   route_name: apigee_edge.settings
-  title: 'Authentication'
+  title: 'Credentials'
   base_route: apigee_edge.settings
 
 apigee_edge.settings.app:
   route_name: apigee_edge.settings.app
-  title: 'General'
+  title: 'API Product associations'
   base_route: apigee_edge.settings.app
+  weight: -10
+
+apigee_edge.settings.app.alias:
+  route_name: apigee_edge.settings.app.alias
+  title: 'Alias'
+  base_route: apigee_edge.settings.app
+
+apigee_edge.settings.app.caching:
+  route_name: apigee_edge.settings.app.caching
+  title: 'Caching'
+  base_route: apigee_edge.settings.app
+  weight: 10
+
+apigee_edge.settings.product.alias:
+  route_name: apigee_edge.settings.product.alias
+  title: 'Alias'
+  base_route: apigee_edge.settings.product.alias
+
+apigee_edge.settings.product.caching:
+  route_name: apigee_edge.settings.product.caching
+  title: 'Caching'
+  base_route: apigee_edge.settings.product.alias
 
 apigee_edge.settings.error_page:
   route_name: apigee_edge.settings.error_page
-  title: 'Error Page Settings'
+  title: 'Error handling'
   base_route: apigee_edge.settings
 
 apigee_edge.settings.developer:
   route_name: apigee_edge.settings.developer
-  title: 'General'
+  title: 'Registration'
   base_route: apigee_edge.settings.developer
 
 apigee_edge.settings.developer.attributes:
   route_name: apigee_edge.settings.developer.email_validation
-  title: 'Sync & Custom Attributes'
+  title: 'Custom Attributes'
+  base_route: apigee_edge.settings.developer
+
+apigee_edge.settings.developer.sync:
+  route_name: apigee_edge.settings.developer.sync
+  title: 'Synchronization'
   base_route: apigee_edge.settings.developer
 
 apigee_edge.developer_app.view:
