@@ -183,7 +183,7 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
     if ($offset > 0) {
       $offset = "+{$offset}";
     }
-    else if ($offset === 0) {
+    elseif ($offset === 0) {
       $offset = "\u{00B1}{$offset}";
     }
 
