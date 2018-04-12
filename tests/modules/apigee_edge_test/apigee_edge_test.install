@@ -34,5 +34,6 @@ function apigee_edge_test_install() {
 
   // Increase timeout of the API client to ensure tests do not fail.
   \Drupal::configFactory()->getEditable('apigee_edge.client')
-    ->set('http_client_timeout', 60);
+    ->set('http_client_timeout', 60)
+    ->save();
 }
