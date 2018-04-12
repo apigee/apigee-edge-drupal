@@ -179,12 +179,20 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
       '#value' => $this->t('Apply'),
     ];
 
+    $offset = date('Z') / 3600;
+    if ($offset > 0) {
+      $offset = "+{$offset}";
+    }
+    else if ($offset === 0) {
+      $offset = "\u{00B1}{$offset}";
+    }
+
     $form['timezone'] = [
       '#type' => 'html_tag',
       '#tag' => 'div',
       '#value' => $this->t('Your timezone: @timezone (UTC@offset)', [
         '@timezone' => $this->currentUser()->getTimeZone(),
-        '@offset' => date('Z') > 0 ? '+' . date('Z') / 3600 : date('Z') / 3600,
+        '@offset' => $offset,
       ]),
     ];
 
