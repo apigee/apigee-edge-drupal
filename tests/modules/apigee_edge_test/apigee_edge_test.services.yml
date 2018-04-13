@@ -1,7 +1,14 @@
 services:
-  logger.apigee_edge_test:
+  logger.apigee_edge_test_apigee_edge_debug_to_file:
     parent: logger.syslog
-    class: Drupal\apigee_edge_test\Logger\DebugLogger
-    arguments: ['@config.factory', '@logger.log_message_parser']
+    class: Drupal\apigee_edge_test\Logger\ApigeeEdgeDebugToFileLogger
+    arguments: ['@database']
+    tags:
+      - { name: logger }
+
+  logger.apigee_edge_test_syslog_to_file:
+    parent: logger.syslog
+    class: Drupal\apigee_edge_test\Logger\SyslogToFileLogger
+    arguments: [ '@database']
     tags:
       - { name: logger }

@@ -60,7 +60,7 @@ services:
 
   paramconverter.developer_app_name:
     class: Drupal\apigee_edge\ParamConverter\DeveloperAppNameConverter
-    arguments: ['@entity_type.manager']
+    arguments: ['@entity_type.manager', '@logger.channel.apigee_edge']
     tags:
       - { name: paramconverter }
 

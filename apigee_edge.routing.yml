@@ -171,10 +171,10 @@ entity.developer_app.analytics:
     _title_callback: '\Drupal\apigee_edge\Form\DeveloperAppAnalyticsForm::getPageTitle'
   requirements:
     _entity_access: 'developer_app.analytics'
-    _permission: 'analytics any developer_app+administer developer_app'
   options:
     parameters:
       developer_app:
+        # This is required because we are not using _entity_form.
         type: entity:developer_app
 
 entity.developer_app.canonical_by_developer:
@@ -234,7 +234,6 @@ entity.developer_app.analytics_for_developer:
   requirements:
     user: '\d+'
     _developer_app_access: 'analytics'
-    _permission: 'analytics own developer_app+administer developer_app'
 
 apigee_edge.export_analytics.csv:
   path: '/analytics/export/{data_id}/csv'

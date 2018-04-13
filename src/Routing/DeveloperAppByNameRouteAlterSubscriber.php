@@ -19,7 +19,6 @@
 
 namespace Drupal\apigee_edge\Routing;
 
-use Drupal\Core\Routing\RouteBuildEvent;
 use Drupal\Core\Routing\RouteSubscriberBase;
 use Drupal\Core\Routing\RoutingEvents;
 use Symfony\Component\Routing\RouteCollection;
@@ -37,29 +36,14 @@ class DeveloperAppByNameRouteAlterSubscriber extends RouteSubscriberBase {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents() {
-    $events[RoutingEvents::ALTER][] = ['onRoutingRouteAlterSetType'];
+    $events[RoutingEvents::ALTER][] = ['onAlterRoutes'];
     return $events;
-  }
-
-  /**
-   * Applies parameter converters to route parameters.
-   *
-   * @param \Drupal\Core\Routing\RouteBuildEvent $event
-   *   The event to process.
-   */
-  public function onRoutingRouteAlterSetType(RouteBuildEvent $event) {
-    foreach ($event->getRouteCollection() as $route) {
-      if (in_array('user', $route->compile()->getPathVariables()) && in_array('app', $route->compile()->getPathVariables())) {
-        $route->setOption('parameters', ['app' => ['type' => 'developer_app_by_name']]);
-      }
-    }
   }
 
   /**
    * {@inheritdoc}
    */
   protected function alterRoutes(RouteCollection $collection) {
-    print 0;
     foreach ($collection as $route) {
       if (in_array('user', $route->compile()->getPathVariables()) && in_array('app', $route->compile()->getPathVariables())) {
         $route->setOption('parameters', ['app' => ['type' => 'developer_app_by_name']]);

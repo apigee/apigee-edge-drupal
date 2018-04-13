@@ -145,8 +145,8 @@ class SDKConnector implements SDKConnectorInterface {
    */
   protected function getHttpClientConfiguration(ConfigFactoryInterface $config_factory) : array {
     return [
-      'http_client_timeout' => $config_factory->get('apigee_edge.client')->get('http_client_timeout'),
-      'http_client_proxy' => $config_factory->get('apigee_edge.client')->get('http_client_proxy'),
+      'timeout' => $config_factory->get('apigee_edge.client')->get('http_client_timeout'),
+      'proxy' => $config_factory->get('apigee_edge.client')->get('http_client_proxy'),
     ];
   }
 
@@ -208,7 +208,9 @@ class SDKConnector implements SDKConnectorInterface {
       if (!isset($moduleInfo['version'])) {
         $moduleInfo['version'] = '8.x-1.0-dev';
       }
-      self::$userAgentPrefix = $moduleInfo['name'] . ' ' . $moduleInfo['version'];
+      // TODO Change "DevPortal" to "Drupal module" later. It has been added for
+      // Apigee's convenience this way.
+      self::$userAgentPrefix = $moduleInfo['name'] . ' DevPortal ' . $moduleInfo['version'];
     }
 
     return self::$userAgentPrefix;
