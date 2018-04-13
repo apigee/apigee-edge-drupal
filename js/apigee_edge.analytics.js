@@ -47,6 +47,7 @@
         var version = drupalSettings.analytics.version;
         var language = drupalSettings.analytics.language;
         var chartContainer = drupalSettings.analytics.chart_container;
+        var timezoneOffset = drupalSettings.analytics.timezone_offset;
 
         // Stop drawing if there is no analytics data.
         if(values === null) {
@@ -71,6 +72,11 @@
             }
             data.addRow([new Date(timestamps[i]), values[i]]);
           }
+
+          // Create timezone date formatter.
+          var formatter_timezone = new google.visualization.DateFormat({formatType: 'long', timeZone: timezoneOffset / 60});
+          // Reformat the date values.
+          formatter_timezone.format(data, 0);
 
           var options = visualizationOptions === null ? {} : JSON.parse(visualizationOptions);
           for (i = 0; i < visualizationOptionsToDate.length; i++) {
@@ -109,9 +115,9 @@
    *   Attaches Apigee Edge analytics quick date picker behavior.
    */
   Drupal.behaviors.apigeeEdgeAnalyticsQuickDatePicker = {
-    attach: function attach(context) {
+    attach: function attach(context, drupalSettings) {
       $('#edit-quick-date-picker', context).once().bind('change', function() {
-        var since = new Date();
+        var since = getServerOffsetDate(new Date());
         switch(this.selectedOptions['0'].value) {
           case '1d':
             since.setDate(since.getDate()-1);
@@ -130,11 +136,24 @@
         $('#edit-since-date').val(sinceLocalDateString);
         $('#edit-since-time').val(sinceLocalTimeString);
 
-        var until = new Date();
+        var until = getServerOffsetDate(new Date());
         var untilLocalDateString = until.getFullYear() + '-' + (('0' + (until.getMonth() + 1)).slice(-2)) + '-' + (('0' + until.getDate()).slice(-2));
         var untilLocalTimeString = (('0' + (until.getHours())).slice(-2)) + ':' + (('0' + (until.getMinutes())).slice(-2)) + ':' + (('0' + until.getSeconds()).slice(-2));
         $('#edit-until-date').val(untilLocalDateString);
         $('#edit-until-time').val(untilLocalTimeString);
+
+        /**
+         * Adjusts given date to the server's timezone.
+         *
+         * @param {Date} date
+         *   The Date object to convert.
+         * @returns {Date}
+         *   The Date object shifted by the server timezone.
+         */
+        function getServerOffsetDate(date) {
+          var timezoneDifference = drupalSettings.analytics.timezone_offset + date.getTimezoneOffset();
+          return new Date(date.getTime() + timezoneDifference * 60 * 1000);
+        }
       });
     }
   };

@@ -14,7 +14,7 @@ services:
       APIGEE_EDGE_USERNAME: ${APIGEE_EDGE_USERNAME}
       APIGEE_EDGE_PASSWORD: ${APIGEE_EDGE_PASSWORD}
       APIGEE_EDGE_ORGANIZATION: ${APIGEE_EDGE_ORGANIZATION}
-      APIGEE_EDGE_TEST_LOG_FILE: "/mnt/files/log/apigee_edge_debug.log"
+      APIGEE_EDGE_TEST_LOG_DIR: "/mnt/files/log"
       # Suppress deprecation warnings.
       # https://api.drupal.org/api/drupal/vendor%21symfony%21phpunit-bridge%21DeprecationErrorHandler.php/8.5.x
       SYMFONY_DEPRECATIONS_HELPER: disabled

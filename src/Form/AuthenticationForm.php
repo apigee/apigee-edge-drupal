@@ -101,7 +101,7 @@ class AuthenticationForm extends ConfigFormBase {
    */
   protected function getEditableConfigNames() {
     return [
-      'apigee_edge.authentication',
+      'apigee_edge.client',
     ];
   }
 
@@ -109,7 +109,7 @@ class AuthenticationForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $config = $this->config('apigee_edge.authentication');
+    $config = $this->config('apigee_edge.client');
     $form = parent::buildForm($form, $form_state);
     $form['#prefix'] = '<div id="apigee-edge-auth-form">';
     $form['#suffix'] = '</div>';
@@ -218,7 +218,7 @@ class AuthenticationForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->config('apigee_edge.authentication')
+    $this->config('apigee_edge.client')
       ->set('active_key', $form_state->getValue('key'))
       ->save();
 

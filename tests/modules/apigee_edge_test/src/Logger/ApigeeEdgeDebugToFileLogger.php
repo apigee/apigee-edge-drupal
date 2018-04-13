@@ -20,12 +20,32 @@
 
 namespace Drupal\apigee_edge_test\Logger;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Database\Connection;
+use Drupal\Core\Logger\LogMessageParserInterface;
 use Drupal\syslog\Logger\SysLog;
 
 /**
  * Logs Apigee Edge debug messages to a file in the root of Drupal.
  */
-class DebugLogger extends SysLog {
+class ApigeeEdgeDebugToFileLogger extends SysLog {
+
+  /**
+   * @var \Drupal\Core\Database\Connection
+   */
+  private $database;
+
+  /**
+   * ApigeeEdgeDebugToFileLogger constructor.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Logger\LogMessageParserInterface $parser
+   * @param \Drupal\Core\Database\Connection $database
+   */
+  public function __construct(ConfigFactoryInterface $config_factory, LogMessageParserInterface $parser, Connection $database) {
+    parent::__construct($config_factory, $parser);
+    $this->database = $database;
+  }
 
   /**
    * {@inheritdoc}
@@ -41,11 +61,14 @@ class DebugLogger extends SysLog {
    * {@inheritdoc}
    */
   protected function syslogWrapper($level, $entry) {
-    $log_path = getenv('APIGEE_EDGE_TEST_LOG_FILE');
+    $log_path = getenv('APIGEE_EDGE_TEST_LOG_DIR');
     if (!$log_path) {
-      $log_path = \Drupal::service('file_system')->realpath('public://apigee_edge_debug.log');
+      $log_path = \Drupal::service('file_system')->realpath('public://');
     }
-    error_log($entry . PHP_EOL, 3, $log_path);
+    // Add test prefix to the log file.
+    $log_path .= '/apigee_edge_debug-' . str_replace('test', '', $this->database->tablePrefix()) . '.log';
+    // Do not fail a test just because the fail is not writable.
+    @error_log($entry . PHP_EOL, 3, $log_path);
   }
 
 }

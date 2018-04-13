@@ -179,10 +179,21 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
       '#value' => $this->t('Apply'),
     ];
 
+    $offset = date('Z') / 3600;
+    if ($offset > 0) {
+      $offset = "+{$offset}";
+    }
+    elseif ($offset === 0) {
+      $offset = "\u{00B1}{$offset}";
+    }
+
     $form['timezone'] = [
       '#type' => 'html_tag',
       '#tag' => 'div',
-      '#value' => $this->t('Your timezone: @timezone', ['@timezone' => $this->currentUser()->getTimeZone()]),
+      '#value' => $this->t('Your timezone: @timezone (UTC@offset)', [
+        '@timezone' => $this->currentUser()->getTimeZone(),
+        '@offset' => $offset,
+      ]),
     ];
 
     $form['export_csv'] = [
@@ -206,8 +217,12 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
 
     if ($this->validateQueryString($form, $metric, $since, $until)) {
       $form['controls']['metrics']['#default_value'] = $metric;
-      $form['controls']['since']['#default_value'] = new DrupalDateTime('@' . $since);
-      $form['controls']['until']['#default_value'] = new DrupalDateTime('@' . $until);
+      $since_datetime = DrupalDatetime::createFromTimestamp($since);
+      $since_datetime->setTimezone(new \Datetimezone($this->currentUser()->getTimeZone()));
+      $until_datetime = DrupalDatetime::createFromTimestamp($until);
+      $until_datetime->setTimezone(new \Datetimezone($this->currentUser()->getTimeZone()));
+      $form['controls']['since']['#default_value'] = $since_datetime;
+      $form['controls']['until']['#default_value'] = $until_datetime;
       $form['controls']['quick_date_picker']['#default_value'] = 'custom';
     }
     else {
@@ -261,11 +276,16 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
    *   TRUE if the parameters are correctly set, else FALSE.
    */
   protected function validateQueryString(array $form, $metric, $since, $until) : bool {
-    if ($metric === NULL || $since === NULL || $until === NULL || !array_key_exists($metric, $form['controls']['metrics']['#options'])) {
+    if ($metric === NULL || $since === NULL || $until === NULL) {
       return FALSE;
     }
 
     try {
+      if (!array_key_exists($metric, $form['controls']['metrics']['#options'])) {
+        $this->messenger->addError($this->t('Invalid parameter metric in the URL.'));
+        return FALSE;
+      }
+
       $since = DrupalDateTime::createFromTimestamp($since);
       $until = DrupalDateTime::createFromTimestamp($until);
       if ($since->diff($until)->invert === 1) {
@@ -273,7 +293,9 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
         return FALSE;
       }
       if ($since->diff(new DrupalDateTime())->invert === 1) {
-        $this->messenger->addError($this->t('Start date cannot be in future.'));
+        $this->messenger->addError($this->t('Start date cannot be in future. The current local time of the Developer Portal: @time', [
+          '@time' => new DrupalDateTime(),
+        ]));
         return FALSE;
       }
     }
@@ -316,6 +338,10 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
     catch (MomentException $exception) {
       $this->messenger->addError($this->t('Invalid datetime parameters.'));
     }
+
+    $date_time_zone = new \DateTimeZone($this->currentUser()->getTimeZone());
+    $timezone_offset = $date_time_zone->getOffset(new \DateTime());
+    $form['#attached']['drupalSettings']['analytics']['timezone_offset'] = $timezone_offset / 60;
 
     // Pass every necessary data to JavaScript.
     // Possible parameters:

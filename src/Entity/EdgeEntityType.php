@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge\Entity;
 
+use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Entity\EntityType;
 use Drupal\Core\Entity\EntityViewBuilder;
@@ -35,6 +36,7 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
    */
   public function __construct(array $definition) {
     parent::__construct($definition);
+    // Some default settings for our entity types.
     $this->handlers += [
       'view_builder' => EntityViewBuilder::class,
       'list_builder' => EntityListBuilder::class,
@@ -47,6 +49,50 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
       'canonical' => "/{$this->id}/{{$this->id}}",
       'collection' => "/{$this->id}",
     ];
+    // Add entity type id to the list cache tags to help easier cache
+    // invalidation.
+    $this->list_cache_tags[] = $this->id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getLabel() {
+    if ($label = $this->getConfigWithEntityLabels()->get('entity_label_singular')) {
+      return $label;
+    }
+    return parent::getLabel();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getSingularLabel() {
+    return $this->getLabel();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPluralLabel() {
+    if ($label = $this->getConfigWithEntityLabels()->get('entity_label_plural')) {
+      return $label;
+    }
+    return parent::getPluralLabel();
+  }
+
+  /**
+   * Returns the config object that contains the entity labels.
+   *
+   * Config object should define values for the following keys:
+   *   - entity_label_singular
+   *   - entity_label_plural.
+   *
+   * @return \Drupal\Core\Config\ImmutableConfig
+   *   Config object.
+   */
+  protected function getConfigWithEntityLabels() : ImmutableConfig {
+    return \Drupal::config("apigee_edge.{$this->id}_settings");
   }
 
 }
