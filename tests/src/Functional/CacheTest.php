@@ -136,6 +136,33 @@ class CacheTest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->fieldValueEquals('displayName[0][value]', $name);
   }
 
+  /**
+   * Tests that credentials are not cached, but found on the app page.
+   */
+  public function testCredentials() {
+    $this->drupalGet("/user/{$this->account->id()}/apps/{$this->app->getName()}");
+    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $loadedApp */
+    $loadedApp = DeveloperApp::load($this->app->id());
+    $this->assertNotEmpty($loadedApp, 'Developer App loaded');
+
+    $rc = new \ReflectionClass($loadedApp);
+    $properties = array_filter($rc->getProperties(), function (\ReflectionProperty $property) {
+      return $property->getName() === 'credentials';
+    });
+    $this->assertCount(1, $properties, 'The credentials property found on the DeveloperApp class');
+    /** @var \ReflectionProperty $property */
+    $property = reset($properties);
+    $property->setAccessible(TRUE);
+    $cachedCredentials = $property->getValue($loadedApp);
+
+    $this->assertEmpty($cachedCredentials, 'The credentials property is empty.');
+
+    /** @var \Apigee\Edge\Api\Management\Entity\AppCredential[] $credentials */
+    $credentials = $loadedApp->getCredentials();
+    $this->assertSession()->pageTextContains($credentials[0]->getConsumerKey());
+    $this->assertSession()->pageTextContains($credentials[0]->getConsumerSecret());
+  }
+
   protected function assertCacheInvalidation(array $keys, callable $action, bool $exists_before = TRUE, bool $exists_after = FALSE) {
     $this->assertKeys($keys, $exists_before);
     $action();
