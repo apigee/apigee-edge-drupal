@@ -143,19 +143,19 @@ class CacheTest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalGet("/user/{$this->account->id()}/apps/{$this->app->getName()}");
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $loadedApp */
     $loadedApp = DeveloperApp::load($this->app->id());
-    $this->assertNotEmpty($loadedApp, 'Developer loaded');
+    $this->assertNotEmpty($loadedApp, 'Developer App loaded');
 
     $rc = new \ReflectionClass($loadedApp);
     $properties = array_filter($rc->getProperties(), function (\ReflectionProperty $property) {
       return $property->getName() === 'credentials';
     });
-    $this->assertEquals(1, count($properties), 'The credentials property found');
+    $this->assertCount(1, $properties, 'The credentials property found on the DeveloperApp class');
     /** @var \ReflectionProperty $property */
     $property = reset($properties);
     $property->setAccessible(TRUE);
     $cachedCredentials = $property->getValue($loadedApp);
 
-    $this->assertEquals([], $cachedCredentials, 'The credentials property is empty.');
+    $this->assertEmpty($cachedCredentials, 'The credentials property is empty.');
 
     /** @var \Apigee\Edge\Api\Management\Entity\AppCredential[] $credentials */
     $credentials = $loadedApp->getCredentials();
