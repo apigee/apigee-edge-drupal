@@ -34,6 +34,11 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
  *
  * Contains implementations that were only available for content entities.
  *
+ * A fieldable Edge entity's properties that are being exposed as base fields
+ * should not be modified by using the original property setters (inherited
+ * from the wrapper SDK entity), those should be modified through the field
+ * API because that can keep field and property values in sync.
+ *
  * @see \Drupal\Core\Entity\ContentEntityBase
  * @see \Drupal\Core\Entity\FieldableEntityStorageInterface
  * @see \Drupal\apigee_edge\Entity\FieldableEdgeEntityInterface
