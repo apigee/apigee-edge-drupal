@@ -34,6 +34,11 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
   protected const DUPLICATE_MACHINE_NAME = 'The machine-readable name is already in use. It must be unique.';
 
+  public static $modules = [
+    'apigee_edge_test',
+    'block',
+  ];
+
   /**
    * Default user.
    *
@@ -67,8 +72,9 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function setUp() {
-    $this->profile = 'standard';
     parent::setUp();
+
+    $this->drupalPlaceBlock('local_tasks_block');
 
     $this->products[] = $this->createProduct();
     $this->account = $this->createAccount(static::$permissions);

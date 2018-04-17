@@ -101,7 +101,11 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
     $config = $this->configFactory->get('apigee_edge.common_app_settings');
     $form = parent::form($form, $form_state);
 
-    unset($form['name']);
+    // Do not allow to change the (machine) name of the app.
+    $form['name'] = [
+      '#type' => 'value',
+      '#value' => $this->entity->getName(),
+    ];
     $form['#tree'] = TRUE;
     $form['developerId']['#access'] = FALSE;
     $form['product']['#access'] = !isset($form['product']) ?: FALSE;

@@ -35,6 +35,12 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
 
   use FieldUiTestTrait;
 
+  public static $modules = [
+    'apigee_edge_test',
+    'link',
+    'block',
+  ];
+
   /**
    * @var \Drupal\user\UserInterface
    */
@@ -49,8 +55,9 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function setUp() {
-    $this->profile = 'standard';
     parent::setUp();
+
+    $this->drupalPlaceBlock('system_breadcrumb_block');
 
     $this->account = $this->createAccount([
       'administer apigee edge',
@@ -77,6 +84,7 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
    * @dataProvider fieldDataProvider
    */
   public function testField(string $field_type, array $storage_edit, array $field_edit, array $field_data) {
+    $field_name_prefix = (string) \Drupal::config('field_ui.settings')->get('field_prefix');
     $field_name = strtolower($this->randomMachineName());
     $this->fieldUIAddNewField(
       '/admin/config/apigee-edge/app-settings',
@@ -94,7 +102,7 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
       'developerId' => $this->developer->getDeveloperId(),
     ]);
     $app->setOwner($this->account);
-    $app->set($field_name, $field_data);
+    $app->set("{$field_name_prefix}{$field_name}", $field_data);
     $app->save();
 
     drupal_flush_all_caches();
@@ -118,6 +126,7 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
             'uri' => 'http://example.com',
             'title' => 'Example',
             'options' => [],
+            'attributes' => [],
           ],
         ],
       ],
@@ -127,21 +136,28 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
           'cardinality' => -1,
         ],
         [],
+        // Weights added to ensure that assertEquals() can be used for
+        // comparision.
         [
           [
             'value' => $this->getRandomGenerator()->paragraphs(),
+            '_weight' => 0,
           ],
           [
             'value' => $this->getRandomGenerator()->paragraphs(),
+            '_weight' => 1,
           ],
           [
             'value' => $this->getRandomGenerator()->paragraphs(),
+            '_weight' => 2,
           ],
           [
             'value' => $this->getRandomGenerator()->paragraphs(),
+            '_weight' => 3,
           ],
           [
             'value' => $this->getRandomGenerator()->paragraphs(),
+            '_weight' => 4,
           ],
         ],
       ],
@@ -159,7 +175,6 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
     $field_values = [
       'scopes' => ['a', 'b', 'c'],
       'displayName' => $this->getRandomGenerator()->word(16),
-      'createdAt' => time(),
     ];
 
     foreach ($field_values as $field_name => $field_value) {

@@ -27,8 +27,6 @@ use Drupal\Core\Form\FormStateInterface;
  */
 class DeveloperSettingsForm extends ConfigFormBase {
 
-  use CachedEntityConfigurationFormAwareTrait;
-
   public const VERIFICATION_ACTION_VERIFY_EMAIL = 'verify_email';
 
   public const VERIFICATION_ACTION_DISPLAY_ERROR_ONLY = 'display_error_only';
@@ -88,7 +86,7 @@ class DeveloperSettingsForm extends ConfigFormBase {
       '#type' => 'textarea',
       '#title' => $this->t('Verification email content'),
       '#description' => $this->t('Available tokens: [site:name], [site:url], [user:display-name], [user:account-name], [user:mail], [site:login-url], [site:url-brief], [user:developer-email-verification-url]'),
-      '#default_value' => $config->get('verification_email.content'),
+      '#default_value' => $config->get('verification_email.body'),
       '#rows' => 10,
       '#states' => [
         'visible' => [
@@ -176,16 +174,7 @@ class DeveloperSettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('user_edit_error_message.value'),
     ];
 
-    $form += $this->addCacheConfigElements($form, $form_state);
-
     return parent::buildForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getConfigNameWithCacheSettings() {
-    return 'apigee_edge.developer_settings';
   }
 
   /**
@@ -206,16 +195,7 @@ class DeveloperSettingsForm extends ConfigFormBase {
       ->set('user_edit_error_message.format', $form_state->getValue(['user_edit_error_message', 'format']))
       ->save();
 
-    $this->saveCacheConfiguration($form, $form_state);
-
     parent::submitForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getEntityType() {
-    return 'developer';
   }
 
 }
