@@ -38,6 +38,7 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
   public static $modules = [
     'apigee_edge_test',
     'link',
+    'block',
   ];
 
   /**
