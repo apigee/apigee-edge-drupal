@@ -69,6 +69,8 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   protected function setUp() {
     parent::setUp();
 
+    $this->drupalPlaceBlock('local_tasks_block');
+
     $this->products[] = $this->createProduct();
     $this->account = $this->createAccount(static::$permissions);
     $this->drupalLogin($this->account);

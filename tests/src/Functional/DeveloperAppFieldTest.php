@@ -56,6 +56,8 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
   protected function setUp() {
     parent::setUp();
 
+    $this->drupalPlaceBlock('system_breadcrumb_block');
+
     $this->account = $this->createAccount([
       'administer apigee edge',
       'administer developer_app',
