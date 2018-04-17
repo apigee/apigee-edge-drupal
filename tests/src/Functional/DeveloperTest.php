@@ -30,6 +30,17 @@ use Drupal\apigee_edge\Entity\Developer;
 class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+
+    // Allow visitor account creation with administrative approval.
+    $user_settings = \Drupal::configFactory()->getEditable('user.settings');
+    $user_settings->set('register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL)->save(TRUE);
+  }
+
+  /**
    * Tests user/developer registration and edit.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
