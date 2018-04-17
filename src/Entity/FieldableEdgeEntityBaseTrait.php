@@ -435,47 +435,6 @@ trait FieldableEdgeEntityBaseTrait {
   }
 
   /**
-   * Type casts a value to match the setter's type hint.
-   *
-   * Sometimes there are differences between how a value is stored in the field
-   * and in the SDK entity. A good example is the timestamp: it is stored
-   * as an integer in Drupal, and as a string by the SDK.
-   *
-   * @param \ReflectionMethod $method
-   *   Method to get the type hint.
-   * @param mixed $value
-   *   Value to type cast.
-   */
-  private function maybeTypeCastFirstParameterValue(\ReflectionMethod $method, &$value) {
-    static $castable = [
-      'boolean', 'bool',
-      'integer', 'int',
-      'float', 'double',
-      'string',
-      'array',
-    ];
-
-    $parameter = $method->getParameters()[0];
-    if (!$parameter) {
-      return;
-    }
-
-    if (!$parameter->hasType()) {
-      return;
-    }
-
-    if ($parameter->getType()->allowsNull() && $value === NULL) {
-      return;
-    }
-
-    if (!in_array($parameter->getType()->getName(), $castable)) {
-      return;
-    }
-
-    settype($value, $parameter->getType()->getName());
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function getFields($include_computed = TRUE) {
