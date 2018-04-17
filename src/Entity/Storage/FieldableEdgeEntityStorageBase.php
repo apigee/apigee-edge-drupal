@@ -21,9 +21,15 @@ namespace Drupal\apigee_edge\Entity\Storage;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 
+/**
+ * Adds fields support to entities without making them content entities.
+ *
+ * @see \Drupal\Core\Entity\ContentEntityStorageBase
+ */
 abstract class FieldableEdgeEntityStorageBase extends EdgeEntityStorageBase implements FieldableEdgeEntityStorageInterface {
 
   /**
@@ -137,6 +143,65 @@ abstract class FieldableEdgeEntityStorageBase extends EdgeEntityStorageBase impl
     $cacheTags = parent::getPersistentCacheTags($entity);
     $cacheTags[] = 'entity_field_info';
     return $cacheTags;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function doCreate(array $values) {
+    // Our entities does not support bundles so we removed that part.
+    $entity = new $this->entityClass([], $this->entityTypeId);
+    $this->initFieldValues($entity, $values);
+    return $entity;
+  }
+
+  /**
+   * Initializes field values.
+   *
+   * @param \Drupal\Core\Entity\FieldableEntityInterface $entity
+   *   An entity object.
+   * @param array $values
+   *   (optional) An associative array of initial field values keyed by field
+   *   name. If none is provided default values will be applied.
+   * @param array $field_names
+   *   (optional) An associative array of field names to be initialized. If none
+   *   is provided all fields will be initialized.
+   */
+  protected function initFieldValues(FieldableEntityInterface $entity, array $values = [], array $field_names = []) {
+    /** @var \Drupal\apigee_edge\Entity\FieldableEdgeEntityInterface $entity */
+    // Populate field_name values.
+    foreach ($entity->getFieldDefinitions() as $field_name => $def) {
+      if (!$field_names || isset($field_names[$field_name])) {
+        $value = NULL;
+
+        if (isset($values[$field_name])) {
+          $value = $values[$field_name];
+        }
+        elseif (array_key_exists('attributes', $values)) {
+          $value = $entity->getFieldValueFromAttribute($field_name, $values['attributes']);
+        }
+
+        if ($value === NULL) {
+          $entity->get($field_name)->applyDefaultValue();
+          // Apply default value on the property too.
+          $entity->setPropertyValue($field_name, $entity->get($field_name)->value);
+        }
+        else {
+          // This call also updates the entity property's value.
+          // @see Drupal\apigee_edge\Entity\FieldableEdgeEntityBaseTrait::set()
+          $entity->set($field_name, $value);
+          unset($values[$field_name]);
+        }
+      }
+    }
+
+    // Set any passed values for non-exposed properties as fields also.
+    foreach ($values as $field_name => $value) {
+      $entity->setPropertyValue($field_name, $value);
+    }
+
+    // Make sure modules can alter field_name initial values.
+    $this->invokeHook('field_values_init', $entity);
   }
 
 }

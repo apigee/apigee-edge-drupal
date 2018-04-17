@@ -39,6 +39,7 @@ use Symfony\Component\Routing\Exception\RouteNotFoundException;
  *
  * @see \Drupal\Core\Entity\Entity
  * @see \Drupal\Core\Entity\EntityInterface
+ * @see \Drupal\apigee_edge\Entity\EdgeEntityInterface
  */
 trait EdgeEntityBaseTrait {
 
@@ -594,6 +595,23 @@ trait EdgeEntityBaseTrait {
       return Cache::mergeTags($this->getCacheTagsToInvalidate(), $this->cacheTags);
     }
     return $this->getCacheTagsToInvalidate();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setPropertyValue(string $property, $value) : void {
+    // Ignore NULL values, because those are not supported by setters of
+    // the SDK entities.
+    if ($value === NULL) {
+      return;
+    }
+    // Properties of SDK entities are not public ones.
+    // (Check number of parameters if it becomes necessary.)
+    $setter = 'set' . ucfirst($property);
+    if (method_exists($this, $setter)) {
+      $this->{$setter}($value);
+    }
   }
 
 }

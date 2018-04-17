@@ -19,32 +19,15 @@
 
 namespace Drupal\apigee_edge\Entity;
 
+use Apigee\Edge\Structure\AttributesProperty;
+use Drupal\apigee_edge\Exception\EdgeFieldException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
+use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
-
-// TODO Find a better way to store these.
-const TYPE_EXCEPTIONS = [
-  'apiResources' => 'string[]',
-  'apps' => 'string[]',
-  'companies' => 'string[]',
-  'createdAt' => 'timestamp',
-  'description' => 'string_long',
-  'environments' => 'string[]',
-  'expiresAt' => 'timestamp',
-  'issuedAt' => 'timestamp',
-  'lastModifiedAt' => 'timestamp',
-  'proxies' => 'string[]',
-  'scopes' => 'string[]',
-  'status' => 'list_string',
-];
-
-const FIELD_BLACKLIST = [
-  'attributes',
-];
 
 /**
  * Trait that allows to make Apigee Edge entities fieldable.
@@ -53,6 +36,7 @@ const FIELD_BLACKLIST = [
  *
  * @see \Drupal\Core\Entity\ContentEntityBase
  * @see \Drupal\Core\Entity\FieldableEntityStorageInterface
+ * @see \Drupal\apigee_edge\Entity\FieldableEdgeEntityInterface
  */
 trait FieldableEdgeEntityBaseTrait {
 
@@ -110,22 +94,70 @@ trait FieldableEdgeEntityBaseTrait {
     $rc = new \ReflectionClass(parent::class);
     $props = [];
     foreach ($rc->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-      if (strpos($method->getName(), 'get') !== 0) {
-        continue;
-      }
 
       if ($method->getNumberOfParameters() > 0) {
         continue;
       }
 
-      $name = lcfirst(substr($method->getName(), 3));
-      if (in_array($name, FIELD_BLACKLIST)) {
+      if (strpos($method->getName(), 'get') !== 0) {
         continue;
       }
-      $type = array_key_exists($name, TYPE_EXCEPTIONS) ? TYPE_EXCEPTIONS[$name] : 'string';
-      $props[$name] = $type;
+
+      $property = lcfirst(substr($method->getName(), 3));
+      if (static::isBackListedProperty($property)) {
+        continue;
+      }
+      $props[$property] = static::getFieldType($property);
     }
     return $props;
+  }
+
+  /**
+   * Array of properties that should not be exposed as base fields.
+   *
+   * @return array
+   *   Array with property names.
+   */
+  protected static function propertyToFieldBlackList() : array {
+    return [];
+  }
+
+  /**
+   * Returns whether an entity property is blacklisted to be exposed as field.
+   *
+   * @param string $property
+   *   Property name.
+   *
+   * @return bool
+   *   TRUE if is blacklisted, FALSE otherwise.
+   */
+  private static function isBackListedProperty(string $property) : bool {
+    return in_array($property, static::propertyToFieldBlackList());
+  }
+
+  /**
+   * Static mapping between entity properties and field types.
+   *
+   * @return array
+   *   An associative array where keys are entity properties and values are
+   *   field types.
+   */
+  protected static function propertyToFieldStaticMap() : array {
+    return [];
+  }
+
+  /**
+   * Returns the type of the field that should represent an entity property.
+   *
+   * @param string $property
+   *   Property name.
+   *
+   * @return string
+   *   Type of the field that should represent an entity property.
+   *   Default is string.
+   */
+  private static function getFieldType(string $property) : string {
+    return array_key_exists($property, static::propertyToFieldStaticMap()) ? static::propertyToFieldStaticMap()[$property] : 'string';
   }
 
   /**
@@ -141,9 +173,7 @@ trait FieldableEdgeEntityBaseTrait {
    */
   protected static function getBaseFieldDefinition(string $name, string $type): ? BaseFieldDefinition {
     $label = ucwords(preg_replace('/([a-z])([A-Z])/', '$1 $2', $name));
-    if (($is_array = strpos($type, '[]') === strlen($type) - 2)) {
-      $type = substr($type, 0, -2);
-    }
+    $is_array = strpos($type, 'list_') === 0;
 
     try {
       $definition = BaseFieldDefinition::create($type);
@@ -226,20 +256,14 @@ trait FieldableEdgeEntityBaseTrait {
    * @return string
    *   Prefix of the field.
    */
-  protected function getFieldPrefix(): string {
+  private function getFieldPrefix(): string {
     return (string) \Drupal::config('field_ui.settings')->get('field_prefix');
   }
 
   /**
-   * Converts a field name to an attribute name.
-   *
-   * @param string $field_name
-   *   Machine name of a field.
-   *
-   * @return string
-   *   Name of the mapped attribute.
+   * {@inheritdoc}
    */
-  protected function getAttributeName(string $field_name): string {
+  public function getAttributeName(string $field_name): string {
     $field_prefix = $this->getFieldPrefix();
     if ($field_prefix && strpos($field_name, $field_prefix) === 0) {
       return substr($field_name, strlen($field_prefix));
@@ -249,15 +273,9 @@ trait FieldableEdgeEntityBaseTrait {
   }
 
   /**
-   * Converts an attribute name to a field name.
-   *
-   * @param string $attribute_name
-   *   Name of an attribute.
-   *
-   * @return string
-   *   Machine name of the mapped field.
+   * {@inheritdoc}
    */
-  protected function getFieldName(string $attribute_name): string {
+  public function getFieldName(string $attribute_name): string {
     $prefix = $this->getFieldPrefix();
     return strpos($attribute_name, $prefix) === 0 ?
       $attribute_name :
@@ -265,7 +283,7 @@ trait FieldableEdgeEntityBaseTrait {
   }
 
   /**
-   * Returns the original (stored in Edge) data from the field.
+   * Returns the original (stored in SDK Entity) data from the field.
    *
    * @param string $field_name
    *   Machine name of a field.
@@ -279,12 +297,19 @@ trait FieldableEdgeEntityBaseTrait {
       return call_user_func([$this, $getter]);
     }
 
+    return $this->getFieldValueFromAttribute($field_name, $this->getAttributes());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getFieldValueFromAttribute(string $field_name, AttributesProperty $attributes) {
     $attribute_name = $this->getAttributeName($field_name);
-    if ($this->attributes->has($attribute_name)) {
-      $attribute_value = $this->attributes->getValue($attribute_name);
+    if ($attributes->has($attribute_name)) {
+      $attribute_value = $attributes->getValue($attribute_name);
+      // TODO Handle or report if json decode fails.
       return $attribute_value ? json_decode($attribute_value, TRUE) : NULL;
     }
-
     return NULL;
   }
 
@@ -300,7 +325,7 @@ trait FieldableEdgeEntityBaseTrait {
         $field_name = $this->getFieldName($field_name);
       }
 
-      if (isset($value) && array_key_exists($field_name, TYPE_EXCEPTIONS) && TYPE_EXCEPTIONS[$field_name] === 'timestamp') {
+      if (isset($value) && array_key_exists($field_name, static::propertyToFieldStaticMap()) && static::getFieldType($field_name) === 'timestamp') {
         if (is_array($value)) {
           $value = array_map(function ($item) {
             /** @var \DateTimeImmutable $item */
@@ -325,7 +350,56 @@ trait FieldableEdgeEntityBaseTrait {
    * {@inheritdoc}
    */
   public function set($field_name, $value, $notify = TRUE) {
-    $this->get($field_name)->setValue($value, $notify);
+    // Do not try to set values of fields that does not exists.
+    // Also blacklisted properties does not have a field in Drupal and their
+    // value changes should not be saved on entity properties either.
+    if (!$this->hasField($field_name) || static::isBackListedProperty($this->getAttributeName($field_name))) {
+      return $this;
+    }
+
+    // Value that is compatible with what a mapped base field can accept.
+    $fieldValue = $value;
+    if (is_object($value)) {
+      // Take care of timestamp fields that value from the SDK is a
+      // date object.
+      if (array_key_exists($field_name, static::propertyToFieldStaticMap()) && static::getFieldType($field_name) === 'timestamp') {
+        /** @var \DateTimeImmutable $value */
+        $fieldValue = $value->getTimestamp();
+      }
+      else {
+        $fieldValue = (string) $value;
+      }
+    }
+
+    // If a base field's cardinality is 1, it means that the
+    // underlying entity property (inherited from the wrapped SDK entity)
+    // only accepts a scalar value. However, some base fields returns its
+    // value as an array. This is what we need to fix here.
+    // (We do not change the structure of values that does not belong to
+    // base fields).
+    if (is_array($value) && $this->getFieldDefinition($field_name) instanceof BaseFieldDefinition && $this->getFieldDefinition($field_name)->getCardinality() === 1) {
+      $exists = FALSE;
+      $value = NestedArray::getValue($value, ['0', 'value'], $exists);
+      if (!$exists) {
+        $value = NestedArray::getValue($value, ['value'], $exists);
+        if (!$exists) {
+          // We should know about this.
+          throw new EdgeFieldException(sprintf('Unable to retrieve value of %s base field on %s.', $field_name, get_called_class()));
+        }
+      }
+    }
+    $this->get($field_name)->setValue($fieldValue, $notify);
+    // Save field's value to the its related property (if there is one).
+    $this->setPropertyValue($field_name, $value);
+    // If there is no property setter found for the field then save field's
+    // value as an attribute. (In that case setPropertyValue() above did not
+    // find a property for sure.)
+    $setter = 'set' . ucfirst($field_name);
+    if (!method_exists($this, $setter)) {
+      $attribute_name = $this->getAttributeName($field_name);
+      $this->attributes->add($attribute_name, json_encode($value));
+    }
+
     return $this;
   }
 
@@ -340,49 +414,7 @@ trait FieldableEdgeEntityBaseTrait {
       $this->validated = FALSE;
     }
 
-    /** @var \Drupal\Core\Field\BaseFieldDefinition[] $definitions */
-    $definitions = $this->getFieldDefinitions();
-
     $this->traitPreSave($storage);
-
-    $rc = new \ReflectionClass($this);
-    foreach ($this->fields as $field_name => $field) {
-      $setter = 'set' . ucfirst($field_name);
-      if (method_exists($this, $setter)) {
-        $value = [];
-
-        for ($i = 0, $count = $field->count(); $i < $count; $i++) {
-          /** @var \Drupal\Core\Field\FieldItemInterface $item */
-          $item = $field->get($i);
-          if ($item && ($mainproperty = $item::mainPropertyName())) {
-            $value[] = $item->get($mainproperty)->getValue();
-          }
-        }
-
-        if ($definitions[$field_name]->getCardinality() === 1) {
-          $value = reset($value);
-        }
-
-        $this->maybeTypeCastFirstParameterValue($rc->getMethod($setter), $value);
-        if (array_key_exists($field_name, TYPE_EXCEPTIONS) && TYPE_EXCEPTIONS[$field_name] === 'timestamp') {
-          $date = new \DateTimeImmutable();
-          if (is_array($value)) {
-            $value = array_map(function ($item, $date) {
-              return $date->setTimestamp($item);
-            }, $value);
-          }
-          else {
-            $value = $date->setTimestamp($value);
-          }
-        }
-        call_user_func([$this, $setter], $value);
-      }
-      else {
-        $value = $field->getValue();
-        $attribute_name = $this->getAttributeName($field_name);
-        $this->attributes->add($attribute_name, json_encode($value));
-      }
-    }
   }
 
   /**
@@ -400,8 +432,8 @@ trait FieldableEdgeEntityBaseTrait {
   /**
    * Type casts a value to match the setter's type hint.
    *
-   * Sometimes there are differences between how a value is stored by the field
-   * and the Edge SDK connector. A good example is the timestamp: it is stored
+   * Sometimes there are differences between how a value is stored in the field
+   * and in the SDK entity. A good example is the timestamp: it is stored
    * as an integer in Drupal, and as a string by the SDK.
    *
    * @param \ReflectionMethod $method

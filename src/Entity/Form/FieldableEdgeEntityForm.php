@@ -61,17 +61,19 @@ class FieldableEdgeEntityForm extends EntityForm implements EdgeEntityFormInterf
    * {@inheritdoc}
    */
   protected function copyFormValuesToEntity(EntityInterface $entity, array $form, FormStateInterface $form_state) {
-    /** @var \Drupal\Core\Entity\FieldableEntityInterface $entity */
-    $extracted = $this->getFormDisplay($form_state)->extractFormValues($entity, $form, $form_state);
-
-    // Then extract the values of fields that are not rendered through widgets,
-    // by simply copying from top-level form values. This leaves the fields
-    // that are not being edited within this form untouched.
-    foreach ($form_state->getValues() as $name => $values) {
-      if ($entity->hasField($name) && !isset($extracted[$name])) {
-        $entity->set($name, $values);
-      }
-    }
+    // Widgets are unable to set values of fields properly this is the
+    // reason why the implementation of this method is different from
+    // \Drupal\Core\Entity\ContentEntityForm::copyFormValuesToEntity().
+    // In our case we also want to reflect field value changes on original
+    // entity properties (inherited from the wrapped SDK entity). For this the
+    // a possible solution was to save field values to the related entity
+    // properties in
+    // \Drupal\apigee_edge\Entity\FieldableEdgeEntityBaseTrait::onChange()
+    // (which is automatically called by
+    // \Drupal\Core\TypedData\TypedData::setValue())
+    // but in onChange() we could not access to the _new_ value of the field
+    // only the previous (unmodified) one.
+    parent::copyFormValuesToEntity($entity, $form, $form_state);
   }
 
   /**

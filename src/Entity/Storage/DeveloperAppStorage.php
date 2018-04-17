@@ -30,6 +30,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -108,6 +109,23 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
    */
   public function getController(SDKConnectorInterface $connector): EntityCrudOperationsControllerInterface {
     return new DeveloperAppController($connector->getOrganization(), $connector->getClient());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function initFieldValues(FieldableEntityInterface $entity, array $values = [], array $field_names = []) {
+    // Initialize display name and description field's value from the display
+    // name attribute if needed.
+    // @see \Apigee\Edge\Api\Management\Entity\App::getDisplayName()
+    if (!array_key_exists('displayName', $values) && array_key_exists('attributes', $values) && $values['attributes']->has('DisplayName')) {
+      $values['displayName'] = $values['attributes']->getValue('DisplayName');
+    }
+    // @see \Apigee\Edge\Api\Management\Entity\App::getDescription()
+    if (!array_key_exists('description', $values) && array_key_exists('attributes', $values) && $values['attributes']->has('Notes')) {
+      $values['description'] = $values['attributes']->getValue('Notes');
+    }
+    parent::initFieldValues($entity, $values, $field_names);
   }
 
   /**

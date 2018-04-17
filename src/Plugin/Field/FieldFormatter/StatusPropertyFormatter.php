@@ -30,7 +30,7 @@ use Drupal\Core\Field\FormatterBase;
  *   label = @Translation("Status property"),
  *   description = "Custom field formatter for Edge status properties.",
  *   field_types = {
- *     "list_string",
+ *     "string",
  *   }
  * )
  */
@@ -50,7 +50,7 @@ class StatusPropertyFormatter extends FormatterBase {
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $element[] = [
       '#type' => 'status_property',
-      '#value' => $items->getIterator()->current()->value,
+      '#value' => $items->value,
     ];
     return $element;
   }
