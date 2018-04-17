@@ -103,11 +103,47 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
   /**
    * {@inheritdoc}
    */
+  protected static function propertyToFieldStaticMap(): array {
+    return [
+      // UUIDs (developerId, appId) managed on Apigee Edge so we do not
+      // want to expose them as UUID fields. Same applies for createdAt and
+      // lastModifiedAt. We do not want that Drupal apply default values
+      // on them if they are empty therefore their field type is a simple
+      // "timestamp" instead of "created" or "changed".
+      'apiResources' => 'list_string',
+      'apps' => 'list_string',
+      'companies' => 'list_string',
+      'createdAt' => 'timestamp',
+      'description' => 'string_long',
+      'environments' => 'list_string',
+      'expiresAt' => 'timestamp',
+      'issuedAt' => 'timestamp',
+      'lastModifiedAt' => 'timestamp',
+      'proxies' => 'list_string',
+      'scopes' => 'list_string',
+      'status' => 'string',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static function propertyToFieldBlackList(): array {
+    return [
+      // We expose each attribute as a field.
+      'attributes',
+      // We expose credentials as a pseudo field.
+      'credentials',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     /** @var \Drupal\Core\Field\BaseFieldDefinition[] $definitions */
     $definitions = self::traitBaseFieldDefinitions($entity_type);
     $developer_app_singular_label = \Drupal::entityTypeManager()->getDefinition('developer_app')->getSingularLabel();
-    unset($definitions['credentials']);
 
     $definitions['name']->setRequired(TRUE);
 

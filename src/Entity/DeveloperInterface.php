@@ -20,13 +20,12 @@
 namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Api\Management\Entity\DeveloperInterface as EdgeDeveloperInterface;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\user\EntityOwnerInterface;
 
 /**
  * Defines an interface for developer entity objects.
  */
-interface DeveloperInterface extends EdgeDeveloperInterface, EntityInterface, EntityOwnerInterface {
+interface DeveloperInterface extends EdgeDeveloperInterface, EdgeEntityInterface, EntityOwnerInterface {
 
   /**
    * Sets the original email address of the developer.
