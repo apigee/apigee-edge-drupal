@@ -19,6 +19,6 @@ apigee_edge.app_settings:
 
 apigee_edge.api_product_settings:
   title: 'Apigee Edge: API product settings'
-  base_route_name: apigee_edge.settings.product
+  base_route_name: apigee_edge.settings.product.alias
   names:
     - apigee_edge.api_product_settings
