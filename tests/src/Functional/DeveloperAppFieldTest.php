@@ -134,21 +134,28 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
           'cardinality' => -1,
         ],
         [],
+        // Weights added to ensure that assertEquals() can be used for
+        // comparision.
         [
           [
             'value' => $this->getRandomGenerator()->paragraphs(),
+            '_weight' => 0,
           ],
           [
             'value' => $this->getRandomGenerator()->paragraphs(),
+            '_weight' => 1,
           ],
           [
             'value' => $this->getRandomGenerator()->paragraphs(),
+            '_weight' => 2,
           ],
           [
             'value' => $this->getRandomGenerator()->paragraphs(),
+            '_weight' => 3,
           ],
           [
             'value' => $this->getRandomGenerator()->paragraphs(),
+            '_weight' => 4,
           ],
         ],
       ],
@@ -166,7 +173,6 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
     $field_values = [
       'scopes' => ['a', 'b', 'c'],
       'displayName' => $this->getRandomGenerator()->word(16),
-      'createdAt' => time(),
     ];
 
     foreach ($field_values as $field_name => $field_value) {
