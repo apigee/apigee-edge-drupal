@@ -38,3 +38,7 @@ $ docker-compose -f docker-compose.yml -f docker-compose.apigee_edge.yml run php
 ```
 
 You can read more about running Drupal 8 PHPUnit tests [here](https://www.drupal.org/docs/8/phpunit/running-phpunit-tests).
+
+## Disclaimer
+
+This is not an officially supported Google product.
