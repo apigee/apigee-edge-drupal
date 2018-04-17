@@ -67,7 +67,6 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function setUp() {
-    $this->profile = 'standard';
     parent::setUp();
 
     $this->products[] = $this->createProduct();

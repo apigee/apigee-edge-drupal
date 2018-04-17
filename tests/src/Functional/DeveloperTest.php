@@ -30,14 +30,6 @@ use Drupal\apigee_edge\Entity\Developer;
 class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
-   * {@inheritdoc}
-   */
-  protected function setUp() {
-    $this->profile = 'standard';
-    parent::setUp();
-  }
-
-  /**
    * Tests user/developer registration and edit.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
