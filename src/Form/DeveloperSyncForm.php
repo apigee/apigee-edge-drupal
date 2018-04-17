@@ -96,7 +96,7 @@ class DeveloperSyncForm extends FormBase {
   protected function buildUrl(string $route_name) {
     $url = Url::fromRoute($route_name);
     $token = \Drupal::csrfToken()->get($url->getInternalPath());
-    $url->setOptions(['query' => ['destination' => '/admin/config/apigee-edge/developer-settings/attributes', 'token' => $token]]);
+    $url->setOptions(['query' => ['destination' => 'admin/config/apigee-edge/developer-settings/sync', 'token' => $token]]);
     return $url;
   }
 
