@@ -82,8 +82,6 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * @dataProvider fieldDataProvider
-   *
-   * @group failing
    */
   public function testField(string $field_type, array $storage_edit, array $field_edit, array $field_data) {
     $field_name_prefix = (string) \Drupal::config('field_ui.settings')->get('field_prefix');
