@@ -129,7 +129,7 @@ trait FieldableEdgeEntityBaseTrait {
    *   Property name.
    *
    * @return bool
-   *   TRUE if is blacklisted, FALSE otherwise.
+   *   TRUE if it is blacklisted, FALSE otherwise.
    */
   private static function isBackListedProperty(string $property) : bool {
     return in_array($property, static::propertyToFieldBlackList());
