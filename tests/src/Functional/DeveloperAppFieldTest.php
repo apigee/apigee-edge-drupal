@@ -35,6 +35,12 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
 
   use FieldUiTestTrait;
 
+  public static $modules = [
+    'apigee_edge_test',
+    'link',
+    'block',
+  ];
+
   /**
    * @var \Drupal\user\UserInterface
    */
@@ -49,8 +55,9 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function setUp() {
-    $this->profile = 'standard';
     parent::setUp();
+
+    $this->drupalPlaceBlock('system_breadcrumb_block');
 
     $this->account = $this->createAccount([
       'administer apigee edge',

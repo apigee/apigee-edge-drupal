@@ -49,7 +49,6 @@ class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function setUp() {
-    $this->profile = 'standard';
     parent::setUp();
 
     $this->account = $this->createAccount();
