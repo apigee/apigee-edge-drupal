@@ -86,7 +86,7 @@ class DeveloperSettingsForm extends ConfigFormBase {
       '#type' => 'textarea',
       '#title' => $this->t('Verification email content'),
       '#description' => $this->t('Available tokens: [site:name], [site:url], [user:display-name], [user:account-name], [user:mail], [site:login-url], [site:url-brief], [user:developer-email-verification-url]'),
-      '#default_value' => $config->get('verification_email.content'),
+      '#default_value' => $config->get('verification_email.body'),
       '#rows' => 10,
       '#states' => [
         'visible' => [
