@@ -112,8 +112,8 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
       $requestedEntities = [];
       // Ensure that the returned array is ordered the same as the original
       // $ids array if this was passed in and remove any invalid ids.
-      $passed_ids = array_flip(array_intersect_key(array_flip($ids), $entities));
-      foreach ($passed_ids as $id) {
+      $passedIds = array_flip(array_intersect_key(array_flip($ids), $entities));
+      foreach ($passedIds as $id) {
         $requestedEntities[$id] = $entities[$id];
       }
       $entities = $requestedEntities;
