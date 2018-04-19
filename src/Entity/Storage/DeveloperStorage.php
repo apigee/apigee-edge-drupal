@@ -99,16 +99,16 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
    */
   public function loadMultiple(array $ids = NULL) {
     $entities = parent::loadMultiple($ids);
-    $entitiesByDeveloperId = [];
-    foreach ($entities as $entity) {
-      // It could be integer if ids were UUIDs.
-      if (is_object($entity)) {
-        /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $entity */
-        $entitiesByDeveloperId[$entity->getDeveloperId()] = $entity;
-      }
-    }
-    $entities = array_merge($entities, $entitiesByDeveloperId);
     if ($ids) {
+      $entitiesByDeveloperId = [];
+      foreach ($entities as $entity) {
+        // It could be integer if ids were UUIDs.
+        if (is_object($entity)) {
+          /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $entity */
+          $entitiesByDeveloperId[$entity->getDeveloperId()] = $entity;
+        }
+      }
+      $entities = array_merge($entities, $entitiesByDeveloperId);
       $requestedEntities = [];
       // Ensure that the returned array is ordered the same as the original
       // $ids array if this was passed in and remove any invalid ids.
