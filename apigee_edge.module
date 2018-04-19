@@ -419,7 +419,7 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
         $developer = Developer::load($userInput['mail']);
         $form['developer_exists'] = [
           '#type' => 'value',
-          '#value' => (bool)$developer,
+          '#value' => (bool) $developer,
         ];
         if ($developer) {
           if ($form['administer_users']['#value']) {
