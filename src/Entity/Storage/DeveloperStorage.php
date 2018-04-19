@@ -123,7 +123,7 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
       // referenced in this array both with its email (Drupal ID) and developer
       // id (UUID).
       $entities = array_filter($entities, function ($entity, $key) {
-        /** @var DeveloperInterface $entity */
+        /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $entity */
         return $entity->getEmail() === $key;
       }, ARRAY_FILTER_USE_BOTH);
     }
