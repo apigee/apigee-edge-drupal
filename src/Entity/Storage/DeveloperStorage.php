@@ -109,14 +109,14 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
     }
     $entities = array_merge($entities, $entitiesByDeveloperId);
     if ($ids) {
-      $requested_entities = [];
+      $requestedEntities = [];
       // Ensure that the returned array is ordered the same as the original
       // $ids array if this was passed in and remove any invalid ids.
       $passed_ids = array_flip(array_intersect_key(array_flip($ids), $entities));
       foreach ($passed_ids as $id) {
-        $requested_entities[$id] = $entities[$id];
+        $requestedEntities[$id] = $entities[$id];
       }
-      $entities = $requested_entities;
+      $entities = $requestedEntities;
     }
     return $entities;
   }
