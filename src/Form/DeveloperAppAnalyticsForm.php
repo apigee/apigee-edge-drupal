@@ -21,6 +21,7 @@ namespace Drupal\apigee_edge\Form;
 
 use Apigee\Edge\Api\Management\Controller\StatsController;
 use Apigee\Edge\Api\Management\Query\StatsQuery;
+use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
@@ -325,12 +326,10 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
    * @throws \Drupal\Core\TempStore\TempStoreException
    */
   protected function generateResponse(array &$form, $metric, $since, $until) {
-    // TODO There are no results from Edge with the correct UUID of a developer,
-    // only if the last two characters are removed from the UUID.
-    $developer_id = substr($this->developerApp->getDeveloperId(), 0, -2);
+    $developer = Developer::load($this->developerApp->getDeveloperId());
     $stats_controller = new StatsController('prod', $this->sdkConnector->getOrganization(), $this->sdkConnector->getClient());
     $stats_query = new StatsQuery([$metric], new Period(new \DateTimeImmutable('@' . $since), new \DateTimeImmutable('@' . $until)));
-    $stats_query->setFilter("(developer eq '{$this->sdkConnector->getOrganization()}@@@{$developer_id}' and developer_app eq '{$this->developerApp->getName()}')")
+    $stats_query->setFilter("(developer_email eq '{$developer->id()}' and developer_app eq '{$this->developerApp->getName()}')")
       ->setTimeUnit('hour');
     try {
       $analytics = $stats_controller->getOptimizedMetricsByDimensions(['apps'], $stats_query);

@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge\Entity\Storage;
 use Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface;
 use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperController;
+use Drupal\apigee_edge\Entity\DeveloperInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\Cache;
@@ -83,6 +84,50 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
    */
   public function getController(SDKConnectorInterface $connector): EntityCrudOperationsControllerInterface {
     return new DeveloperController($connector->getOrganization(), $connector->getClient());
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * We had to override this function because a developer can be referenced
+   * by email or developer id (UUID) on Apigee Edge. In Drupal we use the email
+   * as primary and because of that if we try to load a developer by UUID then
+   * we get back an integer because EntityStorageBase::loadMultiple() returns
+   * an array where entities keyed by their Drupal ids.
+   *
+   * @see \Drupal\Core\Entity\EntityStorageBase::loadMultiple()
+   */
+  public function loadMultiple(array $ids = NULL) {
+    $entities = parent::loadMultiple($ids);
+    if ($ids) {
+      $entitiesByDeveloperId = [];
+      foreach ($entities as $entity) {
+        // It could be integer if ids were UUIDs.
+        if (is_object($entity)) {
+          /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $entity */
+          $entitiesByDeveloperId[$entity->getDeveloperId()] = $entity;
+        }
+      }
+      $entities = array_merge($entities, $entitiesByDeveloperId);
+      $requestedEntities = [];
+      // Ensure that the returned array is ordered the same as the original
+      // $ids array if this was passed in and remove any invalid ids.
+      $passedIds = array_flip(array_intersect_key(array_flip($ids), $entities));
+      foreach ($passedIds as $id) {
+        $requestedEntities[$id] = $entities[$id];
+      }
+      $entities = $requestedEntities;
+    }
+    else {
+      // Remove duplicates because it could happen that one entity is
+      // referenced in this array both with its email (Drupal ID) and developer
+      // id (UUID).
+      $entities = array_filter($entities, function ($entity, $key) {
+        /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $entity */
+        return $entity->getEmail() === $key;
+      }, ARRAY_FILTER_USE_BOTH);
+    }
+    return $entities;
   }
 
   /**
