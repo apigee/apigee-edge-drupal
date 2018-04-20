@@ -70,11 +70,17 @@ class DeveloperEmailUniqueValidator extends ConstraintValidator implements Conta
         return;
       }
     }
-    $developer = Developer::load($items->value);
-    if ($developer) {
-      $this->context->addViolation($constraint->message, [
-        '%email' => $items->value,
-      ]);
+    try {
+      $developer = Developer::load($items->value);
+      if ($developer) {
+        $this->context->addViolation($constraint->message, [
+          '%email' => $items->value,
+        ]);
+      }
+    }
+    catch (\Exception $exception) {
+      // Nothing to do here, if there is no connection to Edge interrupt the registration in the
+      // apigee_edge_form_user_register_form_api_connection_validate() function.
     }
   }
 

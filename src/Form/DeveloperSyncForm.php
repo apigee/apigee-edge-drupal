@@ -39,6 +39,8 @@ class DeveloperSyncForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $form['#attached']['library'][] = 'apigee_edge/apigee_edge.admin';
+
     $form['sync'] = [
       '#type' => 'details',
       '#title' => $this->t('Sync developers'),
