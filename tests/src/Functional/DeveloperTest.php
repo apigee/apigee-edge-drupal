@@ -29,6 +29,13 @@ use Drupal\apigee_edge\Entity\Developer;
  */
 class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
 
+  /**
+   * The id of the currently used authentication key.
+   *
+   * @var string
+   */
+  protected $key;
+
   public static $modules = [
     'apigee_edge_test',
     'views',
@@ -39,6 +46,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
    */
   protected function setUp() {
     parent::setUp();
+    $this->key = $this->config('apigee_edge.client')->get('active_key');
 
     // Allow visitor account creation with administrative approval.
     $user_settings = \Drupal::configFactory()->getEditable('user.settings');
@@ -48,6 +56,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * Tests user/developer registration and edit.
    *
+   * @throws \Behat\Mink\Exception\ResponseTextException
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   public function testDeveloperRegister() {
@@ -66,6 +75,14 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
       'last_name[0][value]' => $test_user['last_name'],
       'name' => $test_user['username'],
     ];
+
+    // Try to register with incorrect API credentials.
+    $this->config('apigee_edge.client')->set('active_key', '')->save();
+    $this->submitForm($formdata, 'Create new account');
+    $this->assertSession()->pageTextContains('User registration is temporarily unavailable. Try again later or contact the site administrator.');
+
+    // Try to register with correct API credentials.
+    $this->config('apigee_edge.client')->set('active_key', $this->key)->save();
     $this->submitForm($formdata, 'Create new account');
 
     /** @var \Drupal\user\Entity\User $account */
@@ -109,6 +126,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
    * if the Drupal user registered by the admin.
    *
    * @throws \Behat\Mink\Exception\ElementNotFoundException
+   * @throws \Behat\Mink\Exception\ResponseTextException
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   public function testDeveloperRegisteredByAdmin() {
@@ -134,6 +152,14 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
       'pass[pass2]' => $test_user['password'],
       'status' => $test_user['status'],
     ];
+
+    // Try to register with incorrect API credentials.
+    $this->config('apigee_edge.client')->set('active_key', '')->save();
+    $this->submitForm($formdata, 'Create new account');
+    $this->assertSession()->pageTextContains('User registration is temporarily unavailable. Try again later or contact the site administrator.');
+
+    // Try to register with correct API credentials.
+    $this->config('apigee_edge.client')->set('active_key', $this->key)->save();
     $this->submitForm($formdata, 'Create new account');
 
     /** @var \Drupal\user\Entity\User $account */
