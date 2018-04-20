@@ -392,13 +392,14 @@ function apigee_edge_form_user_form_developer_email_validate(array $form, FormSt
  * Implements hook_form_FORM_ID_alter().
  */
 function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $validation_functions = [];
   // The email field should be always required because it is required on
   // Apigee Edge.
   $form['account']['mail']['#required'] = TRUE;
   // Add the API connection custom validation callback to the beginning of the chain.
   // apigee_edge_module_implements_alter() ensures that form_alter hook is
   // called in the last time.
-  array_unshift($form['#validate'], 'apigee_edge_form_user_register_form_api_connection_validate');
+  $validation_functions[] = 'apigee_edge_form_user_register_form_api_connection_validate';
   $userInput = $form_state->getUserInput();
   // Because this form alter is called earlier than the validation callback
   // (and the entity validations by user module) we have to use raw
@@ -413,7 +414,7 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
       // Add email custom validation callback to the chain immediately after the API connection validation.
       // apigee_edge_module_implements_alter() ensures that form_alter hook is
       // called in the last time.
-      array_splice($form['#validate'], 1, 0, 'apigee_edge_form_user_register_form_developer_email_validate');
+      $validation_functions[] = 'apigee_edge_form_user_register_form_developer_email_validate';
 
       try {
         $developer = Developer::load($userInput['mail']);
@@ -449,6 +450,7 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
     }
   }
 
+  $form['#validate'] = array_merge($validation_functions, $form['#validate']);
   $form['#after_build'][] = 'apigee_edge_form_user_register_form_after_build';
 }
 
