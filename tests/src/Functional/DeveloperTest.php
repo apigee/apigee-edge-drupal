@@ -91,8 +91,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     // Ensure that entity static cache is also invalidated in this scope
     // too.
     \Drupal::entityTypeManager()->getStorage('developer')->resetCache([$test_user['email']]);
-    // Load developer entity by UUID.
-    $developer = Developer::load($account->get('apigee_edge_developer_id')->value);
+    $developer = Developer::load($test_user['email']);
 
     $this->assertEquals($developer->getEmail(), $test_user['email']);
     $this->assertEquals($developer->getFirstName(), $test_user['first_name']);
