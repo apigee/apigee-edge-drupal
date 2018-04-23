@@ -29,7 +29,7 @@ class DeveloperAppAliasForm extends ConfigFormBase {
    */
   protected function getEditableConfigNames() {
     return [
-      'apigee_edge.appsettings',
+      'apigee_edge.developer_app_settings',
     ];
   }
 
@@ -44,7 +44,7 @@ class DeveloperAppAliasForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $config = $this->config('apigee_edge.appsettings');
+    $config = $this->config('apigee_edge.developer_app_settings');
 
     $form['label'] = [
       '#type' => 'fieldset',
@@ -52,17 +52,17 @@ class DeveloperAppAliasForm extends ConfigFormBase {
       '#collapsible' => FALSE,
     ];
 
-    $form['label']['developer_app_label_singular'] = [
+    $form['label']['entity_label_singular'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Singular format'),
-      '#default_value' => $config->get('developer_app_label_singular'),
+      '#default_value' => $config->get('entity_label_singular'),
       '#description' => $this->t('Leave empty to use the default "Developer App" label.'),
     ];
 
-    $form['label']['developer_app_label_plural'] = [
+    $form['label']['entity_label_plural'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Plural format'),
-      '#default_value' => $config->get('developer_app_label_plural'),
+      '#default_value' => $config->get('entity_label_plural'),
       '#description' => $this->t('Leave empty to use the default "Developer Apps" label.'),
     ];
 
@@ -73,12 +73,12 @@ class DeveloperAppAliasForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $config = \Drupal::configFactory()->getEditable('apigee_edge.appsettings');
+    $config = \Drupal::configFactory()->getEditable('apigee_edge.developer_app_settings');
 
-    if ($config->get('developer_app_label_singular') !== $form_state->getValue('developer_app_label_singular') || $config->get('developer_app_label_plural') !== $form_state->getValue('developer_app_label_plural')) {
-      $this->configFactory->getEditable('apigee_edge.appsettings')
-        ->set('developer_app_label_singular', $form_state->getValue('developer_app_label_singular'))
-        ->set('developer_app_label_plural', $form_state->getValue('developer_app_label_plural'))
+    if ($config->get('entity_label_singular') !== $form_state->getValue('entity_label_singular') || $config->get('entity_label_plural') !== $form_state->getValue('entity_label_plural')) {
+      $this->configFactory->getEditable('apigee_edge.developer_app_settings')
+        ->set('entity_label_singular', $form_state->getValue('entity_label_singular'))
+        ->set('entity_label_plural', $form_state->getValue('entity_label_plural'))
         ->save();
 
       // Clearing required caches.
