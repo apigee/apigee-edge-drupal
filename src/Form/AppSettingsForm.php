@@ -210,7 +210,7 @@ class AppSettingsForm extends ConfigFormBase {
     // We do not want to override (clear) previously configured list of
     // default API product.
     $generalConfig = \Drupal::configFactory()->getEditable('apigee_edge.common_app_settings');
-    $devAppConfig = $this->config('apigee_edge.developer_app_settings');
+    $devAppConfig = \Drupal::configFactory()->getEditable('apigee_edge.developer_app_settings');
 
     $config_names = [
       'display_as_select',
