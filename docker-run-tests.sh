@@ -7,7 +7,7 @@ set -e
 MODULE_PATH="/opt/drupal-module"
 WEB_ROOT="/var/www/html/build"
 WEB_ROOT_PARENT="/var/www/html"
-COMPOSER_OPTIONS="--no-interaction --prefer-dist"
+COMPOSER_GLOBAL_OPTIONS="--no-interaction --prefer-dist -o"
 
 # We mounted the cache/files folder from the host so we have to fix permissions
 # on the parent cache folder because it did not exist before.
@@ -17,7 +17,12 @@ sudo -u root sh -c "chown -R wodby:wodby /home/wodby/.composer/cache"
 cp -R ${MODULE_PATH}/. ${WEB_ROOT_PARENT} && cd ${WEB_ROOT_PARENT}
 
 # Install module with its dependencies (including dev dependencies).
-composer update ${COMPOSER_OPTIONS} ${DEPENDENCIES} -o --with-dependencies
+composer update ${COMPOSER_GLOBAL_OPTIONS} ${DEPENDENCIES} --with-dependencies
+
+# Allow to run tests with a specific Drupal core version (ex.: latest dev).
+if [ -n "$DRUPAL_CORE" ]; then
+  composer require drupal/core:${DRUPAL_CORE} webflo/drupal-core-require-dev:${DRUPAL_CORE} ${COMPOSER_GLOBAL_OPTIONS}
+fi
 
 # Symlink module to the contrib folder.
 ln -s ${MODULE_PATH} ${WEB_ROOT}/modules/contrib/${DRUPAL_MODULE_NAME}
@@ -66,4 +71,4 @@ curl -L -o /var/www/html/testrunner https://github.com/Pronovix/testrunner/relea
 chmod +x /var/www/html/testrunner
 # Do not exit if any PHPUnit test fails.
 set +e
-sudo -u root -E sudo -u www-data -E /var/www/html/testrunner -verbose -threads=$THREADS -root=${WEB_ROOT}/modules/contrib/apigee_edge/tests -command="WEB_ROOT_PARENT/vendor/bin/phpunit -c $WEB_ROOT/core -v --debug --printer \Drupal\Tests\Listeners\HtmlOutputPrinter"
+sudo -u root -E sudo -u www-data -E /var/www/html/testrunner -verbose -threads=$THREADS -root=${WEB_ROOT}/modules/contrib/apigee_edge/tests -command="$WEB_ROOT_PARENT/vendor/bin/phpunit -c $WEB_ROOT/core -v --debug --printer \Drupal\Tests\Listeners\HtmlOutputPrinter"
