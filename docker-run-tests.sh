@@ -20,8 +20,8 @@ cp -R ${MODULE_PATH}/. ${WEB_ROOT_PARENT} && cd ${WEB_ROOT_PARENT}
 composer update ${COMPOSER_GLOBAL_OPTIONS} ${DEPENDENCIES} --with-dependencies
 
 # Allow to run tests with a specific Drupal core version (ex.: latest dev).
-if [ -n "$DRUPAL_CORE" ]; then
-  composer require drupal/core:${DRUPAL_CORE} webflo/drupal-core-require-dev:${DRUPAL_CORE} ${COMPOSER_GLOBAL_OPTIONS}
+if [ -n "${DRUPAL_CORE}" ]; then
+  composer require drupal/core:${DRUPAL_CORE} webflo/drupal-core-require-dev:${DRUPAL_CORE} ${COMPOSER_GLOBAL_OPTIONS};
 fi
 
 # Symlink module to the contrib folder.
@@ -71,4 +71,4 @@ curl -L -o /var/www/html/testrunner https://github.com/Pronovix/testrunner/relea
 chmod +x /var/www/html/testrunner
 # Do not exit if any PHPUnit test fails.
 set +e
-sudo -u root -E sudo -u www-data -E /var/www/html/testrunner -verbose -threads=$THREADS -root=${WEB_ROOT}/modules/contrib/apigee_edge/tests -command="$WEB_ROOT_PARENT/vendor/bin/phpunit -c $WEB_ROOT/core -v --debug --printer \Drupal\Tests\Listeners\HtmlOutputPrinter"
+sudo -u root -E sudo -u www-data -E /var/www/html/testrunner -verbose -threads=${THREADS} -root=${WEB_ROOT}/modules/contrib/apigee_edge/tests -command="$WEB_ROOT_PARENT/vendor/bin/phpunit -c $WEB_ROOT/core -v --debug --printer \Drupal\Tests\Listeners\HtmlOutputPrinter"
