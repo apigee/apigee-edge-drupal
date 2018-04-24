@@ -5,15 +5,27 @@
     "description": "Apigee Edge Drupal integration.",
     "require": {
         "php": ">=7.1",
-        "php-http/guzzle6-adapter": "^1.1.1",
         "apigee/edge": "dev-2.x-dev",
         "drupal/core": "^8.5",
         "drupal/entity": "^1.0",
-        "drupal/key": "^1.7"
+        "drupal/key": "^1.7",
+        "php-http/guzzle6-adapter": "^1.1.1"
     },
     "require-dev": {
-        "phpunit/phpunit": "^6.1"
+        "behat/mink" : "dev-master#9ea1cebe",
+        "composer/installers": "^1.2",
+        "cweagans/composer-patches": "^1.6",
+        "drupal-composer/drupal-scaffold": "^2.2",
+        "drush/drush": "^9.0",
+        "phpunit/phpunit": "^6.5",
+        "webflo/drupal-core-require-dev": "^8.5.0"
     },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://packages.drupal.org/8"
+        }
+    ],
     "config": {
         "sort-packages": true
     },
@@ -24,6 +36,21 @@
             "services": {
                 "drush.services.yml": "^9"
             }
+        },
+        "patches": {
+            "drupal/core": {
+                "Drupal core tests actually requires PHPUnit >= 6.5": "https://www.drupal.org/files/issues/2018-04-11/require_phpunit_65-2947888-5.patch",
+                "Time Ago summary does not render on Manage Display for Datetime": "https://www.drupal.org/files/issues/2686409-45.patch"
+            }
+        },
+        "installer-paths": {
+            "build/core": ["type:drupal-core"],
+            "build/modules/contrib/{$name}": ["type:drupal-module"],
+            "build/profiles/contrib/{$name}": ["type:drupal-profile"],
+            "build/themes/contrib/{$name}": ["type:drupal-theme"],
+            "build/drush/contrib/{$name}": ["type:drupal-drush"],
+            "build/modules/custom/{$name}": ["type:drupal-custom-module"],
+            "build/themes/custom/{$name}": ["type:drupal-custom-theme"]
         }
     }
 }
