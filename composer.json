@@ -1,6 +1,6 @@
 {
     "name": "drupal/apigee_edge",
-    "license": "MIT",
+    "license": "GPL-2.0",
     "type": "drupal-module",
     "description": "Apigee Edge Drupal integration.",
     "require": {
