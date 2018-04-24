@@ -1,8 +1,9 @@
 # Apigee Edge Drupal module
 
-A Drupal 8 module that turns a site into a developer portal for Apigee's API management product.
+A Drupal 8 module that turns a site into a developer portal for Apigee's API
+management product.
 
-# Installing
+## Installing
 
 ```sh
 $ composer require drupal/apigee_edge
@@ -10,31 +11,43 @@ $ composer require drupal/apigee_edge
 
 ### Requirements
 
-* Drupal 8's minimum requirement is 2.0.4 from `phpdocumentor/reflection-docblock` but 3.1 is required at least.
-You can update it with `composer update phpdocumentor/reflection-docblock`.
+* Drupal 8's minimum requirement is `phpdocumentor/reflection-docblock:2.0.4` but
+at least 3.0 is required by this module. If you get a conflict because of this
+then you can update it with the following command 
+`composer update phpdocumentor/reflection-docblock --with-dependencies`.
+* **Please check [composer.json](composer.json) for required patches.** You can 
+install them with [cweagans/composer-patches](https://packagist.org/packages/cweagans/composer-patches)
+automatically or manually.
+* (For running tests) From `behat/mink` library the locked commit is required
+otherwise tests may fail. This caused by a Drupal core [bug](https://www.drupal.org/project/drupal/issues/2956279).
+Please see the related pull request for behat/mink [here](https://github.com/minkphp/Mink/pull/760). 
 
-# Testing
+## Testing
 
-To run the tests, some environment variables are needed both for the script and the server. These variables are:
+To run the tests, some environment variables are needed both for the script and
+the server. These variables are:
 * `APIGEE_EDGE_ENDPOINT`
 * `APIGEE_EDGE_ORGANIZATION`
 * `APIGEE_EDGE_USERNAME`
 * `APIGEE_EDGE_PASSWORD`.
 
-You can set these environment variables multiple ways, either by defining them with `export` or `set` in the terminal or creating a copy of the `core/phpunit.xml.dist` file as `core/phpunit.xml` and specifying them in that.
+You can set these environment variables multiple ways, either by defining them
+with `export` or `set` in the terminal or creating a copy of the `core/phpunit.xml.dist`
+file as `core/phpunit.xml` and specifying them in that.
 
-Run the following command to execute tests of this module (note that the location of the `phpunit` executable might be different in your case):
+Run the following command to execute tests of this module (note that the
+location of the `phpunit` executable might be different in your case):
 
 ```sh
 ./vendor/bin/phpunit -c core --verbose --color --group apigee_edge
 ```
 
-If you have Docker and Docker Compose installed on your system you can also run PHPUnit tests of this module with the following commands:
+If you have Docker and Docker Compose installed on your system you can also run
+PHPUnit tests of this module with the following commands:
 
 ```sh
-$ docker-compose -f docker-compose.yml -f docker-compose.apigee_edge.yml build php
-$ docker-compose up -d
-$ docker-compose -f docker-compose.yml -f docker-compose.apigee_edge.yml run php sh /opt/drupal-module/test.sh
+$ docker-compose up --build
+$ docker-compose run php sh /opt/drupal-module/docker-run-tests.sh
 ```
 
 You can read more about running Drupal 8 PHPUnit tests [here](https://www.drupal.org/docs/8/phpunit/running-phpunit-tests).
