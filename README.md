@@ -20,7 +20,7 @@ Patches prefixed with "(For testing)" are only required for running tests.
 Those are not necessary for using this module.
 Patches can be applied with the [cweagans/composer-patches](https://packagist.org/packages/cweagans/composer-patches)
 the plugin automatically or manually.
-* (For running tests) From `behat/mink` library the locked commit is required
+* (For testing) From `behat/mink` library the locked commit is required
 otherwise tests may fail. This caused by a Drupal core [bug](https://www.drupal.org/project/drupal/issues/2956279).
 Please see the related pull request for behat/mink [here](https://github.com/minkphp/Mink/pull/760). 
 
