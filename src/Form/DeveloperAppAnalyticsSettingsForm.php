@@ -53,7 +53,7 @@ class DeveloperAppAnalyticsSettingsForm extends ConfigFormBase {
     $form['label']['environment'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Environment'),
-      '#default_value' => $this->config('apigee_edge.common_app_settings')->get('environment'),
+      '#default_value' => $this->config('apigee_edge.common_app_settings')->get('analytics_environment'),
     ];
 
     return parent::buildForm($form, $form_state);
@@ -64,7 +64,7 @@ class DeveloperAppAnalyticsSettingsForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->config('apigee_edge.common_app_settings')
-      ->set('environment', $form_state->getValue('environment'))
+      ->set('analytics_environment', $form_state->getValue('environment'))
       ->save();
     parent::submitForm($form, $form_state);
   }
