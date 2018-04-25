@@ -154,7 +154,7 @@ class EmailTest extends ApigeeEdgeFunctionalTestBase {
    *
    * @throws \Behat\Mink\Exception\ResponseTextException
    */
-  public function testEditUserWithoutAPIConnection() {
+  public function testEditUserWithoutApiConnection() {
     $this->account = $this->createAccount();
     $this->drupalLogin($this->account);
     $this->invalidateKey();
