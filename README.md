@@ -15,9 +15,11 @@ $ composer require drupal/apigee_edge
 at least 3.0 is required by this module. If you get a conflict because of this
 then you can update it with the following command 
 `composer update phpdocumentor/reflection-docblock --with-dependencies`.
-* **Please check [composer.json](composer.json) for required patches.** You can 
-install them with [cweagans/composer-patches](https://packagist.org/packages/cweagans/composer-patches)
-automatically or manually.
+* **Please check [composer.json](composer.json) for required patches.**
+Patches prefixed with "(For testing)" are only required for running tests.
+Those are not necessary for using this module.
+Patches can be applied with the [cweagans/composer-patches](https://packagist.org/packages/cweagans/composer-patches)
+the plugin automatically or manually.
 * (For running tests) From `behat/mink` library the locked commit is required
 otherwise tests may fail. This caused by a Drupal core [bug](https://www.drupal.org/project/drupal/issues/2956279).
 Please see the related pull request for behat/mink [here](https://github.com/minkphp/Mink/pull/760). 
