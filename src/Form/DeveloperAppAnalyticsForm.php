@@ -327,7 +327,7 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
    */
   protected function generateResponse(array &$form, $metric, $since, $until) {
     $developer = Developer::load($this->developerApp->getDeveloperId());
-    $stats_controller = new StatsController('prod', $this->sdkConnector->getOrganization(), $this->sdkConnector->getClient());
+    $stats_controller = new StatsController($this->config('apigee_edge.common_app_settings')->get('environment'), $this->sdkConnector->getOrganization(), $this->sdkConnector->getClient());
     $stats_query = new StatsQuery([$metric], new Period(new \DateTimeImmutable('@' . $since), new \DateTimeImmutable('@' . $until)));
     $stats_query->setFilter("(developer_email eq '{$developer->id()}' and developer_app eq '{$this->developerApp->getName()}')")
       ->setTimeUnit('hour');
