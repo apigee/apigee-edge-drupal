@@ -19,10 +19,44 @@
 
 namespace Drupal\apigee_edge\Form;
 
+use Apigee\Edge\Api\Management\Controller\EnvironmentController;
+use Drupal\apigee_edge\SDKConnectorInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class DeveloperAppAnalyticsSettingsForm extends ConfigFormBase {
+
+  /**
+   * The SDK connector service.
+   *
+   * @var \Drupal\apigee_edge\SDKConnectorInterface
+   */
+  protected $sdkConnector;
+
+  /**
+   * Constructs a new DeveloperAppAnalyticsSettingsForm.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The factory for configuration objects.
+   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
+   *   The SDK connector service.
+   */
+  public function __construct(ConfigFactoryInterface $config_factory, SDKConnectorInterface $sdk_connector) {
+    parent::__construct($config_factory);
+    $this->sdkConnector = $sdk_connector;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('config.factory'),
+      $container->get('apigee_edge.sdk_connector')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -44,6 +78,9 @@ class DeveloperAppAnalyticsSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $environment_controller = new EnvironmentController($this->sdkConnector->getOrganization(), $this->sdkConnector->getClient());
+    $environments = $environment_controller->getEntityIds();
+
     $form['label'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Environment to query for analytics data'),
@@ -51,9 +88,10 @@ class DeveloperAppAnalyticsSettingsForm extends ConfigFormBase {
     ];
 
     $form['label']['environment'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Environment'),
+      '#type' => 'radios',
+      '#title' => $this->t('Environments'),
       '#default_value' => $this->config('apigee_edge.common_app_settings')->get('analytics_environment'),
+      '#options' => array_combine($environments, $environments),
     ];
 
     return parent::buildForm($form, $form_state);
