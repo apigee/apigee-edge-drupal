@@ -2,8 +2,8 @@ version: "3"
 
 services:
   database:
-    image: ${DB_IMAGE:-wodby/mariadb:10.2-3.1.2}
-    container_name: "${COMPOSER_PROJECT_NAME:-my_project}_database"
+    image: ${DB_IMAGE:-wodby/mariadb:10.2-3.1.3}
+    container_name: "${COMPOSE_PROJECT_NAME:-my_project}_database"
     stop_grace_period: 30s
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-password}
@@ -18,8 +18,8 @@ services:
     build:
       context: .
       args:
-        - PHP_IMAGE=${PHP_IMAGE:-wodby/drupal-php:7.1-dev-4.2.2}
-    container_name: "${COMPOSER_PROJECT_NAME:-my_project}_php"
+        - PHP_IMAGE=${PHP_IMAGE:-wodby/drupal-php:7.1-dev-4.4.1}
+    container_name: "${COMPOSE_PROJECT_NAME:-my_project}_php"
     environment:
       DB_HOST: ${DB_HOST:-database}
       DB_USER: ${DB_USER:-drupal}
@@ -35,23 +35,23 @@ services:
 
   webserver:
     image: ${WEBSERVER_IMAGE:-wodby/php-apache:2.4-3.0.1}
-    container_name: "${COMPOSER_PROJECT_NAME:-my_project}_webserver"
+    container_name: "${COMPOSE_PROJECT_NAME:-my_project}_webserver"
     depends_on:
       - php
     environment:
       APACHE_LOG_LEVEL: debug
       APACHE_BACKEND_HOST: php
-      APACHE_SERVER_ROOT: /var/www/html/web
+      APACHE_SERVER_ROOT: /var/www/html/build
       NGINX_STATIC_CONTENT_OPEN_FILE_CACHE: "off"
       NGINX_ERROR_LOG_LEVEL: debug
       NGINX_BACKEND_HOST: php
-      NGINX_SERVER_ROOT: /var/www/html/web
+      NGINX_SERVER_ROOT: /var/www/html/build
     volumes:
       - codebase:/var/www/html
 
   phpcs:
     image: mxr576/docker-phpcs
-    container_name: "${COMPOSER_PROJECT_NAME:-my_project}_phpcs"
+    container_name: "${COMPOSE_PROJECT_NAME:-my_project}_phpcs"
     volumes:
       - .:/opt/drupal-module
       - codebase:/var/www/html

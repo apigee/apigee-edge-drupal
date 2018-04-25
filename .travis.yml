@@ -22,8 +22,8 @@ env:
     - DOCKER_COMPOSE_VERSION=1.18.0
     - THREADS=4
   matrix:
-    - PHP_VERSION=7.1 DRUPAL_CORE=8.5 DEPENDENCIES="--prefer-lowest"
-    - PHP_VERSION=7.1 DRUPAL_CORE=8.5 DEPENDENCIES=""
+    - PHP_VERSION=7.1 DEPENDENCIES="--prefer-lowest"
+    - PHP_VERSION=7.1 DEPENDENCIES=""
     - PHP_VERSION=7.1 DRUPAL_CORE=8.5.x-dev DEPENDENCIES="--prefer-lowest"
 
 matrix:
@@ -37,9 +37,7 @@ before_install:
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
-  - docker-compose pull
-  - docker-compose build php
-  - docker-compose up -d
+  - docker-compose up -d --build
   - docker-compose ps
 
 script:
