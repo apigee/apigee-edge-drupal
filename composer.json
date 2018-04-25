@@ -17,6 +17,7 @@
         "cweagans/composer-patches": "^1.6",
         "drupal-composer/drupal-scaffold": "^2.2",
         "drush/drush": "^9.0",
+        "egulias/email-validator": "1.2.14",
         "phpunit/phpunit": "^6.5",
         "webflo/drupal-core-require-dev": "^8.5.0"
     },
