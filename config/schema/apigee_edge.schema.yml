@@ -52,6 +52,8 @@ apigee_edge.common_app_settings:
       type: sequence
       sequence:
         type: string
+    environment:
+      type: string
 
 apigee_edge.developer_app_settings:
   type: config_object
