@@ -354,10 +354,16 @@ function apigee_edge_form_user_form_alter(&$form, FormStateInterface $form_state
     '#type' => 'value',
     '#value' => $user->hasPermission('administer users'),
   ];
-  // Add our custom validation callback to the beginning of the chain.
+
+  // Add the API connection custom validation callback to the beginning of the chain.
   // apigee_edge_module_implements_alter() ensures that form_alter hook is
   // called in the last time.
-  array_unshift($form['#validate'], 'apigee_edge_form_user_form_developer_email_validate');
+  $validation_functions[] = 'apigee_edge_form_user_form_api_connection_validate';
+  // Add email custom validation callback to the chain immediately after the API connection validation.
+  // apigee_edge_module_implements_alter() ensures that form_alter hook is
+  // called in the last time.
+  $validation_functions[] = 'apigee_edge_form_user_form_developer_email_validate';
+  $form['#validate'] = array_merge($validation_functions, $form['#validate']);
 }
 
 /**
@@ -371,7 +377,15 @@ function apigee_edge_form_user_form_alter(&$form, FormStateInterface $form_state
 function apigee_edge_form_user_form_developer_email_validate(array $form, FormStateInterface $form_state) {
   // If email address was changed.
   if ($form_state->getValue('mail') !== $form_state->getBuildInfo()['callback_object']->getEntity()->mail->value) {
-    $developer = Developer::load($form_state->getValue('mail'));
+    $developer = NULL;
+    try {
+      $developer = Developer::load($form_state->getValue('mail'));
+    }
+    catch (\Exception $exception) {
+      // Nothing to do here, if there is no connection to Edge interrupt the registration in the
+      // apigee_edge_form_user_form_api_connection_validate() function.
+    }
+
     if ($developer) {
       // Add email address to the whitelist because we would like to
       // display a custom error message instead of what this
@@ -399,7 +413,7 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
   // Add the API connection custom validation callback to the beginning of the chain.
   // apigee_edge_module_implements_alter() ensures that form_alter hook is
   // called in the last time.
-  $validation_functions[] = 'apigee_edge_form_user_register_form_api_connection_validate';
+  $validation_functions[] = 'apigee_edge_form_user_form_api_connection_validate';
   $userInput = $form_state->getUserInput();
   // Because this form alter is called earlier than the validation callback
   // (and the entity validations by user module) we have to use raw
@@ -445,7 +459,7 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
       }
       catch (\Exception $exception) {
         // Nothing to do here, if there is no connection to Edge interrupt the registration in the
-        // apigee_edge_form_user_register_form_api_connection_validate() function.
+        // apigee_edge_form_user_form_api_connection_validate() function.
       }
     }
   }
@@ -483,8 +497,8 @@ function apigee_edge_form_user_register_form_after_build(array $form, FormStateI
  * @param Drupal\Core\Form\FormStateInterface $form_state
  *   Form state object.
  */
-function apigee_edge_form_user_register_form_api_connection_validate(array $form, FormStateInterface $form_state) {
-  // If there is no connection to Edge interrupt the registration, otherwise it could be a
+function apigee_edge_form_user_form_api_connection_validate(array $form, FormStateInterface $form_state) {
+  // If there is no connection to Edge interrupt the registration/user update, otherwise it could be a
   // security leak if a developer exists in Edge with the same email address.
   /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
   $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
@@ -496,7 +510,7 @@ function apigee_edge_form_user_register_form_api_connection_validate(array $form
       '@user_email' => $form_state->getValue('mail'),
       '@message' => (string) $exception,
     ];
-    watchdog_exception('apigee_edge', $exception, 'Could not create Drupal user: @user_email, because there was no connection to Edge. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
+    watchdog_exception('apigee_edge', $exception, 'Could not create/update Drupal user: @user_email, because there was no connection to Edge. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
     $form_state->setError($form, t('User registration is temporarily unavailable. Try again later or contact the site administrator.'));
   }
 }

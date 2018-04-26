@@ -22,6 +22,9 @@ namespace Drupal\apigee_edge\Form;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 
+/**
+ * Provides a form for changing Developer App aliases.
+ */
 class DeveloperAppAliasForm extends ConfigFormBase {
 
   /**

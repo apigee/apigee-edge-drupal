@@ -48,6 +48,8 @@ class EmailTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   protected function setUp() {
     parent::setUp();
@@ -63,6 +65,8 @@ class EmailTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   protected function tearDown() {
     $this->developer->delete();
@@ -143,6 +147,22 @@ class EmailTest extends ApigeeEdgeFunctionalTestBase {
       'mail' => $this->developer->getEmail(),
     ], 'Save');
     $this->assertSession()->pageTextContains('This email address already belongs to a developer on Apigee Edge.');
+  }
+
+  /**
+   * Tests the user edit form without API connection.
+   *
+   * @throws \Behat\Mink\Exception\ResponseTextException
+   */
+  public function testEditUserWithoutApiConnection() {
+    $this->account = $this->createAccount();
+    $this->drupalLogin($this->account);
+    $this->invalidateKey();
+    $this->drupalPostForm("user/{$this->account->id()}/edit", [
+      'mail' => $this->randomGenerator->word(8) . '@example.com',
+      'current_pass' => $this->account->passRaw,
+    ], 'Save');
+    $this->assertSession()->pageTextContains('User registration is temporarily unavailable. Try again later or contact the site administrator.');
   }
 
 }

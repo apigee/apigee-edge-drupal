@@ -31,7 +31,7 @@ class DeveloperAppCachingForm extends ConfigFormBase {
    */
   protected function getEditableConfigNames() {
     return [
-      'apigee_edge.common_app_settings',
+      'apigee_edge.developer_app_settings',
     ];
   }
 
@@ -63,7 +63,7 @@ class DeveloperAppCachingForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function getConfigNameWithCacheSettings() {
-    return 'apigee_edge.common_app_settings';
+    return 'apigee_edge.developer_app_settings';
   }
 
   /**
