@@ -26,14 +26,17 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Provides a form for Developer App Analytics related configuration.
+ */
 class DeveloperAppAnalyticsSettingsForm extends ConfigFormBase {
 
   /**
-   * The SDK connector service.
+   * Environment controller object.
    *
-   * @var \Drupal\apigee_edge\SDKConnectorInterface
+   * @var \Apigee\Edge\Api\Management\Controller\EnvironmentController
    */
-  protected $sdkConnector;
+  protected $environmentController;
 
   /**
    * Constructs a new DeveloperAppAnalyticsSettingsForm.
@@ -45,7 +48,7 @@ class DeveloperAppAnalyticsSettingsForm extends ConfigFormBase {
    */
   public function __construct(ConfigFactoryInterface $config_factory, SDKConnectorInterface $sdk_connector) {
     parent::__construct($config_factory);
-    $this->sdkConnector = $sdk_connector;
+    $this->environmentController = new EnvironmentController($sdk_connector->getOrganization(), $sdk_connector->getClient());
   }
 
   /**
@@ -78,8 +81,7 @@ class DeveloperAppAnalyticsSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $environment_controller = new EnvironmentController($this->sdkConnector->getOrganization(), $this->sdkConnector->getClient());
-    $environments = $environment_controller->getEntityIds();
+    $environments = $this->environmentController->getEntityIds();
 
     $form['label'] = [
       '#type' => 'fieldset',
