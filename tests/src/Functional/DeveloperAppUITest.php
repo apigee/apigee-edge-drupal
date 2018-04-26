@@ -189,7 +189,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalPostForm('/admin/config/apigee-edge/app-settings/alias', [
       'entity_label_singular' => 'API',
       'entity_label_plural' => 'APIs',
-      ], 'Save configuration');
+    ], 'Save configuration');
 
     \Drupal::entityTypeManager()->clearCachedDefinitions();
     menu_cache_clear_all();
