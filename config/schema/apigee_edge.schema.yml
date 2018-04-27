@@ -19,6 +19,12 @@ apigee_edge.client:
   mapping:
     active_key:
       type: string
+    default_authorization_server:
+      type: string
+    default_client_id:
+      type: string
+    default_client_secret:
+      type: string
     default_endpoint:
       type: string
     http_client_timeout:
@@ -135,11 +141,20 @@ apigee_edge.sync:
 key.type.apigee_edge_basic_auth:
   type: sequence
 
+key.type.apigee_edge_oauth:
+  type: sequence
+
 key.input.apigee_edge_basic_auth_input:
+  type: sequence
+
+key.input.apigee_edge_oauth_input:
   type: sequence
 
 key.provider.apigee_edge_basic_auth_env_variables:
   type: sequence
 
 key.provider.apigee_edge_basic_auth_private_file:
+  type: sequence
+
+key.provider.apigee_edge_oauth_env_variables:
   type: sequence
