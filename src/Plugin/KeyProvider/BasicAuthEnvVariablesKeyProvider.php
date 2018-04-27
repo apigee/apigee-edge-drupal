@@ -82,6 +82,20 @@ class BasicAuthEnvVariablesKeyProvider extends KeyProviderBase implements KeyPlu
    * {@inheritdoc}
    */
   public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+    if (count($this->getMissingEnvironmentVariables()) !== 0) {
+      $form_state->setError($form, t('The following environment variables are not set: @missing_env_variables.', [
+        '@missing_env_variables' => implode(', ', $this->getMissingEnvironmentVariables()),
+      ]));
+    }
+  }
+
+  /**
+   * Returns the missing environment variables.
+   *
+   * @return array
+   *   The missing environment variables.
+   */
+  protected function getMissingEnvironmentVariables() : array {
     $missing_env_variables = [];
 
     if (!getenv('APIGEE_EDGE_ORGANIZATION')) {
@@ -94,9 +108,7 @@ class BasicAuthEnvVariablesKeyProvider extends KeyProviderBase implements KeyPlu
       $missing_env_variables[] = 'APIGEE_EDGE_PASSWORD';
     }
 
-    return $this->t('The following environment variables are not set: @missing_env_variables.', [
-      '@missing_env_variables' => implode(', ', $missing_env_variables),
-    ]);
+    return $missing_env_variables;
   }
 
   /**
