@@ -21,6 +21,7 @@ namespace Drupal\Tests\apigee_edge\Functional;
 
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\key\Entity\Key;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\user\Entity\User;
@@ -30,6 +31,13 @@ use Drupal\user\UserInterface;
  * Base class for functional tests.
  */
 abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
+
+  /**
+   * The ID of the authentication key for testing.
+   *
+   * @var string
+   */
+  protected const KEY_ID = 'test';
 
   /**
    * {@inheritdoc}
@@ -44,14 +52,33 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
   protected function setUp() {
     parent::setUp();
     $key = Key::create([
-      'id' => 'test',
-      'label' => 'test',
+      'id' => self::KEY_ID,
+      'label' => self::KEY_ID,
       'key_type' => 'apigee_edge_basic_auth',
       'key_provider' => 'apigee_edge_basic_auth_env_variables',
       'key_input' => 'apigee_edge_basic_auth_input',
     ]);
-    $key->save();
-    $this->config('apigee_edge.client')->set('active_key', 'test')->save();
+    try {
+      $key->save();
+    }
+    catch (EntityStorageException $exception) {
+      self::fail('Could not create key for testing.');
+    }
+    $this->config('apigee_edge.client')->set('active_key', self::KEY_ID)->save();
+  }
+
+  /**
+   * Restores the active key.
+   */
+  protected function restoreKey() {
+    $this->config('apigee_edge.client')->set('active_key', self::KEY_ID)->save();
+  }
+
+  /**
+   * Removes the active key for testing with unset API credentials.
+   */
+  protected function invalidateKey() {
+    $this->config('apigee_edge.client')->set('active_key', '')->save();
   }
 
   /**

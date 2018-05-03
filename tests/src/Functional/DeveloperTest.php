@@ -29,13 +29,6 @@ use Drupal\apigee_edge\Entity\Developer;
  */
 class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
 
-  /**
-   * The id of the currently used authentication key.
-   *
-   * @var string
-   */
-  protected $key;
-
   public static $modules = [
     'apigee_edge_test',
     'views',
@@ -46,8 +39,6 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
    */
   protected function setUp() {
     parent::setUp();
-    $this->key = $this->config('apigee_edge.client')->get('active_key');
-
     // Allow visitor account creation with administrative approval.
     $user_settings = \Drupal::configFactory()->getEditable('user.settings');
     $user_settings->set('register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL)->save(TRUE);
@@ -77,12 +68,12 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     ];
 
     // Try to register with incorrect API credentials.
-    $this->config('apigee_edge.client')->set('active_key', '')->save();
+    $this->invalidateKey();
     $this->submitForm($formdata, 'Create new account');
     $this->assertSession()->pageTextContains('User registration is temporarily unavailable. Try again later or contact the site administrator.');
 
     // Try to register with correct API credentials.
-    $this->config('apigee_edge.client')->set('active_key', $this->key)->save();
+    $this->restoreKey();
     $this->submitForm($formdata, 'Create new account');
 
     /** @var \Drupal\user\Entity\User $account */
@@ -154,12 +145,12 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     ];
 
     // Try to register with incorrect API credentials.
-    $this->config('apigee_edge.client')->set('active_key', '')->save();
+    $this->invalidateKey();
     $this->submitForm($formdata, 'Create new account');
     $this->assertSession()->pageTextContains('User registration is temporarily unavailable. Try again later or contact the site administrator.');
 
     // Try to register with correct API credentials.
-    $this->config('apigee_edge.client')->set('active_key', $this->key)->save();
+    $this->restoreKey();
     $this->submitForm($formdata, 'Create new account');
 
     /** @var \Drupal\user\Entity\User $account */

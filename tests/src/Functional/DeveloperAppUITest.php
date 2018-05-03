@@ -182,12 +182,14 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * Tests the developer app label modification.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function testDeveloperAppLabel() {
-    $this->submitAdminForm([
+    $this->drupalPostForm('/admin/config/apigee-edge/app-settings/alias', [
       'entity_label_singular' => 'API',
       'entity_label_plural' => 'APIs',
-    ]);
+    ], 'Save configuration');
 
     \Drupal::entityTypeManager()->clearCachedDefinitions();
     menu_cache_clear_all();
