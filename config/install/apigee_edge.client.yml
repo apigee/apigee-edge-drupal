@@ -1,7 +1,7 @@
 active_key: ''
-default_endpoint: https://api.enterprise.apigee.com/v1
-default_authorization_server: https://login.apigee.com/oauth/token
-default_client_id: edgecli
-default_client_secret: edgeclisecret
+default_endpoint: 'https://api.enterprise.apigee.com/v1'
+default_authorization_server: 'https://login.apigee.com/oauth/token'
+default_client_id: 'edgecli'
+default_client_secret: 'edgeclisecret'
 http_client_timeout: 30
 http_client_proxy: ''
