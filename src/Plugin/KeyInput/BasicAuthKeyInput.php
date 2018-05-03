@@ -121,12 +121,14 @@ class BasicAuthKeyInput extends KeyInputBase {
    */
   public function processSubmittedKeyValue(FormStateInterface $form_state) {
     $input_values = $form_state->getValues();
-    $input_values['key_value'] = Json::encode([
-      'endpoint' => $input_values['endpoint'],
-      'organization' => $input_values['organization'],
-      'username' => $input_values['username'],
-      'password' => $input_values['password'],
-    ]);
+    $key_values = Json::decode($input_values['key_value']);
+
+    $key_values['endpoint'] = $input_values['endpoint'];
+    $key_values['organization'] = $input_values['organization'];
+    $key_values['username'] = $input_values['username'];
+    $key_values['password'] = $input_values['password'];
+
+    $input_values['key_value'] = Json::encode($key_values);
 
     // Remove field values from settings.
     unset($input_values['endpoint'], $input_values['organization'], $input_values['username'], $input_values['password']);
