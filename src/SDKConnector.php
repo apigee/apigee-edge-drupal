@@ -21,8 +21,8 @@ namespace Drupal\apigee_edge;
 
 use Apigee\Edge\Api\Management\Controller\OrganizationController;
 use Apigee\Edge\Exception\UnknownEndpointException;
-use Apigee\Edge\HttpClient\Client;
-use Apigee\Edge\HttpClient\ClientInterface;
+use Apigee\Edge\Client;
+use Apigee\Edge\ClientInterface;
 use Apigee\Edge\HttpClient\Utility\Builder;
 use Drupal\apigee_edge\Entity\Controller\DrupalEntityControllerInterface;
 use Drupal\apigee_edge\Entity\Storage\EdgeEntityStorageInterface;
@@ -162,9 +162,11 @@ class SDKConnector implements SDKConnectorInterface {
    */
   public function getClient(): ClientInterface {
     if (self::$client === NULL) {
-      $builder = new Builder($this->httpClient);
       /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $key_type */
-      self::$client = new Client($this->getCredentials()->getAuthentication(), $builder, $this->getCredentials()->getEndpoint(), $this->userAgentPrefix());
+      self::$client = new Client($this->getCredentials()->getAuthentication(), $this->getCredentials()->getEndpoint(), [
+        Client::CONFIG_HTTP_CLIENT_BUILDER => new Builder($this->httpClient),
+        Client::CONFIG_USER_AGENT_PREFIX => $this->userAgentPrefix(),
+      ]);
     }
     return self::$client;
   }
