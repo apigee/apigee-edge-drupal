@@ -5,7 +5,7 @@
     "description": "Apigee Edge Drupal integration.",
     "require": {
         "php": ">=7.1",
-        "apigee/edge": "dev-2.x-dev",
+        "apigee/apigee-client-php": "^2.0",
         "drupal/core": "^8.5",
         "drupal/entity": "^1.0",
         "drupal/key": "^1.7",
