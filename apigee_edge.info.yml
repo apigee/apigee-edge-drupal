@@ -13,6 +13,7 @@ dependencies:
   - core:filter
   - core:options
   - key
+  - system (>=8.5.0)
 
 configure: apigee_edge.settings
 
