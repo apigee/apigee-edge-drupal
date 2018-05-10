@@ -355,13 +355,13 @@ function apigee_edge_form_user_form_alter(&$form, FormStateInterface $form_state
     '#value' => $user->hasPermission('administer users'),
   ];
 
-  // Add the API connection custom validation callback to the beginning of the chain.
-  // apigee_edge_module_implements_alter() ensures that form_alter hook is
+  // Add the API connection custom validation callback to the beginning of the
+  // chain apigee_edge_module_implements_alter() ensures that form_alter hook is
   // called in the last time.
   $validation_functions[] = 'apigee_edge_form_user_form_api_connection_validate';
-  // Add email custom validation callback to the chain immediately after the API connection validation.
-  // apigee_edge_module_implements_alter() ensures that form_alter hook is
-  // called in the last time.
+  // Add email custom validation callback to the chain immediately after the API
+  // connection validation apigee_edge_module_implements_alter() ensures that
+  // form_alter hook is called in the last time.
   $validation_functions[] = 'apigee_edge_form_user_form_developer_email_validate';
   $form['#validate'] = array_merge($validation_functions, $form['#validate']);
 }
@@ -382,7 +382,8 @@ function apigee_edge_form_user_form_developer_email_validate(array $form, FormSt
       $developer = Developer::load($form_state->getValue('mail'));
     }
     catch (\Exception $exception) {
-      // Nothing to do here, if there is no connection to Edge interrupt the registration in the
+      // Nothing to do here, if there is no connection to Edge interrupt the
+      // registration in the
       // apigee_edge_form_user_form_api_connection_validate() function.
     }
 
@@ -410,8 +411,8 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
   // The email field should be always required because it is required on
   // Apigee Edge.
   $form['account']['mail']['#required'] = TRUE;
-  // Add the API connection custom validation callback to the beginning of the chain.
-  // apigee_edge_module_implements_alter() ensures that form_alter hook is
+  // Add the API connection custom validation callback to the beginning of the
+  // chain apigee_edge_module_implements_alter() ensures that form_alter hook is
   // called in the last time.
   $validation_functions[] = 'apigee_edge_form_user_form_api_connection_validate';
   $userInput = $form_state->getUserInput();
@@ -425,9 +426,9 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
     // validation to handle this problem.
     $user = user_load_by_mail($userInput['mail']);
     if (!$user) {
-      // Add email custom validation callback to the chain immediately after the API connection validation.
-      // apigee_edge_module_implements_alter() ensures that form_alter hook is
-      // called in the last time.
+      // Add email custom validation callback to the chain immediately after the
+      // API connection validation apigee_edge_module_implements_alter() ensures
+      // that form_alter hook is called in the last time.
       $validation_functions[] = 'apigee_edge_form_user_register_form_developer_email_validate';
 
       try {
@@ -458,7 +459,8 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
         }
       }
       catch (\Exception $exception) {
-        // Nothing to do here, if there is no connection to Edge interrupt the registration in the
+        // Nothing to do here, if there is no connection to Edge interrupt the
+        // registration in the
         // apigee_edge_form_user_form_api_connection_validate() function.
       }
     }
@@ -498,7 +500,8 @@ function apigee_edge_form_user_register_form_after_build(array $form, FormStateI
  *   Form state object.
  */
 function apigee_edge_form_user_form_api_connection_validate(array $form, FormStateInterface $form_state) {
-  // If there is no connection to Edge interrupt the registration/user update, otherwise it could be a
+  // If there is no connection to Edge interrupt the registration/user update,
+  // otherwise it could be a
   // security leak if a developer exists in Edge with the same email address.
   /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
   $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
