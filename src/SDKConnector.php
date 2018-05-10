@@ -20,12 +20,12 @@
 namespace Drupal\apigee_edge;
 
 use Apigee\Edge\Api\Management\Controller\OrganizationController;
-use Apigee\Edge\Exception\UnknownEndpointException;
 use Apigee\Edge\Client;
 use Apigee\Edge\ClientInterface;
 use Apigee\Edge\HttpClient\Utility\Builder;
 use Drupal\apigee_edge\Entity\Controller\DrupalEntityControllerInterface;
 use Drupal\apigee_edge\Entity\Storage\EdgeEntityStorageInterface;
+use Drupal\apigee_edge\Exception\UnsupportedEntityTypeException;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\InfoParserInterface;
@@ -227,7 +227,7 @@ class SDKConnector implements SDKConnectorInterface {
       return $storage->getController($this);
     }
 
-    throw new UnknownEndpointException($entity_type);
+    throw new UnsupportedEntityTypeException($entity_type);
   }
 
   /**
