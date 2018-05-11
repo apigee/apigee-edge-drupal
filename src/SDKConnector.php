@@ -206,9 +206,9 @@ class SDKConnector implements SDKConnectorInterface {
   /**
    * Builds credentials, which depends on the KeyType of the key entity.
    *
-   * @param KeyInterface $key
+   * @param \Drupal\key\KeyInterface $key
    *   The key entity which stores the API credentials.
-   * @param KeyInterface|null $key_token
+   * @param \Drupal\key\KeyInterface|null $key_token
    *   The OAuth token key entity.
    *
    * @return CredentialsInterface

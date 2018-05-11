@@ -20,10 +20,8 @@
 namespace Drupal\apigee_edge\Plugin\KeyInput;
 
 use Drupal\Component\Serialization\Json;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\key\Plugin\KeyInputBase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Apigee Edge basic authentication credentials input text fields.

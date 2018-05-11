@@ -65,7 +65,7 @@ class OauthTokenStorage implements OauthTokenStorageInterface {
   /**
    * OauthTokenStorage constructor.
    *
-   * @param KeyInterface $key
+   * @param \Drupal\key\KeyInterface $key
    *   The OAuth token key entity.
    * @param int $leeway
    *   Number of seconds extracted from token's expiration date.
