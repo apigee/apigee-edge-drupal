@@ -24,7 +24,7 @@ use Drupal\key\KeyInterface;
 /**
  * Defines an interface for Apigee Edge OAuth Key Type plugins.
  */
-interface EdgeOAuthKeyTypeInterface extends EdgeKeyTypeInterface {
+interface EdgeOauthKeyTypeInterface extends EdgeKeyTypeInterface {
 
   /**
    * Gets the authorization server.
@@ -32,10 +32,10 @@ interface EdgeOAuthKeyTypeInterface extends EdgeKeyTypeInterface {
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
    *
-   * @return string
+   * @return string|null
    *   The authorization server.
    */
-  public function getAuthorizationServer(KeyInterface $key) : string;
+  public function getAuthorizationServer(KeyInterface $key): ?string;
 
   /**
    * Gets the client ID.
@@ -43,10 +43,10 @@ interface EdgeOAuthKeyTypeInterface extends EdgeKeyTypeInterface {
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
    *
-   * @return string
+   * @return string|null
    *   The client ID.
    */
-  public function getClientId(KeyInterface $key) : string;
+  public function getClientId(KeyInterface $key): ?string;
 
   /**
    * Gets the client secret.
@@ -54,9 +54,9 @@ interface EdgeOAuthKeyTypeInterface extends EdgeKeyTypeInterface {
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
    *
-   * @return string
+   * @return string|null
    *   The client secret.
    */
-  public function getClientSecret(KeyInterface $key) : string;
+  public function getClientSecret(KeyInterface $key): ?string;
 
 }

@@ -19,12 +19,11 @@
 
 namespace Drupal\apigee_edge\Plugin\KeyType;
 
-use Drupal\apigee_edge\Plugin\EdgeKeyTypeBase;
+use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
+use Drupal\apigee_edge\OauthTokenStorage;
 use Drupal\apigee_edge\Plugin\EdgeOAuthKeyTypeInterface;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\key\KeyInterface;
 use Http\Message\Authentication;
-use Http\Message\Authentication\BasicAuth;
 
 /**
  * Key type for Apigee Edge basic authentication credentials.
@@ -72,34 +71,34 @@ use Http\Message\Authentication\BasicAuth;
  *   }
  * )
  */
-class OAuthKeyType extends BasicAuthKeyType implements EdgeOAuthKeyTypeInterface {
+class OauthKeyType extends BasicAuthKeyType implements EdgeOauthKeyTypeInterface {
 
   /**
    * {@inheritdoc}
    */
-  public function getAuthorizationServer(KeyInterface $key): string {
-    return $this->get($key, 'authorization_server');
+  public function getAuthorizationServer(KeyInterface $key): ?string {
+    return $key->getKeyValues()['authorization_server'] ?? NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getClientId(KeyInterface $key): string {
-    return $this->get($key, 'client_id');
+  public function getClientId(KeyInterface $key): ?string {
+    return $key->getKeyValues()['client_id'] ?? NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getClientSecret(KeyInterface $key): string {
-    return $this->get($key, 'client_secret');
+  public function getClientSecret(KeyInterface $key): ?string {
+    return $key->getKeyValues()['client_secret'] ?? NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getAuthenticationMethod(KeyInterface $key) : Authentication {
-    return NULL;
+  public function getAuthenticationMethod(KeyInterface $key, KeyInterface $key_token = NULL) : Authentication {
+    return new Oauth($this->getUsername($key), $this->getPassword($key), new OauthTokenStorage($key_token), NULL, $this->getClientId($key), $this->getClientSecret($key), NULL, $this->getAuthorizationServer($key));
   }
 
 }

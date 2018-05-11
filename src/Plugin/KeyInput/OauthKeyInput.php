@@ -34,7 +34,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   description = @Translation("Provides input text fields for Apigee Edge OAuth credentials.")
  * )
  */
-class OAuthKeyInput extends BasicAuthKeyInput {
+class OauthKeyInput extends BasicAuthKeyInput {
 
   /**
    * {@inheritdoc}
@@ -81,9 +81,16 @@ class OAuthKeyInput extends BasicAuthKeyInput {
     $input_values = $form_state->getValues();
     $key_values = Json::decode($input_values['key_value']);
 
-    $key_values['authorization_server'] = $input_values['authorization_server'];
-    $key_values['client_id'] = $input_values['client_id'];
-    $key_values['client_secret'] = $input_values['client_secret'];
+    // Remove endpoint key from the JSON if the field is empty.
+    $fields = ['authorization_server', 'client_id', 'client_secret'];
+    foreach ($fields as $field) {
+      if ($input_values[$field] !== '') {
+        $key_values[$field] = $input_values[$field];
+      }
+      else {
+        unset($key_values[$field]);
+      }
+    }
 
     $input_values['key_value'] = Json::encode($key_values);
 
