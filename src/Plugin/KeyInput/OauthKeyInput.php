@@ -34,13 +34,14 @@ use Drupal\Core\Form\FormStateInterface;
  *   description = @Translation("Provides input text fields for Apigee Edge OAuth credentials.")
  * )
  */
-class OauthKeyInput extends BasicAuthKeyInput {
+class OAuthKeyInput extends BasicAuthKeyInput {
 
   /**
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildConfigurationForm($form, $form_state);
+    $config = $this->configFactory->get('apigee_edge.client');
 
     /** @var \Drupal\key\Entity\Key $key */
     $key = $form_state->getFormObject()->getEntity();
@@ -49,25 +50,24 @@ class OauthKeyInput extends BasicAuthKeyInput {
     $form['authorization_server'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Authorization server'),
-      '#description' => $this->t('The server issuing access tokens to the client. Leave empty to use the default <em>https://login.apigee.com/oauth/token</em> authorization server.'),
-      '#required' => $key->getKeyType()->getPluginDefinition()['multivalue']['fields']['authorization_server']['required'],
-      '#default_value' => $values['authorization_server'],
+      '#description' => $this->t('The server issuing access tokens to the client. Defaults to: %url.', ['%url' => $config->get('default_authorization_server')]),
+      '#required' => $key->getKeyProvider()->getPluginDefinition()['key_value']['required'],
+      '#default_value' => $values['authorization_server'] ?? $config->get('default_authorization_server'),
       '#attributes' => ['autocomplete' => 'off'],
     ];
     $form['client_id'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Client ID'),
-      '#description' => t('The client identifier issued to the client during the registration process. Leave empty to use the default <em>edgecli</em> client ID.'),
-      '#required' => $key->getKeyType()->getPluginDefinition()['multivalue']['fields']['client_id']['required'],
-      '#default_value' => $values['client_id'],
+      '#description' => t('The client identifier issued to the client during the registration process. Defaults to: %client_id.', ['%client_id' => $config->get('default_client_id')]),
+      '#required' => $key->getKeyProvider()->getPluginDefinition()['key_value']['required'],
+      '#default_value' => $values['client_id'] ?? $config->get('default_client_id'),
       '#attributes' => ['autocomplete' => 'off'],
     ];
     $form['client_secret'] = [
       '#type' => 'password',
       '#title' => $this->t('Client secret'),
-      '#description' => t('A secret known only to the client and the authorization server. Leave empty to use the default <em>edgeclisecret</em> client secret.'),
-      '#required' => $key->getKeyType()->getPluginDefinition()['multivalue']['fields']['client_secret']['required'],
-      '#default_value' => $values['client_secret'],
+      '#description' => t('A secret known only to the client and the authorization server. Leave empty to use the default "%client_secret" client secret.', ['%client_secret' => $config->get('default_client_secret')]),
+      '#required' => FALSE,
       '#attributes' => ['autocomplete' => 'off'],
     ];
 
@@ -81,16 +81,9 @@ class OauthKeyInput extends BasicAuthKeyInput {
     $input_values = $form_state->getValues();
     $key_values = Json::decode($input_values['key_value']);
 
-    // Remove key from the JSON if the field is empty.
-    $fields = ['authorization_server', 'client_id', 'client_secret'];
-    foreach ($fields as $field) {
-      if ($input_values[$field] !== '') {
-        $key_values[$field] = $input_values[$field];
-      }
-      else {
-        unset($key_values[$field]);
-      }
-    }
+    $key_values['authorization_server'] = $input_values['authorization_server'];
+    $key_values['client_id'] = $input_values['client_id'];
+    $key_values['client_secret'] = $input_values['client_secret'];
 
     $input_values['key_value'] = Json::encode($key_values);
 

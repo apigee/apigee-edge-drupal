@@ -19,11 +19,12 @@
 
 namespace Drupal\apigee_edge\Plugin\KeyType;
 
-use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
-use Drupal\apigee_edge\OauthTokenStorage;
-use Drupal\apigee_edge\Plugin\EdgeOauthKeyTypeInterface;
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeBase;
+use Drupal\apigee_edge\Plugin\EdgeOAuthKeyTypeInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\key\KeyInterface;
 use Http\Message\Authentication;
+use Http\Message\Authentication\BasicAuth;
 
 /**
  * Key type for Apigee Edge basic authentication credentials.
@@ -71,34 +72,34 @@ use Http\Message\Authentication;
  *   }
  * )
  */
-class OauthKeyType extends BasicAuthKeyType implements EdgeOauthKeyTypeInterface {
+class OAuthKeyType extends BasicAuthKeyType implements EdgeOAuthKeyTypeInterface {
 
   /**
    * {@inheritdoc}
    */
-  public function getAuthorizationServer(KeyInterface $key): ?string {
-    return $key->getKeyValues()['authorization_server'] ?? NULL;
+  public function getAuthorizationServer(KeyInterface $key): string {
+    return $this->get($key, 'authorization_server');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getClientId(KeyInterface $key): ?string {
-    return $key->getKeyValues()['client_id'] ?? NULL;
+  public function getClientId(KeyInterface $key): string {
+    return $this->get($key, 'client_id');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getClientSecret(KeyInterface $key): ?string {
-    return $key->getKeyValues()['client_secret'] ?? NULL;
+  public function getClientSecret(KeyInterface $key): string {
+    return $this->get($key, 'client_secret');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getAuthenticationMethod(KeyInterface $key, KeyInterface $key_token = NULL) : Authentication {
-    return new Oauth($this->getUsername($key), $this->getPassword($key), new OauthTokenStorage($key_token), NULL, $this->getClientId($key), $this->getClientSecret($key), NULL, $this->getAuthorizationServer($key));
+  public function getAuthenticationMethod(KeyInterface $key) : Authentication {
+    return NULL;
   }
 
 }
