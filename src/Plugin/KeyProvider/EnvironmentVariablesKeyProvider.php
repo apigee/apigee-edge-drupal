@@ -20,13 +20,11 @@
 namespace Drupal\apigee_edge\Plugin\KeyProvider;
 
 use Drupal\Component\Serialization\Json;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyPluginFormInterface;
 use Drupal\key\Plugin\KeyProviderBase;
 use Drupal\key\Plugin\KeyProviderSettableValueInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Stores Apigee Edge authentication credentials in environment variables.
@@ -45,39 +43,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class EnvironmentVariablesKeyProvider extends KeyProviderBase implements KeyPluginFormInterface, KeyProviderSettableValueInterface {
 
   /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-
-  /**
    * The selected key type.
    *
    * @var \Drupal\key\Plugin\KeyTypeInterface
    */
   protected $keyType;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $config_factory) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->configFactory = $config_factory;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('config.factory')
-    );
-  }
 
   /**
    * {@inheritdoc}
@@ -120,12 +90,13 @@ class EnvironmentVariablesKeyProvider extends KeyProviderBase implements KeyPlug
    * {@inheritdoc}
    */
   public function getKeyValue(KeyInterface $key) {
-    $config = $this->configFactory->get('apigee_edge.client');
     $this->keyType = $key->getKeyType();
 
     $key_value = [];
     foreach ($this->getEnvironmentVariables() as $id => $variable) {
-      $key_value[$id] = getenv($variable) ?: $config->get("default_{$id}");
+      if (getenv($variable)) {
+        $key_value[$id] = getenv($variable);
+      }
     }
 
     return Json::encode($key_value);
