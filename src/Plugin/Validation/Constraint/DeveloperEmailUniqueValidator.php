@@ -79,7 +79,8 @@ class DeveloperEmailUniqueValidator extends ConstraintValidator implements Conta
       }
     }
     catch (\Exception $exception) {
-      // Nothing to do here, if there is no connection to Edge interrupt the registration in the
+      // Nothing to do here, if there is no connection to Edge interrupt the
+      // registration in the
       // apigee_edge_form_user_form_api_connection_validate() function.
     }
   }

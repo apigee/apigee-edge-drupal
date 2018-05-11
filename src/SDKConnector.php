@@ -236,7 +236,7 @@ class SDKConnector implements SDKConnectorInterface {
     if (NULL === self::$userAgentPrefix) {
       $moduleInfo = $this->infoParser->parse($this->moduleHandler->getModule('apigee_edge')->getPathname());
       if (!isset($moduleInfo['version'])) {
-        $moduleInfo['version'] = '8.x-1.0-dev';
+        $moduleInfo['version'] = '8.x-1.x-dev';
       }
       // TODO Change "DevPortal" to "Drupal module" later. It has been added for
       // Apigee's convenience this way.

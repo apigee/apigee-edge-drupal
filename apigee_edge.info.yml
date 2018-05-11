@@ -6,13 +6,14 @@ type: module
 core: 8.x
 
 dependencies:
-  - core:file
-  - core:user
-  - core:field_ui
+  - drupal:file
+  - drupal:user
+  - drupal:field_ui
   - entity:entity
-  - core:filter
-  - core:options
-  - key
+  - drupal:filter
+  - drupal:options
+  - key:key
+  - drupal:system (>=8.5.0)
 
 configure: apigee_edge.settings
 
