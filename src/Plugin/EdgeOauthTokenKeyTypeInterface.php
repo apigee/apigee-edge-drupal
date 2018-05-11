@@ -23,52 +23,63 @@ use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyTypeMultivalueInterface;
 
 /**
- * Defines an interface for Apigee Edge Key Type plugins.
+ * Defines an interface for Apigee Edge OAuth Token Key Type plugins.
  */
-interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthenticationMethodInterface {
+interface EdgeOauthTokenKeyTypeInterface extends KeyTypeMultivalueInterface {
 
   /**
-   * Gets the API endpoint.
+ * Gets the OAuth access token.
+ *
+ * @param \Drupal\key\KeyInterface $key
+ *   The key entity.
+ *
+ * @return string|null
+ *   The OAuth access token.
+ */
+  public function getAccessToken(KeyInterface $key): ?string;
+
+  /**
+   * Gets the OAuth refresh token.
    *
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
    *
    * @return string|null
-   *   The API endpoint.
+   *   The OAuth refresh token.
    */
-  public function getEndpoint(KeyInterface $key): ?string;
+  public function getRefreshToken(KeyInterface $key): ?string;
 
   /**
-   * Gets the API organization.
+   * Gets the OAuth scope.
    *
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
    *
-   * @return string
-   *   The API organization.
+   * @return string|null
+   *   The OAuth scope.
    */
-  public function getOrganization(KeyInterface $key): string;
+  public function getScope(KeyInterface $key): ?string;
 
   /**
-   * Gets the API username.
+   * Gets the OAuth token type.
    *
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
    *
-   * @return string
-   *   The API username.
+   * @return string|null
+   *   The OAuth token type.
    */
-  public function getUsername(KeyInterface $key): string;
+  public function getTokenType(KeyInterface $key): ?string;
 
   /**
-   * Gets the API password.
+   * Gets the OAuth expiration time.
    *
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
    *
-   * @return string
-   *   The API password.
+   * @return int|null
+   *   The OAuth expiration time.
    */
-  public function getPassword(KeyInterface $key): string;
+  public function getExpiresIn(KeyInterface $key): ?int;
 
 }

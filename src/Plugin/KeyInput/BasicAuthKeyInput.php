@@ -40,55 +40,18 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class BasicAuthKeyInput extends KeyInputBase {
 
   /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $config_factory) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->configFactory = $config_factory;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('config.factory')
-    );
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $config = $this->configFactory->get('apigee_edge.client');
-
     /** @var \Drupal\key\Entity\Key $key */
     $key = $form_state->getFormObject()->getEntity();
     $values = Json::decode($form_state->get('key_value')['current']);
 
-    $form['endpoint'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Apigee Edge endpoint'),
-      '#description' => $this->t('Apigee Edge endpoint where the API calls are being sent. Defaults to the enterprise endpoint: %url.', ['%url' => $config->get('default_endpoint')]),
-      '#required' => $key->getKeyProvider()->getPluginDefinition()['key_value']['required'],
-      '#default_value' => $values['endpoint'] ?? $config->get('default_endpoint'),
-      '#attributes' => ['autocomplete' => 'off'],
-    ];
     $form['organization'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Organization'),
       '#description' => $this->t('Name of the organization on Edge. Changing this value could make your site stop working.'),
-      '#required' => $key->getKeyProvider()->getPluginDefinition()['key_value']['required'],
+      '#required' => $key->getKeyType()->getPluginDefinition()['multivalue']['fields']['organization']['required'],
       '#default_value' => $values['organization'],
       '#attributes' => ['autocomplete' => 'off'],
     ];
@@ -96,7 +59,7 @@ class BasicAuthKeyInput extends KeyInputBase {
       '#type' => 'email',
       '#title' => $this->t('Username'),
       '#description' => $this->t("Organization user's email address that is used for authenticating with the endpoint."),
-      '#required' => $key->getKeyProvider()->getPluginDefinition()['key_value']['required'],
+      '#required' => $key->getKeyType()->getPluginDefinition()['multivalue']['fields']['username']['required'],
       '#default_value' => $values['username'],
       '#attributes' => ['autocomplete' => 'off'],
     ];
@@ -104,7 +67,15 @@ class BasicAuthKeyInput extends KeyInputBase {
       '#type' => 'password',
       '#title' => $this->t('Password'),
       '#description' => t("Organization user's password that is used for authenticating with the endpoint."),
-      '#required' => $key->getKeyProvider()->getPluginDefinition()['key_value']['required'],
+      '#required' => $key->getKeyType()->getPluginDefinition()['multivalue']['fields']['password']['required'],
+      '#attributes' => ['autocomplete' => 'off'],
+    ];
+    $form['endpoint'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Apigee Edge endpoint'),
+      '#description' => $this->t('Apigee Edge endpoint where the API calls are being sent. Leave empty to use the default <em>https://api.enterprise.apigee.com/v1</em> endpoint.'),
+      '#required' => $key->getKeyType()->getPluginDefinition()['multivalue']['fields']['endpoint']['required'],
+      '#default_value' => $values['endpoint'],
       '#attributes' => ['autocomplete' => 'off'],
     ];
 
@@ -123,10 +94,17 @@ class BasicAuthKeyInput extends KeyInputBase {
     $input_values = $form_state->getValues();
     $key_values = Json::decode($input_values['key_value']);
 
-    $key_values['endpoint'] = $input_values['endpoint'];
     $key_values['organization'] = $input_values['organization'];
     $key_values['username'] = $input_values['username'];
     $key_values['password'] = $input_values['password'];
+
+    // Remove endpoint key from the JSON if the field is empty.
+    if ($input_values['endpoint'] !== '') {
+      $key_values['endpoint'] = $input_values['endpoint'];
+    }
+    else {
+      unset($key_values['endpoint']);
+    }
 
     $input_values['key_value'] = Json::encode($key_values);
 

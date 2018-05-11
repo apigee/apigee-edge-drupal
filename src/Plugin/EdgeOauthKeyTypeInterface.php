@@ -20,55 +20,43 @@
 namespace Drupal\apigee_edge\Plugin;
 
 use Drupal\key\KeyInterface;
-use Drupal\key\Plugin\KeyTypeMultivalueInterface;
 
 /**
- * Defines an interface for Apigee Edge Key Type plugins.
+ * Defines an interface for Apigee Edge OAuth Key Type plugins.
  */
-interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthenticationMethodInterface {
+interface EdgeOauthKeyTypeInterface extends EdgeKeyTypeInterface {
 
   /**
-   * Gets the API endpoint.
+   * Gets the authorization server.
    *
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
    *
    * @return string|null
-   *   The API endpoint.
+   *   The authorization server.
    */
-  public function getEndpoint(KeyInterface $key): ?string;
+  public function getAuthorizationServer(KeyInterface $key): ?string;
 
   /**
-   * Gets the API organization.
+   * Gets the client ID.
    *
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
    *
-   * @return string
-   *   The API organization.
+   * @return string|null
+   *   The client ID.
    */
-  public function getOrganization(KeyInterface $key): string;
+  public function getClientId(KeyInterface $key): ?string;
 
   /**
-   * Gets the API username.
+   * Gets the client secret.
    *
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
    *
-   * @return string
-   *   The API username.
+   * @return string|null
+   *   The client secret.
    */
-  public function getUsername(KeyInterface $key): string;
-
-  /**
-   * Gets the API password.
-   *
-   * @param \Drupal\key\KeyInterface $key
-   *   The key entity.
-   *
-   * @return string
-   *   The API password.
-   */
-  public function getPassword(KeyInterface $key): string;
+  public function getClientSecret(KeyInterface $key): ?string;
 
 }

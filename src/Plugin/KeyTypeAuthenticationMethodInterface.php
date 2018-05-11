@@ -32,10 +32,12 @@ interface KeyTypeAuthenticationMethodInterface {
    *
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
+   * @param \Drupal\key\KeyInterface|null $key_token
+   *   The OAuth token key entity.
    *
    * @return \Http\Message\Authentication
    *   The authentication object.
    */
-  public function getAuthenticationMethod(KeyInterface $key) : Authentication;
+  public function getAuthenticationMethod(KeyInterface $key, KeyInterface $key_token = NULL): Authentication;
 
 }

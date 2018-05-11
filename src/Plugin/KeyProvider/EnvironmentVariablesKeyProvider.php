@@ -121,6 +121,7 @@ class EnvironmentVariablesKeyProvider extends KeyProviderBase implements KeyPlug
    */
   public function getKeyValue(KeyInterface $key) {
     $config = $this->configFactory->get('apigee_edge.client');
+    $this->keyType = $key->getKeyType();
 
     $key_value = [];
     foreach ($this->getEnvironmentVariables() as $id => $variable) {

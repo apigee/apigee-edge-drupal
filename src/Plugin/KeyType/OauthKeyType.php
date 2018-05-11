@@ -19,22 +19,22 @@
 
 namespace Drupal\apigee_edge\Plugin\KeyType;
 
-use Drupal\apigee_edge\Plugin\EdgeKeyTypeBase;
-use Drupal\Core\Form\FormStateInterface;
+use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
+use Drupal\apigee_edge\OauthTokenStorage;
+use Drupal\apigee_edge\Plugin\EdgeOauthKeyTypeInterface;
 use Drupal\key\KeyInterface;
 use Http\Message\Authentication;
-use Http\Message\Authentication\BasicAuth;
 
 /**
  * Key type for Apigee Edge basic authentication credentials.
  *
  * @KeyType(
- *   id = "apigee_edge_basic_auth",
- *   label = @Translation("Apigee Edge Basic Authentication"),
- *   description = @Translation("Key type to use for Apigee Edge basic authentication credentials."),
+ *   id = "apigee_edge_oauth",
+ *   label = @Translation("Apigee Edge OAuth (SAML)"),
+ *   description = @Translation("Key type to use for Apigee Edge OAuth credentials."),
  *   group = "apigee_edge",
  *   key_value = {
- *     "plugin" = "apigee_edge_basic_auth_input"
+ *     "plugin" = "apigee_edge_oauth_input"
  *   },
  *   multivalue = {
  *     "enabled" = true,
@@ -54,56 +54,51 @@ use Http\Message\Authentication\BasicAuth;
  *       "password" = {
  *         "label" = @Translation("Password"),
  *         "required" = true
+ *       },
+ *       "authorization_server" = {
+ *         "label" = @Translation("Authorization server"),
+ *         "required" = false
+ *       },
+ *       "client_id" = {
+ *         "label" = @Translation("Client ID"),
+ *         "required" = false
+ *       },
+ *       "client_secret" = {
+ *         "label" = @Translation("Client secret"),
+ *         "required" = false
  *       }
  *     }
  *   }
  * )
  */
-class BasicAuthKeyType extends EdgeKeyTypeBase {
+class OauthKeyType extends BasicAuthKeyType implements EdgeOauthKeyTypeInterface {
 
   /**
    * {@inheritdoc}
    */
-  public static function generateKeyValue(array $configuration) {
-    return '[]';
+  public function getAuthorizationServer(KeyInterface $key): ?string {
+    return $key->getKeyValues()['authorization_server'] ?? NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function validateKeyValue(array $form, FormStateInterface $form_state, $key_value) {
-    if (empty($key_value)) {
-      return;
-    }
+  public function getClientId(KeyInterface $key): ?string {
+    return $key->getKeyValues()['client_id'] ?? NULL;
+  }
 
-    $value = $this->unserialize($key_value);
-    if ($value === NULL) {
-      $form_state->setError($form, $this->t('The key value does not contain valid JSON: @error', ['@error' => json_last_error_msg()]));
-      return;
-    }
-
-    foreach ($this->getPluginDefinition()['multivalue']['fields'] as $id => $field) {
-      if (isset($field['required']) && $field['required'] === FALSE) {
-        continue;
-      }
-
-      $error_element = $form['settings']['input_section']['key_input_settings'][$id] ?? $form;
-
-      /** @var \Drupal\Core\StringTranslation\TranslatableMarkup $field */
-      if (!isset($value[$id])) {
-        $form_state->setError($error_element, $this->t('The key value is missing the field %field.', ['%field' => $field->render()]));
-      }
-      elseif (empty($value[$id])) {
-        $form_state->setError($error_element, $this->t('The key value field %field is empty.', ['%field' => $field->render()]));
-      }
-    }
+  /**
+   * {@inheritdoc}
+   */
+  public function getClientSecret(KeyInterface $key): ?string {
+    return $key->getKeyValues()['client_secret'] ?? NULL;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getAuthenticationMethod(KeyInterface $key, KeyInterface $key_token = NULL) : Authentication {
-    return new BasicAuth($this->getUsername($key), $this->getPassword($key));
+    return new Oauth($this->getUsername($key), $this->getPassword($key), new OauthTokenStorage($key_token), NULL, $this->getClientId($key), $this->getClientSecret($key), NULL, $this->getAuthorizationServer($key));
   }
 
 }
