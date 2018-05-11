@@ -6,12 +6,12 @@ type: module
 core: 8.x
 
 dependencies:
-  - core:file
-  - core:user
-  - core:field_ui
+  - file
+  - user
+  - field_ui
   - entity:entity
-  - core:filter
-  - core:options
+  - filter
+  - options
   - key
   - system (>=8.5.0)
 
