@@ -101,7 +101,7 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
       'id' => 'key_test_env_variables',
       'label' => 'Test key in environment variables',
       'key_type' => 'apigee_edge_basic_auth',
-      'key_provider' => 'apigee_edge_basic_auth_env_variables',
+      'key_provider' => 'apigee_edge_environment_variables',
       'key_input' => 'apigee_edge_basic_auth_input',
     ]);
     $key->save();
@@ -112,7 +112,7 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
       'id' => 'key_test_private_file',
       'label' => 'Test key in private file',
       'key_type' => 'apigee_edge_basic_auth',
-      'key_provider' => 'apigee_edge_basic_auth_private_file',
+      'key_provider' => 'apigee_edge_private_file',
       'key_input' => 'apigee_edge_basic_auth_input',
     ]);
     $key->setKeyValue(Json::encode($this->credentials));
@@ -124,7 +124,7 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
       'id' => 'key_wrong_test_private_file',
       'label' => 'Wrong test key in private file',
       'key_type' => 'apigee_edge_basic_auth',
-      'key_provider' => 'apigee_edge_basic_auth_private_file',
+      'key_provider' => 'apigee_edge_private_file',
       'key_input' => 'apigee_edge_basic_auth_input',
     ]);
     $key->setKeyValue(Json::encode([
