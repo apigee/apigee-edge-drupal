@@ -1057,7 +1057,9 @@ function apigee_edge_key_delete(EntityInterface $entity) {
   if ($active_key === $entity->id()) {
     \Drupal::configFactory()
       ->getEditable('apigee_edge.client')
-      ->set('active_key', '')->save();
+      ->set('active_key', '')
+      ->set('active_key_token', '')
+      ->save();
   }
 }
 
