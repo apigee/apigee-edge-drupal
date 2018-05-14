@@ -66,8 +66,7 @@ By using these environment variables Travis tries to push logs to this
 repository URL:
 `https://${LOGS_REPO_USER}:${LOGS_REPO_PASSWORD}@${LOGS_REPO_HOST}/${LOGS_REPO_USER}/${LOGS_REPO_NAME}.git`
 
-### If your pull request relies on changes that not yet available in Apigee Edge
-Client Library for PHP's latest stable release
+### If your pull request relies on changes that are not yet available in Apigee Edge Client Library for PHP's latest stable release
 Please *temporary* add required changes as patches to module's composer.json.
 This way this module's tests could pass on Travis CI.
 
