@@ -1,8 +1,11 @@
-﻿#!/bin/bash
-# Because bash is missing from any defined path in PATH (like /usr/bin).
-# #!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 
 set -e
+
+if [[ -z "${APIGEE_EDGE_ENDPOINT}" ]] || [[ -z "${APIGEE_EDGE_USERNAME}" ]] || [[ -z "${APIGEE_EDGE_PASSWORD}" ]] || [[ -z "${APIGEE_EDGE_ORGANIZATION}" ]]; then
+  echo "Incomplete configuration. Please make sure the following environment variables exist and not empty: APIGEE_EDGE_ENDPOINT, APIGEE_EDGE_USERNAME, APIGEE_EDGE_PASSWORD, APIGEE_EDGE_ORGANIZATION."
+  exit 1
+fi
 
 MODULE_PATH="/opt/drupal-module"
 WEB_ROOT="/var/www/html/build"
