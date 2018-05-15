@@ -184,7 +184,7 @@ class SDKConnector implements SDKConnectorInterface {
       if ($key === NULL) {
         throw new KeyNotFoundException('Apigee Edge API authentication key not found.');
       }
-      $key_token = $this->keyRepository->getKey($this->configFactory->get('apigee_edge.client')->get('active_key_token'));
+      $key_token = $this->keyRepository->getKey($this->configFactory->get('apigee_edge.client')->get('active_key_oauth_token'));
       self::$credentials = $this->buildCredentials($key, $key_token);
     }
 

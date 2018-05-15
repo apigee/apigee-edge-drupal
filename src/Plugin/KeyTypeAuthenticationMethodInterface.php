@@ -38,6 +38,6 @@ interface KeyTypeAuthenticationMethodInterface {
    * @return \Http\Message\Authentication
    *   The authentication object.
    */
-  public function getAuthenticationMethod(KeyInterface $key, KeyInterface $key_token = NULL): Authentication;
+  public function getAuthenticationMethod(KeyInterface $key, ?KeyInterface $key_token = NULL): Authentication;
 
 }
