@@ -46,7 +46,7 @@ class OauthTokenStorage implements OauthTokenStorageInterface {
    *
    * @var int
    */
-  protected $leeway;
+  protected $leeway = 30;
 
   /**
    * The OAuth token key entity.
@@ -67,17 +67,14 @@ class OauthTokenStorage implements OauthTokenStorageInterface {
    *
    * @param \Drupal\key\KeyInterface $key
    *   The OAuth token key entity.
-   * @param int $leeway
-   *   Number of seconds extracted from token's expiration date.
    */
-  public function __construct(KeyInterface $key, int $leeway = 30) {
+  public function __construct(KeyInterface $key) {
     if (!($key->getKeyType() instanceof EdgeOauthTokenKeyTypeInterface)) {
       throw new \InvalidArgumentException("Type of {$key->id()} key does not implement EdgeOauthTokenKeyTypeInterface.");
     }
 
     $this->key = $key;
     $this->keyType = $key->getKeyType();
-    $this->leeway = $leeway;
   }
 
   /**
@@ -145,7 +142,7 @@ class OauthTokenStorage implements OauthTokenStorageInterface {
       $this->key->save();
     }
     catch (EntityStorageException $exception) {
-      throw new OauthAuthenticationException('Could not save the OAuth response.');
+      throw new OauthAuthenticationException('Could not save the OAuth token data.');
     }
 
     if ($this->keyType->getExpiresIn($this->key) !== NULL && $this->keyType->getExpiresIn($this->key) !== 0) {
@@ -165,7 +162,7 @@ class OauthTokenStorage implements OauthTokenStorageInterface {
       $this->key->save();
     }
     catch (EntityStorageException $exception) {
-      throw new OauthAuthenticationException('Could not remove the stored OAuth data.');
+      throw new OauthAuthenticationException('Could not remove the stored OAuth token data.');
     }
   }
 
