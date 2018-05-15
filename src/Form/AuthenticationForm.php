@@ -150,7 +150,7 @@ class AuthenticationForm extends ConfigFormBase {
         ':url' => Url::fromRoute('entity.key.edit_form', ['key' => $key_id, 'destination' => 'admin/config/apigee-edge/settings'])->toString(),
       ]);
     }
-    $oauth_token_default_value = array_key_exists($config->get('active_key_oauth_token'), $oauth_token_keys) ? $config->get('active_key_token') : NULL;
+    $oauth_token_default_value = array_key_exists($config->get('active_key_oauth_token'), $oauth_token_keys) ? $config->get('active_key_oauth_token') : NULL;
 
     $form['authentication']['key_type'] = [
       '#type' => 'select',
