@@ -26,7 +26,7 @@ use Drupal\key\KeyInterface;
 use Http\Message\Authentication;
 
 /**
- * Key type for Apigee Edge basic authentication credentials.
+ * Key type for Apigee Edge OAuth credentials.
  *
  * @KeyType(
  *   id = "apigee_edge_oauth",

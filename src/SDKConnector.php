@@ -211,7 +211,7 @@ class SDKConnector implements SDKConnectorInterface {
    * @param \Drupal\key\KeyInterface|null $key_token
    *   The OAuth token key entity.
    *
-   * @return CredentialsInterface
+   * @return \Drupal\apigee_edge\CredentialsInterface
    *   The credentials.
    */
   private function buildCredentials(KeyInterface $key, KeyInterface $key_token = NULL): CredentialsInterface {
