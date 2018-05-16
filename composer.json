@@ -1,8 +1,8 @@
 {
-    "name": "drupal/apigee_devportal",
+    "name": "drupal/apigee_edge",
     "license": "GPL-2.0",
     "type": "drupal-module",
-    "description": "Apigee Devportal for Drupal.",
+    "description": "Apigee Edge for Drupal.",
     "require": {
         "php": ">=7.1",
         "apigee/apigee-client-php": "^2.0",
