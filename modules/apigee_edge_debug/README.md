@@ -1,7 +1,7 @@
-# Debug helper for Apigee Developer Portal
+# Debug helper for Apigee Edge
 
 An utility module that helps developers to work with the
-Apigee Developer Portal module.
+Apigee Edge module.
 
 
 ## Features
