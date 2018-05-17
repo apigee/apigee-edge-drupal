@@ -82,7 +82,6 @@ class OauthKeyInput extends BasicAuthKeyInput {
     $key_values = Json::decode($input_values['key_value']);
 
     // Remove endpoint key from the JSON if the field is empty.
-
     $fields = ['authorization_server', 'client_id', 'client_secret'];
     foreach ($fields as $field) {
       if ($input_values[$field] !== '') {
