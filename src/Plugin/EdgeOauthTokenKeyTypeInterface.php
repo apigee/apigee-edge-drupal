@@ -28,14 +28,14 @@ use Drupal\key\Plugin\KeyTypeMultivalueInterface;
 interface EdgeOauthTokenKeyTypeInterface extends KeyTypeMultivalueInterface {
 
   /**
- * Gets the OAuth access token.
- *
- * @param \Drupal\key\KeyInterface $key
- *   The key entity.
- *
- * @return string|null
- *   The OAuth access token.
- */
+   * Gets the OAuth access token.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
+   *
+   * @return string|null
+   *   The OAuth access token.
+   */
   public function getAccessToken(KeyInterface $key): ?string;
 
   /**

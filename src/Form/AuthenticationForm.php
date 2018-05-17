@@ -283,22 +283,22 @@ class AuthenticationForm extends ConfigFormBase {
           [
             ':input[name="key_oauth"]' => [
               'checked' => TRUE,
-              ],
+            ],
             ':input[name="key_oauth_token"]' => [
               'checked' => TRUE,
-              ],
+            ],
             ':input[name="key_type"]' => [
               'value' => 'apigee_edge_oauth',
-              ],
+            ],
           ],
           'or',
           [
             ':input[name="key_basic_auth"]' => [
               'checked' => TRUE,
-              ],
+            ],
             ':input[name="key_type"]' => [
               'value' => 'apigee_edge_basic_auth',
-              ],
+            ],
           ],
         ],
       ],
