@@ -21,7 +21,7 @@ namespace Drupal\apigee_edge\Plugin\KeyType;
 
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use Drupal\apigee_edge\OauthTokenStorage;
-use Drupal\apigee_edge\Plugin\EdgeOAuthKeyTypeInterface;
+use Drupal\apigee_edge\Plugin\EdgeOauthKeyTypeInterface;
 use Drupal\key\KeyInterface;
 use Http\Message\Authentication;
 
