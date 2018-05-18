@@ -76,6 +76,10 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
     $this->drupalPlaceBlock('local_tasks_block');
 
+    $config = \Drupal::configFactory()->getEditable('apigee_edge.dangerzone');
+    $config->set('skip_developer_app_settings_validation', TRUE);
+    $config->save();
+
     $this->products[] = $this->createProduct();
     $this->account = $this->createAccount(static::$permissions);
     $this->drupalLogin($this->account);

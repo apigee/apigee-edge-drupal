@@ -143,3 +143,10 @@ key.provider.apigee_edge_basic_auth_env_variables:
 
 key.provider.apigee_edge_basic_auth_private_file:
   type: sequence
+
+apigee_edge.dangerzone:
+  type: config_object
+  label: 'Dangerous settings'
+  mapping:
+    skip_developer_app_settings_validation:
+      type: boolean

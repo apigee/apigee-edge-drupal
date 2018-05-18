@@ -20,6 +20,7 @@
 namespace Drupal\apigee_edge\Form;
 
 use Drupal\apigee_edge\Entity\ApiProduct;
+use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -90,6 +91,7 @@ class AppSettingsForm extends ConfigFormBase {
       '#type' => 'checkbox',
       '#title' => $this->t('Allow selecting multiple products'),
       '#default_value' => $generalConfig->get('multiple_products'),
+      '#disabled' => !($this->config('apigee_edge.dangerzone')->get('skip_developer_app_settings_validation')) && (bool) DeveloperApp::loadMultiple(),
       '#states' => [
         'visible' => [
           ':input[name="user_select"]' => [
