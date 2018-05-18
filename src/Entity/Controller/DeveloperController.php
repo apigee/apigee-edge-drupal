@@ -44,7 +44,7 @@ class DeveloperController extends EdgeDeveloperController implements DrupalEntit
    * {@inheritdoc}
    */
   public function convertToSdkEntity(EntityInterface $drupal_entity): EdgeEntityInterface {
-    $sdkEntity = $this->privateConvertToSdkEntity($drupal_entity, parent::getEntityClass());
+    $sdkEntity = $this->privateConvertToSdkEntity($drupal_entity);
     // We use the email address as id to save developer entities, this way
     // we do not need to load the developer by Apigee Edge always.
     // \Drupal\apigee_edge\Entity\Developer::id() always returns the proper

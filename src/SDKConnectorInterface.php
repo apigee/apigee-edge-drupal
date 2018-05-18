@@ -39,7 +39,7 @@ interface SDKConnectorInterface {
   /**
    * Returns the http client.
    *
-   * @return \Apigee\Edge\HttpClient\ClientInterface
+   * @return \Apigee\Edge\ClientInterface
    *   The http client.
    */
   public function getClient() : ClientInterface;
