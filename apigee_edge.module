@@ -844,6 +844,8 @@ function template_preprocess_app_credential(array &$variables) {
       }
     }
 
+    $value = (string) $value;
+
     if (in_array($property, $secret_properties)) {
       $variables['primary_wrapper'][$property]['value'] = [
         '#type' => 'html_tag',
