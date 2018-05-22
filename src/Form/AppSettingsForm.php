@@ -87,11 +87,19 @@ class AppSettingsForm extends ConfigFormBase {
       ],
     ];
 
+    $skip_validation = $this->config('apigee_edge.dangerzone')
+      ->get('skip_developer_app_settings_validation');
+    /** @var \Drupal\apigee_edge\SDKConnectorInterface $connector */
+    $connector = \Drupal::service('apigee_edge.sdk_connector');
+    /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperAppStorageInterface $storage */
+    $storage = \Drupal::entityTypeManager()->getStorage('developer_app');
+    /** @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerInterface $controller */
+    $controller = $storage->getController($connector);
     $form['api_product']['multiple_products'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Allow selecting multiple products'),
       '#default_value' => $generalConfig->get('multiple_products'),
-      '#disabled' => !($this->config('apigee_edge.dangerzone')->get('skip_developer_app_settings_validation')) && (bool) DeveloperApp::loadMultiple(),
+      '#disabled' => !$skip_validation && (bool) $controller->getEntityIds(),
       '#states' => [
         'visible' => [
           ':input[name="user_select"]' => [

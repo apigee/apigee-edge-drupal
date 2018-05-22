@@ -144,9 +144,15 @@ key.provider.apigee_edge_basic_auth_env_variables:
 key.provider.apigee_edge_basic_auth_private_file:
   type: sequence
 
+# Dangerous settings. Enabling these might lead to data corruption.
+#
+# Mostly used for testing, or in specific scenarios.
 apigee_edge.dangerzone:
   type: config_object
   label: 'Dangerous settings'
   mapping:
+
+    # Allows changing whether single or multiple products can be assigned for an app,
+    # even when content exists.
     skip_developer_app_settings_validation:
       type: boolean
