@@ -28,7 +28,11 @@
         }
     ],
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "preferred-install": {
+            "*": "dist",
+            "apigee/apigee-client-php": "source"
+        }
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
