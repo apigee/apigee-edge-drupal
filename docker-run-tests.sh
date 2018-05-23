@@ -7,7 +7,7 @@ set -e
 MODULE_PATH="/opt/drupal-module"
 WEB_ROOT="/var/www/html/build"
 WEB_ROOT_PARENT="/var/www/html"
-COMPOSER_GLOBAL_OPTIONS="--no-interaction --prefer-dist -o"
+COMPOSER_GLOBAL_OPTIONS="--no-interaction -o"
 
 # We mounted the cache/files folder from the host so we have to fix permissions
 # on the parent cache folder because it did not exist before.
