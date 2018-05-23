@@ -48,7 +48,7 @@
                 "(For testing) Time Ago summary does not render on Manage Display for Datetime": "https://www.drupal.org/files/issues/2686409-45.patch"
             },
             "apigee/apigee-client-php": {
-                "Fix for an OAuth bug": "https://patch-diff.githubusercontent.com/raw/apigee/apigee-client-php/pull/2.diff"
+                "Fix for an OAuth bug": "https://github.com/apigee/apigee-client-php/compare/2.0.0-alpha1...apigee:2.x.diff"
             }
         },
         "installer-paths": {
