@@ -202,26 +202,33 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
     $app = $this->entity;
     $app->save();
-    $config = $this->configFactory->get('apigee_edge.common_app_settings');
 
-    if ($config->get('associate_apps')) {
-      $dacc = new DeveloperAppCredentialController(
-        $this->sdkConnector->getOrganization(),
-        $app->getDeveloperId(),
-        $app->getName(),
-        $this->sdkConnector->getClient()
-      );
+    $dacc = new DeveloperAppCredentialController(
+      $this->sdkConnector->getOrganization(),
+      $app->getDeveloperId(),
+      $app->getName(),
+      $this->sdkConnector->getClient()
+    );
 
-      /** @var \Apigee\Edge\Api\Management\Entity\AppCredential[] $credentials */
-      $credentials = $app->getCredentials();
-      /** @var \Apigee\Edge\Api\Management\Entity\AppCredential $credential */
-      $credential = reset($credentials);
+    /** @var \Apigee\Edge\Api\Management\Entity\AppCredential[] $credentials */
+    $credentials = $app->getCredentials();
+    /** @var \Apigee\Edge\Api\Management\Entity\AppCredential $credential */
+    $credential = reset($credentials);
+    // Delete auto-generated credential.
+    $dacc->delete($credential->id());
 
+    // Create a new credential using the selected products if available
+    // and the credential lifetime value from the config.
+    $products = [];
+    if ($this->config('apigee_edge.common_app_settings')->get('associate_apps')) {
       $products = array_values(array_filter((array) $form_state->getValue('api_products')));
-      if ($products) {
-        $dacc->addProducts($credential->id(), $products);
-      }
     }
+    $credential_lifetime = $this->config('apigee_edge.developer_app_settings')->get('credential_lifetime');
+    $credential_lifetime = $credential_lifetime === -1 ? $credential_lifetime : $credential_lifetime * 86400000;
+    $abc = $app->getAttributes();
+    $abc->add('callbackUrl', 'alma');
+    $dacc->generate($products, $app->getAttributes(), $app->getCallbackUrl(), [], $credential_lifetime);
+
     $form_state->setRedirectUrl($this->getRedirectUrl());
   }
 

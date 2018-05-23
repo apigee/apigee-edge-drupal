@@ -14,6 +14,11 @@ apigee_edge.settings.app.alias:
   title: 'Alias'
   base_route: apigee_edge.settings.app
 
+apigee_edge.settings.app.credentials:
+  route_name: apigee_edge.settings.app.credentials
+  title: 'Credentials'
+  base_route: apigee_edge.settings.app
+
 apigee_edge.settings.app.analytics:
   route_name: apigee_edge.settings.app.analytics
   title: 'Analytics'
