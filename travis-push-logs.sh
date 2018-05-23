@@ -1,8 +1,11 @@
-#!/bin/bash
-# Because bash is missing from any defined path in PATH (like /usr/bin).
-# #!/usr/bin/env bash
+#!/usr/bin/env bash
 
 set -e
+
+if [[ -z "${LOGS_REPO_USER}" ]] || [[ -z "${LOGS_REPO_PASSWORD}" ]] || [[ -z "${LOGS_REPO_HOST}" ]] || [[ -z "${LOGS_REPO_NAME}" ]]; then
+  echo "There is at least one missing information about destination repo. Please make sure the following environment variables exist and not empty: LOGS_REPO_USER, LOGS_REPO_PASSWORD, LOGS_REPO_HOST, LOGS_REPO_NAME."
+  exit 0
+fi
 
 # Initial GIT setup.
 git config --global user.email "travis@travis-ci.org"
