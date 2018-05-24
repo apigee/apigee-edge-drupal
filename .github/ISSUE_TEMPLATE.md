@@ -2,8 +2,8 @@
 | --------------------------- | -----------------------------------------------
 | Bug?                        | no|yes
 | New Feature?                | no|yes
-| Module Version              | Version or commit SHA <br> This can be the version you can see on admin/modules in Drupal or the output of this command: <code>composer show &#124; grep drupal/apigee_edge &#124; awk '{if ($2 ~ "dev$") print $2 " "$3; else print $2;}'</code>
-| PHP Client version          | Version or commit SHA <br> This can be the output of this command: <code>composer show &#124; grep apigee/apigee-client-php &#124; awk '{if ($2 ~ "dev$") print $2 " "$3; else print $2;}'</code>
+| Module Version              | Version or commit SHA <br> This can be the version you can see on admin/modules in Drupal or the output of this command: <code>composer show | grep drupal/apigee_edge | awk '{if ($2 ~ "dev$") print $2 " "$3; else print $2;}'</code>
+| PHP Client version          | Version or commit SHA <br> This can be the output of this command: <code>composer show | grep apigee/apigee-client-php | awk '{if ($2 ~ "dev$") print $2 " "$3; else print $2;}'</code>
 | Requires PHP client fix     | no|link to an Apigee Client PHP library issue or pull request
 
 #### Actual Behavior
