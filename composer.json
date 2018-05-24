@@ -21,6 +21,9 @@
         "phpunit/phpunit": "^6.5",
         "webflo/drupal-core-require-dev": "^8.5.0"
     },
+    "conflict": {
+        "apigee/apigee-client-php": "<= 2.0.0-alpha1"
+    },
     "repositories": [
         {
             "type": "composer",
@@ -46,9 +49,6 @@
             "drupal/core": {
                 "(For testing) Drupal core tests actually requires PHPUnit >= 6.5": "https://www.drupal.org/files/issues/2018-04-11/require_phpunit_65-2947888-5.patch",
                 "(For testing) Time Ago summary does not render on Manage Display for Datetime": "https://www.drupal.org/files/issues/2686409-45.patch"
-            },
-            "apigee/apigee-client-php": {
-                "Fix for an OAuth bug": "https://patch-diff.githubusercontent.com/raw/apigee/apigee-client-php/pull/2.patch"
             }
         },
         "installer-paths": {
