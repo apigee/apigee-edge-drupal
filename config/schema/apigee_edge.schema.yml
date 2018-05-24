@@ -67,6 +67,8 @@ apigee_edge.developer_app_settings:
       label: 'How to refer to a Developer App on the UI (plural)'
     cache_expiration:
       type: integer
+    credential_lifetime:
+      type: integer
 
 apigee_edge.developer_settings:
   type: config_object

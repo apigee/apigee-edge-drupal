@@ -57,10 +57,12 @@ class DeveloperAppCredentialController extends EdgeDeveloperAppCredentialControl
    */
   public function generate(
     array $apiProducts,
+    AttributesProperty $appAttributes,
+    string $callbackUrl,
     array $scopes = [],
     string $keyExpiresIn = '-1'
   ): AppCredentialInterface {
-    $credential = parent::generate($apiProducts, $scopes, $keyExpiresIn);
+    $credential = parent::generate($apiProducts, $appAttributes, $callbackUrl, $scopes, $keyExpiresIn);
     $this->clearAppCredentialsFromStorage($this->developerId, $this->appName);
     return $credential;
   }

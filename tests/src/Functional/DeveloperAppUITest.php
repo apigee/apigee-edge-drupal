@@ -311,6 +311,47 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
+   * Tests app creation with modified credential lifetime.
+   *
+   * @throws \Behat\Mink\Exception\ResponseTextException
+   */
+  public function testCreateAppWithModifiedCredentialLifetime() {
+    // Change credential lifetime to 10 days from 0.
+    $this->drupalPostForm('/admin/config/apigee-edge/app-settings/credentials', [
+      'credential_lifetime' => 10,
+    ], 'Save configuration');
+    $this->assertSession()->pageTextContains('The configuration options have been saved.');
+
+    // Create a new developer app and check the credential expiration.
+    $name = strtolower($this->randomMachineName());
+    $this->postCreateAppForm([
+      'name' => $name,
+      'displayName[0][value]' => $name,
+      "api_products[{$this->products[0]->getName()}]" => $this->products[0]->getName(),
+    ]);
+    $this->assertSession()->pageTextContains($name);
+    $this->clickLink($name);
+    $this->assertSession()->pageTextContains('1 week 2 days hence');
+
+    // Change credential lifetime to 0 (Never) days from 10.
+    $this->drupalPostForm('/admin/config/apigee-edge/app-settings/credentials', [
+      'credential_lifetime' => 0,
+    ], 'Save configuration');
+    $this->assertSession()->pageTextContains('The configuration options have been saved.');
+
+    // Create a new developer app and check the credential expiration.
+    $name = strtolower($this->randomMachineName());
+    $this->postCreateAppForm([
+      'name' => $name,
+      'displayName[0][value]' => $name,
+      "api_products[{$this->products[0]->getName()}]" => $this->products[0]->getName(),
+    ]);
+    $this->assertSession()->pageTextContains($name);
+    $this->clickLink($name);
+    $this->assertSession()->pageTextContains('Never');
+  }
+
+  /**
    * Creates an app with no products.
    */
   public function testAppCrudNoProducts() {
