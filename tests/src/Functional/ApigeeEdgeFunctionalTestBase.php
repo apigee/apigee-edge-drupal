@@ -55,7 +55,7 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
       'id' => self::KEY_ID,
       'label' => self::KEY_ID,
       'key_type' => 'apigee_edge_basic_auth',
-      'key_provider' => 'apigee_edge_basic_auth_env_variables',
+      'key_provider' => 'apigee_edge_environment_variables',
       'key_input' => 'apigee_edge_basic_auth_input',
     ]);
     try {

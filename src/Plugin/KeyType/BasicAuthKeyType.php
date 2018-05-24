@@ -39,10 +39,22 @@ use Http\Message\Authentication\BasicAuth;
  *   multivalue = {
  *     "enabled" = true,
  *     "fields" = {
- *       "endpoint" = @Translation("Apigee Edge endpoint"),
- *       "organization" = @Translation("Organization"),
- *       "username" = @Translation("Username"),
- *       "password" = @Translation("Password")
+ *       "endpoint" = {
+ *         "label" = @Translation("Apigee Edge endpoint"),
+ *         "required" = false
+ *       },
+ *       "organization" = {
+ *         "label" = @Translation("Organization"),
+ *         "required" = true
+ *       },
+ *       "username" = {
+ *         "label" = @Translation("Username"),
+ *         "required" = true
+ *       },
+ *       "password" = {
+ *         "label" = @Translation("Password"),
+ *         "required" = true
+ *       }
  *     }
  *   }
  * )
@@ -71,6 +83,10 @@ class BasicAuthKeyType extends EdgeKeyTypeBase {
     }
 
     foreach ($this->getPluginDefinition()['multivalue']['fields'] as $id => $field) {
+      if (isset($field['required']) && $field['required'] === FALSE) {
+        continue;
+      }
+
       $error_element = $form['settings']['input_section']['key_input_settings'][$id] ?? $form;
 
       /** @var \Drupal\Core\StringTranslation\TranslatableMarkup $field */
@@ -86,7 +102,7 @@ class BasicAuthKeyType extends EdgeKeyTypeBase {
   /**
    * {@inheritdoc}
    */
-  public function getAuthenticationMethod(KeyInterface $key) : Authentication {
+  public function getAuthenticationMethod(KeyInterface $key, KeyInterface $key_token = NULL): Authentication {
     return new BasicAuth($this->getUsername($key), $this->getPassword($key));
   }
 

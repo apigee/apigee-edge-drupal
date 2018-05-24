@@ -30,20 +30,20 @@ use Drupal\key\KeyInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Stores Apigee Edge basic authentication credentials in a private file.
+ * Stores Apigee Edge authentication credentials in a private file.
  *
  * @KeyProvider(
- *   id = "apigee_edge_basic_auth_private_file",
- *   label = @Translation("Apigee Edge Basic Authentication: Private File"),
- *   description = @Translation("Stores Apigee Edge basic authentication credentials in a private file.<p><strong>Warning! </strong>Private file storage is suitable only for testing environments. In production environments, use the <em>Apigee Edge Basic Authentication: Environment Variables</em> key provider.</p>"),
+ *   id = "apigee_edge_private_file",
+ *   label = @Translation("Apigee Edge: Private File"),
+ *   description = @Translation("Stores Apigee Edge authentication credentials in a private file.<p><strong>Warning! </strong>Private file storage is suitable only for testing environments. In production environments, use the <em>Apigee Edge: Environment Variables</em> key provider.</p>"),
  *   storage_method = "apigee_edge",
  *   key_value = {
  *     "accepted" = TRUE,
- *     "required" = TRUE
+ *     "required" = FALSE
  *   }
  * )
  */
-class BasicAuthPrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInterface, KeyProviderSettableValueInterface {
+class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInterface, KeyProviderSettableValueInterface {
 
   /**
    * Site settings.
@@ -111,6 +111,9 @@ class BasicAuthPrivateFileKeyProvider extends KeyProviderBase implements KeyPlug
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\key\Exception\KeyValueNotSetException
+   *   Thrown when the key cannot be saved.
    */
   public function setKeyValue(KeyInterface $key, $key_value) {
     if (!\file_unmanaged_save_data($key_value, $this->getFileUri($key), FILE_EXISTS_REPLACE)) {
@@ -135,7 +138,7 @@ class BasicAuthPrivateFileKeyProvider extends KeyProviderBase implements KeyPlug
    *   The file URI.
    */
   protected function getFileUri(KeyInterface $key) {
-    return 'private://' . $key->id() . '_apigee_edge_basic_auth.json';
+    return "private://{$key->id()}_apigee_edge.json";
   }
 
 }

@@ -9,12 +9,4 @@ use Apigee\Edge\Exception\ApiException;
  */
 class KeyNotFoundException extends ApiException {
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct($key_id, $code = 0, \Exception $previous = NULL) {
-    $message = !empty($key_id) ? "Apigee Edge API authentication key '{$key_id}' not found." : 'Apigee Edge API authentication key is not set.';
-    parent::__construct($message, $code, $previous);
-  }
-
 }

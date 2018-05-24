@@ -19,6 +19,8 @@
 
 namespace Drupal\apigee_edge;
 
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
+use Drupal\key\KeyInterface;
 use Http\Message\Authentication;
 
 /**
@@ -27,7 +29,7 @@ use Http\Message\Authentication;
 interface CredentialsInterface {
 
   /**
-   * Gets the authentication object.
+   * Gets the authentication object which instantiated by the key type.
    *
    * @return \Http\Message\Authentication
    *   The authentication object.
@@ -35,35 +37,19 @@ interface CredentialsInterface {
   public function getAuthentication(): Authentication;
 
   /**
-   * Gets the Edge API endpoint.
+   * Gets the key entity which stores the API credentials.
    *
-   * @return string
-   *   Apigee Edge endpoint URI.
+   * @return \Drupal\key\KeyInterface
+   *   The key entity which stores the API credentials.
    */
-  public function getEndpoint(): string;
+  public function getKey(): KeyInterface;
 
   /**
-   * Gets the API username.
+   * Gets the key type of the key entity.
    *
-   * @return string
-   *   The API username.
+   * @return \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface
+   *   The key type of the key entity.
    */
-  public function getUsername(): string;
-
-  /**
-   * Gets the name of the organization.
-   *
-   * @return string
-   *   The name of the organization.
-   */
-  public function getOrganization(): string;
-
-  /**
-   * Gets the API password.
-   *
-   * @return string
-   *   The API password.
-   */
-  public function getPassword(): string;
+  public function getKeyType(): EdgeKeyTypeInterface;
 
 }
