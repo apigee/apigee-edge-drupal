@@ -153,6 +153,9 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
           $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = $current_products;
         }
         else {
+          if (count($current_products) > 1) {
+            $this->messenger()->addWarning(t('This app has multiple products, but only a single product is allowed to be selected.'));
+          }
           if ($required) {
             $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = reset($current_products) ?: NULL;
           }

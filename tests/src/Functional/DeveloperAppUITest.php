@@ -116,13 +116,20 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    */
   protected function submitAdminForm(array $changes = []) {
     $this->drupalGet('/admin/config/apigee-edge/app-settings');
-    $this->drupalPostForm('/admin/config/apigee-edge/app-settings', $changes + [
+    $data = $changes + [
       'display_as_select' => FALSE,
       'associate_apps' => TRUE,
       'user_select' => TRUE,
       'multiple_products' => TRUE,
       'require' => FALSE,
-    ], 'Save configuration');
+    ];
+    $multiple_products = $data['multiple_products'];
+    unset($data['multiple_products']);
+    $this->drupalPostForm('/admin/config/apigee-edge/app-settings', $data, 'Save configuration');
+    \Drupal::configFactory()
+      ->getEditable('apigee_edge.common_app_settings')
+      ->set('multiple_products', $multiple_products)
+      ->save();
   }
 
   /**
