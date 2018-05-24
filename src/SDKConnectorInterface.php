@@ -20,7 +20,6 @@
 namespace Drupal\apigee_edge;
 
 use Apigee\Edge\ClientInterface;
-use Drupal\apigee_edge\Entity\Controller\DrupalEntityControllerInterface;
 use Drupal\key\KeyInterface;
 
 /**
@@ -34,7 +33,7 @@ interface SDKConnectorInterface {
    * @return string
    *   The organization.
    */
-  public function getOrganization() : string;
+  public function getOrganization(): string;
 
   /**
    * Returns the http client.
@@ -42,30 +41,20 @@ interface SDKConnectorInterface {
    * @return \Apigee\Edge\ClientInterface
    *   The http client.
    */
-  public function getClient() : ClientInterface;
-
-  /**
-   * Gets the requested controller object.
-   *
-   * Creates the requested controller object using the stored key.
-   *
-   * @param string $entity_type
-   *   Entity type.
-   *
-   * @return \Drupal\apigee_edge\Entity\Controller\DrupalEntityControllerInterface
-   *   The controller object.
-   */
-  public function getControllerByEntity(string $entity_type) : DrupalEntityControllerInterface;
+  public function getClient(): ClientInterface;
 
   /**
    * Test connection with the Edge Management Server.
    *
-   * @param \Drupal\key\KeyInterface $key
+   * @param \Drupal\key\KeyInterface|null $key
    *   Key entity to check connection with Edge,
    *   if NULL, then use the stored key.
+   * @param \Drupal\key\KeyInterface|null $key_token
+   *   OAuth token key entity to check connection with Edge,
+   *   if NULL, then use the stored OAuth token key.
    *
    * @throws \Exception
    */
-  public function testConnection(KeyInterface $key = NULL);
+  public function testConnection(KeyInterface $key = NULL, KeyInterface $key_token = NULL);
 
 }

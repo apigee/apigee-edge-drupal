@@ -20,24 +20,43 @@
 namespace Drupal\apigee_edge\Plugin;
 
 use Drupal\key\KeyInterface;
-use Http\Message\Authentication;
 
 /**
- * Interface for creating the required authentication method object.
+ * Defines an interface for Apigee Edge OAuth Key Type plugins.
  */
-interface KeyTypeAuthenticationMethodInterface {
+interface EdgeOauthKeyTypeInterface extends EdgeKeyTypeInterface {
 
   /**
-   * Gets the authentication method object.
+   * Gets the authorization server.
    *
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
-   * @param \Drupal\key\KeyInterface|null $key_token
-   *   The OAuth token key entity.
    *
-   * @return \Http\Message\Authentication
-   *   The authentication object.
+   * @return string|null
+   *   The authorization server.
    */
-  public function getAuthenticationMethod(KeyInterface $key, ?KeyInterface $key_token = NULL): Authentication;
+  public function getAuthorizationServer(KeyInterface $key): ?string;
+
+  /**
+   * Gets the client ID.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
+   *
+   * @return string|null
+   *   The client ID.
+   */
+  public function getClientId(KeyInterface $key): ?string;
+
+  /**
+   * Gets the client secret.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
+   *
+   * @return string|null
+   *   The client secret.
+   */
+  public function getClientSecret(KeyInterface $key): ?string;
 
 }

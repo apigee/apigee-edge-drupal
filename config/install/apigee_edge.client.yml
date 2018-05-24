@@ -1,4 +1,4 @@
 active_key: ''
-default_endpoint: https://api.enterprise.apigee.com/v1
+active_key_oauth_token: ''
 http_client_timeout: 30
 http_client_proxy: ''

@@ -41,25 +41,26 @@ class RequirementsTest extends ApigeeEdgeFunctionalTestBase {
    * Tests invalid credentials.
    *
    * @throws \Behat\Mink\Exception\ResponseTextException
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function testInvalidCredentials() {
     // Ensure that pre-defined credentials are correctly set.
     $this->drupalGet('/admin/reports/status');
-    $this->assertSession()->pageTextNotContains('Cannot connect to Edge server.');
+    $this->assertSession()->pageTextNotContains('Cannot connect to Apigee Edge server.');
 
     // Delete authentication key.
-    Key::load('test')->delete();
+    Key::load(self::KEY_ID)->delete();
 
     $this->drupalGet('/admin/reports/status');
-    $this->assertSession()->pageTextContains('Apigee Edge API authentication key is not set.');
+    $this->assertSession()->pageTextContains('Apigee Edge API authentication key not found.');
     $this->assertSession()->pageTextContains('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Edge server is unreachable. Visit the Apigee Edge Configuration page to get more information.');
 
-    // Create new Apigee Edge key with private file provider.
+    // Create new Apigee Edge basic auth key with private file provider.
     $key = Key::create([
       'id' => 'private_file',
       'label' => 'Private file',
       'key_type' => 'apigee_edge_basic_auth',
-      'key_provider' => 'apigee_edge_basic_auth_private_file',
+      'key_provider' => 'apigee_edge_private_file',
       'key_input' => 'apigee_edge_basic_auth_input',
     ]);
     $key->setKeyValue(Json::encode([
@@ -71,7 +72,9 @@ class RequirementsTest extends ApigeeEdgeFunctionalTestBase {
     $key->save();
     $this->config('apigee_edge.client')->set('active_key', 'private_file')->save();
 
-    $this->assertSession()->pageTextNotContains('Cannot connect to Edge server.');
+    $this->drupalGet('/admin/reports/status');
+    $this->assertSession()->pageTextNotContains('Cannot connect to Apigee Edge server.');
+    $this->container->get('apigee_edge.sdk_connector')->testConnection();
 
     // Use wrong credentials.
     $key->setKeyValue(Json::encode([
@@ -84,6 +87,57 @@ class RequirementsTest extends ApigeeEdgeFunctionalTestBase {
 
     $this->drupalGet('/admin/reports/status');
     $this->assertSession()->pageTextContains('Unauthorized');
+    $this->assertSession()->pageTextContains('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Edge server is unreachable. Visit the Apigee Edge Configuration page to get more information.');
+
+    // Delete authentication key.
+    Key::load('private_file')->delete();
+
+    $this->drupalGet('/admin/reports/status');
+    $this->assertSession()->pageTextContains('Apigee Edge API authentication key not found.');
+    $this->assertSession()->pageTextContains('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Edge server is unreachable. Visit the Apigee Edge Configuration page to get more information.');
+
+    // Create new Apigee Edge OAuth key with private file provider.
+    $key = Key::create([
+      'id' => 'private_file',
+      'label' => 'Private file',
+      'key_type' => 'apigee_edge_oauth',
+      'key_provider' => 'apigee_edge_private_file',
+      'key_input' => 'apigee_edge_oauth_input',
+    ]);
+    $key->setKeyValue(Json::encode([
+      'endpoint' => getenv('APIGEE_EDGE_ENDPOINT'),
+      'organization' => getenv('APIGEE_EDGE_ORGANIZATION'),
+      'username' => getenv('APIGEE_EDGE_USERNAME'),
+      'password' => getenv('APIGEE_EDGE_PASSWORD'),
+    ]));
+    $key->save();
+    $this->config('apigee_edge.client')->set('active_key', 'private_file')->save();
+
+    // Create new Apigee Edge OAuth token key with private file provider.
+    Key::create([
+      'id' => 'private_file_token',
+      'label' => 'Private file_token',
+      'key_type' => 'apigee_edge_oauth_token',
+      'key_provider' => 'apigee_edge_private_file',
+      'key_input' => 'none',
+    ])->save();
+    $this->config('apigee_edge.client')->set('active_key_oauth_token', 'private_file_token')->save();
+
+    $this->drupalGet('/admin/reports/status');
+    $this->assertSession()->pageTextNotContains('Cannot connect to Apigee Edge server.');
+    $this->container->get('apigee_edge.sdk_connector')->testConnection();
+
+    // Use wrong credentials.
+    $key->setKeyValue(Json::encode([
+      'endpoint' => getenv('APIGEE_EDGE_ENDPOINT'),
+      'organization' => $this->getRandomGenerator()->string(),
+      'username' => getenv('APIGEE_EDGE_USERNAME'),
+      'password' => getenv('APIGEE_EDGE_PASSWORD'),
+    ]));
+    $key->save();
+
+    $this->drupalGet('/admin/reports/status');
+    $this->assertSession()->pageTextContains('Forbidden');
     $this->assertSession()->pageTextContains('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Edge server is unreachable. Visit the Apigee Edge Configuration page to get more information.');
 
     // Unset private file path.

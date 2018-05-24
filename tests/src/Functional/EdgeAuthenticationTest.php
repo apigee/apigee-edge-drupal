@@ -42,7 +42,7 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
    * @return bool
    *   True if the credentials are successfully initialized.
    */
-  protected function initCredentials() : bool {
+  protected function initCredentials(): bool {
     if (($username = getenv('APIGEE_EDGE_USERNAME'))) {
       $this->credentials['username'] = $username;
     }
@@ -71,7 +71,7 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
-   * Tests Apigee Edge key type, key providers and authentication form.
+   * Tests Apigee Edge key types, key providers and authentication form.
    *
    * @throws \Behat\Mink\Exception\ExpectationException
    * @throws \Behat\Mink\Exception\ResponseTextException
@@ -82,6 +82,7 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalPostForm('/admin/config/system/keys/manage/test/delete', [], 'Delete');
     $this->assertSession()->pageTextContains('The key test has been deleted.');
     $this->assertEmpty($this->config('apigee_edge.client')->get('active_key'));
+    $this->assertEmpty($this->config('apigee_edge.client')->get('active_key_oauth_token'));
 
     // Create a key entity using key's default type and provider.
     $default_key = Key::create([
@@ -92,8 +93,10 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
     // Visit authentication form and ensure that there
     // are no available Apigee Edge keys.
     $this->drupalGet('/admin/config/apigee-edge/settings');
-    $this->assertSession()->pageTextContains('There is no available key for connecting to Apigee Edge server. Create a new key.');
-    $this->assertSession()->elementNotExists('css', '#edit-key--wrapper');
+    $this->assertSession()->pageTextContains('There is no available basic authentication key for connecting to Apigee Edge.');
+    $this->getSession()->getPage()->selectFieldOption('edit-key-type', 'apigee_edge_oauth');
+    $this->assertSession()->pageTextContains('There is no available OAuth (SAML) key for connecting to Apigee Edge.');
+    $this->assertSession()->pageTextContains('There is no available OAuth (SAML) token key for connecting to Apigee Edge.');
 
     // Add new Apigee Edge basic authentication key
     // with environment variables provider.
@@ -101,7 +104,7 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
       'id' => 'key_test_env_variables',
       'label' => 'Test key in environment variables',
       'key_type' => 'apigee_edge_basic_auth',
-      'key_provider' => 'apigee_edge_basic_auth_env_variables',
+      'key_provider' => 'apigee_edge_environment_variables',
       'key_input' => 'apigee_edge_basic_auth_input',
     ]);
     $key->save();
@@ -112,7 +115,7 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
       'id' => 'key_test_private_file',
       'label' => 'Test key in private file',
       'key_type' => 'apigee_edge_basic_auth',
-      'key_provider' => 'apigee_edge_basic_auth_private_file',
+      'key_provider' => 'apigee_edge_private_file',
       'key_input' => 'apigee_edge_basic_auth_input',
     ]);
     $key->setKeyValue(Json::encode($this->credentials));
@@ -124,7 +127,7 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
       'id' => 'key_wrong_test_private_file',
       'label' => 'Wrong test key in private file',
       'key_type' => 'apigee_edge_basic_auth',
-      'key_provider' => 'apigee_edge_basic_auth_private_file',
+      'key_provider' => 'apigee_edge_private_file',
       'key_input' => 'apigee_edge_basic_auth_input',
     ]);
     $key->setKeyValue(Json::encode([
@@ -140,56 +143,188 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->pageTextContains('Test key in environment variables');
     $this->assertSession()->pageTextContains('Test key in private file');
     $this->assertSession()->pageTextContains('Wrong test key in private file');
+    $this->getSession()->getPage()->selectFieldOption('edit-key-type', 'apigee_edge_oauth');
+    $this->assertSession()->pageTextContains('There is no available OAuth (SAML) key for connecting to Apigee Edge.');
+    $this->assertSession()->pageTextContains('There is no available OAuth (SAML) token key for connecting to Apigee Edge.');
 
     // Test key stored in environment variables.
     $this->drupalPostForm('/admin/config/apigee-edge/settings', [
-      'key' => 'key_test_env_variables',
+      'key_basic_auth' => 'key_test_env_variables',
     ], 'Send request');
     $this->assertSession()->pageTextContains('Connection successful');
 
     $this->drupalPostForm('/admin/config/apigee-edge/settings', [
-      'key' => 'key_test_env_variables',
+      'key_basic_auth' => 'key_test_env_variables',
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('The configuration options have been saved');
 
     $this->assertEquals($this->config('apigee_edge.client')->get('active_key'), 'key_test_env_variables');
+    $this->assertEmpty($this->config('apigee_edge.client')->get('active_key_oauth_token'));
     $this->container->get('apigee_edge.sdk_connector')->testConnection();
 
     // Test key stored in private file.
     $this->drupalPostForm('/admin/config/apigee-edge/settings', [
-      'key' => 'key_test_private_file',
+      'key_basic_auth' => 'key_test_private_file',
     ], 'Send request');
     $this->assertSession()->pageTextContains('Connection successful');
 
     $this->drupalPostForm('/admin/config/apigee-edge/settings', [
-      'key' => 'key_test_private_file',
+      'key_basic_auth' => 'key_test_private_file',
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('The configuration options have been saved');
 
     $this->assertEquals($this->config('apigee_edge.client')->get('active_key'), 'key_test_private_file');
+    $this->assertEmpty($this->config('apigee_edge.client')->get('active_key_oauth_token'));
     $this->container->get('apigee_edge.sdk_connector')->testConnection();
 
     // Test wrong key stored in private file.
     $this->drupalPostForm('/admin/config/apigee-edge/settings', [
-      'key' => 'key_wrong_test_private_file',
+      'key_basic_auth' => 'key_wrong_test_private_file',
     ], 'Send request');
     $this->assertSession()->pageTextContains('Connection failed.');
 
     $this->drupalPostForm('/admin/config/apigee-edge/settings', [
-      'key' => 'key_wrong_test_private_file',
+      'key_basic_auth' => 'key_wrong_test_private_file',
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('Connection failed.');
 
     $this->assertEquals($this->config('apigee_edge.client')->get('active_key'), 'key_test_private_file');
+    $this->assertEmpty($this->config('apigee_edge.client')->get('active_key_oauth_token'));
+    $this->container->get('apigee_edge.sdk_connector')->testConnection();
+
+    // Add new Apigee Edge OAuth token key
+    // with private file provider.
+    $key = Key::create([
+      'id' => 'key_test_oauth_token',
+      'label' => 'Test OAuth token key in private file',
+      'key_type' => 'apigee_edge_oauth_token',
+      'key_provider' => 'apigee_edge_private_file',
+      'key_input' => 'none',
+    ]);
+    $key->save();
+
+    // Add new Apigee Edge OAuth key
+    // with environment variables provider.
+    $key = Key::create([
+      'id' => 'key_test_oauth_env_variables',
+      'label' => 'Test OAuth key in environment variables',
+      'key_type' => 'apigee_edge_oauth',
+      'key_provider' => 'apigee_edge_environment_variables',
+      'key_input' => 'apigee_edge_oauth_input',
+    ]);
+    $key->save();
+
+    // Add new Apigee Edge OAuth key
+    // with private file provider.
+    $key = Key::create([
+      'id' => 'key_test_oauth_private_file',
+      'label' => 'Test OAuth key in private file',
+      'key_type' => 'apigee_edge_oauth',
+      'key_provider' => 'apigee_edge_private_file',
+      'key_input' => 'apigee_edge_oauth_input',
+    ]);
+    $key->setKeyValue(Json::encode($this->credentials));
+    $key->save();
+
+    // Add new, wrong Apigee Edge OAuth key
+    // with private file provider.
+    $key = Key::create([
+      'id' => 'key_wrong_test_oauth_private_file',
+      'label' => 'Wrong test OAuth key in private file',
+      'key_type' => 'apigee_edge_oauth',
+      'key_provider' => 'apigee_edge_private_file',
+      'key_input' => 'apigee_edge_oauth_input',
+    ]);
+    $key->setKeyValue(Json::encode([
+      'endpoint' => 'malformed',
+      'organization' => 'malformed',
+      'username' => 'malformed@example.com',
+      'password' => 'malformed',
+    ]));
+    $key->save();
+
+    // Visit authentication form and check API connection with the stored keys.
+    $this->drupalGet('/admin/config/apigee-edge/settings');
+    $this->assertSession()->pageTextContains('Test key in environment variables');
+    $this->assertSession()->pageTextContains('Test key in private file');
+    $this->assertSession()->pageTextContains('Wrong test key in private file');
+    $this->getSession()->getPage()->selectFieldOption('edit-key-type', 'apigee_edge_oauth');
+    $this->assertSession()->pageTextContains('Test OAuth token key in private file');
+    $this->assertSession()->pageTextContains('Test OAuth key in environment variables');
+    $this->assertSession()->pageTextContains('Test OAuth key in private file');
+    $this->assertSession()->pageTextContains('Wrong test Oauth key in private file');
+
+    // Test key stored in environment variables.
+    $this->drupalPostForm('/admin/config/apigee-edge/settings', [
+      'key_type' => 'apigee_edge_oauth',
+      'key_oauth' => 'key_test_oauth_env_variables',
+      'key_oauth_token' => 'key_test_oauth_token',
+    ], 'Send request');
+    $this->assertSession()->pageTextContains('Connection successful');
+
+    $this->drupalPostForm('/admin/config/apigee-edge/settings', [
+      'key_type' => 'apigee_edge_oauth',
+      'key_oauth' => 'key_test_oauth_env_variables',
+      'key_oauth_token' => 'key_test_oauth_token',
+    ], 'Save configuration');
+    $this->assertSession()->pageTextContains('The configuration options have been saved');
+
+    $this->assertEquals($this->config('apigee_edge.client')->get('active_key'), 'key_test_oauth_env_variables');
+    $this->assertEquals($this->config('apigee_edge.client')->get('active_key_oauth_token'), 'key_test_oauth_token');
+    $this->container->get('apigee_edge.sdk_connector')->testConnection();
+
+    // Test key stored in private file.
+    $this->drupalPostForm('/admin/config/apigee-edge/settings', [
+      'key_type' => 'apigee_edge_oauth',
+      'key_oauth' => 'key_test_oauth_private_file',
+      'key_oauth_token' => 'key_test_oauth_token',
+    ], 'Send request');
+    $this->assertSession()->pageTextContains('Connection successful');
+
+    $this->drupalPostForm('/admin/config/apigee-edge/settings', [
+      'key_type' => 'apigee_edge_oauth',
+      'key_oauth' => 'key_test_oauth_private_file',
+      'key_oauth_token' => 'key_test_oauth_token',
+    ], 'Save configuration');
+    $this->assertSession()->pageTextContains('The configuration options have been saved');
+
+    $this->assertEquals($this->config('apigee_edge.client')->get('active_key'), 'key_test_oauth_private_file');
+    $this->assertEquals($this->config('apigee_edge.client')->get('active_key_oauth_token'), 'key_test_oauth_token');
+    $this->container->get('apigee_edge.sdk_connector')->testConnection();
+
+    // Test wrong key stored in private file.
+    $this->drupalPostForm('/admin/config/apigee-edge/settings', [
+      'key_type' => 'apigee_edge_oauth',
+      'key_oauth' => 'key_wrong_test_oauth_private_file',
+      'key_oauth_token' => 'key_test_oauth_token',
+    ], 'Send request');
+    $this->assertSession()->pageTextContains('Connection failed.');
+
+    $this->drupalPostForm('/admin/config/apigee-edge/settings', [
+      'key_type' => 'apigee_edge_oauth',
+      'key_oauth' => 'key_wrong_test_oauth_private_file',
+      'key_oauth_token' => 'key_test_oauth_token',
+    ], 'Save configuration');
+    $this->assertSession()->pageTextContains('Connection failed.');
+
+    $this->assertEquals($this->config('apigee_edge.client')->get('active_key'), 'key_test_oauth_private_file');
+    $this->assertEquals($this->config('apigee_edge.client')->get('active_key_oauth_token'), 'key_test_oauth_token');
     $this->container->get('apigee_edge.sdk_connector')->testConnection();
 
     Key::load('key_test_env_variables')->delete();
     Key::load('key_test_private_file')->delete();
     Key::load('key_wrong_test_private_file')->delete();
+    Key::load('key_test_oauth_token')->delete();
+    Key::load('key_test_oauth_env_variables')->delete();
+    Key::load('key_test_oauth_private_file')->delete();
+    Key::load('key_wrong_test_oauth_private_file')->delete();
     $this->drupalGet('/admin/config/apigee-edge/settings');
     $this->assertEmpty($this->config('apigee_edge.client')->get('active_key'));
-    $this->assertSession()->pageTextContains('There is no available key for connecting to Apigee Edge server. Create a new key.');
-    $this->assertSession()->elementNotExists('css', '#edit-key--wrapper');
+    $this->assertEmpty($this->config('apigee_edge.client')->get('active_key_oauth_token'));
+    $this->assertSession()->pageTextContains('There is no available basic authentication key for connecting to Apigee Edge.');
+    $this->getSession()->getPage()->selectFieldOption('edit-key-type', 'apigee_edge_oauth');
+    $this->assertSession()->pageTextContains('There is no available OAuth (SAML) key for connecting to Apigee Edge.');
+    $this->assertSession()->pageTextContains('There is no available OAuth (SAML) token key for connecting to Apigee Edge.');
 
     // Only Apigee Edge keys are usable in SDK connector.
     $this->expectExceptionMessage('Type of default_key key does not implement EdgeKeyTypeInterface.');
