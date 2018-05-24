@@ -46,39 +46,38 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
   /**
    * {@inheritdoc}
    */
-  protected function get(KeyInterface $key, string $field) {
-    if (($value = $key->getKeyValues()[$field]) === NULL) {
-      throw new KeyValueMalformedException($field);
-    }
-    return $value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getEndpoint(KeyInterface $key): string {
-    return $this->get($key, 'endpoint');
+  public function getEndpoint(KeyInterface $key): ?string {
+    return $key->getKeyValues()['endpoint'] ?? NULL;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getOrganization(KeyInterface $key): string {
-    return $this->get($key, 'organization');
+    if ($key->getKeyValues()['organization'] === NULL) {
+      throw new KeyValueMalformedException('organization');
+    }
+    return $key->getKeyValues()['organization'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getUsername(KeyInterface $key): string {
-    return $this->get($key, 'username');
+    if ($key->getKeyValues()['username'] === NULL) {
+      throw new KeyValueMalformedException('username');
+    }
+    return $key->getKeyValues()['username'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getPassword(KeyInterface $key): string {
-    return $this->get($key, 'password');
+    if ($key->getKeyValues()['password'] === NULL) {
+      throw new KeyValueMalformedException('password');
+    }
+    return $key->getKeyValues()['password'];
   }
 
 }

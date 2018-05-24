@@ -1,3 +1,12 @@
-/.env
+# Ignore all hidden files exept these.
+.*
+!/.gitignore
+!/.gitattributes
+!/.editorconfig
+!/.travis.yml
+!.gitkeep
+
+# Other ignored paths and files.
 /build
 /vendor
+composer.lock

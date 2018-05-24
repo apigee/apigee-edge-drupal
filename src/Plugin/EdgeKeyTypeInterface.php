@@ -33,10 +33,10 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
    *
-   * @return string
+   * @return string|null
    *   The API endpoint.
    */
-  public function getEndpoint(KeyInterface $key) : string;
+  public function getEndpoint(KeyInterface $key): ?string;
 
   /**
    * Gets the API organization.
@@ -47,7 +47,7 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
    * @return string
    *   The API organization.
    */
-  public function getOrganization(KeyInterface $key) : string;
+  public function getOrganization(KeyInterface $key): string;
 
   /**
    * Gets the API username.
@@ -58,7 +58,7 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
    * @return string
    *   The API username.
    */
-  public function getUsername(KeyInterface $key) : string;
+  public function getUsername(KeyInterface $key): string;
 
   /**
    * Gets the API password.
@@ -69,6 +69,6 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
    * @return string
    *   The API password.
    */
-  public function getPassword(KeyInterface $key) : string;
+  public function getPassword(KeyInterface $key): string;
 
 }
