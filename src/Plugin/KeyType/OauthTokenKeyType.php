@@ -58,6 +58,10 @@ use Drupal\key\Plugin\KeyTypeBase;
  *       "expires_in" = {
  *         "label" = @Translation("Expires in"),
  *         "required" = false
+ *       },
+ *       "expires" = {
+ *         "label" = @Translation("Expires"),
+ *         "required" = false
  *       }
  *     }
  *   }
@@ -126,6 +130,26 @@ class OauthTokenKeyType extends KeyTypeBase implements EdgeOauthTokenKeyTypeInte
    */
   public function getExpiresIn(KeyInterface $key): ?int {
     return $key->getKeyValues()['expires_in'] ?? NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getExpires(KeyInterface $key): ?int {
+    return $key->getKeyValues()['expires'] ?? NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   *   Thrown in case of an error during the entity save process.
+   */
+  public function resetExpires(KeyInterface $key) {
+    $key_value = $this->unserialize($key->getKeyValue());
+    $key_value['expires'] = 0;
+    $key->setKeyValue($this->serialize($key_value));
+    $key->save();
   }
 
 }

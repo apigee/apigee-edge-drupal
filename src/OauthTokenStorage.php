@@ -31,18 +31,10 @@ use Drupal\key\KeyInterface;
 class OauthTokenStorage implements OauthTokenStorageInterface {
 
   /**
-   * The timestamp when the token expires.
+   * Ensures that token gets refreshed earlier than it expires.
    *
-   * This value is calculated from "expires_in" value which is the lifetime of the access token in seconds.
-   *
-   * @var int
-   */
-  protected $expires = 0;
-
-  /**
-   * Number of seconds extracted from token's expiration date when hasExpired() calculates.
-   *
-   * This ensures that token gets refreshed earlier than it expires.
+   * Number of seconds extracted from token's expiration date when
+   * hasExpired() calculates.
    *
    * @var int
    */
@@ -67,6 +59,10 @@ class OauthTokenStorage implements OauthTokenStorageInterface {
    *
    * @param \Drupal\key\KeyInterface $key
    *   The OAuth token key entity.
+   *
+   * @throws \InvalidArgumentException
+   *   An InvalidArgumentException is thrown if the key type
+   *   does not implement EdgeOauthTokenKeyTypeInterface.
    */
   public function __construct(KeyInterface $key) {
     if (!($key->getKeyType() instanceof EdgeOauthTokenKeyTypeInterface)) {
@@ -95,7 +91,7 @@ class OauthTokenStorage implements OauthTokenStorageInterface {
    * {@inheritdoc}
    */
   public function getExpires(): int {
-    return $this->expires;
+    return $this->keyType->getExpires($this->key) ?? 0;
   }
 
   /**
@@ -113,7 +109,7 @@ class OauthTokenStorage implements OauthTokenStorageInterface {
    * {@inheritdoc}
    */
   public function markExpired(): void {
-    $this->expires = 0;
+    $this->keyType->resetExpires($this->key);
   }
 
   /**
@@ -138,15 +134,14 @@ class OauthTokenStorage implements OauthTokenStorageInterface {
    */
   public function saveToken(array $data): void {
     try {
+      if ($this->keyType->getExpiresIn($this->key) !== NULL && $this->keyType->getExpiresIn($this->key) !== 0) {
+        $data['expires'] = $data['expires_in'] + time();
+      }
       $this->key->setKeyValue($this->keyType->serialize($data));
       $this->key->save();
     }
     catch (EntityStorageException $exception) {
       throw new OauthAuthenticationException('Could not save the OAuth token data.');
-    }
-
-    if ($this->keyType->getExpiresIn($this->key) !== NULL && $this->keyType->getExpiresIn($this->key) !== 0) {
-      $this->expires = $this->keyType->getExpiresIn($this->key) + time();
     }
   }
 

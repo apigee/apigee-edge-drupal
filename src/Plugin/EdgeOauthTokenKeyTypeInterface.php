@@ -72,7 +72,7 @@ interface EdgeOauthTokenKeyTypeInterface extends KeyTypeMultivalueInterface {
   public function getTokenType(KeyInterface $key): ?string;
 
   /**
-   * Gets the OAuth expiration time.
+   * Gets the OAuth expiration time in seconds.
    *
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
@@ -81,5 +81,24 @@ interface EdgeOauthTokenKeyTypeInterface extends KeyTypeMultivalueInterface {
    *   The OAuth expiration time.
    */
   public function getExpiresIn(KeyInterface $key): ?int;
+
+  /**
+   * Gets the OAuth expiration timestamp.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
+   *
+   * @return int|null
+   *   The OAuth expiration time.
+   */
+  public function getExpires(KeyInterface $key): ?int;
+
+  /**
+   * Resets the  OAuth expiration timestamp.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
+   */
+  public function resetExpires(KeyInterface $key);
 
 }
