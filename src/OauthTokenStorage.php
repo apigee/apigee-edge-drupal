@@ -134,9 +134,7 @@ class OauthTokenStorage implements OauthTokenStorageInterface {
    */
   public function saveToken(array $data): void {
     try {
-      if ($this->keyType->getExpiresIn($this->key) !== NULL && $this->keyType->getExpiresIn($this->key) !== 0) {
-        $data['expires'] = $data['expires_in'] + time();
-      }
+      $data['expires'] = $data['expires_in'] + time();
       $this->key->setKeyValue($this->keyType->serialize($data));
       $this->key->save();
     }
