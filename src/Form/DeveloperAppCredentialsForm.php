@@ -53,12 +53,15 @@ class DeveloperAppCredentialsForm extends ConfigFormBase {
       '#collapsible' => FALSE,
     ];
 
+    // The value of -1 indicates no set expiry. But the value of 0 is not
+    // acceptable by the server (InvalidValueForExpiresIn),
+    // so 0 is transformed to -1 while saving the developer app.
     $form['wrapper']['credential_lifetime'] = [
       '#type' => 'number',
       '#title' => $this->t('Default API key lifetime in days'),
       '#default_value' => $this->config('apigee_edge.developer_app_settings')->get('credential_lifetime'),
-      '#description' => $this->t('When an app is newly-created, this is the default number of days until its API Key expires. A value of -1 indicates no set expiry.'),
-      '#min' => -1,
+      '#description' => $this->t('When an app is newly-created, this is the default number of days until its API Key expires. A value of 0 indicates no set expiry.'),
+      '#min' => 0,
       '#required' => TRUE,
     ];
 

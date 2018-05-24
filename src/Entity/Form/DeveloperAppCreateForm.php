@@ -197,37 +197,42 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Core\TempStore\TempStoreException
    */
   public function save(array $form, FormStateInterface $form_state) {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
     $app = $this->entity;
     $app->save();
 
-    $dacc = new DeveloperAppCredentialController(
-      $this->sdkConnector->getOrganization(),
-      $app->getDeveloperId(),
-      $app->getName(),
-      $this->sdkConnector->getClient()
-    );
-
-    /** @var \Apigee\Edge\Api\Management\Entity\AppCredential[] $credentials */
-    $credentials = $app->getCredentials();
-    /** @var \Apigee\Edge\Api\Management\Entity\AppCredential $credential */
-    $credential = reset($credentials);
-    // Delete auto-generated credential.
-    $dacc->delete($credential->id());
-
-    // Create a new credential using the selected products if available
-    // and the credential lifetime value from the config.
-    $products = [];
     if ($this->config('apigee_edge.common_app_settings')->get('associate_apps')) {
+      $dacc = new DeveloperAppCredentialController(
+        $this->sdkConnector->getOrganization(),
+        $app->getDeveloperId(),
+        $app->getName(),
+        $this->sdkConnector->getClient()
+      );
+
+      /** @var \Apigee\Edge\Api\Management\Entity\AppCredential[] $credentials */
+      $credentials = $app->getCredentials();
+      /** @var \Apigee\Edge\Api\Management\Entity\AppCredential $credential */
+      $credential = reset($credentials);
+
+      $credential_lifetime = $this->config('apigee_edge.developer_app_settings')->get('credential_lifetime');
       $products = array_values(array_filter((array) $form_state->getValue('api_products')));
+
+      if ($credential_lifetime === 0 && !empty($products)) {
+        $dacc->addProducts($credential->id(), $products);
+      }
+      elseif ($credential_lifetime !== 0 && !empty($products)) {
+        $dacc->delete($credential->id());
+        // The value of -1 indicates no set expiry. But the value of 0 is not
+        // acceptable by the server (InvalidValueForExpiresIn).
+        $credential_lifetime = $credential_lifetime === 0 ? -1 : $credential_lifetime * 86400000;
+        $dacc->generate($products, $app->getAttributes(), $app->getCallbackUrl(), [], $credential_lifetime);
+      }
     }
-    $credential_lifetime = $this->config('apigee_edge.developer_app_settings')->get('credential_lifetime');
-    $credential_lifetime = $credential_lifetime === -1 ? $credential_lifetime : $credential_lifetime * 86400000;
-    $abc = $app->getAttributes();
-    $abc->add('callbackUrl', 'alma');
-    $dacc->generate($products, $app->getAttributes(), $app->getCallbackUrl(), [], $credential_lifetime);
 
     $form_state->setRedirectUrl($this->getRedirectUrl());
   }
