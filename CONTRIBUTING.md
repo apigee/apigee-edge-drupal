@@ -27,7 +27,7 @@ information on using pull requests.
 This project follows [Google's Open Source Community
 Guidelines](https://opensource.google.com/conduct/).
 
-# Suggested contributing workflow
+# Suggested contributing workflow
 
 ## For start
 * Fork this project on Github.
