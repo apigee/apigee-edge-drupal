@@ -144,6 +144,7 @@ class SDKConnector implements SDKConnectorInterface {
    */
   protected function getHttpClientConfiguration(ConfigFactoryInterface $config_factory): array {
     return [
+      'connect_timeout' => $config_factory->get('apigee_edge.client')->get('http_client_connect_timeout'),
       'timeout' => $config_factory->get('apigee_edge.client')->get('http_client_timeout'),
       'proxy' => $config_factory->get('apigee_edge.client')->get('http_client_proxy'),
     ];
