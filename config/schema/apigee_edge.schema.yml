@@ -21,8 +21,10 @@ apigee_edge.client:
       type: string
     active_key_oauth_token:
       type: string
+    http_client_connect_timeout:
+      type: float
     http_client_timeout:
-      type: integer
+      type: float
     http_client_proxy:
       type: string
 
