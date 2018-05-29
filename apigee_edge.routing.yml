@@ -64,7 +64,7 @@ apigee_edge.settings.developer.sync:
     _permission: 'administer apigee edge'
 
 apigee_edge.settings.developer.cache:
-  path: '/admin/config/apigee-edge/developer-settings/cache'
+  path: '/admin/config/apigee-edge/developer-settings/caching'
   defaults:
     _form: '\Drupal\apigee_edge\Form\DeveloperCachingForm'
     _title: 'Caching'
