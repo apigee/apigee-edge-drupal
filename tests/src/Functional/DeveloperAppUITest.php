@@ -121,7 +121,6 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
       'associate_apps' => TRUE,
       'user_select' => TRUE,
       'multiple_products' => TRUE,
-      'require' => FALSE,
     ];
     $multiple_products = $data['multiple_products'];
     unset($data['multiple_products']);
@@ -231,6 +230,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->postCreateAppForm([
       'name' => $name,
       'displayName[0][value]' => $name,
+      "api_products[{$this->products[0]->getName()}]" => $this->products[0]->getName(),
     ]);
     $this->assertSession()->pageTextContains($name);
   }
@@ -279,6 +279,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->postCreateAppForm([
       'name' => $name,
       'displayName[0][value]' => $name,
+      "api_products[{$this->products[0]->getName()}]" => $this->products[0]->getName(),
     ]);
     $this->assertDeveloperAppExists($name);
 
@@ -297,6 +298,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->postCreateAppForm([
       'name' => $name,
       'displayName[0][value]' => $name,
+      "api_products[{$this->products[0]->getName()}]" => $this->products[0]->getName(),
     ]);
 
     $second_user = $this->createAccount(static::$permissions);
@@ -316,9 +318,8 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    */
   public function testCreateAppWithProducts() {
     $this->products[] = $this->createProduct();
-    $this->assertAppCreationWithProduct([$this->products[0]], TRUE, FALSE, TRUE);
+    $this->assertAppCreationWithProduct([$this->products[0]], FALSE, TRUE);
     $this->assertAppCreationWithProduct([$this->products[0], $this->products[1]]);
-    $this->assertAppCreationWithProduct([]);
   }
 
   /**
@@ -414,8 +415,9 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   /**
    * Creates an app with a single product and then removes the product.
    */
-  public function testAppCrudSingleProductRemove() {
+  public function testAppCrudSingleProductChange() {
     $this->submitAdminForm(['display_as_select' => TRUE, 'multiple_products' => FALSE]);
+    $this->products[] = $this->createProduct();
 
     $this->assertAppCrud(
       function (array $data): array {
@@ -426,11 +428,12 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
         $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
       },
       function (array $data, string $credential_id): array {
-        $data["credential[{$credential_id}][api_products]"] = '';
+        $data["credential[{$credential_id}][api_products]"] = $this->products[1]->getName();
         return $data;
       },
       function () {
         $this->assertSession()->pageTextNotContains($this->products[0]->getDisplayName());
+        $this->assertSession()->pageTextContains($this->products[1]->getDisplayName());
       }
     );
   }
@@ -441,13 +444,15 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   public function testAppCrudSingleProductAdd() {
     $this->submitAdminForm(['multiple_products' => FALSE]);
 
+    $this->products[] = $this->createProduct();
+
     $this->assertAppCrud(
       function (array $data): array {
-        $data['api_products'] = '';
+        $data['api_products'] = $this->products[1]->getName();
         return $data;
       },
       function () {
-        $this->assertSession()->pageTextNotContains($this->products[0]->getDisplayName());
+        $this->assertSession()->pageTextContains($this->products[1]->getDisplayName());
       },
       function (array $data, string $credential_id): array {
         $data["credential[{$credential_id}][api_products]"] = $this->products[0]->getName();
@@ -481,13 +486,15 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
         $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
       },
       function (array $data, string $credential_id): array {
-        $data["credential[{$credential_id}][api_products][]"] = [];
+        $data["credential[{$credential_id}][api_products][]"] = [
+          $this->products[2]->getName(),
+        ];
         return $data;
       },
       function () {
         $this->assertSession()->pageTextNotContains($this->products[0]->getDisplayName());
         $this->assertSession()->pageTextNotContains($this->products[1]->getDisplayName());
-        $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
+        $this->assertSession()->pageTextContains($this->products[2]->getDisplayName());
       }
     );
   }
@@ -502,16 +509,18 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
     $this->assertAppCrud(
       function (array $data): array {
+        $data["api_products[{$this->products[2]->getName()}]"] = $this->products[2]->getName();
         return $data;
       },
       function () {
         $this->assertSession()->pageTextNotContains($this->products[0]->getDisplayName());
         $this->assertSession()->pageTextNotContains($this->products[1]->getDisplayName());
-        $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
+        $this->assertSession()->pageTextContains($this->products[2]->getDisplayName());
       },
       function (array $data, string $credential_id): array {
         $data["credential[{$credential_id}][api_products][{$this->products[0]->getName()}]"] = $this->products[0]->getName();
         $data["credential[{$credential_id}][api_products][{$this->products[1]->getName()}]"] = $this->products[1]->getName();
+        $data["credential[{$credential_id}][api_products][{$this->products[2]->getName()}]"] = "";
         return $data;
       },
       function () {
@@ -660,17 +669,14 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    * Creates an app and assigns products to it.
    *
    * @param \Drupal\apigee_edge\Entity\ApiProduct[] $products
-   * @param bool $require
-   *   Set the product required on the form.
    * @param bool $multiple
    *   Allow submitting multiple products.
    * @param bool $display_as_select
    *   Display the products as a select box.
    */
-  protected function assertAppCreationWithProduct(array $products = [], bool $require = FALSE, bool $multiple = TRUE, bool $display_as_select = FALSE) {
+  protected function assertAppCreationWithProduct(array $products = [], bool $multiple = TRUE, bool $display_as_select = FALSE) {
     $this->submitAdminForm([
       'multiple_products' => $multiple,
-      'require' => $require,
       'display_as_select' => $display_as_select,
     ]);
     $name = strtolower($this->randomMachineName());

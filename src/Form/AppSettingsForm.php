@@ -86,20 +86,6 @@ class AppSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    $form['api_product']['require'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Require at least one product'),
-      '#default_value' => $generalConfig->get('require'),
-      '#states' => [
-        'visible' => [
-          ':input[name="user_select"]' => [
-            'visible' => TRUE,
-            'checked' => TRUE,
-          ],
-        ],
-      ],
-    ];
-
     /** @var string[] $default_products */
     $default_products = $generalConfig->get('default_products') ?: [];
     $product_list = [];
@@ -153,7 +139,6 @@ class AppSettingsForm extends ConfigFormBase {
       'display_as_select',
       'associate_apps',
       'user_select',
-      'require',
     ];
 
     foreach ($config_names as $name) {

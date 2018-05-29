@@ -40,8 +40,6 @@ apigee_edge.common_app_settings:
       type: boolean
     multiple_products:
       type: boolean
-    require:
-      type: boolean
     required_base_fields:
       type: sequence
       sequence:

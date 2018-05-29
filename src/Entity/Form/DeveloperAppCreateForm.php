@@ -114,7 +114,6 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
     ];
 
     if ($config->get('associate_apps')) {
-      $required = $config->get('require');
       $user_select = (bool) $config->get('user_select');
       $form['product'] = [
         '#type' => 'fieldset',
@@ -123,7 +122,7 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
         '#access' => $user_select,
         '#weight' => 100,
         '#attributes' => [
-          'class' => $required ? ['form-required'] : [],
+          'class' => ['form-required'],
         ],
       ];
 
@@ -140,7 +139,7 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
       $form['product']['api_products'] = [
         '#title' => $this->t('API Products'),
         '#title_display' => 'invisible',
-        '#required' => $required,
+        '#required' => TRUE,
         '#options' => $product_list,
         '#access' => $user_select,
         '#default_value' => $multiple ? $default_products : (string) reset($default_products),
