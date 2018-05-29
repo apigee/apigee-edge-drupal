@@ -844,6 +844,12 @@ function template_preprocess_app_credential(array &$variables) {
       }
     }
 
+    // Below, $value is expected to be a string in some places, and it might be
+    // TranslatableMarkup or a string. If it is not a string, then in some
+    // cases warnings will be generated. This way it is always a string,
+    // removing ambiguity.
+    $value = (string) $value;
+
     if (in_array($property, $secret_properties)) {
       $variables['primary_wrapper'][$property]['value'] = [
         '#type' => 'html_tag',

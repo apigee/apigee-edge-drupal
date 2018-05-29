@@ -137,7 +137,6 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
         }
 
         $multiple = $config->get('multiple_products');
-        $required = $config->get('require');
         $current_products = [];
         foreach ($credential->getApiProducts() as $product) {
           $current_products[] = $product->getApiproduct();
@@ -145,7 +144,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
 
         $form['credential'][$credential->getConsumerKey()]['api_products'] = [
           '#title' => $this->entityTypeManager->getDefinition('api_product')->getPluralLabel(),
-          '#required' => $required,
+          '#required' => TRUE,
           '#options' => $product_list,
         ];
 
@@ -153,12 +152,10 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
           $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = $current_products;
         }
         else {
-          if ($required) {
-            $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = reset($current_products) ?: NULL;
+          if (count($current_products) > 1) {
+            $this->messenger()->addWarning(t('This app has multiple products, but only a single product is allowed to be selected.'));
           }
-          else {
-            $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = reset($current_products) ?: '';
-          }
+          $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = reset($current_products) ?: NULL;
         }
 
         if ($config->get('display_as_select')) {
@@ -173,7 +170,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
           }
           else {
             $form['credential'][$credential->getConsumerKey()]['api_products']['#type'] = 'radios';
-            $form['credential'][$credential->getConsumerKey()]['api_products']['#options'] = $required ? $product_list : ['' => $this->t('N/A')] + $product_list;
+            $form['credential'][$credential->getConsumerKey()]['api_products']['#options'] = $product_list;
           }
         }
       }

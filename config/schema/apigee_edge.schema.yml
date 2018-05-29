@@ -40,8 +40,6 @@ apigee_edge.common_app_settings:
       type: boolean
     multiple_products:
       type: boolean
-    require:
-      type: boolean
     required_base_fields:
       type: sequence
       sequence:
@@ -156,3 +154,16 @@ key.provider.apigee_edge_environment_variables:
 
 key.provider.apigee_edge_private_file:
   type: sequence
+
+# Dangerous settings. Enabling these might lead to data corruption.
+#
+# Mostly used for testing, or in specific scenarios.
+apigee_edge.dangerzone:
+  type: config_object
+  label: 'Dangerous settings'
+  mapping:
+
+    # Allows changing whether single or multiple products can be assigned for an app,
+    # even when content exists.
+    skip_developer_app_settings_validation:
+      type: boolean
