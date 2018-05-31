@@ -21,8 +21,6 @@ namespace Drupal\apigee_edge\Plugin;
 
 /**
  * Interface ApigeeFieldStorageFormatInterface.
- *
- * @package Drupal\apigee_edge\Plugin
  */
 interface ApigeeFieldStorageFormatInterface {
 

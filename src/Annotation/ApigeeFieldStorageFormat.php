@@ -49,7 +49,7 @@ class ApigeeFieldStorageFormat extends Plugin {
   /**
    * List of field types where this plugin is appropriate.
    *
-   * If one item is '*', then it will be applied on any field type.
+   * If one item is '*' then it will be applied on any field type.
    *
    * @var array
    */
@@ -58,7 +58,7 @@ class ApigeeFieldStorageFormat extends Plugin {
   /**
    * Weight of this plugin.
    *
-   * The plugins will be sorted by weight, and will be tried to be applied in
+   * The plugins will be sorted by weight and will be tried to be applied in
    * that order.
    *
    * @var int

@@ -38,6 +38,12 @@ use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormatInterface;
  *   },
  *   weight = -1,
  * )
+ *
+ * This class uses an internal method to generate the CSV file that builds on
+ * the CSV functions in PHP. This is because the CsvEncoder in Symfony always
+ * writes the header.
+ *
+ * @see https://github.com/symfony/symfony/issues/27447
  */
 class CSV implements ApigeeFieldStorageFormatInterface {
 

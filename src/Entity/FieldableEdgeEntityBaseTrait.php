@@ -331,7 +331,7 @@ trait FieldableEdgeEntityBaseTrait {
    */
   protected function findAttributeStorageFormatter(string $field_name): ?ApigeeFieldStorageFormatInterface {
     /** @var \Drupal\Core\Field\FieldDefinitionInterface[] $bundle_fields */
-    $bundle_fields = \Drupal::getContainer()->get('entity_field.manager')->getFieldDefinitions($this->entityTypeId, $this->bundle());
+    $bundle_fields = self::getFieldDefinitions();
     if (!isset($bundle_fields[$field_name])) {
       return NULL;
     }
