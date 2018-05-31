@@ -1,0 +1,334 @@
+<?php
+
+/**
+ * @file
+ * Module file for Apigee Edge: API Product RBAC.
+ */
+
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Session\AccountInterface;
+
+define('APIGEE_EDGE_APIPRODUCT_RBAC_ATTRIBUTE_VALUE_DELIMITER', ', ');
+
+/**
+ * Implements hook_module_implements_alter().
+ */
+function apigee_edge_apiproduct_rbac_module_implements_alter(&$implementations, $hook) {
+  if ($hook == 'api_product_access') {
+    // Disable API Product access provided by Apigee Edge module when
+    // this module is enabled.
+    unset($implementations['apigee_edge']);
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_access().
+ *
+ * Supported operations: view, view label, assign.
+ */
+function apigee_edge_apiproduct_rbac_api_product_access(EntityInterface $entity, $operation, AccountInterface $account) {
+  /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $entity */
+  // We only control view and assign operations.
+  if (!in_array($operation, ['view', 'view label', 'assign'])) {
+    // We have to return allowed, because neutral response still means
+    // denied if there is no other module that would return allowed for the
+    // entity specifically.
+    // @see Drupal\Core\Access\AccessResultInterface::isAllowed()
+    // @see Drupal\Core\Entity\EntityAccessControlHandler::access()
+    return AccessResult::allowed();
+  }
+
+  if ($account->hasPermission('bypass api product access control')) {
+    return AccessResult::allowed();
+  }
+
+  $config = \Drupal::config('apigee_edge_apiproduct_rbac.settings');
+  $rbac_attribute_name = $config->get('attribute_name');
+
+  $result = AccessResult::allowed();
+
+  // Attribute exists on the API product and it is not empty.
+  if (!empty($entity->getAttributeValue($rbac_attribute_name))) {
+    $roles = explode(APIGEE_EDGE_APIPRODUCT_RBAC_ATTRIBUTE_VALUE_DELIMITER, $entity->getAttributeValue($rbac_attribute_name));
+
+    // User may not have access to this API product based on the current
+    // access control attribute value but we should still grant him/her access
+    // if s/he has a developer app in association with this API product.
+    // We should not provide him/her access if operation is "assign"
+    // in general just because s/he has an app with the API product.
+    // Displaying these products should be solved on the form level always.
+    if (!empty(array_intersect($roles, $account->getRoles())) || ($operation === 'assign' && _apigee_edge_user_has_an_app_with_product($entity->getName(), $account))) {
+      $result = AccessResult::allowed();
+    }
+    else {
+      $result = AccessResult::forbidden(sprintf('%s user does not have any of these required roles: %s.', $account->getEmail(), rtrim(implode(APIGEE_EDGE_APIPRODUCT_RBAC_ATTRIBUTE_VALUE_DELIMITER, $roles))));
+
+    }
+  }
+  // Attribute is missing from the API product but the user already has an
+  // app with this API product. (Maybe someone assigned this API product
+  // to developer's app on Apigee Edge.) We have to grant view access to the
+  // API product otherwise s/he could not see it an developer app
+  // credentials list for example.
+  elseif ($operation !== 'assign' && _apigee_edge_user_has_an_app_with_product($entity->getName(), $account)) {
+    $result = AccessResult::allowed();
+  }
+  elseif (empty(array_intersect($config->get('grant_access_if_attribute_missing'), $account->getRoles()))) {
+    if (empty($config->get('grant_access_if_attribute_missing'))) {
+      $reason = "{$rbac_attribute_name}attribute on the API product is missing or empty and in this case no roles can access to this API product..";
+    }
+    else {
+      $reason = sprintf('%s attribute on the API product is missing or empty and user does not have any of these roles: %s.', $rbac_attribute_name, implode(', ', $config->get('grant_access_if_attribute_missing')));
+    }
+    $result = AccessResult::forbidden($reason);
+  }
+
+  return $result;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Adds RBAC settings to the API product access control form.
+ */
+function apigee_edge_apiproduct_rbac_form_apigee_edge_api_product_access_control_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $config = \Drupal::config('apigee_edge_apiproduct_rbac.settings');
+  $current_rbac_attr_name = $config->get('attribute_name');
+  $api_product_storage = \Drupal::entityTypeManager()->getStorage('api_product');
+  // Parent form has already calculated these for us.
+  $role_names = $form['access']['role_names']['#value'];
+  $roles_with_bypass_perm = $form['access']['roles_with_bypass']['#value'];
+
+  $form['access']['rbac-warning'] = [
+    '#theme' => 'status_messages',
+    '#message_list' => ['warning' => [t('Access by visibility is disabled by <em>Apigee Edge: API Product RBAC</em> module.')]],
+    '#weight' => -100,
+  ];
+  $form['access']['#open'] = FALSE;
+  $form['access']['visibility']['#access'] = FALSE;
+
+  $form['rbac'] = [
+    '#type' => 'details',
+    '#title' => t('Access by API product'),
+    '#description' => t('Allows to grant view access to an API product only to certain roles.'),
+    '#open' => TRUE,
+    '#tree' => TRUE,
+  ];
+
+  $form['rbac']['attribute_name'] = [
+    '#type' => 'textfield',
+    '#title' => t('Attribute name'),
+    '#description' => t('Name of the attribute on API products that stores role assignments.'),
+    '#default_value' => $config->get('attribute_name'),
+    '#required' => TRUE,
+  ];
+
+  $form['rbac']['original_attribute_name'] = [
+    '#type' => 'value',
+    '#value' => $config->get('attribute_name'),
+  ];
+
+  // Exclude roles with bypass permissions.
+  $grant_access_options = array_filter($form['access']['role_names']['#value'], function ($rid) use ($form) {
+    return !$form['access']['roles_with_bypass']['#value'][$rid];
+  }, ARRAY_FILTER_USE_KEY);
+
+  $form['rbac']['grant_access_if_attribute_missing'] = [
+    '#type' => 'container',
+    '#attributes' => ['class' => 'form-item'],
+  ];
+
+  $form['rbac']['grant_access_if_attribute_missing']['title'] = [
+    '#type' => 'item',
+    '#title' => t('Grant view access if attribute is missing or empty to'),
+    'checkboxes' => [
+      '#type' => 'container',
+    ],
+  ];
+
+  foreach ($grant_access_options as $rid => $name) {
+    $form['rbac']['grant_access_if_attribute_missing']['checkboxes'][$rid] = [
+      '#type' => 'checkbox',
+      '#title' => $name,
+      '#default_value' => in_array($rid, $config->get('grant_access_if_attribute_missing')) ? 1 : 0,
+    ];
+
+    if (!in_array($rid, [AccountInterface::ANONYMOUS_ROLE, AccountInterface::AUTHENTICATED_ROLE])) {
+      $form['rbac']['grant_access_if_attribute_missing']['checkboxes'][$rid]['#states'] = [
+        'checked' => [
+          ':input[name="rbac[grant_access_if_attribute_missing][checkboxes][authenticated]"]' => [
+            'checked' => TRUE,
+          ],
+        ],
+      ];
+    }
+  }
+
+  $form['rbac']['grant_access_if_attribute_missing']['description'] = [
+    '#type' => 'html_tag',
+    '#tag' => 'div',
+    '#value' => t('If %attribute attribute is missing or empty on an API product then grant implicit view access to these roles. (Roles with "Bypass API product access control" are not visible in this list.)', ['%attribute' => $current_rbac_attr_name]),
+    '#attributes' => ['class' => 'description'],
+  ];
+
+  // Store $role_names for use when saving the data.
+  $form['rbac']['role_names'] = $form['access']['role_names'];
+
+  // Store $rolesWithBypassPerm for use when saving the data.
+  $form['rbac']['roles_with_bypass'] = $form['access']['roles_with_bypass'];
+
+  $form['rbac']['api_products'] = [
+    '#type' => 'table',
+    '#header' => [t('API Products')],
+    '#id' => 'rbac-settings',
+    '#attributes' => ['class' => ['rbac-settings', 'js-rbac-settings']],
+    '#sticky' => TRUE,
+  ];
+  foreach ($role_names as $rid => $name) {
+    $form['rbac']['api_products']['#header'][] = [
+      'data' => "{$name} ({$rid})",
+      'class' => ['checkbox'],
+    ];
+  }
+
+  /** @var \Drupal\apigee_edge\Entity\ApiProductInterface[] $api_products */
+  $api_products = $api_product_storage->loadMultiple();
+  $product_names = [];
+
+  foreach ($api_products as $product_name => $product) {
+    $product_names[$product_name] = $product->getDisplayName();
+    $form['rbac']['api_products'][$product_name]['name'] = [
+      '#type' => 'inline_template',
+      '#template' => '<div class="api-product"><span class="name">{{ name }}</span>{% if warning %}<div class="description"><em class="warning">{{ warning }}</em></div>{% endif %}</div>',
+      '#context' => [
+        'name' => $product->getDisplayName(),
+      ],
+    ];
+
+    // Fetch role names for API Product.
+    $selectedRoles = [];
+    if (!empty($product->getAttributeValue($current_rbac_attr_name))) {
+      $selectedRoles = explode(APIGEE_EDGE_APIPRODUCT_RBAC_ATTRIBUTE_VALUE_DELIMITER, $product->getAttributeValue($current_rbac_attr_name));
+    }
+
+    if (empty($selectedRoles) && $config->get('grant_access_if_attribute_missing')) {
+      $form['rbac']['api_products'][$product_name]['name']['#context']['warning'] = t('Attribute is missing or empty therefore settings in <strong>Grant view access</strong> controls the access to this entity.');
+    }
+
+    foreach ($role_names as $rid => $name) {
+      $form['rbac']['api_products'][$product_name][$rid] = [
+        '#title' => $product->getDisplayName(),
+        '#title_display' => 'invisible',
+        '#wrapper_attributes' => [
+          'class' => ['checkbox'],
+        ],
+        '#type' => 'checkbox',
+        '#default_value' => in_array($rid, $selectedRoles) ? 1 : 0,
+        '#attributes' => ['class' => ['rid-' . $rid, 'js-rid-' . $rid]],
+        '#parents' => ['rbac', $rid, $product_name],
+      ];
+      // Show a column of disabled but checked checkboxes.
+      if ($roles_with_bypass_perm[$rid]) {
+        $form['rbac']['api_products'][$product_name][$rid]['#disabled'] = TRUE;
+        $form['rbac']['api_products'][$product_name][$rid]['#default_value'] = TRUE;
+        $form['rbac']['api_products'][$product_name][$rid]['#attributes']['title'] = t('This checkbox is disabled because this role has "Bypass API product access control" permission.');
+      }
+    }
+  }
+
+  // Store name => display name mapping for use when saving the data.
+  $form['rbac']['api_products']['product_names'] = [
+    '#type' => 'value',
+    '#value' => $product_names,
+  ];
+
+  $form['#attached']['library'][] = 'apigee_edge_apiproduct_rbac/admin';
+  $form['#submit'][] = 'apigee_edge_apiproduct_rbac_form_apigee_edge_api_product_access_control_form_submit';
+}
+
+/**
+ * Saves RBAC settings on the API product access control form.
+ *
+ * @see apigee_edge_apiproduct_rbac_form_apigee_edge_api_product_access_control_form_alter()
+ */
+function apigee_edge_apiproduct_rbac_form_apigee_edge_api_product_access_control_form_submit(array $form, FormStateInterface $form_state) {
+  $grant_access = array_keys(array_filter($form_state->getValue([
+    'rbac',
+    'grant_access_if_attribute_missing',
+    'checkboxes',
+  ], [])));
+  if (in_array(AccountInterface::AUTHENTICATED_ROLE, $grant_access)) {
+    // Do not save redundant roles.
+    $grant_access = [AccountInterface::AUTHENTICATED_ROLE];
+  }
+  $config = Drupal::configFactory()->getEditable('apigee_edge_apiproduct_rbac.settings');
+  $config->set('attribute_name', $form_state->getValue(['rbac', 'attribute_name']))
+    ->set('grant_access_if_attribute_missing', $grant_access)
+    ->save();
+  /** @var \Apigee\Edge\Api\Management\Controller\ApiProductControllerInterface $controller */
+  $rid_product_map = [];
+  foreach ($form_state->getValue(['rbac', 'role_names'], []) as $rid => $name) {
+    // Do not store roles with by pass permission in the attribute
+    // unnecessarily.
+    if (!$form_state->getValue(['rbac', 'roles_with_bypass', $rid], FALSE)) {
+      $rid_product_map[$rid] = array_filter($form_state->getValue(['rbac', $rid], []));
+    }
+  }
+  $product_rid_map = [];
+  foreach ($rid_product_map as $rid => $products) {
+    foreach (array_keys($products) as $product) {
+      $product_rid_map[$product][$rid] = $rid;
+    }
+  }
+
+  _apigee_edge_apiproduct_rbac_batch(
+    $form_state->getValue(['rbac', 'api_products', 'product_names']),
+    $product_rid_map,
+    $config->get('attribute_name'),
+    $form_state->getValue(['rbac', 'original_attribute_name'])
+  );
+}
+
+/**
+ * Returns a batch for updating RBAC settings on API products.
+ *
+ * @param array $product_name_display_name_map
+ *   Associative array where keys are the names (ids) of API Products and values
+ *   are their display names.
+ * @param array $product_name_rids_map
+ *   Associative array where keys are the API product names (ids) and values
+ *   are array with roles ids that should have access to an API product.
+ *   Rids (roles) with bypass permission should be excluded from values!
+ * @param string|null $attr_name
+ *   Name of the attribute that stores the assigned roles in an API product.
+ *   Default is the currently saved configuration.
+ * @param string|null $original_attr_name
+ *   Name of the attribute that originally stored the role assignments.
+ *   If attribute has not changed it can be ommitted.
+ */
+function _apigee_edge_apiproduct_rbac_batch(array $product_name_display_name_map, array $product_name_rids_map, string $attr_name = NULL, string $original_attr_name = NULL) {
+  $attr_name = $attr_name ?? \Drupal::config('apigee_edge_apiproduct_rbac.settings')->get('attribute_name');
+  $original_attr_name = $original_attr_name ?? $attr_name;
+  $batch = [
+    'operations' => [
+      [
+        '\Drupal\apigee_edge_apiproduct_rbac\RoleBasedAccessSettingsBatch::batchOperation',
+        [
+          $product_name_display_name_map,
+          $product_name_rids_map,
+          $attr_name,
+          $original_attr_name,
+        ],
+      ],
+    ],
+    'finished' => '\Drupal\apigee_edge_apiproduct_rbac\RoleBasedAccessSettingsBatch::batchFinishedCallback',
+    'title' => t('Updating @attribute attribute on API Products...', ['@attribute' => $attr_name]),
+    // We use a single multi-pass operation, so the default
+    // 'Remaining x of y operations' message will be confusing here.
+    'progress_message' => '',
+    'error_message' => t('The update has encountered an error.'),
+  ];
+  batch_set($batch);
+}
