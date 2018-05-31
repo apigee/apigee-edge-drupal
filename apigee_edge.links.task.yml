@@ -35,6 +35,11 @@ apigee_edge.settings.product.caching:
   title: 'Caching'
   base_route: apigee_edge.settings.product.alias
 
+apigee_edge.settings.product.access_control:
+  route_name: apigee_edge.settings.product.access_control
+  title: 'Access control'
+  base_route: apigee_edge.settings.product.alias
+
 apigee_edge.settings.error_page:
   route_name: apigee_edge.settings.error_page
   title: 'Error handling'

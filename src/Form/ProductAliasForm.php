@@ -23,7 +23,7 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Provides a form for changing API Products related settings.
+ * Provides a form for changing API Product entity labels.
  */
 class ProductAliasForm extends ConfigFormBase {
 
@@ -79,7 +79,7 @@ class ProductAliasForm extends ConfigFormBase {
     $savedLabels = $this->configFactory->get('apigee_edge.api_product_settings');
 
     if ($savedLabels->get('entity_label_singular') !== $form_state->getValue('entity_label_singular') || $savedLabels->get('entity_label_plural') !== $form_state->getValue('entity_label_plural')) {
-      $this->configFactory->getEditable('apigee_edge.api_product_settings')
+      $this->config('apigee_edge.api_product_settings')
         ->set('entity_label_singular', $form_state->getValue('entity_label_singular'))
         ->set('entity_label_plural', $form_state->getValue('entity_label_plural'))
         ->save();

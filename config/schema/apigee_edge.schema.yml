@@ -121,6 +121,22 @@ apigee_edge.api_product_settings:
       label: 'How to refer to an API Product on the UI (plural)'
     cache_expiration:
       type: integer
+    access:
+      type: mapping
+      label: 'Filter displayed API products by access attribute'
+      mapping:
+        public:
+          type: sequence
+          sequence:
+            type: string
+        private:
+          type: sequence
+          sequence:
+            type: string
+        internal:
+          type: sequence
+          sequence:
+            type: string
 
 apigee_edge.sync:
   type: config_object

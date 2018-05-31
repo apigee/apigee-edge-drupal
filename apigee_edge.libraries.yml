@@ -56,6 +56,16 @@ apigee_edge.view:
   js:
     js/apigee_edge.view.js: {}
 
+apiproduct_access_admin:
+  version: 1.0
+  js:
+    js/apigee_edge.apiproduct_access_admin.js: {}
+  dependencies:
+    - core/jquery
+    - core/jquery.once
+    - core/drupal
+    - core/drupalSettings
+
 charts:
   remote: https://www.gstatic.com/charts/loader.js
   version: 1.0

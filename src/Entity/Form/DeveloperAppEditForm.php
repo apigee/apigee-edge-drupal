@@ -19,8 +19,8 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
+use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialController;
-use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Utility\Xss;
@@ -97,9 +97,11 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
    * {@inheritdoc}
    */
   public function form(array $form, FormStateInterface $form_state) {
+    $form = parent::form($form, $form_state);
     $this->checkDeveloperStatus($this->entity->getOwnerId());
     $config = $this->configFactory->get('apigee_edge.common_app_settings');
-    $form = parent::form($form, $form_state);
+    $multiple = $config->get('multiple_products');
+    $required = $config->get('require');
 
     // Do not allow to change the (machine) name of the app.
     $form['name'] = [
@@ -129,19 +131,18 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
           '#collapsible' => FALSE,
         ];
 
-        /** @var \Drupal\apigee_edge\Entity\ApiProduct[] $products */
-        $products = ApiProduct::loadMultiple();
-        $product_list = [];
-        foreach ($products as $product) {
-          $product_list[$product->id()] = $product->getDisplayName();
-        }
-
-        $multiple = $config->get('multiple_products');
-        $required = $config->get('require');
-        $current_products = [];
+        $current_product_ids = [];
         foreach ($credential->getApiProducts() as $product) {
-          $current_products[] = $product->getApiproduct();
+          $current_product_ids[] = $product->getApiproduct();
         }
+        // Parent form has already ensured that only those API products
+        // are visible in this list in which the (current) user has access.
+        $product_list = $form['product']['api_products']['#options'];
+        // But we have to add this app's currently assigned API products to the
+        // list as well.
+        $product_list += array_map(function (ApiProductInterface $product) {
+          return $product->getDisplayName();
+        }, $this->entityTypeManager->getStorage('api_product')->loadMultiple($current_product_ids));
 
         $form['credential'][$credential->getConsumerKey()]['api_products'] = [
           '#title' => $this->entityTypeManager->getDefinition('api_product')->getPluralLabel(),
@@ -150,14 +151,14 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
         ];
 
         if ($multiple) {
-          $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = $current_products;
+          $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = $current_product_ids;
         }
         else {
           if ($required) {
-            $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = reset($current_products) ?: NULL;
+            $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = reset($current_product_ids) ?: NULL;
           }
           else {
-            $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = reset($current_products) ?: '';
+            $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = reset($current_product_ids) ?: '';
           }
         }
 

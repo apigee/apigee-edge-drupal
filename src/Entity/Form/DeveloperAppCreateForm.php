@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
+use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialController;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
@@ -74,8 +75,8 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
    * {@inheritdoc}
    */
   public function form(array $form, FormStateInterface $form_state) {
-    $config = $this->configFactory->get('apigee_edge.common_app_settings');
     $form = parent::form($form, $form_state);
+    $config = $this->configFactory->get('apigee_edge.common_app_settings');
     $form['#attached']['library'][] = 'apigee_edge/apigee_edge.components';
     $form['#attributes']['class'][] = 'apigee-edge--form';
 
@@ -113,7 +114,7 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
       '#default_value' => $app->getName(),
     ];
 
-    if ($config->get('associate_apps')) {
+    if ($config->get('associate_apps') && $config->get('user_select')) {
       $required = $config->get('require');
       $user_select = (bool) $config->get('user_select');
       $form['product'] = [
@@ -127,10 +128,21 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
         ],
       ];
 
-      /** @var \Drupal\apigee_edge\Entity\ApiProduct[] $products */
-      $products = ApiProduct::loadMultiple();
+      // We can use null, because in Entity::access() null falls back to the
+      // currently logged in user.
+      $currentUser = NULL;
+      // Get the current user object from the route if available.
+      // (It could happen that a user with bypass permission edits an other
+      // user's app.)
+      if ($this->routeMatch->getParameter('user') !== NULL) {
+        $currentUser = $this->entityTypeManager->getStorage('user')->load($this->routeMatch->getParameter('user'));
+      }
+      /** @var \Drupal\apigee_edge\Entity\ApiProductInterface[] $availableProductsForUser */
+      $availableProductsForUser = array_filter(ApiProduct::loadMultiple(), function (ApiProductInterface $product) use ($currentUser) {
+        return $product->access('assign', $currentUser);
+      });
       $product_list = [];
-      foreach ($products as $product) {
+      foreach ($availableProductsForUser as $product) {
         $product_list[$product->id()] = $product->getDisplayName();
       }
 
