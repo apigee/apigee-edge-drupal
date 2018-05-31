@@ -19,6 +19,7 @@
 
 namespace Drupal\Tests\apigee_edge\Functional;
 
+use Apigee\Edge\Api\Management\Controller\DeveloperAppController;
 use Apigee\Edge\Api\Management\Entity\App;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
@@ -87,6 +88,161 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
     parent::tearDown();
   }
 
+  public function testFieldStorageFormatters() {
+    $field_name_prefix = (string) \Drupal::config('field_ui.settings')->get('field_prefix');
+
+    $paragraph = trim($this->getRandomGenerator()->paragraphs(1));
+    $paragraphs = trim($this->getRandomGenerator()->paragraphs());
+    $link = [
+      [
+        'uri' => 'http://example.com',
+        'title' => 'Example',
+        'options' => [],
+        'attributes' => [],
+      ],
+    ];
+
+    $fields = [
+      strtolower($this->randomMachineName()) => [
+        'type' => 'boolean',
+        'data' => [
+          ['value' => TRUE],
+          ['value' => FALSE],
+        ],
+        'encoded' => '1,',
+      ],
+      strtolower($this->randomMachineName()) => [
+        'type' => 'float',
+        'data' => [
+          ['value' => M_PI],
+          ['value' => M_E],
+          ['value' => M_EULER],
+        ],
+        'encoded' => implode(',', [M_PI, M_E, M_EULER]),
+      ],
+      strtolower($this->randomMachineName()) => [
+        'type' => 'integer',
+        'data' => [
+          ['value' => 4],
+          ['value' => 9],
+        ],
+        'encoded' => '4,9',
+      ],
+      strtolower($this->randomMachineName()) => [
+        'type' => 'decimal',
+        'data' => [
+          ['value' => '0.1'],
+        ],
+        'encoded' => '0.1',
+      ],
+      strtolower($this->randomMachineName()) => [
+        'type' => 'list_float',
+        'settings' => [
+          'settings[allowed_values]' => implode(PHP_EOL, [
+            M_PI,
+            M_E,
+            M_EULER,
+          ]),
+        ],
+        'data' => [
+          ['value' => M_PI],
+        ],
+        'encoded' => (string) M_PI,
+      ],
+      strtolower($this->randomMachineName()) => [
+        'type' => 'list_integer',
+        'settings' => [
+          'settings[allowed_values]' => implode(PHP_EOL, [1, 2, 3]),
+        ],
+        'data' => [
+          ['value' => 2],
+          ['value' => 3],
+        ],
+        'encoded' => '2,3',
+      ],
+      strtolower($this->randomMachineName()) => [
+        'type' => 'list_string',
+        'settings' => [
+          'settings[allowed_values]' => implode(PHP_EOL, [
+            'qwer',
+            'asdf',
+            'zxcv',
+          ]),
+        ],
+        'data' => [
+          ['value' => 'qwer'],
+          ['value' => 'asdf'],
+          ['value' => 'zxcv'],
+        ],
+        'encoded' => 'qwer,asdf,zxcv',
+      ],
+      strtolower($this->randomMachineName()) => [
+        'type' => 'string',
+        'data' => [
+          ['value' => $paragraph],
+        ],
+        'encoded' => "\"{$paragraph}\"",
+      ],
+      strtolower($this->randomMachineName()) => [
+        'type' => 'string_long',
+        'data' => [
+          ['value' => $paragraphs],
+        ],
+        'encoded' => "\"{$paragraphs}\"",
+      ],
+      strtolower($this->randomMachineName()) => [
+        'type' => 'link',
+        'data' => $link,
+        'encoded' => json_encode($link),
+      ],
+    ];
+
+    foreach ($fields as $name => $data) {
+      $this->fieldUIAddNewField(
+        '/admin/config/apigee-edge/app-settings',
+        $name, strtoupper($name),
+        $data['type'],
+        ($data['settings'] ?? []) + [
+          'cardinality' => -1,
+        ],
+        []
+      );
+
+      drupal_flush_all_caches();
+    }
+
+    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
+    $app = DeveloperApp::create([
+      'name' => $this->randomMachineName(),
+      'status' => App::STATUS_APPROVED,
+      'developerId' => $this->developer->getDeveloperId(),
+    ]);
+    $app->setOwner($this->account);
+    foreach ($fields as $name => $data) {
+      $full_field_name = "{$field_name_prefix}{$name}";
+      $app->set($full_field_name, $data['data']);
+    }
+    $app->save();
+
+    drupal_flush_all_caches();
+
+    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $loadedApp */
+    $loadedApp = DeveloperApp::load($app->id());
+    /** @var \Drupal\apigee_edge\SDKConnectorInterface $connector */
+    $connector = \Drupal::service('apigee_edge.sdk_connector');
+    $controller = new DeveloperAppController($connector->getOrganization(), $this->developer->getDeveloperId(), $connector->getClient());
+    /** @var \Apigee\Edge\Api\Management\Entity\DeveloperApp $rawLoadedApp */
+    $rawLoadedApp = $controller->load($app->getName());
+
+    foreach ($fields as $name => $data) {
+      $full_field_name = "{$field_name_prefix}{$name}";
+      $this->assertEquals($data['data'], $loadedApp->get($full_field_name)->getValue());
+      $this->assertEquals($data['encoded'], $rawLoadedApp->getAttributeValue($name));
+    }
+
+    $app->delete();
+  }
+
   /**
    * @dataProvider fieldDataProvider
    */
@@ -109,7 +265,8 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
       'developerId' => $this->developer->getDeveloperId(),
     ]);
     $app->setOwner($this->account);
-    $app->set("{$field_name_prefix}{$field_name}", $field_data);
+    $full_field_name = "{$field_name_prefix}{$field_name}";
+    $app->set($full_field_name, $field_data);
     $app->save();
 
     drupal_flush_all_caches();
@@ -117,7 +274,7 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $loadedApp */
     $loadedApp = DeveloperApp::load($app->id());
 
-    $this->assertEquals($field_data, $loadedApp->get($field_name)->getValue());
+    $this->assertEquals($field_data, $loadedApp->get($full_field_name)->getValue());
 
     $app->delete();
   }
@@ -134,6 +291,30 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
             'title' => 'Example',
             'options' => [],
             'attributes' => [],
+          ],
+        ],
+      ],
+      'long string' => [
+        'string_long',
+        [
+          'cardinality' => -1,
+        ],
+        [],
+        [
+          [
+            'value' => $this->getRandomGenerator()->paragraphs(),
+          ],
+          [
+            'value' => $this->getRandomGenerator()->paragraphs(),
+          ],
+          [
+            'value' => $this->getRandomGenerator()->paragraphs(),
+          ],
+          [
+            'value' => $this->getRandomGenerator()->paragraphs(),
+          ],
+          [
+            'value' => $this->getRandomGenerator()->paragraphs(),
           ],
         ],
       ],
