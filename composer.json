@@ -21,6 +21,9 @@
         "phpunit/phpunit": "^6.5",
         "webflo/drupal-core-require-dev": "^8.5.0"
     },
+    "conflict": {
+        "apigee/apigee-client-php": "<= 2.0.0-alpha1"
+    },
     "repositories": [
         {
             "type": "composer",

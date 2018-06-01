@@ -3,7 +3,6 @@ display_as_select: false
 associate_apps: true
 user_select: true
 multiple_products: true
-require: false
 locked_base_fields:
   - displayName
 required_base_fields:

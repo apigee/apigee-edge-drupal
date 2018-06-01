@@ -19,10 +19,12 @@ apigee_edge.client:
   mapping:
     active_key:
       type: string
-    default_endpoint:
+    active_key_oauth_token:
       type: string
+    http_client_connect_timeout:
+      type: float
     http_client_timeout:
-      type: integer
+      type: float
     http_client_proxy:
       type: string
 
@@ -37,8 +39,6 @@ apigee_edge.common_app_settings:
     user_select:
       type: boolean
     multiple_products:
-      type: boolean
-    require:
       type: boolean
     required_base_fields:
       type: sequence
@@ -66,6 +66,8 @@ apigee_edge.developer_app_settings:
       type: label
       label: 'How to refer to a Developer App on the UI (plural)'
     cache_expiration:
+      type: integer
+    credential_lifetime:
       type: integer
 
 apigee_edge.developer_settings:
@@ -151,11 +153,33 @@ apigee_edge.sync:
 key.type.apigee_edge_basic_auth:
   type: sequence
 
+key.type.apigee_edge_oauth:
+  type: sequence
+
+key.type.apigee_edge_oauth_token:
+  type: sequence
+
 key.input.apigee_edge_basic_auth_input:
   type: sequence
 
-key.provider.apigee_edge_basic_auth_env_variables:
+key.input.apigee_edge_oauth_input:
   type: sequence
 
-key.provider.apigee_edge_basic_auth_private_file:
+key.provider.apigee_edge_environment_variables:
   type: sequence
+
+key.provider.apigee_edge_private_file:
+  type: sequence
+
+# Dangerous settings. Enabling these might lead to data corruption.
+#
+# Mostly used for testing, or in specific scenarios.
+apigee_edge.dangerzone:
+  type: config_object
+  label: 'Dangerous settings'
+  mapping:
+
+    # Allows changing whether single or multiple products can be assigned for an app,
+    # even when content exists.
+    skip_developer_app_settings_validation:
+      type: boolean

@@ -17,33 +17,32 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Plugin;
+namespace Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormat;
+
+use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormatInterface;
 
 /**
- * Defines an interface for provider plugins that allow encrypt a key value.
+ * @ApigeeFieldStorageFormat(
+ *   id = "json",
+ *   label = "JSON",
+ *   fields = { "*" },
+ *   weight = 1000,
+ * )
  */
-interface KeyProviderEncryptedValueInterface {
+class JSON implements ApigeeFieldStorageFormatInterface {
 
   /**
-   * Encrypts key value.
-   *
-   * @param string $key_value
-   *   The plaintext.
-   *
-   * @return string
-   *   The ciphertext.
+   * {@inheritdoc}
    */
-  public function encrypt(string $key_value);
+  public function encode(array $data): string {
+    return json_encode($data);
+  }
 
   /**
-   * Decrypts key value.
-   *
-   * @param string $key_value
-   *   The ciphertext.
-   *
-   * @return string
-   *   The plaintext.
+   * {@inheritdoc}
    */
-  public function decrypt(string $key_value);
+  public function decode(string $data): array {
+    return json_decode($data, TRUE);
+  }
 
 }

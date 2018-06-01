@@ -19,25 +19,31 @@
 
 namespace Drupal\apigee_edge\Plugin;
 
-use Drupal\key\KeyInterface;
-use Http\Message\Authentication;
-
 /**
- * Interface for creating the required authentication method object.
+ * Interface ApigeeFieldStorageFormatInterface.
  */
-interface KeyTypeAuthenticationMethodInterface {
+interface ApigeeFieldStorageFormatInterface {
 
   /**
-   * Gets the authentication method object.
+   * Encodes field data to the target format.
    *
-   * @param \Drupal\key\KeyInterface $key
-   *   The key entity.
-   * @param \Drupal\key\KeyInterface|null $key_token
-   *   The OAuth token key entity.
+   * @param array $data
+   *   Data to be encoded.
    *
-   * @return \Http\Message\Authentication
-   *   The authentication object.
+   * @return string
+   *   Encoded data.
    */
-  public function getAuthenticationMethod(KeyInterface $key, ?KeyInterface $key_token = NULL): Authentication;
+  public function encode(array $data): string;
+
+  /**
+   * Decodes field data from the target format.
+   *
+   * @param string $data
+   *   Encoded data.
+   *
+   * @return array
+   *   Decoded data.
+   */
+  public function decode(string $data): array;
 
 }

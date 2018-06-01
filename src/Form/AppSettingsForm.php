@@ -86,34 +86,6 @@ class AppSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    $form['api_product']['multiple_products'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Allow selecting multiple products'),
-      '#default_value' => $generalConfig->get('multiple_products'),
-      '#states' => [
-        'visible' => [
-          ':input[name="user_select"]' => [
-            'visible' => TRUE,
-            'checked' => TRUE,
-          ],
-        ],
-      ],
-    ];
-
-    $form['api_product']['require'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Require at least one product'),
-      '#default_value' => $generalConfig->get('require'),
-      '#states' => [
-        'visible' => [
-          ':input[name="user_select"]' => [
-            'visible' => TRUE,
-            'checked' => TRUE,
-          ],
-        ],
-      ],
-    ];
-
     /** @var string[] $default_products */
     $default_products = $generalConfig->get('default_products') ?: [];
     $product_list = [];
@@ -133,21 +105,6 @@ class AppSettingsForm extends ConfigFormBase {
       ]);
     }
 
-    $form['api_product']['default_api_product_single'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Default API Product'),
-      '#options' => ['' => $this->t('N/A')] + $product_list,
-      '#default_value' => empty($default_products) ? '' : reset($default_products),
-      '#states' => [
-        'visible' => [
-          ':input[name="multiple_products"]' => [
-            'checked' => FALSE,
-            'visible' => TRUE,
-          ],
-        ],
-      ],
-    ];
-
     $form['api_product']['default_api_product_multiple'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('Default API Product'),
@@ -156,15 +113,8 @@ class AppSettingsForm extends ConfigFormBase {
       '#states' => [
         'visible' => [
           [
-            ':input[name="multiple_products"]' => [
-              'checked' => TRUE,
-              'visible' => TRUE,
-            ],
-          ],
-          'or',
-          [
             ':input[name="user_select"]' => [
-              'checked' => FALSE,
+              'checked' => TRUE,
               'visible' => TRUE,
             ],
           ],
@@ -189,8 +139,6 @@ class AppSettingsForm extends ConfigFormBase {
       'display_as_select',
       'associate_apps',
       'user_select',
-      'multiple_products',
-      'require',
     ];
 
     foreach ($config_names as $name) {
@@ -199,17 +147,7 @@ class AppSettingsForm extends ConfigFormBase {
 
     $default_products = [];
     if ($form_state->getValue('associate_apps')) {
-      if ($form_state->getValue('user_select')) {
-        if ($form_state->getValue('multiple_products')) {
-          $default_products = $form_state->getValue('default_api_product_multiple');
-        }
-        else {
-          $default_products = [$form_state->getValue('default_api_product_single')];
-        }
-      }
-      else {
-        $default_products = $form_state->getValue('default_api_product_multiple');
-      }
+      $default_products = $form_state->getValue('default_api_product_multiple');
     }
     $default_products = array_values(array_filter($default_products));
 

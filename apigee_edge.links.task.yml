@@ -3,6 +3,16 @@ apigee_edge.settings:
   title: 'Credentials'
   base_route: apigee_edge.settings
 
+apigee_edge.settings.connection_config:
+  route_name: apigee_edge.settings.connection_config
+  title: 'Connection config'
+  base_route: apigee_edge.settings
+
+apigee_edge.settings.error_page:
+  route_name: apigee_edge.settings.error_page
+  title: 'Error handling'
+  base_route: apigee_edge.settings
+
 apigee_edge.settings.app:
   route_name: apigee_edge.settings.app
   title: 'API Product associations'
@@ -12,6 +22,11 @@ apigee_edge.settings.app:
 apigee_edge.settings.app.alias:
   route_name: apigee_edge.settings.app.alias
   title: 'Alias'
+  base_route: apigee_edge.settings.app
+
+apigee_edge.settings.app.credentials:
+  route_name: apigee_edge.settings.app.credentials
+  title: 'Credentials'
   base_route: apigee_edge.settings.app
 
 apigee_edge.settings.app.analytics:
@@ -39,11 +54,6 @@ apigee_edge.settings.product.access_control:
   route_name: apigee_edge.settings.product.access_control
   title: 'Access control'
   base_route: apigee_edge.settings.product.alias
-
-apigee_edge.settings.error_page:
-  route_name: apigee_edge.settings.error_page
-  title: 'Error handling'
-  base_route: apigee_edge.settings
 
 apigee_edge.settings.developer:
   route_name: apigee_edge.settings.developer

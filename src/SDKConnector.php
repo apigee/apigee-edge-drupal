@@ -23,9 +23,8 @@ use Apigee\Edge\Api\Management\Controller\OrganizationController;
 use Apigee\Edge\Client;
 use Apigee\Edge\ClientInterface;
 use Apigee\Edge\HttpClient\Utility\Builder;
-use Drupal\apigee_edge\Entity\Controller\DrupalEntityControllerInterface;
-use Drupal\apigee_edge\Entity\Storage\EdgeEntityStorageInterface;
-use Drupal\apigee_edge\Exception\UnsupportedEntityTypeException;
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
+use Drupal\apigee_edge\Plugin\EdgeOauthKeyTypeInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\InfoParserInterface;
@@ -130,7 +129,7 @@ class SDKConnector implements SDKConnectorInterface {
   }
 
   /**
-   * Get HTTP client overrides for APIgee API client.
+   * Get HTTP client overrides for Apigee Edge API client.
    *
    * Allows to override some configuration of the http client built by the
    * factory for the API client.
@@ -143,8 +142,9 @@ class SDKConnector implements SDKConnectorInterface {
    *
    * @see http://docs.guzzlephp.org/en/stable/request-options.html
    */
-  protected function getHttpClientConfiguration(ConfigFactoryInterface $config_factory) : array {
+  protected function getHttpClientConfiguration(ConfigFactoryInterface $config_factory): array {
     return [
+      'connect_timeout' => $config_factory->get('apigee_edge.client')->get('http_client_connect_timeout'),
       'timeout' => $config_factory->get('apigee_edge.client')->get('http_client_timeout'),
       'proxy' => $config_factory->get('apigee_edge.client')->get('http_client_proxy'),
     ];
@@ -154,7 +154,8 @@ class SDKConnector implements SDKConnectorInterface {
    * {@inheritdoc}
    */
   public function getOrganization(): string {
-    return $this->getCredentials()->getOrganization();
+    $credentials = $this->getCredentials();
+    return $credentials->getKeyType()->getOrganization($credentials->getKey());
   }
 
   /**
@@ -162,8 +163,9 @@ class SDKConnector implements SDKConnectorInterface {
    */
   public function getClient(): ClientInterface {
     if (self::$client === NULL) {
+      $credentials = $this->getCredentials();
       /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $key_type */
-      self::$client = new Client($this->getCredentials()->getAuthentication(), $this->getCredentials()->getEndpoint(), [
+      self::$client = new Client($credentials->getAuthentication(), $credentials->getKeyType()->getEndpoint($credentials->getKey()), [
         Client::CONFIG_HTTP_CLIENT_BUILDER => new Builder($this->httpClient),
         Client::CONFIG_USER_AGENT_PREFIX => $this->userAgentPrefix(),
       ]);
@@ -181,9 +183,10 @@ class SDKConnector implements SDKConnectorInterface {
     if (self::$credentials === NULL) {
       $key = $this->keyRepository->getKey($this->configFactory->get('apigee_edge.client')->get('active_key'));
       if ($key === NULL) {
-        throw new KeyNotFoundException($this->configFactory->get('apigee_edge.client')->get('active_key'));
+        throw new KeyNotFoundException('Apigee Edge API authentication key not found.');
       }
-      self::$credentials = new Credentials($key);
+      $key_token = $this->keyRepository->getKey($this->configFactory->get('apigee_edge.client')->get('active_key_oauth_token'));
+      self::$credentials = $this->buildCredentials($key, $key_token);
     }
 
     return self::$credentials;
@@ -202,9 +205,35 @@ class SDKConnector implements SDKConnectorInterface {
   }
 
   /**
+   * Builds credentials, which depends on the KeyType of the key entity.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity which stores the API credentials.
+   * @param \Drupal\key\KeyInterface|null $key_token
+   *   The OAuth token key entity.
+   *
+   * @return \Drupal\apigee_edge\CredentialsInterface
+   *   The credentials.
+   */
+  private function buildCredentials(KeyInterface $key, KeyInterface $key_token = NULL): CredentialsInterface {
+    if ($key->getKeyType() instanceof EdgeKeyTypeInterface) {
+      if ($key->getKeyType() instanceof EdgeOauthKeyTypeInterface) {
+        if ($key_token === NULL) {
+          throw new KeyNotFoundException('Apigee Edge OAuth token key not found.');
+        }
+        return new OauthCredentials($key, $key_token);
+      }
+      return new Credentials($key);
+    }
+    else {
+      throw new \InvalidArgumentException("Type of {$key->id()} key does not implement EdgeKeyTypeInterface.");
+    }
+  }
+
+  /**
    * Generates a custom user agent prefix.
    */
-  protected function userAgentPrefix() : string {
+  protected function userAgentPrefix(): string {
     if (NULL === self::$userAgentPrefix) {
       $moduleInfo = $this->infoParser->parse($this->moduleHandler->getModule('apigee_edge')->getPathname());
       if (!isset($moduleInfo['version'])) {
@@ -221,19 +250,7 @@ class SDKConnector implements SDKConnectorInterface {
   /**
    * {@inheritdoc}
    */
-  public function getControllerByEntity(string $entity_type) :  DrupalEntityControllerInterface {
-    $storage = $this->entityTypeManager->getStorage($entity_type);
-    if ($storage instanceof EdgeEntityStorageInterface) {
-      return $storage->getController($this);
-    }
-
-    throw new UnsupportedEntityTypeException($entity_type);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function testConnection(KeyInterface $key = NULL) {
+  public function testConnection(KeyInterface $key = NULL, KeyInterface $key_token = NULL) {
     if ($key !== NULL) {
       try {
         $originalCredentials = self::getCredentials();
@@ -241,11 +258,12 @@ class SDKConnector implements SDKConnectorInterface {
       catch (KeyNotFoundException $e) {
         // Skip key not set exception if there is no currently used key.
       }
-      self::setCredentials(new Credentials($key));
+      self::setCredentials($this->buildCredentials($key, $key_token));
     }
     try {
       $oc = new OrganizationController($this->getClient());
-      $oc->load($this->getCredentials()->getOrganization());
+      $credentials = $this->getCredentials();
+      $oc->load($credentials->getKeyType()->getOrganization($credentials->getKey()));
     }
     catch (\Exception $e) {
       throw $e;

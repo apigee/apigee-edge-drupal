@@ -17,27 +17,52 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Plugin;
+namespace Drupal\apigee_edge\Annotation;
 
-use Drupal\key\KeyInterface;
-use Http\Message\Authentication;
+use Drupal\Component\Annotation\Plugin;
 
 /**
- * Interface for creating the required authentication method object.
+ * @Annotation
  */
-interface KeyTypeAuthenticationMethodInterface {
+class ApigeeFieldStorageFormat extends Plugin {
 
   /**
-   * Gets the authentication method object.
-   *
-   * @param \Drupal\key\KeyInterface $key
-   *   The key entity.
-   * @param \Drupal\key\KeyInterface|null $key_token
-   *   The OAuth token key entity.
-   *
-   * @return \Http\Message\Authentication
-   *   The authentication object.
+   * @var string
    */
-  public function getAuthenticationMethod(KeyInterface $key, ?KeyInterface $key_token = NULL): Authentication;
+  public $id;
+
+  /**
+   * @var string
+   */
+  public $class;
+
+  /**
+   * @var string
+   */
+  public $provider;
+
+  /**
+   * @var string
+   */
+  public $label;
+
+  /**
+   * List of field types where this plugin is appropriate.
+   *
+   * If one item is '*' then it will be applied on any field type.
+   *
+   * @var array
+   */
+  public $fields;
+
+  /**
+   * Weight of this plugin.
+   *
+   * The plugins will be sorted by weight and will be tried to be applied in
+   * that order.
+   *
+   * @var int
+   */
+  public $weight;
 
 }
