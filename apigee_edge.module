@@ -1277,6 +1277,11 @@ function _apigee_edge_user_has_an_app_with_product(string $productName, AccountI
     $account = Drupal::currentUser()->getAccount();
   }
 
+  // Anonymous users does not have a developer account on Apigee Edge.
+  if ($account->isAnonymous()) {
+    return FALSE;
+  }
+
   /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperAppStorageInterface $storage */
   try {
     $storage = Drupal::entityTypeManager()->getStorage('developer_app');
