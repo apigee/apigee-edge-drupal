@@ -5,7 +5,7 @@
     "license": "GPL-2.0",
     "require": {
         "php": ">=7.1",
-        "drupal/apigee_edge": "^1,0",
+        "drupal/apigee_edge": "^1,0"
     },
     "config": {
         "sort-packages": true
