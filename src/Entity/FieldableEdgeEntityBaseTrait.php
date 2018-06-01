@@ -21,6 +21,7 @@ namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Structure\AttributesProperty;
 use Drupal\apigee_edge\Exception\EdgeFieldException;
+use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormatInterface;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -312,10 +313,34 @@ trait FieldableEdgeEntityBaseTrait {
     $attribute_name = $this->getAttributeName($field_name);
     if ($attributes->has($attribute_name)) {
       $attribute_value = $attributes->getValue($attribute_name);
-      // TODO Handle or report if json decode fails.
-      return $attribute_value ? json_decode($attribute_value, TRUE) : NULL;
+      if (($formatter = $this->findAttributeStorageFormatter($field_name))) {
+        return $formatter->decode($attribute_value);
+      }
     }
     return NULL;
+  }
+
+  /**
+   * Finds the storage formatter that is appropriate for a given field.
+   *
+   * @param string $field_name
+   *   Name of the field to look up the plugin for.
+   *
+   * @return \Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormatInterface|null
+   *   Null if not found.
+   */
+  protected function findAttributeStorageFormatter(string $field_name): ?ApigeeFieldStorageFormatInterface {
+    /** @var \Drupal\Core\Field\FieldDefinitionInterface[] $bundle_fields */
+    $bundle_fields = self::getFieldDefinitions();
+    if (!isset($bundle_fields[$field_name])) {
+      return NULL;
+    }
+
+    $type = $bundle_fields[$field_name]->getType();
+
+    /** @var \Drupal\apigee_edge\FieldStorageFormatManager $format_manager */
+    $format_manager = \Drupal::service('plugin.manager.apigee_field_storage_format');
+    return $format_manager->lookupPluginForFieldType($type);
   }
 
   /**
@@ -402,7 +427,9 @@ trait FieldableEdgeEntityBaseTrait {
     $setter = 'set' . ucfirst($field_name);
     if (!method_exists($this, $setter)) {
       $attribute_name = $this->getAttributeName($field_name);
-      $this->attributes->add($attribute_name, json_encode($value));
+      if (($formatter = $this->findAttributeStorageFormatter($field_name))) {
+        $this->attributes->add($attribute_name, $formatter->encode($value));
+      }
     }
 
     return $this;

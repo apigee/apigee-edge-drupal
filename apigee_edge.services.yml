@@ -89,3 +89,7 @@ services:
     parent: tempstore.shared
     arguments:
       index_0: '@apigee_edge.keyvalue.expirable.app_credentials'
+
+  plugin.manager.apigee_field_storage_format:
+    class: Drupal\apigee_edge\FieldStorageFormatManager
+    parent: default_plugin_manager
