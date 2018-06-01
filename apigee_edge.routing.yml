@@ -76,7 +76,7 @@ apigee_edge.settings.product.access_control:
     _form: '\Drupal\apigee_edge\Form\ProductAccessControlForm'
     _title: 'API Product access control'
   requirements:
-    _permission: 'administer apigee edge, administer api product access'
+    _permission: 'administer apigee edge'
 
 apigee_edge.settings.app:
   path: '/admin/config/apigee-edge/app-settings'

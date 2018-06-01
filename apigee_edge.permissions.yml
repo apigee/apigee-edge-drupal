@@ -4,6 +4,3 @@ administer apigee edge:
 bypass api product access control:
   title: 'Bypass API product access control'
   restricted access: true
-administer api product access:
-  title: 'Administer API product access control'
-  restricted access: true
