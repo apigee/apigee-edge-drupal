@@ -100,6 +100,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
     $form = parent::form($form, $form_state);
     $this->checkDeveloperStatus($this->entity->getOwnerId());
     $config = $this->configFactory->get('apigee_edge.common_app_settings');
+    $multiple = $config->get('multiple_products');
 
     // Do not allow to change the (machine) name of the app.
     $form['name'] = [
@@ -129,7 +130,6 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
           '#collapsible' => FALSE,
         ];
 
-        $multiple = $config->get('multiple_products');
         $current_product_ids = [];
         foreach ($credential->getApiProducts() as $product) {
           $current_product_ids[] = $product->getApiproduct();
@@ -143,7 +143,6 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
           return $product->getDisplayName();
         }, $this->entityTypeManager->getStorage('api_product')->loadMultiple($current_product_ids));
 
-
         $form['credential'][$credential->getConsumerKey()]['api_products'] = [
           '#title' => $this->entityTypeManager->getDefinition('api_product')->getPluralLabel(),
           '#required' => TRUE,
@@ -154,7 +153,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
           $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = $current_product_ids;
         }
         else {
-          if (count($current_products) > 1) {
+          if (count($current_product_ids) > 1) {
             $this->messenger()->addWarning(t('This app has multiple products, but only a single product is allowed to be selected.'));
           }
           $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = reset($current_products) ?: NULL;
