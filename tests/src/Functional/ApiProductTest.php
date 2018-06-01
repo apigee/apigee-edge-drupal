@@ -20,7 +20,6 @@
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Drupal\apigee_edge\Entity\ApiProduct;
-use Drupal\apigee_edge\Entity\Developer;
 
 /**
  * Create, delete, update API Product entity tests.
