@@ -22,13 +22,17 @@ env:
     - DOCKER_COMPOSE_VERSION=1.18.0
     - THREADS=4
   matrix:
-    - PHP_VERSION=7.1 DEPENDENCIES="--prefer-lowest"
-    - PHP_VERSION=7.1 DEPENDENCIES=""
-    - PHP_VERSION=7.1 DRUPAL_CORE=8.5.x-dev DEPENDENCIES="--prefer-lowest"
+    - PHP_VERSION=7.1 DEPENDENCIES="--prefer-lowest" TEST_ROOT="modules/contrib/apigee_edge/tests"
+    - PHP_VERSION=7.1 DEPENDENCIES="" TEST_ROOT="modules/contrib/apigee_edge/tests"
+    - PHP_VERSION=7.1 DRUPAL_CORE=8.5.x-dev DEPENDENCIES="--prefer-lowest" TEST_ROOT="modules/contrib/apigee_edge/tests"
+    - PHP_VERSION=7.1 DEPENDENCIES="--prefer-lowest" TEST_ROOT="modules/contrib/apigee_edge/modules/apigee_edge_apiproduct_rbac/tests"
+    - PHP_VERSION=7.1 DEPENDENCIES="" TEST_ROOT="modules/contrib/apigee_edge/modules/apigee_edge_apiproduct_rbac/tests"
+    - PHP_VERSION=7.1 DRUPAL_CORE=8.5.x-dev DEPENDENCIES="--prefer-lowest" TEST_ROOT="modules/contrib/apigee_edge/modules/apigee_edge_apiproduct_rbac/tests"
 
 matrix:
   allow_failures:
-    - env: PHP_VERSION=7.1 DRUPAL_CORE=8.5.x-dev DEPENDENCIES="--prefer-lowest"
+    - env: PHP_VERSION=7.1 DRUPAL_CORE=8.5.x-dev DEPENDENCIES="--prefer-lowest" TEST_ROOT="modules/contrib/apigee_edge/tests"
+    - env: PHP_VERSION=7.1 DRUPAL_CORE=8.5.x-dev DEPENDENCIES="--prefer-lowest" TEST_ROOT="modules/contrib/apigee_edge/modules/apigee_edge_apiproduct_rbac/tests"
   fast_finish: true
 
 # TODO Cache Docker images and PHP service build (common parts of the built, like Drupal core install, for a day).
