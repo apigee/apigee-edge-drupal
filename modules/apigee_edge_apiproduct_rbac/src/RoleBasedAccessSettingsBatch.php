@@ -23,6 +23,7 @@ namespace Drupal\apigee_edge_apiproduct_rbac;
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\ApiResponseException;
 use Drupal\Component\Utility\Xss;
+use Drupal\Core\Session\AccountInterface;
 
 /**
  * Utility function for API product RBAC settings save batch.
@@ -71,7 +72,19 @@ final class RoleBasedAccessSettingsBatch {
         // always clear its value.
         $attributes->delete($originalAttributeName);
         if ($rids) {
-          $attributes->add($attributeName, implode(APIGEE_EDGE_APIPRODUCT_RBAC_ATTRIBUTE_VALUE_DELIMITER, $rids));
+          $normalizedRids = [];
+          // Do not save redundant (authenticated) roles if "authenticated user"
+          // role is present in rids.
+          if (in_array(AccountInterface::AUTHENTICATED_ROLE, $normalizedRids)) {
+            $normalizedRids[] = AccountInterface::AUTHENTICATED_ROLE;
+            if (in_array(AccountInterface::ANONYMOUS_ROLE, $rids)) {
+              $normalizedRids[] = AccountInterface::ANONYMOUS_ROLE;
+            }
+          }
+          else {
+            $normalizedRids = $rids;
+          }
+          $attributes->add($attributeName, implode(APIGEE_EDGE_APIPRODUCT_RBAC_ATTRIBUTE_VALUE_DELIMITER, $normalizedRids));
         }
         $controller->updateAttributes($productName, $attributes);
         $context['results']['success'][$productName] = Xss::filter($productDisplayName);

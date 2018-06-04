@@ -16,17 +16,6 @@
  * MA 02110-1301, USA.
  */
 
-/* Theme it as checkboxes render element. */
-#edit-rbac #edit-rbac-grant-access-if-attribute-missing .form-item {
-  margin-top: 0.4em;
-  margin-bottom: 0.4em;
-}
-
-.rbac-settings .api-product > .name {
+.rbac-settings .api-product-name {
   font-weight: bold;
-}
-
-.rbac-settings .api-product > .description {
-  font-size: 0.85em;
-  padding-bottom: 0.5em;
 }

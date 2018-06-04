@@ -5,8 +5,5 @@ apigee_edge_apiproduct_rbac.settings:
       type: string
       label: 'Attribute name'
     grant_access_if_attribute_missing:
-      type: sequence
-      label: 'Grant access to the following roles if attribute is missing'
-      sequence:
-        label: 'Roles with access'
-        type: string
+      type: boolean
+      label: 'Grant access to an API product if attribute is missing or empty'

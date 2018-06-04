@@ -5,6 +5,8 @@
  * Module file for Apigee Edge: API Product RBAC.
  */
 
+use Drupal\apigee_edge\Entity\ApiProductInterface;
+use Drupal\Component\Utility\Xss;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -47,10 +49,21 @@ function apigee_edge_apiproduct_rbac_api_product_access(EntityInterface $entity,
   $config = \Drupal::config('apigee_edge_apiproduct_rbac.settings');
   $rbac_attribute_name = $config->get('attribute_name');
 
-  $result = AccessResult::allowed();
-
-  // Attribute exists on the API product and it is not empty.
-  if (!empty($entity->getAttributeValue($rbac_attribute_name))) {
+  if (empty($entity->getAttributeValue($rbac_attribute_name))) {
+    $result = AccessResult::forbidden("{$rbac_attribute_name} attribute on the API product is missing or empty.");
+    // Attribute is missing from the API product but the user already has an
+    // app with this API product. (Maybe someone assigned this API product
+    // to developer's app on Apigee Edge.) We have to grant view access to the
+    // API product otherwise s/he could not see it an developer app
+    // credentials list for example.
+    if ('assign' === $operation) {
+      $result = $config->get('grant_access_if_attribute_missing') ? AccessResult::allowed() : $result;
+    }
+    elseif ($config->get('grant_access_if_attribute_missing') || _apigee_edge_user_has_an_app_with_product($entity->getName(), $account)) {
+      $result = AccessResult::allowed();
+    }
+  }
+  else {
     $roles = explode(APIGEE_EDGE_APIPRODUCT_RBAC_ATTRIBUTE_VALUE_DELIMITER, $entity->getAttributeValue($rbac_attribute_name));
 
     // User may not have access to this API product based on the current
@@ -66,23 +79,6 @@ function apigee_edge_apiproduct_rbac_api_product_access(EntityInterface $entity,
       $result = AccessResult::forbidden(sprintf('%s user does not have any of these required roles: %s.', $account->getEmail(), rtrim(implode(APIGEE_EDGE_APIPRODUCT_RBAC_ATTRIBUTE_VALUE_DELIMITER, $roles))));
 
     }
-  }
-  // Attribute is missing from the API product but the user already has an
-  // app with this API product. (Maybe someone assigned this API product
-  // to developer's app on Apigee Edge.) We have to grant view access to the
-  // API product otherwise s/he could not see it an developer app
-  // credentials list for example.
-  elseif ($operation !== 'assign' && _apigee_edge_user_has_an_app_with_product($entity->getName(), $account)) {
-    $result = AccessResult::allowed();
-  }
-  elseif (empty(array_intersect($config->get('grant_access_if_attribute_missing'), $account->getRoles()))) {
-    if (empty($config->get('grant_access_if_attribute_missing'))) {
-      $reason = "{$rbac_attribute_name}attribute on the API product is missing or empty and in this case no roles can access to this API product..";
-    }
-    else {
-      $reason = sprintf('%s attribute on the API product is missing or empty and user does not have any of these roles: %s.', $rbac_attribute_name, implode(', ', $config->get('grant_access_if_attribute_missing')));
-    }
-    $result = AccessResult::forbidden($reason);
   }
 
   return $result;
@@ -130,47 +126,11 @@ function apigee_edge_apiproduct_rbac_form_apigee_edge_api_product_access_control
     '#value' => $config->get('attribute_name'),
   ];
 
-  // Exclude roles with bypass permissions.
-  $grant_access_options = array_filter($form['access']['role_names']['#value'], function ($rid) use ($form) {
-    return !$form['access']['roles_with_bypass']['#value'][$rid];
-  }, ARRAY_FILTER_USE_KEY);
-
   $form['rbac']['grant_access_if_attribute_missing'] = [
-    '#type' => 'container',
-    '#attributes' => ['class' => 'form-item'],
-  ];
-
-  $form['rbac']['grant_access_if_attribute_missing']['title'] = [
-    '#type' => 'item',
-    '#title' => t('Grant view access if attribute is missing or empty to'),
-    'checkboxes' => [
-      '#type' => 'container',
-    ],
-  ];
-
-  foreach ($grant_access_options as $rid => $name) {
-    $form['rbac']['grant_access_if_attribute_missing']['checkboxes'][$rid] = [
-      '#type' => 'checkbox',
-      '#title' => $name,
-      '#default_value' => in_array($rid, $config->get('grant_access_if_attribute_missing')) ? 1 : 0,
-    ];
-
-    if (!in_array($rid, [AccountInterface::ANONYMOUS_ROLE, AccountInterface::AUTHENTICATED_ROLE])) {
-      $form['rbac']['grant_access_if_attribute_missing']['checkboxes'][$rid]['#states'] = [
-        'checked' => [
-          ':input[name="rbac[grant_access_if_attribute_missing][checkboxes][authenticated]"]' => [
-            'checked' => TRUE,
-          ],
-        ],
-      ];
-    }
-  }
-
-  $form['rbac']['grant_access_if_attribute_missing']['description'] = [
-    '#type' => 'html_tag',
-    '#tag' => 'div',
-    '#value' => t('If %attribute attribute is missing or empty on an API product then grant implicit view access to these roles. (Roles with "Bypass API product access control" are not visible in this list.)', ['%attribute' => $current_rbac_attr_name]),
-    '#attributes' => ['class' => 'description'],
+    '#type' => 'checkbox',
+    '#title' => t('Show API products with missing or empty attribute to everyone'),
+    '#description' => t('If this checkbox is disabled only users with <em>Bypass API product access control</em> permission can see API product with missing or empty attribute.'),
+    '#default_value' => $config->get('grant_access_if_attribute_missing'),
   ];
 
   // Store $role_names for use when saving the data.
@@ -195,26 +155,27 @@ function apigee_edge_apiproduct_rbac_form_apigee_edge_api_product_access_control
 
   /** @var \Drupal\apigee_edge\Entity\ApiProductInterface[] $api_products */
   $api_products = $api_product_storage->loadMultiple();
+  // Sort products alphabetically (display name is an attribute so sorting in
+  // the query level does not work).
+  uasort($api_products, function (ApiProductInterface $a, ApiProductInterface $b) {
+    // Ignore case and malicious characters.
+    return strcmp(strtolower(Xss::filter($a->getDisplayName())), strtolower(Xss::filter($b->getDisplayName())));
+  });
   $product_names = [];
 
   foreach ($api_products as $product_name => $product) {
     $product_names[$product_name] = $product->getDisplayName();
     $form['rbac']['api_products'][$product_name]['name'] = [
-      '#type' => 'inline_template',
-      '#template' => '<div class="api-product"><span class="name">{{ name }}</span>{% if warning %}<div class="description"><em class="warning">{{ warning }}</em></div>{% endif %}</div>',
-      '#context' => [
-        'name' => $product->getDisplayName(),
-      ],
+      '#type' => 'html_tag',
+      '#tag' => 'span',
+      '#value' => $product->getDisplayName(),
+      '#attributes' => ['class' => 'api-product-name'],
     ];
 
     // Fetch role names for API Product.
     $selectedRoles = [];
     if (!empty($product->getAttributeValue($current_rbac_attr_name))) {
       $selectedRoles = explode(APIGEE_EDGE_APIPRODUCT_RBAC_ATTRIBUTE_VALUE_DELIMITER, $product->getAttributeValue($current_rbac_attr_name));
-    }
-
-    if (empty($selectedRoles) && $config->get('grant_access_if_attribute_missing')) {
-      $form['rbac']['api_products'][$product_name]['name']['#context']['warning'] = t('Attribute is missing or empty therefore settings in <strong>Grant view access</strong> controls the access to this entity.');
     }
 
     foreach ($role_names as $rid => $name) {
@@ -254,18 +215,12 @@ function apigee_edge_apiproduct_rbac_form_apigee_edge_api_product_access_control
  * @see apigee_edge_apiproduct_rbac_form_apigee_edge_api_product_access_control_form_alter()
  */
 function apigee_edge_apiproduct_rbac_form_apigee_edge_api_product_access_control_form_submit(array $form, FormStateInterface $form_state) {
-  $grant_access = array_keys(array_filter($form_state->getValue([
-    'rbac',
-    'grant_access_if_attribute_missing',
-    'checkboxes',
-  ], [])));
-  if (in_array(AccountInterface::AUTHENTICATED_ROLE, $grant_access)) {
-    // Do not save redundant roles.
-    $grant_access = [AccountInterface::AUTHENTICATED_ROLE];
-  }
   $config = Drupal::configFactory()->getEditable('apigee_edge_apiproduct_rbac.settings');
   $config->set('attribute_name', $form_state->getValue(['rbac', 'attribute_name']))
-    ->set('grant_access_if_attribute_missing', $grant_access)
+    ->set('grant_access_if_attribute_missing', (bool) $form_state->getValue([
+      'rbac',
+      'grant_access_if_attribute_missing',
+    ], FALSE))
     ->save();
   /** @var \Apigee\Edge\Api\Management\Controller\ApiProductControllerInterface $controller */
   $rid_product_map = [];
