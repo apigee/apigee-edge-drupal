@@ -30,7 +30,6 @@ use Drupal\apigee_edge\Entity\Developer;
 class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
 
   public static $modules = [
-    'apigee_edge_test',
     'views',
   ];
 

@@ -35,7 +35,6 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   protected const DUPLICATE_MACHINE_NAME = 'The machine-readable name is already in use. It must be unique.';
 
   public static $modules = [
-    'apigee_edge_test',
     'block',
   ];
 
