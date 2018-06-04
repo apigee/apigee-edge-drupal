@@ -75,3 +75,4 @@ chmod +x /var/www/html/testrunner
 # Do not exit if any PHPUnit test fails.
 set +e
 sudo -u root -E sudo -u www-data -E /var/www/html/testrunner -verbose -threads=${THREADS} -root=${WEB_ROOT}/modules/contrib/apigee_edge/tests -command="$WEB_ROOT_PARENT/vendor/bin/phpunit -c $WEB_ROOT/core -v --debug --printer \Drupal\Tests\Listeners\HtmlOutputPrinter"
+sudo -u root -E sudo -u www-data -E /var/www/html/testrunner -verbose -threads=${THREADS} -root=${WEB_ROOT}/modules/contrib/apigee_edge/modules/apigee_edge_apiproduct_rbac/tests -command="$WEB_ROOT_PARENT/vendor/bin/phpunit -c $WEB_ROOT/core -v --debug --printer \Drupal\Tests\Listeners\HtmlOutputPrinter"
