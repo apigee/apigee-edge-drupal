@@ -22,10 +22,12 @@ namespace Drupal\Tests\apigee_edge\Functional;
 
 use Apigee\Edge\Api\Management\Entity\App;
 use Drupal\apigee_edge\Entity\ApiProduct;
+use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialController;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\user\Entity\User;
+use Drupal\user\UserInterface;
 
 /**
  * Validates built-in access control on API products.
@@ -47,6 +49,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
     self::PRIVATE_VISIBILITY,
     self::INTERNAL_VISIBILITY,
   ];
+  protected const SUPPORTED_OPERATIONS = ['view', 'view label', 'assign'];
 
   /**
    * @var \Drupal\apigee_edge\Entity\ApiProductInterface[]*/
@@ -61,10 +64,25 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
   protected $users = [];
 
   /**
+   * @var \Drupal\user\RoleStorageInterface*/
+  protected $roleStorage;
+
+  /**
+   * @var \Drupal\Core\Entity\EntityAccessControlHandler*/
+  protected $accessControlHandler;
+
+  /**
+   * @var array*/
+  private $ridCombinations;
+
+  /**
    * @inheritdoc
    */
   protected function setUp() {
     parent::setUp();
+
+    $this->roleStorage = $this->container->get('entity_type.manager')->getStorage('user_role');
+    $this->accessControlHandler = $this->container->get('entity_type.manager')->getAccessControlHandler('api_product');
 
     $this->users[AccountInterface::ANONYMOUS_ROLE] = User::getAnonymousUser();
     $this->users[AccountInterface::AUTHENTICATED_ROLE] = $this->createAccount();
@@ -87,8 +105,21 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
       $apiproduct->save();
       $this->products[$visibility] = $apiproduct;
     }
+
+    /** @var \Drupal\user\RoleStorageInterface $rolesStorage */
+    $rids = array_keys($this->roleStorage->loadMultiple());
+    $ridCombinations = [[]];
+    foreach ($rids as $rid) {
+      foreach ($ridCombinations as $ridCombination) {
+        array_push($ridCombinations, array_merge([$rid], $ridCombination));
+      }
+    }
+    $this->ridCombinations = $ridCombinations;
   }
 
+  /**
+   * @inheritdoc
+   */
   protected function tearDown() {
     /** @var \Drupal\Core\Entity\EntityInterface[] $entities */
     $entities = array_merge($this->users, $this->products);
@@ -104,103 +135,70 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
     parent::tearDown();
   }
 
-  public function testAccess() {
-    /** @var \Drupal\Core\Entity\EntityAccessControlHandler $access_control_handler */
-    $access_control_handler = $this->container->get('entity_type.manager')->getAccessControlHandler('api_product');
-    /** @var \Drupal\user\RoleStorageInterface $rolesStorage */
-    $rolesStorage = $this->container->get('entity_type.manager')->getStorage('user_role');
-    $rids = array_keys($rolesStorage->loadMultiple());
-    $authenticatedRoles = array_filter($rids, function ($rid) {
+  public function testEntityAccess() : void {
+    $authenticatedRoles = array_filter(array_keys($this->roleStorage->loadMultiple()), function ($rid) {
       return $rid !== AccountInterface::ANONYMOUS_ROLE;
     });
-
-    $ridCombinations = [[]];
-    foreach ($rids as $rid) {
-      foreach ($ridCombinations as $ridCombination) {
-        array_push($ridCombinations, array_merge([$rid], $ridCombination));
-      }
-    }
-
-    $visibilityCombinations = [[]];
-    foreach (self::VISIBILITIES as $visibility) {
-      foreach ($visibilityCombinations as $visibilityCombination) {
-        array_push($visibilityCombinations, array_merge([$visibility], $visibilityCombination));
-      }
-    }
-
-    // Do not test the empty matrix (roles * visibility) times.
-    array_shift($ridCombinations);
-    array_shift($visibilityCombinations);
-    // Only test it once.
-    $visibilityCombinations[] = [];
+    $visibilityCombinations = $this->calculateTestCombinations();
 
     // We calculated all possible combinations from roles and visibilities
     // but existence of Authenticated user role introduces redundant tests.
     $testScenarios = [];
 
     foreach ($visibilityCombinations as $visibilityCombination) {
-      foreach ($ridCombinations as $ridCombination) {
+      foreach ($this->ridCombinations as $ridCombination) {
         $settings = array_combine($visibilityCombination, array_fill(0, count($visibilityCombination), $ridCombination));
-        // Ensure we always save have these 3 keys.
+        // Ensure we always have these 3 keys.
         $settings += [
           self::PUBLIC_VISIBILITY => [],
           self::PRIVATE_VISIBILITY => [],
           self::INTERNAL_VISIBILITY => [],
         ];
-        $this->config('apigee_edge.api_product_settings')
-          ->set('access', $settings)
-          ->save();
+        $this->saveAccessSettings($settings);
         // We have to clear entity access control handler's static cache because
-        // otherwise access results comes from there after this configuration
-        // change instead of apigee_edge_api_product_access().
-        $access_control_handler->resetCache();
+        // otherwise access results comes from there instead of gets
+        // recalculated.
+        $this->accessControlHandler->resetCache();
         foreach ($this->users as $userRole => $user) {
           foreach ($this->products as $product) {
-            $prodVisibility = $product->getAttributeValue('access');
-            $rolesWithAccess = $settings[$prodVisibility] ?? [];
-            // We have a dedicated test for empty settings, no need to check
-            // this multiple times.
-            if (empty($rolesWithAccess)) {
-              continue;
-            }
+            $rolesWithAccess = $this->getRolesWithAccess($product);
             // Saved configuration designedly contains only the authenticated
-            // role and not all authenticated roles.
+            // role and not all (authenticated) roles.
             if (in_array(AccountInterface::AUTHENTICATED_ROLE, $rolesWithAccess)) {
               $rolesWithAccess = array_merge($rolesWithAccess, $authenticatedRoles);
             }
             // Eliminate redundant test scenarios caused by auth.user role.
             sort($rolesWithAccess);
-            $testId = md5(implode(',', $rolesWithAccess));
-            if (in_array($testId, $testScenarios)) {
+            $testId = md5(sprintf('test-%s-%s-%s', $product->id(), $user->id(), implode('-', $rolesWithAccess) ?? 'empty'));
+            if (array_key_exists($testId, $testScenarios)) {
               continue;
             }
-            else {
-              $testScenarios[] = $testId;
-            }
-            foreach (['view', 'view label', 'assign'] as $operation) {
+            $testScenarios[$testId] = $rolesWithAccess;
+            foreach (self::SUPPORTED_OPERATIONS as $operation) {
               $accessGranted = $product->access($operation, $user);
               if (in_array($userRole, $rolesWithAccess)) {
-                $this->assertTrue($accessGranted, sprintf('User with "%s" user should have "%s" access to an API Product with "%s" visibility. Roles with access granted: %s.', $userRole, $operation, $prodVisibility, implode(', ', $rolesWithAccess)));
+                $this->assertTrue($accessGranted, $this->messageIfUserShouldHaveAccessByRole($operation, $user, $userRole, $rolesWithAccess, $product));
               }
               elseif ($this->users[self::USER_WITH_BYPASS_PERM]->id() === $user->id()) {
-                $this->assertTrue($accessGranted, "User with \"Bypass API Product access control\" permission should have \"{$operation}\" access to the API product.");
+                $this->assertTrue($accessGranted, $this->messageIfUserShouldHaveAccessWithBypassPerm($operation, $user));
               }
               else {
-                $this->assertFalse($accessGranted, sprintf('"%s" user without "Bypass API Product access control" permission should not have "%s" access to an API Product with "%s" visibility. Roles with access granted: %s.', $userRole, $operation, $prodVisibility, implode(', ', $rolesWithAccess)));
+                $this->assertFalse($accessGranted, $this->messageIfUserShouldNotHaveAccess($operation, $user, $userRole, $rolesWithAccess, $product));
               }
             }
           }
         }
       }
     }
+    $x = 1;
   }
 
   /**
    * Test for developer app/edit form.
    *
-   * The testAccess() has already ensured that "Access by visibility" access
-   * control is working properly on API products. We just have to confirm that
-   * developer app/edit forms as leveraging it properly.
+   * The testEntityAccess() has already ensured that "Access by visibility"
+   * access control is working properly on API products. We just have to
+   * confirm that developer app/edit forms as leveraging it properly.
    */
   public function testDeveloperAppEditForm() {
     // Some utility functions that we are going to use here.
@@ -237,13 +235,11 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
     };
 
     // Enforce this "Access by visibility" configuration.
-    $this->config('apigee_edge.api_product_settings')
-      ->set('access', [
-        self::PUBLIC_VISIBILITY => [AccountInterface::AUTHENTICATED_ROLE],
-        self::PRIVATE_VISIBILITY => [],
-        self::INTERNAL_VISIBILITY => [],
-      ])
-      ->save();
+    $this->saveAccessSettings([
+      self::PUBLIC_VISIBILITY => [AccountInterface::AUTHENTICATED_ROLE],
+      self::PRIVATE_VISIBILITY => [],
+      self::INTERNAL_VISIBILITY => [],
+    ]);
 
     /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $authUserApp */
     $authUserApp = DeveloperApp::create([
@@ -325,6 +321,116 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
     // << Auth. user.
     // Clean up.
     $authUserApp->delete();
+  }
+
+  /**
+   * Calculates test combination from roles and product visibility options.
+   *
+   * @return array
+   *   Multidimensional array with all possible combinations.
+   */
+  private function calculateTestCombinations() : array {
+    $ridCombinations = $this->ridCombinations;
+
+    $visibilityCombinations = [[]];
+    foreach (self::VISIBILITIES as $visibility) {
+      foreach ($visibilityCombinations as $visibilityCombination) {
+        array_push($visibilityCombinations, array_merge([$visibility], $visibilityCombination));
+      }
+    }
+
+    // Do not test the empty matrix (roles * visibility) times.
+    array_shift($ridCombinations);
+    array_shift($visibilityCombinations);
+    // Only test it once.
+    $visibilityCombinations[] = [];
+
+    return $visibilityCombinations;
+  }
+
+  /**
+   * Saves access settings to its appreciated place.
+   *
+   * @param array $settings
+   *   Associate array where keys are public, private, internal and values are
+   *   role ids.
+   */
+  protected function saveAccessSettings(array $settings) : void {
+    $this->config('apigee_edge.api_product_settings')
+      ->set('access', $settings)
+      ->save();
+  }
+
+  /**
+   * Returns roles (role ids) with access to an API product.
+   *
+   * @param \Drupal\apigee_edge\Entity\ApiProductInterface $product
+   *   API product.
+   *
+   * @return array
+   *   Array of role ids.
+   */
+  protected function getRolesWithAccess(ApiProductInterface $product) : array {
+    $prodVisibility = $product->getAttributeValue('access');
+    return $this->config('apigee_edge.api_product_settings')
+      ->get('access')[$prodVisibility] ?? [];
+  }
+
+  /**
+   * Error message, when a user should have access to an API product by role.
+   *
+   * @param string $operation
+   *   Operation on API product.
+   * @param \Drupal\user\UserInterface $user
+   *   User object.
+   * @param string $user_rid
+   *   Currently tested role of the user.
+   * @param array $rids_with_access
+   *   Roles with access to the API product.
+   * @param \Drupal\apigee_edge\Entity\ApiProductInterface $product
+   *   API Product.
+   *
+   * @return string
+   *   Error message.
+   */
+  protected function messageIfUserShouldHaveAccessByRole(string $operation, UserInterface $user, string $user_rid, array $rids_with_access, ApiProductInterface $product) : string {
+    return sprintf('User with "%s" role should have "%s" access to an API Product with "%s" visibility. Roles with access granted: %s.', $user_rid, $operation, ($product->getAttributeValue('access') ?? 'public'), implode(', ', $rids_with_access));
+  }
+
+  /**
+   * Error message, when a user should have access because s/he has bypass perm.
+   *
+   * @param string $operation
+   *   Operation on API product.
+   * @param \Drupal\user\UserInterface $user
+   *   User object.
+   *
+   * @return string
+   *   Error message.
+   */
+  protected function messageIfUserShouldHaveAccessWithBypassPerm(string $operation, UserInterface $user) : string {
+    return "User with \"Bypass API Product access control\" permission should have \"{$operation}\" access to the API product.";
+  }
+
+  /**
+   * Error message, when a user should not have access to an API product.
+   *
+   * @param string $operation
+   *   Operation on API product.
+   * @param \Drupal\user\UserInterface $user
+   *   User object.
+   * @param string $user_rid
+   *   Currently tested role of the user.
+   * @param array $rids_with_access
+   *   Roles with access to the API product.
+   * @param \Drupal\apigee_edge\Entity\ApiProductInterface $product
+   *   API Product.
+   *
+   * @return string
+   *   Error message.
+   */
+  protected function messageIfUserShouldNotHaveAccess(string $operation, UserInterface $user, string $user_rid, array $rids_with_access, ApiProductInterface $product) : string {
+    return sprintf('"%s" user without "Bypass API Product access control" permission should not have "%s" access to an API Product with "%s" visibility. Roles with access granted: %s.', $user_rid, $operation, ($product->getAttributeValue('access') ?? 'public'), implode(', ', $rids_with_access));
   }
 
   /**
