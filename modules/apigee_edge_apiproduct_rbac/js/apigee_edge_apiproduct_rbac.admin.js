@@ -23,6 +23,9 @@
  * Modified version of Core's user.permissions.js.
  */
 (function ($, Drupal) {
+
+  'use strict';
+
   Drupal.behaviors.apigee_edge_apiproduct_rbac_admin = {
     attach: function attach(context) {
       var self = this;
