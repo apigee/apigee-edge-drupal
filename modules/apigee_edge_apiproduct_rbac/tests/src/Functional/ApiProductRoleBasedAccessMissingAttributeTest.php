@@ -82,7 +82,7 @@ class ApiProductRoleBasedAccessMissingAttributeTest extends ApiProductRoleBasedA
   }
 
   public function testDeveloperAppEditForm() {
-    $this->markTestSkipped('ApiProductRoleBasedAccessAuthenticatedInternal validates this.');
+    $this->markTestSkipped('ApiProductRoleBasedAccessAuthenticatedInternalTest validates this.');
   }
 
 }
