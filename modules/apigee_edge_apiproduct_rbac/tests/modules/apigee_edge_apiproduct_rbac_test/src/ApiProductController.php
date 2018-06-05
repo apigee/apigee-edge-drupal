@@ -74,10 +74,29 @@ final class ApiProductController extends OriginalApiProductController {
    * {@inheritdoc}
    */
   public function create(EntityInterface $entity): void {
+    // We still have to create entities on Apigee Edge otherwise they can
+    // not be assigned to developer apps (unless they gets mocked too).
+    parent::create($entity);
+    /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $entity */
     $this->state->set($this->generateApiProductStateKey($entity->id()), $this->entityTransformer->normalize($entity));
+    $this->updateAttributes($entity->id(), $entity->getAttributes());
     $list = $this->state->get(self::STATE_API_PRODUCT_LIST_KEY) ?? [];
     $list[] = $entity->id();
     $this->state->set(self::STATE_API_PRODUCT_LIST_KEY, $list);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function load(string $entityId): EntityInterface {
+    $data = $this->state->get($this->generateApiProductStateKey($entityId));
+    if (NULL === $data) {
+      throw new ApiException("API Product with {$entityId} has not found in the storage.");
+    }
+    /** @var \Drupal\apigee_edge\Entity\ApiProduct $entity */
+    $entity = $this->entityTransformer->denormalize($data, ApiProduct::class);
+    $this->setAttributesFromStates($entity);
+    return $entity;
   }
 
   /**
@@ -108,14 +127,6 @@ final class ApiProductController extends OriginalApiProductController {
   /**
    * {@inheritdoc}
    */
-  public function updateAttributes(string $entityId, AttributesProperty $attributes): AttributesProperty {
-    $this->state->set($this->generateApiProductAttributeStateKey($entityId), $this->keyVMNormalizer->normalize($attributes));
-    return $attributes;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function getEntities(): array {
     /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $entity */
     $ids = array_map(function ($id) {
@@ -134,15 +145,17 @@ final class ApiProductController extends OriginalApiProductController {
   /**
    * {@inheritdoc}
    */
-  public function load(string $entityId): EntityInterface {
-    $data = $this->state->get($this->generateApiProductStateKey($entityId));
-    if (NULL === $data) {
-      throw new ApiException("API Product with {$entityId} has not found in the storage.");
-    }
-    /** @var \Drupal\apigee_edge\Entity\ApiProduct $entity */
-    $entity = $this->entityTransformer->denormalize($data, ApiProduct::class);
-    $this->setAttributesFromStates($entity);
-    return $entity;
+  public function getAttributes(string $entityId): AttributesProperty {
+    $data = $this->state->get($this->generateApiProductAttributeStateKey($entityId)) ?? [];
+    return $this->entityTransformer->denormalize($data, AttributesProperty::class);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function updateAttributes(string $entityId, AttributesProperty $attributes): AttributesProperty {
+    $this->state->set($this->generateApiProductAttributeStateKey($entityId), $this->keyVMNormalizer->normalize($attributes));
+    return $attributes;
   }
 
   /**
@@ -159,7 +172,7 @@ final class ApiProductController extends OriginalApiProductController {
   }
 
   /**
-   * Generates a unique tests key for an API product entity id.
+   * Generates a unique tests key for an API product attribute entity id.
    *
    * @param string $entityId
    *   API product entity id.
