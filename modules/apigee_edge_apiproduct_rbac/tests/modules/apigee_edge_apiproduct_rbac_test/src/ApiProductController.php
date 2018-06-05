@@ -159,7 +159,7 @@ final class ApiProductController extends OriginalApiProductController {
   }
 
   /**
-   * Generates a unique tests key for an API product entity id.
+   * Generates a unique states key for an API product entity.
    *
    * @param string $entityId
    *   API product entity id.
@@ -172,7 +172,7 @@ final class ApiProductController extends OriginalApiProductController {
   }
 
   /**
-   * Generates a unique tests key for an API product attribute entity id.
+   * Generates a unique states key for an API product attributes storage.
    *
    * @param string $entityId
    *   API product entity id.
