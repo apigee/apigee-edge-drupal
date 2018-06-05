@@ -23,8 +23,10 @@ namespace Drupal\apigee_edge_apiproduct_rbac_test;
 use Apigee\Edge\ClientInterface;
 use Apigee\Edge\Denormalizer\AttributesPropertyDenormalizer;
 use Apigee\Edge\Entity\EntityInterface;
+use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Normalizer\KeyValueMapNormalizer;
 use Apigee\Edge\Structure\AttributesProperty;
+use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\Controller\ApiProductController as OriginalApiProductController;
 use Drupal\Core\State\StateInterface;
@@ -37,7 +39,9 @@ use Drupal\Core\State\StateInterface;
  */
 final class ApiProductController extends OriginalApiProductController {
 
-  private const STATE_KEY_PREFIX = 'api_product_';
+  private const STATE_API_PRODUCT_KEY_PREFIX = 'api_product_';
+  private const STATE_API_PRODUCT_ATTR_KEY_PREFIX = 'api_product_attr_';
+  private const STATE_API_PRODUCT_LIST_KEY = 'api_products';
 
   /**
    * @var \Drupal\Core\State\StateInterface*/
@@ -69,8 +73,43 @@ final class ApiProductController extends OriginalApiProductController {
   /**
    * {@inheritdoc}
    */
+  public function create(EntityInterface $entity): void {
+    $this->state->set($this->generateApiProductStateKey($entity->id()), $this->entityTransformer->normalize($entity));
+    $list = $this->state->get(self::STATE_API_PRODUCT_LIST_KEY) ?? [];
+    $list[] = $entity->id();
+    $this->state->set(self::STATE_API_PRODUCT_LIST_KEY, $list);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function update(EntityInterface $entity): void {
+    $this->state->set($this->generateApiProductStateKey($entity->id()), $this->entityTransformer->normalize($entity));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function delete(string $entityId): EntityInterface {
+    $data = $this->state->get($this->generateApiProductStateKey($entityId));
+    if (NULL === $data) {
+      throw new ApiException("API Product with {$entityId} has not found in the storage.");
+    }
+    $entity = $this->entityTransformer->denormalize($data, ApiProduct::class);
+    $this->state->delete($this->generateApiProductStateKey($entityId));
+    $list = $this->state->get(self::STATE_API_PRODUCT_LIST_KEY) ?? [];
+    if ($index = array_search($entityId, $list)) {
+      unset($list[$index]);
+    }
+    $this->state->set(self::STATE_API_PRODUCT_LIST_KEY, $list);
+    return $entity;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function updateAttributes(string $entityId, AttributesProperty $attributes): AttributesProperty {
-    $this->state->set($this->generateStateKey($entityId), json_encode($this->keyVMNormalizer->normalize($attributes)));
+    $this->state->set($this->generateApiProductAttributeStateKey($entityId), $this->keyVMNormalizer->normalize($attributes));
     return $attributes;
   }
 
@@ -79,9 +118,14 @@ final class ApiProductController extends OriginalApiProductController {
    */
   public function getEntities(): array {
     /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $entity */
-    $entities = parent::getEntities();
-    foreach ($entities as $entity) {
+    $ids = array_map(function ($id) {
+      return $this->generateApiProductStateKey($id);
+    }, $this->state->get(self::STATE_API_PRODUCT_LIST_KEY) ?? []);
+    $entities = [];
+    foreach ($this->state->getMultiple($ids) as $data) {
+      $entity = $this->entityTransformer->denormalize($data, ApiProduct::class);
       $this->setAttributesFromStates($entity);
+      $entities[$entity->id()] = $entity;
     }
 
     return $entities;
@@ -91,9 +135,14 @@ final class ApiProductController extends OriginalApiProductController {
    * {@inheritdoc}
    */
   public function load(string $entityId): EntityInterface {
-    /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $entity */
-    $entity = parent::load($entityId);
+    $data = $this->state->get($this->generateApiProductStateKey($entityId));
+    if (NULL === $data) {
+      throw new ApiException("API Product with {$entityId} has not found in the storage.");
+    }
+    /** @var \Drupal\apigee_edge\Entity\ApiProduct $entity */
+    $entity = $this->entityTransformer->denormalize($data, ApiProduct::class);
     $this->setAttributesFromStates($entity);
+    return $entity;
   }
 
   /**
@@ -105,8 +154,21 @@ final class ApiProductController extends OriginalApiProductController {
    * @return string
    *   Unique state id.
    */
-  private function generateStateKey(string $entityId) : string {
-    return self::STATE_KEY_PREFIX . $entityId;
+  private function generateApiProductStateKey(string $entityId) : string {
+    return self::STATE_API_PRODUCT_KEY_PREFIX . $entityId;
+  }
+
+  /**
+   * Generates a unique tests key for an API product entity id.
+   *
+   * @param string $entityId
+   *   API product entity id.
+   *
+   * @return string
+   *   Unique state id.
+   */
+  private function generateApiProductAttributeStateKey(string $entityId) : string {
+    return self::STATE_API_PRODUCT_ATTR_KEY_PREFIX . $entityId;
   }
 
   /**
@@ -116,9 +178,9 @@ final class ApiProductController extends OriginalApiProductController {
    *   API product entity.
    */
   private function setAttributesFromStates(ApiProductInterface $entity) {
-    if ($attributes = $this->state->get($this->generateStateKey($entity->id()))) {
+    if ($attributes = $this->state->get($this->generateApiProductAttributeStateKey($entity->id()))) {
       /** @var \Apigee\Edge\Structure\AttributesProperty $property */
-      $property = $this->entityTransformer->denormalize(json_decode($attributes), AttributesProperty::class);
+      $property = $this->entityTransformer->denormalize($attributes, AttributesProperty::class);
       $entity->setAttributes($property);
     }
   }
