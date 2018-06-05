@@ -34,7 +34,7 @@ use Drupal\Core\Session\AccountInterface;
  * @group apigee_edge_api_product
  * @group apigee_edge_api_product_access
  */
-class ApiProductRoleBasedAccessMissingAttribute extends ApiProductRoleBasedAccessTestBase {
+class ApiProductRoleBasedAccessMissingAttributeTest extends ApiProductRoleBasedAccessTestBase {
 
   public function testEntityAccess(): void {
     // Some utility functions that we are going to use here.
