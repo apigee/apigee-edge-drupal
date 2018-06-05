@@ -73,7 +73,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * @var array*/
-  private $ridCombinations;
+  protected $ridCombinations;
 
   /**
    * @inheritdoc
@@ -106,15 +106,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
       $this->products[$visibility] = $apiproduct;
     }
 
-    /** @var \Drupal\user\RoleStorageInterface $rolesStorage */
-    $rids = array_keys($this->roleStorage->loadMultiple());
-    $ridCombinations = [[]];
-    foreach ($rids as $rid) {
-      foreach ($ridCombinations as $ridCombination) {
-        array_push($ridCombinations, array_merge([$rid], $ridCombination));
-      }
-    }
-    $this->ridCombinations = $ridCombinations;
+    $this->ridCombinations = $this->calculateRidCombinations(array_keys($this->roleStorage->loadMultiple()));
   }
 
   /**
@@ -321,6 +313,25 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
     // << Auth. user.
     // Clean up.
     $authUserApp->delete();
+  }
+
+  /**
+   * Calculates all possible combinations from role ids.
+   *
+   * @param array $rids
+   *   Array of role ids.
+   *
+   * @return array
+   *   All possible combinations calculated from rids.
+   */
+  protected function calculateRidCombinations(array $rids) : array {
+    $ridCombinations = [[]];
+    foreach ($rids as $rid) {
+      foreach ($ridCombinations as $ridCombination) {
+        array_push($ridCombinations, array_merge([$rid], $ridCombination));
+      }
+    }
+    return $ridCombinations;
   }
 
   /**
