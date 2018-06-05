@@ -130,7 +130,7 @@ class RequirementsTest extends ApigeeEdgeFunctionalTestBase {
     // Use wrong credentials.
     $key->setKeyValue(Json::encode([
       'endpoint' => getenv('APIGEE_EDGE_ENDPOINT'),
-      'organization' => $this->getRandomGenerator()->string(),
+      'organization' => $this->getRandomGenerator()->name(),
       'username' => getenv('APIGEE_EDGE_USERNAME'),
       'password' => getenv('APIGEE_EDGE_PASSWORD'),
     ]));
