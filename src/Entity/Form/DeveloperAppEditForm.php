@@ -111,7 +111,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
     $form['developerId']['#access'] = FALSE;
     $form['product']['#access'] = !isset($form['product']) ?: FALSE;
 
-    if ($config->get('associate_apps') && $config->get('user_select')) {
+    if ($config->get('user_select')) {
       $form['credential'] = [
         '#type' => 'container',
         '#weight' => 100,
@@ -196,7 +196,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
     $config = $this->configFactory->get('apigee_edge.common_app_settings');
     $redirect_user = FALSE;
 
-    if ($config->get('associate_apps') && $config->get('user_select')) {
+    if ($config->get('user_select')) {
       $dacc = new DeveloperAppCredentialController(
         $this->sdkConnector->getOrganization(),
         $this->entity->getDeveloperId(),

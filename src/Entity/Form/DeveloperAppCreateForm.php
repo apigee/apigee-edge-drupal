@@ -73,6 +73,9 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
@@ -114,59 +117,57 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
       '#default_value' => $app->getName(),
     ];
 
-    if ($config->get('associate_apps')) {
-      $user_select = (bool) $config->get('user_select');
-      $form['product'] = [
-        '#type' => 'fieldset',
-        '#title' => $this->entityTypeManager->getDefinition('api_product')->getSingularLabel(),
-        '#collapsible' => FALSE,
-        '#access' => $user_select,
-        '#weight' => 100,
-        '#attributes' => [
-          'class' => ['form-required'],
-        ],
-      ];
+    $user_select = (bool) $config->get('user_select');
+    $form['product'] = [
+      '#type' => 'details',
+      '#title' => $this->entityTypeManager->getDefinition('api_product')->getSingularLabel(),
+      '#open' => TRUE,
+      '#access' => $user_select,
+      '#weight' => 100,
+      '#attributes' => [
+        'class' => ['form-required'],
+      ],
+    ];
 
-      // We can use null, because in Entity::access() null falls back to the
-      // currently logged in user.
-      $currentUser = NULL;
-      // Get the current user object from the route if available.
-      // (It could happen that a user with bypass permission edits an other
-      // user's app.)
-      if ($this->routeMatch->getParameter('user') !== NULL) {
-        $currentUser = $this->entityTypeManager->getStorage('user')->load($this->routeMatch->getParameter('user'));
-      }
-      /** @var \Drupal\apigee_edge\Entity\ApiProductInterface[] $availableProductsForUser */
-      $availableProductsForUser = array_filter(ApiProduct::loadMultiple(), function (ApiProductInterface $product) use ($currentUser) {
-        return $product->access('assign', $currentUser);
-      });
-      $product_list = [];
-      foreach ($availableProductsForUser as $product) {
-        $product_list[$product->id()] = $product->getDisplayName();
-      }
+    // We can use null, because in Entity::access() null falls back to the
+    // currently logged in user.
+    $currentUser = NULL;
+    // Get the current user object from the route if available.
+    // (It could happen that a user with bypass permission edits an other
+    // user's app.)
+    if ($this->routeMatch->getParameter('user') !== NULL) {
+      $currentUser = $this->entityTypeManager->getStorage('user')->load($this->routeMatch->getParameter('user'));
+    }
+    /** @var \Drupal\apigee_edge\Entity\ApiProductInterface[] $availableProductsForUser */
+    $availableProductsForUser = array_filter(ApiProduct::loadMultiple(), function (ApiProductInterface $product) use ($currentUser) {
+      return $product->access('assign', $currentUser);
+    });
+    $product_list = [];
+    foreach ($availableProductsForUser as $product) {
+      $product_list[$product->id()] = $product->getDisplayName();
+    }
 
-      $multiple = $config->get('multiple_products');
-      $default_products = $config->get('default_products') ?: [];
+    $multiple = $config->get('multiple_products');
+    $default_products = $config->get('default_products') ?: [];
 
-      $form['product']['api_products'] = [
-        '#title' => $this->t('API Products'),
-        '#title_display' => 'invisible',
-        '#required' => TRUE,
-        '#options' => $product_list,
-        '#access' => $user_select,
-        '#default_value' => $multiple ? $default_products : (string) reset($default_products),
-      ];
+    $form['product']['api_products'] = [
+      '#title' => $this->t('API Products'),
+      '#title_display' => 'invisible',
+      '#required' => TRUE,
+      '#options' => $product_list,
+      '#access' => $user_select,
+      '#default_value' => $multiple ? $default_products : (string) reset($default_products),
+    ];
 
-      if ($config->get('display_as_select')) {
-        $form['product']['api_products']['#type'] = 'select';
-        $form['product']['api_products']['#multiple'] = $multiple;
-        $form['product']['api_products']['#empty_value'] = '';
-      }
-      else {
-        $form['product']['api_products']['#type'] = $multiple ? 'checkboxes' : 'radios';
-        if (!$multiple) {
-          $form['product']['api_products']['#options'] = ['' => $this->t('N/A')] + $form['product']['api_products']['#options'];
-        }
+    if ($config->get('display_as_select')) {
+      $form['product']['api_products']['#type'] = 'select';
+      $form['product']['api_products']['#multiple'] = $multiple;
+      $form['product']['api_products']['#empty_value'] = '';
+    }
+    else {
+      $form['product']['api_products']['#type'] = $multiple ? 'checkboxes' : 'radios';
+      if (!$multiple) {
+        $form['product']['api_products']['#options'] = ['' => $this->t('N/A')] + $form['product']['api_products']['#options'];
       }
     }
 
@@ -208,38 +209,38 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Core\TempStore\TempStoreException
    */
   public function save(array $form, FormStateInterface $form_state) {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
     $app = $this->entity;
     $app->save();
 
-    if ($this->config('apigee_edge.common_app_settings')->get('associate_apps')) {
-      $dacc = new DeveloperAppCredentialController(
-        $this->sdkConnector->getOrganization(),
-        $app->getDeveloperId(),
-        $app->getName(),
-        $this->sdkConnector->getClient()
-      );
+    $dacc = new DeveloperAppCredentialController(
+      $this->sdkConnector->getOrganization(),
+      $app->getDeveloperId(),
+      $app->getName(),
+      $this->sdkConnector->getClient()
+    );
 
-      /** @var \Apigee\Edge\Api\Management\Entity\AppCredential[] $credentials */
-      $credentials = $app->getCredentials();
-      /** @var \Apigee\Edge\Api\Management\Entity\AppCredential $credential */
-      $credential = reset($credentials);
+    /** @var \Apigee\Edge\Api\Management\Entity\AppCredential[] $credentials */
+    $credentials = $app->getCredentials();
+    /** @var \Apigee\Edge\Api\Management\Entity\AppCredential $credential */
+    $credential = reset($credentials);
 
-      $credential_lifetime = $this->config('apigee_edge.developer_app_settings')->get('credential_lifetime');
-      $products = array_values(array_filter((array) $form_state->getValue('api_products')));
+    $credential_lifetime = $this->config('apigee_edge.developer_app_settings')->get('credential_lifetime');
+    $products = array_values(array_filter((array) $form_state->getValue('api_products')));
 
-      if ($credential_lifetime === 0 && !empty($products)) {
-        $dacc->addProducts($credential->id(), $products);
-      }
-      elseif ($credential_lifetime !== 0 && !empty($products)) {
-        $dacc->delete($credential->id());
-        // The value of -1 indicates no set expiry. But the value of 0 is not
-        // acceptable by the server (InvalidValueForExpiresIn).
-        $credential_lifetime = $credential_lifetime === 0 ? -1 : $credential_lifetime * 86400000;
-        $dacc->generate($products, $app->getAttributes(), $app->getCallbackUrl(), [], $credential_lifetime);
-      }
+    if ($credential_lifetime === 0) {
+      $dacc->addProducts($credential->id(), $products);
+    }
+    else {
+      $dacc->delete($credential->id());
+      // The value of -1 indicates no set expiry. But the value of 0 is not
+      // acceptable by the server (InvalidValueForExpiresIn).
+      $dacc->generate($products, $app->getAttributes(), $app->getCallbackUrl(), [], $credential_lifetime * 86400000);
     }
 
     $form_state->setRedirectUrl($this->getRedirectUrl());
