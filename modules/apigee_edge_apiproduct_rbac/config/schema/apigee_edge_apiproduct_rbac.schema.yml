@@ -1,0 +1,9 @@
+apigee_edge_apiproduct_rbac.settings:
+  type: config_object
+  mapping:
+    attribute_name:
+      type: string
+      label: 'Attribute name'
+    grant_access_if_attribute_missing:
+      type: boolean
+      label: 'Grant access to an API product if attribute is missing or empty'

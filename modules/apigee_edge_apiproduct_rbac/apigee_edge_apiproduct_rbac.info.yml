@@ -1,0 +1,11 @@
+name: "Apigee Edge: API Product RBAC"
+description: Role based access control over view operation on API Products.
+package: Apigee
+
+type: module
+core: 8.x
+
+dependencies:
+  - apigee_edge:apigee_edge
+
+php: "7.1"

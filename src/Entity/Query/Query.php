@@ -27,6 +27,23 @@ use Drupal\Core\Entity\Query\QueryInterface;
 
 /**
  * Defines the entity query for Apigee Edge entities.
+ *
+ * Query loader always tries to use the best Apigee Edge endpoint for retrieving
+ * already filtered results from Apigee Edge and only do the necessary filtering
+ * in the PHP side. It does it in the getFromStorage() method by filtering
+ * conditions to find those that can used directly on Apigee Edge.
+ * This process does not work on group conditions (OR, AND) it
+ * only supports direct field conditions added to the query. Group conditions
+ * always evaluated on the PHP side.
+ *
+ * @code
+ * // This works.
+ * $query->condition('developerId', 'XY');
+ * // But this does not.
+ * $or = $query->orConditionGroup().
+ * $or->condition('developerId', 'XY')->condition('developerId', 'YX');
+ * $query->condition($or);
+ * @endcode
  */
 class Query extends QueryBase implements QueryInterface {
 
@@ -59,8 +76,15 @@ class Query extends QueryBase implements QueryInterface {
    * {@inheritdoc}
    */
   public function execute() {
-    $filter = $this->condition->compile($this);
+    // We have to allow getFromStorage() to remove unnecessary query conditions
+    // so we have to run it before compile(). Example: DeveloperAppQuery
+    // can load only apps of a specific developer by developerId or email.
+    // If it does that by email then the email condition should be removed
+    // because developer apps do not have email property only developerId.
+    // Basically, DeveloperAppQuery already applies a condition on the returned
+    // result because this function gets called.
     $all_records = $this->getFromStorage();
+    $filter = $this->condition->compile($this);
 
     $result = array_filter($all_records, $filter);
     if ($this->count) {
@@ -130,16 +154,21 @@ class Query extends QueryBase implements QueryInterface {
     $storage = $this->entityTypeManager->getStorage($this->entityTypeId);
     // The worst case: load all entities from Apigee Edge.
     $ids = NULL;
-    foreach ($this->condition->conditions() as $condition) {
+    $originalConditions = &$this->condition->conditions();
+    $filteredConditions = [];
+    foreach ($originalConditions as $key => $condition) {
+      $filteredConditions[$key] = $condition;
       // \Drupal\Core\Entity\EntityStorageBase::buildPropertyQuery() always adds
-      // conditions with IN that is why the last part of this condition
-      // is needed.
+      // conditions with IN this is the reason why the last part of this
+      // condition is needed.
       if (in_array($condition['field'], $this->getEntityIdProperties()) && (in_array($condition['operator'], [NULL, '=']) || ($condition['operator'] === 'IN' && count($condition['value']) === 1))) {
         if (is_array($condition['value'])) {
           $ids = [reset($condition['value'])];
+          unset($filteredConditions[$key]);
         }
         else {
           $ids = [$condition['value']];
+          unset($filteredConditions[$key]);
         }
         // If we found an id field in the query do not look for an another
         // because that would not make any sense to query one entity by
@@ -148,6 +177,12 @@ class Query extends QueryBase implements QueryInterface {
         break;
       }
     }
+    // Remove conditions that is going to be applied on Apigee Edge
+    // (by calling the proper API with the proper parameters).
+    // We do not want to apply the same filters on the result in execute()
+    // again.
+    $originalConditions = $filteredConditions;
+
     return $storage->loadMultiple($ids);
   }
 

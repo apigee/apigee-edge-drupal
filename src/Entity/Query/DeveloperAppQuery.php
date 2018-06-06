@@ -38,13 +38,18 @@ class DeveloperAppQuery extends Query {
     $developerId = NULL;
     $appName = NULL;
     $developerIdProperties = ['developerId', 'email'];
-    foreach ($this->condition->conditions() as $condition) {
+    $originalConditions = &$this->condition->conditions();
+    $filteredConditions = [];
+    foreach ($originalConditions as $key => $condition) {
+      $filteredConditions[$key] = $condition;
       if (in_array($condition['field'], $developerIdProperties) && in_array($condition['operator'], [NULL, '='])) {
         if (!is_array($condition['value'])) {
           $developerId = $condition['value'];
+          unset($filteredConditions[$key]);
         }
         elseif (is_array($condition['value']) && count($condition['value']) === 1) {
           $developerId = reset($condition['value']);
+          unset($filteredConditions[$key]);
         }
       }
       // TODO Add support to IN conditions (multiple app names) when it
@@ -52,12 +57,20 @@ class DeveloperAppQuery extends Query {
       elseif ($condition['field'] === 'name' && in_array($condition['operator'], [NULL, '='])) {
         if (!is_array($condition['value'])) {
           $appName = $condition['value'];
+          unset($filteredConditions[$key]);
         }
         elseif (is_array($condition['value']) && count($condition['value']) === 1) {
           $appName = reset($condition['value']);
+          unset($filteredConditions[$key]);
         }
       }
     }
+    // Remove conditions that is going to be applied on Apigee Edge
+    // (by calling the proper API with the proper parameters).
+    // We do not want to apply the same filters on the result in execute()
+    // again.
+    $originalConditions = $filteredConditions;
+
     // Load only one developer's apps instead of all apps.
     if ($developerId !== NULL) {
       /** @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppController $controller */

@@ -86,6 +86,13 @@ apigee_edge.settings.product.caching:
     _title: 'API Product caching'
   requirements:
     _permission: 'administer apigee edge'
+apigee_edge.settings.product.access_control:
+  path: '/admin/config/apigee-edge/product-settings/access-control'
+  defaults:
+    _form: '\Drupal\apigee_edge\Form\ProductAccessControlForm'
+    _title: 'API Product access control'
+  requirements:
+    _permission: 'administer apigee edge'
 
 apigee_edge.settings.app:
   path: '/admin/config/apigee-edge/app-settings'

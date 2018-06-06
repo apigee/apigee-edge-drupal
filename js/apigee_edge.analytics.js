@@ -50,12 +50,15 @@
         var timezoneOffset = drupalSettings.analytics.timezone_offset;
 
         // Stop drawing if there is no analytics data.
-        if(values === null) {
+        if (values === null) {
           return;
         }
 
         // If the passed version doesn't exist, default to 'current' (stable).
-        google.charts.load(version === null ? 'current' : version, {'packages':['corechart'], 'language': language});
+        google.charts.load(version === null ? 'current' : version, {
+          'packages': ['corechart'],
+          'language': language
+        });
         google.charts.setOnLoadCallback(callback);
 
         /**
@@ -67,14 +70,17 @@
           data.addColumn('datetime');
           data.addColumn('number', metric);
           for (var i = 0; i < timestamps.length; i++) {
-            if(skipZeroValues && values[i] === 0) {
+            if (skipZeroValues && values[i] === 0) {
               continue;
             }
             data.addRow([new Date(timestamps[i]), values[i]]);
           }
 
           // Create timezone date formatter.
-          var formatter_timezone = new google.visualization.DateFormat({formatType: 'long', timeZone: timezoneOffset / 60});
+          var formatter_timezone = new google.visualization.DateFormat({
+            formatType: 'long',
+            timeZone: timezoneOffset / 60
+          });
           // Reformat the date values.
           formatter_timezone.format(data, 0);
 
@@ -95,7 +101,7 @@
           if (typeof(route) === 'string') {
             route = route.split('.');
           }
-          if (route.length > 1){
+          if (route.length > 1) {
             setNestedObjectDateProperty(object[route.shift()], route);
           }
           else {
@@ -116,17 +122,17 @@
    */
   Drupal.behaviors.apigeeEdgeAnalyticsQuickDatePicker = {
     attach: function attach(context, drupalSettings) {
-      $('#edit-quick-date-picker', context).once().bind('change', function() {
+      $('#edit-quick-date-picker', context).once().bind('change', function () {
         var since = getServerOffsetDate(new Date());
-        switch(this.selectedOptions['0'].value) {
+        switch (this.selectedOptions['0'].value) {
           case '1d':
-            since.setDate(since.getDate()-1);
+            since.setDate(since.getDate() - 1);
             break;
           case '1w':
-            since.setDate(since.getDate()-7);
+            since.setDate(since.getDate() - 7);
             break;
           case '2w':
-            since.setDate(since.getDate()-14);
+            since.setDate(since.getDate() - 14);
             break;
           default:
             return;

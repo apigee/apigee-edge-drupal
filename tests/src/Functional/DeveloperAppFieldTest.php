@@ -37,7 +37,6 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
   use FieldUiTestTrait;
 
   public static $modules = [
-    'apigee_edge_test',
     'link',
     'block',
   ];

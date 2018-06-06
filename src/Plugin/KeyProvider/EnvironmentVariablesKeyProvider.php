@@ -124,7 +124,7 @@ class EnvironmentVariablesKeyProvider extends KeyProviderBase implements KeyPlug
   }
 
   /**
-   * Returns an array containing the environment variables (depends on the key type).
+   * Returns an array containing the environment variables by key type.
    *
    * @param bool $required
    *   Returns only the required environment variables.

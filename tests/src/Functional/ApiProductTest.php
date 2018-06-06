@@ -20,7 +20,6 @@
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Drupal\apigee_edge\Entity\ApiProduct;
-use Drupal\apigee_edge\Entity\Developer;
 
 /**
  * Create, delete, update API Product entity tests.
@@ -29,37 +28,6 @@ use Drupal\apigee_edge\Entity\Developer;
  * @group apigee_edge_api_product
  */
 class ApiProductTest extends ApigeeEdgeFunctionalTestBase {
-
-  /**
-   * The developer entity.
-   *
-   * @var \Drupal\apigee_edge\Entity\DeveloperInterface
-   */
-  protected $developer;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp() {
-    parent::setUp();
-    $this->developer = Developer::create([
-      'email' => $this->randomMachineName() . '@example.com',
-      'userName' => $this->randomMachineName(),
-      'firstName' => $this->randomMachineName(),
-      'lastName' => $this->randomMachineName(),
-      'status' => Developer::STATUS_ACTIVE,
-    ]);
-    $this->developer->save();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function tearDown() {
-    $this->developer->delete();
-
-    parent::tearDown();
-  }
 
   /**
    * Tests API product entity.

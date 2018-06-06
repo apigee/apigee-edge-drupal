@@ -31,6 +31,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Egulias\EmailValidator\EmailValidatorInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -56,6 +57,13 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
   protected $database;
 
   /**
+   * The email validator.
+   *
+   * @var \Egulias\EmailValidator\EmailValidatorInterface
+   */
+  private $emailValidator;
+
+  /**
    * Constructs an DeveloperAppStorage instance.
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $sdkConnector
@@ -72,11 +80,14 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
    *   Configuration factory.
    * @param \Drupal\Component\Datetime\TimeInterface $systemTime
    *   System time.
+   * @param \Egulias\EmailValidator\EmailValidatorInterface $emailValidator
+   *   Email validator.
    */
-  public function __construct(SDKConnectorInterface $sdkConnector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, EntityTypeManagerInterface $entityTypeManager, ConfigFactoryInterface $config, TimeInterface $systemTime) {
+  public function __construct(SDKConnectorInterface $sdkConnector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, EntityTypeManagerInterface $entityTypeManager, ConfigFactoryInterface $config, TimeInterface $systemTime, EmailValidatorInterface $emailValidator) {
     parent::__construct($sdkConnector, $entity_type, $cache, $logger, $systemTime);
     $this->entityTypeManager = $entityTypeManager;
     $this->cacheExpiration = $config->get('apigee_edge.common_app_settings')->get('cache_expiration');
+    $this->emailValidator = $emailValidator;
   }
 
   /**
@@ -92,7 +103,8 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
       $logger,
       $container->get('entity_type.manager'),
       $container->get('config.factory'),
-      $container->get('datetime.time')
+      $container->get('datetime.time'),
+      $container->get('email.validator')
     );
   }
 
@@ -132,9 +144,15 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
    * {@inheritdoc}
    */
   public function loadByDeveloper(string $developerId): array {
-    $ids = $this->getQuery()
-      ->condition('developerId', $developerId)
-      ->execute();
+    $query = $this->getQuery();
+    // We have to figure out whether this is an email or a UUID.
+    if ($this->emailValidator->isValid($developerId)) {
+      $query->condition('email', $developerId);
+    }
+    else {
+      $query->condition('developerId', $developerId);
+    }
+    $ids = $query->execute();
     return $this->loadMultiple(array_values($ids));
   }
 

@@ -35,6 +35,7 @@ use Apigee\Edge\Api\Management\Entity\ApiProduct as EdgeApiProduct;
  *   ),
  *   handlers = {
  *     "storage" = "\Drupal\apigee_edge\Entity\Storage\ApiProductStorage",
+ *     "access" = "Drupal\Core\Entity\EntityAccessControlHandler",
  *   },
  * )
  */

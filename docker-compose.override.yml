@@ -19,6 +19,7 @@ services:
       # https://api.drupal.org/api/drupal/vendor%21symfony%21phpunit-bridge%21DeprecationErrorHandler.php/8.5.x
       SYMFONY_DEPRECATIONS_HELPER: disabled
       THREADS: ${THREADS:-2}
+      TEST_ROOT: ${TEST_ROOT:-modules/contrib/apigee_edge/tests}
   webserver:
     environment:
       APACHE_FCGI_PROXY_TIMEOUT: 180 # Just in case, wait more than usual in tests.

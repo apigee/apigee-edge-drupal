@@ -23,6 +23,7 @@
  * Main module file for Apigee Edge.
  */
 
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Apigee\Edge\Api\Management\Normalizer\AppCredentialNormalizer;
 use Apigee\Edge\Entity\EntityTransformer;
 use Apigee\Edge\Exception\ApiException;
@@ -38,6 +39,7 @@ use Drupal\apigee_edge\Plugin\Validation\Constraint\DeveloperEmailUniqueValidato
 use Drupal\Component\Render\PlainTextOutput;
 use Drupal\Component\Utility\Crypt;
 use Drupal\Component\Utility\Xss;
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -188,6 +190,62 @@ function apigee_edge_developer_app_view(array &$build, EntityInterface $entity, 
       ] + $defaults;
     }
   }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_access().
+ *
+ * Supported operations: view, view label, assign.
+ *
+ * Rules:
+ * - The user gets allowed if has "Bypass API Product access control"
+ * permission always.
+ * - If operation is "view" or "view label" then the user gets access allowed
+ * for the API Product (entity) if the API product's access attribute value is
+ * either one of the selected access attribute values OR s/he an a developer
+ * app that is in association with the selected API product.
+ * - If operation is "assign" then second part of the previous sentence does
+ * not apply only access attribute's value matters.
+ */
+function apigee_edge_api_product_access(EntityInterface $entity, $operation, AccountInterface $account) {
+  /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $entity */
+  // We only control view and assign operations.
+  if (!in_array($operation, ['view', 'view label', 'assign'])) {
+    // We have to return allowed, because neutral response still means
+    // denied if there is no other module that would return allowed for the
+    // entity specifically.
+    // @see Drupal\Core\Access\AccessResultInterface::isAllowed()
+    // @see Drupal\Core\Entity\EntityAccessControlHandler::access()
+    return AccessResult::allowed();
+  }
+
+  if ($account->hasPermission('bypass api product access control')) {
+    return AccessResult::allowed();
+  }
+
+  $config = \Drupal::config('apigee_edge.api_product_settings');
+  // Attribute may not exists but in that case it means public.
+  $productVisibility = $entity->getAttributeValue('access') ?? 'public';
+  $selectedRoles = $config->get('access')[$productVisibility] ?? [];
+
+  // User may not have access to this API product based on the current
+  // access setting but we should still grant him/her view access
+  // if s/he has a developer app in association with this API product.
+  // We should not provide him/her access if operation is "assign"
+  // in general just because s/he has an app with the API product.
+  // Displaying these products should be solved on the form level always.
+  if (!empty(array_intersect($selectedRoles, $account->getRoles())) || ($operation !== 'assign' && _apigee_edge_user_has_an_app_with_product($entity->getName(), $account))) {
+    return AccessResult::allowed();
+  }
+
+  if (empty($selectedRoles)) {
+    $reason = "The \"{$operation}\" operation on this API product with \"{$productVisibility}\" visibility is revoked because currently no Drupal role can access to API products with this visibility.";
+  }
+  else {
+    $reason = sprintf('The "%s" operation on this API product with "%s" visibility is revoked because user does not have any of the following roles: %s.', $operation, $productVisibility, implode(', ', $selectedRoles));
+  }
+
+  return AccessResult::forbidden($reason);
 }
 
 /**
@@ -726,6 +784,9 @@ function template_preprocess_app_credential_product_list(array &$variables) {
   $variables['#api_product_entities'] = $allProducts = ApiProduct::loadMultiple($cred_product_ids);
   $variables += ['content' => []];
   foreach ($cred_products as $product) {
+    if (!$allProducts[$product->getApiproduct()]->access('view label')) {
+      continue;
+    }
     $value = '';
     switch ($product->getStatus()) {
       case CredentialProduct::STATUS_APPROVED:
@@ -1202,4 +1263,51 @@ function apigee_edge_developer_app_storage_load(array $entities) {
       $entity->setOwnerId($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]]);
     }
   }
+}
+
+/**
+ * Checks whether a user has a developer app in association with an API product.
+ *
+ * We did not add static caching to this function because there could be
+ * possible scenarios when a cache invalidation issue could occur and this
+ * function would return a false-positive result.
+ *
+ * @param string $productName
+ *   API Product name.
+ * @param \Drupal\Core\Session\AccountInterface|null $account
+ *   User object. Default is the current user.
+ *
+ * @return bool
+ *   TRUE if user has at least one app with the API Product, FALSE otherwise.
+ */
+function _apigee_edge_user_has_an_app_with_product(string $productName, AccountInterface $account = NULL) : bool {
+  if ($account === NULL) {
+    $account = Drupal::currentUser()->getAccount();
+  }
+
+  // Anonymous users does not have a developer account on Apigee Edge.
+  if ($account->isAnonymous()) {
+    return FALSE;
+  }
+
+  /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperAppStorageInterface $storage */
+  try {
+    $storage = Drupal::entityTypeManager()->getStorage('developer_app');
+    foreach ($storage->loadByDeveloper($account->getEmail()) as $app) {
+      /** @var \Apigee\Edge\Api\Management\Entity\AppCredentialInterface $credential */
+      foreach ($app->getCredentials() as $credential) {
+        $productNames = array_map(function (CredentialProduct $product) {
+          return $product->getApiproduct();
+        }, $credential->getApiProducts());
+        if (in_array($productName, $productNames)) {
+          return TRUE;
+        }
+      }
+    }
+  }
+  catch (InvalidPluginDefinitionException $e) {
+    // Because it could not happen we just catch this.
+  }
+
+  return FALSE;
 }
