@@ -55,42 +55,15 @@ class AppSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $form = parent::buildForm($form, $form_state);
     $generalConfig = $this->config('apigee_edge.common_app_settings');
-
-    $form['api_product'] = [
-      '#type' => 'fieldset',
-      '#title' => $this->t('API Product'),
-      '#collapsible' => FALSE,
-    ];
-
-    $form['api_product']['display_as_select'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Display the API Product widget as a select box (instead of checkboxes/radios)'),
-      '#default_value' => $generalConfig->get('display_as_select'),
-    ];
-
-    $form['api_product']['associate_apps'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Associate apps with API Products'),
-      '#default_value' => $generalConfig->get('associate_apps'),
-    ];
-
-    $form['api_product']['user_select'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Let user select the product(s)'),
-      '#default_value' => $generalConfig->get('user_select'),
-      '#states' => [
-        'visible' => [
-          ':input[name="associate_apps"]' => ['checked' => TRUE],
-        ],
-      ],
-    ];
 
     /** @var string[] $default_products */
     $default_products = $generalConfig->get('default_products') ?: [];
     $product_list = [];
-    /** @var \Drupal\apigee_edge\Entity\ApiProduct[] $products */
+
     try {
+      /** @var \Drupal\apigee_edge\Entity\ApiProduct[] $products */
       $products = ApiProduct::loadMultiple();
       foreach ($products as $product) {
         $product_list[$product->id()] = $product->getDisplayName();
@@ -99,60 +72,90 @@ class AppSettingsForm extends ConfigFormBase {
     catch (EntityStorageException $e) {
       // Apigee Edge credentials are missing/incorrect or something else went
       // wrong. Do not redirect the user to the error page.
-      $product_list = [];
+      $form['actions']['submit']['#disabled'] = TRUE;
       $this->messenger()->addError($this->t('Unable to retrieve API product list from Apigee Edge. Please ensure that <a href=":link">Apigee Edge connection settings</a> are correct.'), [
         ':link' => Url::fromRoute('apigee_edge.settings')->toString(),
       ]);
+      return $form;
     }
 
-    $form['api_product']['default_api_product_multiple'] = [
-      '#type' => 'checkboxes',
-      '#title' => $this->t('Default API Product'),
-      '#options' => $product_list,
-      '#default_value' => $default_products,
-      '#states' => [
-        'visible' => [
-          [
-            ':input[name="user_select"]' => [
-              'checked' => TRUE,
-              'visible' => TRUE,
-            ],
-          ],
+    $form['api_product'] = [
+      '#id' => 'api_product',
+      '#type' => 'details',
+      '#title' => $this->t('API Product'),
+      '#open' => TRUE,
+    ];
+
+    $form['api_product']['display_as_select'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Display the API Product widget as a select box (instead of checkboxes/radios)'),
+      '#default_value' => $generalConfig->get('display_as_select'),
+    ];
+
+    $form['api_product']['user_select'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Let user select the product(s)'),
+      '#default_value' => $generalConfig->get('user_select'),
+      '#ajax' => [
+        'callback' => '::apiProductListCallback',
+        'wrapper' => 'default-api-product-multiple',
+        'progress' => [
+          'type' => 'throbber',
+          'message' => '',
         ],
       ],
     ];
 
-    return parent::buildForm($form, $form_state);
+    // It's necessary to add a wrapper, because if the ID is added to the
+    // checkboxes form element, then that will not be properly rendered
+    // (the label is duplicated).
+    $form['api_product']['default_api_product_multiple_container'] = [
+      '#type' => 'container',
+      '#id' => 'default-api-product-multiple',
+    ];
+
+    $form['api_product']['default_api_product_multiple_container']['default_api_product_multiple'] = [
+      '#type' => 'checkboxes',
+      '#title' => $this->t('Default API Product'),
+      '#options' => $product_list,
+      '#default_value' => $default_products,
+      '#required' => $form_state->getValue('user_select') === NULL ? !(bool) $generalConfig->get('user_select') : !(bool) $form_state->getValue('user_select'),
+    ];
+
+    return $form;
+  }
+
+  /**
+   * Ajax callback for the "user_select" checkbox.
+   *
+   * Set 'default_api_product_multiple' checkboxes form element as required
+   * if the 'user_select' is unchecked, else not required.
+   * Use AJAX instead of #states because #required in #states is not
+   * working properly.
+   *
+   * @param array $form
+   *   An associative array containing the structure of the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   *
+   * @return array
+   *   The renderable array.
+   *
+   * @see https://www.drupal.org/project/drupal/issues/2855139
+   */
+  public function apiProductListCallback(array &$form, FormStateInterface $form_state) : array {
+    return $form['api_product']['default_api_product_multiple_container'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    // TODO Empty Default API products list should not be saved when form
-    // builder was not able to retrieve API Product list from Apigee Edge.
-    // We do not want to override (clear) previously configured list of
-    // default API product.
-    $generalConfig = \Drupal::configFactory()->getEditable('apigee_edge.common_app_settings');
-
-    $config_names = [
-      'display_as_select',
-      'associate_apps',
-      'user_select',
-    ];
-
-    foreach ($config_names as $name) {
-      $generalConfig->set($name, $form_state->getValue($name));
-    }
-
-    $default_products = [];
-    if ($form_state->getValue('associate_apps')) {
-      $default_products = $form_state->getValue('default_api_product_multiple');
-    }
-    $default_products = array_values(array_filter($default_products));
-
-    $generalConfig->set('default_products', $default_products);
-    $generalConfig->save();
+    $this->config('apigee_edge.common_app_settings')
+      ->set('display_as_select', $form_state->getValue('display_as_select'))
+      ->set('user_select', $form_state->getValue('user_select'))
+      ->set('default_products', array_values(array_filter($form_state->getValue('default_api_product_multiple'))))
+      ->save();
 
     parent::submitForm($form, $form_state);
   }
