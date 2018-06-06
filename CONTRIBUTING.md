@@ -38,7 +38,7 @@ Guidelines](https://opensource.google.com/conduct/).
 on "Activate repository".
 * Open https://travis-ci.org/[YOUR-GITHUB-USERNAME]/apigee-client-php/settings
 and setup required environment variables for running tests. (See the list of
-required environment variables in [README.md's Testing section](README.md#testing).)
+required environment variables in the [Testing](#testing) section.)
 
 ## For daily work
 * Create a new branch in your fork repository, ex.: patch-1.
@@ -51,6 +51,38 @@ ailed because of an API communication error. You can identify these type of
 issues from logs.)
 * Create [new pull request](https://github.com/apigee/apigee-edge-drupal/pull/new/8.x-1.x)
 and do not forget to add a link to Travis CI build that can confirm your code is working.
+
+## Running tests
+
+Before you could start testing this module some environment variables
+needs to be set on your system. These variables are:
+
+* `APIGEE_EDGE_ENDPOINT`
+* `APIGEE_EDGE_ORGANIZATION`
+* `APIGEE_EDGE_USERNAME`
+* `APIGEE_EDGE_PASSWORD`.
+
+You can set these environment variables multiple ways, either by defining them
+with `export` or `set` in the terminal or creating a copy of the `core/phpunit.xml.dist`
+file as `core/phpunit.xml` and specifying them in that file.
+
+After you have these environment variables set you can execute tests of this
+module with the following command (note the location of the `phpunit` executable
+may vary):
+
+```sh
+./vendor/bin/phpunit -c core --verbose --color --group apigee_edge
+```
+
+If you have Docker and Docker Compose installed on your system you can also run
+PHPUnit tests of this module with the following commands:
+
+```sh
+$ docker-compose up --build
+$ docker-compose run php sh /opt/drupal-module/docker-run-tests.sh
+```
+
+You can read more about running Drupal 8 PHPUnit tests [here](https://www.drupal.org/docs/8/phpunit/running-phpunit-tests).
 
 ## Best practices
 
