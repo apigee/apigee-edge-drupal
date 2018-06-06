@@ -8,4 +8,6 @@ core: 8.x
 dependencies:
   - apigee_edge:apigee_edge
 
+configure: apigee_edge.settings.product.access_control
+
 php: "7.1"
