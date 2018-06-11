@@ -73,9 +73,6 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
@@ -209,9 +206,6 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Core\TempStore\TempStoreException
    */
   public function save(array $form, FormStateInterface $form_state) {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */

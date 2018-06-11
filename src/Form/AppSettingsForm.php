@@ -20,10 +20,15 @@
 namespace Drupal\apigee_edge\Form;
 
 use Drupal\apigee_edge\Entity\ApiProduct;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Url;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides configuration form builder for changing app settings.
@@ -34,6 +39,36 @@ use Drupal\Core\Url;
  * thanks to their dedicated entity label configurations.
  */
 class AppSettingsForm extends ConfigFormBase {
+
+  /**
+   * The renderer.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
+   */
+  protected $renderer;
+
+  /**
+   * AppSettingsForm constructor.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The factory for configuration objects.
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer.
+   */
+  public function __construct(ConfigFactoryInterface $config_factory, RendererInterface $renderer) {
+    parent::__construct($config_factory);
+    $this->renderer = $renderer;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('config.factory'),
+      $container->get('renderer')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -106,9 +141,9 @@ class AppSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    // It's necessary to add a wrapper, because if the ID is added to the
+    // It's necessary to add a wrapper because if the ID is added to the
     // checkboxes form element, then that will not be properly rendered
-    // (the label is duplicated).
+    // (the label gets duplicated).
     $form['api_product']['default_api_product_multiple_container'] = [
       '#type' => 'container',
       '#id' => 'default-api-product-multiple',
@@ -138,13 +173,15 @@ class AppSettingsForm extends ConfigFormBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    *
-   * @return array
-   *   The renderable array.
+   * @return \Drupal\Core\Ajax\AjaxResponse
+   *   The Ajax response.
    *
    * @see https://www.drupal.org/project/drupal/issues/2855139
    */
-  public function apiProductListCallback(array &$form, FormStateInterface $form_state) : array {
-    return $form['api_product']['default_api_product_multiple_container'];
+  public function apiProductListCallback(array &$form, FormStateInterface $form_state) : AjaxResponse {
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('#default-api-product-multiple', $this->renderer->render($form['api_product']['default_api_product_multiple_container'])));
+    return $response;
   }
 
   /**
