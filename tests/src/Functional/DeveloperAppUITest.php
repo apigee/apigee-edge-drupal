@@ -117,7 +117,6 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalGet('/admin/config/apigee-edge/app-settings');
     $data = $changes + [
       'display_as_select' => FALSE,
-      'associate_apps' => TRUE,
       'user_select' => TRUE,
       'multiple_products' => TRUE,
     ];
@@ -208,10 +207,13 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
-   * Tests the associate apps checkbox on the admin form.
+   * Tests the user_select checkbox on the admin form.
    */
   public function testAssociateApps() {
-    $this->submitAdminForm(['associate_apps' => FALSE, 'user_select' => FALSE]);
+    $this->submitAdminForm([
+      'user_select' => FALSE,
+      "default_api_product_multiple[{$this->products[0]->getName()}]" => $this->products[0]->getName(),
+    ]);
     $this->gotoForm();
     $this->assertSession()->pageTextNotContains('API Product');
 
@@ -360,15 +362,6 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->pageTextContains($name);
     $this->clickLink($name);
     $this->assertSession()->pageTextContains('Never');
-  }
-
-  /**
-   * Creates an app with no products.
-   */
-  public function testAppCrudNoProducts() {
-    $this->submitAdminForm(['associate_apps' => FALSE]);
-
-    $this->assertAppCrud();
   }
 
   /**
