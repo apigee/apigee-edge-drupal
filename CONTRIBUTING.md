@@ -24,8 +24,7 @@ information on using pull requests.
 
 ## Community Guidelines
 
-This project follows [Google's Open Source Community
-Guidelines](https://opensource.google.com/conduct/).
+This project follows [Google's Open Source Community Guidelines](https://opensource.google.com/conduct/).
 
 # Suggested contributing workflow
 
@@ -117,8 +116,9 @@ composer.json:
             "apigee/apigee-client-php": {
                 "Fix for a bug": "https://patch-diff.githubusercontent.com/raw/apigee/apigee-client-php/pull/1.diff"
             }
-        },
+        }
 ```
+
 **Note:** Apigee Client Library for PHP patches should be removed from the
 module's composer.json before the next stable release. Code changes cannot be
 merged until the related PR(s) have not been released in a new stable version of
