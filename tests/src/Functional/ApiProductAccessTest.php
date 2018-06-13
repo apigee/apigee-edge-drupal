@@ -109,24 +109,6 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
     $this->ridCombinations = $this->calculateRidCombinations(array_keys($this->roleStorage->loadMultiple()));
   }
 
-  /**
-   * @inheritdoc
-   */
-  protected function tearDown() {
-    /** @var \Drupal\Core\Entity\EntityInterface[] $entities */
-    $entities = array_merge($this->users, $this->products);
-    foreach ($entities as $entity) {
-      try {
-        $entity->delete();
-      }
-      catch (\Exception $e) {
-        // Just catch.
-      }
-    }
-
-    parent::tearDown();
-  }
-
   public function testEntityAccess() : void {
     $authenticatedRoles = array_filter(array_keys($this->roleStorage->loadMultiple()), function ($rid) {
       return $rid !== AccountInterface::ANONYMOUS_ROLE;
