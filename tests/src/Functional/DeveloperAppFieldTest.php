@@ -47,11 +47,6 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
   protected $account;
 
   /**
-   * @var \Drupal\apigee_edge\Entity\ApiProduct
-   */
-  protected $product;
-
-  /**
    * @var \Drupal\apigee_edge\Entity\Developer
    */
   protected $developer;
@@ -72,19 +67,9 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
       'administer developer_app form display',
       'administer developer_app display',
     ]);
-    $this->product = $this->createProduct();
+    $this->createProduct();
     $this->developer = Developer::load($this->account->getEmail());
     $this->drupalLogin($this->account);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function tearDown() {
-    $this->drupalLogout();
-    $this->account->delete();
-    $this->product->delete();
-    parent::tearDown();
   }
 
   public function testFieldStorageFormatters() {
@@ -557,7 +542,7 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalPostForm("/user/{$this->account->id()}/apps/create", $extra_values + [
       'displayName[0][value]' => $name,
       'name' => $name,
-      "api_products[{$this->product->getName()}]" => $this->product->getName(),
+      "api_products[{$this->products[0]->getName()}]" => $this->products[0]->getName(),
     ], 'Add developer app');
     $this->assertSession()->pageTextContains($name);
 

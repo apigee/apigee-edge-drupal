@@ -46,13 +46,6 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   protected $account;
 
   /**
-   * Default product.
-   *
-   * @var \Drupal\apigee_edge\Entity\ApiProduct[]
-   */
-  protected $products = [];
-
-  /**
    * A role that can administer apigee edge and related settings.
    *
    * @var string
@@ -79,20 +72,9 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $config->set('skip_developer_app_settings_validation', TRUE);
     $config->save();
 
-    $this->products[] = $this->createProduct();
+    $this->createProduct();
     $this->account = $this->createAccount(static::$permissions);
     $this->drupalLogin($this->account);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function tearDown() {
-    $this->account->delete();
-    foreach ($this->products as $product) {
-      $product->delete();
-    }
-    parent::tearDown();
   }
 
   /**
@@ -311,14 +293,13 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->pageTextNotContains(static::DUPLICATE_MACHINE_NAME);
 
     $this->drupalLogin($this->account);
-    $second_user->delete();
   }
 
   /**
    * Tests app creation with products.
    */
   public function testCreateAppWithProducts() {
-    $this->products[] = $this->createProduct();
+    $this->createProduct();
     $this->assertAppCreationWithProduct([$this->products[0]], FALSE, TRUE);
     $this->assertAppCreationWithProduct([$this->products[0], $this->products[1]]);
   }
@@ -385,8 +366,8 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    * Creates an app with the default products.
    */
   public function testAppDefaultProducts() {
-    $this->products[] = $this->createProduct();
-    $this->products[] = $this->createProduct();
+    $this->createProduct();
+    $this->createProduct();
 
     $this->submitAdminForm([
       'multiple_products' => TRUE,
@@ -409,7 +390,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    */
   public function testAppCrudSingleProductChange() {
     $this->submitAdminForm(['display_as_select' => TRUE, 'multiple_products' => FALSE]);
-    $this->products[] = $this->createProduct();
+    $this->createProduct();
 
     $this->assertAppCrud(
       function (array $data): array {
@@ -436,7 +417,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   public function testAppCrudSingleProductAdd() {
     $this->submitAdminForm(['multiple_products' => FALSE]);
 
-    $this->products[] = $this->createProduct();
+    $this->createProduct();
 
     $this->assertAppCrud(
       function (array $data): array {
@@ -461,8 +442,8 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    */
   public function testAppCrudMultiplePruductsRemove() {
     $this->submitAdminForm(['display_as_select' => TRUE]);
-    $this->products[] = $this->createProduct();
-    $this->products[] = $this->createProduct();
+    $this->createProduct();
+    $this->createProduct();
 
     $this->assertAppCrud(
       function (array $data): array {
@@ -496,8 +477,8 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    */
   public function testAppCrudMultipleProductsAdd() {
     $this->submitAdminForm([]);
-    $this->products[] = $this->createProduct();
-    $this->products[] = $this->createProduct();
+    $this->createProduct();
+    $this->createProduct();
 
     $this->assertAppCrud(
       function (array $data): array {

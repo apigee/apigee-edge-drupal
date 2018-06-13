@@ -19,7 +19,6 @@
 
 namespace Drupal\Tests\apigee_edge\Functional;
 
-use Behat\Mink\Driver\GoutteDriver;
 use Drupal\Tests\BrowserTestBase;
 
 /**
@@ -28,15 +27,5 @@ use Drupal\Tests\BrowserTestBase;
 abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
 
   use ApigeeEdgeTestTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct($name = NULL, array $data = [], $dataName = '') {
-    parent::__construct($name, $data, $dataName);
-    // GoutteDriver must be used for functional tests because response headers
-    // are not available from DrupalSelenium2Driver.
-    $this->minkDefaultDriverClass = GoutteDriver::class;
-  }
 
 }
