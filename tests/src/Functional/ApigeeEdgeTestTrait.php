@@ -32,18 +32,6 @@ use Drupal\user\UserInterface;
 trait ApigeeEdgeTestTrait {
 
   /**
-   * User entities.
-   *
-   * @var \Drupal\user\UserInterface[]*/
-  protected $users = [];
-
-  /**
-   * API product entities.
-   *
-   * @var \Drupal\apigee_edge\Entity\ApiProductInterface[]*/
-  protected $products = [];
-
-  /**
    * {@inheritdoc}
    */
   protected function setUp() {
@@ -124,8 +112,6 @@ trait ApigeeEdgeTestTrait {
       return NULL;
     }
 
-    $this->users[] = $account;
-
     // This is here to make drupalLogin() work.
     $account->passRaw = $edit['pass'];
 
@@ -133,14 +119,12 @@ trait ApigeeEdgeTestTrait {
   }
 
   /**
-   * Creates an API product entity.
-   *
-   * The entity will be deleted in the tearDown() function.
+   * Creates a product.
    *
    * @return \Drupal\apigee_edge\Entity\ApiProduct
    *   (SDK) API product object.
    */
-  protected function createProduct(): ApiProduct {
+  protected function createProduct() : ApiProduct {
     /** @var \Drupal\apigee_edge\Entity\ApiProduct $product */
     $product = ApiProduct::create([
       'name' => $this->randomMachineName(),
@@ -148,27 +132,8 @@ trait ApigeeEdgeTestTrait {
       'approvalType' => ApiProduct::APPROVAL_TYPE_AUTO,
     ]);
     $product->save();
-    $this->products[] = $product;
 
     return $product;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function tearDown() {
-    /** @var \Drupal\Core\Entity\EntityInterface[] $entities */
-    $entities = array_merge($this->users, $this->products);
-    foreach ($entities as $entity) {
-      try {
-        $entity->delete();
-      }
-      catch (\Exception $e) {
-        // Just catch.
-      }
-    }
-
-    parent::tearDown();
   }
 
   /**

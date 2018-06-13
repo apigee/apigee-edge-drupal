@@ -13,12 +13,34 @@ use Drupal\Core\Url;
 class AppSettingsFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
   /**
+   * Default API product entity.
+   *
+   * @var \Drupal\apigee_edge\Entity\ApiProduct
+   */
+  protected $defaultApiProduct;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+    $this->defaultApiProduct = $this->createProduct();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function tearDown() {
+    $this->defaultApiProduct->delete();
+    parent::tearDown();
+  }
+
+  /**
    * Tests the app settings AJAX form.
    */
   public function testAppSettingsForm() {
     $web_assert = $this->assertSession();
     $this->drupalLogin($this->rootUser);
-    $default_api_product = $this->createProduct();
 
     // Visit the app settings form using invalid API credentials.
     $this->invalidateKey();
@@ -43,7 +65,7 @@ class AppSettingsFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $this->assertTrue($product_list->hasAttribute('required'));
     $this->getSession()->getPage()->pressButton('edit-submit');
     $this->assertSession()->pageTextContains('Default API Product field is required.');
-    $this->getSession()->getPage()->checkField("default_api_product_multiple[{$default_api_product->getName()}]");
+    $this->getSession()->getPage()->checkField("default_api_product_multiple[{$this->defaultApiProduct->getName()}]");
     $this->getSession()->getPage()->pressButton('edit-submit');
     $this->assertSession()->pageTextContains('The configuration options have been saved.');
 
@@ -52,7 +74,7 @@ class AppSettingsFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $web_assert->assertWaitOnAjaxRequest();
     $product_list = $this->getSession()->getPage()->find('css', '#default-api-product-multiple fieldset');
     $this->assertFalse($product_list->hasAttribute('required'));
-    $this->getSession()->getPage()->uncheckField("default_api_product_multiple[{$default_api_product->getName()}]");
+    $this->getSession()->getPage()->uncheckField("default_api_product_multiple[{$this->defaultApiProduct->getName()}]");
     $this->getSession()->getPage()->pressButton('edit-submit');
     $this->assertSession()->pageTextContains('The configuration options have been saved.');
   }
