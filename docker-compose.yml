@@ -58,5 +58,11 @@ services:
     depends_on:
       - php
 
+  webdriver:
+    image: selenium/standalone-chrome:3
+    # Unfortunatelly its seems this image is not working at this moment.
+    # https://www.drupal.org/project/drupalci_environments/issues/2978243
+    # image: drupalci/webdriver-chromedriver:dev
+
 volumes:
   codebase:
