@@ -49,8 +49,7 @@ class RequirementsTest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->pageTextNotContains('Cannot connect to Apigee Edge server.');
 
     // Delete authentication key.
-    Key::load(self::KEY_ID)->delete();
-
+    $this->invalidateKey();
     $this->drupalGet('/admin/reports/status');
     $this->assertSession()->pageTextContains('Apigee Edge API authentication key not found.');
     $this->assertSession()->pageTextContains('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Edge server is unreachable. Visit the Apigee Edge Configuration page to get more information.');
