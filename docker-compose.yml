@@ -18,7 +18,7 @@ services:
     build:
       context: .
       args:
-        - PHP_IMAGE=${PHP_IMAGE:-wodby/drupal-php:7.1-dev-4.4.1}
+        - PHP_IMAGE=${PHP_IMAGE:-wodby/drupal-php:7.1-dev-4.5.0}
     container_name: "${COMPOSE_PROJECT_NAME:-my_project}_php"
     environment:
       DB_HOST: ${DB_HOST:-database}
@@ -35,7 +35,7 @@ services:
       - $HOME/.composer/cache/files:/home/wodby/.composer/cache/files
 
   webserver:
-    image: ${WEBSERVER_IMAGE:-wodby/php-apache:2.4-3.0.1}
+    image: ${WEBSERVER_IMAGE:-wodby/php-apache:2.4-3.0.5}
     container_name: "${COMPOSE_PROJECT_NAME:-my_project}_webserver"
     depends_on:
       - php
