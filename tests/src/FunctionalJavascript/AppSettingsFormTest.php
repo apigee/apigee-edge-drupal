@@ -25,6 +25,7 @@ use Drupal\Core\Url;
  * App settings form tests.
  *
  * @group apigee_edge
+ * @group apigee_edge_javascript
  * @group apigee_edge_developer_app
  */
 class AppSettingsFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
