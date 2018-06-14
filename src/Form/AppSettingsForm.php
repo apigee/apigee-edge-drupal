@@ -57,6 +57,11 @@ class AppSettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $generalConfig = $this->config('apigee_edge.common_app_settings');
 
+    // Someone has overridden the default setting.
+    if (!$generalConfig->get('multiple_products')) {
+      $this->messenger()->addWarning($this->t('Access to multiple API Products will be retained until an app is edited and the developer is prompted to confirm a single API Product selection.'));
+    }
+
     $form['api_product'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('API Product'),

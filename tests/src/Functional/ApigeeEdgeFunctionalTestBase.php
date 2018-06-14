@@ -21,6 +21,8 @@ namespace Drupal\Tests\apigee_edge\Functional;
 
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
+use Drupal\apigee_edge\Entity\DeveloperApp;
+use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController as EdgeDeveloperAppCredentialController;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\key\Entity\Key;
 use Drupal\Tests\BrowserTestBase;
@@ -145,6 +147,35 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
     $product->save();
 
     return $product;
+  }
+
+  /**
+   * Creates an app for a user.
+   *
+   * @param array $data
+   *   App data. (developerId gets overridden by $owner's developerId.)
+   * @param \Drupal\user\UserInterface $owner
+   *   Owner of the app.
+   * @param array $products
+   *   List of associated API products.
+   */
+  protected function createDeveloperApp(array $data, UserInterface $owner, array $products = []) {
+    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
+    $app = DeveloperApp::create($data);
+    $app->setOwner($owner);
+    $app->save();
+
+    if (!empty($products)) {
+      /** @var \Drupal\apigee_edge\SDKConnectorInterface $connector */
+      $connector = \Drupal::service('apigee_edge.sdk_connector');
+      $credentials = $app->getCredentials();
+      /** @var \Apigee\Edge\Api\Management\Entity\AppCredentialInterface $credential */
+      $credential = reset($credentials);
+      $dacc = new EdgeDeveloperAppCredentialController($connector->getOrganization(), $app->getDeveloperId(), $app->getName(), $connector->getClient());
+      $dacc->addProducts($credential->getConsumerKey(), $products);
+    }
+
+    return $app;
   }
 
   /**

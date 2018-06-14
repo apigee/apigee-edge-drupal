@@ -154,7 +154,12 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
         }
         else {
           if (count($current_product_ids) > 1) {
-            $this->messenger()->addWarning(t('This app has multiple products, but only a single product is allowed to be selected.'));
+            $dev_app_def = $this->entityTypeManager->getDefinition('developer_app');
+            $api_product_def = $this->entityTypeManager->getDefinition('api_product');
+            $this->messenger->addWarning($this->t('@developer_apps status now require selection of a single @api_product; multiple @api_product selection is no longer supported. Confirm your @api_product selection below.', [
+              '@developer_apps' => $dev_app_def->getPluralLabel(),
+              '@api_product' => $api_product_def->getSingularLabel(),
+            ]));
           }
           $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = reset($current_product_ids) ?: NULL;
         }
