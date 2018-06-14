@@ -66,8 +66,6 @@ class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * Tests developer app entity.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   public function testCrud() {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
