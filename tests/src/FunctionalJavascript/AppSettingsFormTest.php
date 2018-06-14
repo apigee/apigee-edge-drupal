@@ -78,7 +78,7 @@ class AppSettingsFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
     // Selecting default API product is required.
     $this->getSession()->getPage()->uncheckField('edit-user-select');
-    $web_assert->assertWaitOnAjaxRequest();
+    $web_assert->assertWaitOnAjaxRequest(60000);
     $product_list = $this->getSession()->getPage()->find('css', '#default-api-product-multiple fieldset');
     $this->assertTrue($product_list->hasAttribute('required'));
     $this->getSession()->getPage()->pressButton('edit-submit');
@@ -89,7 +89,7 @@ class AppSettingsFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
     // Selecting default API product is not required.
     $this->getSession()->getPage()->checkField('edit-user-select');
-    $web_assert->assertWaitOnAjaxRequest();
+    $web_assert->assertWaitOnAjaxRequest(60000);
     $product_list = $this->getSession()->getPage()->find('css', '#default-api-product-multiple fieldset');
     $this->assertFalse($product_list->hasAttribute('required'));
     $this->getSession()->getPage()->uncheckField("default_api_product_multiple[{$this->defaultApiProduct->getName()}]");
