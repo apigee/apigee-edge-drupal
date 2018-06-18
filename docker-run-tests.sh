@@ -42,9 +42,10 @@ sudo -u root sh -c "mkdir -p $WEB_ROOT/sites/default/files \
     && chown -R wodby:www-data $WEB_ROOT/sites/default/files \
     && chmod 6770 $WEB_ROOT/sites/default/files"
 
-# Pre-create simpletest directory...
+# Pre-create simpletest and screenshots directories...
 sudo -u root mkdir -p ${WEB_ROOT}/sites/simpletest
-# and another required libraries.
+sudo -u root mkdir -p /mnt/files/log/screenshots
+# and some other.
 # (These are required by core/phpunit.xml.dist).
 sudo -u root mkdir -p ${WEB_ROOT}/profiles
 sudo -u root mkdir -p ${WEB_ROOT}/themes
@@ -55,7 +56,9 @@ sudo -u root sh -c "chown -R www-data:wodby /mnt/files/log \
  && chmod -R 6750 /mnt/files/log \
  && mkdir -p /mnt/files/log/simpletest/browser_output \
  && chown -R www-data:wodby /mnt/files/log/simpletest \
- && chmod -R 6750 /mnt/files/log/simpletest"
+ && chmod -R 6750 /mnt/files/log/simpletest \
+ && chown -R www-data:wodby /mnt/files/log/screenshots \
+ && chmod -R 6750 /mnt/files/log/screenshots"
 
 # Change location of the browser_output folder, because it seems even if
 # BROWSERTEST_OUTPUT_DIRECTORY is set the html output is printed out to
