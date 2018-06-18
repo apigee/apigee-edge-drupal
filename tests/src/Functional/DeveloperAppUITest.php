@@ -24,6 +24,7 @@ use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
+use Drupal\Core\Url;
 use Drupal\user\UserInterface;
 
 /**
@@ -122,11 +123,10 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     ];
     $multiple_products = $data['multiple_products'];
     unset($data['multiple_products']);
-    $this->drupalPostForm('/admin/config/apigee-edge/app-settings', $data, 'Save configuration');
-    \Drupal::configFactory()
-      ->getEditable('apigee_edge.common_app_settings')
+    $this->config('apigee_edge.common_app_settings')
       ->set('multiple_products', $multiple_products)
       ->save();
+    $this->drupalPostForm('/admin/config/apigee-edge/app-settings', $data, 'Save configuration');
   }
 
   /**
@@ -542,6 +542,54 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
+   * Ensures warning messages are visible if multiple products/app is disabled.
+   */
+  public function testWarningMessagesIfMultipleProductsDisabled() {
+    $admin_warning_message = 'Access to multiple API Products will be retained until an app is edited and the developer is prompted to confirm a single API Product selection.';
+    $end_user_warning_message = 'Foos status now require selection of a single Bar; multiple Bar selection is no longer supported. Confirm your Bar selection below.';
+    $app_settings_url = Url::fromRoute('apigee_edge.settings.app');
+
+    // Ensure default configuration.
+    $this->config('apigee_edge.common_app_settings')
+      ->set('multiple_products', TRUE)
+      ->save();
+
+    // Change default Developer App and API Product aliases to ensure consumer
+    // warning message respects it.
+    $this->config('apigee_edge.developer_app_settings')
+      ->set('entity_label_singular', 'Foo')
+      ->set('entity_label_plural', 'Foos')
+      ->save();
+    $this->config('apigee_edge.api_product_settings')
+      ->set('entity_label_singular', 'Bar')
+      ->set('entity_label_plural', 'Bars')
+      ->save();
+    \Drupal::entityTypeManager()->clearCachedDefinitions();
+
+    $this->products[] = $product1 = $this->createProduct();;
+    $this->products[] = $product2 = $this->createProduct();
+    $app = $this->createDeveloperApp(['name' => $this->randomMachineName(), 'displayName' => $this->randomString()], $this->account, [$product1->getName(), $product2->getName()]);
+    $app_edit_url = $app->toUrl('edit-form-for-developer');
+
+    $this->drupalGet($app_settings_url);
+    $this->assertSession()->pageTextNotContains($admin_warning_message);
+
+    $this->drupalGet($app_edit_url);
+    $this->assertSession()->pageTextNotContains($end_user_warning_message);
+
+    // Change default configuration.
+    $this->config('apigee_edge.common_app_settings')
+      ->set('multiple_products', FALSE)
+      ->save();
+
+    $this->drupalGet($app_settings_url);
+    $this->assertSession()->pageTextContains($admin_warning_message);
+
+    $this->drupalGet($app_edit_url);
+    $this->assertSession()->pageTextContains($end_user_warning_message);
+  }
+
+  /**
    * Loads a developer app by name.
    *
    * @param string $name
@@ -697,7 +745,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
       $credential = reset($credentials);
 
       $apiproducts = $credential->getApiProducts();
-      $this->assertEquals($productnum, count($apiproducts), "Exacly {$productnum} product is added.");
+      $this->assertEquals($productnum, count($apiproducts), "Exactly {$productnum} product is added.");
       $expected_products = array_map(function (ApiProduct $apiProduct): string {
         return $apiProduct->getName();
       }, $products);
