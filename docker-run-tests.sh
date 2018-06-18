@@ -30,13 +30,13 @@ fi
 # Symlink module to the contrib folder.
 ln -s ${MODULE_PATH} ${WEB_ROOT}/modules/contrib/${DRUPAL_MODULE_NAME}
 
-# Based on https://www.drupal.org/node/244924.
-# Also fix permissions on directory and .htaccess file.
+# Based on https://www.drupal.org/node/244924, but we had to grant read
+# access to files and read + execute access to directories to "others"
+# otherwise Javascript tests failed by using webdriver.
+# (Error: jQuery was not found an AJAX form.)
 sudo -u root sh -c "chown -R wodby:www-data $WEB_ROOT \
-    && find $WEB_ROOT -type d -exec chmod 6750 '{}' \; \
-    && find $WEB_ROOT -type f -exec chmod 0640 '{}' \; \
-    && chmod 755 $WEB_ROOT \
-    && chmod 644 $WEB_ROOT/.htaccess"
+    && find $WEB_ROOT -type d -exec chmod 6755 '{}' \; \
+    && find $WEB_ROOT -type f -exec chmod 0644 '{}' \;"
 
 sudo -u root sh -c "mkdir -p $WEB_ROOT/sites/default/files \
     && chown -R wodby:www-data $WEB_ROOT/sites/default/files \
