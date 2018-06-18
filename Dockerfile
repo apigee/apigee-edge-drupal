@@ -1,4 +1,4 @@
-ARG PHP_IMAGE="wodby/drupal-php:7.1-dev-4.4.1"
+ARG PHP_IMAGE="wodby/drupal-php:7.1-dev-4.5.0"
 
 FROM ${PHP_IMAGE}
 

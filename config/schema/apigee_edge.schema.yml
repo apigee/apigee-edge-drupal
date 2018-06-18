@@ -34,8 +34,6 @@ apigee_edge.common_app_settings:
   mapping:
     display_as_select:
       type: boolean
-    associate_apps:
-      type: boolean
     user_select:
       type: boolean
     multiple_products:

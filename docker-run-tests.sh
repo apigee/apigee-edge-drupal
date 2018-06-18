@@ -30,21 +30,22 @@ fi
 # Symlink module to the contrib folder.
 ln -s ${MODULE_PATH} ${WEB_ROOT}/modules/contrib/${DRUPAL_MODULE_NAME}
 
-# Based on https://www.drupal.org/node/244924.
-# Also fix permissions on directory and .htaccess file.
+# Based on https://www.drupal.org/node/244924, but we had to grant read
+# access to files and read + execute access to directories to "others"
+# otherwise Javascript tests failed by using webdriver.
+# (Error: jQuery was not found an AJAX form.)
 sudo -u root sh -c "chown -R wodby:www-data $WEB_ROOT \
-    && find $WEB_ROOT -type d -exec chmod 6750 '{}' \; \
-    && find $WEB_ROOT -type f -exec chmod 0640 '{}' \; \
-    && chmod 755 $WEB_ROOT \
-    && chmod 644 $WEB_ROOT/.htaccess"
+    && find $WEB_ROOT -type d -exec chmod 6755 '{}' \; \
+    && find $WEB_ROOT -type f -exec chmod 0644 '{}' \;"
 
 sudo -u root sh -c "mkdir -p $WEB_ROOT/sites/default/files \
     && chown -R wodby:www-data $WEB_ROOT/sites/default/files \
     && chmod 6770 $WEB_ROOT/sites/default/files"
 
-# Pre-create simpletest directory...
+# Pre-create simpletest and screenshots directories...
 sudo -u root mkdir -p ${WEB_ROOT}/sites/simpletest
-# and another required libraries.
+sudo -u root mkdir -p /mnt/files/log/screenshots
+# and some other.
 # (These are required by core/phpunit.xml.dist).
 sudo -u root mkdir -p ${WEB_ROOT}/profiles
 sudo -u root mkdir -p ${WEB_ROOT}/themes
@@ -55,7 +56,9 @@ sudo -u root sh -c "chown -R www-data:wodby /mnt/files/log \
  && chmod -R 6750 /mnt/files/log \
  && mkdir -p /mnt/files/log/simpletest/browser_output \
  && chown -R www-data:wodby /mnt/files/log/simpletest \
- && chmod -R 6750 /mnt/files/log/simpletest"
+ && chmod -R 6750 /mnt/files/log/simpletest \
+ && chown -R www-data:wodby /mnt/files/log/screenshots \
+ && chmod -R 6750 /mnt/files/log/screenshots"
 
 # Change location of the browser_output folder, because it seems even if
 # BROWSERTEST_OUTPUT_DIRECTORY is set the html output is printed out to
