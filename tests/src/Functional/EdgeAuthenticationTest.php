@@ -95,8 +95,8 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalGet('/admin/config/apigee-edge/settings');
     $this->assertSession()->pageTextContains('There is no available basic authentication key for connecting to Apigee Edge.');
     $this->getSession()->getPage()->selectFieldOption('edit-key-type', 'apigee_edge_oauth');
-    $this->assertSession()->pageTextContains('There is no available OAuth (SAML) key for connecting to Apigee Edge.');
-    $this->assertSession()->pageTextContains('There is no available OAuth (SAML) token key for connecting to Apigee Edge.');
+    $this->assertSession()->pageTextContains('There is no available OAuth key for connecting to Apigee Edge.');
+    $this->assertSession()->pageTextContains('There is no available OAuth token key for connecting to Apigee Edge.');
 
     // Add new Apigee Edge basic authentication key
     // with environment variables provider.
@@ -144,8 +144,8 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->pageTextContains('Test key in private file');
     $this->assertSession()->pageTextContains('Wrong test key in private file');
     $this->getSession()->getPage()->selectFieldOption('edit-key-type', 'apigee_edge_oauth');
-    $this->assertSession()->pageTextContains('There is no available OAuth (SAML) key for connecting to Apigee Edge.');
-    $this->assertSession()->pageTextContains('There is no available OAuth (SAML) token key for connecting to Apigee Edge.');
+    $this->assertSession()->pageTextContains('There is no available OAuth key for connecting to Apigee Edge.');
+    $this->assertSession()->pageTextContains('There is no available OAuth token key for connecting to Apigee Edge.');
 
     // Test key stored in environment variables.
     $this->drupalPostForm('/admin/config/apigee-edge/settings', [
@@ -323,8 +323,8 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
     $this->assertEmpty($this->config('apigee_edge.client')->get('active_key_oauth_token'));
     $this->assertSession()->pageTextContains('There is no available basic authentication key for connecting to Apigee Edge.');
     $this->getSession()->getPage()->selectFieldOption('edit-key-type', 'apigee_edge_oauth');
-    $this->assertSession()->pageTextContains('There is no available OAuth (SAML) key for connecting to Apigee Edge.');
-    $this->assertSession()->pageTextContains('There is no available OAuth (SAML) token key for connecting to Apigee Edge.');
+    $this->assertSession()->pageTextContains('There is no available OAuth key for connecting to Apigee Edge.');
+    $this->assertSession()->pageTextContains('There is no available OAuth token key for connecting to Apigee Edge.');
 
     // Only Apigee Edge keys are usable in SDK connector.
     $this->expectExceptionMessage('Type of default_key key does not implement EdgeKeyTypeInterface.');
