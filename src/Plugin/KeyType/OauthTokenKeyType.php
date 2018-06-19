@@ -30,7 +30,7 @@ use Drupal\key\Plugin\KeyTypeBase;
  *
  * @KeyType(
  *   id = "apigee_edge_oauth_token",
- *   label = @Translation("Apigee Edge OAuth (SAML) token"),
+ *   label = @Translation("Apigee Edge OAuth token"),
  *   description = @Translation("Key type to use for Apigee Edge OAuth tokens."),
  *   group = "apigee_edge",
  *   key_value = {

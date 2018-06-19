@@ -157,7 +157,7 @@ class AuthenticationForm extends ConfigFormBase {
       '#title' => $this->t('Apigee Edge API authentication type'),
       '#options' => [
         'apigee_edge_basic_auth' => $this->t('Basic authentication'),
-        'apigee_edge_oauth' => $this->t('OAuth (SAML)'),
+        'apigee_edge_oauth' => $this->t('OAuth'),
       ],
       '#default_value' => isset($oauth_default_value) ? 'apigee_edge_oauth' : 'apigee_edge_basic_auth',
       '#required' => TRUE,
@@ -183,7 +183,7 @@ class AuthenticationForm extends ConfigFormBase {
       $form['authentication']['key_basic_auth_missing'] = [
         '#type' => 'item',
         '#title' => $this->t('There is no available basic authentication key for connecting to Apigee Edge.'),
-        '#description' => $this->t('Select an OAuth (SAML) key or <a href=":link">create a new basic authentication key</a>.', [
+        '#description' => $this->t('Select an OAuth key or <a href=":link">create a new basic authentication key</a>.', [
           ':link' => Url::fromRoute('entity.key.add_form', ['destination' => 'admin/config/apigee-edge/settings'])->toString(),
         ]),
         '#states' => [
@@ -198,7 +198,7 @@ class AuthenticationForm extends ConfigFormBase {
 
     $form['authentication']['key_oauth'] = [
       '#type' => 'radios',
-      '#title' => $this->t('OAuth (SAML) keys'),
+      '#title' => $this->t('OAuth keys'),
       '#options' => $oauth_keys,
       '#access' => !empty($oauth_keys) && !empty($oauth_token_keys),
       '#default_value' => $oauth_default_value,
@@ -213,7 +213,7 @@ class AuthenticationForm extends ConfigFormBase {
 
     $form['authentication']['key_oauth_token'] = [
       '#type' => 'radios',
-      '#title' => $this->t('OAuth (SAML) token keys'),
+      '#title' => $this->t('OAuth token keys'),
       '#options' => $oauth_token_keys,
       '#access' => !empty($oauth_keys) && !empty($oauth_token_keys),
       '#default_value' => $oauth_token_default_value,
@@ -229,8 +229,8 @@ class AuthenticationForm extends ConfigFormBase {
     if (empty($oauth_keys)) {
       $form['authentication']['key_oauth_missing'] = [
         '#type' => 'item',
-        '#title' => $this->t('There is no available OAuth (SAML) key for connecting to Apigee Edge.'),
-        '#description' => $this->t('Select a basic authentication key or <a href=":link">create a new OAuth (SAML) key</a>.', [
+        '#title' => $this->t('There is no available OAuth key for connecting to Apigee Edge.'),
+        '#description' => $this->t('Select a basic authentication key or <a href=":link">create a new OAuth key</a>.', [
           ':link' => Url::fromRoute('entity.key.add_form', ['destination' => 'admin/config/apigee-edge/settings'])->toString(),
         ]),
         '#states' => [
@@ -246,8 +246,8 @@ class AuthenticationForm extends ConfigFormBase {
     if (empty($oauth_token_keys)) {
       $form['authentication']['key_oauth_token_missing'] = [
         '#type' => 'item',
-        '#title' => $this->t('There is no available OAuth (SAML) token key for connecting to Apigee Edge.'),
-        '#description' => $this->t('Select a basic authentication key or <a href=":link">create a new OAuth (SAML) token key</a>.', [
+        '#title' => $this->t('There is no available OAuth token key for connecting to Apigee Edge.'),
+        '#description' => $this->t('Select a basic authentication key or <a href=":link">create a new OAuth token key</a>.', [
           ':link' => Url::fromRoute('entity.key.add_form', ['destination' => 'admin/config/apigee-edge/settings'])->toString(),
         ]),
         '#states' => [

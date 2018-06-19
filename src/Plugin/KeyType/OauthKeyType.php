@@ -30,7 +30,7 @@ use Http\Message\Authentication;
  *
  * @KeyType(
  *   id = "apigee_edge_oauth",
- *   label = @Translation("Apigee Edge OAuth (SAML)"),
+ *   label = @Translation("Apigee Edge OAuth"),
  *   description = @Translation("Key type to use for Apigee Edge OAuth credentials."),
  *   group = "apigee_edge",
  *   key_value = {
