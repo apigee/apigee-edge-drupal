@@ -46,6 +46,7 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
  */
 trait FieldableEdgeEntityBaseTrait {
 
+  use FieldableEdgeEntityUtilityTrait;
   use EdgeEntityBaseTrait {
     preSave as private traitPreSave;
     postSave as private traitPostSave;
@@ -257,32 +258,10 @@ trait FieldableEdgeEntityBaseTrait {
   }
 
   /**
-   * Returns the field UI's field name prefix.
-   *
-   * @return string
-   *   Prefix of the field.
-   */
-  private function getFieldPrefix(): string {
-    return (string) \Drupal::config('field_ui.settings')->get('field_prefix');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getAttributeName(string $field_name): string {
-    $field_prefix = $this->getFieldPrefix();
-    if ($field_prefix && strpos($field_name, $field_prefix) === 0) {
-      return substr($field_name, strlen($field_prefix));
-    }
-
-    return $field_name;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function getFieldName(string $attribute_name): string {
-    $prefix = $this->getFieldPrefix();
+    $prefix = static::getFieldPrefix();
     return strpos($attribute_name, $prefix) === 0 ?
       $attribute_name :
       $prefix . $attribute_name;
@@ -310,7 +289,7 @@ trait FieldableEdgeEntityBaseTrait {
    * {@inheritdoc}
    */
   public function getFieldValueFromAttribute(string $field_name, AttributesProperty $attributes) {
-    $attribute_name = $this->getAttributeName($field_name);
+    $attribute_name = static::getAttributeName($field_name);
     if ($attributes->has($attribute_name)) {
       $attribute_value = $attributes->getValue($attribute_name);
       if (($formatter = $this->findAttributeStorageFormatter($field_name))) {
@@ -383,7 +362,7 @@ trait FieldableEdgeEntityBaseTrait {
     // Do not try to set values of fields that does not exists.
     // Also blacklisted properties does not have a field in Drupal and their
     // value changes should not be saved on entity properties either.
-    if (!$this->hasField($field_name) || static::isBackListedProperty($this->getAttributeName($field_name))) {
+    if (!$this->hasField($field_name) || static::isBackListedProperty(static::getAttributeName($field_name))) {
       return $this;
     }
 
@@ -426,7 +405,7 @@ trait FieldableEdgeEntityBaseTrait {
     // find a property for sure.)
     $setter = 'set' . ucfirst($field_name);
     if (!method_exists($this, $setter)) {
-      $attribute_name = $this->getAttributeName($field_name);
+      $attribute_name = static::getAttributeName($field_name);
       if (($formatter = $this->findAttributeStorageFormatter($field_name))) {
         $this->attributes->add($attribute_name, $formatter->encode($value));
       }
