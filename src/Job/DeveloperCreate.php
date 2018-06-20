@@ -90,7 +90,7 @@ class DeveloperCreate extends EdgeJob {
    * {@inheritdoc}
    */
   public function __toString() : string {
-    return t('Creating developer for @mail on Edge.', [
+    return t('Copying user (@mail) to Edge from Drupal.', [
       '@mail' => $this->developer->getEmail(),
     ])->render();
   }

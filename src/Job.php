@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Job;
+namespace Drupal\apigee_edge;
 
 /**
  * Defines the Job class.

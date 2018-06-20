@@ -28,7 +28,7 @@ use Drupal\user\Plugin\Validation\Constraint\UserNameUnique;
 /**
  * A job to create a Drupal user from an Apigee Edge developer.
  */
-class CreateUser extends EdgeJob {
+class UserCreate extends EdgeJob {
 
   /**
    * The developer's email.
@@ -73,7 +73,12 @@ class CreateUser extends EdgeJob {
         throw new EntityMalformedException((string) $violation->getMessage());
       }
     }
+
+    // If the developer-user synchronization is in progress, then saving
+    // developers while saving Drupal user should be avoided.
+    _apigee_edge_set_sync_in_progress(TRUE);
     $user->save();
+    _apigee_edge_set_sync_in_progress(FALSE);
   }
 
   /**

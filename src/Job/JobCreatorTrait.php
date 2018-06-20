@@ -33,7 +33,7 @@ trait JobCreatorTrait {
    * @return \Drupal\apigee_edge\JobExecutor
    *   The job executor service.
    */
-  protected function getExecutor() : JobExecutor {
+  protected function getExecutor(): JobExecutor {
     return \Drupal::service('apigee_edge.job_executor');
   }
 
