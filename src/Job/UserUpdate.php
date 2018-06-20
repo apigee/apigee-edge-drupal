@@ -23,9 +23,9 @@ use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\FieldableEdgeEntityUtilityTrait;
 
 /**
- * A job to update an Apigee Edge developer based on a Drupal user.
+ * A job to update a Drupal user based on an Apigee Edge developer.
  */
-class DeveloperUpdate extends EdgeJob {
+class UserUpdate extends EdgeJob {
 
   use FieldableEdgeEntityUtilityTrait;
 
@@ -37,14 +37,14 @@ class DeveloperUpdate extends EdgeJob {
   protected $mail;
 
   /**
-   * Whether the Apigee Edge developer should be updated.
+   * Whether the Drupal user should be updated.
    *
    * @var bool
    */
   protected $executeUpdate = FALSE;
 
   /**
-   * DeveloperUpdate constructor.
+   * UserUpdate constructor.
    *
    * @param string $mail
    *   The email of the developer/user.
@@ -58,18 +58,18 @@ class DeveloperUpdate extends EdgeJob {
    * {@inheritdoc}
    */
   protected function executeRequest() {
-    /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
+    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
     $developer = Developer::load($this->mail);
-    /** @var \Drupal\user\UserInterface $account */
+    /** @var \Drupal\user\Entity\User $account */
     $account = user_load_by_mail($this->mail);
 
     if ($developer->getFirstName() !== $account->get('first_name')->value) {
-      $developer->setFirstName($account->get('first_name')->value);
+      $account->set('first_name', $developer->getFirstName());
       $this->executeUpdate = TRUE;
     }
 
     if ($developer->getLastName() !== $account->get('last_name')->value) {
-      $developer->setLastName($account->get('last_name')->value);
+      $account->set('last_name', $developer->getLastName());
       $this->executeUpdate = TRUE;
     }
 
@@ -81,25 +81,32 @@ class DeveloperUpdate extends EdgeJob {
         $type = $account->getFieldDefinition($field)->getType();
         $formatter = $format_manager->lookupPluginForFieldType($type);
         $account_field_value = $formatter->encode($account->get($field)->getValue());
-        $encoded = $developer->getAttributeValue(static::getAttributeName($field));
-        $developer_attribute_value = isset($encoded) ? $formatter->decode($encoded) : NULL;
+        $developer_attribute_value = $developer->getAttributeValue(static::getAttributeName($field));
+        if ($developer_attribute_value === NULL) {
+          continue;
+        }
+        $developer_attribute_value = $formatter->decode($developer_attribute_value);
         if ($account_field_value !== $developer_attribute_value) {
-          $developer->setAttribute(static::getAttributeName($field), $account_field_value);
+          $account->set($field, $developer_attribute_value);
           $this->executeUpdate = TRUE;
         }
       }
     }
 
     if ($this->executeUpdate) {
-      $developer->save();
+      // If the developer-user synchronization is in progress, then saving
+      // developers while saving Drupal user should be avoided.
+      _apigee_edge_set_sync_in_progress(TRUE);
+      $account->save();
+      _apigee_edge_set_sync_in_progress(FALSE);
     }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function __toString() : string {
-    return t('Updating developer (@mail) on Apigee Edge.', [
+  public function __toString(): string {
+    return t('Updating user (@mail) in Drupal.', [
       '@mail' => $this->mail,
     ])->render();
   }
