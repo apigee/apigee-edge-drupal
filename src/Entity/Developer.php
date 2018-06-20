@@ -20,7 +20,6 @@
 namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Api\Management\Entity\Developer as EdgeDeveloper;
-use Drupal\Component\Serialization\Json;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
@@ -37,6 +36,7 @@ use Drupal\user\UserInterface;
  */
 class Developer extends EdgeDeveloper implements DeveloperInterface {
 
+  use FieldableEdgeEntityUtilityTrait;
   use EdgeEntityBaseTrait {
     id as private traitId;
   }
@@ -105,11 +105,12 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
     $developer = !isset($user->original) ? static::create($developer_data) : new static($developer_data);
     $developer->setOwnerId($user->id());
 
-    foreach (\Drupal::config('apigee_edge.sync')->get('user_fields_to_sync') as $field_to_sync) {
-      $developer->setAttribute(
-        preg_replace('/^field_(.*)$/', '${1}', $field_to_sync),
-        Json::encode($user->get($field_to_sync)->getValue())
-      );
+    /** @var \Drupal\apigee_edge\FieldStorageFormatManager $format_manager */
+    $format_manager = \Drupal::service('plugin.manager.apigee_field_storage_format');
+    foreach (\Drupal::config('apigee_edge.sync')->get('user_fields_to_sync') as $field) {
+      $type = $user->getFieldDefinition($field)->getType();
+      $formatter = $format_manager->lookupPluginForFieldType($type);
+      $developer->setAttribute(static::getAttributeName($field), $formatter->encode($user->get($field)->getValue()));
     }
     return $developer;
   }
