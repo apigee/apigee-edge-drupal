@@ -80,7 +80,7 @@ class DeveloperCreate extends EdgeJob {
    *   The created job or null if properties are missing on the local account.
    */
   public static function createForUser(UserInterface $account) : ? Job {
-    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
+    /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
     $developer = Developer::createFromDrupalUser($account);
 
     return new static($developer);

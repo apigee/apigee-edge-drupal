@@ -139,7 +139,7 @@ class DeveloperSync extends EdgeJob {
     foreach ($identical_accounts as $search => $mail) {
       /** @var \Apigee\Edge\Api\Management\Entity\DeveloperInterface $developer */
       $developer = Developer::load($mail);
-      /** @var \Drupal\user\Entity\User $account */
+      /** @var \Drupal\user\UserInterface $account */
       $account = user_load_by_mail($mail);
       $last_modified_delta = $developer->getLastModifiedAt()->getTimestamp() - $account->getChangedTime();
       if ($last_modified_delta > 0) {
@@ -166,7 +166,7 @@ class DeveloperSync extends EdgeJob {
     // Create missing Apigee Edge developers.
     foreach ($this->drupalAccounts as $search => $mail) {
       if (empty($this->edgeAccounts[$search])) {
-        /** @var \Drupal\user\Entity\User $account */
+        /** @var \Drupal\user\UserInterface $account */
         if (!($account = user_load_by_mail($mail))) {
           $this->recordMessage("User for {$mail} not found.");
           continue;

@@ -58,9 +58,9 @@ class UserUpdate extends EdgeJob {
    * {@inheritdoc}
    */
   protected function executeRequest() {
-    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
+    /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
     $developer = Developer::load($this->mail);
-    /** @var \Drupal\user\Entity\User $account */
+    /** @var \Drupal\user\UserInterface $account */
     $account = user_load_by_mail($this->mail);
 
     if ($developer->getFirstName() !== $account->get('first_name')->value) {

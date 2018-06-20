@@ -49,7 +49,7 @@ class UserCreate extends EdgeJob {
    * {@inheritdoc}
    */
   protected function executeRequest() {
-    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
+    /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
     $developer = Developer::load($this->mail);
     $user = User::create([
       'name' => $developer->getUserName(),
