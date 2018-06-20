@@ -1324,7 +1324,7 @@ function _apigee_edge_user_has_an_app_with_product(string $productName, AccountI
  * If the developer-user synchronization is in progress, then saving
  * developers while saving Drupal user should be avoided.
  *
- * @param bool $in_progress
+ * @param bool|null $in_progress
  *   User synchronization state.
  *
  * @return bool|null
