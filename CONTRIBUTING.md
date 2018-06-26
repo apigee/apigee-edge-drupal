@@ -33,9 +33,9 @@ This project follows [Google's Open Source Community Guidelines](https://opensou
 * If you do not have an Apigee Edge trial organization please create a new one
 [here](https://login.apigee.com/login).
 * Register on https://travis-ci.org .
-* Open https://travis-ci.org/[YOUR-GITHUB-USERNAME]/apigee-client-php and click
+* Open https://travis-ci.org/[YOUR-GITHUB-USERNAME]/apigee-edge-drupal and click
 on "Activate repository".
-* Open https://travis-ci.org/[YOUR-GITHUB-USERNAME]/apigee-client-php/settings
+* Open https://travis-ci.org/[YOUR-GITHUB-USERNAME]/apigee-edge-drupal/settings
 and setup required environment variables for running tests. (See the list of
 required environment variables in the [Testing](#testing) section.)
 
