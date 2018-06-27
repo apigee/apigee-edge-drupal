@@ -28,28 +28,66 @@ This project follows [Google's Open Source Community Guidelines](https://opensou
 
 # Suggested contributing workflow
 
-## For start
+## For a start
 * Fork this project on Github.
 * If you do not have an Apigee Edge trial organization please create a new one
 [here](https://login.apigee.com/login).
-* Register on https://travis-ci.org .
+* Register on https://travis-ci.org.
 * Open https://travis-ci.org/[YOUR-GITHUB-USERNAME]/apigee-edge-drupal and click
 on "Activate repository".
 * Open https://travis-ci.org/[YOUR-GITHUB-USERNAME]/apigee-edge-drupal/settings
 and setup required environment variables for running tests. (See the list of
 required environment variables in the [Testing](#testing) section.)
+* Install the module from for your fork instead of Drupal.org on your local. (See below.)
 
 ## For daily work
 * Create a new branch in your fork repository, ex.: patch-1.
 * Add changes to the code. If you implement new features please always add new
-tests that covers the implemented functionality. If you modify existing features please always update related tests if needed.
+tests to cover the implemented functionality. If you modify existing features please always update related tests if needed.
 * Push your changes to your repo's patch-1 branch.
-* Wait until all Travis CI test jobs finish and _pass_. (If any of them fails
-please try to restart them once or twice because it could happen that they 
-ailed because of an API communication error. You can identify these type of
-issues from logs.)
+* Wait until all Travis CI test jobs finish and _pass_.
 * Create [new pull request](https://github.com/apigee/apigee-edge-drupal/pull/new/8.x-1.x)
 and do not forget to add a link to Travis CI build that can confirm your code is working.
+
+## Installing module from your fork instead of Drupal.org
+
+Create a new branch on Github.com in your fork for your fix, ex.: patch-1.
+
+Update your composer.json and install the module from your fork:
+```bash
+cd [DRUPAL_ROOT]
+composer config repositories.forked-apigee_edge vcs https://github.com/[YOUR-GITHUB-USERNAME]/apigee-edge-drupal
+composer require drupal/apigee_edge:dev-patch-1 # It is important to require a branch/tag here that does not exist in the Drupal.org repo otherwise code gets pulled from there. For example, dev-8.x-1.x condition would pull the code from Drupal.org repo instead of your fork.  
+```
+
+If you would like to keep your fork always up-to-date with recent changes in
+upstream then add Apigee repo as a remote (one time only):
+
+```bash
+cd [DRUPAL_ROOT]/modules/contrib/apigee_edge
+git remote add upstream https://github.com/apigee/apigee-edge-drupal.git
+git fetch upstream
+```
+
+For daily bases, rebase your current working branch to get latest changes from
+upstream:
+
+```bash
+cd [DRUPAL_ROOT]/modules/contrib/apigee_edge
+git fetch upstream
+git rebase upstream/8.x-1.x
+```
+
+After you have installed the module from your fork you can easily create new
+branches for new fixes on your local:
+```bash
+cd [DRUPAL_ROOT]/modules/contrib/apigee_edge
+git fetch upstream
+git checkout -b patch-2 upstream/8.x-1.x
+## Add your awesome changes.
+git push -u origin patch-2:patch-2 # Push changes to your repo.
+## Create PR on Github.
+``` 
 
 ## Running tests
 
@@ -74,14 +112,24 @@ may vary):
 ```
 
 If you have Docker and Docker Compose installed on your system you can also run
-PHPUnit tests of this module with the following commands:
+PHPUnit tests with the following commands:
 
-```sh
-$ docker-compose up --build
-$ docker-compose run php sh /opt/drupal-module/docker-run-tests.sh
+```bash
+cd [DRUPAL_ROOT]/modules/contrib/apigee_edge/.travis
+docker-compose up --build # Build is important because recent changes on module files have to be copied from the host to the container.
+docker-compose run php /opt/drupal-module/run-test.sh # to run all tests of this module. This command performs some initial setup tasks if test environment has not been configured yet. 
+docker-compose run php /opt/drupal-module/run-test.sh --filter testAppSettingsForm AppSettingsFormTest build/modules/contrib/apigee_edge/tests/src/FunctionalJavascript/AppSettingsFormTest.php # to run one specific test. If you pass any arguments to run-test.sh those get passed directly to PHPUnit. See [.travis/run-test.sh](run-test.sh).
+docker-compose down --remove-orphans -v # Intermediate data (like module files) must be cleared from the shared volumes otherwise recent changes won't be visible in the container. 
 ```
 
 You can read more about running Drupal 8 PHPUnit tests [here](https://www.drupal.org/docs/8/phpunit/running-phpunit-tests).
+
+### Troubleshooting
+
+**If a test is passing on your local but it is failing on Travis CI.**
+1. Try to restart failing job(s) one or two times, failing tests could be caused by communication issues.
+2. If 1. did not work try to run the failing test(s) on your local in the above described
+Docker based environment because this what Travis CI also uses for running tests.
 
 ## Best practices
 
