@@ -32,6 +32,7 @@ The Apigee Edge module enables you to integrate Drupal 8 with Apigee Edge.
 ### Troubleshooting 
 
 * **[File entity](https://www.drupal.org/project/file_entity) module.** If you installed the File entity module then you are going to need the latest patch from [this issue](https://www.drupal.org/project/file_entity/issues/2977747) otherwise you can run into some problems.
+* **[Key](https://www.drupal.org/project/key) module.** If you are using OAuth then you are going to need the latest patch from [this issue](https://www.drupal.org/project/key/issues/2982124#comment-12665544) otherwise you can run into some problems.
 
 ### Development
 
