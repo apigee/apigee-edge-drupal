@@ -21,7 +21,7 @@ services:
       THREADS: ${THREADS:-2}
       TEST_ROOT: ${TEST_ROOT:-modules/contrib/apigee_edge/tests}
       # We have to set this variable even if we set this to disabled, because
-      # otherwise xDebug does not gets enabled and we need it for code coverage
+      # otherwise xDebug does not get enabled and we need that for code coverage
       # generation.
       PHP_XDEBUG: 0
   webserver:
