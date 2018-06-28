@@ -14,7 +14,7 @@
     "require-dev": {
         "behat/mink" : "dev-master#9ea1cebe",
         "composer/installers": "^1.2",
-        "cweagans/composer-patches": "^1.6",
+        "cweagans/composer-patches": "^1.6.5",
         "drupal-composer/drupal-scaffold": "^2.2",
         "drush/drush": "^9.0",
         "egulias/email-validator": "1.2.14",
@@ -53,6 +53,9 @@
             "drupal/key": {
                 "Fix implementation of NoneKeyInput": "https://www.drupal.org/files/issues/2018-06-27/key-fix-implementation-of-nonekeyinput-2982124-2.patch"
             }
+        },
+        "patchLevel": {
+            "drupal/core": "-p2"
         },
         "installer-paths": {
             "build/core": ["type:drupal-core"],
