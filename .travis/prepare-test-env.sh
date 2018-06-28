@@ -7,6 +7,15 @@ if [[ -z "${APIGEE_EDGE_ENDPOINT}" ]] || [[ -z "${APIGEE_EDGE_USERNAME}" ]] || [
   exit 1
 fi
 
+# Make sure that script is standalone (it can be used even if it is not called
+# by run-test.sh).
+THREADS=${THREADS:-4}
+MODULE_PATH=${MODULE_PATH:-"/opt/drupal-module"}
+WEB_ROOT=${WEB_ROOT:-"/var/www/html/build"}
+WEB_ROOT_PARENT=${WEB_ROOT_PARENT:-"/var/www/html"}
+TEST_ROOT=${TEST_ROOT:-modules/custom}
+TESTRUNNER=${TESTRUNNER:-"/var/www/html/testrunner"}
+
 COMPOSER_GLOBAL_OPTIONS="--no-interaction -o"
 
 # We mounted the cache/files folder from the host so we have to fix permissions
