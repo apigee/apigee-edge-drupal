@@ -110,6 +110,13 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
     foreach (\Drupal::config('apigee_edge.sync')->get('user_fields_to_sync') as $field) {
       $type = $user->getFieldDefinition($field)->getType();
       $formatter = $format_manager->lookupPluginForFieldType($type);
+      if (!isset($formatter)) {
+        \Drupal::logger('apigee_edge')->warning('Skipping @mail developer attribute save, there is no available storage formatter for @field_type.', [
+          '@mail' => $user->getEmail(),
+          '@field_type' => $type,
+        ]);
+        continue;
+      }
       $developer->setAttribute(static::getAttributeName($field), $formatter->encode($user->get($field)->getValue()));
     }
     return $developer;
