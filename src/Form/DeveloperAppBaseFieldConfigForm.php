@@ -56,6 +56,36 @@ class DeveloperAppBaseFieldConfigForm extends FormBase {
       $form['table'][$locked]['required']['#disabled'] = TRUE;
     }
 
+    $app_config = $this->config('apigee_edge.common_app_settings');
+
+    $form['callback_url'] = [
+      '#type' => 'details',
+      '#title' => t('Callback URL settings'),
+      '#open' => TRUE,
+      '#tree' => TRUE,
+    ];
+
+    $form['callback_url']['pattern'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Pattern'),
+      '#default_value' => $app_config->get('callback_url_pattern'),
+      '#description' => $this->t('Regular expression that a Callback URL should match. Default is "^https?:\/\/.*$" that ensures callback url starts with either <em>http://</em> or <em>https://</em>.'),
+      '#required' => TRUE,
+    ];
+    $form['callback_url']['pattern_description'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Description'),
+      '#default_value' => $app_config->get('callback_url_pattern_description'),
+      '#description' => $this->t('Describes the validation criteria that a Callback URL should match.'),
+      '#required' => TRUE,
+    ];
+    $form['callback_url']['placeholder'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Placeholder'),
+      '#default_value' => $app_config->get('callback_url_placeholder'),
+      '#description' => $this->t('Placeholder for a Callback URL.'),
+    ];
+
     $form['save'] = [
       '#type' => 'submit',
       '#value' => $this->t('Save'),
@@ -98,6 +128,13 @@ class DeveloperAppBaseFieldConfigForm extends FormBase {
     $this->configFactory()
       ->getEditable('apigee_edge.common_app_settings')
       ->set('required_base_fields', $required)
+      ->save();
+
+    $this->configFactory()
+      ->getEditable('apigee_edge.common_app_settings')
+      ->set('callback_url_pattern', $form_state->getValue(['callback_url', 'pattern']))
+      ->set('callback_url_pattern_description', $form_state->getValue(['callback_url', 'pattern_description']))
+      ->set('callback_url_placeholder', $form_state->getValue(['callback_url', 'placeholder']))
       ->save();
 
     drupal_flush_all_caches();
