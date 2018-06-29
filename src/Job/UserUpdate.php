@@ -78,8 +78,23 @@ class UserUpdate extends EdgeJob {
       /** @var \Drupal\apigee_edge\FieldStorageFormatManager $format_manager */
       $format_manager = \Drupal::service('plugin.manager.apigee_field_storage_format');
       foreach ($user_fields_to_sync as $field) {
-        $type = $account->getFieldDefinition($field)->getType();
+        $field_definition = $account->getFieldDefinition($field);
+        if (!isset($field_definition)) {
+          $this->recordMessage(t('Skipping @mail developer update, because the field @field does not exist.', [
+            '@mail' => $this->mail,
+            '@field' => $field_definition->getName(),
+          ])->render());
+          continue;
+        }
+        $type = $field_definition->getType();
         $formatter = $format_manager->lookupPluginForFieldType($type);
+        if (!isset($formatter)) {
+          $this->recordMessage(t('Skipping @mail developer update, because there is no available storage formatter for @field_type.', [
+            '@mail' => $this->mail,
+            '@field_type' => $type,
+          ])->render());
+          continue;
+        }
         $account_field_value = $formatter->encode($account->get($field)->getValue());
         $developer_attribute_value = $developer->getAttributeValue(static::getAttributeName($field));
         if ($developer_attribute_value === NULL) {
@@ -94,11 +109,15 @@ class UserUpdate extends EdgeJob {
     }
 
     if ($this->executeUpdate) {
-      // If the developer-user synchronization is in progress, then saving
-      // developers while saving Drupal user should be avoided.
-      _apigee_edge_set_sync_in_progress(TRUE);
-      $account->save();
-      _apigee_edge_set_sync_in_progress(FALSE);
+      try {
+        // If the developer-user synchronization is in progress, then saving
+        // developers while saving Drupal user should be avoided.
+        _apigee_edge_set_sync_in_progress(TRUE);
+        $account->save();
+      }
+      finally {
+        _apigee_edge_set_sync_in_progress(FALSE);
+      }
     }
   }
 
@@ -106,7 +125,7 @@ class UserUpdate extends EdgeJob {
    * {@inheritdoc}
    */
   public function __toString(): string {
-    return t('Updating user (@mail) in Drupal.', [
+    return t('Updating user (@mail) in Drupal if necessary.', [
       '@mail' => $this->mail,
     ])->render();
   }

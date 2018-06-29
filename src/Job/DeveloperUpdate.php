@@ -78,8 +78,23 @@ class DeveloperUpdate extends EdgeJob {
       /** @var \Drupal\apigee_edge\FieldStorageFormatManager $format_manager */
       $format_manager = \Drupal::service('plugin.manager.apigee_field_storage_format');
       foreach ($user_fields_to_sync as $field) {
-        $type = $account->getFieldDefinition($field)->getType();
+        $field_definition = $account->getFieldDefinition($field);
+        if (!isset($field_definition)) {
+          $this->recordMessage(t('Skipping @mail developer update, because the field @field does not exist.', [
+            '@mail' => $this->mail,
+            '@field' => $field_definition->getName(),
+          ])->render());
+          continue;
+        }
+        $type = $field_definition->getType();
         $formatter = $format_manager->lookupPluginForFieldType($type);
+        if (!isset($formatter)) {
+          $this->recordMessage(t('Skipping @mail developer update, because there is no available storage formatter for @field_type.', [
+            '@mail' => $this->mail,
+            '@field_type' => $type,
+          ])->render());
+          continue;
+        }
         $account_field_value = $formatter->encode($account->get($field)->getValue());
         $encoded = $developer->getAttributeValue(static::getAttributeName($field));
         $developer_attribute_value = isset($encoded) ? $formatter->decode($encoded) : NULL;
@@ -98,8 +113,8 @@ class DeveloperUpdate extends EdgeJob {
   /**
    * {@inheritdoc}
    */
-  public function __toString() : string {
-    return t('Updating developer (@mail) on Apigee Edge.', [
+  public function __toString(): string {
+    return t('Updating developer (@mail) on Apigee Edge if necessary.', [
       '@mail' => $this->mail,
     ])->render();
   }

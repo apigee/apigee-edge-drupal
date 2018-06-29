@@ -26,7 +26,7 @@ use Drupal\apigee_edge\Job;
 use Drupal\user\UserInterface;
 
 /**
- * A job to create a developer in Edge.
+ * A job to create a developer in Apigee Edge.
  */
 class DeveloperCreate extends EdgeJob {
 
@@ -79,7 +79,7 @@ class DeveloperCreate extends EdgeJob {
    * @return \Drupal\apigee_edge\Job|null
    *   The created job or null if properties are missing on the local account.
    */
-  public static function createForUser(UserInterface $account) : ? Job {
+  public static function createForUser(UserInterface $account): ?Job {
     /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
     $developer = Developer::createFromDrupalUser($account);
 
@@ -89,8 +89,8 @@ class DeveloperCreate extends EdgeJob {
   /**
    * {@inheritdoc}
    */
-  public function __toString() : string {
-    return t('Copying user (@mail) to Edge from Drupal.', [
+  public function __toString(): string {
+    return t('Copying user (@mail) to Apigee Edge from Drupal.', [
       '@mail' => $this->developer->getEmail(),
     ])->render();
   }

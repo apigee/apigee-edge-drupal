@@ -1328,10 +1328,10 @@ function _apigee_edge_user_has_an_app_with_product(string $productName, AccountI
  *   User synchronization state.
  *
  * @return bool|null
- *   TRUE if the user synchronization is in progress, else FALSE.
+ *   TRUE if the user synchronization is in progress, else FALSE or NULL.
  */
 function _apigee_edge_set_sync_in_progress(?bool $in_progress = NULL) {
-  static $i = FALSE;
+  static $i;
   if ($in_progress !== NULL) {
     $i = $in_progress;
   }
@@ -1341,8 +1341,8 @@ function _apigee_edge_set_sync_in_progress(?bool $in_progress = NULL) {
 /**
  * Gets the user synchronization state.
  *
- * @return bool
- *   TRUE if the user synchronization is in progress, else FALSE.
+ * @return bool|null
+ *   TRUE if the user synchronization is in progress, else FALSE or NULL.
  */
 function _apigee_edge_get_sync_in_progress() {
   return _apigee_edge_set_sync_in_progress();

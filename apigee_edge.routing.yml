@@ -47,7 +47,7 @@ apigee_edge.settings.developer:
   requirements:
     _permission: 'administer apigee edge'
 
-apigee_edge.settings.developer.email_validation:
+apigee_edge.settings.developer.attributes:
   path: '/admin/config/apigee-edge/developer-settings/attributes'
   defaults:
     _form: '\Drupal\apigee_edge\Form\DeveloperAttributesSettingsForm'

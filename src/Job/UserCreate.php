@@ -74,18 +74,22 @@ class UserCreate extends EdgeJob {
       }
     }
 
-    // If the developer-user synchronization is in progress, then saving
-    // developers while saving Drupal user should be avoided.
-    _apigee_edge_set_sync_in_progress(TRUE);
-    $user->save();
-    _apigee_edge_set_sync_in_progress(FALSE);
+    try {
+      // If the developer-user synchronization is in progress, then saving
+      // developers while saving Drupal user should be avoided.
+      _apigee_edge_set_sync_in_progress(TRUE);
+      $user->save();
+    }
+    finally {
+      _apigee_edge_set_sync_in_progress(FALSE);
+    }
   }
 
   /**
    * {@inheritdoc}
    */
   public function __toString(): string {
-    return t('Copying developer (@mail) to Drupal from Edge.', [
+    return t('Copying developer (@mail) to Drupal from Apigee Edge.', [
       '@mail' => $this->mail,
     ])->render();
   }

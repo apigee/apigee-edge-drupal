@@ -134,7 +134,7 @@ class DeveloperSync extends EdgeJob {
   public function execute(): bool {
     parent::execute();
 
-    // Update Apigee Edge developers and Drupal users.
+    // Update Apigee Edge developers and Drupal users if needed.
     $identical_accounts = array_intersect($this->edgeAccounts, $this->drupalAccounts);
     foreach ($identical_accounts as $search => $mail) {
       /** @var \Apigee\Edge\Api\Management\Entity\DeveloperInterface $developer */
@@ -142,7 +142,7 @@ class DeveloperSync extends EdgeJob {
       /** @var \Drupal\user\UserInterface $account */
       $account = user_load_by_mail($mail);
       $last_modified_delta = $developer->getLastModifiedAt()->getTimestamp() - $account->getChangedTime();
-      if ($last_modified_delta > 0) {
+      if ($last_modified_delta >= 0) {
         $updateUserJob = new UserUpdate($mail);
         $updateUserJob->setTag($this->getTag());
         $this->scheduleJob($updateUserJob);
@@ -196,7 +196,7 @@ class DeveloperSync extends EdgeJob {
    * {@inheritdoc}
    */
   public function __toString(): string {
-    return t('Synchronizing developers and users.')->render();
+    return t('Synchronizing Apigee Edge developers and Drupal users.')->render();
   }
 
 }
