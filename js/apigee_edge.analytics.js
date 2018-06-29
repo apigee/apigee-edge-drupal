@@ -54,6 +54,13 @@
           return;
         }
 
+        // Display an error message if the Google Loader API cannot be loaded
+        // and stop drawing.
+        if (typeof google === 'undefined') {
+          $('.apigee-edge-developer-app-analytics').prepend('<div class="messages messages--error">'+ Drupal.t('Failed to load Google Loader API (https://www.gstatic.com/charts/loader.js).') + '</div>');
+          return;
+        }
+
         // If the passed version doesn't exist, default to 'current' (stable).
         google.charts.load(version === null ? 'current' : version, {
           'packages': ['corechart'],

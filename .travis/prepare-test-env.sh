@@ -7,9 +7,15 @@ if [[ -z "${APIGEE_EDGE_ENDPOINT}" ]] || [[ -z "${APIGEE_EDGE_USERNAME}" ]] || [
   exit 1
 fi
 
-MODULE_PATH="/opt/drupal-module"
-WEB_ROOT="/var/www/html/build"
-WEB_ROOT_PARENT="/var/www/html"
+# Make sure that script is standalone (it can be used even if it is not called
+# by run-test.sh).
+THREADS=${THREADS:-4}
+MODULE_PATH=${MODULE_PATH:-"/opt/drupal-module"}
+WEB_ROOT=${WEB_ROOT:-"/var/www/html/build"}
+WEB_ROOT_PARENT=${WEB_ROOT_PARENT:-"/var/www/html"}
+TEST_ROOT=${TEST_ROOT:-modules/custom}
+TESTRUNNER=${TESTRUNNER:-"/var/www/html/testrunner"}
+
 COMPOSER_GLOBAL_OPTIONS="--no-interaction -o"
 
 # We mounted the cache/files folder from the host so we have to fix permissions
@@ -69,12 +75,9 @@ sudo -u root ln -s /mnt/files/log/simpletest/browser_output ${WEB_ROOT}/sites/si
 sudo -u root sh -c "chown -R www-data:wodby $WEB_ROOT/sites/simpletest \
     && chmod -R 6750 $WEB_ROOT/sites/simpletest"
 
-# Let's see installed dependencies.
+# Let's display installed dependencies and their versions.
 composer show
 
-# Download the test runner.
-curl -L -o /var/www/html/testrunner https://github.com/Pronovix/testrunner/releases/download/v0.4/testrunner-linux-amd64
-chmod +x /var/www/html/testrunner
-# Do not exit if any PHPUnit test fails.
-set +e
-sudo -u root -E sudo -u www-data -E /var/www/html/testrunner -verbose -threads=${THREADS} -root=${WEB_ROOT}/${TEST_ROOT} -command="$WEB_ROOT_PARENT/vendor/bin/phpunit -c $WEB_ROOT/core -v --debug --printer \Drupal\Tests\Listeners\HtmlOutputPrinter"
+# Downloading the test runner.
+curl -s -L -o ${TESTRUNNER} https://github.com/Pronovix/testrunner/releases/download/v0.4/testrunner-linux-amd64
+chmod +x ${TESTRUNNER}

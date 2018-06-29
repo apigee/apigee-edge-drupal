@@ -16,7 +16,8 @@ services:
 
   php:
     build:
-      context: .
+      context: ..
+      dockerfile: .travis/Dockerfile
       args:
         - PHP_IMAGE=${PHP_IMAGE:-wodby/drupal-php:7.1-dev-4.5.0}
     container_name: "${COMPOSE_PROJECT_NAME:-my_project}_php"
@@ -54,7 +55,7 @@ services:
     image: mxr576/docker-phpcs
     container_name: "${COMPOSE_PROJECT_NAME:-my_project}_phpcs"
     volumes:
-      - .:/opt/drupal-module
+      - ../:/opt/drupal-module
       - codebase:/var/www/html
     depends_on:
       - php

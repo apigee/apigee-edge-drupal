@@ -3,7 +3,7 @@
 set -e
 
 if [[ -z "${LOGS_REPO_USER}" ]] || [[ -z "${LOGS_REPO_PASSWORD}" ]] || [[ -z "${LOGS_REPO_HOST}" ]] || [[ -z "${LOGS_REPO_NAME}" ]]; then
-  echo "There is at least one missing information about destination repo. Please make sure the following environment variables exist and not empty: LOGS_REPO_USER, LOGS_REPO_PASSWORD, LOGS_REPO_HOST, LOGS_REPO_NAME."
+  echo "There is at least one missing information about the destination repo. Please make sure the following environment variables exist and not empty: LOGS_REPO_USER, LOGS_REPO_PASSWORD, LOGS_REPO_HOST, LOGS_REPO_NAME."
   exit 0
 fi
 
@@ -11,7 +11,7 @@ fi
 git config --global user.email "travis@travis-ci.org"
 git config --global user.name "Travis CI"
 # Copy logs from the PHP container.
-docker cp my_project_php:/mnt/files/log .
+docker cp $(docker ps -f "name=.*_php" --format "{{.ID}}"):/mnt/files/log .
 cd log
 # Commit and push logs to the git repo.
 git init
