@@ -46,8 +46,15 @@ class DeveloperSyncForm extends FormBase {
       '#title' => $this->t('Sync developers'),
       '#open' => TRUE,
     ];
+
+    $form['sync']['description'] = [
+      '#markup' => '<p>' . $this->t('Developer synchronization will run through all users in this portal, adding them as developers in the Apigee Edge org, and making sure all developers on the Apigee Edge org are added to this portal. The "Run Developer Sync" button will sync the developers, displaying a progress bar. The "Background Developer Sync" button will run the developer sync process in batches each time <a href=":cron_url">cron</a> runs.', [
+        ':cron_url' => Url::fromRoute('system.cron_settings')->toString()
+        ]) . '</p>',
+    ];
+
     $form['sync']['sync_submit'] = [
-      '#title' => $this->t('Now'),
+      '#title' => $this->t('Run Developer Sync'),
       '#type' => 'link',
       '#url' => $this->buildUrl('apigee_edge.user_sync.run'),
       '#attributes' => [
@@ -58,22 +65,13 @@ class DeveloperSyncForm extends FormBase {
       ],
     ];
     $form['sync']['background_sync_submit'] = [
-      '#title' => $this->t('Background'),
+      '#title' => $this->t('Background Developer Sync'),
       '#type' => 'link',
       '#url' => $this->buildUrl('apigee_edge.user_sync.schedule'),
       '#attributes' => [
         'class' => [
           'button',
         ],
-      ],
-    ];
-    $form['sync']['sync_info'] = [
-      '#type' => 'html_tag',
-      '#tag' => 'span',
-      '#value' => '?',
-      '#attributes' => [
-        'class' => 'info-circle',
-        'title' => $this->t('A background sync is recommended for large numbers of developers.'),
       ],
     ];
 

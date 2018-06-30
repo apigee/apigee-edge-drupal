@@ -48,7 +48,7 @@ class BasicAuthKeyInput extends KeyInputBase {
     $form['organization'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Organization'),
-      '#description' => $this->t('Name of the organization on Edge. Changing this value could make your site stop working.'),
+      '#description' => $this->t('Name of the Apigee Edge organization. Changing this value could make your site stop working.'),
       '#required' => $key->getKeyType()->getPluginDefinition()['multivalue']['fields']['organization']['required'],
       '#default_value' => $values['organization'],
       '#attributes' => ['autocomplete' => 'off'],
@@ -71,7 +71,7 @@ class BasicAuthKeyInput extends KeyInputBase {
     $form['endpoint'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Apigee Edge endpoint'),
-      '#description' => $this->t('Apigee Edge endpoint where the API calls are being sent. Leave empty to use the default <em>https://api.enterprise.apigee.com/v1</em> endpoint.'),
+      '#description' => $this->t('Apigee Edge endpoint where the API calls are being sent. Leave empty to use the public cloud endpoint <em>https://api.enterprise.apigee.com/v1</em>.'),
       '#required' => $key->getKeyType()->getPluginDefinition()['multivalue']['fields']['endpoint']['required'],
       '#default_value' => $values['endpoint'],
       '#attributes' => ['autocomplete' => 'off'],

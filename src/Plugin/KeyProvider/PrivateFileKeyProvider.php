@@ -35,7 +35,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @KeyProvider(
  *   id = "apigee_edge_private_file",
  *   label = @Translation("Apigee Edge: Private File"),
- *   description = @Translation("Stores Apigee Edge authentication credentials in a private file.<p><strong>Warning! </strong>Private file storage is suitable only for testing environments. In production environments, use the <em>Apigee Edge: Environment Variables</em> key provider.</p>"),
+ *   description = @Translation("Stores Apigee Edge authentication credentials in a private file.</p>"),
  *   storage_method = "apigee_edge",
  *   key_value = {
  *     "accepted" = TRUE,

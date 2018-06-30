@@ -52,7 +52,7 @@ class RequirementsTest extends ApigeeEdgeFunctionalTestBase {
     $this->invalidateKey();
     $this->drupalGet('/admin/reports/status');
     $this->assertSession()->pageTextContains('Apigee Edge API authentication key not found.');
-    $this->assertSession()->pageTextContains('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Edge server is unreachable. Visit the Apigee Edge Configuration page to get more information.');
+    $this->assertSession()->pageTextContains('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Edge server is unreachable. Visit the Apigee Edge general configuration page to get more information.');
 
     // Create new Apigee Edge basic auth key with private file provider.
     $key = Key::create([
@@ -86,14 +86,14 @@ class RequirementsTest extends ApigeeEdgeFunctionalTestBase {
 
     $this->drupalGet('/admin/reports/status');
     $this->assertSession()->pageTextContains('Unauthorized');
-    $this->assertSession()->pageTextContains('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Edge server is unreachable. Visit the Apigee Edge Configuration page to get more information.');
+    $this->assertSession()->pageTextContains('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Edge server is unreachable. Visit the Apigee Edge general configuration page to get more information.');
 
     // Delete authentication key.
     Key::load('private_file')->delete();
 
     $this->drupalGet('/admin/reports/status');
     $this->assertSession()->pageTextContains('Apigee Edge API authentication key not found.');
-    $this->assertSession()->pageTextContains('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Edge server is unreachable. Visit the Apigee Edge Configuration page to get more information.');
+    $this->assertSession()->pageTextContains('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Edge server is unreachable. Visit the Apigee Edge general configuration page to get more information.');
 
     // Create new Apigee Edge OAuth key with private file provider.
     $key = Key::create([
@@ -137,7 +137,7 @@ class RequirementsTest extends ApigeeEdgeFunctionalTestBase {
 
     $this->drupalGet('/admin/reports/status');
     $this->assertSession()->pageTextContains('Forbidden');
-    $this->assertSession()->pageTextContains('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Edge server is unreachable. Visit the Apigee Edge Configuration page to get more information.');
+    $this->assertSession()->pageTextContains('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Edge server is unreachable. Visit the Apigee Edge general configuration page to get more information.');
 
     // Unset private file path.
     $settings['settings']['file_private_path'] = (object) [

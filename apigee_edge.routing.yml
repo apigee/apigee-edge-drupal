@@ -19,7 +19,7 @@ apigee_edge.settings:
   path: '/admin/config/apigee-edge/settings'
   defaults:
     _form: '\Drupal\apigee_edge\Form\AuthenticationForm'
-    _title: 'Apigee Edge Configuration'
+    _title: 'Apigee Edge general configuration'
   requirements:
     _permission: 'administer apigee edge'
 
@@ -27,7 +27,7 @@ apigee_edge.settings.connection_config:
   path: '/admin/config/apigee-edge/connection-config'
   defaults:
     _form: '\Drupal\apigee_edge\Form\ConnectionConfigForm'
-    _title: 'Connection Config'
+    _title: 'Connection config'
   requirements:
     _permission: 'administer apigee edge'
 
@@ -35,7 +35,7 @@ apigee_edge.settings.error_page:
   path: '/admin/config/apigee-edge/error-page-settings'
   defaults:
     _form: '\Drupal\apigee_edge\Form\ErrorPageSettingsForm'
-    _title: 'Error Page Settings'
+    _title: 'Error page settings'
   requirements:
     _permission: 'administer apigee edge'
 
@@ -43,7 +43,7 @@ apigee_edge.settings.developer:
   path: '/admin/config/apigee-edge/developer-settings'
   defaults:
     _form: '\Drupal\apigee_edge\Form\DeveloperSettingsForm'
-    _title: 'Developer Settings'
+    _title: 'Developer settings'
   requirements:
     _permission: 'administer apigee edge'
 
@@ -51,7 +51,7 @@ apigee_edge.settings.developer.email_validation:
   path: '/admin/config/apigee-edge/developer-settings/attributes'
   defaults:
     _form: '\Drupal\apigee_edge\Form\DeveloperAttributesSettingsForm'
-    _title: 'Custom Attributes'
+    _title: 'Custom attributes'
   requirements:
     _permission: 'administer apigee edge'
 
@@ -75,7 +75,7 @@ apigee_edge.settings.product.alias:
   path: '/admin/config/apigee-edge/product-settings/alias'
   defaults:
     _form: '\Drupal\apigee_edge\Form\ProductAliasForm'
-    _title: 'API Product Settings'
+    _title: 'API product settings'
   requirements:
     _permission: 'administer apigee edge'
 
@@ -83,14 +83,14 @@ apigee_edge.settings.product.caching:
   path: '/admin/config/apigee-edge/product-settings/caching'
   defaults:
     _form: '\Drupal\apigee_edge\Form\ProductCachingForm'
-    _title: 'API Product caching'
+    _title: 'API product caching'
   requirements:
     _permission: 'administer apigee edge'
 apigee_edge.settings.product.access_control:
   path: '/admin/config/apigee-edge/product-settings/access-control'
   defaults:
     _form: '\Drupal\apigee_edge\Form\ProductAccessControlForm'
-    _title: 'API Product access control'
+    _title: 'API product access control'
   requirements:
     _permission: 'administer apigee edge'
 
@@ -98,7 +98,7 @@ apigee_edge.settings.app:
   path: '/admin/config/apigee-edge/app-settings'
   defaults:
     _form: '\Drupal\apigee_edge\Form\AppSettingsForm'
-    _title: 'App Settings'
+    _title: 'App settings'
   requirements:
     _permission: 'administer apigee edge'
 
