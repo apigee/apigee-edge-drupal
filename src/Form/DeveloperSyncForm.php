@@ -46,11 +46,14 @@ class DeveloperSyncForm extends FormBase {
       '#title' => $this->t('Sync developers'),
       '#open' => TRUE,
     ];
-
+    
     $form['sync']['description'] = [
-      '#markup' => '<p>' . $this->t('Developer synchronization will run through all users in this portal, adding them as developers in the Apigee Edge org, and making sure all developers on the Apigee Edge org are added to this portal. The "Run Developer Sync" button will sync the developers, displaying a progress bar. The "Background Developer Sync" button will run the developer sync process in batches each time <a href=":cron_url">cron</a> runs.', [
-        ':cron_url' => Url::fromRoute('system.cron_settings')->toString()
-        ]) . '</p>',
+      '#type' => 'html_tag',
+      '#tag' => 'p',
+      '#value' => $this
+        ->t('Developer synchronization will run through all users in this portal, adding them as developers in the Apigee Edge org, and making sure all developers on the Apigee Edge org are added to this portal. The "Run Developer Sync" button will sync the developers, displaying a progress bar. The "Background Developer Sync" button will run the developer sync process in batches each time <a href=":cron_url">cron</a> runs.', [
+          ':cron_url' => Url::fromRoute('system.cron_settings')->toString()
+        ]),
     ];
 
     $form['sync']['sync_submit'] = [
