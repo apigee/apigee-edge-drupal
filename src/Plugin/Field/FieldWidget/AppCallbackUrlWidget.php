@@ -78,10 +78,11 @@ class AppCallbackUrlWidget extends UriWidget {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
     $element = parent::formElement($items, $delta, $element, $form, $form_state);
-    $app_config = \Drupal::config('apigee_edge.common_app_settings');
-    $element['value']['#pattern'] = $this->getSetting('callback_url_pattern') ?? $app_config->get('callback_url_pattern');
-    $element['value']['#attributes']['title'] = $this->getSetting('callback_url_pattern_description') ?? $app_config->get('callback_url_pattern_description');
-    $element['value']['#placeholder'] = $this->getSetting('placeholder') ?? $app_config->get('callback_url_placeholder');
+    // Try to load the (developer/company) app entity specific settings.
+    $app_settings = \Drupal::config("apigee_edge.{$form_state->getBuildInfo()['callback_object']->getEntity()->getEntityTypeId()}_settings");
+    $element['value']['#pattern'] = $this->getSetting('callback_url_pattern') ?? $app_settings->get('callback_url_pattern');
+    $element['value']['#attributes']['title'] = $this->getSetting('callback_url_pattern_description') ?? $app_settings->get('callback_url_pattern_description');
+    $element['value']['#placeholder'] = $this->getSetting('placeholder') ?? $app_settings->get('callback_url_placeholder');
     return $element;
   }
 
