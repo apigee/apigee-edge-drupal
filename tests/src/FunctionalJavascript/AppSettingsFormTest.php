@@ -22,7 +22,7 @@ namespace Drupal\Tests\apigee_edge\FunctionalJavascript;
 use Drupal\Core\Url;
 
 /**
- * App settings form tests.
+ * App settings form Javascript tests.
  *
  * @group apigee_edge
  * @group apigee_edge_javascript
