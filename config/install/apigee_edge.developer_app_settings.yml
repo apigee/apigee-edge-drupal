@@ -3,3 +3,11 @@ entity_label_singular: ''
 entity_label_plural: ''
 cache_expiration: 900
 credential_lifetime: 0
+locked_base_fields:
+  - displayName
+required_base_fields:
+  - displayName
+callback_url_pattern: '^https?:\/\/.*$'
+callback_url_pattern_error_message: 'The Callback URL must start with http:// or https://'
+callback_url_description: 'External site to which a consumer of this app is redirected to login when using three-legged OAuth.'
+callback_url_placeholder: ''

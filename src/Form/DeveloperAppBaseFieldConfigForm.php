@@ -52,9 +52,45 @@ class DeveloperAppBaseFieldConfigForm extends FormBase {
       }
     }
 
-    foreach ($this->config('apigee_edge.common_app_settings')->get('locked_base_fields') as $locked) {
+    foreach ($this->config('apigee_edge.developer_app_settings')->get('locked_base_fields') as $locked) {
       $form['table'][$locked]['required']['#disabled'] = TRUE;
     }
+
+    $developer_app_settings = $this->config('apigee_edge.developer_app_settings');
+
+    $form['callback_url'] = [
+      '#type' => 'details',
+      '#title' => t('Callback URL settings'),
+      '#open' => TRUE,
+      '#tree' => TRUE,
+    ];
+
+    $form['callback_url']['pattern'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Pattern'),
+      '#default_value' => $developer_app_settings->get('callback_url_pattern'),
+      '#description' => $this->t('Regular expression that a Callback URL should match. Default is "^https?:\/\/.*$" that ensures callback url starts with either <em>http://</em> or <em>https://</em>.'),
+      '#required' => TRUE,
+    ];
+    $form['callback_url']['pattern_error_message'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Validation error message'),
+      '#default_value' => $developer_app_settings->get('callback_url_pattern_error_message'),
+      '#description' => $this->t('Client-side validation error message if a callback URL does not match.'),
+      '#required' => TRUE,
+    ];
+    $form['callback_url']['description'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Description'),
+      '#default_value' => $developer_app_settings->get('callback_url_description'),
+      '#description' => $this->t('Description of a Callback URL field.'),
+    ];
+    $form['callback_url']['placeholder'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Placeholder'),
+      '#default_value' => $developer_app_settings->get('callback_url_placeholder'),
+      '#description' => $this->t('Placeholder for a Callback URL field.'),
+    ];
 
     $form['save'] = [
       '#type' => 'submit',
@@ -81,6 +117,10 @@ class DeveloperAppBaseFieldConfigForm extends FormBase {
         }
       }
     }
+
+    if (strpos($form_state->getValue(['callback_url', 'pattern'], ''), '^http') === FALSE) {
+      $form_state->setError($form['callback_url']['pattern'], $this->t('The pattern should start with <em>^http</em> to limit the acceptable protocols.'));
+    }
   }
 
   /**
@@ -88,7 +128,6 @@ class DeveloperAppBaseFieldConfigForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $required = [];
-
     foreach ($form_state->getValue('table') as $name => $data) {
       if ($data['required']) {
         $required[] = $name;
@@ -96,8 +135,12 @@ class DeveloperAppBaseFieldConfigForm extends FormBase {
     }
 
     $this->configFactory()
-      ->getEditable('apigee_edge.common_app_settings')
+      ->getEditable('apigee_edge.developer_app_settings')
       ->set('required_base_fields', $required)
+      ->set('callback_url_pattern', $form_state->getValue(['callback_url', 'pattern']))
+      ->set('callback_url_pattern_error_message', $form_state->getValue(['callback_url', 'pattern_error_message']))
+      ->set('callback_url_description', $form_state->getValue(['callback_url', 'description']))
+      ->set('callback_url_placeholder', $form_state->getValue(['callback_url', 'placeholder']))
       ->save();
 
     drupal_flush_all_caches();
