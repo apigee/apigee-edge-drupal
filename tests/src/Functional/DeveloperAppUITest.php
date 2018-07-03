@@ -442,8 +442,10 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    */
   public function testCallbackUrlValidationServerSide() {
     // Override default configuration.
+    $description = 'This is a Callback URL field.';
     $this->config('apigee_edge.developer_app_settings')
       ->set('callback_url_pattern', '^https:\/\/example.com')
+      ->set('callback_url_description', $description)
       ->save();
 
     $callback_url = $this->randomMachineName();
@@ -456,6 +458,8 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $app_edit_url = $app->toUrl('edit-form-for-developer');
 
     $this->drupalGet($app_edit_url);
+    // Also test field description.
+    $this->assertSession()->pageTextContains($description);
     $this->drupalPostForm($app_edit_url, [], t('Save'));
     $this->assertSession()->pageTextContains("The URL {$callback_url} is not valid.");
     $this->drupalPostForm($app_edit_url, ['callbackUrl[0][value]' => 'http://example.com'], t('Save'));
