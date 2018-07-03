@@ -69,12 +69,14 @@ apigee_edge.developer_app_settings:
       type: integer
     callback_url_pattern:
       type: string
-      label: 'Regular expression that a Callback URL should match.'
-    callback_url_pattern_description:
-      type: string
-      label: 'Describes the validation criteria that a Callback URL should match.'
+    callback_url_pattern_error_message:
+      type: label
+      label: 'Human readable description of the validation criteria that a Callback URL should match.'
+    callback_url_description:
+      type: label
+      label: 'Description of the Callback URL field.'
     callback_url_placeholder:
-      type: string
+      type: label
       label: 'Placeholder for a Callback URL'
 
 apigee_edge.developer_settings:

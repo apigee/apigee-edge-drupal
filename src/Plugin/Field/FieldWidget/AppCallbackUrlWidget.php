@@ -29,9 +29,11 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * The field supposed to be used as a base field on company- and
  * developer app entities only.
- * Because it should be used as a base field we can not store validation
- * pattern's description in the widget's configuration otherwise it would not be
- * translateable. (Base field definitions and configurations gets cached.)
+ * Because it should be used as a base field we can not store human readable
+ * strings in the widget's configuration otherwise they would not be
+ * translatable. (Base field definitions and configurations gets cached.)
+ *
+ * @see https://www.drupal.org/node/2546212
  *
  * @FieldWidget(
  *   id = "app_callback_url",
@@ -52,10 +54,12 @@ class AppCallbackUrlWidget extends UriWidget {
     // if it is necessary.
     $settings['placeholder'] = NULL;
     $settings['callback_url_pattern'] = NULL;
-    // If you override it and the field is used as a base field then
-    // this text won't be translated on the UI because its value is cached
-    // to the base field definition.
-    $settings['callback_url_pattern_description'] = NULL;
+    // If you override these and the field is used as a base field then
+    // you can not translatable them on the UI because these values are
+    // being cached to the base field definition.
+    // @see https://www.drupal.org/node/2546212
+    $settings['callback_url_description'] = NULL;
+    $settings['callback_url_pattern_error_message'] = NULL;
     return $settings;
   }
 
@@ -81,8 +85,9 @@ class AppCallbackUrlWidget extends UriWidget {
     // Try to load the (developer/company) app entity specific settings.
     $app_settings = \Drupal::config("apigee_edge.{$form_state->getBuildInfo()['callback_object']->getEntity()->getEntityTypeId()}_settings");
     $element['value']['#pattern'] = $this->getSetting('callback_url_pattern') ?? $app_settings->get('callback_url_pattern');
-    $element['value']['#attributes']['title'] = $this->getSetting('callback_url_pattern_description') ?? $app_settings->get('callback_url_pattern_description');
+    $element['value']['#attributes']['title'] = $this->getSetting('callback_url_pattern_error_message') ?? $app_settings->get('callback_url_pattern_error_message');
     $element['value']['#placeholder'] = $this->getSetting('placeholder') ?? $app_settings->get('callback_url_placeholder');
+    $element['value']['#description'] = $this->getSetting('callback_url_description') ?? $app_settings->get('callback_url_description');
     return $element;
   }
 
