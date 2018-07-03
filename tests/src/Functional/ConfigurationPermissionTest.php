@@ -29,7 +29,7 @@ class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'block',
   ];
 

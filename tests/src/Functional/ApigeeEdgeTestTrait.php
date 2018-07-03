@@ -295,4 +295,20 @@ trait ApigeeEdgeTestTrait {
     return $property;
   }
 
+  /**
+   * Installs a given list of modules and rebuilds the cache.
+   *
+   * @param string[] $module_list
+   *   An array of module names.
+   *
+   * @see \Drupal\Tests\toolbar\Functional\ToolbarCacheContextsTest::installExtraModules()
+   */
+  protected function installExtraModules(array $module_list) {
+    \Drupal::service('module_installer')->install($module_list);
+
+    // Installing modules updates the container and needs a router rebuild.
+    $this->container = \Drupal::getContainer();
+    $this->container->get('router.builder')->rebuildIfNeeded();
+  }
+
 }

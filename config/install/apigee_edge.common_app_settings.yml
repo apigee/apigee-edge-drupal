@@ -2,9 +2,5 @@ langcode: en
 display_as_select: false
 user_select: true
 multiple_products: true
-locked_base_fields:
-  - displayName
-required_base_fields:
-  - displayName
 default_products: []
 analytics_environment: prod
