@@ -45,10 +45,10 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalJavascriptTestBase {
     };
 
     // Override default configuration.
-    $pattern_description = 'It must be https://example.com';
+    $pattern_error_message = 'It must be https://example.com';
     $this->config('apigee_edge.developer_app_settings')
       ->set('callback_url_pattern', '^https:\/\/example.com')
-      ->set('callback_url_pattern_error_message', $pattern_description)
+      ->set('callback_url_pattern_error_message', $pattern_error_message)
       ->save();
 
     $this->products[] = $product = $this->createProduct();
@@ -70,7 +70,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalJavascriptTestBase {
     // The format in Firefox is different, it is only one line:
     // "Please match the requested format: {$pattern_description}.".
     $checkValidationMessage('Please match the requested format.');
-    $this->assertEquals($pattern_description, $this->getSession()->evaluateScript('document.getElementById("edit-callbackurl-0-value").title'));
+    $this->assertEquals($pattern_error_message, $this->getSession()->evaluateScript('document.getElementById("edit-callbackurl-0-value").title'));
     $this->drupalPostForm($app_edit_url, ['callbackUrl[0][value]' => 'https://example.com'], t('Save'));
     $this->assertSession()->pageTextContains('Developer App details have been successfully updated.');
     $this->assertSession()->pageTextContains('https://example.com');
