@@ -75,7 +75,7 @@ class ApiProductStorage extends EdgeEntityStorageBase implements ApiProductStora
    * {@inheritdoc}
    */
   public function getController(SDKConnectorInterface $connector) : EntityCrudOperationsControllerInterface {
-    return new ApiProductController($connector->getOrganization(), $connector->getClient(), [], $this->entityClass);
+    return new ApiProductController($connector->getOrganization(), $connector->getClient(), $this->entityClass);
   }
 
 }

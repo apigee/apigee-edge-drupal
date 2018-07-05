@@ -112,4 +112,5 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
     }
     return $keys;
   }
+
 }

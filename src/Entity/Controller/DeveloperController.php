@@ -44,16 +44,20 @@ class DeveloperController extends EdgeDeveloperController implements DrupalEntit
    * DeveloperController constructor.
    *
    * @param string $organization
+   *   The organization name.
    * @param \Apigee\Edge\ClientInterface $client
-   * @param array $entityNormalizers
-   * @param \Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface|null $organizationController
+   *   The API client.
    * @param string $entityClass
    *   The FQCN of the entity class that is used in Drupal.
+   * @param array $entityNormalizers
+   *   Array of entity normalizers.
+   * @param \Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface|null $organizationController
+   *   The organization controller.
    *
    * @throws \ReflectionException
    * @throws \InvalidArgumentException
    */
-  public function __construct(string $organization, ClientInterface $client, $entityNormalizers = [], ?OrganizationControllerInterface $organizationController = NULL, string $entityClass) {
+  public function __construct(string $organization, ClientInterface $client, string $entityClass, array $entityNormalizers = [], ?OrganizationControllerInterface $organizationController = NULL) {
     parent::__construct($organization, $client, $entityNormalizers, $organizationController);
     $rc = new \ReflectionClass($entityClass);
     $interface = DeveloperInterface::class;

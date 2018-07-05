@@ -39,15 +39,18 @@ class ApiProductController extends EdgeApiProductController implements DrupalEnt
    * ApiProductController constructor.
    *
    * @param string $organization
+   *   The organization name.
    * @param \Apigee\Edge\ClientInterface $client
-   * @param array $entityNormalizers
+   *   The API client.
    * @param string $entityClass
    *   The FQCN of the entity class that is used in Drupal.
+   * @param array $entityNormalizers
+   *   Array of entity normalizers.
    *
    * @throws \ReflectionException
    * @throws \InvalidArgumentException
    */
-  public function __construct(string $organization, ClientInterface $client, $entityNormalizers = [], string $entityClass) {
+  public function __construct(string $organization, ClientInterface $client, string $entityClass, array $entityNormalizers = []) {
     parent::__construct($organization, $client, $entityNormalizers);
     $interface = ApiProductInterface::class;
     $rc = new \ReflectionClass($entityClass);
