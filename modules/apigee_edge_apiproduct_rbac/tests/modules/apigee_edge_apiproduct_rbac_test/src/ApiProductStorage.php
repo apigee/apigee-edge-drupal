@@ -77,7 +77,7 @@ final class ApiProductStorage extends OriginalApiProductStorage {
    * {@inheritdoc}
    */
   public function getController(SDKConnectorInterface $connector): EntityCrudOperationsControllerInterface {
-    return new ApiProductController($connector->getOrganization(), $connector->getClient(), $this->state);
+    return new ApiProductController($connector->getOrganization(), $connector->getClient(), $this->entityClass, $this->state);
   }
 
 }
