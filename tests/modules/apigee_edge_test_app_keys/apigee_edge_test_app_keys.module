@@ -1,0 +1,44 @@
+<?php
+
+/**
+ * @file
+ * Module file for Apigee Edge Test: App keys.
+ */
+
+use Apigee\Edge\Exception\ApiException;
+use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialController;
+use Drupal\Component\Utility\Random;
+use Drupal\Core\Entity\EntityInterface;
+
+/**
+ * Implements hook_entity_insert().
+ */
+function apigee_edge_test_app_keys_developer_app_insert(EntityInterface $entity) {
+  /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
+  $credentials = $entity->getCredentials();
+  $credential = reset($credentials);
+  // We only care about auto-generated key by Apigee Edge when a new app is
+  // being created.
+  if ($credential->getExpiresAt() === NULL) {
+    $random = new Random();
+    $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
+    $dacc = new DeveloperAppCredentialController(
+      $sdk_connector->getOrganization(),
+      $entity->getDeveloperId(),
+      $entity->getName(),
+      $sdk_connector->getClient()
+    );
+    try {
+      $dacc->delete($credential->getConsumerKey());
+      try {
+        $dacc->create($random->name(), $random->name());
+      }
+      catch (ApiException $e) {
+        watchdog_exception('apigee_edge', $e, 'Unable to create new API key on Apigee Edge for @app app. !message', ['@app' => $entity->id()]);
+      }
+    }
+    catch (ApiException $e) {
+      watchdog_exception('apigee_edge', $e, 'Unable to delete auto-generated key of @app app on Apigee Edge. !message', ['@app' => $entity->id()]);
+    }
+  }
+}
