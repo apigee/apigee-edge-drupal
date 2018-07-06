@@ -25,7 +25,7 @@ use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
 /**
  * Triggered when new API products have been added to an app credential.
  */
-class AppCredentialAddApiProductEvent extends AbstractAppCredentialCreateEvent {
+class AppCredentialAddApiProductEvent extends AbstractAppCredentialEvent {
 
   const EVENT_NAME = 'apigee_edge.app_credential.add_api_product';
 
@@ -51,6 +51,16 @@ class AppCredentialAddApiProductEvent extends AbstractAppCredentialCreateEvent {
   public function __construct(string $appType, string $ownerId, string $appName, AppCredentialInterface $credential, array $newProducts) {
     parent::__construct($appType, $ownerId, $appName, $credential);
     $this->newProducts = $newProducts;
+  }
+
+  /**
+   * Returns new API products added to the credential.
+   *
+   * @return string[]
+   *   Array of API product names.
+   */
+  public function getNewProducts(): array {
+    return $this->newProducts;
   }
 
 }

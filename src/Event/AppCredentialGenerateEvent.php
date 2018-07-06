@@ -26,7 +26,7 @@ namespace Drupal\apigee_edge\Event;
  * When a new app key has been _generated_ you can access API products on the
  * credential.
  */
-class AppCredentialGenerateEvent extends AbstractAppCredentialCreateEvent {
+class AppCredentialGenerateEvent extends AbstractAppCredentialEvent {
 
   const EVENT_NAME = 'apigee_edge.app_credential.generate';
 

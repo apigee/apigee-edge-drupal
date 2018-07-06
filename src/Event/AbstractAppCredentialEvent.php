@@ -26,22 +26,25 @@ use Symfony\Component\EventDispatcher\Event;
 /**
  * Base class for app credential create, generate and add products events.
  */
-abstract class AbstractAppCredentialCreateEvent extends Event {
+abstract class AbstractAppCredentialEvent extends Event {
 
   const APP_TYPE_COMPANY = 'company';
 
   const APP_TYPE_DEVELOPER = 'developer';
 
   /**
-   * @var string*/
+   * @var string
+   */
   private $appType;
 
   /**
-   * @var string*/
+   * @var string
+   */
   private $ownerId;
 
   /**
-   * @var string*/
+   * @var string
+   */
   private $appName;
 
   /**
@@ -69,6 +72,46 @@ abstract class AbstractAppCredentialCreateEvent extends Event {
     $this->ownerId = $ownerId;
     $this->appName = $appName;
     $this->credential = $credential;
+  }
+
+  /**
+   * Returns the app type which is either "company" or "developer".
+   *
+   * @return string
+   *   The app type.
+   */
+  public function getAppType(): string {
+    return $this->appType;
+  }
+
+  /**
+   * Returns owner id which is either a company name or a developer id (email).
+   *
+   * @return string
+   *   The owner id.
+   */
+  public function getOwnerId(): string {
+    return $this->ownerId;
+  }
+
+  /**
+   * Returns the name of the app.
+   *
+   * @return string
+   *   The app name.
+   */
+  public function getAppName(): string {
+    return $this->appName;
+  }
+
+  /**
+   * Returns the app credential.
+   *
+   * @return \Apigee\Edge\Api\Management\Entity\AppCredentialInterface
+   *   The app credential.
+   */
+  public function getCredential(): AppCredentialInterface {
+    return $this->credential;
   }
 
 }

@@ -26,7 +26,7 @@ namespace Drupal\apigee_edge\Event;
  * When app key has been _created_ then you can not access to API products
  * on the credential yet because are going to be assigned later.
  */
-class AppCredentialCreateEvent extends AbstractAppCredentialCreateEvent {
+class AppCredentialCreateEvent extends AbstractAppCredentialEvent {
 
   const EVENT_NAME = 'apigee_edge.app_credential.create';
 
