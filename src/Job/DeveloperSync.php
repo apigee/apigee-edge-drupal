@@ -19,38 +19,36 @@
 
 namespace Drupal\apigee_edge\Job;
 
-use Apigee\Edge\Api\Management\Controller\DeveloperController;
-use Apigee\Edge\Api\Management\Entity\DeveloperInterface;
 use Drupal\apigee_edge\Entity\Developer;
-use Drupal\Core\Database\Connection;
+use Drupal\user\Entity\User;
 
 /**
- * A job that synchronizes developers.
+ * A job that synchronizes Apigee Edge developers and Drupal users.
  */
 class DeveloperSync extends EdgeJob {
 
   use JobCreatorTrait;
 
   /**
-   * All Apigee Edge accounts.
+   * All Apigee Edge developers indexed by their emails.
    *
-   * Format: strtolower(email) => email.
+   * Format: strtolower(email) => Developer.
    *
-   * @var array
+   * @var \Drupal\apigee_edge\Entity\DeveloperInterface[]
    */
-  protected $edgeAccounts = [];
+  protected $edgeDevelopers = [];
 
   /**
-   * All Drupal accounts.
+   * All Drupal users indexed by their emails.
    *
-   * Format: strtolower(mail) => mail.
+   * Format: strtolower(mail) => User.
    *
-   * @var array
+   * @var \Drupal\user\UserInterface[]
    */
-  protected $drupalAccounts = [];
+  protected $drupalUsers = [];
 
   /**
-   * Filter regexp for the edge developer emails.
+   * Filter regexp for the Apigee Edge developer emails.
    *
    * @var string
    */
@@ -60,7 +58,7 @@ class DeveloperSync extends EdgeJob {
    * DeveloperSync constructor.
    *
    * @param null|string $filter
-   *   An optional regexp filter for the edge developer emails.
+   *   An optional regexp filter for the Apigee Edge developer emails.
    */
   public function __construct(?string $filter) {
     parent::__construct();
@@ -68,64 +66,52 @@ class DeveloperSync extends EdgeJob {
   }
 
   /**
-   * Returns the database connection service.
+   * Loads all Drupal users indexed my their emails.
    *
-   * @return \Drupal\Core\Database\Connection
-   *   The database connection service.
+   * @return \Drupal\user\UserInterface[]
+   *   Format: strtolower(mail) => User
    */
-  protected function getConnection(): Connection {
-    return \Drupal::service('database');
-  }
-
-  /**
-   * Loads all users' emails.
-   *
-   * @return array
-   *   Format: strtolower(mail) => mail
-   */
-  protected function loadUserEmails(): array {
-    $mails = $this->getConnection()->query("
-      SELECT u.mail
-      FROM {users_field_data} u
-    ")->fetchCol();
-
-    $accounts = [];
-    foreach ($mails as $mail) {
-      if (isset($mail)) {
-        $accounts[strtolower($mail)] = $mail;
+  protected function loadUsers(): array {
+    $users = [];
+    /** @var \Drupal\user\UserInterface $user */
+    foreach (User::loadMultiple() as $user) {
+      $email = $user->getEmail();
+      if (isset($email)) {
+        $users[strtolower($email)] = $user;
       }
     }
 
-    return $accounts;
+    return $users;
   }
 
   /**
-   * Loads all Apigee Edge developers' emails.
+   * Loads all Apigee Edge developers indexed my their emails.
    *
-   * @return array
-   *   Format: strtolower(email) => email
+   * @return \Drupal\apigee_edge\Entity\DeveloperInterface[]
+   *   Format: strtolower(email) => Developer
    */
-  protected function loadEdgeUserEmails(): array {
-    $controller = new DeveloperController($this->getConnector()->getOrganization(), $this->getConnector()->getClient());
-    $mails = $controller->getEntityIds();
-
-    $accounts = [];
-    foreach ($mails as $mail) {
-      if ($this->filter && !preg_match($this->filter, $mail)) {
+  protected function loadDevelopers(): array {
+    $developers = [];
+    /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
+    foreach (Developer::loadMultiple() as $developer) {
+      $email = $developer->getEmail();
+      if ($this->filter && !preg_match($this->filter, $email)) {
         continue;
       }
-      $accounts[strtolower($mail)] = $mail;
+      else {
+        $developers[strtolower($email)] = $developer;
+      }
     }
 
-    return $accounts;
+    return $developers;
   }
 
   /**
    * {@inheritdoc}
    */
   protected function executeRequest() {
-    $this->drupalAccounts = $this->loadUserEmails();
-    $this->edgeAccounts = $this->loadEdgeUserEmails();
+    $this->drupalUsers = $this->loadUsers();
+    $this->edgeDevelopers = $this->loadDevelopers();
   }
 
   /**
@@ -135,47 +121,44 @@ class DeveloperSync extends EdgeJob {
     parent::execute();
 
     // Update Apigee Edge developers and Drupal users if needed.
-    $identical_accounts = array_intersect($this->edgeAccounts, $this->drupalAccounts);
-    foreach ($identical_accounts as $search => $mail) {
-      /** @var \Apigee\Edge\Api\Management\Entity\DeveloperInterface $developer */
-      $developer = Developer::load($mail);
-      /** @var \Drupal\user\UserInterface $account */
-      $account = user_load_by_mail($mail);
-      $last_modified_delta = $developer->getLastModifiedAt()->getTimestamp() - $account->getChangedTime();
+    $identical_entities = array_intersect_key($this->edgeDevelopers, $this->drupalUsers);
+    foreach ($identical_entities as $clean_email => $entity) {
+      /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
+      $developer = $this->edgeDevelopers[$clean_email];
+      /** @var \Drupal\user\UserInterface $user */
+      $user = $this->drupalUsers[$clean_email];
+
+      $last_modified_delta = $developer->getLastModifiedAt()->getTimestamp() - $user->getChangedTime();
+      // Update Drupal user because the Apigee Edge developer is fresher.
       if ($last_modified_delta >= 0) {
-        $updateUserJob = new UserUpdate($mail);
+        $updateUserJob = new UserUpdate($user->getEmail());
         $updateUserJob->setTag($this->getTag());
         $this->scheduleJob($updateUserJob);
       }
+      // Update Apigee Edge developer because the Drupal user is fresher.
       elseif ($last_modified_delta < 0) {
-        $updateDeveloperJob = new DeveloperUpdate($mail);
+        $updateDeveloperJob = new DeveloperUpdate($developer->getEmail());
         $updateDeveloperJob->setTag($this->getTag());
         $this->scheduleJob($updateDeveloperJob);
       }
     }
 
     // Create missing Drupal users.
-    foreach ($this->edgeAccounts as $search => $mail) {
-      if (empty($this->drupalAccounts[$search])) {
-        $createUserJob = new UserCreate($mail);
+    foreach ($this->edgeDevelopers as $clean_email => $developer) {
+      if (empty($this->drupalUsers[$clean_email])) {
+        $createUserJob = new UserCreate($developer->getEmail());
         $createUserJob->setTag($this->getTag());
         $this->scheduleJob($createUserJob);
       }
     }
 
     // Create missing Apigee Edge developers.
-    foreach ($this->drupalAccounts as $search => $mail) {
-      if (empty($this->edgeAccounts[$search])) {
-        /** @var \Drupal\user\UserInterface $account */
-        if (!($account = user_load_by_mail($mail))) {
-          $this->recordMessage("User for {$mail} not found.");
-          continue;
-        }
-
-        $createDeveloperJob = DeveloperCreate::createForUser($account);
+    foreach ($this->drupalUsers as $clean_email => $user) {
+      if (empty($this->edgeDevelopers[$clean_email])) {
+        $createDeveloperJob = DeveloperCreate::createForUser($user);
         if (!$createDeveloperJob) {
           $this->recordMessage(t('Skipping @mail user, because of incomplete data', [
-            '@mail' => $mail,
+            '@mail' => $user->getEmail(),
           ])->render());
           continue;
         }
@@ -186,8 +169,8 @@ class DeveloperSync extends EdgeJob {
     }
 
     // Reset these, so they won't be saved to the database, taking up space.
-    $this->edgeAccounts = [];
-    $this->drupalAccounts = [];
+    $this->edgeDevelopers = [];
+    $this->drupalUsers = [];
 
     return FALSE;
   }

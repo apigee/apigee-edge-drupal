@@ -26,19 +26,19 @@ use Drupal\apigee_edge\Job;
 use Drupal\user\UserInterface;
 
 /**
- * A job to create a developer in Apigee Edge.
+ * A job to create a developer on Apigee Edge.
  */
 class DeveloperCreate extends EdgeJob {
 
   /**
-   * The developer to create.
+   * The Apigee Edge developer to create.
    *
    * @var \Drupal\apigee_edge\Entity\DeveloperInterface
    */
   protected $developer;
 
   /**
-   * Whether to fail if a developer already exists.
+   * Whether to fail if a developer already exists on Apigee Edge.
    *
    * @var bool
    */
@@ -65,23 +65,25 @@ class DeveloperCreate extends EdgeJob {
         throw $ex;
       }
       else {
-        $this->recordMessage('Developer already exists.');
+        $this->recordMessage(t("%email developer already exists on Apigee Edge.", [
+          '%email' => $this->developer->getEmail(),
+        ])->render());
       }
     }
   }
 
   /**
-   * Creates a job to create a remote developer for a local user.
+   * Creates a job to create a remote developer for a Drupal user.
    *
-   * @param \Drupal\user\UserInterface $account
-   *   Local Drupal account.
+   * @param \Drupal\user\UserInterface $user
+   *   Local Drupal user.
    *
    * @return \Drupal\apigee_edge\Job|null
-   *   The created job or null if properties are missing on the local account.
+   *   The created job or null if properties are missing on the Drupal user.
    */
-  public static function createForUser(UserInterface $account): ?Job {
+  public static function createForUser(UserInterface $user): ?Job {
     /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
-    $developer = Developer::createFromDrupalUser($account);
+    $developer = Developer::createFromDrupalUser($user);
 
     return new static($developer);
   }

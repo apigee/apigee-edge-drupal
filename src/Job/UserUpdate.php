@@ -34,7 +34,7 @@ class UserUpdate extends EdgeJob {
    *
    * @var string
    */
-  protected $mail;
+  protected $email;
 
   /**
    * Whether the Drupal user should be updated.
@@ -46,12 +46,12 @@ class UserUpdate extends EdgeJob {
   /**
    * UserUpdate constructor.
    *
-   * @param string $mail
+   * @param string $email
    *   The email of the developer/user.
    */
-  public function __construct(string $mail) {
+  public function __construct(string $email) {
     parent::__construct();
-    $this->mail = $mail;
+    $this->email = $email;
   }
 
   /**
@@ -59,17 +59,17 @@ class UserUpdate extends EdgeJob {
    */
   protected function executeRequest() {
     /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
-    $developer = Developer::load($this->mail);
-    /** @var \Drupal\user\UserInterface $account */
-    $account = user_load_by_mail($this->mail);
+    $developer = Developer::load($this->email);
+    /** @var \Drupal\user\UserInterface $user */
+    $user = user_load_by_mail($this->email);
 
-    if ($developer->getFirstName() !== $account->get('first_name')->value) {
-      $account->set('first_name', $developer->getFirstName());
+    if ($developer->getFirstName() !== $user->get('first_name')->value) {
+      $user->set('first_name', $developer->getFirstName());
       $this->executeUpdate = TRUE;
     }
 
-    if ($developer->getLastName() !== $account->get('last_name')->value) {
-      $account->set('last_name', $developer->getLastName());
+    if ($developer->getLastName() !== $user->get('last_name')->value) {
+      $user->set('last_name', $developer->getLastName());
       $this->executeUpdate = TRUE;
     }
 
@@ -77,33 +77,53 @@ class UserUpdate extends EdgeJob {
     if (!empty($user_fields_to_sync)) {
       /** @var \Drupal\apigee_edge\FieldStorageFormatManager $format_manager */
       $format_manager = \Drupal::service('plugin.manager.apigee_field_storage_format');
-      foreach ($user_fields_to_sync as $field) {
-        $field_definition = $account->getFieldDefinition($field);
+      foreach ($user_fields_to_sync as $field_name) {
+        $field_definition = $user->getFieldDefinition($field_name);
+        // If the field does not exist, then skip.
         if (!isset($field_definition)) {
-          $this->recordMessage(t('Skipping @mail developer update, because the field @field does not exist.', [
-            '@mail' => $this->mail,
-            '@field' => $field_definition->getName(),
+          $this->recordMessage(t("Skipping %email user's field update, because %field_name field does not exist.", [
+            '%email' => $this->email,
+            '%field_name' => $field_name,
           ])->render());
           continue;
         }
-        $type = $field_definition->getType();
-        $formatter = $format_manager->lookupPluginForFieldType($type);
+        $field_type = $field_definition->getType();
+        $formatter = $format_manager->lookupPluginForFieldType($field_type);
+        // If there is no available storage formatter for the field, then skip.
         if (!isset($formatter)) {
-          $this->recordMessage(t('Skipping @mail developer update, because there is no available storage formatter for @field_type.', [
-            '@mail' => $this->mail,
-            '@field_type' => $type,
+          $this->recordMessage(t("Skipping %email user's %field_name field update, because there is no available storage formatter for %field_type field type.", [
+            '%email' => $this->email,
+            '%field_name' => $field_name,
+            '%field_type' => $field_type,
           ])->render());
           continue;
         }
-        $account_field_value = $formatter->encode($account->get($field)->getValue());
-        $developer_attribute_value = $developer->getAttributeValue(static::getAttributeName($field));
+
+        $user_field_value = $formatter->encode($user->get($field_name)->getValue());
+        $developer_attribute_value = $developer->getAttributeValue(static::getAttributeName($field_name));
         if ($developer_attribute_value === NULL) {
           continue;
         }
-        $developer_attribute_value = $formatter->decode($developer_attribute_value);
-        if ($account_field_value !== $developer_attribute_value) {
-          $account->set($field, $developer_attribute_value);
-          $this->executeUpdate = TRUE;
+
+        if ($user_field_value !== $developer_attribute_value) {
+          $rollback = $user->get($field_name)->getValue();
+          $user->set($field_name, $formatter->decode($developer_attribute_value));
+          // Do not set the field value if a field constraint fails during
+          // validation.
+          $field_violations = $user->get($field_name)->validate();
+          if ($field_violations->count() > 0) {
+            $user->set($field_name, $rollback);
+            foreach ($field_violations as $violation) {
+              $this->recordMessage(t("Skipping %email user's %field_name field update: %message", [
+                '%email' => $this->email,
+                '%field_name' => $field_name,
+                '%message' => $violation->getMessage(),
+              ])->render());
+            }
+          }
+          else {
+            $this->executeUpdate = TRUE;
+          }
         }
       }
     }
@@ -111,9 +131,15 @@ class UserUpdate extends EdgeJob {
     if ($this->executeUpdate) {
       try {
         // If the developer-user synchronization is in progress, then saving
-        // developers while saving Drupal user should be avoided.
+        // the same developer in apigee_edge_user_presave() while creating
+        // Drupal user based on a developer should be avoided.
         _apigee_edge_set_sync_in_progress(TRUE);
-        $account->save();
+        $user->save();
+      }
+      catch (\Exception $exception) {
+        $this->recordMessage(t('Skipping updating %email user: %message', [
+          '%message' => (string) $exception,
+        ])->render());
       }
       finally {
         _apigee_edge_set_sync_in_progress(FALSE);
@@ -125,8 +151,8 @@ class UserUpdate extends EdgeJob {
    * {@inheritdoc}
    */
   public function __toString(): string {
-    return t('Updating user (@mail) in Drupal if necessary.', [
-      '@mail' => $this->mail,
+    return t('Refreshing user (%email) in Drupal.', [
+      '%email' => $this->email,
     ])->render();
   }
 

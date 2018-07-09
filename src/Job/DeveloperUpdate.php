@@ -34,7 +34,7 @@ class DeveloperUpdate extends EdgeJob {
    *
    * @var string
    */
-  protected $mail;
+  protected $email;
 
   /**
    * Whether the Apigee Edge developer should be updated.
@@ -46,12 +46,12 @@ class DeveloperUpdate extends EdgeJob {
   /**
    * DeveloperUpdate constructor.
    *
-   * @param string $mail
+   * @param string $email
    *   The email of the developer/user.
    */
-  public function __construct(string $mail) {
+  public function __construct(string $email) {
     parent::__construct();
-    $this->mail = $mail;
+    $this->email = $email;
   }
 
   /**
@@ -59,17 +59,17 @@ class DeveloperUpdate extends EdgeJob {
    */
   protected function executeRequest() {
     /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
-    $developer = Developer::load($this->mail);
-    /** @var \Drupal\user\UserInterface $account */
-    $account = user_load_by_mail($this->mail);
+    $developer = Developer::load($this->email);
+    /** @var \Drupal\user\UserInterface $user */
+    $user = user_load_by_mail($this->email);
 
-    if ($developer->getFirstName() !== $account->get('first_name')->value) {
-      $developer->setFirstName($account->get('first_name')->value);
+    if ($developer->getFirstName() !== $user->get('first_name')->value) {
+      $developer->setFirstName($user->get('first_name')->value);
       $this->executeUpdate = TRUE;
     }
 
-    if ($developer->getLastName() !== $account->get('last_name')->value) {
-      $developer->setLastName($account->get('last_name')->value);
+    if ($developer->getLastName() !== $user->get('last_name')->value) {
+      $developer->setLastName($user->get('last_name')->value);
       $this->executeUpdate = TRUE;
     }
 
@@ -77,29 +77,33 @@ class DeveloperUpdate extends EdgeJob {
     if (!empty($user_fields_to_sync)) {
       /** @var \Drupal\apigee_edge\FieldStorageFormatManager $format_manager */
       $format_manager = \Drupal::service('plugin.manager.apigee_field_storage_format');
-      foreach ($user_fields_to_sync as $field) {
-        $field_definition = $account->getFieldDefinition($field);
+      foreach ($user_fields_to_sync as $field_name) {
+        $field_definition = $user->getFieldDefinition($field_name);
+        // If the field does not exist, then skip.
         if (!isset($field_definition)) {
-          $this->recordMessage(t('Skipping @mail developer update, because the field @field does not exist.', [
-            '@mail' => $this->mail,
-            '@field' => $field_definition->getName(),
+          $this->recordMessage(t("Skipping %email developer's %attribute_name attribute update, because %field_name field does not exist.", [
+            '%email' => $this->email,
+            '%attribute_name' => static::getAttributeName($field_name),
+            '%field_name' => $field_definition->getName(),
           ])->render());
           continue;
         }
-        $type = $field_definition->getType();
-        $formatter = $format_manager->lookupPluginForFieldType($type);
+        $field_type = $field_definition->getType();
+        $formatter = $format_manager->lookupPluginForFieldType($field_type);
+        // If there is no available storage formatter for the field, then skip.
         if (!isset($formatter)) {
-          $this->recordMessage(t('Skipping @mail developer update, because there is no available storage formatter for @field_type.', [
-            '@mail' => $this->mail,
-            '@field_type' => $type,
+          $this->recordMessage(t("Skipping %email developer's %attribute_name attribute update, because there is no available storage formatter for %field_type field type.", [
+            '%email' => $this->email,
+            '%attribute_name' => static::getAttributeName($field_name),
+            '%field_type' => $field_type,
           ])->render());
           continue;
         }
-        $account_field_value = $formatter->encode($account->get($field)->getValue());
-        $encoded = $developer->getAttributeValue(static::getAttributeName($field));
-        $developer_attribute_value = isset($encoded) ? $formatter->decode($encoded) : NULL;
-        if ($account_field_value !== $developer_attribute_value) {
-          $developer->setAttribute(static::getAttributeName($field), $account_field_value);
+
+        $user_field_value = $formatter->encode($user->get($field_name)->getValue());
+        $developer_attribute_value = $developer->getAttributeValue(static::getAttributeName($field_name));
+        if ($user_field_value !== $developer_attribute_value) {
+          $developer->setAttribute(static::getAttributeName($field_name), $user_field_value);
           $this->executeUpdate = TRUE;
         }
       }
@@ -114,8 +118,8 @@ class DeveloperUpdate extends EdgeJob {
    * {@inheritdoc}
    */
   public function __toString(): string {
-    return t('Updating developer (@mail) on Apigee Edge if necessary.', [
-      '@mail' => $this->mail,
+    return t('Refreshing developer (%email) on Apigee Edge.', [
+      '%email' => $this->email,
     ])->render();
   }
 

@@ -20,8 +20,7 @@
 namespace Drupal\apigee_edge\Job;
 
 use Drupal\apigee_edge\Entity\Developer;
-use Drupal\apigee_edge\Plugin\Validation\Constraint\DeveloperEmailUniqueValidator;
-use Drupal\Core\Entity\EntityMalformedException;
+use Drupal\apigee_edge\Entity\FieldableEdgeEntityUtilityTrait;
 use Drupal\user\Entity\User;
 use Drupal\user\Plugin\Validation\Constraint\UserNameUnique;
 
@@ -30,19 +29,21 @@ use Drupal\user\Plugin\Validation\Constraint\UserNameUnique;
  */
 class UserCreate extends EdgeJob {
 
+  use FieldableEdgeEntityUtilityTrait;
+
   /**
-   * The developer's email.
+   * The Apigee Edge developer's email.
    *
    * @var string
    */
-  protected $mail;
+  protected $email;
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(string $mail) {
+  public function __construct(string $email) {
     parent::__construct();
-    $this->mail = $mail;
+    $this->email = $email;
   }
 
   /**
@@ -50,7 +51,8 @@ class UserCreate extends EdgeJob {
    */
   protected function executeRequest() {
     /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
-    $developer = Developer::load($this->mail);
+    $developer = Developer::load($this->email);
+    /** @var \Drupal\user\UserInterface $user */
     $user = User::create([
       'name' => $developer->getUserName(),
       'mail' => $developer->getEmail(),
@@ -59,26 +61,84 @@ class UserCreate extends EdgeJob {
       'status' => $developer->getStatus() === Developer::STATUS_ACTIVE,
       'pass' => user_password(),
     ]);
-    // Whitelist developer's email address because we know that it exists
-    // on Edge and we would like to create a new user for it in Drupal.
-    DeveloperEmailUniqueValidator::whitelist($developer->getEmail());
-    $violations = $user->validate();
-    /** @var \Drupal\Core\Entity\EntityConstraintViolationList $userNameViolations */
-    $userNameViolations = $violations->getByField('name');
+
+    /** @var \Drupal\Core\Entity\EntityConstraintViolationListInterface $userNameViolations */
+    $userNameViolations = $user->get('name')->validate();
     foreach ($userNameViolations as $violation) {
-      // Throw an exception if username is already taken here instead
-      // of getting a database exception in a lower layer.
+      // Skip user creation if username is already taken here instead
+      // of getting a database exception in a lower layer. Username is not
+      // unique in Apigee Edge.
       /** @var \Symfony\Component\Validator\ConstraintViolation $violation */
       if (get_class($violation->getConstraint()) === UserNameUnique::class) {
-        throw new EntityMalformedException((string) $violation->getMessage());
+        $this->recordMessage(t('Skipping creating %email user: %message', [
+          '%message' => $violation->getMessage(),
+        ])->render());
+        return;
+      }
+    }
+
+    $user_fields_to_sync = \Drupal::config('apigee_edge.sync')->get('user_fields_to_sync');
+    if (!empty($user_fields_to_sync)) {
+      /** @var \Drupal\apigee_edge\FieldStorageFormatManager $format_manager */
+      $format_manager = \Drupal::service('plugin.manager.apigee_field_storage_format');
+      foreach ($user_fields_to_sync as $field_name) {
+        if (!array_key_exists(static::getAttributeName($field_name), $developer->getAttributes()->values())) {
+          $this->recordMessage(t('Skipping creating %email user field, because the developer does not have %attribute_name attribute on Apigee Edge.', [
+            '%email' => $this->email,
+            '%attribute_name' => static::getAttributeName($field_name),
+          ])->render());
+          continue;
+        }
+        $field_definition = $user->getFieldDefinition($field_name);
+        // If the field does not exist, then skip.
+        if (!isset($field_definition)) {
+          $this->recordMessage(t('Skipping creating %email user field, because %field_name field does not exist.', [
+            '%email' => $this->email,
+            '%field_name' => $field_name,
+          ])->render());
+          continue;
+        }
+        $field_type = $field_definition->getType();
+        $formatter = $format_manager->lookupPluginForFieldType($field_type);
+        // If there is no available storage formatter for the field, then skip.
+        if (!isset($formatter)) {
+          $this->recordMessage(t("Skipping creating %email user's %field_name field, because there is no available storage formatter for %field_type field type.", [
+            '%email' => $this->email,
+            '%field_name' => $field_name,
+            '%field_type' => $field_type,
+          ])->render());
+          continue;
+        }
+
+        $rollback = $user->get($field_name)->getValue();
+        $user->set($field_name, $formatter->decode($developer->getAttributeValue(static::getAttributeName($field_name))));
+        // Do not set the field value if a field constraint fails during
+        // validation.
+        $field_violations = $user->get($field_name)->validate();
+        if ($field_violations->count() > 0) {
+          $user->set($field_name, $rollback);
+          foreach ($field_violations as $violation) {
+            $this->recordMessage(t("Skipping creating %email user's %field_name field: %message", [
+              '%email' => $this->email,
+              '%field_name' => $field_name,
+              '%message' => $violation->getMessage(),
+            ])->render());
+          }
+        }
       }
     }
 
     try {
       // If the developer-user synchronization is in progress, then saving
-      // developers while saving Drupal user should be avoided.
+      // the same developer in apigee_edge_user_presave() while creating Drupal
+      // user based on a developer should be avoided.
       _apigee_edge_set_sync_in_progress(TRUE);
       $user->save();
+    }
+    catch (\Exception $exception) {
+      $this->recordMessage(t('Skipping creating %email user: %message', [
+        '%message' => (string) $exception,
+      ])->render());
     }
     finally {
       _apigee_edge_set_sync_in_progress(FALSE);
@@ -89,8 +149,8 @@ class UserCreate extends EdgeJob {
    * {@inheritdoc}
    */
   public function __toString(): string {
-    return t('Copying developer (@mail) to Drupal from Apigee Edge.', [
-      '@mail' => $this->mail,
+    return t('Copying developer (%email) to Drupal from Apigee Edge.', [
+      '%email' => $this->email,
     ])->render();
   }
 
