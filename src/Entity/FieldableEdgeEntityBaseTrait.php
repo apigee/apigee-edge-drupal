@@ -258,16 +258,6 @@ trait FieldableEdgeEntityBaseTrait {
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function getFieldName(string $attribute_name): string {
-    $prefix = static::getFieldPrefix();
-    return strpos($attribute_name, $prefix) === 0 ?
-      $attribute_name :
-      $prefix . $attribute_name;
-  }
-
-  /**
    * Returns the original (stored in SDK Entity) data from the field.
    *
    * @param string $field_name
@@ -331,7 +321,7 @@ trait FieldableEdgeEntityBaseTrait {
       $definitions = $this->getFieldDefinitions();
 
       if (!isset($definitions[$field_name])) {
-        $field_name = $this->getFieldName($field_name);
+        $field_name = static::getFieldName($field_name);
       }
 
       if (isset($value) && array_key_exists($field_name, static::propertyToFieldStaticMap()) && static::getFieldType($field_name) === 'timestamp') {

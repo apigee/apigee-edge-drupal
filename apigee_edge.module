@@ -964,7 +964,7 @@ function template_preprocess_app_credential(array &$variables) {
 function apigee_edge_user_presave(UserInterface $account) {
   // If the developer-user synchronization is in progress, then saving
   // developers while saving Drupal user should be avoided.
-  if (_apigee_edge_get_sync_in_progress()) {
+  if (_apigee_edge_is_sync_in_progress()) {
     return;
   }
 
@@ -1319,31 +1319,32 @@ function _apigee_edge_user_has_an_app_with_product(string $productName, AccountI
 }
 
 /**
- * Indicates that the user synchronization is in progress.
+ * Indicates that the developer-user synchronization is in progress.
  *
  * If the developer-user synchronization is in progress, then saving
- * developers while saving Drupal user should be avoided.
+ * the same developer in apigee_edge_user_presave() while creating Drupal user
+ * based on a developer should be avoided.
  *
  * @param bool|null $in_progress
- *   User synchronization state.
+ *   Developer-user synchronization state.
  *
- * @return bool|null
- *   TRUE if the user synchronization is in progress, else FALSE or NULL.
+ * @return bool
+ *   TRUE if the developer-user synchronization is in progress, else FALSE.
  */
 function _apigee_edge_set_sync_in_progress(?bool $in_progress = NULL) {
   static $i;
   if ($in_progress !== NULL) {
     $i = $in_progress;
   }
-  return $i;
+  return $i ?? FALSE;
 }
 
 /**
  * Gets the user synchronization state.
  *
- * @return bool|null
- *   TRUE if the user synchronization is in progress, else FALSE or NULL.
+ * @return bool
+ *   TRUE if the developer-user synchronization is in progress, else FALSE.
  */
-function _apigee_edge_get_sync_in_progress() {
+function _apigee_edge_is_sync_in_progress() {
   return _apigee_edge_set_sync_in_progress();
 }

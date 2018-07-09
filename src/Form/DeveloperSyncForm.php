@@ -67,7 +67,6 @@ class DeveloperSyncForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-
     try {
       $this->sdkConnector->testConnection();
     }

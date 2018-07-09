@@ -89,10 +89,10 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
    * @param \Drupal\user\UserInterface $user
    *   The Drupal user account.
    *
-   * @return Developer
+   * @return \Drupal\apigee_edge\Entity\DeveloperInterface
    *   The developer entity.
    */
-  public static function createFromDrupalUser(UserInterface $user): Developer {
+  public static function createFromDrupalUser(UserInterface $user): DeveloperInterface {
     $developer_data = [
       'email' => $user->getEmail(),
       'originalEmail' => isset($user->original) ? $user->original->getEmail() : $user->getEmail(),
@@ -107,17 +107,30 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
 
     /** @var \Drupal\apigee_edge\FieldStorageFormatManager $format_manager */
     $format_manager = \Drupal::service('plugin.manager.apigee_field_storage_format');
-    foreach (\Drupal::config('apigee_edge.sync')->get('user_fields_to_sync') as $field) {
-      $type = $user->getFieldDefinition($field)->getType();
-      $formatter = $format_manager->lookupPluginForFieldType($type);
-      if (!isset($formatter)) {
-        \Drupal::logger('apigee_edge')->warning('Skipping @mail developer attribute save, there is no available storage formatter for @field_type.', [
-          '@mail' => $user->getEmail(),
-          '@field_type' => $type,
+    foreach (\Drupal::config('apigee_edge.sync')->get('user_fields_to_sync') as $field_name) {
+      $field_definition = $user->getFieldDefinition($field_name);
+      // If the field does not exist, then skip.
+      if (!isset($field_definition)) {
+        \Drupal::logger('apigee_edge')->warning("Skipping %mail developer's %attribute_name attribute update, because %field_name field does not exist.", [
+          '%mail' => $user->getEmail(),
+          '%attribute_name' => static::getAttributeName($field_name),
+          '%field_name' => $field_name,
         ]);
         continue;
       }
-      $developer->setAttribute(static::getAttributeName($field), $formatter->encode($user->get($field)->getValue()));
+      $field_type = $field_definition->getType();
+      $formatter = $format_manager->lookupPluginForFieldType($field_type);
+      // If there is no available storage formatter for the field, then skip.
+      if (!isset($formatter)) {
+        \Drupal::logger('apigee_edge')->warning("Skipping %mail developer's %attribute_name attribute update, because there is no available storage formatter for %field_type field type.", [
+          '%mail' => $user->getEmail(),
+          '%attribute_name' => static::getAttributeName($field_name),
+          '%field_type' => $field_type,
+        ]);
+        continue;
+      }
+
+      $developer->setAttribute(static::getAttributeName($field_name), $formatter->encode($user->get($field_name)->getValue()));
     }
     return $developer;
   }
@@ -132,7 +145,7 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
   /**
    * {@inheritdoc}
    */
-  public function id(): ? string {
+  public function id(): ?string {
     return $this->originalEmail;
   }
 

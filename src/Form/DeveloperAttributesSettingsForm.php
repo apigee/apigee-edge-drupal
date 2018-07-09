@@ -92,7 +92,7 @@ class DeveloperAttributesSettingsForm extends ConfigFormBase {
         $options[$field->getName()]['field_storage_formatter'] = $short_name;
       }
       else {
-        $options[$field->getName()]['field_storage_formatter'] = '-';
+        $options[$field->getName()]['field_storage_formatter'] = $this->t('- None -');
       }
 
       if (in_array($field->getName(), $config->get('user_fields_to_sync'))) {

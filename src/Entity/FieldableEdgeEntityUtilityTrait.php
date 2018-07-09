@@ -46,4 +46,14 @@ trait FieldableEdgeEntityUtilityTrait {
     return $field_name;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public static function getFieldName(string $attribute_name): string {
+    $prefix = static::getFieldPrefix();
+    return strpos($attribute_name, $prefix) === 0 ?
+      $attribute_name :
+      $prefix . $attribute_name;
+  }
+
 }
