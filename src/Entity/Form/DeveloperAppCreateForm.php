@@ -219,7 +219,7 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
     $app = $this->entity;
     $app->save();
 
-    $dacc = $this->getDeveloperAppController($app);
+    $dacc = $this->getDeveloperAppCredentialController($app);
 
     /** @var \Apigee\Edge\Api\Management\Entity\AppCredential[] $credentials */
     $credentials = $app->getCredentials();
