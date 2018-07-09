@@ -43,13 +43,32 @@ class DeveloperAppQuery extends Query {
     foreach ($originalConditions as $key => $condition) {
       $filteredConditions[$key] = $condition;
       if (in_array($condition['field'], $developerIdProperties) && in_array($condition['operator'], [NULL, '='])) {
+        // Indicates whether we found a single developer id in this condition
+        // or not.
+        $developer_id_found = FALSE;
         if (!is_array($condition['value'])) {
           $developerId = $condition['value'];
-          unset($filteredConditions[$key]);
+          $developer_id_found = TRUE;
         }
         elseif (is_array($condition['value']) && count($condition['value']) === 1) {
           $developerId = reset($condition['value']);
-          unset($filteredConditions[$key]);
+          $developer_id_found = TRUE;
+        }
+
+        if ($developer_id_found) {
+          // Sanity- and security check. The developer who set an empty value
+          // (null, false, '', etc) as the value of the developer id probably
+          // made an unintentional mistake. If we would still load all developer
+          // apps in this case that could lead to information disclosure
+          // or worse case a security leak.
+          if (empty($developerId)) {
+            return [];
+          }
+          else {
+            // We have a valid developer id that can be passed to Apigee Edge
+            // to return its apps.
+            unset($filteredConditions[$key]);
+          }
         }
       }
       // TODO Add support to IN conditions (multiple app names) when it
@@ -72,8 +91,7 @@ class DeveloperAppQuery extends Query {
     $originalConditions = $filteredConditions;
 
     // Load only one developer's apps instead of all apps.
-    // Sanity check: ignore empty string as developer id.
-    if ($developerId !== NULL && $developerId !== '') {
+    if ($developerId !== NULL) {
       /** @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppController $controller */
       $controller = $storage->getController(\Drupal::service('apigee_edge.sdk_connector'));
       // Load only one app instead of all apps of a developer.
