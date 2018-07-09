@@ -163,10 +163,15 @@ class Query extends QueryBase implements QueryInterface {
       // condition is needed.
       if (in_array($condition['field'], $this->getEntityIdProperties()) && (in_array($condition['operator'], [NULL, '=']) || ($condition['operator'] === 'IN' && count($condition['value']) === 1))) {
         if (is_array($condition['value'])) {
-          $ids = [reset($condition['value'])];
+          $id = reset($condition['value']);
+          // Sanity check: entity id should not be an empty string.
+          if ($id !== '') {
+            $ids = [$id];
+          }
           unset($filteredConditions[$key]);
         }
-        else {
+        // Sanity check: entity id should not be an empty string.
+        elseif ($condition['value'] !== '') {
           $ids = [$condition['value']];
           unset($filteredConditions[$key]);
         }

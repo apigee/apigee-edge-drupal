@@ -72,11 +72,13 @@ class DeveloperAppQuery extends Query {
     $originalConditions = $filteredConditions;
 
     // Load only one developer's apps instead of all apps.
-    if ($developerId !== NULL) {
+    // Sanity check: ignore empty string as developer id.
+    if ($developerId !== NULL && $developerId !== '') {
       /** @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppController $controller */
       $controller = $storage->getController(\Drupal::service('apigee_edge.sdk_connector'));
       // Load only one app instead of all apps of a developer.
-      if ($appName !== NULL) {
+      // Sanity check: ignore empty string as app name.
+      if ($appName !== NULL && $appName !== '') {
         // Try to retrieve the appId from the cache, because if load the
         // developer app with that then we can leverage the our entity cache.
         $appId = $storage->getCachedAppId($developerId, $appName);
