@@ -120,6 +120,7 @@ class AuthenticationForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $keys = $this->state->get('apigee_edge.auth');
     $form = parent::buildForm($form, $form_state);
     $form['#prefix'] = '<div id="apigee-edge-auth-form">';
     $form['#suffix'] = '</div>';
@@ -140,7 +141,7 @@ class AuthenticationForm extends ConfigFormBase {
         ':url' => Url::fromRoute('entity.key.edit_form', ['key' => $key_id, 'destination' => 'admin/config/apigee-edge/settings'])->toString(),
       ]);
     }
-    $basic_auth_default_value = array_key_exists($this->state->get('apigee_edge.client.active_key'), $basic_auth_keys) ? $this->state->get('apigee_edge.client.active_key') : NULL;
+    $basic_auth_default_value = array_key_exists($keys['active_key'], $basic_auth_keys) ? $keys['active_key'] : NULL;
 
     // Loading OAuth keys.
     $oauth_keys = $this->keyRepository->getKeyNamesAsOptions(['type' => 'apigee_edge_oauth']);
@@ -150,7 +151,7 @@ class AuthenticationForm extends ConfigFormBase {
         ':url' => Url::fromRoute('entity.key.edit_form', ['key' => $key_id, 'destination' => 'admin/config/apigee-edge/settings'])->toString(),
       ]);
     }
-    $oauth_default_value = array_key_exists($this->state->get('apigee_edge.client.active_key'), $oauth_keys) ? $this->state->get('apigee_edge.client.active_key') : NULL;
+    $oauth_default_value = array_key_exists($keys['active_key'], $oauth_keys) ? $keys['active_key'] : NULL;
 
     // Loading OAuth token keys.
     $oauth_token_keys = $this->keyRepository->getKeyNamesAsOptions(['type' => 'apigee_edge_oauth_token']);
@@ -160,7 +161,7 @@ class AuthenticationForm extends ConfigFormBase {
         ':url' => Url::fromRoute('entity.key.edit_form', ['key' => $key_id, 'destination' => 'admin/config/apigee-edge/settings'])->toString(),
       ]);
     }
-    $oauth_token_default_value = array_key_exists($this->state->get('apigee_edge.client.active_key_oauth_token'), $oauth_token_keys) ? $this->state->get('apigee_edge.client.active_key_oauth_token') : NULL;
+    $oauth_token_default_value = array_key_exists($keys['active_key_oauth_token'], $oauth_token_keys) ? $keys['active_key_oauth_token'] : NULL;
 
     $form['authentication']['key_type'] = [
       '#type' => 'select',
@@ -376,14 +377,16 @@ class AuthenticationForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    $keys = $this->state->get('apigee_edge.auth');
     if ($form_state->getValue('key_type') === 'apigee_edge_basic_auth') {
-      $this->state->set('apigee_edge.client.active_key', $form_state->getValue('key_basic_auth'));
+      $keys['active_key'] = $form_state->getValue('key_basic_auth');
+      $keys['active_key_oauth_token'] = '';
+      $this->state->set('apigee_edge.auth', $keys);
     }
     elseif ($form_state->getValue('key_type') === 'apigee_edge_oauth') {
-      $this->state->setMultiple([
-        'apigee_edge.client.active_key' => $form_state->getValue('key_oauth'),
-        'apigee_edge.client.active_key_oauth_token' => $form_state->getValue('key_oauth_token'),
-      ]);
+      $keys['active_key'] = $form_state->getValue('key_basic_auth');
+      $keys['active_key_oauth_token'] = $form_state->getValue('key_oauth_token');
+      $this->state->set('apigee_edge.auth', $keys);
     }
     parent::submitForm($form, $form_state);
   }

@@ -66,7 +66,9 @@ class RequirementsTest extends ApigeeEdgeFunctionalTestBase {
       'password' => getenv('APIGEE_EDGE_PASSWORD'),
     ]));
     $key->save();
-    $this->container->get('state')->set('apigee_edge.client.active_key', 'private_file');
+    $keys = $this->container->get('state')->get('apigee_edge.auth');
+    $keys['active_key'] = 'private_file';
+    $this->container->get('state')->set('apigee_edge.auth', $keys);
 
     $this->drupalGet('/admin/reports/status');
     $this->assertSession()->pageTextNotContains('Cannot connect to Apigee Edge server.');
@@ -107,7 +109,9 @@ class RequirementsTest extends ApigeeEdgeFunctionalTestBase {
       'password' => getenv('APIGEE_EDGE_PASSWORD'),
     ]));
     $key->save();
-    $this->container->get('state')->set('apigee_edge.client.active_key', 'private_file');
+    $keys = $this->container->get('state')->get('apigee_edge.auth');
+    $keys['active_key'] = 'private_file';
+    $this->container->get('state')->set('apigee_edge.auth', $keys);
 
     // Create new Apigee Edge OAuth token key with private file provider.
     Key::create([
@@ -117,7 +121,9 @@ class RequirementsTest extends ApigeeEdgeFunctionalTestBase {
       'key_provider' => 'apigee_edge_private_file',
       'key_input' => 'none',
     ])->save();
-    $this->container->get('state')->set('apigee_edge.client.active_key_oauth_token', 'private_file_token');
+    $keys = $this->container->get('state')->get('apigee_edge.auth');
+    $keys['active_key_oauth_token'] = 'private_file';
+    $this->container->get('state')->set('apigee_edge.auth', $keys);
 
     $this->drupalGet('/admin/reports/status');
     $this->assertSession()->pageTextNotContains('Cannot connect to Apigee Edge server.');

@@ -78,11 +78,12 @@ class ConnectionConfigForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $config = $this->state->get('apigee_edge.client');
     $form['connect_timeout'] = [
       '#type' => 'number',
       '#title' => $this->t('Connection timeout'),
       '#description' => $this->t('Number of seconds before an HTTP connection to Edge is assumed to have timed out.'),
-      '#default_value' => $this->state->get('apigee_edge.client.http_client_connect_timeout'),
+      '#default_value' => $config['client_connect_timeout'],
       '#min' => 0,
       '#step' => 0.1,
       '#required' => TRUE,
@@ -92,7 +93,7 @@ class ConnectionConfigForm extends ConfigFormBase {
       '#type' => 'number',
       '#title' => $this->t('Request timeout'),
       '#description' => $this->t('Number of seconds before an HTTP response from Edge is assumed to have timed out.'),
-      '#default_value' => $this->state->get('apigee_edge.client.http_client_timeout'),
+      '#default_value' => $config['http_client_timeout'],
       '#min' => 0,
       '#step' => 0.1,
       '#required' => TRUE,
@@ -105,10 +106,10 @@ class ConnectionConfigForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->state->setMultiple([
-      'apigee_edge.client.http_client_connect_timeout' => $form_state->getValue('connect_timeout'),
-      'apigee_edge.client.http_client_timeout' => $form_state->getValue('request_timeout'),
-    ]);
+    $config = $this->state->get('apigee_edge.client');
+    $config['http_client_connect_timeout'] = $form_state->getValue('connect_timeout');
+    $config['http_client_timeout'] = $form_state->getValue('request_timeout');
+    $this->state->set('apigee_edge.client', $config);
     parent::submitForm($form, $form_state);
   }
 

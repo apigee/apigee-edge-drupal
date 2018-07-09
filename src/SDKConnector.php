@@ -143,15 +143,11 @@ class SDKConnector implements SDKConnectorInterface {
    * @see http://docs.guzzlephp.org/en/stable/request-options.html
    */
   protected function getHttpClientConfiguration(StateInterface $state): array {
-    $config = $state->getMultiple([
-      'apigee_edge.client.http_client_connect_timeout',
-      'apigee_edge.client.http_client_timeout',
-      'apigee_edge.client.http_client_proxy',
-    ]);
+    $config = $state->get('apigee_edge.client');
     return [
-      'connect_timeout' => $config['apigee_edge.client.http_client_connect_timeout'],
-      'timeout' => $config['apigee_edge.client.http_client_timeout'],
-      'proxy' => $config['apigee_edge.client.http_client_proxy'],
+      'connect_timeout' => $config['http_client_connect_timeout'],
+      'timeout' => $config['http_client_timeout'],
+      'proxy' => $config['http_client_proxy'],
     ];
   }
 
@@ -186,11 +182,12 @@ class SDKConnector implements SDKConnectorInterface {
    */
   private function getCredentials(): CredentialsInterface {
     if (self::$credentials === NULL) {
-      $key = $this->keyRepository->getKey($this->state->get('apigee_edge.client.active_key'));
+      $keys = $this->state->get('apigee_edge.auth');
+      $key = $this->keyRepository->getKey($keys['active_key']);
       if ($key === NULL) {
         throw new KeyNotFoundException('Apigee Edge API authentication key not found.');
       }
-      $key_token = $this->keyRepository->getKey($this->state->get('apigee_edge.client.active_key_oauth_token'));
+      $key_token = $this->keyRepository->getKey($keys['active_key_oauth_token']);
       self::$credentials = $this->buildCredentials($key, $key_token);
     }
 
