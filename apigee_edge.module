@@ -166,6 +166,16 @@ function apigee_edge_entity_extra_field_info() {
 }
 
 /**
+ * Implements hook_field_formatter_info_alter().
+ */
+function apigee_edge_field_formatter_info_alter(array &$info) {
+  // Allows using the 'uri_link' formatter for the 'app_callback_url'
+  // field type, which uses it as default formatter.
+  // @see \Drupal\apigee_edge\Plugin\Field\FieldType\AppCallbackUrlItem
+  $info['uri_link']['field_types'][] = 'app_callback_url';
+}
+
+/**
  * Implements hook_entity_view().
  */
 function apigee_edge_developer_app_view(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
@@ -270,7 +280,7 @@ function apigee_edge_form_alter(&$form, FormStateInterface $form_state, $form_id
  *   Form state.
  */
 function _apigee_edge_entity_form_display_edit_form_validate(array &$form, FormStateInterface $form_state) {
-  $required = \Drupal::config('apigee_edge.common_app_settings')->get('required_base_fields');
+  $required = \Drupal::config('apigee_edge.developer_app_settings')->get('required_base_fields');
 
   foreach ($form_state->getValue('fields') as $field_name => $data) {
     if (in_array($field_name, $required) && $data['region'] === 'hidden') {

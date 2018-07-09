@@ -21,6 +21,7 @@ namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
@@ -157,7 +158,7 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
       ])
       ->setLabel(t('@developer_app name', ['@developer_app' => $developer_app_singular_label]));
 
-    $definitions['callbackUrl']
+    $definitions['callbackUrl'] = BaseFieldDefinition::create('app_callback_url')
       ->setDisplayOptions('form', [
         'weight' => 1,
       ])
@@ -165,6 +166,8 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
         'label' => 'inline',
         'weight' => 2,
       ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE)
       ->setLabel(t('Callback URL'));
 
     $definitions['description']
@@ -200,8 +203,8 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
       ])
       ->setLabel(t('Last updated'));
 
-    $common_app_settings = \Drupal::config('apigee_edge.common_app_settings');
-    foreach ((array) $common_app_settings->get('required_base_fields') as $required) {
+    $developer_app_settings = \Drupal::config('apigee_edge.developer_app_settings');
+    foreach ((array) $developer_app_settings->get('required_base_fields') as $required) {
       $definitions[$required]->setRequired(TRUE);
     }
 

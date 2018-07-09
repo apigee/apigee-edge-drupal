@@ -33,7 +33,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  */
 class UserSyncTest extends ApigeeEdgeFunctionalTestBase {
 
-  public static $modules = [
+  protected static $modules = [
     'block',
   ];
 
