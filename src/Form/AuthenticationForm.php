@@ -355,7 +355,7 @@ class AuthenticationForm extends ConfigFormBase {
       $form_state->setError($form, $this->t('Could not read the key storage. Check the key provider and settings.'));
     }
     catch (\Exception $exception) {
-      watchdog_exception('apigee_edge', $exception, '@message %function (line %line of %file). <pre>@backtrace_string</pre>', ['@message' => (string) $exception]);
+      watchdog_exception('apigee_edge', $exception);
       $form_state->setError($form, $this->t('Connection failed. Response from Apigee Edge: %response <br> For further information please check the <a href=":url">log messages</a>.', [
         '%response' => $exception->getMessage(),
         ':url' => Url::fromRoute('dblog.overview')->toString(),
