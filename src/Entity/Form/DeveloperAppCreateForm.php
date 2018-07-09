@@ -187,11 +187,16 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
    *   TRUE or FALSE.
    */
   public static function appExists(string $name, array $element, FormStateInterface $formState): bool {
+    // Do not validate if app name is not set.
+    if ($name === '') {
+      return FALSE;
+    }
+
     $query = \Drupal::entityQuery('developer_app')
       ->condition('developerId', $formState->getValue('developerId'))
       ->condition('name', $name);
 
-    return $query->count()->execute();
+    return (bool) $query->count()->execute();
   }
 
   /**
