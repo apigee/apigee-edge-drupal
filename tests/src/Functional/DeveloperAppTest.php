@@ -25,6 +25,7 @@ use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialController;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
+use Drupal\Core\Entity\EntityInterface;
 
 /**
  * Create, delete, update Developer App entity tests.
@@ -141,7 +142,7 @@ class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  protected function createApp(): EntityEntityInterface {
+  protected function createApp(): EntityInterface {
     $app = DeveloperApp::create([
       'name' => $this->randomMachineName(),
       'status' => App::STATUS_APPROVED,
