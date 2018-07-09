@@ -12,14 +12,20 @@ use Drupal\Core\Entity\EntityInterface;
 
 /**
  * Implements hook_entity_insert().
+ *
+ * TODO Add company apps support later.
  */
 function apigee_edge_test_app_keys_developer_app_insert(EntityInterface $entity) {
   /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
   $credentials = $entity->getCredentials();
   $credential = reset($credentials);
+  $credential_lifetime = Drupal::config('apigee_edge.developer_app_settings')->get('credential_lifetime');
   // We only care about auto-generated key by Apigee Edge when a new app is
-  // being created.
-  if ($credential->getExpiresAt() === NULL) {
+  // being created. We also ignore auto-generated keys if credential lifetime
+  // is set, because those get removed automatically and we should not create
+  // two new keys for a new app (on the 3rd party service).
+  // @see \Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm::save()
+  if ($credential->getExpiresAt() === NULL && $credential_lifetime === 0) {
     $random = new Random();
     $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
     $dacc = new DeveloperAppCredentialController(
@@ -31,7 +37,8 @@ function apigee_edge_test_app_keys_developer_app_insert(EntityInterface $entity)
     try {
       $dacc->delete($credential->getConsumerKey());
       try {
-        $dacc->create($random->name(), $random->name());
+        $prefix = apigee_edge_test_app_keys_get_prefix();
+        $dacc->create("{$prefix}-{$random->name()}", "{$prefix}-{$random->name()}");
       }
       catch (ApiException $e) {
         watchdog_exception('apigee_edge', $e, 'Unable to create new API key on Apigee Edge for @app app. !message', ['@app' => $entity->id()]);
@@ -41,4 +48,14 @@ function apigee_edge_test_app_keys_developer_app_insert(EntityInterface $entity)
       watchdog_exception('apigee_edge', $e, 'Unable to delete auto-generated key of @app app on Apigee Edge. !message', ['@app' => $entity->id()]);
     }
   }
+}
+
+/**
+ * Returns the key and secret prefix used by this module.
+ *
+ * @return string
+ *   The prefix.
+ */
+function apigee_edge_test_app_keys_get_prefix() {
+  return 'apigee_edge_test_app_keys';
 }

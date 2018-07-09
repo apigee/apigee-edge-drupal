@@ -61,11 +61,13 @@ class OverrideAppKeysOnGenerate implements EventSubscriberInterface {
       // TODO Finish when Company apps gets supported.
     }
 
+    $prefix = apigee_edge_test_app_keys_get_prefix();
+
     try {
       $credential_controller->delete($event->getCredential()->getConsumerKey());
-      $new_consumer_key = $random->name();
+      $new_consumer_key = "{$prefix}-{$random->name()}";
       try {
-        $credential_controller->create($new_consumer_key, $random->name());
+        $credential_controller->create($new_consumer_key, "{$prefix}-{$random->name()}");
         try {
           $products = array_map(function (CredentialProduct $item) {
             return $item->getApiproduct();
