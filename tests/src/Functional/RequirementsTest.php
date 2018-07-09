@@ -122,7 +122,7 @@ class RequirementsTest extends ApigeeEdgeFunctionalTestBase {
       'key_input' => 'none',
     ])->save();
     $keys = $this->container->get('state')->get('apigee_edge.auth');
-    $keys['active_key_oauth_token'] = 'private_file';
+    $keys['active_key_oauth_token'] = 'private_file_token';
     $this->container->get('state')->set('apigee_edge.auth', $keys);
 
     $this->drupalGet('/admin/reports/status');
