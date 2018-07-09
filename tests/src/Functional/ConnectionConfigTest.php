@@ -28,10 +28,6 @@ class ConnectionConfigTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * Tests connection config form, HTTP client configuration.
-   *
-   * @throws \Behat\Mink\Exception\ResponseTextException
-   * @throws \ReflectionException
-   * @throws \Exception
    */
   public function testHttpClientConfig() {
     $this->drupalLogin($this->rootUser);

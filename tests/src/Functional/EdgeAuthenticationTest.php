@@ -72,17 +72,13 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * Tests Apigee Edge key types, key providers and authentication form.
-   *
-   * @throws \Behat\Mink\Exception\ExpectationException
-   * @throws \Behat\Mink\Exception\ResponseTextException
-   * @throws \Exception
    */
   public function testEdgeAuthentication() {
     // Delete pre-defined test key.
     $this->drupalPostForm('/admin/config/system/keys/manage/test/delete', [], 'Delete');
     $this->assertSession()->pageTextContains('The key test has been deleted.');
-    $this->assertEmpty($this->config('apigee_edge.client')->get('active_key'));
-    $this->assertEmpty($this->config('apigee_edge.client')->get('active_key_oauth_token'));
+    $this->assertEmpty($this->container->get('state')->get('apigee_edge.client.active_key'));
+    $this->assertEmpty($this->container->get('state')->get('apigee_edge.client.active_key_oauth_token'));
 
     // Create a key entity using key's default type and provider.
     $default_key = Key::create([
@@ -158,8 +154,8 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('The configuration options have been saved');
 
-    $this->assertEquals($this->config('apigee_edge.client')->get('active_key'), 'key_test_env_variables');
-    $this->assertEmpty($this->config('apigee_edge.client')->get('active_key_oauth_token'));
+    $this->assertEquals($this->container->get('state')->get('apigee_edge.client.active_key'), 'key_test_env_variables');
+    $this->assertEmpty($this->container->get('state')->get('apigee_edge.client.active_key_oauth_token'));
     $this->container->get('apigee_edge.sdk_connector')->testConnection();
 
     // Test key stored in private file.
@@ -173,8 +169,8 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('The configuration options have been saved');
 
-    $this->assertEquals($this->config('apigee_edge.client')->get('active_key'), 'key_test_private_file');
-    $this->assertEmpty($this->config('apigee_edge.client')->get('active_key_oauth_token'));
+    $this->assertEquals($this->container->get('state')->get('apigee_edge.client.active_key'), 'key_test_private_file');
+    $this->assertEmpty($this->container->get('state')->get('apigee_edge.client.active_key_oauth_token'));
     $this->container->get('apigee_edge.sdk_connector')->testConnection();
 
     // Test wrong key stored in private file.
@@ -188,8 +184,8 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('Connection failed.');
 
-    $this->assertEquals($this->config('apigee_edge.client')->get('active_key'), 'key_test_private_file');
-    $this->assertEmpty($this->config('apigee_edge.client')->get('active_key_oauth_token'));
+    $this->assertEquals($this->container->get('state')->get('apigee_edge.client.active_key'), 'key_test_private_file');
+    $this->assertEmpty($this->container->get('state')->get('apigee_edge.client.active_key_oauth_token'));
     $this->container->get('apigee_edge.sdk_connector')->testConnection();
 
     // Add new Apigee Edge OAuth token key
@@ -269,8 +265,8 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('The configuration options have been saved');
 
-    $this->assertEquals($this->config('apigee_edge.client')->get('active_key'), 'key_test_oauth_env_variables');
-    $this->assertEquals($this->config('apigee_edge.client')->get('active_key_oauth_token'), 'key_test_oauth_token');
+    $this->assertEquals($this->container->get('state')->get('apigee_edge.client.active_key'), 'key_test_oauth_env_variables');
+    $this->assertEquals($this->container->get('state')->get('apigee_edge.client.active_key_oauth_token'), 'key_test_oauth_token');
     $this->container->get('apigee_edge.sdk_connector')->testConnection();
 
     // Test key stored in private file.
@@ -288,8 +284,8 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('The configuration options have been saved');
 
-    $this->assertEquals($this->config('apigee_edge.client')->get('active_key'), 'key_test_oauth_private_file');
-    $this->assertEquals($this->config('apigee_edge.client')->get('active_key_oauth_token'), 'key_test_oauth_token');
+    $this->assertEquals($this->container->get('state')->get('apigee_edge.client.active_key'), 'key_test_oauth_private_file');
+    $this->assertEquals($this->container->get('state')->get('apigee_edge.client.active_key_oauth_token'), 'key_test_oauth_token');
     $this->container->get('apigee_edge.sdk_connector')->testConnection();
 
     // Test wrong key stored in private file.
@@ -307,8 +303,8 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('Connection failed.');
 
-    $this->assertEquals($this->config('apigee_edge.client')->get('active_key'), 'key_test_oauth_private_file');
-    $this->assertEquals($this->config('apigee_edge.client')->get('active_key_oauth_token'), 'key_test_oauth_token');
+    $this->assertEquals($this->container->get('state')->get('apigee_edge.client.active_key'), 'key_test_oauth_private_file');
+    $this->assertEquals($this->container->get('state')->get('apigee_edge.client.active_key_oauth_token'), 'key_test_oauth_token');
     $this->container->get('apigee_edge.sdk_connector')->testConnection();
 
     Key::load('key_test_env_variables')->delete();
@@ -319,8 +315,8 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
     Key::load('key_test_oauth_private_file')->delete();
     Key::load('key_wrong_test_oauth_private_file')->delete();
     $this->drupalGet('/admin/config/apigee-edge/settings');
-    $this->assertEmpty($this->config('apigee_edge.client')->get('active_key'));
-    $this->assertEmpty($this->config('apigee_edge.client')->get('active_key_oauth_token'));
+    $this->assertEmpty($this->container->get('state')->get('apigee_edge.client.active_key'));
+    $this->assertEmpty($this->container->get('state')->get('apigee_edge.client.active_key_oauth_token'));
     $this->assertSession()->pageTextContains('There is no available basic authentication key for connecting to Apigee Edge.');
     $this->getSession()->getPage()->selectFieldOption('edit-key-type', 'apigee_edge_oauth');
     $this->assertSession()->pageTextContains('There is no available OAuth key for connecting to Apigee Edge.');
