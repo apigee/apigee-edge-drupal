@@ -37,16 +37,10 @@ class ApigeeEdgeDeveloperIdFieldItem extends FieldItemList {
   protected function computeValue() {
     /** @var \Drupal\user\UserInterface $entity */
     $entity = $this->getEntity();
-    try {
-      /** @var \Drupal\apigee_edge\Entity\Developer $developer */
-      $developer = Developer::load($entity->getEmail());
-      $value = $developer ? $developer->getDeveloperId() : NULL;
-
-      $this->list[0] = $this->createItem(0, $value);
-    }
-    catch (\Exception $exception) {
-      watchdog_exception('apigee_edge', $exception);
-    }
+    /** @var \Drupal\apigee_edge\Entity\DeveloperInterface|null $developer */
+    $developer = Developer::load($entity->getEmail());
+    $value = $developer ? $developer->getDeveloperId() : NULL;
+    $this->list[0] = $this->createItem(0, $value);
   }
 
 }
