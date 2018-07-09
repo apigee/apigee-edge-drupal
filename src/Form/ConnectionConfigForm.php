@@ -83,7 +83,7 @@ class ConnectionConfigForm extends ConfigFormBase {
       '#type' => 'number',
       '#title' => $this->t('Connection timeout'),
       '#description' => $this->t('Number of seconds before an HTTP connection to Edge is assumed to have timed out.'),
-      '#default_value' => $config['client_connect_timeout'],
+      '#default_value' => $config['http_client_connect_timeout'],
       '#min' => 0,
       '#step' => 0.1,
       '#required' => TRUE,
