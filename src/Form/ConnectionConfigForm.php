@@ -47,7 +47,7 @@ class ConnectionConfigForm extends ConfigFormBase {
    */
   public function __construct(ConfigFactoryInterface $config_factory, StateInterface $state) {
     parent::__construct($config_factory);
-    $this->setConfigFactory($config_factory);
+    $this->state = $state;
   }
 
   /**

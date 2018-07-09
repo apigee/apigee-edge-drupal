@@ -35,7 +35,7 @@ class ConnectionConfigTest extends ApigeeEdgeFunctionalTestBase {
     $connect_timeout = random_int(300, 1000) / 10;
     $request_timeout = random_int(300, 1000) / 10;
 
-    $this->drupalPostForm('/admin/config/apigee-edge/connection-config', [
+    $this->drupalPostForm(Url::fromRoute('apigee_edge.settings.connection_config'), [
       'connect_timeout' => $connect_timeout,
       'request_timeout' => $request_timeout,
     ], 'Save configuration');
