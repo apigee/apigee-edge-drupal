@@ -20,9 +20,11 @@
 
 namespace Drupal\apigee_edge\Entity\Controller;
 
+use Apigee\Edge\ClientInterface;
 use Apigee\Edge\Api\Management\Controller\DeveloperController as EdgeDeveloperController;
+use Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface;
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
-use Drupal\apigee_edge\Entity\Developer;
+use Drupal\apigee_edge\Entity\DeveloperInterface;
 use Drupal\Core\Entity\EntityInterface;
 
 /**
@@ -34,10 +36,42 @@ class DeveloperController extends EdgeDeveloperController implements DrupalEntit
   }
 
   /**
+   * @var string
+   */
+  private $entityClass;
+
+  /**
+   * DeveloperController constructor.
+   *
+   * @param string $organization
+   *   The organization name.
+   * @param \Apigee\Edge\ClientInterface $client
+   *   The API client.
+   * @param string $entityClass
+   *   The FQCN of the entity class that is used in Drupal.
+   * @param array $entityNormalizers
+   *   Array of entity normalizers.
+   * @param \Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface|null $organizationController
+   *   The organization controller.
+   *
+   * @throws \ReflectionException
+   * @throws \InvalidArgumentException
+   */
+  public function __construct(string $organization, ClientInterface $client, string $entityClass, array $entityNormalizers = [], ?OrganizationControllerInterface $organizationController = NULL) {
+    parent::__construct($organization, $client, $entityNormalizers, $organizationController);
+    $rc = new \ReflectionClass($entityClass);
+    $interface = DeveloperInterface::class;
+    if (!$rc->implementsInterface($interface)) {
+      throw new \InvalidArgumentException("Entity class must implement {$interface}.");
+    }
+    $this->entityClass = $entityClass;
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function getEntityClass(): string {
-    return Developer::class;
+    return $this->entityClass;
   }
 
   /**

@@ -20,8 +20,12 @@
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Apigee\Edge\Api\Management\Entity\App;
+use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
+use Drupal\apigee_edge\Entity\ApiProduct;
+use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialController;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
+use Drupal\Core\Entity\EntityInterface;
 
 /**
  * Create, delete, update Developer App entity tests.
@@ -69,13 +73,7 @@ class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
    */
   public function testCrud() {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
-    $app = DeveloperApp::create([
-      'name' => $this->randomMachineName(),
-      'status' => App::STATUS_APPROVED,
-      'developerId' => $this->developer->getDeveloperId(),
-    ]);
-    $app->setOwner($this->account);
-    $app->save();
+    $app = $this->createApp();
 
     $this->assertNotEmpty($app->getAppId());
 
@@ -93,6 +91,66 @@ class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
     $this->assertEquals($value, $loadedApp->getAttributeValue('test'));
 
     $app->delete();
+  }
+
+  /**
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   * @throws \Drupal\Core\TempStore\TempStoreException
+   */
+  public function testExternalKeyGeneration() {
+    $validateCredential = function (AppCredentialInterface $credential) {
+      $prefix = apigee_edge_test_app_keys_get_prefix();
+      $this->assertStringStartsWith($prefix, $credential->getConsumerKey());
+      $this->assertStringStartsWith($prefix, $credential->getConsumerSecret());
+    };
+
+    $this->installExtraModules(['apigee_edge_test_app_keys']);
+    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $app */
+    $app = $this->createApp();
+    $credentials = $app->getCredentials();
+    $credential = reset($credentials);
+    $validateCredential($credential);
+    $app->delete();
+
+    // Test with generate.
+    $app = $this->createApp();
+    $apiproduct = ApiProduct::create([
+      'name' => $this->randomMachineName(),
+      'displayName' => $this->randomMachineName(),
+      'approvalType' => ApiProduct::APPROVAL_TYPE_AUTO,
+    ]);
+    $apiproduct->save();
+    $credentials = $app->getCredentials();
+    $credential = reset($credentials);
+    /** @var \Drupal\apigee_edge\SDKConnectorInterface $connector */
+    $connector = \Drupal::service('apigee_edge.sdk_connector');
+    $dacc = new DeveloperAppCredentialController($connector->getOrganization(), $app->getDeveloperId(), $app->getName(), $connector->getClient());
+    $dacc->delete($credential->getConsumerKey());
+    $dacc->generate([$apiproduct->id()], $app->getAttributes(), (string) $app->getCallbackUrl(), $app->getScopes(), 60 * 60 * 1000);
+    // Also test that related caches got invalidated, this is the reason why
+    // we retrieve the credentials from the app instead of use the return
+    // value of the function above.
+    $credentials = $app->getCredentials();
+    $credential = reset($credentials);
+    $validateCredential($credential);
+    $app->delete();
+    $apiproduct->delete();
+  }
+
+  /**
+   * Creates new developer app.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  protected function createApp(): EntityInterface {
+    $app = DeveloperApp::create([
+      'name' => $this->randomMachineName(),
+      'status' => App::STATUS_APPROVED,
+      'developerId' => $this->developer->getDeveloperId(),
+    ]);
+    $app->setOwner($this->account);
+    $app->save();
+    return $app;
   }
 
 }

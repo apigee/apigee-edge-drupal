@@ -150,8 +150,7 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
     $entity = $this->loadApp($entityId);
     $controller = $this->createDeveloperAppController($entity->getDeveloperId());
     $return = $controller->delete($entity->getName());
-    unset(static::$cacheByAppId[$entity->getAppId()]);
-    unset(static::$cacheByAppId[$entity->getDeveloperId()][$entity->getName()]);
+    $this->removeEntityFromCache($entity);
     return $return;
   }
 
@@ -234,6 +233,21 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function removeEntityFromCache(AppInterface $app) : void {
+    // Do not try to remove non developer apps (ex.: company apps) to this
+    // cache.
+    if (!in_array(EdgeDeveloperAppInterface::class, class_implements($app))) {
+      return;
+    }
+    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $app */
+    unset(static::$cacheByAppId[$app->getAppId()]);
+    unset(static::$cacheByDeveloperIdAppName[$app->getDeveloperId()][$app->getAppId()]);
+    $this->clearAppCredentialsFromStorage($app->getDeveloperId(), $app->getName());
+  }
+
+  /**
    * Saves a developer app entity to caches.
    *
    * @param \Apigee\Edge\Api\Management\Entity\AppInterface $app
@@ -242,11 +256,12 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
    * @throws \Drupal\Core\TempStore\TempStoreException
    *   If saving credentials to the intermediate credential storage fails.
    */
-  private function saveEntityToStaticCaches(AppInterface $app) {
+  private function saveEntityToStaticCaches(AppInterface $app) : void {
     // Do not try to save non developer apps (ex.: company apps) to this cache.
     if (!in_array(EdgeDeveloperAppInterface::class, class_implements($app))) {
       return;
     }
+    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $app */
     static::$cacheByAppId[$app->getAppId()] = $app;
     NestedArray::setValue(static::$cacheByDeveloperIdAppName, [$app->getDeveloperId(), $app->getName()], $app);
     // Store loaded credential's in user's private credential store to
