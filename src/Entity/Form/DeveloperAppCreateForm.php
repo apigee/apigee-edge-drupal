@@ -19,9 +19,11 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
+use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialControllerInterface;
+use Apigee\Edge\Api\Management\Entity\DeveloperAppInterface;
+use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialController;
-use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
@@ -185,11 +187,16 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
    *   TRUE or FALSE.
    */
   public static function appExists(string $name, array $element, FormStateInterface $formState): bool {
+    // Do not validate if app name is not set.
+    if ($name === '') {
+      return FALSE;
+    }
+
     $query = \Drupal::entityQuery('developer_app')
       ->condition('developerId', $formState->getValue('developerId'))
       ->condition('name', $name);
 
-    return $query->count()->execute();
+    return (bool) $query->count()->execute();
   }
 
   /**
@@ -212,12 +219,7 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
     $app = $this->entity;
     $app->save();
 
-    $dacc = new DeveloperAppCredentialController(
-      $this->sdkConnector->getOrganization(),
-      $app->getDeveloperId(),
-      $app->getName(),
-      $this->sdkConnector->getClient()
-    );
+    $dacc = $this->getDeveloperAppCredentialController($app);
 
     /** @var \Apigee\Edge\Api\Management\Entity\AppCredential[] $credentials */
     $credentials = $app->getCredentials();
@@ -263,6 +265,24 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
     return $this->t('Add @developer_app', ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel()]);
+  }
+
+  /**
+   * Gets the credential controller for an app.
+   *
+   * @param \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface $app
+   *   The developer app.
+   *
+   * @return \Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialControllerInterface
+   *   The credential controller for managing app credentials.
+   */
+  protected function getDeveloperAppCredentialController(DeveloperAppInterface $app): DeveloperAppCredentialControllerInterface {
+    return new DeveloperAppCredentialController(
+      $this->sdkConnector->getOrganization(),
+      $app->getDeveloperId(),
+      $app->getName(),
+      $this->sdkConnector->getClient()
+    );
   }
 
 }

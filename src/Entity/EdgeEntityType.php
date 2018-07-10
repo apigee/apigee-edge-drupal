@@ -95,4 +95,22 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
     return \Drupal::config("apigee_edge.{$this->id}_settings");
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getKeys() {
+    $keys = parent::getKeys();
+    // If id definition is missing from the entity annotation try to set it up
+    // automatically otherwise things gets broken, like entity reference fields.
+    if (!isset($keys['id'])) {
+      $rc = new \ReflectionClass($this->getClass());
+      // SDK entities can tell their primary id property.
+      if ($rc->hasMethod('idProperty')) {
+        $obj = $rc->newInstance();
+        $keys['id'] = $obj->idProperty();
+      }
+    }
+    return $keys;
+  }
+
 }
