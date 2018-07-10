@@ -134,18 +134,18 @@ apigee_edge.settings.app.caching:
   requirements:
     _permission: 'administer apigee edge'
 
-apigee_edge.user_sync.schedule:
+apigee_edge.developer_sync.schedule:
   path: '/admin/config/apigee-edge/sync/schedule'
   defaults:
-    _controller: '\Drupal\apigee_edge\Controller\UserSyncController::schedule'
+    _controller: '\Drupal\apigee_edge\Controller\DeveloperSyncController::schedule'
   requirements:
     _permission: 'administer apigee edge'
     _csrf_token: 'TRUE'
 
-apigee_edge.user_sync.run:
+apigee_edge.developer_sync.run:
   path: '/admin/config/apigee-edge/sync/run'
   defaults:
-    _controller: '\Drupal\apigee_edge\Controller\UserSyncController::run'
+    _controller: '\Drupal\apigee_edge\Controller\DeveloperSyncController::run'
   requirements:
     _permission: 'administer apigee edge'
     _csrf_token: 'TRUE'
