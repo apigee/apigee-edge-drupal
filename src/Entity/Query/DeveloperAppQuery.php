@@ -35,33 +35,66 @@ class DeveloperAppQuery extends Query {
     /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperAppStorage $storage */
     $storage = $this->entityTypeManager->getStorage($this->entityTypeId);
     $ids = NULL;
-    $developerId = NULL;
-    $appName = NULL;
-    $developerIdProperties = ['developerId', 'email'];
-    $originalConditions = &$this->condition->conditions();
-    $filteredConditions = [];
-    foreach ($originalConditions as $key => $condition) {
-      $filteredConditions[$key] = $condition;
-      if (in_array($condition['field'], $developerIdProperties) && in_array($condition['operator'], [NULL, '='])) {
+    $developer_id = NULL;
+    $app_name = NULL;
+    $developer_id_properties = ['developerId', 'email'];
+    $original_conditions = &$this->condition->conditions();
+    $filtered_conditions = [];
+    foreach ($original_conditions as $key => $condition) {
+      $filtered_conditions[$key] = $condition;
+      if (in_array($condition['field'], $developer_id_properties) && in_array($condition['operator'], [NULL, '='])) {
+        // Indicates whether we found a single developer id in this condition
+        // or not.
+        $developer_id_found = FALSE;
         if (!is_array($condition['value'])) {
-          $developerId = $condition['value'];
-          unset($filteredConditions[$key]);
+          $developer_id = $condition['value'];
+          $developer_id_found = TRUE;
         }
         elseif (is_array($condition['value']) && count($condition['value']) === 1) {
-          $developerId = reset($condition['value']);
-          unset($filteredConditions[$key]);
+          $developer_id = reset($condition['value']);
+          $developer_id_found = TRUE;
+        }
+
+        if ($developer_id_found) {
+          // Sanity- and security check. The developer who set an empty value
+          // (null, false, '', etc) as the value of the developer id probably
+          // made an unintentional mistake. If we would still load all developer
+          // apps in this case that could lead to information disclosure
+          // or worse case a security leak.
+          if (empty($developer_id)) {
+            return [];
+          }
+          else {
+            // We have a valid developer id that can be passed to Apigee Edge
+            // to return its apps.
+            unset($filtered_conditions[$key]);
+          }
         }
       }
       // TODO Add support to IN conditions (multiple app names) when it
       // becomes necessary.
       elseif ($condition['field'] === 'name' && in_array($condition['operator'], [NULL, '='])) {
+        $app_name_found = FALSE;
         if (!is_array($condition['value'])) {
-          $appName = $condition['value'];
-          unset($filteredConditions[$key]);
+          $app_name = $condition['value'];
+          $app_name_found = TRUE;
         }
         elseif (is_array($condition['value']) && count($condition['value']) === 1) {
-          $appName = reset($condition['value']);
-          unset($filteredConditions[$key]);
+          $app_name = reset($condition['value']);
+          $app_name_found = TRUE;
+        }
+
+        if ($app_name_found) {
+          // The same as above, the provided condition can not be evaluated
+          // on Apigee Edge so let's return immediately.
+          if (empty($app_name)) {
+            return [];
+          }
+          else {
+            // We have a valid app name that can be passed to Apigee Edge
+            // to return its apps.
+            unset($filtered_conditions[$key]);
+          }
         }
       }
     }
@@ -69,20 +102,20 @@ class DeveloperAppQuery extends Query {
     // (by calling the proper API with the proper parameters).
     // We do not want to apply the same filters on the result in execute()
     // again.
-    $originalConditions = $filteredConditions;
+    $original_conditions = $filtered_conditions;
 
     // Load only one developer's apps instead of all apps.
-    if ($developerId !== NULL) {
+    if ($developer_id !== NULL) {
       /** @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppController $controller */
       $controller = $storage->getController(\Drupal::service('apigee_edge.sdk_connector'));
       // Load only one app instead of all apps of a developer.
-      if ($appName !== NULL) {
+      if ($app_name !== NULL) {
         // Try to retrieve the appId from the cache, because if load the
         // developer app with that then we can leverage the our entity cache.
-        $appId = $storage->getCachedAppId($developerId, $appName);
-        if ($appId) {
+        $app_id = $storage->getCachedAppId($developer_id, $app_name);
+        if ($app_id) {
           try {
-            $entity = $storage->load($appId);
+            $entity = $storage->load($app_id);
             // If the app found in the cache then return it, if not then it can
             // mean that the cached app id is outdated (ex.: app had been
             // deleted from Apigee Edge in somewhere else than the Developer
@@ -99,7 +132,7 @@ class DeveloperAppQuery extends Query {
 
         try {
           /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
-          $entity = $controller->loadByAppName($developerId, $appName);
+          $entity = $controller->loadByAppName($developer_id, $app_name);
           // We have to use the storage because it ensures that next time the
           // app can be found in the cache (and various other things as well).
           return [$storage->load($entity->getAppId())];
@@ -116,9 +149,9 @@ class DeveloperAppQuery extends Query {
         // be smaller compared with retrieving all app entity data - maybe
         // unnecessarily if we already have them in cache - and it should be
         // produced and retrieved more quickly.
-        $appNames = $controller->getEntityIdsByDeveloper($developerId);
-        $cachedAppIds = array_map(function ($appName) use ($storage, $developerId) {
-          return $storage->getCachedAppId($developerId, $appName);
+        $appNames = $controller->getEntityIdsByDeveloper($developer_id);
+        $cachedAppIds = array_map(function ($appName) use ($storage, $developer_id) {
+          return $storage->getCachedAppId($developer_id, $appName);
         }, $appNames);
         // Remove those null values that indicates an app name could not be
         // found in cache.
@@ -143,7 +176,7 @@ class DeveloperAppQuery extends Query {
         $ids = array_map(function ($entity) {
           /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
           return $entity->getAppId();
-        }, $controller->getEntitiesByDeveloper($developerId));
+        }, $controller->getEntitiesByDeveloper($developer_id));
         if ($ids) {
           return $storage->loadMultiple($ids);
         }

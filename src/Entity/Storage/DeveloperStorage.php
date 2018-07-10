@@ -82,7 +82,7 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
    * {@inheritdoc}
    */
   public function getController(SDKConnectorInterface $connector): EntityCrudOperationsControllerInterface {
-    return new DeveloperController($connector->getOrganization(), $connector->getClient());
+    return new DeveloperController($connector->getOrganization(), $connector->getClient(), $this->entityClass);
   }
 
   /**
