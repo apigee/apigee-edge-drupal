@@ -19,10 +19,13 @@
 
 namespace Drupal\Tests\apigee_edge\Functional;
 
+use Apigee\Edge\Api\Management\Controller\DeveloperController;
 use Drupal\apigee_edge\Entity\Developer;
-use Drupal\apigee_edge\Entity\DeveloperInterface;
+use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormat\CSV;
+use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormat\JSON;
+use Drupal\Core\Url;
+use Drupal\field_ui\Tests\FieldUiTestTrait;
 use Drupal\user\Entity\User;
-use Drupal\user\UserInterface;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -30,11 +33,17 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 /**
  * Developer synchronization test.
  *
- * @group apigee_edge9
+ * @group apigee_edge
  */
 class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
 
-  public static $modules = [
+  use FieldUiTestTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static $modules = [
+    'link',
     'block',
   ];
 
@@ -67,50 +76,350 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
   protected $drupalUsers = [];
 
   /**
+   * Array of modified Apigee Edge developers.
+   *
+   * @var \Drupal\apigee_edge\Entity\DeveloperInterface[]
+   */
+  protected $modifiedEdgeDevelopers = [];
+
+  /**
+   * Array of modified Drupal users.
+   *
+   * @var \Drupal\user\UserInterface[]
+   */
+  protected $modifiedDrupalUsers = [];
+
+  /**
+   * Inactive Apigee Edge developer assigned to an active Drupal user.
+   *
+   * @var \Drupal\apigee_edge\Entity\DeveloperInterface
+   */
+  protected $inactiveDeveloper;
+
+  /**
+   * Array of Drupal user fields.
+   *
+   * @var array
+   */
+  protected $fields = [];
+
+  /**
+   * Field name prefix.
+   *
+   * @var string
+   */
+  protected $fieldNamePrefix;
+
+  /**
+   * The field storage format manager service.
+   *
+   * @var \Drupal\apigee_edge\FieldStorageFormatManager
+   */
+  protected $formatManager;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp() {
     parent::setUp();
+
+    $this->drupalPlaceBlock('system_breadcrumb_block');
+    $this->fieldNamePrefix = $this->config('field_ui.settings')->get('field_prefix');
+    $this->formatManager = $this->container->get('plugin.manager.apigee_field_storage_format');
 
     $this->prefix = $this->randomMachineName();
     $escaped_prefix = preg_quote($this->prefix);
     $this->filter = "/^{$escaped_prefix}\.[a-zA-Z0-9]*@example\.com$/";
     $this->container->get('config.factory')->getEditable('apigee_edge.sync')->set('filter', $this->filter)->save();
 
+    $this->drupalLogin($this->rootUser);
+    $this->setUpUserFields();
+
     // Create developers on Apigee Edge.
-    for ($i = 0; $i < 1; $i++) {
-      $this->edgeDevelopers[$i] = Developer::create([
-        'email' => "{$this->prefix}.{$this->randomMachineName()}@example.com",
+    for ($i = 0; $i < 2; $i++) {
+      $mail = "{$this->prefix}.{$this->randomMachineName()}@example.com";
+      $this->edgeDevelopers[$mail] = Developer::create([
+        'email' => $mail,
         'userName' => $this->randomMachineName(),
         'firstName' => $this->randomMachineName(),
         'lastName' => $this->randomMachineName(),
       ]);
-      $this->edgeDevelopers[$i]->save();
+      foreach ($this->fields as $field_type => $data) {
+        $formatter = $this->formatManager->lookupPluginForFieldType($field_type);
+        $this->edgeDevelopers[$mail]->setAttribute($data['name'], $formatter->encode($data['data']));
+      }
+      $this->edgeDevelopers[$mail]->setAttribute('invalid_email', 'invalid_email_address');
+      $this->edgeDevelopers[$mail]->save();
     }
 
-    // Create users in Drupal.
+    // Create users in Drupal. Do not let run apigee_edge_user_presave(), so
+    // the corresponding developer won't be created.
     _apigee_edge_set_sync_in_progress(TRUE);
-    for ($i = 0; $i < 1; $i++) {
-      $this->drupalUsers[$i] = $this->createAccount([], TRUE, $this->prefix, FALSE);
+    for ($i = 0; $i < 2; $i++) {
+      $user = $this->createAccount([], TRUE, $this->prefix);
+      foreach ($this->fields as $field_type => $data) {
+        $user->set($this->fieldNamePrefix . $data['name'], $data['data']);
+      }
+      $user->save();
+      $this->drupalUsers[$user->getEmail()] = $user;
     }
     _apigee_edge_set_sync_in_progress(FALSE);
 
-    $this->drupalLogin($this->rootUser);
+    // Create synchronized users and change attribute values only on Apigee
+    // Edge.
+    for ($i = 0; $i < 2; $i++) {
+      $user = $this->createAccount([], TRUE, $this->prefix);
+      foreach ($this->fields as $field_type => $data) {
+        $user->set($this->fieldNamePrefix . $data['name'], $data['data']);
+      }
+      // Set unlinked field on the user.
+      $user->set($this->fieldNamePrefix . 'invalid_email', 'valid.email@example.com');
+      $user->set($this->fieldNamePrefix . 'one_track_field', 'user');
+      $user->save();
+      $this->modifiedEdgeDevelopers[$user->getEmail()] = Developer::load($user->getEmail());
+
+      foreach ($this->fields as $field_type => $data) {
+        $formatter = $this->formatManager->lookupPluginForFieldType($field_type);
+        $this->modifiedEdgeDevelopers[$user->getEmail()]->setAttribute($data['name'], $formatter->encode($data['data_changed']));
+      }
+      // Set unlinked attribute on the developer.
+      $this->modifiedEdgeDevelopers[$user->getEmail()]->setAttribute('one_track_field', 'developer');
+      $this->modifiedEdgeDevelopers[$user->getEmail()]->setAttribute('invalid_email', 'invalid_email_address');
+      $this->modifiedEdgeDevelopers[$user->getEmail()]->save();
+    }
+
+    // Create synchronized users and change field values only in Drupal.
+    for ($i = 0; $i < 2; $i++) {
+      $user = $this->createAccount([], TRUE, $this->prefix);
+      foreach ($this->fields as $field_type => $data) {
+        $user->set($this->fieldNamePrefix . $data['name'], $data['data']);
+      }
+      $user->save();
+      $this->modifiedDrupalUsers[$user->getEmail()] = $user;
+
+      // Do not let run apigee_edge_user_presave(), so the corresponding
+      // developer won't be updated.
+      _apigee_edge_set_sync_in_progress(TRUE);
+      foreach ($this->fields as $field_type => $data) {
+        $this->modifiedDrupalUsers[$user->getEmail()]->set($this->fieldNamePrefix . $data['name'], $data['data_changed']);
+        $this->modifiedDrupalUsers[$user->getEmail()]->setChangedTime(time());
+        $this->modifiedDrupalUsers[$user->getEmail()]->save();
+      }
+      _apigee_edge_set_sync_in_progress(FALSE);
+
+      // Set unlinked field on both sides.
+      $this->modifiedDrupalUsers[$user->getEmail()]->set($this->fieldNamePrefix . 'one_track_field', 'user');
+      $this->modifiedDrupalUsers[$user->getEmail()]->save();
+      /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
+      $developer = Developer::load($user->getEmail());
+      $developer->setAttribute('one_track_field', 'developer');
+      $developer->save();
+    }
+
+    // Developer's username already exists. Should not be copied into Drupal.
+    Developer::create([
+      'email' => "{$this->prefix}.reserved@example.com",
+      'userName' => reset($this->drupalUsers)->getAccountName(),
+      'firstName' => $this->randomMachineName(),
+      'lastName' => $this->randomMachineName(),
+    ])->save();
+
+    // Do not block Drupal user if the corresponding developer's status is
+    // inactive.
+    $active_user = $this->createAccount([], TRUE, $this->prefix);
+    $dc = new DeveloperController($this->container->get('apigee_edge.sdk_connector')->getOrganization(), $this->container->get('apigee_edge.sdk_connector')->getClient());
+    $dc->setStatus($active_user->getEmail(), Developer::STATUS_INACTIVE);
+    $this->inactiveDeveloper = Developer::load($active_user->getEmail());
+    $this->assertEquals($this->inactiveDeveloper->getStatus(), Developer::STATUS_INACTIVE);
+  }
+
+  /**
+   * Creates fields for Drupal users.
+   */
+  protected function setUpUserFields() {
+    $text = $this->getRandomGenerator()->sentences(5);
+    $link = [
+      [
+        'title' => 'Example',
+        'options' => [],
+        'uri' => 'http://example.com',
+      ],
+    ];
+    $link_changed = [
+      [
+        'title' => 'Example_Changed',
+        'options' => [],
+        'uri' => 'http://example.com/changed',
+      ],
+    ];
+
+    $this->fields = [
+      'boolean' => [
+        'name' => strtolower($this->randomMachineName()),
+        'data' => [
+          ['value' => TRUE],
+        ],
+        'data_changed' => [
+          ['value' => FALSE],
+        ],
+      ],
+      'email' => [
+        'name' => strtolower($this->randomMachineName()),
+        'data' => [
+          ['value' => 'test@example.com'],
+        ],
+        'data_changed' => [
+          ['value' => 'test.changed@example.com'],
+        ],
+      ],
+      'timestamp' => [
+        'name' => strtolower($this->randomMachineName()),
+        'data' => [
+          ['value' => 1531212177],
+        ],
+        'data_changed' => [
+          ['value' => 1531000000],
+        ],
+      ],
+      'integer' => [
+        'name' => strtolower($this->randomMachineName()),
+        'data' => [
+          ['value' => 4],
+          ['value' => 9],
+        ],
+        'data_changed' => [
+          ['value' => 2],
+          ['value' => 8],
+          ['value' => 1],
+        ],
+      ],
+      'list_integer' => [
+        'name' => strtolower($this->randomMachineName()),
+        'settings' => [
+          'settings[allowed_values]' => implode(PHP_EOL, [1, 2, 3]),
+        ],
+        'data' => [
+          ['value' => 2],
+          ['value' => 3],
+        ],
+        'data_changed' => [
+          ['value' => 1],
+          ['value' => 3],
+        ],
+      ],
+      'list_string' => [
+        'name' => strtolower($this->randomMachineName()),
+        'settings' => [
+          'settings[allowed_values]' => implode(PHP_EOL, [
+            'qwer',
+            'asdf',
+            'zxcv',
+          ]),
+        ],
+        'data' => [
+          ['value' => 'qwer'],
+          ['value' => 'asdf'],
+          ['value' => 'zxcv'],
+        ],
+        'data_changed' => [
+          ['value' => 'qwer'],
+          ['value' => 'asdf'],
+        ],
+      ],
+      'string' => [
+        'name' => strtolower($this->randomMachineName()),
+        'data' => [
+          ['value' => $text],
+        ],
+        'data_changed' => [
+          ['value' => strrev($text)],
+        ],
+      ],
+      'string_long' => [
+        'name' => strtolower($this->randomMachineName()),
+        'data' => [
+          ['value' => $text],
+        ],
+        'data_changed' => [
+          ['value' => strrev($text)],
+        ],
+      ],
+      'link' => [
+        'name' => strtolower($this->randomMachineName()),
+        'data' => $link,
+        'data_changed' => $link_changed,
+      ],
+    ];
+
+    foreach ($this->fields as $field_type => $data) {
+      $this->fieldUIAddNewField(
+        '/admin/config/people/accounts',
+        $data['name'],
+        strtoupper($data['name']),
+        $field_type,
+        ($data['settings'] ?? []) + [
+          'cardinality' => -1,
+        ],
+        []
+      );
+    }
+
+    // Create a Drupal user field that is not linked to any Apigee Edge
+    // developer attribute. It should be unchanged after sync on both sides.
+    $this->fieldUIAddNewField(
+      '/admin/config/people/accounts',
+      'one_track_field',
+      strtoupper('one_track_field'),
+      'string',
+      [
+        'cardinality' => -1,
+      ],
+      []
+    );
+
+    // Create a Drupal user email field that has an invalid value on Apigee Edge
+    // (invalid email address). The invalid value should not be copied into the
+    // Drupal user's field.
+    $this->fieldUIAddNewField(
+      '/admin/config/people/accounts',
+      'invalid_email',
+      strtoupper('invalid_email'),
+      'email',
+      [
+        'cardinality' => -1,
+      ],
+      []
+    );
+
+    drupal_flush_all_caches();
+
+    // Set the fields to be synchronized.
+    $this->drupalGet(Url::fromRoute('apigee_edge.settings.developer.attributes'));
+    $full_field_names = [];
+    foreach ($this->fields as $field_type => $data) {
+      $full_field_name = "{$this->fieldNamePrefix}{$data['name']}";
+      $this->getSession()->getPage()->checkField("attributes[{$full_field_name}]");
+      $full_field_names[] = $full_field_name;
+    }
+    $this->getSession()->getPage()->checkField("attributes[{$this->fieldNamePrefix}invalid_email]");
+    $full_field_names[] = "{$this->fieldNamePrefix}invalid_email";
+    $this->getSession()->getPage()->pressButton('Save configuration');
+    $this->assertSession()->pageTextContains('The configuration options have been saved.');
+    $user_fields_to_sync = $this->config('apigee_edge.sync')->get('user_fields_to_sync');
+    $this->assertEquals(asort($user_fields_to_sync), asort($full_field_names));
   }
 
   /**
    * {@inheritdoc}
    */
   protected function tearDown() {
-    $remote_ids = array_map(function ($record): string {
-      return $record['email'];
-    }, $this->edgeDevelopers);
-    $drupal_emails = array_map(function (UserInterface $user): string {
-      return $user->getEmail();
-    }, $this->drupalUsers);
-    $ids = array_merge($remote_ids, $drupal_emails);
-    foreach ($ids as $id) {
-      Developer::load($id)->delete();
+    $developers_to_delete = array_merge($this->edgeDevelopers, $this->drupalUsers, $this->modifiedEdgeDevelopers, $this->modifiedDrupalUsers);
+    foreach ($developers_to_delete as $email => $entity) {
+      try {
+        Developer::load($email)->delete();
+      }
+      catch (\Exception $exception) {
+      }
     }
     parent::tearDown();
   }
@@ -119,72 +428,98 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
    * Verifies that the Drupal users and the Edge developers are synchronized.
    */
   protected function verify() {
-    $all_users = [];
-    /** @var \Drupal\user\UserInterface $account */
-    foreach (User::loadMultiple() as $account) {
-      $email = $account->getEmail();
-      if ($email && $email !== 'admin@example.com') {
-        $this->assertTrue($this->filter ? (bool) preg_match($this->filter, $email) : TRUE, "Email ({$email}) is filtered properly.");
-        $all_users[$email] = $email;
+    $developers_to_verify = array_merge($this->edgeDevelopers, $this->drupalUsers, $this->modifiedEdgeDevelopers, $this->modifiedDrupalUsers);
+    foreach ($developers_to_verify as $email => $entity) {
+      /** @var \Drupal\user\UserInterface $user */
+      $user = user_load_by_mail($email);
+      /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
+      $developer = Developer::load($email);
+
+      $this->assertNotEmpty($user, 'User found: ' . $email);
+      $this->assertNotEmpty($developer, 'Developer found: ' . $email);
+      $this->assertEquals($developer->getUserName(), $user->getAccountName());
+      $this->assertEquals($developer->getFirstName(), $user->get('first_name')->value);
+      $this->assertEquals($developer->getLastName(), $user->get('last_name')->value);
+
+      if (array_key_exists($email, $this->modifiedDrupalUsers) || array_key_exists($email, $this->modifiedEdgeDevelopers)) {
+        // Unlinked field/attribute should be unchanged on both sides.
+        $this->assertEquals($developer->getAttributeValue('one_track_field'), 'developer');
+        $this->assertEquals($user->get($this->fieldNamePrefix . 'one_track_field')->value, 'user');
+
+        foreach ($this->fields as $field_type => $data) {
+          $formatter = $this->formatManager->lookupPluginForFieldType($field_type);
+          if ($formatter instanceof JSON) {
+            $this->assertJsonStringEqualsJsonString($developer->getAttributeValue($data['name']), $formatter->encode($user->get($this->fieldNamePrefix . $data['name'])->getValue()));
+            $this->assertJsonStringEqualsJsonString($developer->getAttributeValue($data['name']), $formatter->encode($data['data_changed']));
+          }
+          elseif ($formatter instanceof CSV) {
+            $this->assertEquals($developer->getAttributeValue($data['name']), $formatter->encode($user->get($this->fieldNamePrefix . $data['name'])->getValue()));
+            $this->assertEquals($developer->getAttributeValue($data['name']), $formatter->encode($data['data_changed']));
+          }
+        }
+      }
+      else {
+        foreach ($this->fields as $field_type => $data) {
+          $formatter = $this->formatManager->lookupPluginForFieldType($field_type);
+          if ($formatter instanceof JSON) {
+            $this->assertJsonStringEqualsJsonString($developer->getAttributeValue($data['name']), $formatter->encode($user->get($this->fieldNamePrefix . $data['name'])->getValue()));
+            $this->assertJsonStringEqualsJsonString($developer->getAttributeValue($data['name']), $formatter->encode($data['data']));
+          }
+          elseif ($formatter instanceof CSV) {
+            $this->assertEquals($developer->getAttributeValue($data['name']), $formatter->encode($user->get($this->fieldNamePrefix . $data['name'])->getValue()));
+            $this->assertEquals($developer->getAttributeValue($data['name']), $formatter->encode($data['data']));
+          }
+        }
+      }
+
+      // Invalid email address should not be copied into the corresponding
+      // Drupal user field.
+      if ($developer->hasAttribute('invalid_email')) {
+        if (array_key_exists($email, $this->edgeDevelopers)) {
+          $this->assertNull($user->get("{$this->fieldNamePrefix}invalid_email")->value);
+        }
+        elseif (array_key_exists($email, $this->modifiedEdgeDevelopers)) {
+          $this->assertEquals($user->get("{$this->fieldNamePrefix}invalid_email")->value, 'valid.email@example.com');
+        }
       }
     }
 
-    unset($all_users[$this->rootUser->getEmail()]);
+    // Developer with existing username is not copied into Drupal.
+    $this->assertFalse(user_load_by_mail("{$this->prefix}.reserved@example.com"));
 
-    foreach ($this->edgeDevelopers as $edgeDeveloper) {
-      /** @var \Drupal\user\Entity\User $account */
-      $user = user_load_by_mail($edgeDeveloper->getEmail());
-      $this->assertNotEmpty($user, 'Account found: ' . $edgeDeveloper->getEmail());
-      $this->assertEquals($edgeDeveloper->getUserName(), $user->getAccountName());
-      $this->assertEquals($edgeDeveloper->getFirstName(), $user->get('first_name')->value);
-      $this->assertEquals($edgeDeveloper->getLastName(), $user->get('last_name')->value);
+    // Drupal user's status is active.
+    /** @var \Drupal\user\UserInterface $active_user */
+    $active_user = user_load_by_mail($this->inactiveDeveloper->getEmail());
+    $this->assertTrue($active_user->isActive());
 
-      unset($all_users[$edgeDeveloper->getEmail()]);
-    }
-
-    foreach ($this->drupalUsers as $drupalUser) {
-      /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
-      $developer = Developer::load($drupalUser->getEmail());
-      $this->assertNotEmpty($developer, 'Developer found on edge.');
-      $this->assertEquals($drupalUser->getAccountName(), $developer->getUserName());
-      $this->assertEquals($drupalUser->get('first_name')->value, $developer->getFirstName());
-      $this->assertEquals($drupalUser->get('last_name')->value, $developer->getLastName());
-
-      unset($all_users[$drupalUser->getEmail()]);
-    }
-
-    $this->assertEquals([], $all_users, 'Only the necessary users were synced. ' . implode(', ', $all_users));
+    // Only the necessary test users were created in Drupal besides the
+    // inactive developer's, anonymous and admin users.
+    $this->assertEquals(count(User::loadMultiple()), count($developers_to_verify) + 3);
   }
 
   /**
-   * Tests Drupal user synchronization.
-   *
-   * @throws \Behat\Mink\Exception\ResponseTextException
+   * Tests developer synchronization.
    */
-  public function testUserSync() {
-    $this->drupalGet('/admin/config/apigee-edge/developer-settings/sync');
-    $this->clickLinkProperly(t('Now'));
-    $this->assertSession()->pageTextContains(t('Users are in sync with Edge.'));
+  public function testDeveloperSync() {
+    $this->drupalGet(Url::fromRoute('apigee_edge.settings.developer.sync'));
+    $this->clickLinkProperly('Now');
+    $this->assertSession()->pageTextContains('Apigee Edge developers are in sync with Drupal users.');
     $this->verify();
   }
 
   /**
-   * Tests scheduled Drupal user synchronization.
-   *
-   * @throws \Behat\Mink\Exception\ResponseTextException
-   * @throws \Drupal\Component\Plugin\Exception\PluginException
-   * @throws \Exception
+   * Tests scheduled developer synchronization.
    */
-  public function testUserAsync() {
-    $this->drupalGet('/admin/config/apigee-edge/developer-settings/sync');
-    $this->clickLinkProperly(t('Background'));
-    $this->assertSession()->pageTextContains(t('User synchronization is scheduled.'));
+  public function testDeveloperAsync() {
+    $this->drupalGet(Url::fromRoute('apigee_edge.settings.developer.sync'));
+    $this->clickLinkProperly('Background');
+    $this->assertSession()->pageTextContains('Developer synchronization is scheduled.');
     /** @var \Drupal\Core\Queue\QueueFactory $queue_service */
-    $queue_service = \Drupal::service('queue');
+    $queue_service = $this->container->get('queue');
     /** @var \Drupal\Core\Queue\QueueInterface $queue */
     $queue = $queue_service->get('apigee_edge_job');
     /** @var \Drupal\Core\Queue\QueueWorkerManagerInterface $queue_worker_manager */
-    $queue_worker_manager = \Drupal::service('plugin.manager.queue_worker');
+    $queue_worker_manager = $this->container->get('plugin.manager.queue_worker');
     /** @var \Drupal\Core\Queue\QueueWorkerInterface $worker */
     $worker = $queue_worker_manager->createInstance('apigee_edge_job');
     while (($item = $queue->claimItem())) {
@@ -195,19 +530,26 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
-   * Tests the Drupal user synchronization started from the CLI.
+   * Tests the developer synchronization started from the CLI.
    */
-  public function testCliUserSync() {
+  public function testCliDeveloperSync() {
     $cli_service = $this->container->get('apigee_edge.cli');
     $input = new ArgvInput();
     $output = new BufferedOutput();
-
     $cli_service->sync(new SymfonyStyle($input, $output), 't');
-
     $printed_output = $output->fetch();
 
-    foreach ($this->edgeDevelopers as $edge_developer) {
-      $this->assertContains($edge_developer['email'], $printed_output);
+    foreach ($this->edgeDevelopers as $email => $developer) {
+      $this->assertContains("Copying developer {$email} to Drupal from Apigee Edge.", $printed_output);
+    }
+    foreach ($this->drupalUsers as $email => $user) {
+      $this->assertContains("Copying user {$email} to Apigee Edge from Drupal.", $printed_output);
+    }
+    foreach ($this->modifiedEdgeDevelopers as $email => $developer) {
+      $this->assertContains("Refreshing user {$email} in Drupal.", $printed_output);
+    }
+    foreach ($this->modifiedDrupalUsers as $email => $user) {
+      $this->assertContains("Refreshing developer {$email} on Apigee Edge.", $printed_output);
     }
 
     $this->verify();
