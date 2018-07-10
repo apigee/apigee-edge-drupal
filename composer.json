@@ -6,6 +6,7 @@
     "require": {
         "php": ">=7.1",
         "apigee/apigee-client-php": "^2.0",
+        "cweagans/composer-patches": "^1.6.5",
         "drupal/core": "^8.5",
         "drupal/entity": "^1.0",
         "drupal/key": "^1.7",
@@ -14,7 +15,6 @@
     "require-dev": {
         "behat/mink" : "dev-master#9ea1cebe",
         "composer/installers": "^1.2",
-        "cweagans/composer-patches": "^1.6.5",
         "drupal-composer/drupal-scaffold": "^2.2",
         "drush/drush": "^9.0",
         "egulias/email-validator": "1.2.14",
