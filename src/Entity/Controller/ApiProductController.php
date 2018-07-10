@@ -21,7 +21,8 @@
 namespace Drupal\apigee_edge\Entity\Controller;
 
 use Apigee\Edge\Api\Management\Controller\ApiProductController as EdgeApiProductController;
-use Drupal\apigee_edge\Entity\ApiProduct;
+use Apigee\Edge\ClientInterface;
+use Drupal\apigee_edge\Entity\ApiProductInterface;
 
 /**
  * Advanced version of Apigee Edge SDK's API product controller.
@@ -30,10 +31,40 @@ class ApiProductController extends EdgeApiProductController implements DrupalEnt
   use DrupalEntityControllerAwareTrait;
 
   /**
+   * @var string
+   */
+  private $entityClass;
+
+  /**
+   * ApiProductController constructor.
+   *
+   * @param string $organization
+   *   The organization name.
+   * @param \Apigee\Edge\ClientInterface $client
+   *   The API client.
+   * @param string $entityClass
+   *   The FQCN of the entity class that is used in Drupal.
+   * @param array $entityNormalizers
+   *   Array of entity normalizers.
+   *
+   * @throws \ReflectionException
+   * @throws \InvalidArgumentException
+   */
+  public function __construct(string $organization, ClientInterface $client, string $entityClass, array $entityNormalizers = []) {
+    parent::__construct($organization, $client, $entityNormalizers);
+    $interface = ApiProductInterface::class;
+    $rc = new \ReflectionClass($entityClass);
+    if (!$rc->implementsInterface($interface)) {
+      throw new \InvalidArgumentException("Entity class must implement {$interface}.");
+    }
+    $this->entityClass = $entityClass;
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function getEntityClass(): string {
-    return ApiProduct::class;
+    return $this->entityClass;
   }
 
 }

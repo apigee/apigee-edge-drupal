@@ -20,7 +20,6 @@
 namespace Drupal\apigee_edge\Entity\Form;
 
 use Drupal\apigee_edge\Entity\ApiProductInterface;
-use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialController;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Utility\Xss;
@@ -202,12 +201,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
     $redirect_user = FALSE;
 
     if ($config->get('user_select')) {
-      $dacc = new DeveloperAppCredentialController(
-        $this->sdkConnector->getOrganization(),
-        $this->entity->getDeveloperId(),
-        $this->entity->getName(),
-        $this->sdkConnector->getClient()
-      );
+      $dacc = $this->getDeveloperAppCredentialController($this->entity);
 
       // $this->entity->getCredentials() always returns the already stored
       // credentials on Apigee Edge.

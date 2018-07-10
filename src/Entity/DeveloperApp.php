@@ -279,8 +279,9 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
       $developerAppStorage = $this->entityTypeManager()->getStorage('developer_app');
       // Use our own developer controller because it ensures that loaded app
       // credentials also get stored in user's private credential storage.
+      /** @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerInterface $dac */
       $dac = $developerAppStorage->getController($sdkConnector);
-      /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $app */
+      $dac->removeEntityFromCache($this);
       $dac->load($this->appId);
     }
     $credentials = $this->getAppCredentialsFromStorage($this->developerId, $this->name);
