@@ -15,7 +15,7 @@ The Apigee Edge module enables you to integrate Drupal 8 with Apigee Edge.
    cd /path/to/drupal/root
    composer require drupal/apigee_edge
    ```
-   
+
     For more information about installing contributed modules using composer, see [the official documentation](https://www.drupal.org/docs/develop/using-composer/using-composer-to-manage-drupal-site-dependencies#managing-contributed)
 1. Click **Extend** in the Drupal administration menu.
 1. Select the **Apigee Edge** module.
@@ -29,10 +29,10 @@ The Apigee Edge module enables you to integrate Drupal 8 with Apigee Edge.
 * **Please check [composer.json](https://github.com/apigee/apigee-edge-drupal/blob/8.x-1.x/composer.json) for required patches.** Patches prefixed with "(For testing)" are only required for running tests. Those are not necessary for using this module. Patches can be applied with the [cweagans/composer-patches](https://packagist.org/packages/cweagans/composer-patches) the plugin automatically or manually.
 * (For developers) The locked commit from `behat/mink` library is required otherwise tests may fail. This caused by a Drupal core [bug](https://www.drupal.org/project/drupal/issues/2956279). Please see the related pull request for behat/mink [here](https://github.com/minkphp/Mink/pull/760).
 
-### Troubleshooting 
+### Troubleshooting
 
 * **[File entity](https://www.drupal.org/project/file_entity) module.** If you installed the File entity module then you are going to need the latest patch from [this issue](https://www.drupal.org/project/file_entity/issues/2977747) otherwise you can run into some problems.
-* **[Key](https://www.drupal.org/project/key) module.** If you are using OAuth then you are going to need the latest patch from [this issue](https://www.drupal.org/project/key/issues/2982124#comment-12665544) otherwise you can run into some problems.
+* **[Key](https://www.drupal.org/project/key) module.** If you are using OAuth then you are going to need the latest patch from [this issue](https://www.drupal.org/project/key/issues/2982124) otherwise you can run into some problems.
 
 ### Development
 

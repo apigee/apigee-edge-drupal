@@ -1,0 +1,5 @@
+services:
+  apigee_edge.event_subscriber.override_app_keys_on_generate:
+    class: Drupal\apigee_edge_test_app_keys\EventSubscriber\OverrideAppKeysOnGenerate
+    tags:
+      - { name: event_subscriber }

@@ -20,6 +20,7 @@
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Drupal\apigee_edge\Entity\Developer;
+use Drupal\apigee_edge\Entity\DeveloperApp;
 
 /**
  * Developer entity query test.
@@ -42,7 +43,7 @@ class QueryTest extends ApigeeEdgeFunctionalTestBase {
    */
   protected $prefix;
 
-  protected $edgeDevelopers = [
+  protected $developerData = [
     [
       'email' => 'test00@example.com',
       'userName' => 'test00',
@@ -76,6 +77,10 @@ class QueryTest extends ApigeeEdgeFunctionalTestBase {
   ];
 
   /**
+   * @var \Drupal\apigee_edge\Entity\DeveloperInterface[]*/
+  protected $edgeDevelopers = [];
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp() {
@@ -83,9 +88,11 @@ class QueryTest extends ApigeeEdgeFunctionalTestBase {
 
     $this->prefix = $this->randomMachineName();
 
-    foreach ($this->edgeDevelopers as &$edgeDeveloper) {
-      $edgeDeveloper['email'] = "{$this->prefix}.{$edgeDeveloper['email']}";
-      Developer::create($edgeDeveloper)->save();
+    foreach ($this->developerData as $data) {
+      $data['email'] = "{$this->prefix}.{$data['email']}";
+      $developer = Developer::create($data);
+      $developer->save();
+      $this->edgeDevelopers[$data['email']] = $developer;
     }
 
     $this->storage = \Drupal::entityTypeManager()->getStorage('developer');
@@ -124,11 +131,70 @@ class QueryTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
+   * Test for "smart" queries which are trying to reduce API calls.
+   */
+  public function testSmartQueries() {
+    // Make sure that all developer has an app.
+    foreach ($this->edgeDevelopers as $developer) {
+      $app = DeveloperApp::create([
+        'name' => $this->randomMachineName(),
+        'status' => DeveloperApp::STATUS_APPROVED,
+        'developerId' => $developer->getDeveloperId(),
+      ]);
+      $app->save();
+    }
+
+    // When primary id(s) of entities is set to something empty we should
+    // get back an empty result.
+    $result = $this->storage->getQuery()
+      ->condition('email', NULL)
+      ->count()->execute();
+    $this->assertEquals(0, $result);
+    $result = $this->storage->getQuery()
+      ->condition('developerId', NULL)
+      ->count()->execute();
+    $this->assertEquals(0, $result);
+
+    $developer = reset($this->edgeDevelopers);
+    /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperAppStorageInterface $dev_app_storage */
+    $dev_app_storage = \Drupal::entityTypeManager()->getStorage('developer_app');
+    $result = $dev_app_storage->getQuery()
+      ->condition('developerId', $developer->getDeveloperId())
+      ->count()->execute();
+    $this->assertEquals(1, $result);
+    // If developer id - which can be used to filter apps directly on Apigee
+    // Edge by calling the proper API endpoint - is set to something empty
+    // we should get back an empty result.
+    $result = $dev_app_storage->getQuery()
+      ->condition('developerId', NULL)
+      ->count()->execute();
+    $this->assertEquals(0, $result);
+    $result = $dev_app_storage->getQuery()
+      ->condition('email', $developer->getEmail())
+      ->count()->execute();
+    $this->assertEquals(1, $result);
+    // If developer email - which can be used to filter apps directly on Apigee
+    // Edge by calling the proper API endpoint - is set to something empty
+    // we should get back an empty result.
+    $result = $dev_app_storage->getQuery()
+      ->condition('email', NULL)
+      ->count()->execute();
+    $this->assertEquals(0, $result);
+    // If app name is set to something empty then query should not fail and
+    // we should get back an empty list even if the developer has apps.
+    $result = $dev_app_storage->getQuery()
+      ->condition('email', $developer->getEmail())
+      ->condition('name', NULL)
+      ->count()->execute();
+    $this->assertEquals(0, $result);
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function tearDown() {
     foreach ($this->edgeDevelopers as $edgeDeveloper) {
-      Developer::load($edgeDeveloper['email'])->delete();
+      $edgeDeveloper->delete();
     }
     parent::tearDown();
   }
