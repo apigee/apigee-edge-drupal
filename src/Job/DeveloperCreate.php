@@ -19,11 +19,7 @@
 
 namespace Drupal\apigee_edge\Job;
 
-use Apigee\Edge\Exception\ClientErrorException;
 use Drupal\apigee_edge\Entity\Developer;
-use Drupal\apigee_edge\Entity\DeveloperInterface;
-use Drupal\apigee_edge\Job;
-use Drupal\user\UserInterface;
 
 /**
  * A job to create a developer on Apigee Edge.
@@ -31,61 +27,41 @@ use Drupal\user\UserInterface;
 class DeveloperCreate extends EdgeJob {
 
   /**
-   * The Apigee Edge developer to create.
+   * The Drupal user's email.
    *
-   * @var \Drupal\apigee_edge\Entity\DeveloperInterface
+   * @var string
    */
-  protected $developer;
-
-  /**
-   * Whether to fail if a developer already exists on Apigee Edge.
-   *
-   * @var bool
-   */
-  protected $failWhenExists;
+  protected $email;
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(DeveloperInterface $developer, $fail_when_exists = FALSE) {
+  public function __construct(string $email) {
     parent::__construct();
-    $this->developer = $developer;
-    $this->failWhenExists = $fail_when_exists;
+    $this->email = $email;
   }
 
   /**
    * {@inheritdoc}
    */
   protected function executeRequest() {
-    try {
-      $this->developer->save();
-    }
-    catch (ClientErrorException $ex) {
-      if ($this->failWhenExists || $ex->getEdgeErrorCode() !== Developer::APIGEE_EDGE_ERROR_CODE_DEVELOPER_ALREADY_EXISTS) {
-        throw $ex;
-      }
-      else {
-        $this->recordMessage(t("%email developer already exists on Apigee Edge.", [
-          '%email' => $this->developer->getEmail(),
-        ])->render());
-      }
-    }
-  }
-
-  /**
-   * Creates a job to create a remote developer for a Drupal user.
-   *
-   * @param \Drupal\user\UserInterface $user
-   *   Local Drupal user.
-   *
-   * @return \Drupal\apigee_edge\Job|null
-   *   The created job or null if properties are missing on the Drupal user.
-   */
-  public static function createForUser(UserInterface $user): ?Job {
+    /** @var \Drupal\user\UserInterface $user */
+    $user = user_load_by_mail($this->email);
     /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
-    $developer = Developer::createFromDrupalUser($user);
+    $developer = Developer::createFromDrupalUser($user, $this);
 
-    return new static($developer);
+    try {
+      $developer->save();
+    }
+    catch (\Exception $exception) {
+      $message = "Skipping creating %email developer: %message";
+      $context = [
+        '%email' => $this->email,
+        '%message' => (string) $exception->getMessage(),
+      ];
+      \Drupal::logger('apigee_edge_sync')->error($message, $context);
+      $this->recordMessage(t($message, $context)->render());
+    }
   }
 
   /**
@@ -93,7 +69,7 @@ class DeveloperCreate extends EdgeJob {
    */
   public function __toString(): string {
     return t('Copying user (@mail) to Apigee Edge from Drupal.', [
-      '@mail' => $this->developer->getEmail(),
+      '@mail' => $this->email,
     ])->render();
   }
 

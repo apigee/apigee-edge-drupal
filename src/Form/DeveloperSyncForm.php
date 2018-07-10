@@ -87,7 +87,7 @@ class DeveloperSyncForm extends FormBase {
     $form['sync']['sync_submit'] = [
       '#title' => $this->t('Now'),
       '#type' => 'link',
-      '#url' => $this->buildUrl('apigee_edge.user_sync.run'),
+      '#url' => $this->buildUrl('apigee_edge.developer_sync.run'),
       '#attributes' => [
         'class' => [
           'button',
@@ -98,7 +98,7 @@ class DeveloperSyncForm extends FormBase {
     $form['sync']['background_sync_submit'] = [
       '#title' => $this->t('Background'),
       '#type' => 'link',
-      '#url' => $this->buildUrl('apigee_edge.user_sync.schedule'),
+      '#url' => $this->buildUrl('apigee_edge.developer_sync.schedule'),
       '#attributes' => [
         'class' => [
           'button',

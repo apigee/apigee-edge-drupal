@@ -79,24 +79,31 @@ class DeveloperUpdate extends EdgeJob {
       $format_manager = \Drupal::service('plugin.manager.apigee_field_storage_format');
       foreach ($user_fields_to_sync as $field_name) {
         $field_definition = $user->getFieldDefinition($field_name);
-        // If the field does not exist, then skip.
+        // If the field does not exist, then skip it.
         if (!isset($field_definition)) {
-          $this->recordMessage(t("Skipping %email developer's %attribute_name attribute update, because %field_name field does not exist.", [
+          $message = "Skipping %email developer's %attribute_name attribute update, because %field_name field does not exist.";
+          $context = [
             '%email' => $this->email,
             '%attribute_name' => static::getAttributeName($field_name),
             '%field_name' => $field_definition->getName(),
-          ])->render());
+          ];
+          \Drupal::logger('apigee_edge_sync')->warning($message, $context);
+          $this->recordMessage(t($message, $context)->render());
           continue;
         }
         $field_type = $field_definition->getType();
         $formatter = $format_manager->lookupPluginForFieldType($field_type);
-        // If there is no available storage formatter for the field, then skip.
+        // If there is no available storage formatter for the field, then skip
+        // it.
         if (!isset($formatter)) {
-          $this->recordMessage(t("Skipping %email developer's %attribute_name attribute update, because there is no available storage formatter for %field_type field type.", [
+          $message = "Skipping %email developer's %attribute_name attribute update, because there is no available storage formatter for %field_type field type.";
+          $context = [
             '%email' => $this->email,
             '%attribute_name' => static::getAttributeName($field_name),
             '%field_type' => $field_type,
-          ])->render());
+          ];
+          \Drupal::logger('apigee_edge_sync')->warning($message, $context);
+          $this->recordMessage(t($message, $context)->render());
           continue;
         }
 
@@ -110,7 +117,17 @@ class DeveloperUpdate extends EdgeJob {
     }
 
     if ($this->executeUpdate) {
-      $developer->save();
+      try {
+        $developer->save();
+      }
+      catch (\Exception $exception) {
+        $message = "Skipping refreshing %email developer: %message";
+        $context = [
+          '%message' => (string) $exception,
+        ];
+        \Drupal::logger('apigee_edge_sync')->error($message, $context);
+        $this->recordMessage(t($message, $context)->render());
+      }
     }
   }
 

@@ -1342,11 +1342,11 @@ function _apigee_edge_user_has_an_app_with_product(string $productName, AccountI
  *   TRUE if the developer-user synchronization is in progress, else FALSE.
  */
 function _apigee_edge_set_sync_in_progress(?bool $in_progress = NULL) {
-  static $i;
+  static $state;
   if ($in_progress !== NULL) {
-    $i = $in_progress;
+    $state = $in_progress;
   }
-  return $i ?? FALSE;
+  return $state ?? FALSE;
 }
 
 /**

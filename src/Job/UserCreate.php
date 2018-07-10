@@ -70,9 +70,12 @@ class UserCreate extends EdgeJob {
       // unique in Apigee Edge.
       /** @var \Symfony\Component\Validator\ConstraintViolation $violation */
       if (get_class($violation->getConstraint()) === UserNameUnique::class) {
-        $this->recordMessage(t('Skipping creating %email user: %message', [
+        $message = "Skipping creating %email user: %message";
+        $context = [
           '%message' => $violation->getMessage(),
-        ])->render());
+        ];
+        \Drupal::logger('apigee_edge_sync')->error($message, $context);
+        $this->recordMessage(t($message, $context)->render());
         return;
       }
     }
@@ -83,30 +86,39 @@ class UserCreate extends EdgeJob {
       $format_manager = \Drupal::service('plugin.manager.apigee_field_storage_format');
       foreach ($user_fields_to_sync as $field_name) {
         if (!array_key_exists(static::getAttributeName($field_name), $developer->getAttributes()->values())) {
-          $this->recordMessage(t('Skipping creating %email user field, because the developer does not have %attribute_name attribute on Apigee Edge.', [
+          $message = "Skipping creating %email user field, because the developer does not have %attribute_name attribute on Apigee Edge.";
+          $context = [
             '%email' => $this->email,
             '%attribute_name' => static::getAttributeName($field_name),
-          ])->render());
+          ];
+          \Drupal::logger('apigee_edge_sync')->warning($message, $context);
+          $this->recordMessage(t($message, $context)->render());
           continue;
         }
         $field_definition = $user->getFieldDefinition($field_name);
-        // If the field does not exist, then skip.
+        // If the field does not exist, then skip it.
         if (!isset($field_definition)) {
-          $this->recordMessage(t('Skipping creating %email user field, because %field_name field does not exist.', [
+          $message = "Skipping creating %email user field, because %field_name field does not exist.";
+          $context = [
             '%email' => $this->email,
             '%field_name' => $field_name,
-          ])->render());
+          ];
+          \Drupal::logger('apigee_edge_sync')->warning($message, $context);
+          $this->recordMessage(t($message, $context)->render());
           continue;
         }
         $field_type = $field_definition->getType();
         $formatter = $format_manager->lookupPluginForFieldType($field_type);
-        // If there is no available storage formatter for the field, then skip.
+        // If there is no available storage formatter for the field, then skip it.
         if (!isset($formatter)) {
-          $this->recordMessage(t("Skipping creating %email user's %field_name field, because there is no available storage formatter for %field_type field type.", [
+          $message = "Skipping creating %email user's %field_name field, because there is no available storage formatter for %field_type field type.";
+          $context = [
             '%email' => $this->email,
             '%field_name' => $field_name,
             '%field_type' => $field_type,
-          ])->render());
+          ];
+          \Drupal::logger('apigee_edge_sync')->warning($message, $context);
+          $this->recordMessage(t($message, $context)->render());
           continue;
         }
 
@@ -118,11 +130,14 @@ class UserCreate extends EdgeJob {
         if ($field_violations->count() > 0) {
           $user->set($field_name, $rollback);
           foreach ($field_violations as $violation) {
-            $this->recordMessage(t("Skipping creating %email user's %field_name field: %message", [
+            $message = "Skipping creating %email user's %field_name field: %message";
+            $context = [
               '%email' => $this->email,
               '%field_name' => $field_name,
               '%message' => $violation->getMessage(),
-            ])->render());
+            ];
+            \Drupal::logger('apigee_edge_sync')->warning($message, $context);
+            $this->recordMessage(t($message, $context)->render());
           }
         }
       }
@@ -136,9 +151,13 @@ class UserCreate extends EdgeJob {
       $user->save();
     }
     catch (\Exception $exception) {
-      $this->recordMessage(t('Skipping creating %email user: %message', [
+      $message = "Skipping creating %email user: %message";
+      $context = [
+        '%email' => $this->email,
         '%message' => (string) $exception,
-      ])->render());
+      ];
+      \Drupal::logger('apigee_edge_sync')->error($message, $context);
+      $this->recordMessage(t($message, $context)->render());
     }
     finally {
       _apigee_edge_set_sync_in_progress(FALSE);

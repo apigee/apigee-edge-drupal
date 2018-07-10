@@ -20,6 +20,7 @@
 namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Api\Management\Entity\Developer as EdgeDeveloper;
+use Drupal\apigee_edge\Job;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
@@ -88,11 +89,14 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
    *
    * @param \Drupal\user\UserInterface $user
    *   The Drupal user account.
+   * @param \Drupal\apigee_edge\Job $developer_create_job
+   *   The DeveloperCreate job object if this function is called from
+   *   developer synchronization.
    *
    * @return \Drupal\apigee_edge\Entity\DeveloperInterface
    *   The developer entity.
    */
-  public static function createFromDrupalUser(UserInterface $user): DeveloperInterface {
+  public static function createFromDrupalUser(UserInterface $user, Job $developer_create_job = NULL): DeveloperInterface {
     $developer_data = [
       'email' => $user->getEmail(),
       'originalEmail' => isset($user->original) ? $user->original->getEmail() : $user->getEmail(),
@@ -109,24 +113,40 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
     $format_manager = \Drupal::service('plugin.manager.apigee_field_storage_format');
     foreach (\Drupal::config('apigee_edge.sync')->get('user_fields_to_sync') as $field_name) {
       $field_definition = $user->getFieldDefinition($field_name);
-      // If the field does not exist, then skip.
+      // If the field does not exist, then skip it.
       if (!isset($field_definition)) {
-        \Drupal::logger('apigee_edge')->warning("Skipping %mail developer's %attribute_name attribute update, because %field_name field does not exist.", [
+        $message = "Skipping %mail developer's %attribute_name attribute update, because %field_name field does not exist.";
+        $context = [
           '%mail' => $user->getEmail(),
           '%attribute_name' => static::getAttributeName($field_name),
           '%field_name' => $field_name,
-        ]);
+        ];
+        if (isset($developer_create_job)) {
+          \Drupal::logger('apigee_edge')->warning($message, $context);
+          $developer_create_job->recordMessage(t($message, $context)->render());
+        }
+        else {
+          \Drupal::logger('apigee_edge_sync')->warning($message, $context);
+        }
         continue;
       }
       $field_type = $field_definition->getType();
       $formatter = $format_manager->lookupPluginForFieldType($field_type);
-      // If there is no available storage formatter for the field, then skip.
+      // If there is no available storage formatter for the field, then skip it.
       if (!isset($formatter)) {
-        \Drupal::logger('apigee_edge')->warning("Skipping %mail developer's %attribute_name attribute update, because there is no available storage formatter for %field_type field type.", [
+        $message = "Skipping %mail developer's %attribute_name attribute update, because there is no available storage formatter for %field_type field type.";
+        $context = [
           '%mail' => $user->getEmail(),
           '%attribute_name' => static::getAttributeName($field_name),
           '%field_type' => $field_type,
-        ]);
+        ];
+        if (isset($developer_create_job)) {
+          \Drupal::logger('apigee_edge')->warning($message, $context);
+          $developer_create_job->recordMessage(t($message, $context)->render());
+        }
+        else {
+          \Drupal::logger('apigee_edge_sync')->warning($message, $context);
+        }
         continue;
       }
 

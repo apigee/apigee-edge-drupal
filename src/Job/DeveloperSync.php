@@ -35,6 +35,8 @@ class DeveloperSync extends EdgeJob {
    * Format: strtolower(email) => Developer.
    *
    * @var \Drupal\apigee_edge\Entity\DeveloperInterface[]
+   *
+   * @see https://www.drupal.org/project/drupal/issues/2490294
    */
   protected $edgeDevelopers = [];
 
@@ -44,6 +46,8 @@ class DeveloperSync extends EdgeJob {
    * Format: strtolower(mail) => User.
    *
    * @var \Drupal\user\UserInterface[]
+   *
+   * @see https://www.drupal.org/project/drupal/issues/2490294
    */
   protected $drupalUsers = [];
 
@@ -70,6 +74,8 @@ class DeveloperSync extends EdgeJob {
    *
    * @return \Drupal\user\UserInterface[]
    *   Format: strtolower(mail) => User
+   *
+   * @see https://www.drupal.org/project/drupal/issues/2490294
    */
   protected function loadUsers(): array {
     $users = [];
@@ -89,6 +95,8 @@ class DeveloperSync extends EdgeJob {
    *
    * @return \Drupal\apigee_edge\Entity\DeveloperInterface[]
    *   Format: strtolower(email) => Developer
+   *
+   * @see https://www.drupal.org/project/drupal/issues/2490294
    */
   protected function loadDevelopers(): array {
     $developers = [];
@@ -129,13 +137,15 @@ class DeveloperSync extends EdgeJob {
       $user = $this->drupalUsers[$clean_email];
 
       $last_modified_delta = $developer->getLastModifiedAt()->getTimestamp() - $user->getChangedTime();
-      // Update Drupal user because the Apigee Edge developer is fresher.
+      // Update Drupal user because the Apigee Edge developer is the most
+      // recent.
       if ($last_modified_delta >= 0) {
         $updateUserJob = new UserUpdate($user->getEmail());
         $updateUserJob->setTag($this->getTag());
         $this->scheduleJob($updateUserJob);
       }
-      // Update Apigee Edge developer because the Drupal user is fresher.
+      // Update Apigee Edge developer because the Drupal user is the most
+      // recent.
       elseif ($last_modified_delta < 0) {
         $updateDeveloperJob = new DeveloperUpdate($developer->getEmail());
         $updateDeveloperJob->setTag($this->getTag());
@@ -155,14 +165,7 @@ class DeveloperSync extends EdgeJob {
     // Create missing Apigee Edge developers.
     foreach ($this->drupalUsers as $clean_email => $user) {
       if (empty($this->edgeDevelopers[$clean_email])) {
-        $createDeveloperJob = DeveloperCreate::createForUser($user);
-        if (!$createDeveloperJob) {
-          $this->recordMessage(t('Skipping @mail user, because of incomplete data', [
-            '@mail' => $user->getEmail(),
-          ])->render());
-          continue;
-        }
-
+        $createDeveloperJob = new DeveloperCreate($user->getEmail());
         $createDeveloperJob->setTag($this->getTag());
         $this->scheduleJob($createDeveloperJob);
       }
