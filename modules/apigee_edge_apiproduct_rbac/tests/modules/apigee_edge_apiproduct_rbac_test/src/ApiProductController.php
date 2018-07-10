@@ -60,11 +60,14 @@ final class ApiProductController extends OriginalApiProductController {
    *
    * @param string $organization
    * @param \Apigee\Edge\ClientInterface $client
+   * @param string $entityClass
    * @param \Drupal\Core\State\StateInterface $state
    * @param array $entityNormalizers
+   *
+   * @throws \ReflectionException
    */
-  public function __construct(string $organization, ClientInterface $client, StateInterface $state, array $entityNormalizers = []) {
-    parent::__construct($organization, $client, $entityNormalizers);
+  public function __construct(string $organization, ClientInterface $client, string $entityClass, StateInterface $state, array $entityNormalizers = []) {
+    parent::__construct($organization, $client, $entityClass, $entityNormalizers);
     $this->state = $state;
     $this->keyVMNormalizer = new KeyValueMapNormalizer();
     $this->attributesDenormalizer = new AttributesPropertyDenormalizer();

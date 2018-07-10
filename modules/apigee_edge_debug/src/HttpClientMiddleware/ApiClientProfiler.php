@@ -115,6 +115,7 @@ class ApiClientProfiler {
         $logFormat = $this->logFormat;
 
         $options[RequestOptions::ON_STATS] = function (TransferStats $stats) use ($request, $next, $logger, $formatter, $logFormat) {
+          $level = LogLevel::DEBUG;
           // Do not log this request if it has not been made by the Apigee
           // Edge SDK connector.
           if (!$request->hasHeader(SDKConnector::HEADER)) {
@@ -126,8 +127,12 @@ class ApiClientProfiler {
           ];
           if ($stats->hasResponse()) {
             $context['response_formatted'] = $formatter->formatResponse($stats->getResponse());
+            if ($stats->getResponse()->getStatusCode() >= 400) {
+              $level = LogLevel::WARNING;
+            }
           }
           else {
+            $level = LogLevel::ERROR;
             $error = $stats->getHandlerErrorData();
             if (is_object($error)) {
               if (method_exists($error, '__toString')) {
@@ -139,7 +144,7 @@ class ApiClientProfiler {
             }
             $context['error'] = $error;
           }
-          $logger->log(LogLevel::DEBUG, $logFormat, $context);
+          $logger->log($level, $logFormat, $context);
           $next($stats);
         };
 

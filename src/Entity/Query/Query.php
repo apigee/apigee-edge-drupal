@@ -158,23 +158,43 @@ class Query extends QueryBase implements QueryInterface {
     $filteredConditions = [];
     foreach ($originalConditions as $key => $condition) {
       $filteredConditions[$key] = $condition;
+      $id = NULL;
+      // Indicates whether we found a single entity id in this condition
+      // or not.
+      $id_found = FALSE;
       // \Drupal\Core\Entity\EntityStorageBase::buildPropertyQuery() always adds
       // conditions with IN this is the reason why the last part of this
       // condition is needed.
       if (in_array($condition['field'], $this->getEntityIdProperties()) && (in_array($condition['operator'], [NULL, '=']) || ($condition['operator'] === 'IN' && count($condition['value']) === 1))) {
         if (is_array($condition['value'])) {
-          $ids = [reset($condition['value'])];
-          unset($filteredConditions[$key]);
+          $id = reset($condition['value']);
+          $id_found = TRUE;
         }
         else {
-          $ids = [$condition['value']];
-          unset($filteredConditions[$key]);
+          $id = $condition['value'];
+          $id_found = TRUE;
         }
-        // If we found an id field in the query do not look for an another
-        // because that would not make any sense to query one entity by
-        // both id fields. (Where in theory both id field could refer to a
-        // different entity.)
-        break;
+      }
+
+      // We have to handle propertly when a developer probably unintentionally
+      // passed an empty value (null, false, "", etc.) as a value of a condition
+      // for a primary entity id. In this case we should return empty result
+      // immediately because this condition can not be evaluated Apigee Edge
+      // and we should not load all entities unnecessarily to get same result
+      // after filtered the results in the PHP side.
+      if ($id_found) {
+        if (empty($id)) {
+          return [];
+        }
+        else {
+          $ids = [$id];
+          unset($filteredConditions[$key]);
+          // If we found an id field in the query do not look for an another
+          // because that would not make any sense to query one entity by
+          // both id fields. (Where in theory both id field could refer to a
+          // different entity.)
+          break;
+        }
       }
     }
     // Remove conditions that is going to be applied on Apigee Edge

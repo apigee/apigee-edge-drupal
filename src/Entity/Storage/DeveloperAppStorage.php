@@ -126,6 +126,18 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
   /**
    * {@inheritdoc}
    */
+  public function loadUnchanged($id) {
+    /** @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerInterface $controller */
+    // Clear developer app controller's static cache.
+    $controller = $this->getController($this->sdkConnector);
+    $entity = $this->load($id);
+    $controller->removeEntityFromCache($entity);
+    return parent::loadUnchanged($id);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function initFieldValues(FieldableEntityInterface $entity, array $values = [], array $field_names = []) {
     // Initialize display name and description field's value from the display
     // name attribute if needed.
