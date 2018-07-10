@@ -135,8 +135,8 @@ class DeveloperUpdate extends EdgeJob {
    * {@inheritdoc}
    */
   public function __toString(): string {
-    return t('Refreshing developer (%email) on Apigee Edge.', [
-      '%email' => $this->email,
+    return t('Refreshing developer (@email) on Apigee Edge.', [
+      '@email' => $this->email,
     ])->render();
   }
 

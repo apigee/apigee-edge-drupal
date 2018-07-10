@@ -168,8 +168,8 @@ class UserCreate extends EdgeJob {
    * {@inheritdoc}
    */
   public function __toString(): string {
-    return t('Copying developer (%email) to Drupal from Apigee Edge.', [
-      '%email' => $this->email,
+    return t('Copying developer (@email) to Drupal from Apigee Edge.', [
+      '@email' => $this->email,
     ])->render();
   }
 

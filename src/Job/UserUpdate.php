@@ -164,8 +164,8 @@ class UserUpdate extends EdgeJob {
    * {@inheritdoc}
    */
   public function __toString(): string {
-    return t('Refreshing user (%email) in Drupal.', [
-      '%email' => $this->email,
+    return t('Refreshing user (@email) in Drupal.', [
+      '@email' => $this->email,
     ])->render();
   }
 
