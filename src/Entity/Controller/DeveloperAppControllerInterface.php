@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge\Entity\Controller;
 
+use Apigee\Edge\Api\Management\Entity\AppInterface;
 use Apigee\Edge\Controller\CpsListingEntityControllerInterface;
 use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Apigee\Edge\Entity\EntityInterface;
@@ -73,5 +74,13 @@ interface DeveloperAppControllerInterface extends
    * @link https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/developers/%7Bdeveloper_email_or_id%7D/apps
    */
   public function getEntityIdsByDeveloper(string $developerId) : array;
+
+  /**
+   * Removes an app from the controller's static cache(s).
+   *
+   * @param \Apigee\Edge\Api\Management\Entity\AppInterface $app
+   *   An app entity.
+   */
+  public function removeEntityFromCache(AppInterface $app): void;
 
 }

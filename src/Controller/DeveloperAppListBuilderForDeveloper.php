@@ -84,8 +84,16 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    * {@inheritdoc}
    */
   protected function getEntityIds(array $headers = [], UserInterface $user = NULL) {
+    $developerId = $user->get('apigee_edge_developer_id')->value;
+    // If developer id can not be retrieved for a Drupal user it means that
+    // either there is connection error or the site is out of sync with
+    // Apigee Edge.
+    if ($developerId === NULL) {
+      return [];
+    }
+
     $query = $this->storage->getQuery()
-      ->condition('developerId', $user->get('apigee_edge_developer_id')->value);
+      ->condition('developerId', $developerId);
     $query->tableSort($headers);
     return $query->execute();
   }
