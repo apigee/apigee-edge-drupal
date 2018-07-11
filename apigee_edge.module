@@ -1350,7 +1350,7 @@ function _apigee_edge_set_sync_in_progress(?bool $in_progress = NULL) {
 }
 
 /**
- * Gets the user synchronization state.
+ * Gets the developer synchronization state.
  *
  * @return bool
  *   TRUE if the developer-user synchronization is in progress, else FALSE.

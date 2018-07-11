@@ -174,7 +174,9 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       }
       // Set unlinked field on the user.
       $user->set($this->fieldNamePrefix . 'invalid_email', 'valid.email@example.com');
+      // Set valid email field on the user.
       $user->set($this->fieldNamePrefix . 'one_track_field', 'user');
+      $user->setChangedTime($this->container->get('datetime.time')->getRequestTime());
       $user->save();
       $this->modifiedEdgeDevelopers[$user->getEmail()] = Developer::load($user->getEmail());
 
@@ -184,6 +186,7 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       }
       // Set unlinked attribute on the developer.
       $this->modifiedEdgeDevelopers[$user->getEmail()]->setAttribute('one_track_field', 'developer');
+      // Set invalid email attribute value on the developer.
       $this->modifiedEdgeDevelopers[$user->getEmail()]->setAttribute('invalid_email', 'invalid_email_address');
       $this->modifiedEdgeDevelopers[$user->getEmail()]->save();
     }
@@ -197,23 +200,25 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       $user->save();
       $this->modifiedDrupalUsers[$user->getEmail()] = $user;
 
+      // Set unlinked field on Apigee Edge.
+      /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
+      $developer = Developer::load($user->getEmail());
+      $developer->setAttribute('one_track_field', 'developer');
+      $developer->save();
+
       // Do not let run apigee_edge_user_presave(), so the corresponding
       // developer won't be updated.
       _apigee_edge_set_sync_in_progress(TRUE);
       foreach ($this->fields as $field_type => $data) {
         $this->modifiedDrupalUsers[$user->getEmail()]->set($this->fieldNamePrefix . $data['name'], $data['data_changed']);
-        $this->modifiedDrupalUsers[$user->getEmail()]->setChangedTime(time());
-        $this->modifiedDrupalUsers[$user->getEmail()]->save();
       }
-      _apigee_edge_set_sync_in_progress(FALSE);
-
-      // Set unlinked field on both sides.
+      // Set unlinked field in Drupal.
       $this->modifiedDrupalUsers[$user->getEmail()]->set($this->fieldNamePrefix . 'one_track_field', 'user');
+      // It's necessary because changed time is automatically updated on the UI
+      // only.
+      $this->modifiedDrupalUsers[$user->getEmail()]->setChangedTime($this->container->get('datetime.time')->getRequestTime() + 1000);
       $this->modifiedDrupalUsers[$user->getEmail()]->save();
-      /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
-      $developer = Developer::load($user->getEmail());
-      $developer->setAttribute('one_track_field', 'developer');
-      $developer->save();
+      _apigee_edge_set_sync_in_progress(FALSE);
     }
 
     // Developer's username already exists. Should not be copied into Drupal.
@@ -257,10 +262,10 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       'boolean' => [
         'name' => strtolower($this->randomMachineName()),
         'data' => [
-          ['value' => TRUE],
+          ['value' => 1],
         ],
         'data_changed' => [
-          ['value' => FALSE],
+          ['value' => 0],
         ],
       ],
       'email' => [
@@ -420,6 +425,16 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       }
       catch (\Exception $exception) {
       }
+    }
+    try {
+      Developer::load("{$this->prefix}.reserved@example.com")->delete();
+    }
+    catch (\Exception $exception) {
+    }
+    try {
+      $this->inactiveDeveloper->delete();
+    }
+    catch (\Exception $exception) {
     }
     parent::tearDown();
   }

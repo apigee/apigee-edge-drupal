@@ -83,7 +83,12 @@ class DeveloperSync extends EdgeJob {
     foreach (User::loadMultiple() as $user) {
       $email = $user->getEmail();
       if (isset($email)) {
-        $users[strtolower($email)] = $user;
+        if ($this->filter && !preg_match($this->filter, $email)) {
+          continue;
+        }
+        else {
+          $users[strtolower($email)] = $user;
+        }
       }
     }
 
@@ -99,6 +104,9 @@ class DeveloperSync extends EdgeJob {
    * @see https://www.drupal.org/project/drupal/issues/2490294
    */
   protected function loadDevelopers(): array {
+    // Reset developer cache, because the developer may be edited on Apigee
+    // Edge.
+    \Drupal::entityTypeManager()->getStorage('developer')->resetCache();
     $developers = [];
     /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
     foreach (Developer::loadMultiple() as $developer) {

@@ -125,7 +125,7 @@ class DeveloperSyncForm extends FormBase {
   }
 
   /**
-   * Build URL for user synchronization processes, using CSRF protection.
+   * Build URL for developer-user sync processes, using CSRF protection.
    *
    * @param string $route_name
    *   The name of the route.

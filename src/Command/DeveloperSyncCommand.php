@@ -23,14 +23,14 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * User synchronization command class for Drupal Console.
+ * Developer synchronization command class for Drupal Console.
  *
  * @Drupal\Console\Annotations\DrupalCommand (
  *     extension="apigee_edge",
  *     extensionType="module"
  * )
  */
-class UserSyncCommand extends CommandBase {
+class DeveloperSyncCommand extends CommandBase {
 
   /**
    * {@inheritdoc}

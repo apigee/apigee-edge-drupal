@@ -29,7 +29,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Controller for the user synchronization-related pages.
+ * Controller for the developer synchronization-related pages.
  */
 class DeveloperSyncController extends ControllerBase {
 
@@ -84,12 +84,12 @@ class DeveloperSyncController extends ControllerBase {
   }
 
   /**
-   * Returns the user sync filter.
+   * Returns the developer sync filter.
    *
    * @return null|string
    *   Filter condition or null if not set.
    */
-  protected static function getFilter(): ? string {
+  protected static function getFilter(): ?string {
     return ((string) \Drupal::config('apigee_edge.sync')->get('filter')) ?: NULL;
   }
 
@@ -156,7 +156,7 @@ class DeveloperSyncController extends ControllerBase {
   /**
    * The first batch operation.
    *
-   * This generates the user sync jobs for the second operation.
+   * This generates the developer-user sync jobs for the second operation.
    *
    * @param string $tag
    *   Job tag.
