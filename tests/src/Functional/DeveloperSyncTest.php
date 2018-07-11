@@ -176,7 +176,7 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       $user->set($this->fieldNamePrefix . 'invalid_email', 'valid.email@example.com');
       // Set valid email field on the user.
       $user->set($this->fieldNamePrefix . 'one_track_field', 'user');
-      $user->setChangedTime($this->container->get('datetime.time')->getRequestTime());
+      $user->setChangedTime($this->container->get('datetime.time')->getCurrentTime());
       $user->save();
       $this->modifiedEdgeDevelopers[$user->getEmail()] = Developer::load($user->getEmail());
 
@@ -216,7 +216,7 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       $this->modifiedDrupalUsers[$user->getEmail()]->set($this->fieldNamePrefix . 'one_track_field', 'user');
       // It's necessary because changed time is automatically updated on the UI
       // only.
-      $this->modifiedDrupalUsers[$user->getEmail()]->setChangedTime($this->container->get('datetime.time')->getRequestTime());
+      $this->modifiedDrupalUsers[$user->getEmail()]->setChangedTime($this->container->get('datetime.time')->getCurrentTime());
       $this->modifiedDrupalUsers[$user->getEmail()]->save();
       _apigee_edge_set_sync_in_progress(FALSE);
     }
