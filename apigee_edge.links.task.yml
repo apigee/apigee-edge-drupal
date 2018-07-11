@@ -61,7 +61,7 @@ apigee_edge.settings.developer:
   base_route: apigee_edge.settings.developer
 
 apigee_edge.settings.developer.attributes:
-  route_name: apigee_edge.settings.developer.email_validation
+  route_name: apigee_edge.settings.developer.attributes
   title: 'Custom Attributes'
   base_route: apigee_edge.settings.developer
 

@@ -14,20 +14,6 @@ apigee_edge.error_page:
           type: text
           label: 'Error page content'
 
-apigee_edge.client:
-  type: config_object
-  mapping:
-    active_key:
-      type: string
-    active_key_oauth_token:
-      type: string
-    http_client_connect_timeout:
-      type: float
-    http_client_timeout:
-      type: float
-    http_client_proxy:
-      type: string
-
 apigee_edge.common_app_settings:
   type: config_object
   label: 'Common app settings'

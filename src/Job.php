@@ -112,7 +112,7 @@ abstract class Job {
    * @return string
    *   UUID of the job.
    */
-  public function getId() : string {
+  public function getId(): string {
     return $this->id;
   }
 
@@ -124,7 +124,7 @@ abstract class Job {
    * @return string
    *   The job tag.
    */
-  public function getTag() : string {
+  public function getTag(): string {
     return $this->tag;
   }
 
@@ -144,7 +144,7 @@ abstract class Job {
    * @return int
    *   The job's status.
    */
-  public function getStatus() : int {
+  public function getStatus(): int {
     return $this->status;
   }
 
@@ -204,7 +204,7 @@ abstract class Job {
    * @return string[]
    *   Array of the stored messages.
    */
-  public function getMessages() : array {
+  public function getMessages(): array {
     return $this->messages;
   }
 
@@ -223,7 +223,7 @@ abstract class Job {
    * @return bool
    *   Whether the job can be rescheduled.
    */
-  public function consumeRetry() : bool {
+  public function consumeRetry(): bool {
     if ($this->retry > 0) {
       $this->retry--;
       return TRUE;
@@ -235,13 +235,13 @@ abstract class Job {
   /**
    * Whether this job should be retried when an exception is thrown.
    *
-   * @param \Exception $ex
+   * @param \Exception $exception
    *   The thrown exception.
    *
    * @return bool
    *   TRUE if the job should be retried.
    */
-  public function shouldRetry(\Exception $ex) : bool {
+  public function shouldRetry(\Exception $exception): bool {
     return TRUE;
   }
 
@@ -254,7 +254,7 @@ abstract class Job {
    *   Whether the job is incomplete. Returning TRUE here means that the job
    *   will be rescheduled.
    */
-  abstract public function execute() : bool;
+  abstract public function execute(): bool;
 
   /**
    * Returns this job's visual representation.
@@ -262,7 +262,7 @@ abstract class Job {
    * @return array
    *   The render array.
    */
-  abstract public function renderArray() : array;
+  abstract public function renderArray(): array;
 
   /**
    * Returns this job's textual representation.
@@ -270,6 +270,6 @@ abstract class Job {
    * @return string
    *   The string representation of the job.
    */
-  abstract public function __toString() : string;
+  abstract public function __toString(): string;
 
 }

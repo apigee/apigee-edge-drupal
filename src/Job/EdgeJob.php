@@ -20,7 +20,7 @@
 namespace Drupal\apigee_edge\Job;
 
 use Drupal\apigee_edge\Job;
-use Drupal\apigee_edge\SDKConnector;
+use Drupal\apigee_edge\SDKConnectorInterface;
 
 /**
  * Base class for all Apigee Edge communication jobs.
@@ -44,11 +44,15 @@ abstract class EdgeJob extends Job {
   /**
    * {@inheritdoc}
    */
-  public function execute() : bool {
+  public function execute(): bool {
     $this->executeRequest();
     $journal = $this->getConnector()->getClient()->getJournal();
     $request = $journal->getLastRequest();
     $response = $journal->getLastResponse();
+
+    if (!isset($request) || !isset($response)) {
+      return FALSE;
+    }
 
     $this->request = [
       'method' => $request->getMethod(),
@@ -76,7 +80,7 @@ abstract class EdgeJob extends Job {
    * @return \Drupal\apigee_edge\SDKConnector
    *   The SDK connector service.
    */
-  protected function getConnector() : SDKConnector {
+  protected function getConnector(): SDKConnectorInterface {
     return \Drupal::service('apigee_edge.sdk_connector');
   }
 
@@ -88,7 +92,7 @@ abstract class EdgeJob extends Job {
   /**
    * {@inheritdoc}
    */
-  public function renderArray() : array {
+  public function renderArray(): array {
     // TODO visualize Journal.
     return [];
   }

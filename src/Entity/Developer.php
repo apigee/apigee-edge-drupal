@@ -20,7 +20,7 @@
 namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Api\Management\Entity\Developer as EdgeDeveloper;
-use Drupal\Component\Serialization\Json;
+use Drupal\apigee_edge\Job;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
@@ -37,6 +37,7 @@ use Drupal\user\UserInterface;
  */
 class Developer extends EdgeDeveloper implements DeveloperInterface {
 
+  use FieldableEdgeEntityUtilityTrait;
   use EdgeEntityBaseTrait {
     id as private traitId;
   }
@@ -88,11 +89,14 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
    *
    * @param \Drupal\user\UserInterface $user
    *   The Drupal user account.
+   * @param \Drupal\apigee_edge\Job $developer_create_job
+   *   The DeveloperCreate job object if this function is called from
+   *   developer synchronization.
    *
-   * @return Developer
+   * @return \Drupal\apigee_edge\Entity\DeveloperInterface
    *   The developer entity.
    */
-  public static function createFromDrupalUser(UserInterface $user): Developer {
+  public static function createFromDrupalUser(UserInterface $user, Job $developer_create_job = NULL): DeveloperInterface {
     $developer_data = [
       'email' => $user->getEmail(),
       'originalEmail' => isset($user->original) ? $user->original->getEmail() : $user->getEmail(),
@@ -105,11 +109,48 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
     $developer = !isset($user->original) ? static::create($developer_data) : new static($developer_data);
     $developer->setOwnerId($user->id());
 
-    foreach (\Drupal::config('apigee_edge.sync')->get('user_fields_to_sync') as $field_to_sync) {
-      $developer->setAttribute(
-        preg_replace('/^field_(.*)$/', '${1}', $field_to_sync),
-        Json::encode($user->get($field_to_sync)->getValue())
-      );
+    /** @var \Drupal\apigee_edge\FieldStorageFormatManager $format_manager */
+    $format_manager = \Drupal::service('plugin.manager.apigee_field_storage_format');
+    foreach (\Drupal::config('apigee_edge.sync')->get('user_fields_to_sync') as $field_name) {
+      $field_definition = $user->getFieldDefinition($field_name);
+      // If the field does not exist, then skip it.
+      if (!isset($field_definition)) {
+        $message = "Skipping %mail developer's %attribute_name attribute update, because %field_name field does not exist.";
+        $context = [
+          '%mail' => $user->getEmail(),
+          '%attribute_name' => static::getAttributeName($field_name),
+          '%field_name' => $field_name,
+        ];
+        if (isset($developer_create_job)) {
+          \Drupal::logger('apigee_edge')->warning($message, $context);
+          $developer_create_job->recordMessage(t($message, $context)->render());
+        }
+        else {
+          \Drupal::logger('apigee_edge_sync')->warning($message, $context);
+        }
+        continue;
+      }
+      $field_type = $field_definition->getType();
+      $formatter = $format_manager->lookupPluginForFieldType($field_type);
+      // If there is no available storage formatter for the field, then skip it.
+      if (!isset($formatter)) {
+        $message = "Skipping %mail developer's %attribute_name attribute update, because there is no available storage formatter for %field_type field type.";
+        $context = [
+          '%mail' => $user->getEmail(),
+          '%attribute_name' => static::getAttributeName($field_name),
+          '%field_type' => $field_type,
+        ];
+        if (isset($developer_create_job)) {
+          \Drupal::logger('apigee_edge')->warning($message, $context);
+          $developer_create_job->recordMessage(t($message, $context)->render());
+        }
+        else {
+          \Drupal::logger('apigee_edge_sync')->warning($message, $context);
+        }
+        continue;
+      }
+
+      $developer->setAttribute(static::getAttributeName($field_name), $formatter->encode($user->get($field_name)->getValue()));
     }
     return $developer;
   }
@@ -124,7 +165,7 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
   /**
    * {@inheritdoc}
    */
-  public function id(): ? string {
+  public function id(): ?string {
     return $this->originalEmail;
   }
 

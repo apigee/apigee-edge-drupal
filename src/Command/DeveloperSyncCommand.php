@@ -17,44 +17,36 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Job;
+namespace Drupal\apigee_edge\Command;
 
-use Drupal\apigee_edge\Entity\Developer;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * A job to delete a developer from Edge.
+ * Developer synchronization command class for Drupal Console.
+ *
+ * @Drupal\Console\Annotations\DrupalCommand (
+ *     extension="apigee_edge",
+ *     extensionType="module"
+ * )
  */
-class DeveloperDelete extends EdgeJob {
-
-  /**
-   * The id of the developer.
-   *
-   * @var string
-   */
-  protected $developerId;
+class DeveloperSyncCommand extends CommandBase {
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(string $developer_id) {
-    parent::__construct();
-    $this->developerId = $developer_id;
+  protected function configure() {
+    $this
+      ->setName('apigee_edge:sync')
+      ->setDescription($this->trans('commands.apigee_edge.sync.description'));
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function executeRequest() {
-    Developer::load($this->developerId)->delete();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __toString(): string {
-    return t('Deleting developer (@mail) from Edge', [
-      '@mail' => $this->developerId,
-    ])->render();
+  protected function execute(InputInterface $input, OutputInterface $output) {
+    $this->setupIo($input, $output);
+    $this->cliService->sync($this->getIo(), 't');
   }
 
 }

@@ -37,7 +37,7 @@ interface FieldableEdgeEntityInterface extends FieldableEntityInterface, EdgeEnt
    * @return string
    *   Name of the mapped attribute.
    */
-  public function getAttributeName(string $field_name): string;
+  public static function getAttributeName(string $field_name): string;
 
   /**
    * Converts an attribute name to a field name.
@@ -48,7 +48,7 @@ interface FieldableEdgeEntityInterface extends FieldableEntityInterface, EdgeEnt
    * @return string
    *   Machine name of the mapped field.
    */
-  public function getFieldName(string $attribute_name): string;
+  public static function getFieldName(string $attribute_name): string;
 
   /**
    * Gets field value from the related attribute.

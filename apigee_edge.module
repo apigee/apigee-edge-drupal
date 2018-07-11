@@ -972,6 +972,12 @@ function template_preprocess_app_credential(array &$variables) {
  * it has been in Edge.
  */
 function apigee_edge_user_presave(UserInterface $account) {
+  // If the developer-user synchronization is in progress, then saving
+  // developers while saving Drupal user should be avoided.
+  if (_apigee_edge_is_sync_in_progress()) {
+    return;
+  }
+
   $developer_id = NULL;
   try {
     /** @var \Drupal\apigee_edge\Entity\Developer $developer */
@@ -1130,16 +1136,11 @@ function apigee_edge_field_ui_field_storage_add_form_submit(array &$form, FormSt
  */
 function apigee_edge_key_delete(EntityInterface $entity) {
   /** @var \Drupal\key\KeyInterface $entity */
-  $active_key = \Drupal::configFactory()
-    ->get('apigee_edge.client')
-    ->get('active_key');
-
-  if ($active_key === $entity->id()) {
-    \Drupal::configFactory()
-      ->getEditable('apigee_edge.client')
-      ->set('active_key', '')
-      ->set('active_key_oauth_token', '')
-      ->save();
+  if (\Drupal::state()->get('apigee_edge.auth')['active_key'] === $entity->id()) {
+    \Drupal::state()->set('apigee_edge.auth', [
+      'active_key' => '',
+      'active_key_oauth_token' => '',
+    ]);
   }
 }
 
@@ -1320,4 +1321,35 @@ function _apigee_edge_user_has_an_app_with_product(string $productName, AccountI
   }
 
   return FALSE;
+}
+
+/**
+ * Indicates that the developer-user synchronization is in progress.
+ *
+ * If the developer-user synchronization is in progress, then saving
+ * the same developer in apigee_edge_user_presave() while creating Drupal user
+ * based on a developer should be avoided.
+ *
+ * @param bool|null $in_progress
+ *   Developer-user synchronization state.
+ *
+ * @return bool
+ *   TRUE if the developer-user synchronization is in progress, else FALSE.
+ */
+function _apigee_edge_set_sync_in_progress(?bool $in_progress = NULL) {
+  static $state;
+  if ($in_progress !== NULL) {
+    $state = $in_progress;
+  }
+  return $state ?? FALSE;
+}
+
+/**
+ * Gets the developer synchronization state.
+ *
+ * @return bool
+ *   TRUE if the developer-user synchronization is in progress, else FALSE.
+ */
+function _apigee_edge_is_sync_in_progress() {
+  return _apigee_edge_set_sync_in_progress();
 }

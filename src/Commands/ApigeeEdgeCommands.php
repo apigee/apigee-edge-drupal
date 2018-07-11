@@ -51,7 +51,7 @@ class ApigeeEdgeCommands extends DrushCommands {
    *
    * @usage drush apigee-edge:sync
    *   Starts the developer synchronization between
-   *   the Developer Portal and the Edge Management Server.
+   *   the Developer Portal and the Apigee Edge Management Server.
    */
   public function sync() {
     $this->cliService->sync($this->io(), 'dt');

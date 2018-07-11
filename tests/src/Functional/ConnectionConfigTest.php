@@ -19,6 +19,8 @@
 
 namespace Drupal\Tests\apigee_edge\Functional;
 
+use Drupal\Core\Url;
+
 /**
  * HTTP client, connection config test.
  *
@@ -28,10 +30,6 @@ class ConnectionConfigTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * Tests connection config form, HTTP client configuration.
-   *
-   * @throws \Behat\Mink\Exception\ResponseTextException
-   * @throws \ReflectionException
-   * @throws \Exception
    */
   public function testHttpClientConfig() {
     $this->drupalLogin($this->rootUser);
@@ -39,7 +37,7 @@ class ConnectionConfigTest extends ApigeeEdgeFunctionalTestBase {
     $connect_timeout = random_int(300, 1000) / 10;
     $request_timeout = random_int(300, 1000) / 10;
 
-    $this->drupalPostForm('/admin/config/apigee-edge/connection-config', [
+    $this->drupalPostForm(Url::fromRoute('apigee_edge.settings.connection_config'), [
       'connect_timeout' => $connect_timeout,
       'request_timeout' => $request_timeout,
     ], 'Save configuration');

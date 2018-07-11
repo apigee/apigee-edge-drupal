@@ -29,9 +29,9 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Controller for the user synchronization-related pages.
+ * Controller for the developer synchronization-related pages.
  */
-class UserSyncController extends ControllerBase {
+class DeveloperSyncController extends ControllerBase {
 
   /**
    * Job executor.
@@ -48,7 +48,7 @@ class UserSyncController extends ControllerBase {
   protected $messenger;
 
   /**
-   * UserSyncController constructor.
+   * DeveloperSyncController constructor.
    *
    * @param \Drupal\apigee_edge\JobExecutor $executor
    *   The job executor service.
@@ -80,23 +80,23 @@ class UserSyncController extends ControllerBase {
    *   Job tag.
    */
   protected static function generateTag(string $type) : string {
-    return "user_sync_{$type}_" . user_password();
+    return "developer_sync_{$type}_" . user_password();
   }
 
   /**
-   * Returns the user sync filter.
+   * Returns the developer sync filter.
    *
    * @return null|string
    *   Filter condition or null if not set.
    */
-  protected static function getFilter(): ? string {
+  protected static function getFilter(): ?string {
     return ((string) \Drupal::config('apigee_edge.sync')->get('filter')) ?: NULL;
   }
 
   /**
-   * Handler for 'apigee_edge.user_sync.schedule'.
+   * Handler for 'apigee_edge.developer_sync.schedule'.
    *
-   * Runs a user sync in the background.
+   * Runs a developer sync in the background.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The HTTP request.
@@ -111,15 +111,15 @@ class UserSyncController extends ControllerBase {
     $job->setTag($this->generateTag('background'));
     apigee_edge_get_executor()->cast($job);
 
-    $this->messenger->addStatus($this->t('User synchronization is scheduled.'));
+    $this->messenger->addStatus($this->t('Developer synchronization is scheduled.'));
 
     return new RedirectResponse($destination);
   }
 
   /**
-   * Handler for 'apigee_edge.user_sync.run'.
+   * Handler for 'apigee_edge.developer_sync.run'.
    *
-   * Starts the user sync batch process.
+   * Starts the developer sync batch process.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The HTTP request.
@@ -144,7 +144,7 @@ class UserSyncController extends ControllerBase {
     $tag = static::generateTag('batch');
 
     return [
-      'title' => t('Synchronizing users'),
+      'title' => t('Synchronizing developers'),
       'operations' => [
         [[static::class, 'batchGenerateJobs'], [$tag]],
         [[static::class, 'batchExecuteJobs'], [$tag]],
@@ -156,7 +156,7 @@ class UserSyncController extends ControllerBase {
   /**
    * The first batch operation.
    *
-   * This generates the user sync jobs for the second operation.
+   * This generates the developer-user sync jobs for the second operation.
    *
    * @param string $tag
    *   Job tag.
@@ -203,7 +203,7 @@ class UserSyncController extends ControllerBase {
    * Batch finish callback.
    */
   public static function batchFinished() {
-    \Drupal::messenger()->addStatus(t('Users are in sync with Edge.'));
+    \Drupal::messenger()->addStatus(t('Apigee Edge developers are in sync with Drupal users.'));
   }
 
 }
