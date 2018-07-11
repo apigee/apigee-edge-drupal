@@ -66,6 +66,7 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
     if (!$this->initCredentials()) {
       $this->markTestSkipped('Credentials not found.');
     }
+    self::$modules[] = 'dblog';
     parent::setUp();
     $this->drupalLogin($this->rootUser);
   }
