@@ -55,21 +55,34 @@ trait ApigeeEdgeTestTrait {
     catch (EntityStorageException $exception) {
       self::fail('Could not create key for testing.');
     }
-    $this->config('apigee_edge.client')->set('active_key', 'test')->save();
+
+    $keys = [
+      'active_key' => 'test',
+      'active_key_oauth_token' => '',
+    ];
+    $this->container->get('state')->set('apigee_edge.auth', $keys);
   }
 
   /**
    * Restores the active key.
    */
   protected function restoreKey() {
-    $this->config('apigee_edge.client')->set('active_key', 'test')->save();
+    $keys = [
+      'active_key' => 'test',
+      'active_key_oauth_token' => '',
+    ];
+    $this->container->get('state')->set('apigee_edge.auth', $keys);
   }
 
   /**
    * Removes the active key for testing with unset API credentials.
    */
   protected function invalidateKey() {
-    $this->config('apigee_edge.client')->set('active_key', '')->save();
+    $keys = [
+      'active_key' => '',
+      'active_key_oauth_token' => '',
+    ];
+    $this->container->get('state')->set('apigee_edge.auth', $keys);
   }
 
   /**
