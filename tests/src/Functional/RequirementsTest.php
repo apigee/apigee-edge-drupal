@@ -39,9 +39,6 @@ class RequirementsTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * Tests invalid credentials.
-   *
-   * @throws \Behat\Mink\Exception\ResponseTextException
-   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function testInvalidCredentials() {
     // Ensure that pre-defined credentials are correctly set.
@@ -69,7 +66,9 @@ class RequirementsTest extends ApigeeEdgeFunctionalTestBase {
       'password' => getenv('APIGEE_EDGE_PASSWORD'),
     ]));
     $key->save();
-    $this->config('apigee_edge.client')->set('active_key', 'private_file')->save();
+    $keys = $this->container->get('state')->get('apigee_edge.auth');
+    $keys['active_key'] = 'private_file';
+    $this->container->get('state')->set('apigee_edge.auth', $keys);
 
     $this->drupalGet('/admin/reports/status');
     $this->assertSession()->pageTextNotContains('Cannot connect to Apigee Edge server.');
@@ -110,7 +109,9 @@ class RequirementsTest extends ApigeeEdgeFunctionalTestBase {
       'password' => getenv('APIGEE_EDGE_PASSWORD'),
     ]));
     $key->save();
-    $this->config('apigee_edge.client')->set('active_key', 'private_file')->save();
+    $keys = $this->container->get('state')->get('apigee_edge.auth');
+    $keys['active_key'] = 'private_file';
+    $this->container->get('state')->set('apigee_edge.auth', $keys);
 
     // Create new Apigee Edge OAuth token key with private file provider.
     Key::create([
@@ -120,7 +121,9 @@ class RequirementsTest extends ApigeeEdgeFunctionalTestBase {
       'key_provider' => 'apigee_edge_private_file',
       'key_input' => 'none',
     ])->save();
-    $this->config('apigee_edge.client')->set('active_key_oauth_token', 'private_file_token')->save();
+    $keys = $this->container->get('state')->get('apigee_edge.auth');
+    $keys['active_key_oauth_token'] = 'private_file_token';
+    $this->container->get('state')->set('apigee_edge.auth', $keys);
 
     $this->drupalGet('/admin/reports/status');
     $this->assertSession()->pageTextNotContains('Cannot connect to Apigee Edge server.');
