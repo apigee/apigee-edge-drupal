@@ -19,6 +19,8 @@
 
 namespace Drupal\Tests\apigee_edge\Functional;
 
+use Drupal\Core\Url;
+
 /**
  * HTTP client, connection config test.
  *

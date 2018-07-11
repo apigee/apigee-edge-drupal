@@ -384,7 +384,7 @@ class AuthenticationForm extends ConfigFormBase {
       $this->state->set('apigee_edge.auth', $keys);
     }
     elseif ($form_state->getValue('key_type') === 'apigee_edge_oauth') {
-      $keys['active_key'] = $form_state->getValue('key_basic_auth');
+      $keys['active_key'] = $form_state->getValue('key_oauth');
       $keys['active_key_oauth_token'] = $form_state->getValue('key_oauth_token');
       $this->state->set('apigee_edge.auth', $keys);
     }
