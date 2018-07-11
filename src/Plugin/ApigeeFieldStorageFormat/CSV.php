@@ -35,6 +35,8 @@ use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormatInterface;
  *     "list_string",
  *     "string",
  *     "string_long",
+ *     "email",
+ *     "timestamp"
  *   },
  *   weight = -1,
  * )

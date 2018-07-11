@@ -23,9 +23,9 @@ use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\FieldableEdgeEntityUtilityTrait;
 
 /**
- * A job to update an Apigee Edge developer based on a Drupal user.
+ * A job to update a Drupal user based on an Apigee Edge developer.
  */
-class DeveloperUpdate extends EdgeJob {
+class UserUpdate extends EdgeJob {
 
   use FieldableEdgeEntityUtilityTrait;
 
@@ -37,14 +37,14 @@ class DeveloperUpdate extends EdgeJob {
   protected $email;
 
   /**
-   * Whether the Apigee Edge developer should be updated.
+   * Whether the Drupal user should be updated.
    *
    * @var bool
    */
   protected $executeUpdate = FALSE;
 
   /**
-   * DeveloperUpdate constructor.
+   * UserUpdate constructor.
    *
    * @param string $email
    *   The email of the developer/user.
@@ -64,12 +64,12 @@ class DeveloperUpdate extends EdgeJob {
     $user = user_load_by_mail($this->email);
 
     if ($developer->getFirstName() !== $user->get('first_name')->value) {
-      $developer->setFirstName($user->get('first_name')->value);
+      $user->set('first_name', $developer->getFirstName());
       $this->executeUpdate = TRUE;
     }
 
     if ($developer->getLastName() !== $user->get('last_name')->value) {
-      $developer->setLastName($user->get('last_name')->value);
+      $user->set('last_name', $developer->getLastName());
       $this->executeUpdate = TRUE;
     }
 
@@ -81,11 +81,10 @@ class DeveloperUpdate extends EdgeJob {
         $field_definition = $user->getFieldDefinition($field_name);
         // If the field does not exist, then skip it.
         if (!isset($field_definition)) {
-          $message = "Skipping %email developer's %attribute_name attribute update, because %field_name field does not exist.";
+          $message = "Skipping %email user's field update, because %field_name field does not exist.";
           $context = [
             '%email' => $this->email,
-            '%attribute_name' => static::getAttributeName($field_name),
-            '%field_name' => $field_definition->getName(),
+            '%field_name' => $field_name,
           ];
           \Drupal::logger('apigee_edge_sync')->warning($message, $context);
           $this->recordMessage(t($message, $context)->render());
@@ -96,10 +95,10 @@ class DeveloperUpdate extends EdgeJob {
         // If there is no available storage formatter for the field, then skip
         // it.
         if (!isset($formatter)) {
-          $message = "Skipping %email developer's %attribute_name attribute update, because there is no available storage formatter for %field_type field type.";
+          $message = "Skipping %email user's %field_name field update, because there is no available storage formatter for %field_type field type.";
           $context = [
             '%email' => $this->email,
-            '%attribute_name' => static::getAttributeName($field_name),
+            '%field_name' => $field_name,
             '%field_type' => $field_type,
           ];
           \Drupal::logger('apigee_edge_sync')->warning($message, $context);
@@ -109,24 +108,54 @@ class DeveloperUpdate extends EdgeJob {
 
         $user_field_value = $formatter->encode($user->get($field_name)->getValue());
         $developer_attribute_value = $developer->getAttributeValue(static::getAttributeName($field_name));
+        if ($developer_attribute_value === NULL) {
+          continue;
+        }
+
         if ($user_field_value !== $developer_attribute_value) {
-          $developer->setAttribute(static::getAttributeName($field_name), $user_field_value);
-          $this->executeUpdate = TRUE;
+          $rollback = $user->get($field_name)->getValue();
+          $user->set($field_name, $formatter->decode($developer_attribute_value));
+          // Do not set the field value if a field constraint fails during
+          // validation.
+          $field_violations = $user->get($field_name)->validate();
+          if ($field_violations->count() > 0) {
+            $user->set($field_name, $rollback);
+            foreach ($field_violations as $violation) {
+              $message = "Skipping %email user's %field_name field update: %message";
+              $context = [
+                '%email' => $this->email,
+                '%field_name' => $field_name,
+                '%message' => $violation->getMessage(),
+              ];
+              \Drupal::logger('apigee_edge_sync')->warning($message, $context);
+              $this->recordMessage(t($message, $context)->render());
+            }
+          }
+          else {
+            $this->executeUpdate = TRUE;
+          }
         }
       }
     }
 
     if ($this->executeUpdate) {
       try {
-        $developer->save();
+        // If the developer-user synchronization is in progress, then saving
+        // the same developer in apigee_edge_user_presave() while creating
+        // Drupal user based on a developer should be avoided.
+        _apigee_edge_set_sync_in_progress(TRUE);
+        $user->save();
       }
       catch (\Exception $exception) {
-        $message = "Skipping refreshing %email developer: %message";
+        $message = "Skipping updating %email user: %message";
         $context = [
           '%message' => (string) $exception,
         ];
         \Drupal::logger('apigee_edge_sync')->error($message, $context);
         $this->recordMessage(t($message, $context)->render());
+      }
+      finally {
+        _apigee_edge_set_sync_in_progress(FALSE);
       }
     }
   }
@@ -135,7 +164,7 @@ class DeveloperUpdate extends EdgeJob {
    * {@inheritdoc}
    */
   public function __toString(): string {
-    return t('Refreshing developer (@email) on Apigee Edge.', [
+    return t('Refreshing user (@email) in Drupal.', [
       '@email' => $this->email,
     ])->render();
   }

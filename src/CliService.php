@@ -19,7 +19,7 @@
 
 namespace Drupal\apigee_edge;
 
-use Drupal\apigee_edge\Controller\UserSyncController;
+use Drupal\apigee_edge\Controller\DeveloperSyncController;
 use Symfony\Component\Console\Style\StyleInterface;
 
 /**
@@ -32,7 +32,7 @@ class CliService implements CliServiceInterface {
    */
   public function sync(StyleInterface $io, callable $t) {
     $io->title($t('Developer - User synchronization'));
-    $batch = UserSyncController::getBatch();
+    $batch = DeveloperSyncController::getBatch();
     $last_message = '';
 
     foreach ($batch['operations'] as $operation) {

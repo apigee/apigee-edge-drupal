@@ -113,9 +113,9 @@ class AppSettingsForm extends ConfigFormBase {
       // Apigee Edge credentials are missing/incorrect or something else went
       // wrong. Do not redirect the user to the error page.
       $form['actions']['submit']['#disabled'] = TRUE;
-      $this->messenger()->addError($this->t('Unable to retrieve API product list from Apigee Edge. Please ensure that <a href=":link">Apigee Edge connection settings</a> are correct.'), [
+      $this->messenger()->addError($this->t('Unable to retrieve API product list from Apigee Edge. Please ensure that <a href=":link">Apigee Edge connection settings</a> are correct.', [
         ':link' => Url::fromRoute('apigee_edge.settings')->toString(),
-      ]);
+      ]));
       return $form;
     }
 
