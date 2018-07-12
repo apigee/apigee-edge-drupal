@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge\Form;
 use Drupal\apigee_edge\KeyValueMalformedException;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
@@ -64,6 +65,13 @@ class AuthenticationForm extends ConfigFormBase {
   protected $messenger;
 
   /**
+   * The module handler service.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $moduleHandler;
+
+  /**
    * Constructs a new AuthenticationForm.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -76,17 +84,21 @@ class AuthenticationForm extends ConfigFormBase {
    *   SDK connector service.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   Module handler service.
    */
   public function __construct(ConfigFactoryInterface $config_factory,
                               StateInterface $state,
                               KeyRepositoryInterface $key_repository,
                               SDKConnectorInterface $sdk_connector,
-                              MessengerInterface $messenger) {
+                              MessengerInterface $messenger,
+                              ModuleHandlerInterface $module_handler) {
     parent::__construct($config_factory);
     $this->state = $state;
     $this->keyRepository = $key_repository;
     $this->sdkConnector = $sdk_connector;
     $this->messenger = $messenger;
+    $this->moduleHandler = $module_handler;
   }
 
   /**
@@ -98,7 +110,8 @@ class AuthenticationForm extends ConfigFormBase {
       $container->get('state'),
       $container->get('key.repository'),
       $container->get('apigee_edge.sdk_connector'),
-      $container->get('messenger')
+      $container->get('messenger'),
+      $container->get('module_handler')
     );
   }
 
@@ -367,9 +380,17 @@ class AuthenticationForm extends ConfigFormBase {
     }
     catch (\Exception $exception) {
       watchdog_exception('apigee_edge', $exception);
-      $form_state->setError($form, $this->t('Connection failed. Response from edge: %response', [
-        '%response' => $exception->getMessage(),
-      ]));
+      if ($this->moduleHandler->moduleExists('dblog')) {
+        $form_state->setError($form, $this->t('Connection failed. Response from Apigee Edge: %response<br>For further information please check the <a href=":url">log messages</a>.', [
+          '%response' => $exception->getMessage(),
+          ':url' => Url::fromRoute('dblog.overview')->toString(),
+        ]));
+      }
+      else {
+        $form_state->setError($form, $this->t('Connection failed. Response from Apigee Edge: %response', [
+          '%response' => $exception->getMessage(),
+        ]));
+      }
     }
   }
 
