@@ -7,12 +7,17 @@
         "php": ">=7.1",
         "composer/installers": "^1.5",
         "drupal-composer/drupal-scaffold": "^2.5.2",
-        "wikimedia/composer-merge-plugin": "^1.4.1"
+        "wikimedia/composer-merge-plugin": "dev-capture-input-options"
     },
     "repositories": [
         {
             "type": "composer",
             "url": "https://packages.drupal.org/8"
+        },
+        {
+            "type": "vcs",
+            "_comment1": "We have to install it from here until this PR is open: https://github.com/wikimedia/composer-merge-plugin/pull/169.",
+            "url": "https://github.com/mxr576/composer-merge-plugin"
         }
     ],
     "config": {
