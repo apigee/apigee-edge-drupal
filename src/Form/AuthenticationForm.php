@@ -380,15 +380,17 @@ class AuthenticationForm extends ConfigFormBase {
     }
     catch (\Exception $exception) {
       watchdog_exception('apigee_edge', $exception);
-      $message = 'Connection failed. Response from Apigee Edge: %response';
-      $context = [
-        '%response' => $exception->getMessage(),
-      ];
       if ($this->moduleHandler->moduleExists('dblog')) {
-        $message .= '<br>For further information please check the <a href=":url">log messages</a>.';
-        $context[':url'] = Url::fromRoute('dblog.overview')->toString();
+        $form_state->setError($form, $this->t('Connection failed. Response from Apigee Edge: %response<br>For further information please check the <a href=":url">log messages</a>.', [
+          '%response' => $exception->getMessage(),
+          ':url' => Url::fromRoute('dblog.overview')->toString(),
+        ]));
       }
-      $form_state->setError($form, $this->t($message, $context));
+      else {
+        $form_state->setError($form, $this->t('Connection failed. Response from Apigee Edge: %response', [
+          '%response' => $exception->getMessage(),
+        ]));
+      }
     }
   }
 
