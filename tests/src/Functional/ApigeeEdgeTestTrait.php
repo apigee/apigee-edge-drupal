@@ -37,7 +37,7 @@ trait ApigeeEdgeTestTrait {
    * {@inheritdoc}
    */
   protected function setUp() {
-    self::$modules[] = 'apigee_edge_test';
+    $this->installExtraModules(['apigee_edge_test']);
 
     parent::setUp();
     $key = Key::create([

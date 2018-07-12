@@ -30,13 +30,6 @@ use Drupal\key\Entity\Key;
 class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'dblog',
-  ];
-
-  /**
    * Credential storage.
    *
    * @var array
