@@ -65,6 +65,26 @@ apigee_edge.developer_app_settings:
       type: label
       label: 'Placeholder for a Callback URL'
 
+field.widget.settings.app_callback_url:
+  type: mapping
+  label: 'Callback URL widget settings'
+  mapping:
+    size:
+      type: integer
+      label: 'Size of textfield'
+    placeholder:
+      type: label
+      label: 'Placeholder for a Callback URL field'
+    callback_url_pattern:
+      type: string
+      label: 'Regular expression that a Callback URL should match'
+    callback_url_pattern_error_message:
+      type: string
+      label: 'Client-side validation error message if a Callback URL does not match'
+    callback_url_description:
+      type: string
+      label: 'Description of a Callback URL field'
+
 apigee_edge.developer_settings:
   type: config_object
   label: 'Developer settings'
@@ -178,23 +198,3 @@ apigee_edge.dangerzone:
     # even when content exists.
     skip_developer_app_settings_validation:
       type: boolean
-
-field.widget.settings.app_callback_url:
-  type: mapping
-  label: 'Callback URL widget settings'
-  mapping:
-    size:
-      type: integer
-      label: 'Size of textfield'
-    placeholder:
-      type: label
-      label: 'Placeholder for a Callback URL field'
-    callback_url_pattern:
-      type: string
-      label: 'Regular expression that a Callback URL should match'
-    callback_url_description:
-      type: string
-      label: 'Description of a Callback URL field'
-    callback_url_pattern_error_message:
-      type: string
-      label: 'Client-side validation error message if a Callback URL does not match'
