@@ -30,6 +30,13 @@ use Drupal\key\Entity\Key;
 class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
+   * {@inheritdoc}
+   */
+  protected static $modules = [
+    'dblog',
+  ];
+
+  /**
    * Credential storage.
    *
    * @var array
@@ -66,7 +73,6 @@ class EdgeAuthenticationTest extends ApigeeEdgeFunctionalTestBase {
     if (!$this->initCredentials()) {
       $this->markTestSkipped('Credentials not found.');
     }
-    self::$modules[] = 'dblog';
     parent::setUp();
     $this->drupalLogin($this->rootUser);
   }

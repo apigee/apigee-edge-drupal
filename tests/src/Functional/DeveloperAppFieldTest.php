@@ -36,6 +36,9 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
 
   use FieldUiTestTrait;
 
+  /**
+   * {@inheritdoc}
+   */
   protected static $modules = [
     'link',
     'block',
@@ -47,12 +50,12 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
   protected $account;
 
   /**
-   * @var \Drupal\apigee_edge\Entity\ApiProduct
+   * @var \Drupal\apigee_edge\Entity\ApiProductInterface
    */
   protected $product;
 
   /**
-   * @var \Drupal\apigee_edge\Entity\Developer
+   * @var \Drupal\apigee_edge\Entity\DeveloperInterface
    */
   protected $developer;
 
@@ -81,9 +84,16 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function tearDown() {
-    $this->drupalLogout();
-    $this->account->delete();
-    $this->product->delete();
+    try {
+      $this->account->delete();
+    }
+    catch (\Exception $exception) {
+    }
+    try {
+      $this->product->delete();
+    }
+    catch (\Exception $exception) {
+    }
     parent::tearDown();
   }
 
@@ -206,9 +216,9 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
         ],
         []
       );
-
-      drupal_flush_all_caches();
     }
+
+    drupal_flush_all_caches();
 
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
     $app = DeveloperApp::create([
