@@ -108,7 +108,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
     ];
     $form['#tree'] = TRUE;
     $form['developerId']['#access'] = FALSE;
-    $form['product']['#access'] = !isset($form['product']) ?: FALSE;
+    $form['api_products']['#access'] = !isset($form['api_products']) ?: FALSE;
 
     if ($config->get('user_select')) {
       $form['credential'] = [
@@ -135,7 +135,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
         }
         // Parent form has already ensured that only those API products
         // are visible in this list in which the (current) user has access.
-        $product_list = $form['product']['api_products']['#options'];
+        $product_list = $form['api_products']['#options'];
         // But we have to add this app's currently assigned API products to the
         // list as well.
         $product_list += array_map(function (ApiProductInterface $product) {
