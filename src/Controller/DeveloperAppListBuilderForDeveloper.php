@@ -34,6 +34,7 @@ use Drupal\Core\Url;
 use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Lists developer apps of a developer on the UI.
@@ -43,9 +44,11 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
   use DeveloperStatusCheckTrait;
 
   /**
+   * The current user.
+   *
    * @var \Drupal\Core\Session\AccountInterface
    */
-  private $currentUser;
+  protected $currentUser;
 
   /**
    * DeveloperAppListBuilderForDeveloper constructor.
@@ -60,9 +63,11 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    *   The render.
    * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   Currently logged-in user.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+   *   The request stack object.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, EntityTypeManagerInterface $entityTypeManager, RendererInterface $render, AccountInterface $currentUser) {
-    parent::__construct($entity_type, $storage, $entityTypeManager, $render);
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, EntityTypeManagerInterface $entityTypeManager, RendererInterface $render, AccountInterface $currentUser, RequestStack $request_stack) {
+    parent::__construct($entity_type, $storage, $entityTypeManager, $render, $request_stack);
     $this->currentUser = $currentUser;
   }
 
@@ -76,7 +81,8 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
       $container->get('entity.manager')->getStorage($entity_type->id()),
       $container->get('entity.manager'),
       $container->get('renderer'),
-      $container->get('current_user')
+      $container->get('current_user'),
+      $container->get('request_stack')
     );
   }
 
@@ -149,7 +155,7 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    * {@inheritdoc}
    */
   protected function getUniqueCssIdForApp(DeveloperAppInterface $app): string {
-    // If we are listing the apps of a developer than app name is also
+    // If we are listing the apps of a developer than developer app name is also
     // unique.
     return Html::getUniqueId($app->getName());
   }

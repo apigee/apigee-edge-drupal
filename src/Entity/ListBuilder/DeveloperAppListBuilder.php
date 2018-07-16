@@ -35,6 +35,7 @@ use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * General entity listing builder for developer apps.
@@ -54,6 +55,20 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
   protected $renderer;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $requestStack;
+
+  /**
    * The default sort direction.
    *
    * @var string
@@ -68,13 +83,6 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
   protected $defaultSortField = 'ASC';
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * DeveloperAppListBuilder constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -83,13 +91,16 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
    *   The entity storage object.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Drupal\Core\Render\RendererInterface $render
+   * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+   *   The request stack object.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render) {
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, RequestStack $request_stack) {
     parent::__construct($entity_type, $storage);
-    $this->renderer = $render;
+    $this->renderer = $renderer;
     $this->entityTypeManager = $entity_type_manager;
+    $this->requestStack = $request_stack;
     // Disable pager for now.
     $this->limit = 0;
   }
@@ -100,9 +111,10 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
     return new static(
       $entity_type,
-      $container->get('entity.manager')->getStorage($entity_type->id()),
-      $container->get('entity.manager'),
-      $container->get('renderer')
+      $container->get('entity_type.manager')->getStorage($entity_type->id()),
+      $container->get('entity_type.manager'),
+      $container->get('renderer'),
+      $container->get('request_stack')
     );
   }
 
@@ -163,6 +175,18 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
   }
 
   /**
+   * Returns a rendered link to Add developer app form.
+   *
+   * @return array
+   *   Render array.
+   */
+  protected function renderAddAppLink() {
+    return Link::createFromRoute($this->t('Add @developer_app', [
+      '@developer_app' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
+    ]), 'entity.developer_app.add_form', [], ['attributes' => ['class' => 'btn btn-primary btn--add-app']])->toRenderable();
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function getDefaultOperations(EntityInterface $entity) {
@@ -179,22 +203,39 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
   }
 
   /**
-   * Returns the link if user can view an app otherwise the label of the app.
+   * Returns the value of developer app name's field in the entity list.
    *
-   * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $app
-   *   Developer app.
+   * Returns the link if user can view a developer app otherwise the label of
+   * the developer app.
+   *
+   * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app
+   *   Developer app entity.
    *
    * @return \Drupal\Core\Link|string
-   *   Link to the view page of an app or the label of the app if the current
-   *   user has no permission to view an app.
+   *   Link to the view page of a developer app or the label of the developer
+   *   app if the current user has no permission to view a developer app.
    *
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  protected function getAppDetailsLink(DeveloperAppInterface $app) {
-    if ($app->access('view')) {
-      return $app->toLink();
+  protected function getAppDetailsLink(DeveloperAppInterface $developer_app) {
+    if ($developer_app->access('view')) {
+      return $developer_app->toLink();
     }
-    return $app->label();
+    return $developer_app->label();
+  }
+
+  /**
+   * Returns a unique CSS id for a developer app.
+   *
+   * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app
+   *   The developer app entity.
+   *
+   * @return string
+   *   The unique developer app id.
+   */
+  protected function getUniqueCssIdForApp(DeveloperAppInterface $developer_app): string {
+    // Developer app's default UUID is unique enough.
+    return $developer_app->id();
   }
 
   /**
@@ -219,86 +260,119 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
   }
 
   /**
-   * Returns a unique CSS id for an app.
+   * Builds an info row for a developer app in the entity listing.
    *
-   * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $app
-   *   The developer app entity.
+   * The info row contains the developer app's name (link to the details page),
+   * status and entity operations.
    *
-   * @return string
-   *   The unique app id.
+   * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app
+   *   The developer app entity for this row of the list.
+   * @param array $rows
+   *   A render array containing the info and warning rows to be displayed.
+   *
+   * @return array
+   *   A render array structure of fields for this developer app entity.
    */
-  protected function getUniqueCssIdForApp(DeveloperAppInterface $app): string {
-    // App's default UUID is unique enough.
-    return $app->id();
+  protected function buildInfoRow(DeveloperAppInterface $developer_app, array $rows): array {
+    $appNameAsCssId = $this->getUniqueCssIdForApp($developer_app);
+    $infoRowId = "{$appNameAsCssId}-info";
+    $row = [
+      'data' => [],
+      'id' => $infoRowId,
+      'class' => [
+        'row--app',
+        'row--info',
+      ],
+    ];
+
+    $row['data']['app_name'] = $this->getAppDetailsLink($developer_app);
+    $row['data']['app_status']['data'] = [
+      '#type' => 'status_property',
+      '#value' => $developer_app->getStatus(),
+    ];
+
+    $row['data'] += parent::buildRow($developer_app);
+    $rows[$infoRowId] = $row;
+    return $rows;
   }
 
   /**
-   * {@inheritdoc}
+   * Checks the developer app and returns information for displaying warnings.
+   *
+   * Helper function for buildWarningRow(). Information about credentials,
+   * products can be returned.
+   *
+   * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app
+   *   Developer app entity to be checked.
+   *
+   * @return array
+   *   An array containing the information about the credentials, products for
+   *   displaying warning messages.
    */
-  public function buildRow(EntityInterface $entity) {
-    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
-    $request = \Drupal::request();
-    $appNameAsCssId = $this->getUniqueCssIdForApp($entity);
-    $infoRowId = "{$appNameAsCssId}-info";
-    $warningRowId = "{$appNameAsCssId}-warning";
-    $rows = [
-      $infoRowId => [
-        'data' => [],
-        'id' => $infoRowId,
-        'class' => [
-          'row--app',
-          'row--info',
-        ],
-      ],
-      $warningRowId => [
-        'data' => [],
-        'id' => $warningRowId,
-        'class' => [
-          'row--app',
-          'row--warning',
-        ],
-      ],
-    ];
-    $infoRow = &$rows[$infoRowId]['data'];
-    $warningRow = &$rows[$warningRowId]['data'];
-    $infoRow['app_name'] = $this->getAppDetailsLink($entity);
-    $infoRow['app_status']['data'] = [
-      '#type' => 'status_property',
-      '#value' => $entity->getStatus(),
-    ];
-    $infoRow += parent::buildRow($entity);
+  protected function checkDeveloperApp(DeveloperAppInterface $developer_app): array {
+    $info = [];
+    $info['hasRevokedCred'] = FALSE;
+    $info['hasRevokedCredProduct'] = FALSE;
+    $info['hasPendingCredProduct'] = FALSE;
+    $info['problematicApiProductName'] = NULL;
 
-    $hasRevokedCred = FALSE;
-    $hasRevokedCredProduct = FALSE;
-    $hasPendingCredProduct = FALSE;
-    $problematicApiProductName = NULL;
-    foreach ($entity->getCredentials() as $credential) {
+    foreach ($developer_app->getCredentials() as $credential) {
       if ($credential->getStatus() === AppCredential::STATUS_REVOKED) {
-        $hasRevokedCred = TRUE;
+        $info['hasRevokedCred'] = TRUE;
         break;
       }
       foreach ($credential->getApiProducts() as $credProduct) {
         if ($credProduct->getStatus() == CredentialProduct::STATUS_REVOKED) {
-          $problematicApiProductName = $credProduct->getApiproduct();
-          $hasRevokedCredProduct = TRUE;
+          $info['problematicApiProductName'] = $credProduct->getApiproduct();
+          $info['hasRevokedCredProduct'] = TRUE;
           break;
         }
         elseif ($credProduct->getStatus() == CredentialProduct::STATUS_PENDING) {
-          $problematicApiProductName = $credProduct->getApiproduct();
-          $hasPendingCredProduct = TRUE;
+          $info['problematicApiProductName'] = $credProduct->getApiproduct();
+          $info['hasPendingCredProduct'] = TRUE;
           break;
         }
       }
     }
 
-    /*
-     * Display warning sign next to the status if app's status is approved, but:
-     *  - any credentials of the app is in revoked status
-     *  - any products of any credentials of the app is in revoked or pending
-     *    status.
-     */
-    if ($entity->getStatus() === App::STATUS_APPROVED && ($hasRevokedCred || $hasPendingCredProduct || $hasRevokedCredProduct)) {
-      $build['status'] = $infoRow['app_status']['data'];
+    return $info;
+  }
+
+  /**
+   * Builds a warning row for a developer app in the entity listing.
+   *
+   * The warning row contains the warning messages if necessary.
+   *
+   * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app
+   *   The developer app entity for this row of the list.
+   * @param array $rows
+   *   A render array containing the info and warning rows to be displayed.
+   *
+   * @return array
+   *   A render array structure of fields for this developer app entity.
+   */
+  protected function buildWarningRow(DeveloperAppInterface $developer_app, array $rows): array {
+    $appNameAsCssId = $this->getUniqueCssIdForApp($developer_app);
+    $warningRowId = "{$appNameAsCssId}-warning";
+    $infoRowId = "{$appNameAsCssId}-info";
+    $row = [
+      'data' => [],
+      'id' => $warningRowId,
+      'class' => [
+        'row--app',
+        'row--warning',
+      ],
+    ];
+
+    $info = $this->checkDeveloperApp($developer_app);
+
+    // Display warning sign next to the status if developer app's status is
+    // approved, but:
+    // - any credentials of the developer app is in revoked status
+    // - any products of any credentials of the developer app is in revoked or
+    //   pending status.
+    if ($developer_app->getStatus() === App::STATUS_APPROVED && ($info['hasRevokedCred'] || $info['hasPendingCredProduct'] || $info['hasRevokedCredProduct'])) {
+      $build['status'] = $rows[$infoRowId]['data']['app_status']['data'];
       $build['warning'] = [
         '#type' => 'html_tag',
         '#tag' => 'span',
@@ -320,62 +394,66 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
         ],
         'fragment' => $warningRowId,
       ];
-      $url = Url::fromUserInput($request->getRequestUri(), $link_options);
+      $url = Url::fromUserInput($this->requestStack->getCurrentRequest()->getRequestUri(), $link_options);
       $link = Link::fromTextAndUrl($this->t('<span class="ui-icon-triangle-1-e ui-icon"></span><span class="text">Show details</span>'), $url);
       $build['warning-toggle'] = $link->toRenderable();
-      $infoRow['app_status']['data'] = $this->renderer->render($build);
-      $warningRow['info'] = [
+      $rows[$infoRowId]['data']['app_status']['data'] = $this->renderer->render($build);
+      $row['data']['info'] = [
         'colspan' => 3,
       ];
 
-      if ($hasRevokedCred) {
+      if ($info['hasRevokedCred']) {
         $args = [
           '@developer_app' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
         ];
-        if (count($entity->getCredentials()) > 1) {
-          $warningRow['info']['data'] = $this->t(
+        if (count($developer_app->getCredentials()) > 1) {
+          $row['data']['info']['data'] = $this->t(
             'One of the credentials associated with this @developer_app is in revoked status.',
             $args
           );
         }
         else {
-          $warningRow['info']['data'] = $this->t(
+          $row['data']['info']['data'] = $this->t(
             'The credential associated with this @developer_app is in revoked status.',
             $args
           );
         }
       }
-      elseif ($hasRevokedCredProduct || $hasPendingCredProduct) {
+      elseif ($info['hasRevokedCredProduct'] || $info['hasPendingCredProduct']) {
         $args = [
           '@developer_app' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
           '@apiproduct' => $this->getApiProductEntityDefinition()->getLowercaseLabel(),
-          '@status' => $hasPendingCredProduct ? $this->t('pending') : $this->t('revoked'),
+          '@status' => $info['hasPendingCredProduct'] ? $this->t('pending') : $this->t('revoked'),
         ];
-        if (count($entity->getCredentials()) === 1) {
+        if (count($developer_app->getCredentials()) === 1) {
           /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $apiProduct */
-          $apiProduct = $this->getApiProductStorage()->load($problematicApiProductName);
+          $apiProduct = $this->getApiProductStorage()->load($info['problematicApiProductName']);
           $args['%name'] = $apiProduct->getDisplayName();
-          $warningRow['info']['data'] = $this->t("%name @apiproduct associated with this @developer_app is in @status status.", $args);
+          $row['data']['info']['data'] = $this->t("%name @apiproduct associated with this @developer_app is in @status status.", $args);
         }
         else {
-          $warningRow['info']['data'] = $this->t("At least one @apiproduct associated with one of the credentials of this @developer_app is in @status status.", $args);
+          $row['data']['info']['data'] = $this->t("At least one @apiproduct associated with one of the credentials of this @developer_app is in @status status.", $args);
         }
       }
     }
 
+    $rows[$warningRowId] = $row;
     return $rows;
   }
 
   /**
-   * Returns a rendered link to Add developer app form.
-   *
-   * @return array
-   *   Render array.
+   * {@inheritdoc}
    */
-  protected function renderAddAppLink() {
-    return Link::createFromRoute($this->t('Add @developer_app', [
-      '@developer_app' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
-    ]), 'entity.developer_app.add_form', [], ['attributes' => ['class' => 'btn btn-primary btn--add-app']])->toRenderable();
+  public function buildRow(EntityInterface $entity) {
+    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
+    $rows = [];
+
+    // Generate info row of the current developer app.
+    $rows = $this->buildInfoRow($entity, $rows);
+    // Generate warning row of the current developer app.
+    $rows = $this->buildWarningRow($entity, $rows);
+
+    return $rows;
   }
 
   /**
@@ -384,6 +462,7 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
   public function render() {
     $build['#attached']['library'][] = 'apigee_edge/apigee_edge.listing';
 
+    // Create "Add developer app" link.
     if ($this->entityTypeManager->getAccessControlHandler('developer_app')->createAccess()) {
       $build['add_app'] = [
         '#type' => 'container',
@@ -394,6 +473,7 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
       ];
     }
 
+    // Developer app entity list.
     $build['table'] = [
       '#id' => 'app-list',
       '#type' => 'table',
@@ -427,7 +507,9 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
    * {@inheritdoc}
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
-    return $this->t('@developer_app', ['@developer_app' => $this->getDeveloperAppEntityDefinition()->getPluralLabel()]);
+    return $this->t('@developer_app', [
+      '@developer_app' => $this->getDeveloperAppEntityDefinition()->getPluralLabel(),
+    ]);
   }
 
 }
