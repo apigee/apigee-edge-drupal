@@ -54,7 +54,8 @@
                 "Fix implementation of NoneKeyInput": "https://www.drupal.org/files/issues/2018-06-27/key-fix-implementation-of-nonekeyinput-2982124-2.patch"
             },
             "apigee/apigee-client-php": {
-                "OAuth re-authentication fix with expired refresh token": "https://github.com/apigee/apigee-client-php/commit/6ac0f3a8f1ad909d7f48dcd8e05f48bdd34d8245.diff"
+                "OAuth re-authentication fix with expired refresh token": "https://github.com/apigee/apigee-client-php/commit/6ac0f3a8f1ad909d7f48dcd8e05f48bdd34d8245.diff",
+                "Getting rid of an OAuth related dead one": "https://github.com/apigee/apigee-client-php/commit/e27a9d51ad61e4453493e58be70e52834c525e12.diff"
             }
         },
         "patchLevel": {
