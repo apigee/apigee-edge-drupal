@@ -254,7 +254,9 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
    * {@inheritdoc}
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
-    return $this->t('Add @developer_app', ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel()]);
+    return $this->t('Add @developer_app', [
+      '@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel(),
+    ]);
   }
 
   /**

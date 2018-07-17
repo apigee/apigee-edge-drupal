@@ -27,6 +27,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Render\Markup;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -203,7 +204,7 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
     if ($account->id() == $this->currentUser->id()) {
       return t('My @developer_app', $args);
     }
-    $args['@user'] = $account->getDisplayName();
+    $args['@user'] = Markup::create($account->getDisplayName());
     return t('@developer_app of @user', $args);
   }
 

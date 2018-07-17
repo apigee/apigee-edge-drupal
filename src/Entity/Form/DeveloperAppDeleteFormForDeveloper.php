@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge\Entity\Form;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -91,7 +92,7 @@ class DeveloperAppDeleteFormForDeveloper extends DeveloperAppDeleteForm {
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
     return $this->pageTitle([
-      '@name' => $routeMatch->getParameter('app')->getDisplayName(),
+      '@name' => Markup::create($routeMatch->getParameter('app')->getDisplayName()),
       '@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel(),
     ]);
   }
