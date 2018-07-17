@@ -48,13 +48,20 @@ class ConnectionConfigTest extends ApigeeEdgeFunctionalTestBase {
 
     // Update the test process's kernel with a new service container.
     $this->rebuildContainer();
+    /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
     $sdk_connector = $this->container->get('apigee_edge.sdk_connector');
     // Get the client object from the SDK connector.
-    $http_client = parent::getInvisibleProperty($sdk_connector, 'httpClient')->getValue($sdk_connector);
-    $client = parent::getInvisibleProperty($http_client, 'client')->getValue($http_client);
-
-    $this->assertEquals($connect_timeout, $client->getConfig('connect_timeout'));
-    $this->assertEquals($request_timeout, $client->getConfig('timeout'));
+    $api_client = $sdk_connector->getClient();
+    $ro = new \ReflectionObject($api_client);
+    $rm = $ro->getMethod('getHttpClient');
+    $rm->setAccessible(TRUE);
+    /** @var \Http\Client\Common\PluginClient $plugin_client */
+    $plugin_client = $rm->invoke($api_client);
+    $httplug_client = parent::getInvisibleProperty($plugin_client, 'client')->getValue($plugin_client);
+    /** @var \GuzzleHttp\Client $client */
+    $http_client = parent::getInvisibleProperty($httplug_client, 'client')->getValue($httplug_client);
+    $this->assertEquals($connect_timeout, $http_client->getConfig('connect_timeout'));
+    $this->assertEquals($request_timeout, $http_client->getConfig('timeout'));
   }
 
 }
