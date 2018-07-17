@@ -270,10 +270,11 @@ class SDKConnector implements SDKConnectorInterface {
     }
     else {
       $client = $this->getClient();
+      $credentials = $this->getCredentials();
     }
+
     try {
       $oc = new OrganizationController($client);
-      $credentials = $this->getCredentials();
       $oc->load($credentials->getKeyType()->getOrganization($credentials->getKey()));
     }
     catch (\Exception $e) {
