@@ -17,7 +17,8 @@
         {
             "type": "vcs",
             "_comment1": "We have to install it from here until this PR is open: https://github.com/wikimedia/composer-merge-plugin/pull/169.",
-            "url": "https://github.com/mxr576/composer-merge-plugin"
+            "url": "https://github.com/mxr576/composer-merge-plugin",
+            "no-api": true
         }
     ],
     "config": {
