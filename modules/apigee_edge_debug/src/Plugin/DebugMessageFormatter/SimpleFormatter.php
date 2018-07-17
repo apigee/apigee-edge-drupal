@@ -20,7 +20,6 @@
 
 namespace Drupal\apigee_edge_debug\Plugin\DebugMessageFormatter;
 
-use GuzzleHttp\TransferStats;
 use Http\Message\Formatter;
 use Http\Message\Formatter\SimpleFormatter as OriginalSimpleFormatter;
 
@@ -40,13 +39,6 @@ class SimpleFormatter extends DebugMessageFormatterPluginBase {
    * @var \Http\Message\Formatter\SimpleFormatter
    */
   private static $formatter;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function formatStats(TransferStats $stats): string {
-    return var_export($this->getTimeStatsInSeconds($stats), TRUE);
-  }
 
   /**
    * {@inheritdoc}

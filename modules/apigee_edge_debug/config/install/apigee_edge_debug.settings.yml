@@ -1,4 +1,4 @@
-debug_message_formatter: simple
-debug_message_format: "{request_formatted}<p>Transfer statistics: <pre>{stats}</pre></p>"
+formatter: full_html
+log_message_format: "<pre>{request_formatted}</pre>\n<p>Transfer statistics: <pre>{stats}</pre></p>"
 masquerade_organization: true
-remove_authorization_header: true
+remove_credentials: true

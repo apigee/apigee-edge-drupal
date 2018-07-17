@@ -23,6 +23,7 @@ namespace Drupal\apigee_edge_debug\Plugin\DebugMessageFormatter;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\PluginBase;
+use GuzzleHttp\Psr7;
 use GuzzleHttp\TransferStats;
 use Http\Message\Formatter;
 use Psr\Http\Message\RequestInterface;
@@ -30,7 +31,7 @@ use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Defines base class for debug message formatter plugins.
+ * Defines a base class for debug message formatter plugins.
  */
 abstract class DebugMessageFormatterPluginBase extends PluginBase implements ContainerFactoryPluginInterface, DebugMessageFormatterPluginInterface {
 
@@ -46,7 +47,7 @@ abstract class DebugMessageFormatterPluginBase extends PluginBase implements Con
    *
    * @var bool
    */
-  protected $removeAuthorizationHeader;
+  protected $removeCredentials;
 
   /**
    * DebugMessageFormatterPluginBase constructor.
@@ -63,15 +64,45 @@ abstract class DebugMessageFormatterPluginBase extends PluginBase implements Con
   public function __construct(ConfigFactoryInterface $config, array $configuration, string $plugin_id, $plugin_definition) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->masqueradeOrganization = $config->get('apigee_edge_debug.settings')->get('masquerade_organization');
-    $this->removeAuthorizationHeader = $config->get('apigee_edge_debug.settings')->get('remove_authorization_header');
+    $this->removeCredentials = $config->get('apigee_edge_debug.settings')->get('remove_credentials');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static($container->get('config.factory'), $configuration, $plugin_id, $plugin_definition);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getId(): string {
+    return $this->pluginDefinition['id'];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getLabel(): string {
+    return $this->pluginDefinition['label'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function formatRequest(RequestInterface $request) {
-    if ($this->removeAuthorizationHeader) {
+    // Do not modify the original request object.
+    if ($this->removeCredentials) {
       $request = $request->withoutHeader('Authorization');
+      if ($request->getMethod() === 'POST' && $request->getUri()->getPath() === '/oauth/token') {
+        $body = (string) $request->getBody();
+        $body = preg_replace('/(.*refresh_token=)([^\&]+)(.*)/', '$1***refresh-token***$3', $body);
+        $body = preg_replace('/(.*mfa_token=)([^\&]+)(.*)/', '$1***mfa-token***$3', $body);
+        $body = preg_replace('/(.*username=)([^\&]+)(.*)/', '$1***username***$3', $body);
+        $body = preg_replace('/(.*password=)([^\&]+)(.*)/', '$1***password***$3', $body);
+        $request = $request->withBody(Psr7\stream_for($body));
+      }
     }
     if ($this->masqueradeOrganization) {
       $pattern = '/(\/v\d+\/(?:o|organizations))(?:\/)([^\/]+)(?:\/?)(.*)/';
@@ -94,29 +125,30 @@ abstract class DebugMessageFormatterPluginBase extends PluginBase implements Con
   /**
    * {@inheritdoc}
    */
-  public function formatResponse(ResponseInterface $response) {
+  public function formatResponse(ResponseInterface $response, RequestInterface $request) {
+    if ($this->removeCredentials) {
+      $request = $request->withoutHeader('Authorization');
+      if ($request->getMethod() === 'POST' && $request->getUri()->getPath() === '/oauth/token') {
+        $json = json_decode((string) $response->getBody(), TRUE);
+        if (json_last_error() === JSON_ERROR_NONE) {
+          if (isset($json['access_token'])) {
+            $json['access_token'] = '***access-token***';
+          }
+          if (isset($json['refresh_token'])) {
+            $json['refresh_token'] = '***refresh-token***';
+          }
+          $response = $response->withBody(Psr7\stream_for(json_encode((object) $json)));
+        }
+      }
+    }
     return $this->getFormatter()->formatResponse($response);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getId(): string {
-    return $this->pluginDefinition['id'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getLabel(): string {
-    return $this->pluginDefinition['label'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static($container->get('config.factory'), $configuration, $plugin_id, $plugin_definition);
+  public function formatStats(TransferStats $stats): string {
+    return var_export($this->getTimeStatsInSeconds($stats), TRUE);
   }
 
   /**
