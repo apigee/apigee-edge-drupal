@@ -22,11 +22,11 @@ namespace Drupal\apigee_edge\Entity\Controller;
 
 use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController as EdgeDeveloperAppCredentialController;
 use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
-use Apigee\Edge\Entity\EntityInterface;
 use Apigee\Edge\Structure\AttributesProperty;
 use Drupal\apigee_edge\Entity\AppCredentialStorageAwareTrait;
 use Drupal\apigee_edge\Event\AppCredentialAddApiProductEvent;
 use Drupal\apigee_edge\Event\AppCredentialCreateEvent;
+use Drupal\apigee_edge\Event\AppCredentialDeleteEvent;
 use Drupal\apigee_edge\Event\AppCredentialGenerateEvent;
 
 /**
@@ -112,7 +112,7 @@ class DeveloperAppCredentialController extends EdgeDeveloperAppCredentialControl
    *
    * @throws \Drupal\Core\TempStore\TempStoreException
    */
-  public function deleteApiProduct(string $consumerKey, string $apiProduct): EntityInterface {
+  public function deleteApiProduct(string $consumerKey, string $apiProduct): AppCredentialInterface {
     $credential = parent::deleteApiProduct($consumerKey, $apiProduct);
     // We have to clear all, see method's description for explanation.
     $this->clearAppCredentialsFromStorage($this->developerId, $this->appName);
@@ -147,7 +147,7 @@ class DeveloperAppCredentialController extends EdgeDeveloperAppCredentialControl
    *
    * @throws \Drupal\Core\TempStore\TempStoreException
    */
-  public function delete(string $entityId): EntityInterface {
+  public function delete(string $entityId): AppCredentialInterface {
     $entity = parent::delete($entityId);
     \Drupal::service('event_dispatcher')->dispatch(AppCredentialDeleteEvent::EVENT_NAME, new AppCredentialDeleteEvent(AppCredentialCreateEvent::APP_TYPE_DEVELOPER, $this->developerId, $this->appName, $entity));
     // We have to clear all, see method's description for explanation.
