@@ -24,9 +24,9 @@
     "config": {
         "sort-packages": true,
         "optimize-autoloader": true,
+        "_comment1": "PHP API Client patches that modifies tests files only apply if it is installed from source.",
         "preferred-install": {
             "*": "dist",
-            "_comment1": "PHP API Client pathces that modifies tests files only apply if it is installed from source.",
             "apigee/apigee-client-php": "source"
         }
     },

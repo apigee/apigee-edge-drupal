@@ -1,0 +1,5 @@
+apigee_edge_debug.settings:
+  title: 'Debug'
+  parent: system.admin_config_edge
+  route_name: apigee_edge_debug.settings
+  weight: 100

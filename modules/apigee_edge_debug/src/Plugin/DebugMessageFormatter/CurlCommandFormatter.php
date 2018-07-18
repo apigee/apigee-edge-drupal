@@ -25,9 +25,17 @@ use Http\Message\Formatter;
 use Http\Message\Formatter\CurlCommandFormatter as OriginalCurlCommandFormatter;
 
 /**
- * Debug message formatter plugin for cURL commands.
+ * CURL command message formatter plugin.
+ *
+ * Output API request as a cURL command. It does not render response- or
+ * transfer statistics data.
+ *
+ * @DebugMessageFormatter(
+ *   id = "curl",
+ *   label = @Translation("cURL command"),
+ * )
  */
-class CurlCommandFormatter extends DebugMessageFormatterPluginBase implements Formatter {
+class CurlCommandFormatter extends DebugMessageFormatterPluginBase {
 
   /**
    * The original cURL command formatter.

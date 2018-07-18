@@ -7,6 +7,5 @@
 !.gitkeep
 
 # Other ignored paths and files.
-/build
 /vendor
 composer.lock

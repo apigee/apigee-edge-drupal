@@ -60,7 +60,7 @@ class DeveloperAppBaseFieldConfigForm extends FormBase {
 
     $form['callback_url'] = [
       '#type' => 'details',
-      '#title' => t('Callback URL settings'),
+      '#title' => $this->t('Callback URL settings'),
       '#open' => TRUE,
       '#tree' => TRUE,
     ];

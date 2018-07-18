@@ -18,36 +18,24 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge_debug\Plugin\DebugMessageFormatter;
+namespace Drupal\apigee_edge;
 
-use Http\Message\Formatter;
-use Http\Message\Formatter\SimpleFormatter as OriginalSimpleFormatter;
+use Apigee\Edge\ClientInterface;
+use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
+use Http\Message\Authentication\BasicAuth;
 
 /**
- * Simple debug message formatter plugin.
- *
- * @DebugMessageFormatter(
- *   id = "simple",
- *   label = @Translation("Simple"),
- * )
+ * Decorator for OAuth authentication plugin.
  */
-class SimpleFormatter extends DebugMessageFormatterPluginBase {
-
-  /**
-   * The original simple formatter.
-   *
-   * @var \Http\Message\Formatter\SimpleFormatter
-   */
-  private static $formatter;
+class OauthAuthentication extends Oauth {
 
   /**
    * {@inheritdoc}
    */
-  protected function getFormatter(): Formatter {
-    if (NULL === self::$formatter) {
-      self::$formatter = new OriginalSimpleFormatter();
-    }
-    return self::$formatter;
+  protected function authClient(): ClientInterface {
+    /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
+    $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
+    return $sdk_connector->buildClient(new BasicAuth($this->clientId, $this->clientSecret), $this->auth_server);
   }
 
 }
