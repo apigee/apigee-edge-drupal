@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge\Plugin\KeyInput;
 
+use Apigee\Edge\ClientInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\key\Plugin\KeyInputBase;
@@ -71,7 +72,9 @@ class BasicAuthKeyInput extends KeyInputBase {
     $form['endpoint'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Apigee Edge endpoint'),
-      '#description' => $this->t('Apigee Edge endpoint where the API calls are being sent. Leave empty to use the default <em>https://api.enterprise.apigee.com/v1</em> endpoint.'),
+      '#description' => $this->t('Apigee Edge endpoint where the API calls are being sent. Leave empty to use the default %endpoint endpoint.', [
+        '%endpoint' => ClientInterface::DEFAULT_ENDPOINT,
+      ]),
       '#required' => $key->getKeyType()->getPluginDefinition()['multivalue']['fields']['endpoint']['required'],
       '#default_value' => $values['endpoint'],
       '#attributes' => ['autocomplete' => 'off'],
