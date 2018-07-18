@@ -7,6 +7,24 @@ The Apigee Edge module enables you to integrate Drupal 8 with Apigee Edge.
 
 ### Installing
 
+> The Apigee Edge module may require Drupal core or contributed module
+patches to be able to work properly. These patches can be applied
+automatically when Apigee Edge module gets installed but for that your
+Drupal installation must fulfill the following requirements:
+> 1. [cweagans/composer-patches](https://packagist.org/packages/cweagans/composer-patches) >= 1.6.5 has to be installed.
+> 1. ["Allowing patches to be applied from dependencies
+"](https://github.com/cweagans/composer-patches/tree/1.6.5#allowing-patches-to-be-applied-from-dependencies)
+has to be enabled Drupal's composer.json.
+> 1. Proper [patch level](https://github.com/cweagans/composer-patches/pull/101#issue-104810467)
+for drupal/core has to be set in Drupal's composer.json.
+>
+> You can find the currently required patches in the Apigee Edge module's [composer.json](https://github.com/apigee/apigee-edge-drupal/blob/8.x-1.x/composer.json)
+and in the Apigee Edge PHP API Client's [composer.json](https://github.com/apigee/apigee-client-php/blob/2.x/composer.json).
+>
+> **If you do not have all required patches applied in your Drupal
+installation you may experience some problems with the Apigee Edge
+module.**
+
 1. Install the Apigee Edge module using [Composer](https://getcomposer.org/).
   Composer will download the Apigee Edge module and all its dependencies.
   **Note**: Composer must be executed at the root of your Drupal installation.
