@@ -25,6 +25,9 @@ use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialController;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
+use Drupal\apigee_edge\Event\AppCredentialCreateEvent;
+use Drupal\apigee_edge\Event\AppCredentialDeleteEvent;
+use Drupal\apigee_edge_test_app_keys\EventSubscriber\CreateDeleteAppKey;
 use Drupal\Core\Entity\EntityInterface;
 
 /**
@@ -93,11 +96,7 @@ class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
     $app->delete();
   }
 
-  /**
-   * @throws \Drupal\Core\Entity\EntityStorageException
-   * @throws \Drupal\Core\TempStore\TempStoreException
-   */
-  public function testExternalKeyGeneration() {
+  public function testAppCredentialEvents() {
     $validateCredential = function (AppCredentialInterface $credential) {
       $prefix = apigee_edge_test_app_keys_get_prefix();
       $this->assertStringStartsWith($prefix, $credential->getConsumerKey());
@@ -112,7 +111,7 @@ class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
     $validateCredential($credential);
     $app->delete();
 
-    // Test with generate.
+    // Override (default) app key when an app is created.
     $app = $this->createApp();
     $apiproduct = ApiProduct::create([
       'name' => $this->randomMachineName(),
@@ -123,9 +122,11 @@ class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
     $credentials = $app->getCredentials();
     $credential = reset($credentials);
     /** @var \Drupal\apigee_edge\SDKConnectorInterface $connector */
-    $connector = \Drupal::service('apigee_edge.sdk_connector');
+    $connector = $this->container->get('apigee_edge.sdk_connector');
     $dacc = new DeveloperAppCredentialController($connector->getOrganization(), $app->getDeveloperId(), $app->getName(), $connector->getClient());
     $dacc->delete($credential->getConsumerKey());
+
+    // Override app key on generate.
     $dacc->generate([$apiproduct->id()], $app->getAttributes(), (string) $app->getCallbackUrl(), $app->getScopes(), 60 * 60 * 1000);
     // Also test that related caches got invalidated, this is the reason why
     // we retrieve the credentials from the app instead of use the return
@@ -133,6 +134,18 @@ class DeveloperAppTest extends ApigeeEdgeFunctionalTestBase {
     $credentials = $app->getCredentials();
     $credential = reset($credentials);
     $validateCredential($credential);
+
+    // Delete app key event.
+    /** @var \Drupal\Core\State\StateInterface $states */
+    $state = $this->container->get('state');
+    $dacc->delete($credential->id());
+    $this->assertNotNull($state->get(CreateDeleteAppKey::generateStateKey(AppCredentialDeleteEvent::APP_TYPE_DEVELOPER, $app->getDeveloperId(), $app->getName(), $credential->id())));
+
+    // Create (additional) app key event.
+    $credential_key = $this->randomMachineName();
+    $dacc->create($credential_key, $this->randomMachineName());
+    $this->assertNotNull($state->get(CreateDeleteAppKey::generateStateKey(AppCredentialCreateEvent::APP_TYPE_DEVELOPER, $app->getDeveloperId(), $app->getName(), $credential->id())));
+
     $app->delete();
     $apiproduct->delete();
   }
