@@ -58,7 +58,7 @@ abstract class AbstractAppCredentialEvent extends Event {
    * @param string $appType
    *   Either company or developer.
    * @param string $ownerId
-   *   Company name or developer id (email) depending on the appType.
+   *   Company name or developer id (uuid by default) depending on the appType.
    * @param string $appName
    *   Name of the app.
    * @param \Apigee\Edge\Api\Management\Entity\AppCredentialInterface $credential
