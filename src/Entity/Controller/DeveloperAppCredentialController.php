@@ -149,6 +149,7 @@ class DeveloperAppCredentialController extends EdgeDeveloperAppCredentialControl
    */
   public function delete(string $entityId): EntityInterface {
     $entity = parent::delete($entityId);
+    \Drupal::service('event_dispatcher')->dispatch(AppCredentialDeleteEvent::EVENT_NAME, new AppCredentialDeleteEvent(AppCredentialCreateEvent::APP_TYPE_DEVELOPER, $this->developerId, $this->appName, $entity));
     // We have to clear all, see method's description for explanation.
     $this->clearAppCredentialsFromStorage($this->developerId, $this->appName);
     return $entity;
