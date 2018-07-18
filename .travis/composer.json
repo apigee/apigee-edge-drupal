@@ -23,6 +23,7 @@
     ],
     "config": {
         "sort-packages": true,
+        "optimize-autoloader": true,
         "preferred-install": {
             "*": "dist",
             "_comment1": "PHP API Client pathces that modifies tests files only apply if it is installed from source.",
