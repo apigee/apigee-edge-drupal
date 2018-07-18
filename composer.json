@@ -6,6 +6,7 @@
     "require": {
         "php": ">=7.1",
         "apigee/apigee-client-php": "^2.0",
+        "cweagans/composer-patches": "^1.6.5",
         "drupal/core": "^8.5",
         "drupal/entity": "^1.0",
         "drupal/key": "^1.7",
@@ -13,29 +14,16 @@
     },
     "require-dev": {
         "behat/mink" : "dev-master#9ea1cebe",
-        "composer/installers": "^1.2",
-        "cweagans/composer-patches": "^1.6.5",
-        "drupal-composer/drupal-scaffold": "^2.2",
         "drush/drush": "^9.0",
         "egulias/email-validator": "1.2.14",
         "phpunit/phpunit": "^6.5",
-        "webflo/drupal-core-require-dev": "^8.5.0"
+        "webflo/drupal-core-require-dev": "^8.5"
     },
     "conflict": {
         "apigee/apigee-client-php": "<= 2.0.0-alpha1"
     },
-    "repositories": [
-        {
-            "type": "composer",
-            "url": "https://packages.drupal.org/8"
-        }
-    ],
     "config": {
-        "sort-packages": true,
-        "preferred-install": {
-            "*": "dist",
-            "apigee/apigee-client-php": "source"
-        }
+        "sort-packages": true
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
@@ -56,18 +44,6 @@
             "apigee/apigee-client-php": {
                 "OAuth re-authentication fix with expired refresh token and minor changes": "https://github.com/apigee/apigee-client-php/pull/9.diff"
             }
-        },
-        "patchLevel": {
-            "drupal/core": "-p2"
-        },
-        "installer-paths": {
-            "build/core": ["type:drupal-core"],
-            "build/modules/contrib/{$name}": ["type:drupal-module"],
-            "build/profiles/contrib/{$name}": ["type:drupal-profile"],
-            "build/themes/contrib/{$name}": ["type:drupal-theme"],
-            "build/drush/contrib/{$name}": ["type:drupal-drush"],
-            "build/modules/custom/{$name}": ["type:drupal-custom-module"],
-            "build/themes/custom/{$name}": ["type:drupal-custom-theme"]
         }
     }
 }
