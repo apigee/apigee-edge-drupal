@@ -1,5 +1,11 @@
 services:
   apigee_edge.event_subscriber.override_app_keys_on_generate:
     class: Drupal\apigee_edge_test_app_keys\EventSubscriber\OverrideAppKeysOnGenerate
+    arguments: ['@apigee_edge.sdk_connector']
+    tags:
+      - { name: event_subscriber }
+  apigee_edge.event_subscriber.create_delete_app_key:
+    class: Drupal\apigee_edge_test_app_keys\EventSubscriber\CreateDeleteAppKey
+    arguments: ['@datetime.time', '@state']
     tags:
       - { name: event_subscriber }
