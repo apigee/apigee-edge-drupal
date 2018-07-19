@@ -22,8 +22,7 @@ COMPOSER_GLOBAL_OPTIONS="--no-interaction -o"
 # on the parent cache folder because it did not exist before.
 sudo -u root sh -c "chown -R wodby:wodby /home/wodby/.composer/cache"
 
-# Copy module's source to web root parent.
-cp -R ${MODULE_PATH}/. ${WEB_ROOT_PARENT} && cd ${WEB_ROOT_PARENT}
+cd ${MODULE_PATH}/.travis
 
 # Install module with its dependencies (including dev dependencies).
 composer update ${COMPOSER_GLOBAL_OPTIONS} ${DEPENDENCIES} --with-dependencies
@@ -33,28 +32,34 @@ if [ -n "${DRUPAL_CORE}" ]; then
   composer require drupal/core:${DRUPAL_CORE} webflo/drupal-core-require-dev:${DRUPAL_CORE} ${COMPOSER_GLOBAL_OPTIONS};
 fi
 
+# Copying Drupal to the right place.
+# Symlinking is not an option becaue the webserver container would not be
+# able to access to files.
+cp -R ${MODULE_PATH}/.travis/build ${WEB_ROOT_PARENT}
+cp -R ${MODULE_PATH}/.travis/vendor ${WEB_ROOT_PARENT}
+
 # Symlink module to the contrib folder.
 ln -s ${MODULE_PATH} ${WEB_ROOT}/modules/contrib/${DRUPAL_MODULE_NAME}
 
-# Based on https://www.drupal.org/node/244924, but we had to grant read
-# access to files and read + execute access to directories to "others"
-# otherwise Javascript tests failed by using webdriver.
-# (Error: jQuery was not found an AJAX form.)
-sudo -u root sh -c "chown -R wodby:www-data $WEB_ROOT \
-    && find $WEB_ROOT -type d -exec chmod 6755 '{}' \; \
-    && find $WEB_ROOT -type f -exec chmod 0644 '{}' \;"
-
-sudo -u root sh -c "mkdir -p $WEB_ROOT/sites/default/files \
-    && chown -R wodby:www-data $WEB_ROOT/sites/default/files \
-    && chmod 6770 $WEB_ROOT/sites/default/files"
-
 # Pre-create simpletest and screenshots directories...
-sudo -u root mkdir -p ${WEB_ROOT}/sites/simpletest
+sudo -u root -E mkdir -p ${WEB_ROOT}/sites/simpletest
 sudo -u root mkdir -p /mnt/files/log/screenshots
 # and some other.
 # (These are required by core/phpunit.xml.dist).
 sudo -u root mkdir -p ${WEB_ROOT}/profiles
 sudo -u root mkdir -p ${WEB_ROOT}/themes
+
+# Based on https://www.drupal.org/node/244924, but we had to grant read
+# access to files and read + execute access to directories to "others"
+# otherwise Javascript tests failed by using webdriver.
+# (Error: jQuery was not found an AJAX form.)
+sudo -u root -E sh -c "chown -R wodby:www-data $WEB_ROOT \
+    && find $WEB_ROOT -type d -exec chmod 6755 '{}' \; \
+    && find $WEB_ROOT -type f -exec chmod 0644 '{}' \;"
+
+sudo -u root -E sh -c "mkdir -p $WEB_ROOT/sites/default/files \
+    && chown -R wodby:www-data $WEB_ROOT/sites/default/files \
+    && chmod 6770 $WEB_ROOT/sites/default/files"
 
 # Make sure that the log folder is writable for both www-data and wodby users.
 # Also create a dedicated folder for PHPUnit outputs.

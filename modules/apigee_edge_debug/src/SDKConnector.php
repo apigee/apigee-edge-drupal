@@ -21,14 +21,6 @@
 namespace Drupal\apigee_edge_debug;
 
 use Drupal\apigee_edge\SDKConnector as OriginalSDKConnector;
-use Drupal\Component\Utility\NestedArray;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Extension\InfoParserInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Http\ClientFactory;
-use Drupal\Core\State\StateInterface;
-use Drupal\key\KeyRepositoryInterface;
-use Http\Adapter\Guzzle6\Client as GuzzleClientAdapter;
 
 /**
  * Service decorator for SDKConnector.
@@ -38,7 +30,7 @@ class SDKConnector extends OriginalSDKConnector {
   /**
    * Customer http request header.
    *
-   * This tells ApiClientProfiler to profile requests made by the underlying
+   * This tells the ApiClientProfiler to profile requests made by the underlying
    * HTTP client.
    *
    * @see \Drupal\apigee_edge_debug\HttpClientMiddleware\ApiClientProfiler
@@ -53,30 +45,12 @@ class SDKConnector extends OriginalSDKConnector {
   private $innerService;
 
   /**
-   * SDKConnector constructor.
-   *
-   * @param \Drupal\Core\Http\ClientFactory $clientFactory
-   *   Http Client factory service.
-   * @param \Drupal\key\KeyRepositoryInterface $key_repository
-   *   The key repository.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   Entity Type manager service.
-   * @param \Drupal\Core\State\StateInterface $state
-   *   The state key/value store.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
-   *   Module handler service.
-   * @param \Drupal\Core\Extension\InfoParserInterface $infoParser
-   *   Info file parser service.
+   * {@inheritdoc}
    */
-  public function __construct(ClientFactory $clientFactory, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ModuleHandlerInterface $moduleHandler, InfoParserInterface $infoParser) {
-    parent::__construct($clientFactory, $key_repository, $entity_type_manager, $state, $moduleHandler, $infoParser);
-    $config = [
-      'headers' => [
-        static::HEADER => static::HEADER,
-      ],
-    ];
-    $config = NestedArray::mergeDeep($this->getHttpClientConfiguration($state), $config);
-    $this->httpClient = new GuzzleClientAdapter($clientFactory->fromOptions($config));
+  protected function httpClientConfiguration(): array {
+    $config = parent::httpClientConfiguration();
+    $config['headers'][static::HEADER] = static::HEADER;
+    return $config;
   }
 
   /**

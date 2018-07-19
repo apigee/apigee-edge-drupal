@@ -77,11 +77,11 @@ class ApiClientProfiler {
     // the module's configuration would have been imported to the database.
     // In that case the $formatterPluginId is missing and it causes fatal
     // errors.
-    $formatterPluginId = $configFactory->get('apigee_edge_debug.settings')->get('debug_message_formatter');
+    $formatterPluginId = $configFactory->get('apigee_edge_debug.settings')->get('formatter');
     if ($formatterPluginId) {
       $this->formatter = $debugMessageFormatterPlugin->createInstance($formatterPluginId);
     }
-    $this->logFormat = $configFactory->get('apigee_edge_debug.settings')->get('debug_message_format');
+    $this->logFormat = $configFactory->get('apigee_edge_debug.settings')->get('log_message_format');
     $this->logger = $logger;
     $this->debugMessageFormatterPlugin = $debugMessageFormatterPlugin;
   }
@@ -115,18 +115,23 @@ class ApiClientProfiler {
         $logFormat = $this->logFormat;
 
         $options[RequestOptions::ON_STATS] = function (TransferStats $stats) use ($request, $next, $logger, $formatter, $logFormat) {
+          // Do not modify the original request object in the subsequent calls.
+          $request_clone = clone $request;
           $level = LogLevel::DEBUG;
           // Do not log this request if it has not been made by the Apigee
           // Edge SDK connector.
-          if (!$request->hasHeader(SDKConnector::HEADER)) {
+          if (!$request_clone->hasHeader(SDKConnector::HEADER)) {
             return;
           }
           $context = [
-            'request_formatted' => $formatter->formatRequest($request),
+            'request_formatted' => $formatter->formatRequest($request_clone),
             'stats' => $formatter->formatStats($stats),
           ];
           if ($stats->hasResponse()) {
-            $context['response_formatted'] = $formatter->formatResponse($stats->getResponse());
+            // Do not modify the original response object in the subsequent
+            // calls.
+            $response_clone = clone $stats->getResponse();
+            $context['response_formatted'] = $formatter->formatResponse($response_clone, $request_clone);
             if ($stats->getResponse()->getStatusCode() >= 400) {
               $level = LogLevel::WARNING;
             }

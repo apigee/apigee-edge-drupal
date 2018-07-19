@@ -1,11 +1,11 @@
 apigee_edge_debug.settings:
   type: config_object
   mapping:
-    debug_message_formatter:
+    formatter:
       type: string
-    debug_message_format:
+    log_message_format:
       type: text
     masquerade_organization:
       type: boolean
-    remove_authorization_header:
+    remove_credentials:
       type: boolean

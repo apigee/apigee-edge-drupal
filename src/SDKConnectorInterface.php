@@ -21,6 +21,7 @@ namespace Drupal\apigee_edge;
 
 use Apigee\Edge\ClientInterface;
 use Drupal\key\KeyInterface;
+use Http\Message\Authentication;
 
 /**
  * Defines an interface for SDK controller classes.
@@ -56,5 +57,18 @@ interface SDKConnectorInterface {
    * @throws \Exception
    */
   public function testConnection(KeyInterface $key = NULL, KeyInterface $key_token = NULL);
+
+  /**
+   * Returns a pre-configured API client with the provided credentials.
+   *
+   * @param \Http\Message\Authentication $authentication
+   *   Authentication.
+   * @param null|string $endpoint
+   *   API endpoint, default is https://api.enterprise.apigee.com/v1.
+   *
+   * @return \Apigee\Edge\ClientInterface
+   *   Configured API client.
+   */
+  public function buildClient(Authentication $authentication, ?string $endpoint = NULL): ClientInterface;
 
 }
