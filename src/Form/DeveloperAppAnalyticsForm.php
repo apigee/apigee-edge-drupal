@@ -442,7 +442,7 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
     return $this->t('Analytics of @name', [
-      '@name' => Markup::create($routeMatch->getParameter('developer_app')->getDisplayName()),
+      '@name' => Markup::create($routeMatch->getParameter('developer_app')->label()),
     ]);
   }
 

@@ -73,7 +73,7 @@ class CacheTest extends ApigeeEdgeFunctionalTestBase {
 
   protected function warmCaches() {
     $this->drupalGet("/user/{$this->account->id()}/apps");
-    $this->clickLink($this->app->getDisplayName());
+    $this->clickLink($this->app->label());
   }
 
   /**

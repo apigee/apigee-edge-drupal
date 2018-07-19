@@ -99,7 +99,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->clickLink($name);
 
     $this->assertSession()->pageTextContains($name);
-    $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
+    $this->assertSession()->pageTextContains($this->products[0]->label());
 
     $this->clickLink('Delete');
     $this->submitForm([], 'Delete');
@@ -224,7 +224,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     ]);
 
     $asserts = function () {
-      $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
+      $this->assertSession()->pageTextContains($this->products[0]->label());
     };
 
     $this->assertAppCrud(NULL, $asserts, NULL, $asserts);
@@ -245,9 +245,9 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     ]);
 
     $asserts = function () {
-      $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
-      $this->assertSession()->pageTextContains($this->products[1]->getDisplayName());
-      $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
+      $this->assertSession()->pageTextContains($this->products[0]->label());
+      $this->assertSession()->pageTextContains($this->products[1]->label());
+      $this->assertSession()->pageTextNotContains($this->products[2]->label());
     };
 
     $this->assertAppCrud(NULL, $asserts, NULL, $asserts);
@@ -266,15 +266,15 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
         return $data;
       },
       function () {
-        $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
+        $this->assertSession()->pageTextContains($this->products[0]->label());
       },
       function (array $data, string $credential_id): array {
         $data["credential[{$credential_id}][api_products]"] = $this->products[1]->getName();
         return $data;
       },
       function () {
-        $this->assertSession()->pageTextNotContains($this->products[0]->getDisplayName());
-        $this->assertSession()->pageTextContains($this->products[1]->getDisplayName());
+        $this->assertSession()->pageTextNotContains($this->products[0]->label());
+        $this->assertSession()->pageTextContains($this->products[1]->label());
       }
     );
   }
@@ -293,14 +293,14 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
         return $data;
       },
       function () {
-        $this->assertSession()->pageTextContains($this->products[1]->getDisplayName());
+        $this->assertSession()->pageTextContains($this->products[1]->label());
       },
       function (array $data, string $credential_id): array {
         $data["credential[{$credential_id}][api_products]"] = $this->products[0]->getName();
         return $data;
       },
       function () {
-        $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
+        $this->assertSession()->pageTextContains($this->products[0]->label());
       }
     );
   }
@@ -322,9 +322,9 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
         return $data;
       },
       function () {
-        $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
-        $this->assertSession()->pageTextContains($this->products[1]->getDisplayName());
-        $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
+        $this->assertSession()->pageTextContains($this->products[0]->label());
+        $this->assertSession()->pageTextContains($this->products[1]->label());
+        $this->assertSession()->pageTextNotContains($this->products[2]->label());
       },
       function (array $data, string $credential_id): array {
         $data["credential[{$credential_id}][api_products][]"] = [
@@ -333,9 +333,9 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
         return $data;
       },
       function () {
-        $this->assertSession()->pageTextNotContains($this->products[0]->getDisplayName());
-        $this->assertSession()->pageTextNotContains($this->products[1]->getDisplayName());
-        $this->assertSession()->pageTextContains($this->products[2]->getDisplayName());
+        $this->assertSession()->pageTextNotContains($this->products[0]->label());
+        $this->assertSession()->pageTextNotContains($this->products[1]->label());
+        $this->assertSession()->pageTextContains($this->products[2]->label());
       }
     );
   }
@@ -354,9 +354,9 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
         return $data;
       },
       function () {
-        $this->assertSession()->pageTextNotContains($this->products[0]->getDisplayName());
-        $this->assertSession()->pageTextNotContains($this->products[1]->getDisplayName());
-        $this->assertSession()->pageTextContains($this->products[2]->getDisplayName());
+        $this->assertSession()->pageTextNotContains($this->products[0]->label());
+        $this->assertSession()->pageTextNotContains($this->products[1]->label());
+        $this->assertSession()->pageTextContains($this->products[2]->label());
       },
       function (array $data, string $credential_id): array {
         $data["credential[{$credential_id}][api_products][{$this->products[0]->getName()}]"] = $this->products[0]->getName();
@@ -365,9 +365,9 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
         return $data;
       },
       function () {
-        $this->assertSession()->pageTextContains($this->products[0]->getDisplayName());
-        $this->assertSession()->pageTextContains($this->products[1]->getDisplayName());
-        $this->assertSession()->pageTextNotContains($this->products[2]->getDisplayName());
+        $this->assertSession()->pageTextContains($this->products[0]->label());
+        $this->assertSession()->pageTextContains($this->products[1]->label());
+        $this->assertSession()->pageTextNotContains($this->products[2]->label());
       }
     );
   }

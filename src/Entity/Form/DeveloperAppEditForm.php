@@ -101,12 +101,20 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
     $config = $this->configFactory->get('apigee_edge.common_app_settings');
     $multiple = $config->get('multiple_products');
 
+    $form['#tree'] = TRUE;
+
     // Do not allow to change the (machine) name of the app.
     $form['name'] = [
       '#type' => 'value',
       '#value' => $this->entity->getName(),
     ];
-    $form['#tree'] = TRUE;
+
+    // If app's display name is empty fallback to app name as default
+    // value just like Apigee Edge Management UI does.
+    if ($form['displayName']['widget'][0]['value']['#default_value'] === NULL) {
+      $form['displayName']['widget'][0]['value']['#default_value'] = $this->getEntity()->getName();
+    }
+
     $form['developerId']['#access'] = FALSE;
     $form['api_products']['#access'] = !isset($form['api_products']) ?: FALSE;
 
@@ -139,7 +147,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
         // But we have to add this app's currently assigned API products to the
         // list as well.
         $product_list += array_map(function (ApiProductInterface $product) {
-          return $product->getDisplayName();
+          return $product->label();
         }, $this->entityTypeManager->getStorage('api_product')->loadMultiple($current_product_ids));
 
         $form['credential'][$credential->getConsumerKey()]['api_products'] = [

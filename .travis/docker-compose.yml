@@ -31,6 +31,7 @@ services:
       SIMPLETEST_DB: ${DB_DRIVER:-mysql}://${DB_USER:-drupal}:${DB_PASSWORD-password}@${DB_HOST:-database}/${DB_NAME:-drupal}
       MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", null, "http://webdriver:4444/wd/hub"]'
       BROWSERTEST_OUTPUT_DIRECTORY: "/mnt/files/log/simpletest"
+      COMPOSER_AUTH: ${COMPOSER_AUTH:-}
     volumes:
       - codebase:/var/www/html
       - $HOME/.composer/cache/files:/home/wodby/.composer/cache/files

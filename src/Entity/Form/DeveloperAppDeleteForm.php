@@ -150,7 +150,7 @@ class DeveloperAppDeleteForm extends EntityDeleteForm implements DeveloperAppPag
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
     return $this->pageTitle([
-      '@name' => Markup::create($routeMatch->getParameter('developer_app')->getDisplayName()),
+      '@name' => Markup::create($routeMatch->getParameter('developer_app')->label()),
       '@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel(),
     ]);
   }

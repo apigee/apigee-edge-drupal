@@ -23,13 +23,13 @@
  */
 function apigee_edge_test_install() {
   \Drupal::configFactory()->getEditable('apigee_edge_debug.settings')
-    ->set('debug_message_format', "
+    ->set('log_message_format', "
 <pre>{request_formatted}</pre>
 
 <pre>{response_formatted}</pre>
 
 <p>Transfer statistics: <pre>{stats}</pre></p>")
-    ->set('debug_message_formatter', 'full_html')
+    ->set('formatter', 'full_html')
     ->save();
 
   // Increase timeout of the API client to ensure tests do not fail.

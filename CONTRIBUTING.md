@@ -117,8 +117,8 @@ PHPUnit tests with the following commands:
 ```bash
 cd [DRUPAL_ROOT]/modules/contrib/apigee_edge/.travis
 docker-compose up --build # Build is important because recent changes on module files have to be copied from the host to the container.
-docker-compose run php /opt/drupal-module/run-test.sh # to run all tests of this module. This command performs some initial setup tasks if test environment has not been configured yet. 
-docker-compose run php /opt/drupal-module/run-test.sh --filter testAppSettingsForm AppSettingsFormTest build/modules/contrib/apigee_edge/tests/src/FunctionalJavascript/AppSettingsFormTest.php # to run one specific test. If you pass any arguments to run-test.sh those get passed directly to PHPUnit. See [.travis/run-test.sh](run-test.sh).
+docker-compose run php /opt/drupal-module/.travis/run-test.sh # to run all tests of this module. This command performs some initial setup tasks if test environment has not been configured yet. 
+docker-compose run php /opt/drupal-module/.travis/run-test.sh --filter testAppSettingsForm AppSettingsFormTest build/modules/contrib/apigee_edge/tests/src/FunctionalJavascript/AppSettingsFormTest.php # to run one specific test. If you pass any arguments to run-test.sh those get passed directly to PHPUnit. See [.travis/run-test.sh](run-test.sh).
 docker-compose down --remove-orphans -v # Intermediate data (like module files) must be cleared from the shared volumes otherwise recent changes won't be visible in the container. 
 ```
 

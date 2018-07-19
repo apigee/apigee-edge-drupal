@@ -197,31 +197,31 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
     $onlyPublicProductVisible = function () {
       $this->checkProductVisibility(
         [
-          $this->products[self::PUBLIC_VISIBILITY]->getDisplayName(),
+          $this->products[self::PUBLIC_VISIBILITY]->label(),
         ],
         [
-          $this->products[self::PRIVATE_VISIBILITY]->getDisplayName(),
-          $this->products[self::INTERNAL_VISIBILITY]->getDisplayName(),
+          $this->products[self::PRIVATE_VISIBILITY]->label(),
+          $this->products[self::INTERNAL_VISIBILITY]->label(),
         ]
       );
     };
     $allProductsVisible = function () {
       $this->checkProductVisibility(
         [
-          $this->products[self::PUBLIC_VISIBILITY]->getDisplayName(),
-          $this->products[self::PRIVATE_VISIBILITY]->getDisplayName(),
-          $this->products[self::INTERNAL_VISIBILITY]->getDisplayName(),
+          $this->products[self::PUBLIC_VISIBILITY]->label(),
+          $this->products[self::PRIVATE_VISIBILITY]->label(),
+          $this->products[self::INTERNAL_VISIBILITY]->label(),
         ]
       );
     };
     $justPublicAndPrivateVisible = function () {
       $this->checkProductVisibility(
         [
-          $this->products[self::PUBLIC_VISIBILITY]->getDisplayName(),
-          $this->products[self::PRIVATE_VISIBILITY]->getDisplayName(),
+          $this->products[self::PUBLIC_VISIBILITY]->label(),
+          $this->products[self::PRIVATE_VISIBILITY]->label(),
         ],
         [
-          $this->products[self::INTERNAL_VISIBILITY]->getDisplayName(),
+          $this->products[self::INTERNAL_VISIBILITY]->label(),
         ]
       );
     };

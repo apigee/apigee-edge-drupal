@@ -33,6 +33,7 @@ use Drupal\Core\State\StateInterface;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
 use Http\Adapter\Guzzle6\Client as GuzzleClientAdapter;
+use Http\Message\Authentication;
 
 /**
  * Provides an Apigee Edge SDK connector.
@@ -82,13 +83,6 @@ class SDKConnector implements SDKConnectorInterface {
   protected $entityTypeManager;
 
   /**
-   * The HttpClient.
-   *
-   * @var \Http\Client\HttpClient
-   */
-  protected $httpClient;
-
-  /**
    * The module handler service.
    *
    * @var \Drupal\Core\Extension\ModuleHandlerInterface
@@ -101,6 +95,11 @@ class SDKConnector implements SDKConnectorInterface {
    * @var \Drupal\Core\Extension\InfoParserInterface
    */
   protected $infoParser;
+
+  /**
+   * @var \Drupal\Core\Http\ClientFactory
+   */
+  private $clientFactory;
 
   /**
    * Constructs a new SDKConnector.
@@ -119,8 +118,7 @@ class SDKConnector implements SDKConnectorInterface {
    *   Info file parser service.
    */
   public function __construct(ClientFactory $clientFactory, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ModuleHandlerInterface $moduleHandler, InfoParserInterface $infoParser) {
-    $httpClient = $clientFactory->fromOptions($this->getHttpClientConfiguration($state));
-    $this->httpClient = new GuzzleClientAdapter($httpClient);
+    $this->clientFactory = $clientFactory;
     $this->entityTypeManager = $entity_type_manager;
     $this->keyRepository = $key_repository;
     $this->state = $state;
@@ -134,16 +132,13 @@ class SDKConnector implements SDKConnectorInterface {
    * Allows to override some configuration of the http client built by the
    * factory for the API client.
    *
-   * @param \Drupal\Core\State\StateInterface $state
-   *   The state key/value store.
-   *
    * @return array
    *   Associative array of configuration settings.
    *
    * @see http://docs.guzzlephp.org/en/stable/request-options.html
    */
-  protected function getHttpClientConfiguration(StateInterface $state): array {
-    $config = $state->get('apigee_edge.client');
+  protected function httpClientConfiguration(): array {
+    $config = $this->state->get('apigee_edge.client');
     return [
       'connect_timeout' => $config['http_client_connect_timeout'],
       'timeout' => $config['http_client_timeout'],
@@ -162,16 +157,32 @@ class SDKConnector implements SDKConnectorInterface {
   /**
    * {@inheritdoc}
    */
-  public function getClient(): ClientInterface {
-    if (self::$client === NULL) {
-      $credentials = $this->getCredentials();
-      /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $key_type */
-      self::$client = new Client($credentials->getAuthentication(), $credentials->getKeyType()->getEndpoint($credentials->getKey()), [
-        Client::CONFIG_HTTP_CLIENT_BUILDER => new Builder($this->httpClient),
-        Client::CONFIG_USER_AGENT_PREFIX => $this->userAgentPrefix(),
-      ]);
+  public function getClient(?Authentication $authentication = NULL, ?string $endpoint = NULL): ClientInterface {
+    if ($authentication === NULL) {
+      if (self::$client === NULL) {
+        $credentials = $this->getCredentials();
+        /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $key_type */
+        $client = self::$client = $this->buildClient($credentials->getAuthentication(), $credentials->getKeyType()->getEndpoint($credentials->getKey()));
+      }
+      else {
+        $client = self::$client;
+      }
     }
-    return self::$client;
+    else {
+      $client = $this->buildClient($authentication, $endpoint);
+    }
+
+    return $client;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildClient(Authentication $authentication, ?string $endpoint = NULL): ClientInterface {
+    return new Client($authentication, $endpoint, [
+      Client::CONFIG_HTTP_CLIENT_BUILDER => new Builder(new GuzzleClientAdapter($this->clientFactory->fromOptions($this->httpClientConfiguration()))),
+      Client::CONFIG_USER_AGENT_PREFIX => $this->userAgentPrefix(),
+    ]);
   }
 
   /**
@@ -254,17 +265,16 @@ class SDKConnector implements SDKConnectorInterface {
    */
   public function testConnection(KeyInterface $key = NULL, KeyInterface $key_token = NULL) {
     if ($key !== NULL) {
-      try {
-        $originalCredentials = self::getCredentials();
-      }
-      catch (KeyNotFoundException $e) {
-        // Skip key not set exception if there is no currently used key.
-      }
-      self::setCredentials($this->buildCredentials($key, $key_token));
+      $credentials = $this->buildCredentials($key, $key_token);
+      $client = $this->buildClient($credentials->getAuthentication(), $credentials->getKeyType()->getEndpoint($credentials->getKey()));
     }
-    try {
-      $oc = new OrganizationController($this->getClient());
+    else {
+      $client = $this->getClient();
       $credentials = $this->getCredentials();
+    }
+
+    try {
+      $oc = new OrganizationController($client);
       $oc->load($credentials->getKeyType()->getOrganization($credentials->getKey()));
     }
     catch (\Exception $e) {

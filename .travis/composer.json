@@ -1,0 +1,57 @@
+{
+    "name": "drupal/apigee_edge_travis",
+    "license": "GPL-2.0",
+    "type": "project",
+    "description": "Builds a test environment for the Apigee Edge module.",
+    "require": {
+        "php": ">=7.1",
+        "composer/installers": "^1.5",
+        "drupal-composer/drupal-scaffold": "^2.5.2",
+        "wikimedia/composer-merge-plugin": "dev-capture-input-options"
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://packages.drupal.org/8"
+        },
+        {
+            "type": "vcs",
+            "_comment1": "We have to install it from here until this PR is open: https://github.com/wikimedia/composer-merge-plugin/pull/169.",
+            "url": "https://github.com/mxr576/composer-merge-plugin",
+            "no-api": true
+        }
+    ],
+    "config": {
+        "sort-packages": true,
+        "optimize-autoloader": true,
+        "_comment1": "PHP API Client patches that modifies tests files only apply if it is installed from source.",
+        "preferred-install": {
+            "*": "dist",
+            "apigee/apigee-client-php": "source"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "extra": {
+        "merge-plugin": {
+            "include": [
+                "../composer.json"
+            ],
+            "merge-extra": true,
+            "merge-extra-deep": true
+        },
+        "installer-paths": {
+            "build/core": ["type:drupal-core"],
+            "build/modules/contrib/{$name}": ["type:drupal-module"],
+            "build/profiles/contrib/{$name}": ["type:drupal-profile"],
+            "build/themes/contrib/{$name}": ["type:drupal-theme"],
+            "build/drush/contrib/{$name}": ["type:drupal-drush"],
+            "build/modules/custom/{$name}": ["type:drupal-custom-module"],
+            "build/themes/custom/{$name}": ["type:drupal-custom-theme"]
+        },
+        "enable-patching": true,
+        "patchLevel": {
+            "drupal/core": "-p2"
+        }
+    }
+}

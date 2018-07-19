@@ -1,0 +1,7 @@
+apigee_edge_debug.settings:
+  path: '/admin/config/apigee-edge/debug'
+  defaults:
+    _form: '\Drupal\apigee_edge_debug\Form\ConfigForm'
+    _title: 'Apigee Edge debug'
+  requirements:
+    _permission: 'administer apigee edge'
