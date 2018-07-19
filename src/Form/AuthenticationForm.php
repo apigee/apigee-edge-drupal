@@ -25,12 +25,12 @@ use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use Drupal\apigee_edge\Plugin\KeyType\OauthKeyType;
 use Drupal\apigee_edge\SDKConnectorInterface;
+use Drupal\Component\Render\MarkupInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
-use Drupal\Core\Render\Markup;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\Url;
 use Drupal\key\KeyInterface;
@@ -402,15 +402,12 @@ class AuthenticationForm extends ConfigFormBase {
       watchdog_exception('apigee_edge', $exception);
 
       $form_state->setError($form, $this->t('@suggestion Error message: %response.', [
-        // Use Markup instead of primitive string to avoid double
-        // sanitizing.
-        '@suggestion' => Markup::create($this->createSuggestion($exception, $key)),
+        '@suggestion' => $this->createSuggestion($exception, $key),
         '%response' => $exception->getMessage(),
       ]));
 
       // Display debug information.
-      $form['debug']['#access'] = TRUE;
-      $form['debug']['debug_text']['#access'] = TRUE;
+      $form['debug']['#access'] = $form['debug']['debug_text']['#access'] = TRUE;
       $form['debug']['debug_text']['#value'] = $this->createDebugText($exception, $key, $key_token);
     }
   }
@@ -423,10 +420,10 @@ class AuthenticationForm extends ConfigFormBase {
    * @param \Drupal\key\KeyInterface $key
    *   The used key during form validation.
    *
-   * @return string
+   * @return \Drupal\Component\Render\MarkupInterface
    *   The suggestion text to be displayed.
    */
-  protected function createSuggestion(\Exception $exception, KeyInterface $key): string {
+  protected function createSuggestion(\Exception $exception, KeyInterface $key): MarkupInterface {
     /** @var \Drupal\apigee_edge\Plugin\KeyType\BasicAuthKeyType $key_type */
     $key_type = $key->getKeyType();
 
@@ -462,7 +459,7 @@ class AuthenticationForm extends ConfigFormBase {
           /** @var \GuzzleHttp\Exception\ConnectException $curl_exception */
           $curl_exception = $exception->getPrevious()->getPrevious()->getPrevious();
           // The remote host was not resolved (authorization server).
-          if ($curl_exception->getHandlerContext()['errno'] === 6) {
+          if ($curl_exception->getHandlerContext()['errno'] === CURLE_COULDNT_RESOLVE_HOST) {
             $suggestion = $this->t('@fail_text The given authorization server (%authorization_server) is probably incorrect or something is wrong with the connection.', [
               '@fail_text' => $fail_text,
               '%authorization_server' => $key_type->getAuthorizationServer($key),
@@ -499,7 +496,7 @@ class AuthenticationForm extends ConfigFormBase {
           /** @var \GuzzleHttp\Exception\ConnectException $curl_exception */
           $curl_exception = $exception->getPrevious()->getPrevious();
           // Resolving timed out.
-          if ($curl_exception->getHandlerContext()['errno'] === 28) {
+          if ($curl_exception->getHandlerContext()['errno'] === CURLE_OPERATION_TIMEDOUT) {
             $suggestion = $this->t('@fail_text Maybe the connection timeout threshold (%connect_timeout) or the request timeout (%timeout) is too low or something is wrong with the connection.', [
               '@fail_text' => $fail_text,
               '%connect_timeout' => $this->state->get('apigee_edge.client')['http_client_connect_timeout'],
@@ -507,7 +504,7 @@ class AuthenticationForm extends ConfigFormBase {
             ]);
           }
           // The remote host was not resolved (endpoint).
-          elseif ($curl_exception->getHandlerContext()['errno'] === 6) {
+          elseif ($curl_exception->getHandlerContext()['errno'] === CURLE_COULDNT_RESOLVE_HOST) {
             $suggestion = $this->t('@fail_text The given endpoint (%endpoint) is probably incorrect or something is wrong with the connection.', [
               '@fail_text' => $fail_text,
               '%endpoint' => $key_type->getEndpoint($key),
