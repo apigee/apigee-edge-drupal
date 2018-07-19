@@ -137,6 +137,10 @@ class OauthTokenStorage implements OauthTokenStorageInterface {
       $data['expires'] = $data['expires_in'] + time();
       $this->key->setKeyValue($this->keyType->serialize($data));
       $this->key->save();
+      // FIXME
+      // We have to flush static caches because of this issue as a temporary
+      // fix: https://www.drupal.org/project/key/issues/2985590.
+      drupal_static_reset();
     }
     catch (EntityStorageException $exception) {
       throw new OauthAuthenticationException('Could not save the OAuth token data.');
@@ -153,6 +157,10 @@ class OauthTokenStorage implements OauthTokenStorageInterface {
     try {
       $this->key->setKeyValue($this->keyType->serialize([]));
       $this->key->save();
+      // FIXME
+      // We have to flush static caches because of this issue as a temporary
+      // fix: https://www.drupal.org/project/key/issues/2985590.
+      drupal_static_reset();
     }
     catch (EntityStorageException $exception) {
       throw new OauthAuthenticationException('Could not remove the stored OAuth token data.');

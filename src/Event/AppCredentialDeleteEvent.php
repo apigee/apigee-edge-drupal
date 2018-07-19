@@ -18,36 +18,13 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge_debug\Plugin\DebugMessageFormatter;
-
-use Http\Message\Formatter;
-use Http\Message\Formatter\SimpleFormatter as OriginalSimpleFormatter;
+namespace Drupal\apigee_edge\Event;
 
 /**
- * Simple debug message formatter plugin.
- *
- * @DebugMessageFormatter(
- *   id = "simple",
- *   label = @Translation("Simple"),
- * )
+ * Triggered when an app credential gets deleted.
  */
-class SimpleFormatter extends DebugMessageFormatterPluginBase {
+class AppCredentialDeleteEvent extends AbstractAppCredentialEvent {
 
-  /**
-   * The original simple formatter.
-   *
-   * @var \Http\Message\Formatter\SimpleFormatter
-   */
-  private static $formatter;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getFormatter(): Formatter {
-    if (NULL === self::$formatter) {
-      self::$formatter = new OriginalSimpleFormatter();
-    }
-    return self::$formatter;
-  }
+  const EVENT_NAME = 'apigee_edge.app_credential.delete';
 
 }

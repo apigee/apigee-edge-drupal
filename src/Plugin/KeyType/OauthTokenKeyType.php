@@ -150,6 +150,10 @@ class OauthTokenKeyType extends KeyTypeBase implements EdgeOauthTokenKeyTypeInte
     $key_value['expires'] = 0;
     $key->setKeyValue($this->serialize($key_value));
     $key->save();
+    // FIXME
+    // We have to flush static caches because of this issue as a temporary
+    // fix: https://www.drupal.org/project/key/issues/2985590.
+    drupal_static_reset();
   }
 
 }
