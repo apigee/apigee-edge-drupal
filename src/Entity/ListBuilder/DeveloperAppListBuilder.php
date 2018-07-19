@@ -354,7 +354,7 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
         if (count($entity->getCredentials()) === 1) {
           /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $apiProduct */
           $apiProduct = $this->getApiProductStorage()->load($problematicApiProductName);
-          $args['%name'] = $apiProduct->getDisplayName();
+          $args['%name'] = $apiProduct->label();
           $warningRow['info']['data'] = $this->t("%name @apiproduct associated with this @developer_app is in @status status.", $args);
         }
         else {

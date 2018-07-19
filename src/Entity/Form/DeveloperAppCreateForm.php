@@ -143,7 +143,7 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
     });
     $product_list = [];
     foreach ($availableProductsForUser as $product) {
-      $product_list[$product->id()] = $product->getDisplayName();
+      $product_list[$product->id()] = $product->label();
     }
 
     $multiple = $config->get('multiple_products');
