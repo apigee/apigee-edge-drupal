@@ -230,7 +230,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
    * @throws \Behat\Mink\Exception\ResponseTextException
    */
   protected function assertAnalyticsPage() {
-    $this->assertSession()->pageTextContains("Analytics of {$this->developerApp->getDisplayName()}");
+    $this->assertSession()->pageTextContains("Analytics of {$this->developerApp->label()}");
     $this->assertSession()->pageTextContains("Your timezone: {$this->loggedInUser->getTimeZone()}");
     $this->assertSession()->pageTextContains('No performance data is available for the criteria you supplied.');
     $this->assertSession()->pageTextNotContains('Export CSV');
