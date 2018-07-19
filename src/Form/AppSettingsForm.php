@@ -106,7 +106,7 @@ class AppSettingsForm extends ConfigFormBase {
       /** @var \Drupal\apigee_edge\Entity\ApiProduct[] $products */
       $products = ApiProduct::loadMultiple();
       foreach ($products as $product) {
-        $product_list[$product->id()] = $product->getDisplayName();
+        $product_list[$product->id()] = $product->label();
       }
     }
     catch (EntityStorageException $e) {

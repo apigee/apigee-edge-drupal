@@ -33,7 +33,7 @@ class DeveloperAppAnalyticsFormForDeveloper extends DeveloperAppAnalyticsForm {
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
     return $this->t('Analytics of @name', [
-      '@name' => $routeMatch->getParameter('app')->getDisplayName(),
+      '@name' => $routeMatch->getParameter('app')->label(),
     ]);
   }
 

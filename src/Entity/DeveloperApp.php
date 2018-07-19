@@ -81,6 +81,7 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
   use AppCredentialStorageAwareTrait;
   use FieldableEdgeEntityBaseTrait {
     id as private traitId;
+    label as private traitLabel;
     urlRouteParameters as private traitUrlRouteParameters;
     baseFieldDefinitions as private traitBaseFieldDefinitions;
   }
@@ -243,6 +244,18 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
    */
   public function uuid() {
     return $this->getAppId();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    $label = $this->traitLabel();
+    // Return app name instead of app id if display name is missing.
+    if ($label === $this->id()) {
+      $label = $this->getName();
+    }
+    return $label;
   }
 
   /**
