@@ -267,13 +267,11 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
    *
    * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app
    *   The developer app entity for this row of the list.
-   * @param array $rows
-   *   A render array containing the info and warning rows to be displayed.
    *
    * @return array
    *   A render array structure of fields for this developer app entity.
    */
-  protected function buildInfoRow(DeveloperAppInterface $developer_app, array $rows): array {
+  protected function buildInfoRow(DeveloperAppInterface $developer_app): array {
     $appNameAsCssId = $this->getUniqueCssIdForApp($developer_app);
     $infoRowId = "{$appNameAsCssId}-info";
     $row = [
@@ -292,44 +290,53 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
     ];
 
     $row['data'] += parent::buildRow($developer_app);
-    $rows[$infoRowId] = $row;
-    return $rows;
+    return $row;
   }
 
   /**
-   * Checks the developer app and returns information for displaying warnings.
-   *
-   * Helper function for buildWarningRow(). Information about credentials,
-   * products can be returned.
+   * Checks credentials of a developer app and returns warnings about them.
    *
    * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app
    *   Developer app entity to be checked.
    *
    * @return array
-   *   An array containing the information about the credentials, products for
-   *   displaying warning messages.
+   *   An array containing the information about the revoked credentials and
+   *   revoked or pending products in a credential.
    */
-  protected function checkDeveloperApp(DeveloperAppInterface $developer_app): array {
+  protected function getDeveloperAppCredentialWarnings(DeveloperAppInterface $developer_app): array {
     $info = [];
-    $info['hasRevokedCred'] = FALSE;
-    $info['hasRevokedCredProduct'] = FALSE;
-    $info['hasPendingCredProduct'] = FALSE;
-    $info['problematicApiProductName'] = NULL;
+    $info['revokedCred'] = FALSE;
+    $info['revokedOrPendingCredProduct'] = FALSE;
 
     foreach ($developer_app->getCredentials() as $credential) {
       if ($credential->getStatus() === AppCredential::STATUS_REVOKED) {
-        $info['hasRevokedCred'] = TRUE;
+        $args = [
+          '@developer_app' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
+        ];
+        if (count($developer_app->getCredentials()) > 1) {
+          $info['revokedCred'] = $this->t('One of the credentials associated with this @developer_app is in revoked status.', $args);
+        }
+        else {
+          $info['revokedCred'] = $this->t('The credential associated with this @developer_app is in revoked status.', $args);
+        }
         break;
       }
       foreach ($credential->getApiProducts() as $credProduct) {
-        if ($credProduct->getStatus() == CredentialProduct::STATUS_REVOKED) {
-          $info['problematicApiProductName'] = $credProduct->getApiproduct();
-          $info['hasRevokedCredProduct'] = TRUE;
-          break;
-        }
-        elseif ($credProduct->getStatus() == CredentialProduct::STATUS_PENDING) {
-          $info['problematicApiProductName'] = $credProduct->getApiproduct();
-          $info['hasPendingCredProduct'] = TRUE;
+        if ($credProduct->getStatus() == CredentialProduct::STATUS_REVOKED || $credProduct->getStatus() == CredentialProduct::STATUS_PENDING) {
+          $args = [
+            '@developer_app' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
+            '@apiproduct' => $this->getApiProductEntityDefinition()->getLowercaseLabel(),
+            '@status' => $credProduct->getStatus() == CredentialProduct::STATUS_REVOKED ? $this->t('revoked') : $this->t('pending'),
+          ];
+          if (count($developer_app->getCredentials()) === 1) {
+            /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $apiProduct */
+            $apiProduct = $this->getApiProductStorage()->load($credProduct->getApiproduct());
+            $args['%name'] = $apiProduct->label();
+            $info['revokedOrPendingCredProduct'] = $this->t('%name @apiproduct associated with this @developer_app is in @status status.', $args);
+          }
+          else {
+            $info['revokedOrPendingCredProduct'] = $this->t('At least one @apiproduct associated with one of the credentials of this @developer_app is in @status status.', $args);
+          }
           break;
         }
       }
@@ -341,20 +348,19 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
   /**
    * Builds a warning row for a developer app in the entity listing.
    *
-   * The warning row contains the warning messages if necessary.
+   * The warning row contains the warning messages if there is any.
    *
    * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app
    *   The developer app entity for this row of the list.
-   * @param array $rows
-   *   A render array containing the info and warning rows to be displayed.
+   * @param array $infoRow
+   *   A reference to the info row to modify its content.
    *
    * @return array
    *   A render array structure of fields for this developer app entity.
    */
-  protected function buildWarningRow(DeveloperAppInterface $developer_app, array $rows): array {
+  protected function buildWarningRow(DeveloperAppInterface $developer_app, array &$infoRow): array {
     $appNameAsCssId = $this->getUniqueCssIdForApp($developer_app);
     $warningRowId = "{$appNameAsCssId}-warning";
-    $infoRowId = "{$appNameAsCssId}-info";
     $row = [
       'data' => [],
       'id' => $warningRowId,
@@ -364,15 +370,15 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
       ],
     ];
 
-    $info = $this->checkDeveloperApp($developer_app);
+    $warnings = $this->getDeveloperAppCredentialWarnings($developer_app);
 
     // Display warning sign next to the status if developer app's status is
     // approved, but:
     // - any credentials of the developer app is in revoked status
     // - any products of any credentials of the developer app is in revoked or
     //   pending status.
-    if ($developer_app->getStatus() === App::STATUS_APPROVED && ($info['hasRevokedCred'] || $info['hasPendingCredProduct'] || $info['hasRevokedCredProduct'])) {
-      $build['status'] = $rows[$infoRowId]['data']['app_status']['data'];
+    if ($developer_app->getStatus() === App::STATUS_APPROVED && ($warnings['revokedCred'] || $warnings['revokedOrPendingCredProduct'])) {
+      $build['status'] = $infoRow['data']['app_status']['data'];
       $build['warning'] = [
         '#type' => 'html_tag',
         '#tag' => 'span',
@@ -397,48 +403,20 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
       $url = Url::fromUserInput($this->requestStack->getCurrentRequest()->getRequestUri(), $link_options);
       $link = Link::fromTextAndUrl($this->t('<span class="ui-icon-triangle-1-e ui-icon"></span><span class="text">Show details</span>'), $url);
       $build['warning-toggle'] = $link->toRenderable();
-      $rows[$infoRowId]['data']['app_status']['data'] = $this->renderer->render($build);
+      $infoRow['data']['app_status']['data'] = $this->renderer->render($build);
       $row['data']['info'] = [
         'colspan' => 3,
       ];
 
-      if ($info['hasRevokedCred']) {
-        $args = [
-          '@developer_app' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
-        ];
-        if (count($developer_app->getCredentials()) > 1) {
-          $row['data']['info']['data'] = $this->t(
-            'One of the credentials associated with this @developer_app is in revoked status.',
-            $args
-          );
-        }
-        else {
-          $row['data']['info']['data'] = $this->t(
-            'The credential associated with this @developer_app is in revoked status.',
-            $args
-          );
-        }
+      if ($warnings['revokedCred']) {
+        $row['data']['info']['data'] = $warnings['revokedCred'];
       }
-      elseif ($info['hasRevokedCredProduct'] || $info['hasPendingCredProduct']) {
-        $args = [
-          '@developer_app' => $this->getDeveloperAppEntityDefinition()->getLowercaseLabel(),
-          '@apiproduct' => $this->getApiProductEntityDefinition()->getLowercaseLabel(),
-          '@status' => $info['hasPendingCredProduct'] ? $this->t('pending') : $this->t('revoked'),
-        ];
-        if (count($developer_app->getCredentials()) === 1) {
-          /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $apiProduct */
-          $apiProduct = $this->getApiProductStorage()->load($info['problematicApiProductName']);
-          $args['%name'] = $apiProduct->label();
-          $row['data']['info']['data'] = $this->t("%name @apiproduct associated with this @developer_app is in @status status.", $args);
-        }
-        else {
-          $row['data']['info']['data'] = $this->t("At least one @apiproduct associated with one of the credentials of this @developer_app is in @status status.", $args);
-        }
+      elseif ($warnings['revokedOrPendingCredProduct']) {
+        $row['data']['info']['data'] = $warnings['revokedOrPendingCredProduct'];
       }
     }
 
-    $rows[$warningRowId] = $row;
-    return $rows;
+    return $row;
   }
 
   /**
@@ -447,11 +425,14 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
   public function buildRow(EntityInterface $entity) {
     /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
     $rows = [];
+    $appNameAsCssId = $this->getUniqueCssIdForApp($entity);
 
     // Generate info row of the current developer app.
-    $rows = $this->buildInfoRow($entity, $rows);
+    $infoRowId = "{$appNameAsCssId}-info";
+    $rows[$infoRowId] = $this->buildInfoRow($entity);
     // Generate warning row of the current developer app.
-    $rows = $this->buildWarningRow($entity, $rows);
+    $warningRowId = "{$appNameAsCssId}-warning";
+    $rows[$warningRowId] = $this->buildWarningRow($entity, $rows[$infoRowId]);
 
     return $rows;
   }
