@@ -26,6 +26,7 @@ use Apigee\Edge\Entity\EntityInterface;
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Normalizer\KeyValueMapNormalizer;
 use Apigee\Edge\Structure\AttributesProperty;
+use Apigee\Edge\Structure\PagerInterface;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\Controller\ApiProductController as OriginalApiProductController;
@@ -130,7 +131,7 @@ final class ApiProductController extends OriginalApiProductController {
   /**
    * {@inheritdoc}
    */
-  public function getEntities(): array {
+  public function getEntities(PagerInterface $pager = NULL, string $key_provider = 'id'): array {
     /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $entity */
     $ids = array_map(function ($id) {
       return $this->generateApiProductStateKey($id);

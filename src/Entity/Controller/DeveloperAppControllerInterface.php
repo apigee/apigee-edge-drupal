@@ -20,7 +20,7 @@
 namespace Drupal\apigee_edge\Entity\Controller;
 
 use Apigee\Edge\Api\Management\Entity\AppInterface;
-use Apigee\Edge\Controller\CpsListingEntityControllerInterface;
+use Apigee\Edge\Controller\PaginatedEntityListingControllerInterface;
 use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
 use Apigee\Edge\Entity\EntityInterface;
 
@@ -29,7 +29,7 @@ use Apigee\Edge\Entity\EntityInterface;
  */
 interface DeveloperAppControllerInterface extends
     EntityCrudOperationsControllerInterface,
-    CpsListingEntityControllerInterface,
+    PaginatedEntityListingControllerInterface,
     DrupalEntityControllerInterface {
 
   /**
