@@ -33,11 +33,17 @@ interface DeveloperAppPageTitleInterface {
    * page context we only inject the route matcher and retrieves parameters
    * from that directly.
    *
+   * To avoid double-escaping the developer app's name use a MarkupInterface
+   * object (e.g. \Drupal\Core\Render\Markup) as placeholder replacement value
+   * so the replaced value in the returned string will not be sanitized.
+   *
    * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   The current route match.
    *
    * @return string
    *   The page title.
+   *
+   * @see https://github.com/drupal/core/blob/10b7c918ab56f9b6b14ed52ed0afd2ab66f4b927/lib/Drupal/Component/Render/FormattableMarkup.php#L140
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string;
 
