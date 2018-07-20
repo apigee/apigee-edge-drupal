@@ -21,6 +21,7 @@ namespace Drupal\apigee_edge\Form;
 
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
@@ -33,7 +34,7 @@ class DeveloperAppAnalyticsFormForDeveloper extends DeveloperAppAnalyticsForm {
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
     return $this->t('Analytics of @name', [
-      '@name' => $routeMatch->getParameter('app')->label(),
+      '@name' => Markup::create($routeMatch->getParameter('app')->label()),
     ]);
   }
 

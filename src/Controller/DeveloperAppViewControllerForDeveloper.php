@@ -23,6 +23,7 @@ use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\Core\Entity\Controller\EntityViewController;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
@@ -47,7 +48,7 @@ class DeveloperAppViewControllerForDeveloper extends EntityViewController implem
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
     return t('@name @developer_app', [
-      '@name' => $routeMatch->getParameter('app')->label(),
+      '@name' => Markup::create($routeMatch->getParameter('app')->label()),
       '@developer_app' => $this->entityManager->getDefinition('developer_app')->getSingularLabel(),
     ]);
   }

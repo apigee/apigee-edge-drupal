@@ -57,7 +57,7 @@
         // Display an error message if the Google Loader API cannot be loaded
         // and stop drawing.
         if (typeof google === 'undefined') {
-          $('.apigee-edge-developer-app-analytics').prepend('<div class="messages messages--error">'+ Drupal.t('Failed to load Google Loader API (https://www.gstatic.com/charts/loader.js).') + '</div>');
+          $('.apigee-edge-developer-app-analytics').prepend('<div class="developer-app-analytics--error-message">'+ Drupal.t('Failed to load Google Loader API (https://www.gstatic.com/charts/loader.js).') + '</div>');
           return;
         }
 

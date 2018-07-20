@@ -63,11 +63,11 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
       "default_api_product_multiple[{$this->products[0]->getName()}]" => $this->products[0]->getName(),
     ]);
     $this->gotoCreateAppForm();
-    $this->assertSession()->pageTextNotContains('API Product');
+    $this->assertSession()->pageTextNotContains('APIs');
 
     $this->submitAdminForm();
     $this->gotoCreateAppForm();
-    $this->assertSession()->pageTextContains('API Product');
+    $this->assertSession()->pageTextContains('APIs');
   }
 
   /**
@@ -192,7 +192,8 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     ]);
     $this->assertSession()->pageTextContains($name);
     $this->clickLink($name);
-    $this->assertSession()->pageTextContains('1 week 2 days hence');
+    // Result depends on how fast the response was.
+    $this->assertSession()->pageTextMatches('/1 week (2|3) days hence/');
 
     // Change credential lifetime to 0 (Never) days from 10.
     $this->drupalPostForm('/admin/config/apigee-edge/app-settings/credentials', [

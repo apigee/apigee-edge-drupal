@@ -117,16 +117,6 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
     ];
 
     $user_select = (bool) $config->get('user_select');
-    $form['product'] = [
-      '#type' => 'details',
-      '#title' => $this->entityTypeManager->getDefinition('api_product')->getSingularLabel(),
-      '#open' => TRUE,
-      '#access' => $user_select,
-      '#weight' => 100,
-      '#attributes' => [
-        'class' => ['form-required'],
-      ],
-    ];
 
     // We can use null, because in Entity::access() null falls back to the
     // currently logged in user.
@@ -149,24 +139,24 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
     $multiple = $config->get('multiple_products');
     $default_products = $config->get('default_products') ?: [];
 
-    $form['product']['api_products'] = [
-      '#title' => $this->t('API Products'),
-      '#title_display' => 'invisible',
+    $form['api_products'] = [
+      '#title' => $this->entityTypeManager->getDefinition('api_product')->getPluralLabel(),
       '#required' => TRUE,
       '#options' => $product_list,
       '#access' => $user_select,
+      '#weight' => 100,
       '#default_value' => $multiple ? $default_products : (string) reset($default_products),
     ];
 
     if ($config->get('display_as_select')) {
-      $form['product']['api_products']['#type'] = 'select';
-      $form['product']['api_products']['#multiple'] = $multiple;
-      $form['product']['api_products']['#empty_value'] = '';
+      $form['api_products']['#type'] = 'select';
+      $form['api_products']['#multiple'] = $multiple;
+      $form['api_products']['#empty_value'] = '';
     }
     else {
-      $form['product']['api_products']['#type'] = $multiple ? 'checkboxes' : 'radios';
+      $form['api_products']['#type'] = $multiple ? 'checkboxes' : 'radios';
       if (!$multiple) {
-        $form['product']['api_products']['#options'] = ['' => $this->t('N/A')] + $form['product']['api_products']['#options'];
+        $form['api_products']['#options'] = ['' => $this->t('N/A')] + $form['api_products']['#options'];
       }
     }
 
@@ -264,7 +254,9 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
    * {@inheritdoc}
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
-    return $this->t('Add @developer_app', ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel()]);
+    return $this->t('Add @developer_app', [
+      '@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel(),
+    ]);
   }
 
   /**

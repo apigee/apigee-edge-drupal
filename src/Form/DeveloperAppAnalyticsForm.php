@@ -32,6 +32,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\TempStore\PrivateTempStoreFactory;
 use Drupal\Core\Url;
@@ -441,7 +442,7 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
     return $this->t('Analytics of @name', [
-      '@name' => $routeMatch->getParameter('developer_app')->label(),
+      '@name' => Markup::create($routeMatch->getParameter('developer_app')->label()),
     ]);
   }
 
