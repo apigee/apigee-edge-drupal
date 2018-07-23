@@ -19,8 +19,12 @@
 
 namespace Drupal\apigee_edge\Form;
 
-use Drupal\apigee_edge\KeyValueMalformedException;
+use Apigee\Edge\Exception\ApiRequestException;
+use Apigee\Edge\Exception\OauthAuthenticationException;
+use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
+use Drupal\apigee_edge\Plugin\KeyType\OauthKeyType;
 use Drupal\apigee_edge\SDKConnectorInterface;
+use Drupal\Component\Render\MarkupInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\ConfigFormBase;
@@ -28,7 +32,10 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\Url;
+use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
+use GuzzleHttp\Exception\ConnectException;
+use Http\Client\Exception\NetworkException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -138,6 +145,18 @@ class AuthenticationForm extends ConfigFormBase {
     $form['#prefix'] = '<div id="apigee-edge-auth-form">';
     $form['#suffix'] = '</div>';
     $form['#attached']['library'][] = 'apigee_edge/apigee_edge.admin';
+
+    $form['debug'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Debug information'),
+      '#access' => FALSE,
+      '#open' => FALSE,
+    ];
+    $form['debug']['debug_text'] = [
+      '#type' => 'textarea',
+      '#disabled' => TRUE,
+      '#rows' => 20,
+    ];
 
     $form['authentication'] = [
       '#type' => 'details',
@@ -372,26 +391,192 @@ class AuthenticationForm extends ConfigFormBase {
       $key_token = $this->keyRepository->getKey($form_state->getValue('key_oauth_token'));
     }
     try {
+      // Ensure that testing connection using clean token storage.
+      if (isset($key_token)) {
+        $key_token->deleteKeyValue();
+      }
       $this->sdkConnector->testConnection($key, $key_token);
-    }
-    catch (KeyValueMalformedException $exception) {
-      watchdog_exception('apigee_edge', $exception);
-      $form_state->setError($form, $this->t('Could not read the key storage. Check the key provider and settings.'));
     }
     catch (\Exception $exception) {
       watchdog_exception('apigee_edge', $exception);
-      if ($this->moduleHandler->moduleExists('dblog')) {
-        $form_state->setError($form, $this->t('Connection failed. Response from Apigee Edge: %response<br>For further information please check the <a href=":url">log messages</a>.', [
-          '%response' => $exception->getMessage(),
-          ':url' => Url::fromRoute('dblog.overview')->toString(),
-        ]));
+
+      $form_state->setError($form, $this->t('@suggestion Error message: %response.', [
+        '@suggestion' => $this->createSuggestion($exception, $key),
+        '%response' => $exception->getMessage(),
+      ]));
+
+      // Display debug information.
+      $form['debug']['#access'] = $form['debug']['debug_text']['#access'] = TRUE;
+      $form['debug']['debug_text']['#value'] = $this->createDebugText($exception, $key, $key_token);
+    }
+  }
+
+  /**
+   * Creates a suggestion text to be displayed in the connection failed message.
+   *
+   * @param \Exception $exception
+   *   The thrown exception during form validation.
+   * @param \Drupal\key\KeyInterface $key
+   *   The used key during form validation.
+   *
+   * @return \Drupal\Component\Render\MarkupInterface
+   *   The suggestion text to be displayed.
+   */
+  protected function createSuggestion(\Exception $exception, KeyInterface $key): MarkupInterface {
+    /** @var \Drupal\apigee_edge\Plugin\KeyType\BasicAuthKeyType $key_type */
+    $key_type = $key->getKeyType();
+
+    // Failed to connect to the Oauth authorization server.
+    if ($exception instanceof OauthAuthenticationException) {
+      /** @var \Drupal\apigee_edge\Plugin\KeyType\OauthKeyType $key_type */
+      $fail_text = $this->t('Failed to connect to the OAuth authorization server.');
+      // General error message.
+      $suggestion = $this->t('@fail_text Check the debug information below for more details.', [
+        '@fail_text' => $fail_text,
+      ]);
+      // Invalid credentials.
+      if ($exception->getCode() === 401) {
+        // Invalid credentials using defined client_id/client_secret.
+        if ($key_type->getClientId($key) !== Oauth::DEFAULT_CLIENT_ID || $key_type->getClientSecret($key) !== Oauth::DEFAULT_CLIENT_SECRET) {
+          $suggestion = $this->t('@fail_text The given username (%username) or password or client ID (%client_id) or client secret is incorrect.', [
+            '@fail_text' => $fail_text,
+            '%client_id' => $key_type->getClientId($key),
+            '%username' => $key_type->getUsername($key),
+          ]);
+        }
+        // Invalid credentials using default client_id/client_secret.
+        else {
+          $suggestion = $this->t('@fail_text The given username (%username) or password is incorrect.', [
+            '@fail_text' => $fail_text,
+            '%username' => $key_type->getUsername($key),
+          ]);
+        }
       }
-      else {
-        $form_state->setError($form, $this->t('Connection failed. Response from Apigee Edge: %response', [
-          '%response' => $exception->getMessage(),
-        ]));
+      // Failed request.
+      elseif ($exception->getCode() === 0) {
+        if ($exception->getPrevious() instanceof ApiRequestException && $exception->getPrevious()->getPrevious() instanceof NetworkException && $exception->getPrevious()->getPrevious()->getPrevious() instanceof ConnectException) {
+          /** @var \GuzzleHttp\Exception\ConnectException $curl_exception */
+          $curl_exception = $exception->getPrevious()->getPrevious()->getPrevious();
+          // Resolving timed out.
+          if ($curl_exception->getHandlerContext()['errno'] === CURLE_OPERATION_TIMEDOUT) {
+            $suggestion = $this->t('@fail_text The connection timeout threshold (%connect_timeout) or the request timeout (%timeout) is too low or something is wrong with the connection.', [
+              '@fail_text' => $fail_text,
+              '%connect_timeout' => $this->state->get('apigee_edge.client')['http_client_connect_timeout'],
+              '%timeout' => $this->state->get('apigee_edge.client')['http_client_timeout'],
+            ]);
+          }
+          // The remote host was not resolved (authorization server).
+          if ($curl_exception->getHandlerContext()['errno'] === CURLE_COULDNT_RESOLVE_HOST) {
+            $suggestion = $this->t('@fail_text The given authorization server (%authorization_server) is incorrect or something is wrong with the connection.', [
+              '@fail_text' => $fail_text,
+              '%authorization_server' => $key_type->getAuthorizationServer($key),
+            ]);
+          }
+        }
       }
     }
+    // Failed to connect to Apigee Edge (basic authentication or bearer
+    // authentication).
+    else {
+      $fail_text = $this->t('Failed to connect to Apigee Edge.');
+      // General error message.
+      $suggestion = $this->t('@fail_text Check the debug information below for more details.', [
+        '@fail_text' => $fail_text,
+      ]);
+      // Invalid credentials.
+      if ($exception->getCode() === 401) {
+        $suggestion = $this->t('@fail_text The given username (%username) or password is incorrect.', [
+          '@fail_text' => $fail_text,
+          '%username' => $key_type->getUsername($key),
+        ]);
+      }
+      // Invalid organization name.
+      elseif ($exception->getCode() === 403) {
+        $suggestion = $this->t('@fail_text The given organization name (%organization) is incorrect.', [
+          '@fail_text' => $fail_text,
+          '%organization' => $key_type->getOrganization($key),
+        ]);
+      }
+      // Failed request.
+      elseif ($exception->getCode() === 0) {
+        if ($exception->getPrevious() instanceof NetworkException && $exception->getPrevious()->getPrevious() instanceof ConnectException) {
+          /** @var \GuzzleHttp\Exception\ConnectException $curl_exception */
+          $curl_exception = $exception->getPrevious()->getPrevious();
+          // Resolving timed out.
+          if ($curl_exception->getHandlerContext()['errno'] === CURLE_OPERATION_TIMEDOUT) {
+            $suggestion = $this->t('@fail_text The connection timeout threshold (%connect_timeout) or the request timeout (%timeout) is too low or something is wrong with the connection.', [
+              '@fail_text' => $fail_text,
+              '%connect_timeout' => $this->state->get('apigee_edge.client')['http_client_connect_timeout'],
+              '%timeout' => $this->state->get('apigee_edge.client')['http_client_timeout'],
+            ]);
+          }
+          // The remote host was not resolved (endpoint).
+          elseif ($curl_exception->getHandlerContext()['errno'] === CURLE_COULDNT_RESOLVE_HOST) {
+            $suggestion = $this->t('@fail_text The given endpoint (%endpoint) is incorrect or something is wrong with the connection.', [
+              '@fail_text' => $fail_text,
+              '%endpoint' => $key_type->getEndpoint($key),
+            ]);
+          }
+        }
+      }
+    }
+
+    return $suggestion;
+  }
+
+  /**
+   * Creates debug text if there was an error during form validation.
+   *
+   * @param \Exception $exception
+   *   The thrown exception during form validation.
+   * @param \Drupal\key\KeyInterface $key
+   *   The used key during form validation.
+   * @param \Drupal\key\KeyInterface|null $key_token
+   *   The user token key during form validation.
+   *
+   * @return string
+   *   The debug text to be displayed.
+   */
+  protected function createDebugText(\Exception $exception, KeyInterface $key, ?KeyInterface $key_token): string {
+    /** @var \Drupal\apigee_edge\Plugin\KeyType\BasicAuthKeyType $key_type */
+    $key_type = $key->getKeyType();
+
+    $credentials = [
+      'endpoint' => $key_type->getEndpoint($key),
+      'organization' => $key_type->getOrganization($key),
+      'username' => $key_type->getUsername($key),
+    ];
+
+    $keys = [
+      'key_type' => get_class($key_type),
+      'key_provider' => get_class($key->getKeyProvider()),
+    ];
+
+    if ($key_type instanceof OauthKeyType) {
+      /** @var \Drupal\apigee_edge\Plugin\KeyType\OauthKeyType $key_type */
+      $credentials['authorization_server'] = $key_type->getAuthorizationServer($key);
+      $credentials['client_id'] = $key_type->getClientId($key);
+      $credentials['client_secret'] = $key_type->getClientSecret($key) === Oauth::DEFAULT_CLIENT_SECRET ? Oauth::DEFAULT_CLIENT_SECRET : '***client-secret***';
+
+      $keys['key_token_type'] = get_class($key_token->getKeyType());
+      $keys['key_token_provider'] = get_class($key_token->getKeyProvider());
+    }
+
+    $exception_text = (string) $exception;
+    $exception_text = preg_replace('/(.*refresh_token=)([^\&\r\n]+)(.*)/', '$1***refresh-token***$3', $exception_text);
+    $exception_text = preg_replace('/(.*mfa_token=)([^\&\r\n]+)(.*)/', '$1***mfa-token***$3', $exception_text);
+    $exception_text = preg_replace('/(.*password=)([^\&\r\n]+)(.*)/', '$1***password***$3', $exception_text);
+    $exception_text = preg_replace('/(Authorization: (Basic|Bearer) ).*/', '$1***credentials***', $exception_text);
+
+    $text = json_encode($credentials, JSON_PRETTY_PRINT) .
+      PHP_EOL .
+      json_encode($keys, JSON_PRETTY_PRINT) .
+      PHP_EOL .
+      json_encode($this->state->get('apigee_edge.client'), JSON_PRETTY_PRINT) .
+      PHP_EOL .
+      $exception_text;
+
+    return $text;
   }
 
   /**

@@ -32,10 +32,10 @@ interface EdgeOauthKeyTypeInterface extends EdgeKeyTypeInterface {
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
    *
-   * @return string|null
+   * @return string
    *   The authorization server.
    */
-  public function getAuthorizationServer(KeyInterface $key): ?string;
+  public function getAuthorizationServer(KeyInterface $key): string;
 
   /**
    * Gets the client ID.
@@ -43,10 +43,10 @@ interface EdgeOauthKeyTypeInterface extends EdgeKeyTypeInterface {
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
    *
-   * @return string|null
+   * @return string
    *   The client ID.
    */
-  public function getClientId(KeyInterface $key): ?string;
+  public function getClientId(KeyInterface $key): string;
 
   /**
    * Gets the client secret.
@@ -54,9 +54,9 @@ interface EdgeOauthKeyTypeInterface extends EdgeKeyTypeInterface {
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
    *
-   * @return string|null
+   * @return string
    *   The client secret.
    */
-  public function getClientSecret(KeyInterface $key): ?string;
+  public function getClientSecret(KeyInterface $key): string;
 
 }

@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge\Plugin\KeyType;
 
+use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use Drupal\apigee_edge\OauthAuthentication;
 use Drupal\apigee_edge\OauthTokenStorage;
 use Drupal\apigee_edge\Plugin\EdgeOauthKeyTypeInterface;
@@ -76,22 +77,22 @@ class OauthKeyType extends BasicAuthKeyType implements EdgeOauthKeyTypeInterface
   /**
    * {@inheritdoc}
    */
-  public function getAuthorizationServer(KeyInterface $key): ?string {
-    return $key->getKeyValues()['authorization_server'] ?? NULL;
+  public function getAuthorizationServer(KeyInterface $key): string {
+    return $key->getKeyValues()['authorization_server'] ?? Oauth::DEFAULT_AUTHORIZATION_SERVER;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getClientId(KeyInterface $key): ?string {
-    return $key->getKeyValues()['client_id'] ?? NULL;
+  public function getClientId(KeyInterface $key): string {
+    return $key->getKeyValues()['client_id'] ?? Oauth::DEFAULT_CLIENT_ID;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getClientSecret(KeyInterface $key): ?string {
-    return $key->getKeyValues()['client_secret'] ?? NULL;
+  public function getClientSecret(KeyInterface $key): string {
+    return $key->getKeyValues()['client_secret'] ?? Oauth::DEFAULT_CLIENT_SECRET;
   }
 
   /**
