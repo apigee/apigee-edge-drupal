@@ -19,7 +19,6 @@
 
 namespace Drupal\apigee_edge\Form;
 
-use Apigee\Edge\ClientInterface;
 use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
@@ -455,12 +454,6 @@ class AuthenticationForm extends ConfigFormBase {
       }
       // Failed request.
       elseif ($exception->getCode() === 0) {
-        if ($exception->getMessage() === 'Host can not be empty.') {
-          $suggestion = $this->t('@fail_text The given authorization server (%authorization_server) is incorrect or something is wrong with the connection.', [
-            '@fail_text' => $fail_text,
-            '%authorization_server' => $key_type->getAuthorizationServer($key),
-          ]);
-        }
         if ($exception->getPrevious() instanceof ApiRequestException && $exception->getPrevious()->getPrevious() instanceof NetworkException && $exception->getPrevious()->getPrevious()->getPrevious() instanceof ConnectException) {
           /** @var \GuzzleHttp\Exception\ConnectException $curl_exception */
           $curl_exception = $exception->getPrevious()->getPrevious()->getPrevious();

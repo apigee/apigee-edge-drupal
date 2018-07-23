@@ -31,6 +31,14 @@ use Drupal\key\Entity\Key;
  */
 class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
+  const NO_AVAILABLE_BASIC_AUTH_KEY = 'There is no available basic authentication key for connecting to Apigee Edge.';
+
+  const NO_AVAILABLE_OAUTH_KEY = 'There is no available OAuth key for connecting to Apigee Edge.';
+
+  const NO_AVAILABLE_OAUTH_TOKEN_KEY = 'There is no available OAuth token key for connecting to Apigee Edge.';
+
+  const DEBUG_INFORMATION_TITLE = 'Debug information';
+
   /**
    * Valid credentials.
    *
@@ -95,13 +103,13 @@ class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
       'id' => 'default_key',
     ])->save();
     $this->drupalGet(Url::fromRoute('apigee_edge.settings'));
-    $this->assertSession()->pageTextContains('There is no available basic authentication key for connecting to Apigee Edge.');
-    $this->assertSession()->pageTextNotContains('There is no available OAuth key for connecting to Apigee Edge.');
-    $this->assertSession()->pageTextNotContains('There is no available OAuth token key for connecting to Apigee Edge.');
+    $this->assertSession()->pageTextContains(self::NO_AVAILABLE_BASIC_AUTH_KEY);
+    $this->assertSession()->pageTextNotContains(self::NO_AVAILABLE_OAUTH_KEY);
+    $this->assertSession()->pageTextNotContains(self::NO_AVAILABLE_OAUTH_TOKEN_KEY);
     $this->getSession()->getPage()->selectFieldOption('edit-key-type', 'apigee_edge_oauth');
-    $this->assertSession()->pageTextContains('There is no available OAuth key for connecting to Apigee Edge.');
-    $this->assertSession()->pageTextContains('There is no available OAuth token key for connecting to Apigee Edge.');
-    $this->assertSession()->pageTextNotContains('There is no available basic authentication key for connecting to Apigee Edge.');
+    $this->assertSession()->pageTextContains(self::NO_AVAILABLE_OAUTH_KEY);
+    $this->assertSession()->pageTextContains(self::NO_AVAILABLE_OAUTH_TOKEN_KEY);
+    $this->assertSession()->pageTextNotContains(self::NO_AVAILABLE_BASIC_AUTH_KEY);
 
     // Basic authentication, environment variables.
     $this->createKey('key_basic_auth_env_variables', 'apigee_edge_basic_auth', 'apigee_edge_environment_variables');
@@ -113,8 +121,8 @@ class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $this->assertSession()->pageTextContains('key_basic_auth_env_variables');
     $this->assertSession()->pageTextContains('key_basic_auth_private_file');
     $this->getSession()->getPage()->selectFieldOption('edit-key-type', 'apigee_edge_oauth');
-    $this->assertSession()->pageTextContains('There is no available OAuth key for connecting to Apigee Edge.');
-    $this->assertSession()->pageTextContains('There is no available OAuth token key for connecting to Apigee Edge.');
+    $this->assertSession()->pageTextContains(self::NO_AVAILABLE_OAUTH_KEY);
+    $this->assertSession()->pageTextContains(self::NO_AVAILABLE_OAUTH_TOKEN_KEY);
     $this->getSession()->getPage()->selectFieldOption('edit-key-type', 'apigee_edge_basic_auth');
 
     // OAuth token key, private file.
@@ -123,8 +131,8 @@ class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $this->drupalGet(Url::fromRoute('apigee_edge.settings'));
     $this->getSession()->getPage()->selectFieldOption('edit-key-type', 'apigee_edge_oauth');
     $this->assertSession()->pageTextNotContains('key_oauth_token');
-    $this->assertSession()->pageTextNotContains('There is no available OAuth token key for connecting to Apigee Edge.');
-    $this->assertSession()->pageTextContains('There is no available OAuth key for connecting to Apigee Edge.');
+    $this->assertSession()->pageTextNotContains(self::NO_AVAILABLE_OAUTH_TOKEN_KEY);
+    $this->assertSession()->pageTextContains(self::NO_AVAILABLE_OAUTH_KEY);
 
     // OAuth, environment variables.
     $this->createKey('key_oauth_env_variables', 'apigee_edge_oauth', 'apigee_edge_environment_variables');
@@ -204,14 +212,15 @@ class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     // Create and test keys with too low timeouts.
     $this->createKey('key_basic_auth_private_file_low_timeout', 'apigee_edge_basic_auth', 'apigee_edge_private_file', $this->validCredentials);
     $this->createKey('key_oauth_private_file_low_timeout', 'apigee_edge_oauth', 'apigee_edge_private_file', $this->validCredentials);
+    $timeout = 0.1;
     $this->drupalPostForm(Url::fromRoute('apigee_edge.settings.connection_config'), [
-      'connect_timeout' => 0.1,
-      'request_timeout' => 0.1,
+      'connect_timeout' => $timeout,
+      'request_timeout' => $timeout,
     ], 'Save configuration');
-    $this->assertKeyTestConnection('key_basic_auth_private_file_low_timeout', '', "Failed to connect to Apigee Edge. The connection timeout threshold (0.1) or the request timeout (0.1) is too low or something is wrong with the connection. Error message: cURL error 28:");
-    $this->assertKeyTestConnection('key_oauth_private_file_low_timeout', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The connection timeout threshold (0.1) or the request timeout (0.1) is too low or something is wrong with the connection. Error message: cURL error 28:");
-    $this->assertKeySave('key_basic_auth_private_file_low_timeout', '', "Failed to connect to Apigee Edge. The connection timeout threshold (0.1) or the request timeout (0.1) is too low or something is wrong with the connection. Error message: cURL error 28:");
-    $this->assertKeySave('key_oauth_private_file_low_timeout', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The connection timeout threshold (0.1) or the request timeout (0.1) is too low or something is wrong with the connection. Error message: cURL error 28:");
+    $this->assertKeyTestConnection('key_basic_auth_private_file_low_timeout', '', "Failed to connect to Apigee Edge. The connection timeout threshold ({$timeout}) or the request timeout ({$timeout}) is too low or something is wrong with the connection. Error message: cURL error 28:");
+    $this->assertKeyTestConnection('key_oauth_private_file_low_timeout', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The connection timeout threshold ({$timeout}) or the request timeout ({$timeout}) is too low or something is wrong with the connection. Error message: cURL error 28:");
+    $this->assertKeySave('key_basic_auth_private_file_low_timeout', '', "Failed to connect to Apigee Edge. The connection timeout threshold ({$timeout}) or the request timeout ({$timeout}) is too low or something is wrong with the connection. Error message: cURL error 28:");
+    $this->assertKeySave('key_oauth_private_file_low_timeout', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The connection timeout threshold ({$timeout}) or the request timeout ({$timeout}) is too low or something is wrong with the connection. Error message: cURL error 28:");
     $this->drupalPostForm(Url::fromRoute('apigee_edge.settings.connection_config'), [
       'connect_timeout' => 30,
       'request_timeout' => 30,
@@ -224,15 +233,15 @@ class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $this->drupalGet(Url::fromRoute('apigee_edge.settings'));
     $this->assertEmpty($this->container->get('state')->get('apigee_edge.auth')['active_key']);
     $this->assertEmpty($this->container->get('state')->get('apigee_edge.auth')['active_key_oauth_token']);
-    $this->assertSession()->pageTextContains('There is no available basic authentication key for connecting to Apigee Edge.');
+    $this->assertSession()->pageTextContains(self::NO_AVAILABLE_BASIC_AUTH_KEY);
     $this->getSession()->getPage()->selectFieldOption('edit-key-type', 'apigee_edge_oauth');
-    $this->assertSession()->pageTextContains('There is no available OAuth key for connecting to Apigee Edge.');
-    $this->assertSession()->pageTextContains('There is no available OAuth token key for connecting to Apigee Edge.');
+    $this->assertSession()->pageTextContains(self::NO_AVAILABLE_OAUTH_KEY);
+    $this->assertSession()->pageTextContains(self::NO_AVAILABLE_OAUTH_TOKEN_KEY);
 
     // Check Key form custom validations.
     $this->assertKeyFormValidation();
 
-    // Only Apigee Edge keys are usable in SDK connector.
+    // Only Apigee Edge keys can be used in SDK connector.
     $this->expectExceptionMessage('Type of default_key key does not implement EdgeKeyTypeInterface.');
     $this->container->get('apigee_edge.sdk_connector')->testConnection(Key::load('default_key'));
   }
@@ -310,11 +319,11 @@ class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $web_assert->assertWaitOnAjaxRequest();
     if (empty($message)) {
       $this->assertSession()->pageTextContains('Connection successful');
-      $this->assertSession()->pageTextNotContains('Debug information');
+      $this->assertSession()->pageTextNotContains(self::DEBUG_INFORMATION_TITLE);
     }
     else {
       $this->assertSession()->pageTextContains($message);
-      $this->assertSession()->pageTextContains('Debug information');
+      $this->assertSession()->pageTextContains(self::DEBUG_INFORMATION_TITLE);
       $this->assertDebugText($key_id);
     }
   }
@@ -345,14 +354,14 @@ class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $this->getSession()->getPage()->pressButton('Save configuration');
     if (empty($message)) {
       $this->assertSession()->pageTextContains('The configuration options have been saved');
-      $this->assertSession()->pageTextNotContains('Debug information');
+      $this->assertSession()->pageTextNotContains(self::DEBUG_INFORMATION_TITLE);
       $this->assertEquals($this->container->get('state')->get('apigee_edge.auth')['active_key'], $key_id);
       $this->assertEquals($this->container->get('state')->get('apigee_edge.auth')['active_key_oauth_token'], $key_token_id);
       $this->container->get('apigee_edge.sdk_connector')->testConnection();
     }
     else {
       $this->assertSession()->pageTextContains($message);
-      $this->assertSession()->pageTextContains('Debug information');
+      $this->assertSession()->pageTextContains(self::DEBUG_INFORMATION_TITLE);
       $this->assertDebugText($key_id);
       $this->assertNotEquals($this->container->get('state')->get('apigee_edge.auth')['active_key'], $key_id);
     }
