@@ -441,7 +441,7 @@ class AuthenticationForm extends ConfigFormBase {
         if ($key_type->getClientId($key) !== Oauth::DEFAULT_CLIENT_ID || $key_type->getClientSecret($key) !== Oauth::DEFAULT_CLIENT_SECRET) {
           $suggestion = $this->t('@fail_text The given username (%username) or password or client ID (%client_id) or client secret is incorrect.', [
             '@fail_text' => $fail_text,
-            '%client_id' => $key_type->getClientId($key) ?? Oauth::DEFAULT_CLIENT_ID,
+            '%client_id' => $key_type->getClientId($key),
             '%username' => $key_type->getUsername($key),
           ]);
         }
