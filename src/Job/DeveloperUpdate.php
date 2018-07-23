@@ -63,6 +63,11 @@ class DeveloperUpdate extends EdgeJob {
     /** @var \Drupal\user\UserInterface $user */
     $user = user_load_by_mail($this->email);
 
+    if ($developer->getUserName() !== $user->get('name')->value) {
+      $developer->setUserName($user->get('name')->value);
+      $this->executeUpdate = TRUE;
+    }
+
     if ($developer->getFirstName() !== $user->get('first_name')->value) {
       $developer->setFirstName($user->get('first_name')->value);
       $this->executeUpdate = TRUE;
@@ -86,9 +91,10 @@ class DeveloperUpdate extends EdgeJob {
             '%email' => $this->email,
             '%attribute_name' => static::getAttributeName($field_name),
             '%field_name' => $field_definition->getName(),
+            'link' => $user->toLink()->toString(),
           ];
           \Drupal::logger('apigee_edge_sync')->warning($message, $context);
-          $this->recordMessage(t($message, $context)->render());
+          $this->recordMessage(t("Skipping %email developer's %attribute_name attribute update, because %field_name field does not exist.", $context)->render());
           continue;
         }
         $field_type = $field_definition->getType();
@@ -101,9 +107,10 @@ class DeveloperUpdate extends EdgeJob {
             '%email' => $this->email,
             '%attribute_name' => static::getAttributeName($field_name),
             '%field_type' => $field_type,
+            'link' => $user->toLink()->toString(),
           ];
           \Drupal::logger('apigee_edge_sync')->warning($message, $context);
-          $this->recordMessage(t($message, $context)->render());
+          $this->recordMessage(t("Skipping %email developer's %attribute_name attribute update, because there is no available storage formatter for %field_type field type.", $context)->render());
           continue;
         }
 
@@ -121,12 +128,13 @@ class DeveloperUpdate extends EdgeJob {
         $developer->save();
       }
       catch (\Exception $exception) {
-        $message = "Skipping refreshing %email developer: %message";
+        $message = 'Skipping refreshing %email developer: %message';
         $context = [
           '%message' => (string) $exception,
+          'link' => $user->toLink()->toString(),
         ];
         \Drupal::logger('apigee_edge_sync')->error($message, $context);
-        $this->recordMessage(t($message, $context)->render());
+        $this->recordMessage(t('Skipping refreshing %email developer: %message', $context)->render());
       }
     }
   }
