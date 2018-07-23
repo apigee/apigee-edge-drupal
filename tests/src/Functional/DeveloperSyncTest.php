@@ -176,7 +176,7 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       $user->set($this->fieldNamePrefix . 'invalid_email', 'valid.email@example.com');
       // Set valid email field on the user.
       $user->set($this->fieldNamePrefix . 'one_track_field', 'user');
-      $user->setChangedTime($this->container->get('datetime.time')->getCurrentTime());
+      $user->setChangedTime($this->container->get('datetime.time')->getCurrentTime() - 100);
       $user->save();
       $this->modifiedEdgeDevelopers[$user->getEmail()] = Developer::load($user->getEmail());
 
@@ -184,6 +184,11 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
         $formatter = $this->formatManager->lookupPluginForFieldType($field_type);
         $this->modifiedEdgeDevelopers[$user->getEmail()]->setAttribute($data['name'], $formatter->encode($data['data_changed']));
       }
+
+      // Change first name and last name.
+      $this->modifiedEdgeDevelopers[$user->getEmail()]->setFirstName($this->randomGenerator->word(8));
+      $this->modifiedEdgeDevelopers[$user->getEmail()]->setLastName($this->randomGenerator->word(8));
+
       // Set unlinked attribute on the developer.
       $this->modifiedEdgeDevelopers[$user->getEmail()]->setAttribute('one_track_field', 'developer');
       // Set invalid email attribute value on the developer.
@@ -212,11 +217,17 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       foreach ($this->fields as $field_type => $data) {
         $this->modifiedDrupalUsers[$user->getEmail()]->set($this->fieldNamePrefix . $data['name'], $data['data_changed']);
       }
+
+      // Change first name, last name and username.
+      $this->modifiedDrupalUsers[$user->getEmail()]->set('first_name', $this->randomGenerator->word(8));
+      $this->modifiedDrupalUsers[$user->getEmail()]->set('last_name', $this->randomGenerator->word(8));
+      $this->modifiedDrupalUsers[$user->getEmail()]->set('name', $this->randomGenerator->word(8));
+
       // Set unlinked field in Drupal.
       $this->modifiedDrupalUsers[$user->getEmail()]->set($this->fieldNamePrefix . 'one_track_field', 'user');
       // It's necessary because changed time is automatically updated on the UI
       // only.
-      $this->modifiedDrupalUsers[$user->getEmail()]->setChangedTime($this->container->get('datetime.time')->getCurrentTime());
+      $this->modifiedDrupalUsers[$user->getEmail()]->setChangedTime($this->container->get('datetime.time')->getCurrentTime() + 100);
       $this->modifiedDrupalUsers[$user->getEmail()]->save();
       _apigee_edge_set_sync_in_progress(FALSE);
     }
