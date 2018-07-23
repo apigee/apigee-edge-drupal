@@ -438,8 +438,8 @@ class AuthenticationForm extends ConfigFormBase {
       // Invalid credentials.
       if ($exception->getCode() === 401) {
         // Invalid credentials using defined client_id/client_secret.
-        if ($key_type->getClientId($key) === NULL || $key_type->getClientSecret($key) === NULL) {
-          $suggestion = $this->t('@fail_text The given username (%username) or password or client ID (%client_id) or client secret is probably incorrect.', [
+        if ($key_type->getClientId($key) !== Oauth::DEFAULT_CLIENT_ID || $key_type->getClientSecret($key) !== Oauth::DEFAULT_CLIENT_SECRET) {
+          $suggestion = $this->t('@fail_text The given username (%username) or password or client ID (%client_id) or client secret is incorrect.', [
             '@fail_text' => $fail_text,
             '%client_id' => $key_type->getClientId($key) ?? Oauth::DEFAULT_CLIENT_ID,
             '%username' => $key_type->getUsername($key),
@@ -447,7 +447,7 @@ class AuthenticationForm extends ConfigFormBase {
         }
         // Invalid credentials using default client_id/client_secret.
         else {
-          $suggestion = $this->t('@fail_text The given username (%username) or password is probably incorrect.', [
+          $suggestion = $this->t('@fail_text The given username (%username) or password is incorrect.', [
             '@fail_text' => $fail_text,
             '%username' => $key_type->getUsername($key),
           ]);
@@ -455,12 +455,26 @@ class AuthenticationForm extends ConfigFormBase {
       }
       // Failed request.
       elseif ($exception->getCode() === 0) {
+        if ($exception->getMessage() === 'Host can not be empty.') {
+          $suggestion = $this->t('@fail_text The given authorization server (%authorization_server) is incorrect or something is wrong with the connection.', [
+            '@fail_text' => $fail_text,
+            '%authorization_server' => $key_type->getAuthorizationServer($key),
+          ]);
+        }
         if ($exception->getPrevious() instanceof ApiRequestException && $exception->getPrevious()->getPrevious() instanceof NetworkException && $exception->getPrevious()->getPrevious()->getPrevious() instanceof ConnectException) {
           /** @var \GuzzleHttp\Exception\ConnectException $curl_exception */
           $curl_exception = $exception->getPrevious()->getPrevious()->getPrevious();
+          // Resolving timed out.
+          if ($curl_exception->getHandlerContext()['errno'] === CURLE_OPERATION_TIMEDOUT) {
+            $suggestion = $this->t('@fail_text The connection timeout threshold (%connect_timeout) or the request timeout (%timeout) is too low or something is wrong with the connection.', [
+              '@fail_text' => $fail_text,
+              '%connect_timeout' => $this->state->get('apigee_edge.client')['http_client_connect_timeout'],
+              '%timeout' => $this->state->get('apigee_edge.client')['http_client_timeout'],
+            ]);
+          }
           // The remote host was not resolved (authorization server).
           if ($curl_exception->getHandlerContext()['errno'] === CURLE_COULDNT_RESOLVE_HOST) {
-            $suggestion = $this->t('@fail_text The given authorization server (%authorization_server) is probably incorrect or something is wrong with the connection.', [
+            $suggestion = $this->t('@fail_text The given authorization server (%authorization_server) is incorrect or something is wrong with the connection.', [
               '@fail_text' => $fail_text,
               '%authorization_server' => $key_type->getAuthorizationServer($key),
             ]);
@@ -478,14 +492,14 @@ class AuthenticationForm extends ConfigFormBase {
       ]);
       // Invalid credentials.
       if ($exception->getCode() === 401) {
-        $suggestion = $this->t('@fail_text The given username (%username) or password is probably incorrect.', [
+        $suggestion = $this->t('@fail_text The given username (%username) or password is incorrect.', [
           '@fail_text' => $fail_text,
           '%username' => $key_type->getUsername($key),
         ]);
       }
       // Invalid organization name.
       elseif ($exception->getCode() === 403) {
-        $suggestion = $this->t('@fail_text The given organization name (%organization) is probably incorrect.', [
+        $suggestion = $this->t('@fail_text The given organization name (%organization) is incorrect.', [
           '@fail_text' => $fail_text,
           '%organization' => $key_type->getOrganization($key),
         ]);
@@ -497,7 +511,7 @@ class AuthenticationForm extends ConfigFormBase {
           $curl_exception = $exception->getPrevious()->getPrevious();
           // Resolving timed out.
           if ($curl_exception->getHandlerContext()['errno'] === CURLE_OPERATION_TIMEDOUT) {
-            $suggestion = $this->t('@fail_text Maybe the connection timeout threshold (%connect_timeout) or the request timeout (%timeout) is too low or something is wrong with the connection.', [
+            $suggestion = $this->t('@fail_text The connection timeout threshold (%connect_timeout) or the request timeout (%timeout) is too low or something is wrong with the connection.', [
               '@fail_text' => $fail_text,
               '%connect_timeout' => $this->state->get('apigee_edge.client')['http_client_connect_timeout'],
               '%timeout' => $this->state->get('apigee_edge.client')['http_client_timeout'],
@@ -505,7 +519,7 @@ class AuthenticationForm extends ConfigFormBase {
           }
           // The remote host was not resolved (endpoint).
           elseif ($curl_exception->getHandlerContext()['errno'] === CURLE_COULDNT_RESOLVE_HOST) {
-            $suggestion = $this->t('@fail_text The given endpoint (%endpoint) is probably incorrect or something is wrong with the connection.', [
+            $suggestion = $this->t('@fail_text The given endpoint (%endpoint) is incorrect or something is wrong with the connection.', [
               '@fail_text' => $fail_text,
               '%endpoint' => $key_type->getEndpoint($key),
             ]);
@@ -535,7 +549,7 @@ class AuthenticationForm extends ConfigFormBase {
     $key_type = $key->getKeyType();
 
     $credentials = [
-      'endpoint' => $key_type->getEndpoint($key) ?? ClientInterface::DEFAULT_ENDPOINT,
+      'endpoint' => $key_type->getEndpoint($key),
       'organization' => $key_type->getOrganization($key),
       'username' => $key_type->getUsername($key),
     ];
@@ -547,9 +561,9 @@ class AuthenticationForm extends ConfigFormBase {
 
     if ($key_type instanceof OauthKeyType) {
       /** @var \Drupal\apigee_edge\Plugin\KeyType\OauthKeyType $key_type */
-      $credentials['authorization_server'] = $key_type->getAuthorizationServer($key) ?? Oauth::DEFAULT_AUTHORIZATION_SERVER;
-      $credentials['client_id'] = $key_type->getClientId($key) ?? Oauth::DEFAULT_CLIENT_ID;
-      $credentials['client_secret'] = $key_type->getClientSecret($key) === NULL ? Oauth::DEFAULT_CLIENT_SECRET : '***client-secret***';
+      $credentials['authorization_server'] = $key_type->getAuthorizationServer($key);
+      $credentials['client_id'] = $key_type->getClientId($key);
+      $credentials['client_secret'] = $key_type->getClientSecret($key) === Oauth::DEFAULT_CLIENT_SECRET ? Oauth::DEFAULT_CLIENT_SECRET : '***client-secret***';
 
       $keys['key_token_type'] = get_class($key_token->getKeyType());
       $keys['key_token_provider'] = get_class($key_token->getKeyProvider());
