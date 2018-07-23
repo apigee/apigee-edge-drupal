@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge\Plugin;
 
+use Apigee\Edge\Client;
 use Drupal\apigee_edge\KeyValueMalformedException;
 use Drupal\Component\Serialization\Json;
 use Drupal\key\KeyInterface;
@@ -46,8 +47,8 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
   /**
    * {@inheritdoc}
    */
-  public function getEndpoint(KeyInterface $key): ?string {
-    return $key->getKeyValues()['endpoint'] ?? NULL;
+  public function getEndpoint(KeyInterface $key): string {
+    return $key->getKeyValues()['endpoint'] ?? Client::DEFAULT_ENDPOINT;
   }
 
   /**

@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge\Plugin\KeyInput;
 
+use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
 
@@ -49,7 +50,9 @@ class OauthKeyInput extends BasicAuthKeyInput {
     $form['authorization_server'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Authorization server'),
-      '#description' => $this->t('The server issuing access tokens to the client. Leave empty to use the default <em>https://login.apigee.com/oauth/token</em> authorization server.'),
+      '#description' => $this->t('The server issuing access tokens to the client. Leave empty to use the default %authorization_server authorization server.', [
+        '%authorization_server' => Oauth::DEFAULT_AUTHORIZATION_SERVER,
+      ]),
       '#required' => $key->getKeyType()->getPluginDefinition()['multivalue']['fields']['authorization_server']['required'],
       '#default_value' => $values['authorization_server'],
       '#attributes' => ['autocomplete' => 'off'],
@@ -57,7 +60,9 @@ class OauthKeyInput extends BasicAuthKeyInput {
     $form['client_id'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Client ID'),
-      '#description' => t('The client identifier issued to the client during the registration process. Leave empty to use the default <em>edgecli</em> client ID.'),
+      '#description' => t('The client identifier issued to the client during the registration process. Leave empty to use the default %client_id client ID.', [
+        '%client_id' => Oauth::DEFAULT_CLIENT_ID,
+      ]),
       '#required' => $key->getKeyType()->getPluginDefinition()['multivalue']['fields']['client_id']['required'],
       '#default_value' => $values['client_id'],
       '#attributes' => ['autocomplete' => 'off'],
@@ -65,7 +70,9 @@ class OauthKeyInput extends BasicAuthKeyInput {
     $form['client_secret'] = [
       '#type' => 'password',
       '#title' => $this->t('Client secret'),
-      '#description' => t('A secret known only to the client and the authorization server. Leave empty to use the default <em>edgeclisecret</em> client secret.'),
+      '#description' => t('A secret known only to the client and the authorization server. Leave empty to use the default %client_secret client secret.', [
+        '%client_secret' => Oauth::DEFAULT_CLIENT_SECRET,
+      ]),
       '#required' => $key->getKeyType()->getPluginDefinition()['multivalue']['fields']['client_secret']['required'],
       '#default_value' => $values['client_secret'],
       '#attributes' => ['autocomplete' => 'off'],
