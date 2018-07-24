@@ -140,9 +140,9 @@ class SDKConnector implements SDKConnectorInterface {
   protected function httpClientConfiguration(): array {
     $config = $this->state->get('apigee_edge.client');
     return [
-      'connect_timeout' => $config['http_client_connect_timeout'],
-      'timeout' => $config['http_client_timeout'],
-      'proxy' => $config['http_client_proxy'],
+      'connect_timeout' => $config['http_client_connect_timeout'] ?? 30,
+      'timeout' => $config['http_client_timeout'] ?? 30,
+      'proxy' => $config['http_client_proxy'] ?? '',
     ];
   }
 
