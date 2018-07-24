@@ -120,10 +120,11 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
           '%mail' => $user->getEmail(),
           '%attribute_name' => static::getAttributeName($field_name),
           '%field_name' => $field_name,
+          'link' => $user->toLink()->toString(),
         ];
         if (isset($developer_create_job)) {
           \Drupal::logger('apigee_edge')->warning($message, $context);
-          $developer_create_job->recordMessage(t($message, $context)->render());
+          $developer_create_job->recordMessage(t("Skipping %mail developer's %attribute_name attribute update, because %field_name field does not exist.", $context)->render());
         }
         else {
           \Drupal::logger('apigee_edge_sync')->warning($message, $context);
@@ -139,10 +140,11 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
           '%mail' => $user->getEmail(),
           '%attribute_name' => static::getAttributeName($field_name),
           '%field_type' => $field_type,
+          'link' => $user->toLink()->toString(),
         ];
         if (isset($developer_create_job)) {
           \Drupal::logger('apigee_edge')->warning($message, $context);
-          $developer_create_job->recordMessage(t($message, $context)->render());
+          $developer_create_job->recordMessage(t("Skipping %mail developer's %attribute_name attribute update, because there is no available storage formatter for %field_type field type.", $context)->render());
         }
         else {
           \Drupal::logger('apigee_edge_sync')->warning($message, $context);
