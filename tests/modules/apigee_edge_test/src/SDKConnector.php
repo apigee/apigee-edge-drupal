@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge_test;
 
 use Apigee\Edge\Client;
 use Apigee\Edge\ClientInterface;
+use Apigee\Edge\Exception\ApiResponseException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Drupal\apigee_edge\SDKConnector as OriginalSDKConnector;
 use Drupal\apigee_edge\SDKConnectorInterface;
@@ -88,12 +89,23 @@ class SDKConnector extends OriginalSDKConnector implements SDKConnectorInterface
       Client::CONFIG_RETRY_PLUGIN_CONFIG => [
         'retries' => 5,
         'decider' => function (RequestInterface $request, Exception $e) {
-          if (!$e instanceof OauthAuthenticationException) {
-            $this->logger->warning('Restarting request because it failed with: {exception}.', ['exception' => $e->getMessage()]);
-            return TRUE;
+          $restart = TRUE;
+          // When Oauth authentication is in use retry decider should ignore
+          // OauthAuthenticationException.
+          if ($e instanceof OauthAuthenticationException) {
+            return FALSE;
+          }
+          elseif ($e instanceof ApiResponseException && 401 === $e->getResponse()->getStatusCode()) {
+            // Do not retry API calls that failed with
+            // authentication error.
+            return FALSE;
           }
 
-          return FALSE;
+          if ($restart) {
+            $this->logger->warning('Restarting request because it failed with: {exception}.', ['exception' => $e->getMessage()]);
+          }
+
+          return $restart;
         },
         'delay' => function (RequestInterface $request, Exception $e, $retries) : int {
           return $retries * 15000000;
