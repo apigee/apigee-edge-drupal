@@ -91,7 +91,7 @@ class DeveloperUpdate extends EdgeJob {
             '%email' => $this->email,
             '%attribute_name' => static::getAttributeName($field_name),
             '%field_name' => $field_definition->getName(),
-            'link' => $user->toLink()->toString(),
+            'link' => $user->toLink(t('View user'))->toString(),
           ];
           \Drupal::logger('apigee_edge_sync')->warning($message, $context);
           $this->recordMessage(t("Skipping %email developer's %attribute_name attribute update, because %field_name field does not exist.", $context)->render());
@@ -107,7 +107,7 @@ class DeveloperUpdate extends EdgeJob {
             '%email' => $this->email,
             '%attribute_name' => static::getAttributeName($field_name),
             '%field_type' => $field_type,
-            'link' => $user->toLink()->toString(),
+            'link' => $this->$user->toLink(t('View user'))->toString(),
           ];
           \Drupal::logger('apigee_edge_sync')->warning($message, $context);
           $this->recordMessage(t("Skipping %email developer's %attribute_name attribute update, because there is no available storage formatter for %field_type field type.", $context)->render());
@@ -130,8 +130,9 @@ class DeveloperUpdate extends EdgeJob {
       catch (\Exception $exception) {
         $message = 'Skipping refreshing %email developer: %message';
         $context = [
+          '%email' => $this->email,
           '%message' => (string) $exception,
-          'link' => $user->toLink()->toString(),
+          'link' => $user->toLink(t('View user'))->toString(),
         ];
         \Drupal::logger('apigee_edge_sync')->error($message, $context);
         $this->recordMessage(t('Skipping refreshing %email developer: %message', $context)->render());

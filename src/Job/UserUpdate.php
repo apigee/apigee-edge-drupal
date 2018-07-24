@@ -85,7 +85,7 @@ class UserUpdate extends EdgeJob {
           $context = [
             '%email' => $this->email,
             '%field_name' => $field_name,
-            'link' => $user->toLink()->toString(),
+            'link' => $user->toLink(t('View user'))->toString(),
           ];
           \Drupal::logger('apigee_edge_sync')->warning($message, $context);
           $this->recordMessage(t("Skipping %email user's field update, because %field_name field does not exist.", $context)->render());
@@ -101,7 +101,7 @@ class UserUpdate extends EdgeJob {
             '%email' => $this->email,
             '%field_name' => $field_name,
             '%field_type' => $field_type,
-            'link' => $user->toLink()->toString(),
+            'link' => $user->toLink(t('View user'))->toString(),
           ];
           \Drupal::logger('apigee_edge_sync')->warning($message, $context);
           $this->recordMessage(t("Skipping %email user's %field_name field update, because there is no available storage formatter for %field_type field type.", $context)->render());
@@ -123,12 +123,13 @@ class UserUpdate extends EdgeJob {
           if ($field_violations->count() > 0) {
             $user->set($field_name, $rollback);
             foreach ($field_violations as $violation) {
-              $message = "Skipping %email user's %field_name field update: %message";
+              $message = "Skipping %email user's %field_name field update with %field_value value: %message";
               $context = [
                 '%email' => $this->email,
                 '%field_name' => $field_name,
+                '%field_value' => $developer_attribute_value,
                 '%message' => $violation->getMessage(),
-                'link' => $user->toLink()->toString(),
+                'link' => $user->toLink(t('View user'))->toString(),
               ];
               \Drupal::logger('apigee_edge_sync')->warning($message, $context);
               $this->recordMessage(t("Skipping %email user's %field_name field update: %message", $context)->render());
@@ -155,8 +156,9 @@ class UserUpdate extends EdgeJob {
       catch (\Exception $exception) {
         $message = 'Skipping updating %email user: %message';
         $context = [
+          '%email' => $this->email,
           '%message' => (string) $exception,
-          'link' => $user->toLink()->toString(),
+          'link' => $user->toLink(t('View user'))->toString(),
         ];
         \Drupal::logger('apigee_edge_sync')->error($message, $context);
         $this->recordMessage(t('Skipping updating %email user: %message', $context)->render());
