@@ -107,7 +107,7 @@ class DeveloperUpdate extends EdgeJob {
             '%email' => $this->email,
             '%attribute_name' => static::getAttributeName($field_name),
             '%field_type' => $field_type,
-            'link' => $this->$user->toLink(t('View user'))->toString(),
+            'link' => $user->toLink(t('View user'))->toString(),
           ];
           \Drupal::logger('apigee_edge_sync')->warning($message, $context);
           $this->recordMessage(t("Skipping %email developer's %attribute_name attribute update, because there is no available storage formatter for %field_type field type.", $context)->render());
