@@ -82,17 +82,9 @@ class SDKConnector extends OriginalSDKConnector implements SDKConnectorInterface
   /**
    * {@inheritdoc}
    */
-  protected function httpClientConfiguration(): array {
-    $config = parent::httpClientConfiguration();
-    return $config;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function buildClient(Authentication $authentication, ?string $endpoint = NULL, array $options = []): ClientInterface {
     // Use the retry plugin in tests.
-    return parent::buildClient($authentication, $endpoint, [
+    return $this->innerService->buildClient($authentication, $endpoint, [
       Client::CONFIG_RETRY_PLUGIN_CONFIG => [
         'retries' => 5,
         'decider' => function (RequestInterface $request, Exception $e) {
@@ -111,10 +103,10 @@ class SDKConnector extends OriginalSDKConnector implements SDKConnectorInterface
   }
 
   /**
-   * {@inheritdoc}
+   * @inheritdoc
    */
-  public function __call($method, $args) {
-    return call_user_func_array([$this->innerService, $method], $args);
+  protected function httpClientConfiguration(): array {
+    return $this->innerService->httpClientConfiguration();
   }
 
 }
