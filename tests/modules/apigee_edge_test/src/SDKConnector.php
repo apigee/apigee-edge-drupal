@@ -18,8 +18,10 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge_debug;
+namespace Drupal\apigee_edge_test;
 
+use Apigee\Edge\Client;
+use Apigee\Edge\ClientInterface;
 use Drupal\apigee_edge\SDKConnector as OriginalSDKConnector;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -28,21 +30,12 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Http\ClientFactory;
 use Drupal\Core\State\StateInterface;
 use Drupal\key\KeyRepositoryInterface;
+use Http\Message\Authentication;
 
 /**
  * Service decorator for SDKConnector.
  */
 class SDKConnector extends OriginalSDKConnector implements SDKConnectorInterface {
-
-  /**
-   * Customer http request header.
-   *
-   * This tells the ApiClientProfiler to profile requests made by the underlying
-   * HTTP client.
-   *
-   * @see \Drupal\apigee_edge_debug\HttpClientMiddleware\ApiClientProfiler
-   */
-  public const HEADER = 'X-Apigee-Edge-Api-Client-Profiler';
 
   /**
    * The inner SDK connector service.
@@ -79,8 +72,15 @@ class SDKConnector extends OriginalSDKConnector implements SDKConnectorInterface
    */
   protected function httpClientConfiguration(): array {
     $config = parent::httpClientConfiguration();
-    $config['headers'][static::HEADER] = static::HEADER;
     return $config;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildClient(Authentication $authentication, ?string $endpoint = NULL, array $options = []): ClientInterface {
+    // Use the retry plugin in tests.
+    return parent::buildClient($authentication, $endpoint, [Client::CONFIG_RETRY_PLUGIN_CONFIG => ['retries' => 5]]);
   }
 
   /**

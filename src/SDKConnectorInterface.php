@@ -65,10 +65,12 @@ interface SDKConnectorInterface {
    *   Authentication.
    * @param null|string $endpoint
    *   API endpoint, default is https://api.enterprise.apigee.com/v1.
+   * @param array $options
+   *   Client configuration option.
    *
    * @return \Apigee\Edge\ClientInterface
    *   Configured API client.
    */
-  public function buildClient(Authentication $authentication, ?string $endpoint = NULL): ClientInterface;
+  public function buildClient(Authentication $authentication, ?string $endpoint = NULL, array $options = []): ClientInterface;
 
 }

@@ -178,11 +178,12 @@ class SDKConnector implements SDKConnectorInterface {
   /**
    * {@inheritdoc}
    */
-  public function buildClient(Authentication $authentication, ?string $endpoint = NULL): ClientInterface {
-    return new Client($authentication, $endpoint, [
+  public function buildClient(Authentication $authentication, ?string $endpoint = NULL, array $options = []): ClientInterface {
+    $options += [
       Client::CONFIG_HTTP_CLIENT_BUILDER => new Builder(new GuzzleClientAdapter($this->clientFactory->fromOptions($this->httpClientConfiguration()))),
       Client::CONFIG_USER_AGENT_PREFIX => $this->userAgentPrefix(),
-    ]);
+    ];
+    return new Client($authentication, $endpoint, $options);
   }
 
   /**
