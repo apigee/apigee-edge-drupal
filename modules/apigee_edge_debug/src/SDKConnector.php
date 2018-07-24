@@ -78,7 +78,7 @@ class SDKConnector extends OriginalSDKConnector implements SDKConnectorInterface
    * {@inheritdoc}
    */
   protected function httpClientConfiguration(): array {
-    $config = parent::httpClientConfiguration();
+    $config = $this->innerService->httpClientConfiguration();
     $config['headers'][static::HEADER] = static::HEADER;
     return $config;
   }
