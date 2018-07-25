@@ -58,7 +58,7 @@ class DeveloperCreate extends EdgeJob {
       $context = [
         '%email' => $this->email,
         '%message' => (string) $exception->getMessage(),
-        'link' => $user->toLink()->toString(),
+        'link' => $user->toLink(t('View user'))->toString(),
       ];
       \Drupal::logger('apigee_edge_sync')->error($message, $context);
       $this->recordMessage(t('Skipping creating %email developer: %message', $context)->render());
