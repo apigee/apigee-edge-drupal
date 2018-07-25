@@ -124,17 +124,19 @@ class UserCreate extends EdgeJob {
         }
 
         $rollback = $user->get($field_name)->getValue();
-        $user->set($field_name, $formatter->decode($developer->getAttributeValue(static::getAttributeName($field_name))));
+        $developer_attribute_value = $developer->getAttributeValue(static::getAttributeName($field_name));
+        $user->set($field_name, $formatter->decode($developer_attribute_value));
         // Do not set the field value if a field constraint fails during
         // validation.
         $field_violations = $user->get($field_name)->validate();
         if ($field_violations->count() > 0) {
           $user->set($field_name, $rollback);
           foreach ($field_violations as $violation) {
-            $message = "Skipping creating %email user's %field_name field: %message";
+            $message = "Skipping creating %email user's %field_name field with %field_value value: %message";
             $context = [
               '%email' => $this->email,
               '%field_name' => $field_name,
+              '%field_value' => $developer_attribute_value,
               '%message' => $violation->getMessage(),
             ];
             \Drupal::logger('apigee_edge_sync')->warning($message, $context);
