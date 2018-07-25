@@ -124,8 +124,8 @@ class UserCreate extends EdgeJob {
         }
 
         $rollback = $user->get($field_name)->getValue();
-        $developer_attribute_value = $formatter->decode($developer->getAttributeValue(static::getAttributeName($field_name)));
-        $user->set($field_name, $developer_attribute_value);
+        $developer_attribute_value = $developer->getAttributeValue(static::getAttributeName($field_name));
+        $user->set($field_name, $formatter->decode($developer_attribute_value));
         // Do not set the field value if a field constraint fails during
         // validation.
         $field_violations = $user->get($field_name)->validate();
