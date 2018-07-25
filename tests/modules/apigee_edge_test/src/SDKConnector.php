@@ -83,19 +83,24 @@ class SDKConnector extends OriginalSDKConnector implements SDKConnectorInterface
    * {@inheritdoc}
    */
   public function buildClient(Authentication $authentication, ?string $endpoint = NULL, array $options = []): ClientInterface {
+    $decider = function (RequestInterface $request, Exception $e) {
+      // Only retry API calls that failed with this specific error.
+      if ($e instanceof ApiResponseException && $e->getEdgeErrorCode() === 'messaging.adaptors.http.flow.ApplicationNotFound') {
+        $this->logger->warning('Restarting request because it failed. {error_code}: {exception}.', [
+          'error_code' => $e->getEdgeErrorCode(),
+          'exception' => $e->getMessage(),
+        ]);
+
+        return TRUE;
+      }
+
+      return FALSE;
+    };
     // Use the retry plugin in tests.
     return $this->innerService->buildClient($authentication, $endpoint, [
       Client::CONFIG_RETRY_PLUGIN_CONFIG => [
         'retries' => 5,
-        'decider' => function (RequestInterface $request, Exception $e) {
-          // Only retry API calls that failed with this specific error.
-          if ($e instanceof ApiResponseException && $e->getEdgeErrorCode() === 'messaging.adaptors.http.flow.ApplicationNotFound') {
-            $this->logger->warning('Restarting request because it failed. {error_code}: {exception}.', ['error_code' => $e->getEdgeErrorCode(), 'exception' => $e->getMessage()]);
-            return TRUE;
-          }
-
-          return FALSE;
-        },
+        'decider' => $decider,
         'delay' => function (RequestInterface $request, Exception $e, $retries) : int {
           return $retries * 15000000;
         },
