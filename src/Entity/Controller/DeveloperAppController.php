@@ -26,7 +26,7 @@ use Apigee\Edge\Api\Management\Entity\AppInterface;
 use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
 use Apigee\Edge\Api\Management\Entity\DeveloperAppInterface as EdgeDeveloperAppInterface;
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
-use Apigee\Edge\Structure\CpsListLimitInterface;
+use Apigee\Edge\Structure\PagerInterface;
 use Drupal\apigee_edge\Entity\AppCredentialStorageAwareTrait;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\apigee_edge\Entity\EntityConvertAwareTrait;
@@ -157,12 +157,12 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   /**
    * {@inheritdoc}
    */
-  public function getEntities(CpsListLimitInterface $cpsLimit = NULL): array {
-    $developerAppIds = $this->getEntityIds($cpsLimit);
+  public function getEntities(PagerInterface $pager = NULL, string $idGetter = NULL): array {
+    $developerAppIds = $this->getEntityIds($pager);
     // Do not care about what is in the static cache, we have to load all
     // developer app entities anyway.
     /** @var \Apigee\Edge\Api\Management\Entity\DeveloperApp[] $allApps */
-    $allApps = $this->listApps(TRUE, $cpsLimit);
+    $allApps = $this->listApps(TRUE, $pager);
     $this->saveEntitiesToStaticCache($allApps);
     $apps = array_intersect_key($allApps, array_flip($developerAppIds));
     $converted = array_map(function (EdgeDeveloperApp $app) {
@@ -174,8 +174,8 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   /**
    * {@inheritdoc}
    */
-  public function getEntityIds(CpsListLimitInterface $cpsLimit = NULL): array {
-    return $this->listAppIdsByType('developer', $cpsLimit);
+  public function getEntityIds(PagerInterface $pager = NULL): array {
+    return $this->listAppIdsByType('developer', $pager);
   }
 
   /**
@@ -339,8 +339,8 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   /**
    * {@inheritdoc}
    */
-  public function listApps(bool $includeCredentials = TRUE, CpsListLimitInterface $cpsLimit = NULL): array {
-    $apps = parent::listApps($includeCredentials, $cpsLimit);
+  public function listApps(bool $includeCredentials = TRUE, PagerInterface $pager = NULL): array {
+    $apps = parent::listApps($includeCredentials, $pager);
     $this->saveEntitiesToStaticCache($apps);
     return $apps;
   }
@@ -348,8 +348,8 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   /**
    * {@inheritdoc}
    */
-  public function listAppsByStatus(string $status, bool $includeCredentials = TRUE, CpsListLimitInterface $cpsLimit = NULL): array {
-    $apps = parent::listAppsByStatus($status, $includeCredentials, $cpsLimit);
+  public function listAppsByStatus(string $status, bool $includeCredentials = TRUE, PagerInterface $pager = NULL): array {
+    $apps = parent::listAppsByStatus($status, $includeCredentials, $pager);
     $this->saveEntitiesToStaticCache($apps);
     return $apps;
   }

@@ -345,7 +345,7 @@ class AuthenticationForm extends ConfigFormBase {
           ],
         ],
       ],
-      '#submit' => ['::submitTestConnection'],
+      '#submit' => ['::validateForm'],
     ];
 
     $form['actions']['submit']['#disabled'] = !$form['authentication']['key_basic_auth']['#access'] && !$form['authentication']['key_oauth']['#access'];
@@ -396,6 +396,7 @@ class AuthenticationForm extends ConfigFormBase {
         $key_token->deleteKeyValue();
       }
       $this->sdkConnector->testConnection($key, $key_token);
+      $this->messenger->addStatus($this->t('Connection successful.'));
     }
     catch (\Exception $exception) {
       watchdog_exception('apigee_edge', $exception);
@@ -602,28 +603,14 @@ class AuthenticationForm extends ConfigFormBase {
    *
    * @param array $form
    *   An associative array containing the structure of the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state object.
    *
    * @return array
    *   The AJAX response.
    */
-  public function ajaxCallback(array $form): array {
+  public function ajaxCallback(array $form, FormStateInterface $form_state): array {
     return $form;
-  }
-
-  /**
-   * API test connection.
-   *
-   * Sends API test request using the current form data and set
-   * the response text on the UI.
-   *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   */
-  public function submitTestConnection(array $form, FormStateInterface $form_state) {
-    $form_state->setRebuild();
-    $this->messenger->addStatus($this->t('Connection successful.'));
   }
 
 }

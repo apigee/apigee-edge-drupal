@@ -140,9 +140,9 @@ class SDKConnector implements SDKConnectorInterface {
   protected function httpClientConfiguration(): array {
     $config = $this->state->get('apigee_edge.client');
     return [
-      'connect_timeout' => $config['http_client_connect_timeout'],
-      'timeout' => $config['http_client_timeout'],
-      'proxy' => $config['http_client_proxy'],
+      'connect_timeout' => $config['http_client_connect_timeout'] ?? 30,
+      'timeout' => $config['http_client_timeout'] ?? 30,
+      'proxy' => $config['http_client_proxy'] ?? '',
     ];
   }
 
@@ -178,11 +178,12 @@ class SDKConnector implements SDKConnectorInterface {
   /**
    * {@inheritdoc}
    */
-  public function buildClient(Authentication $authentication, ?string $endpoint = NULL): ClientInterface {
-    return new Client($authentication, $endpoint, [
+  public function buildClient(Authentication $authentication, ?string $endpoint = NULL, array $options = []): ClientInterface {
+    $options += [
       Client::CONFIG_HTTP_CLIENT_BUILDER => new Builder(new GuzzleClientAdapter($this->clientFactory->fromOptions($this->httpClientConfiguration()))),
       Client::CONFIG_USER_AGENT_PREFIX => $this->userAgentPrefix(),
-    ]);
+    ];
+    return new Client($authentication, $endpoint, $options);
   }
 
   /**

@@ -5,8 +5,8 @@ services:
     volumes:
       - log:/mnt/files/log
     environment:
-      DRUPAL_CORE: ${DRUPAL_CORE}
-      DEPENDENCIES: ${DEPENDENCIES}
+      DRUPAL_CORE: ${DRUPAL_CORE:-}
+      DEPENDENCIES: ${DEPENDENCIES:-}
       # We can not pass these environment variables with `docker-compose run -e` until
       # this has not been improved. https://github.com/wodby/php/pull/21#issuecomment-361200733
       DRUPAL_MODULE_NAME: apigee_edge

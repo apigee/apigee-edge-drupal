@@ -1,4 +1,8 @@
 services:
+  logger.channel.apigee_edge_test:
+    parent: logger.channel_base
+    arguments: ['apigee_edge_test']
+
   logger.apigee_edge_test_apigee_edge_debug_to_file:
     parent: logger.syslog
     class: Drupal\apigee_edge_test\Logger\ApigeeEdgeDebugToFileLogger
@@ -12,3 +16,10 @@ services:
     arguments: [ '@database']
     tags:
       - { name: logger }
+
+  apigee_edge_test.sdk_connector:
+    class: Drupal\apigee_edge_test\SDKConnector
+    decorates: apigee_edge_debug.sdk_connector
+    decoration_priority: 0
+    public: false
+    arguments: ['@apigee_edge_test.sdk_connector.inner', '@logger.channel.apigee_edge_test', '@http_client_factory', '@key.repository', '@entity_type.manager', '@state', '@module_handler', '@info_parser']
