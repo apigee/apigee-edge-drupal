@@ -470,4 +470,37 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->pageTextContains('https://example.com');
   }
 
+  /**
+   * Ensures warning message is visible if callback url's value is invalid.
+   */
+  public function testInvalidEdgeSideCallbackUrl() {
+    // Create developer_app.developer_app.default config.
+    // EntityViewDisplay::load('developer_app.developer_app.default') returns
+    // null without this.
+    $this->drupalLogin($this->rootUser);
+    $this->drupalPostForm('/admin/config/apigee-edge/app-settings/display', [], 'Save');
+
+    $this->products[] = $this->createProduct();
+    $callback_url = $this->randomGenerator->word(8);
+    $app = $this->createDeveloperApp([
+      'name' => $this->randomMachineName(),
+      'displayName' => $this->randomString(),
+      'callbackUrl' => $callback_url,
+    ],
+      $this->account,
+      [
+        $this->products[0]->id(),
+      ]);
+
+    $app_view_url = $app->toUrl('canonical');
+    $this->drupalGet($app_view_url);
+    $this->assertSession()->pageTextContains("The Callback URL value should be fixed. The URI '{$callback_url}' is invalid. You must use a valid URI scheme.");
+    $this->assertSession()->pageTextNotContains('Callback URL:');
+
+    $app_view_by_developer_url = $app->toUrl('canonical-by-developer');
+    $this->drupalGet($app_view_by_developer_url);
+    $this->assertSession()->pageTextContains("The Callback URL value should be fixed. The URI '{$callback_url}' is invalid. You must use a valid URI scheme.");
+    $this->assertSession()->pageTextNotContains('Callback URL:');
+  }
+
 }
