@@ -45,21 +45,21 @@ abstract class ApigeeEdgeFunctionalJavascriptTestBase extends JavascriptTestBase
   public function createScreenshot($filename_prefix = '', $set_background_color = TRUE) {
     $log_dir = getenv('APIGEE_EDGE_TEST_LOG_DIR');
     if (!$log_dir) {
-      $log_dir = \Drupal::service('file_system')->realpath('public://');
+      $log_dir = $this->container->get('file_system')->realpath('public://');
     }
     $screenshots_dir = $log_dir . '/screenshots';
     if (!is_dir($screenshots_dir)) {
       mkdir($screenshots_dir, 0777, TRUE);
     }
     /** @var \Drupal\Core\Database\Connection $database */
-    $database = \Drupal::service('database');
+    $database = $this->container->get('database');
     $test_id = str_replace('test', '', $database->tablePrefix());
     // Add table suffix (test id) to the file name and ensure the generated
     // file name is unique.
     $filename = file_create_filename("{$filename_prefix}-{$test_id}.jpg", $screenshots_dir);
     // Also create a log entry because that way we can understand the state of
     // the system before a screenshot got created more easily from logs.
-    \Drupal::logger('apigee_edge')->debug("Creating new screenshot: {$filename}.");
+    $this->container->get('logger.channel.apigee_edge_test')->debug("Creating new screenshot: {$filename}.");
     parent::createScreenshot($filename, $set_background_color);
   }
 

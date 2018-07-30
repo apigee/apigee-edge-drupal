@@ -377,7 +377,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    */
   public function testNotificationsWhenAccountIsInactiveOnEdge() {
     /** @var \Drupal\apigee_edge\SDKConnectorInterface $connector */
-    $connector = \Drupal::service('apigee_edge.sdk_connector');
+    $connector = $this->container->get('apigee_edge.sdk_connector');
     $controller = new DeveloperController($connector->getOrganization(), $connector->getClient());
 
     $controller->setStatus($this->account->getEmail(), Developer::STATUS_INACTIVE);
