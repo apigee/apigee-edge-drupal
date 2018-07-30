@@ -68,7 +68,7 @@ class CacheTest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalLogin($this->account);
     $this->warmCaches();
 
-    $this->cacheBackend = \Drupal::service('cache.apigee_edge_entity');
+    $this->cacheBackend = $this->container->get('cache.apigee_edge_entity');
   }
 
   protected function warmCaches() {
@@ -124,7 +124,7 @@ class CacheTest extends ApigeeEdgeFunctionalTestBase {
 
   public function testEditAppIsAlwaysUncached() {
     /** @var \Drupal\apigee_edge\SDKConnectorInterface $connector */
-    $connector = \Drupal::service('apigee_edge.sdk_connector');
+    $connector = $this->container->get('apigee_edge.sdk_connector');
     $controller = new DeveloperAppController($connector->getOrganization(), $this->developer->getDeveloperId(), $connector->getClient());
     $name = strtolower($this->randomMachineName(16));
     /** @var \Apigee\Edge\Api\Management\Entity\DeveloperApp $app */

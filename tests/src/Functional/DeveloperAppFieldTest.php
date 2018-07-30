@@ -238,7 +238,7 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $loadedApp */
     $loadedApp = DeveloperApp::load($app->id());
     /** @var \Drupal\apigee_edge\SDKConnectorInterface $connector */
-    $connector = \Drupal::service('apigee_edge.sdk_connector');
+    $connector = $this->container->get('apigee_edge.sdk_connector');
     $controller = new DeveloperAppController($connector->getOrganization(), $this->developer->getDeveloperId(), $connector->getClient());
     /** @var \Apigee\Edge\Api\Management\Entity\DeveloperApp $rawLoadedApp */
     $rawLoadedApp = $controller->load($app->getName());
