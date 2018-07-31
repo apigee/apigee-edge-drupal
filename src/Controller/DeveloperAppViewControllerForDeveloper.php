@@ -39,39 +39,6 @@ class DeveloperAppViewControllerForDeveloper extends EntityViewController implem
   use DeveloperAppCallbackUrlCheckTrait;
 
   /**
-   * The messenger.
-   *
-   * @var \Drupal\Core\Messenger\MessengerInterface
-   */
-  protected $messenger;
-
-  /**
-   * Creates an EntityViewController object.
-   *
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
-   *   The entity manager.
-   * @param \Drupal\Core\Render\RendererInterface $renderer
-   *   The renderer service.
-   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
-   *   The messenger.
-   */
-  public function __construct(EntityManagerInterface $entity_manager, RendererInterface $renderer, MessengerInterface $messenger) {
-    parent::__construct($entity_manager, $renderer);
-    $this->messenger = $messenger;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('entity.manager'),
-      $container->get('renderer'),
-      $container->get('messenger')
-    );
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function view(EntityInterface $app, $view_mode = 'full') {

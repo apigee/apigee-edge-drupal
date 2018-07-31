@@ -24,7 +24,7 @@ use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Url;
 
 /**
- * Provides a trait for checking developer app's callback URL..
+ * Provides a trait for checking developer app's callback URL.
  */
 trait DeveloperAppCallbackUrlCheckTrait {
 
@@ -47,7 +47,7 @@ trait DeveloperAppCallbackUrlCheckTrait {
           Url::fromUri($developer_app->getCallbackUrl());
         }
         catch (\Exception $exception) {
-          $this->messenger->addWarning(t('The Callback URL value should be fixed. @message', [
+          \Drupal::messenger()->addWarning(t('The Callback URL value should be fixed. @message', [
             '@message' => $exception->getMessage(),
           ]));
         }
