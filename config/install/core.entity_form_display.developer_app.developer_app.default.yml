@@ -1,0 +1,38 @@
+langcode: en
+status: true
+dependencies:
+  module:
+  - apigee_edge
+id: developer_app.developer_app.default
+targetEntityType: developer_app
+bundle: developer_app
+mode: default
+content:
+  callbackUrl:
+    weight: 1
+    region: content
+    settings:
+      size: 60
+      placeholder: null
+      callback_url_pattern: null
+      callback_url_description: null
+      callback_url_pattern_error_message: null
+    third_party_settings: {  }
+    type: app_callback_url
+  description:
+    weight: 2
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
+    third_party_settings: {  }
+    type: string_textarea
+  displayName:
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+    type: string_textfield
+hidden: {  }
