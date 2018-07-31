@@ -44,7 +44,11 @@ class DeveloperAppViewControllerForDeveloper extends EntityViewController implem
   public function view(EntityInterface $app, $view_mode = 'full') {
     /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $app */
     $this->checkDeveloperStatus($app->getOwnerId());
-    $this->checkCallbackUrl($app);
+    // Because we use this custom controller class to render the entity the
+    // _entity_view parameter cannot be passed. Create a new route and
+    // controller if another $view_mode should be used.
+    // See \Drupal\Core\Entity\Enhancer\EntityRouteEnhancer.
+    $this->checkCallbackUrl($app, 'default');
     $build = parent::view($app, $view_mode);
     return $build;
   }

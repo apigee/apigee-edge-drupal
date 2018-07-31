@@ -33,11 +33,13 @@ trait DeveloperAppCallbackUrlCheckTrait {
    *
    * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app
    *   The developer app entity.
+   * @param string $view_mode
+   *   The view mode that should be used to display the developer app entity.
    *
    * @see \Drupal\apigee_edge\Entity\DeveloperApp::set()
    */
-  protected function checkCallbackUrl(DeveloperAppInterface $developer_app) {
-    $developer_app_view_display = EntityViewDisplay::load('developer_app.developer_app.default');
+  protected function checkCallbackUrl(DeveloperAppInterface $developer_app, $view_mode) {
+    $developer_app_view_display = EntityViewDisplay::load("developer_app.developer_app.{$view_mode}");
     // If the Callback URL field is enabled then check its value.
     if ($developer_app_view_display->getComponent('callbackUrl') !== NULL) {
       // If the property value and the field value are different then the
