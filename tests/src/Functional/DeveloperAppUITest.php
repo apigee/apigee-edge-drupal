@@ -470,4 +470,51 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->pageTextContains('https://example.com');
   }
 
+  /**
+   * Ensures warning message is visible if callback url's value is invalid.
+   */
+  public function testInvalidEdgeSideCallbackUrl() {
+    $this->drupalLogin($this->rootUser);
+    $this->products[] = $this->createProduct();
+    $callback_url = $this->randomGenerator->word(8);
+    $callback_url_warning_msg = "The Callback URL value should be fixed. The URI '{$callback_url}' is invalid. You must use a valid URI scheme.";
+    $app = $this->createDeveloperApp([
+      'name' => $this->randomMachineName(),
+      'displayName' => $this->randomString(),
+      'callbackUrl' => $callback_url,
+    ],
+      $this->account,
+      [
+        $this->products[0]->id(),
+      ]);
+
+    $app_view_url = $app->toUrl('canonical');
+    $app_view_by_developer_url = $app->toUrl('canonical-by-developer');
+    $app_edit_form_url = $app->toUrl('edit-form');
+    $app_edit_form_for_developer_url = $app->toUrl('edit-form-for-developer');
+
+    $this->drupalGet($app_view_url);
+    $this->assertSession()->pageTextContains($callback_url_warning_msg);
+    $this->assertSession()->pageTextNotContains('Callback URL:');
+    $this->drupalGet($app_view_by_developer_url);
+    $this->assertSession()->pageTextContains($callback_url_warning_msg);
+    $this->assertSession()->pageTextNotContains('Callback URL:');
+
+    $this->drupalGet($app_edit_form_url);
+    $this->assertSession()->fieldValueEquals('callbackUrl[0][value]', $callback_url);
+    $this->drupalGet($app_edit_form_for_developer_url);
+    $this->assertSession()->fieldValueEquals('callbackUrl[0][value]', $callback_url);
+
+    $this->drupalPostForm('/admin/config/apigee-edge/app-settings/display', ['fields[callbackUrl][region]' => 'hidden'], 'Save');
+    $this->drupalPostForm('/admin/config/apigee-edge/app-settings/form-display', ['fields[callbackUrl][region]' => 'hidden'], 'Save');
+
+    $this->drupalGet($app_view_url);
+    $this->assertSession()->pageTextNotContains($callback_url_warning_msg);
+    $this->assertSession()->pageTextNotContains('Callback URL:');
+
+    $this->drupalGet($app_view_by_developer_url);
+    $this->assertSession()->pageTextNotContains($callback_url_warning_msg);
+    $this->assertSession()->pageTextNotContains('Callback URL:');
+  }
+
 }

@@ -115,6 +115,14 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
       $form['displayName']['widget'][0]['value']['#default_value'] = $this->getEntity()->getName();
     }
 
+    // If app's callback URL field is visible on the form then set the property
+    // value as default value because the field value can be empty if the
+    // original value is not a valid URL.
+    // See: \Drupal\apigee_edge\Entity\DeveloperApp::set()
+    if (isset($form['callbackUrl'])) {
+      $form['callbackUrl']['widget'][0]['value']['#default_value'] = $this->getEntity()->getCallbackUrl();
+    }
+
     $form['developerId']['#access'] = FALSE;
     $form['api_products']['#access'] = !isset($form['api_products']) ?: FALSE;
 

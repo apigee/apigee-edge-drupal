@@ -595,6 +595,9 @@ class AuthenticationForm extends ConfigFormBase {
       $keys['active_key_oauth_token'] = $form_state->getValue('key_oauth_token');
       $this->state->set('apigee_edge.auth', $keys);
     }
+    // Reset state's static cache to correctly display the active key in the
+    // form's key list.
+    $this->state->resetCache();
     parent::submitForm($form, $form_state);
   }
 
