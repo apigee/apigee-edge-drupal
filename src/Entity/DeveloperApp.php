@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge\Entity;
 use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Url;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
@@ -80,6 +81,7 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
 
   use AppCredentialStorageAwareTrait;
   use FieldableEdgeEntityBaseTrait {
+    set as private traitSet;
     id as private traitId;
     label as private traitLabel;
     urlRouteParameters as private traitUrlRouteParameters;
@@ -227,6 +229,27 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
     }
 
     return $definitions;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function set($field_name, $value, $notify = TRUE) {
+    // If the callback URL value is not a valid URL then save an empty string
+    // as the field value and set the callbackUrl property to the original
+    // value. It's not necessary if the value's type is array, in this case the
+    // field value is set on the developer app edit form.
+    if ($field_name === 'callbackUrl' && !is_array($value)) {
+      try {
+        Url::fromUri($value);
+      }
+      catch (\Exception $exception) {
+        $developer_app = $this->traitSet($field_name, '', $notify);
+        $developer_app->setCallbackUrl($value);
+        return $developer_app;
+      }
+    }
+    return $this->traitSet($field_name, $value, $notify);
   }
 
   /**

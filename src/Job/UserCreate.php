@@ -72,6 +72,7 @@ class UserCreate extends EdgeJob {
       if (get_class($violation->getConstraint()) === UserNameUnique::class) {
         $message = 'Skipping creating %email user: %message';
         $context = [
+          '%email' => $this->email,
           '%message' => $violation->getMessage(),
         ];
         \Drupal::logger('apigee_edge_sync')->error($message, $context);
