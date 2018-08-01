@@ -71,8 +71,7 @@ class MyAppsMenuLink extends MenuLinkDefault {
    * {@inheritdoc}
    */
   public function getTitle() {
-    $devAppLabel = $this->entityTypeManager->getDefinition('developer_app')->getPluralLabel();
-    return $this->t('My @developer_app', ['@developer_app' => $devAppLabel]);
+    return _apigee_edge_get_my_apps_title();
   }
 
 }

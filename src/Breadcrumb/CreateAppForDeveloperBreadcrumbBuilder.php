@@ -52,9 +52,7 @@ class CreateAppForDeveloperBreadcrumbBuilder implements BreadcrumbBuilderInterfa
       'user' => $user,
     ]));
     $breadcrumb->addLink(Link::createFromRoute(
-      t('My @developer_app', [
-        '@developer_app' => \Drupal::entityTypeManager()->getDefinition('developer_app')->getPluralLabel(),
-      ]),
+      \Drupal::currentUser()->id() === $user ? _apigee_edge_get_my_apps_title() : _apigee_edge_get_my_apps_title($user),
       'entity.developer_app.collection_by_developer',
       ['user' => $user]
     ));
@@ -62,7 +60,6 @@ class CreateAppForDeveloperBreadcrumbBuilder implements BreadcrumbBuilderInterfa
     // This breadcrumb builder is based on a route parameter, and hence it
     // depends on the 'route' cache context.
     $breadcrumb->addCacheContexts(['route']);
-
     return $breadcrumb;
   }
 
