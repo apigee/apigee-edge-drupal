@@ -235,7 +235,7 @@ entity.developer_app.collection_by_developer:
      _custom_access: '\Drupal\apigee_edge\Access\MyAppsAccessCheck::access'
 
 entity.developer_app.add_form_for_developer:
-  path: '/user/{user}/apps/create'
+  path: '/user/{user}/create-app'
   defaults:
     _entity_form: 'developer_app.add_for_developer'
     _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppCreateFormForDeveloper::getPageTitle'
