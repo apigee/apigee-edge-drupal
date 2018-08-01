@@ -123,11 +123,11 @@ class ConfigForm extends ConfigFormBase {
       '#open' => TRUE,
     ];
 
-    $form['sanitization']['masquerade_organization'] = [
+    $form['sanitization']['mask_organization'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t('Masquerade organization'),
-      '#description' => $this->t('Masquerade organization name from in entries.'),
-      '#default_value' => $config->get('masquerade_organization'),
+      '#title' => $this->t('Mask organization'),
+      '#description' => $this->t('Mask organization name from in entries.'),
+      '#default_value' => $config->get('mask_organization'),
     ];
 
     $form['sanitization']['remove_credentials'] = [
@@ -147,7 +147,7 @@ class ConfigForm extends ConfigFormBase {
     $this->config('apigee_edge_debug.settings')
       ->set('formatter', $form_state->getValue('formatter'))
       ->set('log_message_format', $form_state->getValue(['log_message_format', 'format']))
-      ->set('masquerade_organization', ($form_state->getValue('masquerade_organization')))
+      ->set('mask_organization', ($form_state->getValue('mask_organization')))
       ->set('remove_credentials', $form_state->getValue('remove_credentials'))
       ->save();
 
