@@ -126,7 +126,7 @@ class ConfigForm extends ConfigFormBase {
     $form['sanitization']['mask_organization'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Mask organization'),
-      '#description' => $this->t('Mask organization name from in entries.'),
+      '#description' => $this->t('Mask organization name in log entries.'),
       '#default_value' => $config->get('mask_organization'),
     ];
 
