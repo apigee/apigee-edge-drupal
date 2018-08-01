@@ -48,6 +48,11 @@ services:
     tags:
       - { name: event_subscriber }
 
+  apigee_edge.breadcrumb.create_app:
+    class: Drupal\apigee_edge\Breadcrumb\CreateAppForDeveloperBreadcrumbBuilder
+    tags:
+    - { name: breadcrumb_builder, priority: 1001 }
+
   route_subscriber.apigee_edge.developer_app_by_name:
     class: Drupal\apigee_edge\Routing\DeveloperAppByNameRouteAlterSubscriber
     tags:
