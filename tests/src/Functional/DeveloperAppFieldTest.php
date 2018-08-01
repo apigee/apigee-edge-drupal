@@ -25,6 +25,7 @@ use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Url;
 use Drupal\field_ui\Tests\FieldUiTestTrait;
 
 /**
@@ -519,7 +520,9 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
    *   Whether it should be visible or not.
    */
   protected function assertFieldVisibleOnEntityForm(string $field_label, bool $visible = TRUE) {
-    $this->drupalGet("/user/{$this->account->id()}/apps/create");
+    $this->drupalGet(Url::fromRoute('entity.developer_app.collection_by_developer', [
+      'user' => $this->account->id(),
+    ]));
     if ($visible) {
       $this->assertSession()->pageTextContains($field_label);
     }
@@ -564,11 +567,16 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
   protected function createApp(array $extra_values = []): string {
     $name = strtolower($this->randomMachineName());
 
-    $this->drupalPostForm("/user/{$this->account->id()}/apps/create", $extra_values + [
-      'displayName[0][value]' => $name,
-      'name' => $name,
-      "api_products[{$this->product->getName()}]" => $this->product->getName(),
-    ], 'Add developer app');
+    $this->drupalPostForm(
+      Url::fromRoute('entity.developer_app.collection_by_developer', [
+        'user' => $this->account->id(),
+      ]),
+      $extra_values + [
+        'displayName[0][value]' => $name,
+        'name' => $name,
+        "api_products[{$this->product->getName()}]" => $this->product->getName(),
+      ],
+      'Add developer app');
     $this->assertSession()->pageTextContains($name);
 
     return $name;

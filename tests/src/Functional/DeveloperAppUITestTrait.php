@@ -24,6 +24,7 @@ use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
+use Drupal\Core\Url;
 use Drupal\user\UserInterface;
 
 /**
@@ -96,7 +97,10 @@ trait DeveloperAppUITestTrait {
     if ($account === NULL) {
       $account = $this->account;
     }
-    $this->drupalGet("/user/{$account->id()}/apps/create");
+
+    $this->drupalGet(Url::fromRoute('entity.developer_app.collection_by_developer', [
+      'user' => $account->id(),
+    ]));
   }
 
   /**
@@ -133,7 +137,14 @@ trait DeveloperAppUITestTrait {
       $account = $this->account;
     }
 
-    $this->drupalPostForm("/user/{$account->id()}/apps/create", $data, 'Add developer app');
+    $this->drupalPostForm(
+      Url::fromRoute(
+        'entity.developer_app.collection_by_developer', [
+          'user' => $account->id(),
+        ]),
+      $data,
+      'Add developer app'
+    );
   }
 
   protected function postEditAppForm(array $data, string $app_name, ?UserInterface $account = NULL) {
