@@ -67,6 +67,7 @@ trait DeveloperAppUITestTrait {
     // traits are being used.
     $this->installExtraModules(['block']);
     $this->drupalPlaceBlock('local_tasks_block');
+    $this->drupalPlaceBlock('system_breadcrumb_block');
 
     $config = \Drupal::configFactory()->getEditable('apigee_edge.dangerzone');
     $config->set('skip_developer_app_settings_validation', TRUE);
@@ -359,6 +360,21 @@ trait DeveloperAppUITestTrait {
     }
 
     return NULL;
+  }
+
+  /**
+   * Gets breadcrumb links of the current page.
+   *
+   * @return array
+   *   Array of breadcrumb links.
+   */
+  protected function getBreadcrumbLinks(): array {
+    $links = $this->xpath('//nav[@class="breadcrumb"]/ol/li/a');
+    $got_breadcrumb = [];
+    foreach ($links as $link) {
+      $got_breadcrumb[] = $link->getAttribute('href');
+    }
+    return $got_breadcrumb;
   }
 
 }
