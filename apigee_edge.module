@@ -1371,21 +1371,27 @@ function _apigee_edge_is_sync_in_progress() {
 }
 
 /**
- * Gets the title of the my developer apps page.
+ * Gets the title of "My developer apps".
  *
- * @param int $user
- *   User id.
+ * @param \Drupal\user\UserInterface|null $user
+ *   It can be used if an admin visits another user's
+ *   "My developer apps" page.
  *
  * @return \Drupal\Core\StringTranslation\TranslatableMarkup
- *   Title of the my developer apps page.
+ *   Title of "My developer apps".
  */
-function _apigee_edge_get_my_apps_title($user = NULL) {
+function apigee_edge_get_my_developer_apps_title(?UserInterface $user = NULL) {
   $args['@developer_app'] = \Drupal::entityTypeManager()->getDefinition('developer_app')->getPluralLabel();
   if (isset($user)) {
-    $args['@user'] = Markup::create(User::load($user)->getDisplayName());
-    return t('@developer_app of @user', $args);
+    $args['@user'] = Markup::create($user->getDisplayName());
+    $title = t('@developer_app of @user', $args);
   }
   else {
-    return t('My @developer_app', $args);
+    $title = t('My @developer_app', $args);
   }
+
+  // Modules and themes can alter the title.
+  \Drupal::moduleHandler()->alter('my_developer_apps_title', $title, $user);
+
+  return $title;
 }
