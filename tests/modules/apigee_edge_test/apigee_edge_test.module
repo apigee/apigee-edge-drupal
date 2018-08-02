@@ -33,7 +33,7 @@ use Drupal\user\UserInterface;
  *
  * @see \Drupal\Tests\apigee_edge\Functional\DeveloperAppUITest
  */
-function apigee_edge_test_my_developer_apps_title_alter(TranslatableMarkup &$title, ?UserInterface $user = NULL) {
+function apigee_edge_test_apigee_edge_my_developer_apps_title_alter(TranslatableMarkup &$title, ?UserInterface $user = NULL) {
   $title = new TranslatableMarkup('Foo @original', [
     '@original' => $title,
   ]);

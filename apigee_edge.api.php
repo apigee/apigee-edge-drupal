@@ -23,9 +23,6 @@
  * Hooks for apigee_edge module.
  */
 
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\user\UserInterface;
-
 /**
  * @addtogroup hooks
  * @{
@@ -40,7 +37,7 @@ use Drupal\user\UserInterface;
  *   It can be used if an admin visits another user's
  *   "My developer apps" page.
  */
-function hook_my_developer_apps_title_alter(TranslatableMarkup &$title, ?UserInterface $user = NULL) {
+function hook_apigee_edge_my_developer_apps_title_alter(\Drupal\Core\StringTranslation\TranslatableMarkup &$title, ?\Drupal\user\UserInterface $user = NULL) {
 }
 
 /**

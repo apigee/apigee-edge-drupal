@@ -1391,7 +1391,7 @@ function apigee_edge_get_my_developer_apps_title(?UserInterface $user = NULL) {
   }
 
   // Modules and themes can alter the title.
-  \Drupal::moduleHandler()->alter('my_developer_apps_title', $title, $user);
+  \Drupal::moduleHandler()->alter('apigee_edge_my_developer_apps_title', $title, $user);
 
   return $title;
 }
