@@ -27,7 +27,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\UserInterface;
 
 /**
- * Implements hook_my_developer_apps_title_alter().
+ * Implements hook_apigee_edge_my_developer_apps_title_alter().
  *
  * Tests "My developer apps" title alter hook.
  *

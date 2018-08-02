@@ -141,7 +141,7 @@ trait DeveloperAppUITestTrait {
 
     $this->drupalPostForm(
       Url::fromRoute(
-        'entity.developer_app.collection_by_developer', [
+        'entity.developer_app.add_form_for_developer', [
           'user' => $account->id(),
         ]),
       $data,
