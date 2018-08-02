@@ -520,7 +520,7 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
    *   Whether it should be visible or not.
    */
   protected function assertFieldVisibleOnEntityForm(string $field_label, bool $visible = TRUE) {
-    $this->drupalGet(Url::fromRoute('entity.developer_app.collection_by_developer', [
+    $this->drupalGet(Url::fromRoute('entity.developer_app.add_form_for_developer', [
       'user' => $this->account->id(),
     ]));
     if ($visible) {
@@ -568,7 +568,7 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
     $name = strtolower($this->randomMachineName());
 
     $this->drupalPostForm(
-      Url::fromRoute('entity.developer_app.collection_by_developer', [
+      Url::fromRoute('entity.developer_app.add_form_for_developer', [
         'user' => $this->account->id(),
       ]),
       $extra_values + [

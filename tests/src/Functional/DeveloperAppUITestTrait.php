@@ -100,7 +100,7 @@ trait DeveloperAppUITestTrait {
       $account = $this->account;
     }
 
-    $this->drupalGet(Url::fromRoute('entity.developer_app.collection_by_developer', [
+    $this->drupalGet(Url::fromRoute('entity.developer_app.add_form_for_developer', [
       'user' => $account->id(),
     ]));
   }
