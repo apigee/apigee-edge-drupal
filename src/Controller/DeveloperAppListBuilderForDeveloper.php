@@ -199,13 +199,13 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    * {@inheritdoc}
    */
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
-    $args['@developer_app'] = $this->getDeveloperAppEntityDefinition()->getPluralLabel();
     $account = $routeMatch->getParameter('user');
     if ($account->id() == $this->currentUser->id()) {
-      return t('My @developer_app', $args);
+      return apigee_edge_get_my_developer_apps_title();
     }
-    $args['@user'] = Markup::create($account->getDisplayName());
-    return t('@developer_app of @user', $args);
+    else {
+      return apigee_edge_get_my_developer_apps_title($account);
+    }
   }
 
   /**

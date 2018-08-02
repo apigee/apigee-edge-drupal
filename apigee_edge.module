@@ -40,18 +40,22 @@ use Drupal\Component\Render\PlainTextOutput;
 use Drupal\Component\Utility\Crypt;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Breadcrumb\Breadcrumb;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
+use Drupal\Core\Render\Markup;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Site\Settings;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\TempStore\TempStoreException;
 use Drupal\Core\Url;
 use Drupal\user\UserInterface;
+use Drupal\user\Entity\User;
 
 define('APIGEE_EDGE_USER_REGISTRATION_SOURCE', 'apigee_edge_user_registration_source');
 
@@ -87,6 +91,18 @@ function apigee_edge_theme() {
       'render element' => 'element',
     ],
   ];
+}
+
+/**
+ * Implements hook_system_breadcrumb_alter().
+ */
+function apigee_edge_system_breadcrumb_alter(Breadcrumb &$breadcrumb, RouteMatchInterface $route_match, array $context) {
+  // Remove breadcrumb cache from every path under "/user" to let
+  // CreateAppForDeveloperBreadcrumbBuilder build breadcrumb properly on the
+  // add developer app for developer page.
+  if (preg_match('/^\/user.*/', $route_match->getRouteObject()->getPath())) {
+    $breadcrumb->mergeCacheMaxAge(0);
+  }
 }
 
 /**
@@ -1352,4 +1368,30 @@ function _apigee_edge_set_sync_in_progress(?bool $in_progress = NULL) {
  */
 function _apigee_edge_is_sync_in_progress() {
   return _apigee_edge_set_sync_in_progress();
+}
+
+/**
+ * Gets the title of "My developer apps".
+ *
+ * @param \Drupal\user\UserInterface|null $user
+ *   It can be used if an admin visits another user's
+ *   "My developer apps" page.
+ *
+ * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+ *   Title of "My developer apps".
+ */
+function apigee_edge_get_my_developer_apps_title(?UserInterface $user = NULL) {
+  $args['@developer_app'] = \Drupal::entityTypeManager()->getDefinition('developer_app')->getPluralLabel();
+  if (isset($user)) {
+    $args['@user'] = Markup::create($user->getDisplayName());
+    $title = t('@developer_app of @user', $args);
+  }
+  else {
+    $title = t('My @developer_app', $args);
+  }
+
+  // Modules and themes can alter the title.
+  \Drupal::moduleHandler()->alter('apigee_edge_my_developer_apps_title', $title, $user);
+
+  return $title;
 }

@@ -21,9 +21,11 @@
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Apigee\Edge\Structure\CredentialProduct;
+use Behat\Mink\Element\NodeElement;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
+use Drupal\Core\Url;
 use Drupal\user\UserInterface;
 
 /**
@@ -66,6 +68,7 @@ trait DeveloperAppUITestTrait {
     // traits are being used.
     $this->installExtraModules(['block']);
     $this->drupalPlaceBlock('local_tasks_block');
+    $this->drupalPlaceBlock('system_breadcrumb_block');
 
     $config = \Drupal::configFactory()->getEditable('apigee_edge.dangerzone');
     $config->set('skip_developer_app_settings_validation', TRUE);
@@ -96,7 +99,10 @@ trait DeveloperAppUITestTrait {
     if ($account === NULL) {
       $account = $this->account;
     }
-    $this->drupalGet("/user/{$account->id()}/apps/create");
+
+    $this->drupalGet(Url::fromRoute('entity.developer_app.add_form_for_developer', [
+      'user' => $account->id(),
+    ]));
   }
 
   /**
@@ -133,7 +139,14 @@ trait DeveloperAppUITestTrait {
       $account = $this->account;
     }
 
-    $this->drupalPostForm("/user/{$account->id()}/apps/create", $data, 'Add developer app');
+    $this->drupalPostForm(
+      Url::fromRoute(
+        'entity.developer_app.add_form_for_developer', [
+          'user' => $account->id(),
+        ]),
+      $data,
+      'Add developer app'
+    );
   }
 
   protected function postEditAppForm(array $data, string $app_name, ?UserInterface $account = NULL) {
@@ -348,6 +361,16 @@ trait DeveloperAppUITestTrait {
     }
 
     return NULL;
+  }
+
+  /**
+   * Gets breadcrumb links of the current page.
+   *
+   * @return \Behat\Mink\Element\NodeElement[]
+   *   Array of breadcrumb links.
+   */
+  protected function getBreadcrumbLinks(): array {
+    return $this->xpath('//nav[@class="breadcrumb"]/ol/li/a');
   }
 
 }

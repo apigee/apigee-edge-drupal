@@ -26,6 +26,7 @@ use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialController;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
@@ -255,7 +256,9 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
 
     // Only public API products should be visible by default on the add/edit
     // app forms for authenticated user.
-    $this->drupalGet("/user/{$this->users[AccountInterface::AUTHENTICATED_ROLE]->id()}/apps/create");
+    $this->drupalGet(Url::fromRoute('entity.developer_app.add_form_for_developer', [
+      'user' => $this->users[AccountInterface::AUTHENTICATED_ROLE]->id(),
+    ]));
     $onlyPublicProductVisible();
     $this->drupalGet("/user/{$this->users[AccountInterface::AUTHENTICATED_ROLE]->id()}/apps/{$authUserApp->getName()}/edit");
     $onlyPublicProductVisible();
@@ -273,13 +276,17 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
     // Even if a user has bypass permission s/he should see only those API
     // Products on on an other user's add/edit form that the other user has
     // access.
-    $this->drupalGet("/user/{$this->users[AccountInterface::AUTHENTICATED_ROLE]->id()}/apps/create");
+    $this->drupalGet(Url::fromRoute('entity.developer_app.add_form_for_developer', [
+      'user' => $this->users[AccountInterface::AUTHENTICATED_ROLE]->id(),
+    ]));
     $onlyPublicProductVisible();
     $this->drupalGet("/user/{$this->users[AccountInterface::AUTHENTICATED_ROLE]->id()}/apps/{$authUserApp->getName()}/edit");
     $onlyPublicProductVisible();
 
     // But on the its own add/edit app forms s/he should see all API products.
-    $this->drupalGet("/user/{$this->users[self::USER_WITH_BYPASS_PERM]->id()}/apps/create");
+    $this->drupalGet(Url::fromRoute('entity.developer_app.add_form_for_developer', [
+      'user' => $this->users[self::USER_WITH_BYPASS_PERM]->id(),
+    ]));
     $allProductsVisible();
     $this->drupalGet("/user/{$this->users[self::USER_WITH_BYPASS_PERM]->id()}/apps/{$bypassUserApp->getName()}/edit");
     $this->drupalLogout();
@@ -303,7 +310,9 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalLogin($this->users[AccountInterface::AUTHENTICATED_ROLE]);
     // On the add app form still only public API products should be
     // visible.
-    $this->drupalGet("/user/{$this->users[AccountInterface::AUTHENTICATED_ROLE]->id()}/apps/create");
+    $this->drupalGet(Url::fromRoute('entity.developer_app.add_form_for_developer', [
+      'user' => $this->users[AccountInterface::AUTHENTICATED_ROLE]->id(),
+    ]));
     $onlyPublicProductVisible();
     // But on the app's edit form that contains the private API product that
     // should be visible as well.
