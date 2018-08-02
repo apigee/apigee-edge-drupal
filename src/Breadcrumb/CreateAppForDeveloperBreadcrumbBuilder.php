@@ -52,7 +52,7 @@ class CreateAppForDeveloperBreadcrumbBuilder implements BreadcrumbBuilderInterfa
       'user' => $user,
     ]));
     $breadcrumb->addLink(Link::createFromRoute(
-      \Drupal::currentUser()->id() === $user ? _apigee_edge_get_my_apps_title() : _apigee_edge_get_my_apps_title($user),
+      \Drupal::currentUser()->id() === $user ? apigee_edge_get_my_developer_apps_title() : apigee_edge_get_my_developer_apps_title(User::load($user)),
       'entity.developer_app.collection_by_developer',
       ['user' => $user]
     ));

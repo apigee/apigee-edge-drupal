@@ -201,10 +201,10 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
   public function getPageTitle(RouteMatchInterface $routeMatch): string {
     $account = $routeMatch->getParameter('user');
     if ($account->id() == $this->currentUser->id()) {
-      return _apigee_edge_get_my_apps_title();
+      return apigee_edge_get_my_developer_apps_title();
     }
     else {
-      return _apigee_edge_get_my_apps_title($account->id());
+      return apigee_edge_get_my_developer_apps_title($account);
     }
   }
 

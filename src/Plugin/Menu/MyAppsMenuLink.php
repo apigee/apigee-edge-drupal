@@ -31,6 +31,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class MyAppsMenuLink extends MenuLinkDefault {
 
   /**
+   * The entity type manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   private $entityTypeManager;
@@ -71,7 +73,7 @@ class MyAppsMenuLink extends MenuLinkDefault {
    * {@inheritdoc}
    */
   public function getTitle() {
-    return _apigee_edge_get_my_apps_title();
+    return apigee_edge_get_my_developer_apps_title();
   }
 
 }
