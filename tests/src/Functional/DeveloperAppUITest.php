@@ -525,42 +525,37 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $user = $this->createAccount();
 
     // Check UID 2 my apps page.
-    $this->drupalGet(Url::fromRoute('entity.developer_app.collection_by_developer', [
-      'user' => $this->account->id(),
-    ]));
-    $expected_breadcrumb = [
-      '/',
-      Url::fromRoute('entity.user.canonical', ['user' => $this->account->id()])->toString(),
-    ];
-    $this->assertSame($expected_breadcrumb, $this->getBreadcrumbLinks());
+    $this->drupalGet(Url::fromRoute('entity.developer_app.collection_by_developer', ['user' => $this->account->id()]));
+    $breadcrumb_links = $this->getBreadcrumbLinks();
+    $this->assertEquals('/', $breadcrumb_links[0]->getAttribute('href'));
+    $this->assertEquals(Url::fromRoute('entity.user.canonical', ['user' => $this->account->id()])->toString(), $breadcrumb_links[1]->getAttribute('href'));
 
     // Check UID 2 create app page.
-    $this->drupalGet(Url::fromRoute('entity.developer_app.add_form_for_developer', [
-      'user' => $this->account->id(),
-    ]));
-    $expected_breadcrumb[] = Url::fromRoute('entity.developer_app.collection_by_developer', [
-      'user' => $this->account->id(),
-    ])->toString();
-    $this->assertSame($expected_breadcrumb, $this->getBreadcrumbLinks());
+    $this->drupalGet(Url::fromRoute('entity.developer_app.add_form_for_developer', ['user' => $this->account->id()]));
+    $breadcrumb_links = $this->getBreadcrumbLinks();
+    $this->assertEquals('/', $breadcrumb_links[0]->getAttribute('href'));
+    $this->assertEquals(Url::fromRoute('entity.user.canonical', ['user' => $this->account->id()])->toString(), $breadcrumb_links[1]->getAttribute('href'));
+    $this->assertEquals(Url::fromRoute('entity.developer_app.collection_by_developer', ['user' => $this->account->id()])->toString(), $breadcrumb_links[2]->getAttribute('href'));
+    // Ensure that hook_my_developer_apps_title_alter() works properly.
+    $this->assertStringStartsWith('Foo', $breadcrumb_links[2]->getText());
 
     // Check UID 3 my apps page.
-    $this->drupalGet(Url::fromRoute('entity.developer_app.collection_by_developer', [
-      'user' => $user->id(),
-    ]));
-    $expected_breadcrumb = [
-      '/',
-      Url::fromRoute('entity.user.canonical', ['user' => $user->id()])->toString(),
-    ];
-    $this->assertSame($expected_breadcrumb, $this->getBreadcrumbLinks());
+    $this->drupalGet(Url::fromRoute('entity.developer_app.collection_by_developer', ['user' => $user->id()]));
+    $breadcrumb_links = $this->getBreadcrumbLinks();
+    $this->assertEquals('/', $breadcrumb_links[0]->getAttribute('href'));
+    $this->assertEquals(Url::fromRoute('entity.user.canonical', ['user' => $user->id()])->toString(), $breadcrumb_links[1]->getAttribute('href'));
 
     // Check UID 3 create app page.
-    $this->drupalGet(Url::fromRoute('entity.developer_app.add_form_for_developer', [
-      'user' => $user->id(),
-    ]));
+    $this->drupalGet(Url::fromRoute('entity.developer_app.add_form_for_developer', ['user' => $user->id()]));
     $expected_breadcrumb[] = Url::fromRoute('entity.developer_app.collection_by_developer', [
       'user' => $user->id(),
     ])->toString();
-    $this->assertSame($expected_breadcrumb, $this->getBreadcrumbLinks());
+    $breadcrumb_links = $this->getBreadcrumbLinks();
+    $this->assertEquals('/', $breadcrumb_links[0]->getAttribute('href'));
+    $this->assertEquals(Url::fromRoute('entity.user.canonical', ['user' => $user->id()])->toString(), $breadcrumb_links[1]->getAttribute('href'));
+    $this->assertEquals(Url::fromRoute('entity.developer_app.collection_by_developer', ['user' => $user->id()])->toString(), $breadcrumb_links[2]->getAttribute('href'));
+    // Ensure that hook_my_developer_apps_title_alter() works properly.
+    $this->assertStringStartsWith('Foo', $breadcrumb_links[2]->getText());
   }
 
 }

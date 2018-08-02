@@ -21,6 +21,7 @@
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Apigee\Edge\Structure\CredentialProduct;
+use Behat\Mink\Element\NodeElement;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
@@ -365,16 +366,11 @@ trait DeveloperAppUITestTrait {
   /**
    * Gets breadcrumb links of the current page.
    *
-   * @return array
+   * @return \Behat\Mink\Element\NodeElement[]
    *   Array of breadcrumb links.
    */
   protected function getBreadcrumbLinks(): array {
-    $links = $this->xpath('//nav[@class="breadcrumb"]/ol/li/a');
-    $got_breadcrumb = [];
-    foreach ($links as $link) {
-      $got_breadcrumb[] = $link->getAttribute('href');
-    }
-    return $got_breadcrumb;
+    return $this->xpath('//nav[@class="breadcrumb"]/ol/li/a');
   }
 
 }
