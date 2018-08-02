@@ -5,7 +5,7 @@ apigee_edge_debug.settings:
       type: string
     log_message_format:
       type: text
-    masquerade_organization:
+    mask_organization:
       type: boolean
     remove_credentials:
       type: boolean

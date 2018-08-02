@@ -36,11 +36,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 abstract class DebugMessageFormatterPluginBase extends PluginBase implements ContainerFactoryPluginInterface, DebugMessageFormatterPluginInterface {
 
   /**
-   * Whether to masquerade the organization in the request URI or not.
+   * Whether to mask the organization in the request URI or not.
    *
    * @var bool
    */
-  protected $masqueradeOrganization;
+  protected $maskOrganization;
 
   /**
    * Whether to remove the authorization header from the request or not.
@@ -63,7 +63,7 @@ abstract class DebugMessageFormatterPluginBase extends PluginBase implements Con
    */
   public function __construct(ConfigFactoryInterface $config, array $configuration, string $plugin_id, $plugin_definition) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->masqueradeOrganization = $config->get('apigee_edge_debug.settings')->get('masquerade_organization');
+    $this->maskOrganization = $config->get('apigee_edge_debug.settings')->get('mask_organization');
     $this->removeCredentials = $config->get('apigee_edge_debug.settings')->get('remove_credentials');
   }
 
@@ -104,7 +104,7 @@ abstract class DebugMessageFormatterPluginBase extends PluginBase implements Con
         $request = $request->withBody(Psr7\stream_for($body));
       }
     }
-    if ($this->masqueradeOrganization) {
+    if ($this->maskOrganization) {
       $pattern = '/(\/v\d+\/(?:o|organizations))(?:\/)([^\/]+)(?:\/?)(.*)/';
       $path = rtrim(preg_replace($pattern, '$1/***organization***/$3', $request->getUri()
         ->getPath()), '/');
