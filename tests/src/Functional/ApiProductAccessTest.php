@@ -256,7 +256,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
 
     // Only public API products should be visible by default on the add/edit
     // app forms for authenticated user.
-    $this->drupalGet(Url::fromRoute('entity.developer_app.collection_by_developer', [
+    $this->drupalGet(Url::fromRoute('entity.developer_app.add_form_for_developer', [
       'user' => $this->users[AccountInterface::AUTHENTICATED_ROLE]->id(),
     ]));
     $onlyPublicProductVisible();
@@ -276,7 +276,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
     // Even if a user has bypass permission s/he should see only those API
     // Products on on an other user's add/edit form that the other user has
     // access.
-    $this->drupalGet(Url::fromRoute('entity.developer_app.collection_by_developer', [
+    $this->drupalGet(Url::fromRoute('entity.developer_app.add_form_for_developer', [
       'user' => $this->users[AccountInterface::AUTHENTICATED_ROLE]->id(),
     ]));
     $onlyPublicProductVisible();
@@ -284,7 +284,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
     $onlyPublicProductVisible();
 
     // But on the its own add/edit app forms s/he should see all API products.
-    $this->drupalGet(Url::fromRoute('entity.developer_app.collection_by_developer', [
+    $this->drupalGet(Url::fromRoute('entity.developer_app.add_form_for_developer', [
       'user' => $this->users[self::USER_WITH_BYPASS_PERM]->id(),
     ]));
     $allProductsVisible();
@@ -310,7 +310,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalLogin($this->users[AccountInterface::AUTHENTICATED_ROLE]);
     // On the add app form still only public API products should be
     // visible.
-    $this->drupalGet(Url::fromRoute('entity.developer_app.collection_by_developer', [
+    $this->drupalGet(Url::fromRoute('entity.developer_app.add_form_for_developer', [
       'user' => $this->users[AccountInterface::AUTHENTICATED_ROLE]->id(),
     ]));
     $onlyPublicProductVisible();
