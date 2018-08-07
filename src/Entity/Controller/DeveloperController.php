@@ -20,10 +20,11 @@
 
 namespace Drupal\apigee_edge\Entity\Controller;
 
-use Apigee\Edge\ClientInterface;
 use Apigee\Edge\Api\Management\Controller\DeveloperController as EdgeDeveloperController;
 use Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface;
+use Apigee\Edge\ClientInterface;
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
+use Apigee\Edge\Serializer\EntitySerializerInterface;
 use Drupal\apigee_edge\Entity\DeveloperInterface;
 use Drupal\Core\Entity\EntityInterface;
 
@@ -51,16 +52,15 @@ class DeveloperController extends EdgeDeveloperController implements DrupalEntit
    *   The API client.
    * @param string $entity_class
    *   The FQCN of the entity class that is used in Drupal.
-   * @param array $entity_normalizers
-   *   Array of entity normalizers.
+   * @param \Apigee\Edge\Serializer\EntitySerializerInterface|null $entity_serializer
+   *   The entity serializer.
    * @param \Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface|null $organization_controller
    *   The organization controller.
    *
    * @throws \ReflectionException
-   * @throws \InvalidArgumentException
    */
-  public function __construct(string $organization, ClientInterface $client, string $entity_class, array $entity_normalizers = [], ?OrganizationControllerInterface $organization_controller = NULL) {
-    parent::__construct($organization, $client, $entity_normalizers, $organization_controller);
+  public function __construct(string $organization, ClientInterface $client, string $entity_class, ?EntitySerializerInterface $entity_serializer = NULL, ?OrganizationControllerInterface $organization_controller = NULL) {
+    parent::__construct($organization, $client, $entity_serializer, $organization_controller);
     $rc = new \ReflectionClass($entity_class);
     $interface = DeveloperInterface::class;
     if (!$rc->implementsInterface($interface)) {

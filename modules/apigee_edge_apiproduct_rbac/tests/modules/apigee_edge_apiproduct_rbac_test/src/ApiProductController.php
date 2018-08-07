@@ -20,11 +20,11 @@
 
 namespace Drupal\apigee_edge_apiproduct_rbac_test;
 
+use Apigee\Edge\Api\Management\Serializer\AttributesPropertyAwareEntitySerializer;
 use Apigee\Edge\ClientInterface;
-use Apigee\Edge\Denormalizer\AttributesPropertyDenormalizer;
 use Apigee\Edge\Entity\EntityInterface;
 use Apigee\Edge\Exception\ApiException;
-use Apigee\Edge\Normalizer\KeyValueMapNormalizer;
+use Apigee\Edge\Serializer\EntitySerializerInterface;
 use Apigee\Edge\Structure\AttributesProperty;
 use Apigee\Edge\Structure\PagerInterface;
 use Drupal\apigee_edge\Entity\ApiProduct;
@@ -52,18 +52,11 @@ final class ApiProductController extends OriginalApiProductController {
   private $state;
 
   /**
-   * Key value map normalizer.
+   * Attribute serializer.
    *
-   * @var \Apigee\Edge\Normalizer\KeyValueMapNormalizer
+   * @var \Apigee\Edge\Api\Management\Serializer\AttributesPropertyAwareEntitySerializer
    */
-  private $keyVMNormalizer;
-
-  /**
-   * Attribute denormalizer.
-   *
-   * @var \Apigee\Edge\Denormalizer\AttributesPropertyDenormalizer
-   */
-  private $attributesDenormalizer;
+  private $attributesSerializer;
 
   /**
    * ApiProductController constructor.
@@ -76,16 +69,15 @@ final class ApiProductController extends OriginalApiProductController {
    *   The FQCN of the entity class that is used in Drupal.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state key/value store.
-   * @param array $entity_normalizers
-   *   Array of entity normalizers.
+   * @param \Apigee\Edge\Serializer\EntitySerializerInterface|null $entity_serializer
+   *   The entitu serializer.
    *
    * @throws \ReflectionException
    */
-  public function __construct(string $organization, ClientInterface $client, string $entity_class, StateInterface $state, array $entity_normalizers = []) {
-    parent::__construct($organization, $client, $entity_class, $entity_normalizers);
+  public function __construct(string $organization, ClientInterface $client, string $entity_class, StateInterface $state, ?EntitySerializerInterface $entity_serializer = NULL) {
+    parent::__construct($organization, $client, $entity_class, $entity_serializer);
     $this->state = $state;
-    $this->keyVMNormalizer = new KeyValueMapNormalizer();
-    $this->attributesDenormalizer = new AttributesPropertyDenormalizer();
+    $this->attributesSerializer = new AttributesPropertyAwareEntitySerializer();
   }
 
   /**
@@ -96,7 +88,7 @@ final class ApiProductController extends OriginalApiProductController {
     // not be assigned to developer apps (unless they gets mocked too).
     parent::create($entity);
     /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $entity */
-    $this->state->set($this->generateApiProductStateKey($entity->id()), $this->entityTransformer->normalize($entity));
+    $this->state->set($this->generateApiProductStateKey($entity->id()), $this->entitySerializer->normalize($entity));
     $this->updateAttributes($entity->id(), $entity->getAttributes());
     $list = $this->state->get(self::STATE_API_PRODUCT_LIST_KEY) ?? [];
     $list[] = $entity->id();
@@ -112,7 +104,7 @@ final class ApiProductController extends OriginalApiProductController {
       throw new ApiException("API Product with {$entity_id} has not found in the storage.");
     }
     /** @var \Drupal\apigee_edge\Entity\ApiProduct $entity */
-    $entity = $this->entityTransformer->denormalize($data, ApiProduct::class);
+    $entity = $this->entitySerializer->denormalize($data, ApiProduct::class);
     $this->setAttributesFromStates($entity);
     return $entity;
   }
@@ -121,7 +113,7 @@ final class ApiProductController extends OriginalApiProductController {
    * {@inheritdoc}
    */
   public function update(EntityInterface $entity): void {
-    $this->state->set($this->generateApiProductStateKey($entity->id()), $this->entityTransformer->normalize($entity));
+    $this->state->set($this->generateApiProductStateKey($entity->id()), $this->entitySerializer->normalize($entity));
   }
 
   /**
@@ -132,7 +124,7 @@ final class ApiProductController extends OriginalApiProductController {
     if (NULL === $data) {
       throw new ApiException("API Product with {$entity_id} has not found in the storage.");
     }
-    $entity = $this->entityTransformer->denormalize($data, ApiProduct::class);
+    $entity = $this->entitySerializer->denormalize($data, ApiProduct::class);
     $this->state->delete($this->generateApiProductStateKey($entity_id));
     $list = $this->state->get(self::STATE_API_PRODUCT_LIST_KEY) ?? [];
     if ($index = array_search($entity_id, $list)) {
@@ -152,7 +144,7 @@ final class ApiProductController extends OriginalApiProductController {
     }, $this->state->get(self::STATE_API_PRODUCT_LIST_KEY) ?? []);
     $entities = [];
     foreach ($this->state->getMultiple($ids) as $data) {
-      $entity = $this->entityTransformer->denormalize($data, ApiProduct::class);
+      $entity = $this->entitySerializer->denormalize($data, ApiProduct::class);
       $this->setAttributesFromStates($entity);
       $entities[$entity->id()] = $entity;
     }
@@ -165,14 +157,14 @@ final class ApiProductController extends OriginalApiProductController {
    */
   public function getAttributes(string $entity_id): AttributesProperty {
     $data = $this->state->get($this->generateApiProductAttributeStateKey($entity_id)) ?? [];
-    return $this->entityTransformer->denormalize($data, AttributesProperty::class);
+    return $this->entitySerializer->denormalize($data, AttributesProperty::class);
   }
 
   /**
    * {@inheritdoc}
    */
   public function updateAttributes(string $entity_id, AttributesProperty $attributes): AttributesProperty {
-    $this->state->set($this->generateApiProductAttributeStateKey($entity_id), $this->keyVMNormalizer->normalize($attributes));
+    $this->state->set($this->generateApiProductAttributeStateKey($entity_id), $this->attributesSerializer->normalize($attributes));
     return $attributes;
   }
 
@@ -211,7 +203,7 @@ final class ApiProductController extends OriginalApiProductController {
   private function setAttributesFromStates(ApiProductInterface $entity) {
     if ($attributes = $this->state->get($this->generateApiProductAttributeStateKey($entity->id()))) {
       /** @var \Apigee\Edge\Structure\AttributesProperty $property */
-      $property = $this->entityTransformer->denormalize($attributes, AttributesProperty::class);
+      $property = $this->entitySerializer->denormalize($attributes, AttributesProperty::class);
       $entity->setAttributes($property);
     }
   }

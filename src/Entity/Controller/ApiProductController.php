@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge\Entity\Controller;
 
 use Apigee\Edge\Api\Management\Controller\ApiProductController as EdgeApiProductController;
 use Apigee\Edge\ClientInterface;
+use Apigee\Edge\Serializer\EntitySerializerInterface;
 use Drupal\apigee_edge\Entity\ApiProductInterface;
 
 /**
@@ -46,14 +47,13 @@ class ApiProductController extends EdgeApiProductController implements DrupalEnt
    *   The API client.
    * @param string $entity_class
    *   The FQCN of the entity class that is used in Drupal.
-   * @param array $entity_normalizers
-   *   Array of entity normalizers.
+   * @param \Apigee\Edge\Serializer\EntitySerializerInterface|null $entity_serializer
+   *   The entity serializer.
    *
    * @throws \ReflectionException
-   * @throws \InvalidArgumentException
    */
-  public function __construct(string $organization, ClientInterface $client, string $entity_class, array $entity_normalizers = []) {
-    parent::__construct($organization, $client, $entity_normalizers);
+  public function __construct(string $organization, ClientInterface $client, string $entity_class, ?EntitySerializerInterface $entity_serializer = NULL) {
+    parent::__construct($organization, $client, $entity_serializer);
     $interface = ApiProductInterface::class;
     $rc = new \ReflectionClass($entity_class);
     if (!$rc->implementsInterface($interface)) {
