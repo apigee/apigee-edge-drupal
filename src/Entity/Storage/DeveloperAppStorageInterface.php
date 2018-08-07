@@ -27,12 +27,12 @@ interface DeveloperAppStorageInterface extends FieldableEdgeEntityStorageInterfa
   /**
    * Loads developer apps by developer.
    *
-   * @param string $developerId
+   * @param string $developer_id
    *   Developer id (uuid) or email address of a developer.
    *
    * @return \Drupal\apigee_edge\Entity\DeveloperApp[]
    *   The array of the developer apps of the given developer.
    */
-  public function loadByDeveloper(string $developerId): array;
+  public function loadByDeveloper(string $developer_id): array;
 
 }

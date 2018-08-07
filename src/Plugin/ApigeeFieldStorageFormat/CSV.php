@@ -22,6 +22,8 @@ namespace Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormat;
 use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormatInterface;
 
 /**
+ * CSV formatter for Apigee Edge field storage.
+ *
  * @ApigeeFieldStorageFormat(
  *   id = "csv",
  *   label = "CSV",

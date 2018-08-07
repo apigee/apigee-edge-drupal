@@ -29,7 +29,6 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\Url;
 use Drupal\key\KeyInterface;
@@ -65,13 +64,6 @@ class AuthenticationForm extends ConfigFormBase {
   protected $sdkConnector;
 
   /**
-   * The messenger service.
-   *
-   * @var \Drupal\Core\Messenger\MessengerInterface
-   */
-  protected $messenger;
-
-  /**
    * The module handler service.
    *
    * @var \Drupal\Core\Extension\ModuleHandlerInterface
@@ -89,22 +81,14 @@ class AuthenticationForm extends ConfigFormBase {
    *   The key repository.
    * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
    *   SDK connector service.
-   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
-   *   The messenger service.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   Module handler service.
    */
-  public function __construct(ConfigFactoryInterface $config_factory,
-                              StateInterface $state,
-                              KeyRepositoryInterface $key_repository,
-                              SDKConnectorInterface $sdk_connector,
-                              MessengerInterface $messenger,
-                              ModuleHandlerInterface $module_handler) {
+  public function __construct(ConfigFactoryInterface $config_factory, StateInterface $state, KeyRepositoryInterface $key_repository, SDKConnectorInterface $sdk_connector, ModuleHandlerInterface $module_handler) {
     parent::__construct($config_factory);
     $this->state = $state;
     $this->keyRepository = $key_repository;
     $this->sdkConnector = $sdk_connector;
-    $this->messenger = $messenger;
     $this->moduleHandler = $module_handler;
   }
 
@@ -117,7 +101,6 @@ class AuthenticationForm extends ConfigFormBase {
       $container->get('state'),
       $container->get('key.repository'),
       $container->get('apigee_edge.sdk_connector'),
-      $container->get('messenger'),
       $container->get('module_handler')
     );
   }

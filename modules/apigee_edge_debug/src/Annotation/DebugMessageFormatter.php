@@ -23,7 +23,7 @@ namespace Drupal\apigee_edge_debug\Annotation;
 use Drupal\Component\Annotation\Plugin;
 
 /**
- * Defines an Edge debug message formatter plugin annotation object.
+ * Defines an Apigee Edge debug message formatter plugin annotation object.
  *
  * @Annotation
  */

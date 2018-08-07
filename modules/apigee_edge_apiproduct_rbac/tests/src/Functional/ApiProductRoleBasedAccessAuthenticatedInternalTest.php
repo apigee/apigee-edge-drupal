@@ -36,7 +36,7 @@ use Drupal\Core\Session\AccountInterface;
 class ApiProductRoleBasedAccessAuthenticatedInternalTest extends ApiProductRoleBasedAccessTestBase {
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function setUp() {
     parent::setUp();

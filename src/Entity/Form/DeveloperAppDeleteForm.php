@@ -26,6 +26,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -141,7 +142,7 @@ class DeveloperAppDeleteForm extends EntityDeleteForm implements DeveloperAppPag
    *
    * @see \Drupal\Core\StringTranslation\StringTranslationTrait::t()
    */
-  protected function pageTitle(array $args = []) {
+  protected function pageTitle(array $args = []): TranslatableMarkup {
     return $this->t('Delete @name @developer_app', $args);
   }
 

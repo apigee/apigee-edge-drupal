@@ -56,7 +56,7 @@ class SDKConnector extends OriginalSDKConnector implements SDKConnectorInterface
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $inner_service
    *   The decorated SDK connector service.
-   * @param \Drupal\Core\Http\ClientFactory $clientFactory
+   * @param \Drupal\Core\Http\ClientFactory $client_factory
    *   Http client.
    * @param \Drupal\key\KeyRepositoryInterface $key_repository
    *   The key repository.
@@ -64,14 +64,14 @@ class SDKConnector extends OriginalSDKConnector implements SDKConnectorInterface
    *   Entity type manager service.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state key/value store.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   Module handler service.
-   * @param \Drupal\Core\Extension\InfoParserInterface $infoParser
+   * @param \Drupal\Core\Extension\InfoParserInterface $info_parser
    *   Info file parser service.
    */
-  public function __construct(SDKConnectorInterface $inner_service, ClientFactory $clientFactory, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ModuleHandlerInterface $moduleHandler, InfoParserInterface $infoParser) {
+  public function __construct(SDKConnectorInterface $inner_service, ClientFactory $client_factory, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ModuleHandlerInterface $module_handler, InfoParserInterface $info_parser) {
     $this->innerService = $inner_service;
-    parent::__construct($clientFactory, $key_repository, $entity_type_manager, $state, $moduleHandler, $infoParser);
+    parent::__construct($client_factory, $key_repository, $entity_type_manager, $state, $module_handler, $info_parser);
   }
 
   /**

@@ -55,13 +55,13 @@ interface FieldableEdgeEntityInterface extends FieldableEntityInterface, EdgeEnt
    *
    * @param string $field_name
    *   Name of a field in Drupal.
-   * @param \Apigee\Edge\Structure\AttributesProperty $attributesProperty
+   * @param \Apigee\Edge\Structure\AttributesProperty $attributes_property
    *   Attribute property that contains the attributes on an entity.
    *
    * @return mixed|null
    *   Field value from related attribute. It returns NULL if field does
    *   not have an attribute on the entity or its value is actually NULL.
    */
-  public function getFieldValueFromAttribute(string $field_name, AttributesProperty $attributesProperty);
+  public function getFieldValueFromAttribute(string $field_name, AttributesProperty $attributes_property);
 
 }

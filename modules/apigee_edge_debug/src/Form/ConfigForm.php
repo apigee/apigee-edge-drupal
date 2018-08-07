@@ -26,9 +26,14 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Provides a form for changing configuration of the debug module.
+ */
 class ConfigForm extends ConfigFormBase {
 
   /**
+   * Debug message formatter plugin manager.
+   *
    * @var \Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager
    */
   private $pluginManager;
@@ -38,12 +43,12 @@ class ConfigForm extends ConfigFormBase {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
-   * @param \Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager $pluginManager
+   * @param \Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager $plugin_manager
    *   The debug message formatter plugin manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, DebugMessageFormatterPluginManager $pluginManager) {
+  public function __construct(ConfigFactoryInterface $config_factory, DebugMessageFormatterPluginManager $plugin_manager) {
     parent::__construct($config_factory);
-    $this->pluginManager = $pluginManager;
+    $this->pluginManager = $plugin_manager;
   }
 
   /**

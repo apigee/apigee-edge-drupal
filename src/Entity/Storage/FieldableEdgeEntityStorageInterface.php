@@ -23,6 +23,9 @@ use Drupal\Core\Entity\DynamicallyFieldableEntityStorageInterface;
 use Drupal\Core\Entity\FieldableEntityStorageInterface;
 use Drupal\Core\Entity\Schema\DynamicallyFieldableEntityStorageSchemaInterface;
 
+/**
+ * Defines an interface for fieldable Apigee Edge entities.
+ */
 interface FieldableEdgeEntityStorageInterface extends EdgeEntityStorageInterface, FieldableEntityStorageInterface, DynamicallyFieldableEntityStorageInterface, DynamicallyFieldableEntityStorageSchemaInterface {
 
 }

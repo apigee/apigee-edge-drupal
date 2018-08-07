@@ -27,7 +27,6 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Render\Markup;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -58,18 +57,18 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    *   The entity type.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The entity storage.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\Render\RendererInterface $render
    *   The render.
-   * @param \Drupal\Core\Session\AccountInterface $currentUser
+   * @param \Drupal\Core\Session\AccountInterface $current_user
    *   Currently logged-in user.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack object.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, EntityTypeManagerInterface $entityTypeManager, RendererInterface $render, AccountInterface $currentUser, RequestStack $request_stack) {
-    parent::__construct($entity_type, $storage, $entityTypeManager, $render, $request_stack);
-    $this->currentUser = $currentUser;
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render, AccountInterface $current_user, RequestStack $request_stack) {
+    parent::__construct($entity_type, $storage, $entity_type_manager, $render, $request_stack);
+    $this->currentUser = $current_user;
   }
 
   /**
@@ -123,7 +122,7 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    * @return \Drupal\Core\Entity\EntityInterface[]
    *   Developer apps or an empty array.
    */
-  protected function loadByUser(UserInterface $user, array $headers = []) {
+  protected function loadByUser(UserInterface $user, array $headers = []): array {
     $entity_ids = $this->getEntityIds($headers, $user);
     return $this->storage->loadMultiple($entity_ids);
   }
@@ -218,7 +217,7 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    * @return \Symfony\Component\HttpFoundation\RedirectResponse
    *   Returns a redirect to the My apps of the currently logged in user.
    */
-  public function myAppsPage() {
+  public function myAppsPage(): RedirectResponse {
     $options['absolute'] = TRUE;
     $url = Url::fromRoute('entity.developer_app.collection_by_developer', ['user' => \Drupal::currentUser()->id()], $options);
     return new RedirectResponse($url->toString(), 302);

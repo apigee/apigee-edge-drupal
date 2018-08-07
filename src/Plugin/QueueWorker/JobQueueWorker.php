@@ -43,15 +43,20 @@ class JobQueueWorker extends QueueWorkerBase implements ContainerFactoryPluginIn
    */
   protected $executor;
 
+  /**
+   * The queue object.
+   *
+   * @var \Drupal\Core\Queue\QueueInterface
+   */
   protected $queue;
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, JobExecutor $executor, QueueFactory $queueFactory) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, JobExecutor $executor, QueueFactory $queue_factory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->executor = $executor;
-    $this->queue = $queueFactory->get('apigee_edge_job');
+    $this->queue = $queue_factory->get('apigee_edge_job');
   }
 
   /**

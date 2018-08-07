@@ -33,21 +33,29 @@ abstract class AbstractAppCredentialEvent extends Event {
   const APP_TYPE_DEVELOPER = 'developer';
 
   /**
+   * Type of the app.
+   *
    * @var string
    */
   private $appType;
 
   /**
+   * ID of the app owner.
+   *
    * @var string
    */
   private $ownerId;
 
   /**
+   * Name of the app.
+   *
    * @var string
    */
   private $appName;
 
   /**
+   * App credential.
+   *
    * @var \Apigee\Edge\Api\Management\Entity\AppCredentialInterface
    */
   private $credential;
@@ -55,22 +63,22 @@ abstract class AbstractAppCredentialEvent extends Event {
   /**
    * AppCredentialGenerateEvent constructor.
    *
-   * @param string $appType
+   * @param string $add_type
    *   Either company or developer.
-   * @param string $ownerId
+   * @param string $owner_id
    *   Company name or developer id (uuid by default) depending on the appType.
-   * @param string $appName
+   * @param string $app_name
    *   Name of the app.
    * @param \Apigee\Edge\Api\Management\Entity\AppCredentialInterface $credential
    *   The app credential that has been created.
    */
-  public function __construct(string $appType, string $ownerId, string $appName, AppCredentialInterface $credential) {
-    if (!in_array($appType, [self::APP_TYPE_DEVELOPER, self::APP_TYPE_COMPANY])) {
+  public function __construct(string $add_type, string $owner_id, string $app_name, AppCredentialInterface $credential) {
+    if (!in_array($add_type, [self::APP_TYPE_DEVELOPER, self::APP_TYPE_COMPANY])) {
       throw new \InvalidArgumentException('App type must be either company or developer.');
     }
-    $this->appType = $appType;
-    $this->ownerId = $ownerId;
-    $this->appName = $appName;
+    $this->appType = $add_type;
+    $this->ownerId = $owner_id;
+    $this->appName = $app_name;
     $this->credential = $credential;
   }
 

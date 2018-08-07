@@ -168,7 +168,7 @@ class ConditionTest extends UnitTestCase {
    * @return array
    *   Random data row.
    */
-  protected function randomData() : array {
+  protected function randomData(): array {
     return $this->entityData[mt_rand(0, count($this->entityData) - 1)];
   }
 
@@ -180,7 +180,7 @@ class ConditionTest extends UnitTestCase {
    * @return \Drupal\apigee_edge\Entity\Query\Condition
    *   Mock conditional object.
    */
-  protected function mockCondition($conjunction = 'AND') : Condition {
+  protected function mockCondition($conjunction = 'AND'): Condition {
     return new Condition($conjunction, new class implements QueryInterface {
 
       public function addTag($tag) {}
@@ -238,7 +238,7 @@ class ConditionTest extends UnitTestCase {
    * @param callable $filter
    *   A filter to verify the results.
    */
-  protected function assertFilters(Condition $condition, callable $filter) : void {
+  protected function assertFilters(Condition $condition, callable $filter): void {
     $expected = array_filter($this->entities, $filter);
     $actual = array_filter($this->entities, $condition->compile(NULL));
     $this->assertEquals($expected, $actual);
@@ -285,14 +285,14 @@ class ConditionTest extends UnitTestCase {
         /**
          * {@inheritdoc}
          */
-        public function idProperty() : string {
+        public function idProperty(): string {
           return 'id';
         }
 
         /**
          * {@inheritdoc}
          */
-        public function id() : ?string {
+        public function id(): ?string {
           return $this->id;
         }
 

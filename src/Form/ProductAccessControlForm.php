@@ -32,28 +32,33 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ProductAccessControlForm extends ConfigFormBase {
 
   /**
+   * The entity type manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  private $entityTypeManager;
+  protected $entityTypeManager;
 
   /**
    * ProductAccessControlForm constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory service.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entityTypeManager) {
+  public function __construct(ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($config_factory);
-    $this->entityTypeManager = $entityTypeManager;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('config.factory'), $container->get('entity_type.manager'));
+    return new static(
+      $container->get('config.factory'),
+      $container->get('entity_type.manager')
+    );
   }
 
   /**
@@ -71,7 +76,7 @@ class ProductAccessControlForm extends ConfigFormBase {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $role_storage = $this->entityTypeManager->getStorage('user_role');
@@ -80,8 +85,8 @@ class ProductAccessControlForm extends ConfigFormBase {
 
     $form['access'] = [
       '#type' => 'details',
-      '#title' => t('Access by visibility'),
-      '#description' => t('Limit access to API Products by "Access" settings on Apigee Edge.'),
+      '#title' => $this->t('Access by visibility'),
+      '#description' => $this->t('Limit access to API Products by "Access" settings on Apigee Edge.'),
       '#open' => TRUE,
       '#tree' => TRUE,
     ];
@@ -154,7 +159,7 @@ class ProductAccessControlForm extends ConfigFormBase {
         if ($rolesWithBypassPerm[$rid]) {
           $form['access']['visibility'][$visibility][$rid]['#disabled'] = TRUE;
           $form['access']['visibility'][$visibility][$rid]['#default_value'] = TRUE;
-          $form['access']['visibility'][$visibility][$rid]['#attributes']['title'] = t('This checkbox is disabled because this role has "Bypass API product access control" permission.');
+          $form['access']['visibility'][$visibility][$rid]['#attributes']['title'] = $this->t('This checkbox is disabled because this role has "Bypass API product access control" permission.');
         }
       }
     }
@@ -165,7 +170,7 @@ class ProductAccessControlForm extends ConfigFormBase {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $ridProductMap = [];

@@ -60,7 +60,7 @@ class OauthKeyInput extends BasicAuthKeyInput {
     $form['client_id'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Client ID'),
-      '#description' => t('The client identifier issued to the client during the registration process. Leave empty to use the default %client_id client ID.', [
+      '#description' => $this->t('The client identifier issued to the client during the registration process. Leave empty to use the default %client_id client ID.', [
         '%client_id' => Oauth::DEFAULT_CLIENT_ID,
       ]),
       '#required' => $key->getKeyType()->getPluginDefinition()['multivalue']['fields']['client_id']['required'],
@@ -70,7 +70,7 @@ class OauthKeyInput extends BasicAuthKeyInput {
     $form['client_secret'] = [
       '#type' => 'password',
       '#title' => $this->t('Client secret'),
-      '#description' => t('A secret known only to the client and the authorization server. Leave empty to use the default %client_secret client secret.', [
+      '#description' => $this->t('A secret known only to the client and the authorization server. Leave empty to use the default %client_secret client secret.', [
         '%client_secret' => Oauth::DEFAULT_CLIENT_SECRET,
       ]),
       '#required' => $key->getKeyType()->getPluginDefinition()['multivalue']['fields']['client_secret']['required'],

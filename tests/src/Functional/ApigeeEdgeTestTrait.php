@@ -95,7 +95,7 @@ trait ApigeeEdgeTestTrait {
    * @return \Drupal\user\UserInterface
    *   Drupal user.
    */
-  protected function createAccount(array $permissions = [], bool $status = TRUE, string $prefix = '') : ?UserInterface {
+  protected function createAccount(array $permissions = [], bool $status = TRUE, string $prefix = ''): ?UserInterface {
     $rid = NULL;
     if ($permissions) {
       $rid = $this->createRole($permissions);
@@ -139,7 +139,7 @@ trait ApigeeEdgeTestTrait {
    * @return \Drupal\apigee_edge\Entity\ApiProduct
    *   (SDK) API product object.
    */
-  protected function createProduct() : ApiProduct {
+  protected function createProduct(): ApiProduct {
     /** @var \Drupal\apigee_edge\Entity\ApiProduct $product */
     $product = ApiProduct::create([
       'name' => $this->randomMachineName(),
@@ -188,7 +188,7 @@ trait ApigeeEdgeTestTrait {
    *
    * @return \Drupal\apigee_edge\Entity\DeveloperApp[]|null
    *   Array of developer apps of the user or if user does not exist as
-   *   developer on Edge.
+   *   developer on Apigee Edge.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */

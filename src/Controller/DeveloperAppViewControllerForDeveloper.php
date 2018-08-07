@@ -23,12 +23,8 @@ use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\Core\Entity\Controller\EntityViewController;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityManagerInterface;
-use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Render\Markup;
-use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Displays the view page of a developer app for a given user on the UI.

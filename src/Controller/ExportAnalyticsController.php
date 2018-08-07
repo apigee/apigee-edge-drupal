@@ -20,6 +20,7 @@
 namespace Drupal\apigee_edge\Controller;
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\TempStore\PrivateTempStoreFactory;
@@ -29,7 +30,7 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Serializer\Encoder\CsvEncoder;
 
 /**
- * Defines a controller for exporting & downloading analytics data.
+ * Defines a controller for exporting and downloading analytics data.
  */
 class ExportAnalyticsController extends ControllerBase {
 
@@ -65,7 +66,7 @@ class ExportAnalyticsController extends ControllerBase {
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access result.
    */
-  public function access($data_id) {
+  public function access($data_id): AccessResultInterface {
     return AccessResult::allowedIf($this->store->get($data_id) !== NULL);
   }
 
@@ -78,7 +79,7 @@ class ExportAnalyticsController extends ControllerBase {
    * @return \Symfony\Component\HttpFoundation\Response
    *   The response object.
    */
-  public function exportAsCsv($data_id) {
+  public function exportAsCsv($data_id): Response {
     $analytics = $this->store->get($data_id);
 
     $file_name = "{$analytics['stats']['data'][0]['identifier']['values'][0]}_{$analytics['stats']['data'][0]['metric'][0]['name']}_analytics.csv";

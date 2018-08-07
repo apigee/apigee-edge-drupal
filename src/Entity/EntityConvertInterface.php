@@ -23,6 +23,9 @@ namespace Drupal\apigee_edge\Entity;
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 
+/**
+ * Defines an interface for Drupal-SDK entity converters.
+ */
 interface EntityConvertInterface {
 
   /**
@@ -30,25 +33,25 @@ interface EntityConvertInterface {
    *
    * @param \Drupal\Core\Entity\EntityInterface $drupal_entity
    *   Apigee Edge entity in Drupal.
-   * @param string $sdkEntityClass
+   * @param string $sdk_entity_class
    *   FQCN of the SDK entity class.
    *
    * @return \Apigee\Edge\Entity\EntityInterface
    *   Apigee Edge entity in the SDK.
    */
-  public function convertToSdkEntity(EntityInterface $drupal_entity, string $sdkEntityClass): EdgeEntityInterface;
+  public function convertToSdkEntity(EntityInterface $drupal_entity, string $sdk_entity_class): EdgeEntityInterface;
 
   /**
    * Converts a SDK entity into an Drupal entity.
    *
    * @param \Apigee\Edge\Entity\EntityInterface $sdk_entity
    *   Apigee Edge entity in the SDK.
-   * @param string $drupalEntityClass
+   * @param string $drupal_entity_class
    *   FQCN of the Drupal entity class.
    *
    * @return \Drupal\Core\Entity\EntityInterface
    *   Apigee Edge entity in the Drupal.
    */
-  public function convertToDrupalEntity(EdgeEntityInterface $sdk_entity, string $drupalEntityClass) : EntityInterface;
+  public function convertToDrupalEntity(EdgeEntityInterface $sdk_entity, string $drupal_entity_class): EntityInterface;
 
 }

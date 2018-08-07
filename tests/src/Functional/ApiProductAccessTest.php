@@ -128,7 +128,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
     parent::tearDown();
   }
 
-  public function testEntityAccess() : void {
+  public function testEntityAccess() {
     $authenticatedRoles = array_filter(array_keys($this->roleStorage->loadMultiple()), function ($rid) {
       return $rid !== AccountInterface::ANONYMOUS_ROLE;
     });
@@ -333,7 +333,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
    * @return array
    *   All possible combinations calculated from rids.
    */
-  protected function calculateRidCombinations(array $rids) : array {
+  protected function calculateRidCombinations(array $rids): array {
     $ridCombinations = [[]];
     foreach ($rids as $rid) {
       foreach ($ridCombinations as $ridCombination) {
@@ -349,7 +349,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
    * @return array
    *   Multidimensional array with all possible combinations.
    */
-  private function calculateTestCombinations() : array {
+  private function calculateTestCombinations(): array {
     $ridCombinations = $this->ridCombinations;
 
     $visibilityCombinations = [[]];
@@ -375,7 +375,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
    *   Associate array where keys are public, private, internal and values are
    *   role ids.
    */
-  protected function saveAccessSettings(array $settings) : void {
+  protected function saveAccessSettings(array $settings) {
     $this->config('apigee_edge.api_product_settings')
       ->set('access', $settings)
       ->save();
@@ -390,7 +390,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
    * @return array
    *   Array of role ids.
    */
-  protected function getRolesWithAccess(ApiProductInterface $product) : array {
+  protected function getRolesWithAccess(ApiProductInterface $product): array {
     $prodVisibility = $product->getAttributeValue('access');
     return $this->config('apigee_edge.api_product_settings')
       ->get('access')[$prodVisibility] ?? [];
@@ -413,7 +413,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
    * @return string
    *   Error message.
    */
-  protected function messageIfUserShouldHaveAccessByRole(string $operation, UserInterface $user, string $user_rid, array $rids_with_access, ApiProductInterface $product) : string {
+  protected function messageIfUserShouldHaveAccessByRole(string $operation, UserInterface $user, string $user_rid, array $rids_with_access, ApiProductInterface $product): string {
     return sprintf('User with "%s" role should have "%s" access to an API Product with "%s" visibility. Roles with access granted: %s.', $user_rid, $operation, ($product->getAttributeValue('access') ?? 'public'), implode(', ', $rids_with_access));
   }
 
@@ -428,7 +428,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
    * @return string
    *   Error message.
    */
-  protected function messageIfUserShouldHaveAccessWithBypassPerm(string $operation, UserInterface $user) : string {
+  protected function messageIfUserShouldHaveAccessWithBypassPerm(string $operation, UserInterface $user): string {
     return "User with \"Bypass API Product access control\" permission should have \"{$operation}\" access to the API product.";
   }
 
@@ -449,7 +449,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
    * @return string
    *   Error message.
    */
-  protected function messageIfUserShouldNotHaveAccess(string $operation, UserInterface $user, string $user_rid, array $rids_with_access, ApiProductInterface $product) : string {
+  protected function messageIfUserShouldNotHaveAccess(string $operation, UserInterface $user, string $user_rid, array $rids_with_access, ApiProductInterface $product): string {
     return sprintf('"%s" user without "Bypass API Product access control" permission should not have "%s" access to an API Product with "%s" visibility. Roles with access granted: %s.', $user_rid, $operation, ($product->getAttributeValue('access') ?? 'public'), implode(', ', $rids_with_access));
   }
 

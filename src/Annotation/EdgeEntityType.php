@@ -24,7 +24,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\apigee_edge\Entity\EdgeEntityType as EntityEdgeEntityType;
 
 /**
- * Defines an Edge entity type annotation object.
+ * Defines an Apigee Edge entity type annotation object.
  *
  * The annotation properties of entity types are found on
  * \Drupal\apigee_edge\Entity\EdgeEntityType and are accessed using

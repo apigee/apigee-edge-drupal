@@ -24,6 +24,11 @@ use Apigee\Edge\Api\Management\Entity\App;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 
+/**
+ * Apigee Edge entity cache related tests.
+ *
+ * @group apigee_edge
+ */
 class CacheTest extends ApigeeEdgeFunctionalTestBase {
 
   /**

@@ -177,7 +177,7 @@ trait DeveloperAppUITestTrait {
    * @return \Drupal\apigee_edge\Entity\DeveloperApp|null
    *   Developer app or null.
    */
-  protected function assertDeveloperAppExists(string $name) : ?DeveloperApp {
+  protected function assertDeveloperAppExists(string $name): ?DeveloperApp {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp[] $apps */
     $apps = $this->getApps();
     $found = NULL;

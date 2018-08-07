@@ -24,6 +24,9 @@ use Drupal\apigee_edge\Form\DeveloperAppBaseFieldConfigForm;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\field_ui\Controller\FieldConfigListController;
 
+/**
+ * Defines a controller to list Developer App field instances.
+ */
 class DeveloperAppFieldConfigListController extends FieldConfigListController {
 
   /**

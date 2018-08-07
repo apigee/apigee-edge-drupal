@@ -63,7 +63,7 @@ class DeveloperAttributesSettingsForm extends ConfigFormBase {
     ];
 
     $form['developer_attributes']['instructions'] = [
-      '#markup' => $this->t('Select the <a href=":url_manage">user fields</a> that has to be synced to the Apigee Edge server.<br>You can also add a <a href=":url_new">new field</a> to users.', [
+      '#markup' => $this->t('Select the <a href=":url_manage">user fields</a> that have to be synced to the Apigee Edge server.<br>You can also add a <a href=":url_new">new field</a> to users.', [
         ':url_manage' => Url::fromRoute('entity.user.field_ui_fields')->toString(),
         ':url_new' => Url::fromRoute('field_ui.field_storage_config_add_user')->toString(),
       ]),

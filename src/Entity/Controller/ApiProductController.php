@@ -31,6 +31,8 @@ class ApiProductController extends EdgeApiProductController implements DrupalEnt
   use DrupalEntityControllerAwareTrait;
 
   /**
+   * THE FQCN of the entity class.
+   *
    * @var string
    */
   private $entityClass;
@@ -42,22 +44,22 @@ class ApiProductController extends EdgeApiProductController implements DrupalEnt
    *   The organization name.
    * @param \Apigee\Edge\ClientInterface $client
    *   The API client.
-   * @param string $entityClass
+   * @param string $entity_class
    *   The FQCN of the entity class that is used in Drupal.
-   * @param array $entityNormalizers
+   * @param array $entity_normalizers
    *   Array of entity normalizers.
    *
    * @throws \ReflectionException
    * @throws \InvalidArgumentException
    */
-  public function __construct(string $organization, ClientInterface $client, string $entityClass, array $entityNormalizers = []) {
-    parent::__construct($organization, $client, $entityNormalizers);
+  public function __construct(string $organization, ClientInterface $client, string $entity_class, array $entity_normalizers = []) {
+    parent::__construct($organization, $client, $entity_normalizers);
     $interface = ApiProductInterface::class;
-    $rc = new \ReflectionClass($entityClass);
+    $rc = new \ReflectionClass($entity_class);
     if (!$rc->implementsInterface($interface)) {
       throw new \InvalidArgumentException("Entity class must implement {$interface}.");
     }
-    $this->entityClass = $entityClass;
+    $this->entityClass = $entity_class;
   }
 
   /**

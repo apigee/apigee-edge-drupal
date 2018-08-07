@@ -116,7 +116,7 @@ class JobExecutor {
    * @return \Drupal\apigee_edge\Job|null
    *   Loaded job object or null if it does not exit.
    */
-  public function load(string $id) : ? Job {
+  public function load(string $id): ?Job {
     $query = $this->connection->select('apigee_edge_job', 'j')
       ->fields('j', ['job']);
     $query->condition('id', $id);
@@ -134,7 +134,7 @@ class JobExecutor {
    * @return \Drupal\apigee_edge\Job|null
    *   Job object or null if there is no available.
    */
-  public function select(?string $tag = NULL) : ? Job {
+  public function select(?string $tag = NULL): ?Job {
     // TODO handle race conditions.
     $query = $this->connection->select('apigee_edge_job', 'j')
       ->fields('j', ['job'])
@@ -214,7 +214,7 @@ class JobExecutor {
    * @return int
    *   Number of counted jobs.
    */
-  public function countJobs(?string $tag = NULL, ?array $statuses = NULL) : int {
+  public function countJobs(?string $tag = NULL, ?array $statuses = NULL): int {
     $query = $this->connection->select('apigee_edge_job', 'j');
 
     if ($tag !== NULL) {

@@ -22,6 +22,8 @@ namespace Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormat;
 use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormatInterface;
 
 /**
+ * JSON formatter for Apigee Edge field storage.
+ *
  * @ApigeeFieldStorageFormat(
  *   id = "json",
  *   label = "JSON",

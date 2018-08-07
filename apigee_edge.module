@@ -55,7 +55,6 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\TempStore\TempStoreException;
 use Drupal\Core\Url;
 use Drupal\user\UserInterface;
-use Drupal\user\Entity\User;
 
 define('APIGEE_EDGE_USER_REGISTRATION_SOURCE', 'apigee_edge_user_registration_source');
 
@@ -451,7 +450,7 @@ function apigee_edge_form_user_form_alter(&$form, FormStateInterface $form_state
 }
 
 /**
- * Validates whether the provided email address is already taken on Edge or not.
+ * Validates whether the provided email address is already taken on Apigee Edge.
  *
  * @param array $form
  *   Form array.
@@ -466,8 +465,8 @@ function apigee_edge_form_user_form_developer_email_validate(array $form, FormSt
       $developer = Developer::load($form_state->getValue('mail'));
     }
     catch (\Exception $exception) {
-      // Nothing to do here, if there is no connection to Edge interrupt the
-      // registration in the
+      // Nothing to do here, if there is no connection to Apigee Edge interrupt
+      // the registration in the
       // apigee_edge_form_user_form_api_connection_validate() function.
     }
 
@@ -543,8 +542,8 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
         }
       }
       catch (\Exception $exception) {
-        // Nothing to do here, if there is no connection to Edge interrupt the
-        // registration in the
+        // Nothing to do here, if there is no connection to Apigee Edge
+        // interrupt the registration in the
         // apigee_edge_form_user_form_api_connection_validate() function.
       }
     }
@@ -584,9 +583,9 @@ function apigee_edge_form_user_register_form_after_build(array $form, FormStateI
  *   Form state object.
  */
 function apigee_edge_form_user_form_api_connection_validate(array $form, FormStateInterface $form_state) {
-  // If there is no connection to Edge interrupt the registration/user update,
-  // otherwise it could be a
-  // security leak if a developer exists in Edge with the same email address.
+  // If there is no connection to Apigee Edge interrupt the registration/user
+  // update, otherwise it could be a security leak if a developer exists in
+  // Apigee Edge with the same email address.
   /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
   $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
   try {
@@ -597,13 +596,13 @@ function apigee_edge_form_user_form_api_connection_validate(array $form, FormSta
       '@user_email' => $form_state->getValue('mail'),
       '@message' => (string) $exception,
     ];
-    watchdog_exception('apigee_edge', $exception, 'Could not create/update Drupal user: @user_email, because there was no connection to Edge. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
+    watchdog_exception('apigee_edge', $exception, 'Could not create/update Drupal user: @user_email, because there was no connection to Apigee Edge. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
     $form_state->setError($form, t('User registration is temporarily unavailable. Try again later or contact the site administrator.'));
   }
 }
 
 /**
- * Validates whether the provided email address is already taken on Edge or not.
+ * Validates whether the provided email address is already taken on Apigee Edge.
  *
  * @param array $form
  *   Form array.
@@ -628,7 +627,7 @@ function apigee_edge_form_user_register_form_developer_email_validate(array $for
     // display the same error message for an admin user as a regular user.
     DeveloperEmailUniqueValidator::whitelist($form_state->getValue('mail'));
     // If administrator has not confirmed that s/he would like to create a user
-    // in Drupal with an existing developer id on Edge then add a custom
+    // in Drupal with an existing developer id on Apigee Edge then add a custom
     // error to the field.
     if (empty($form_state->getValue('apigee_edge_developer_exists'))) {
       $form_state->setErrorByName('mail', t('This email address already exists on Apigee Edge.'));
@@ -719,7 +718,7 @@ function _apigee_edge_existing_developer_email_verification_link(UserInterface $
 }
 
 /**
- * Generates a token for an email address that is already taken on Edge.
+ * Generates a token for an email address that is already taken on Apigee Edge.
  *
  * We do not want to enforce user to use the same first name, last name,
  * username when this token is generated and whe s/he re-opens the registration
@@ -985,7 +984,7 @@ function template_preprocess_app_credential(array &$variables) {
  * Implements hook_user_presave().
  *
  * TODO Take (configurable?) actions if a user could not be saved in Drupal but
- * it has been in Edge.
+ * it has been in Apigee Edge.
  */
 function apigee_edge_user_presave(UserInterface $account) {
   // If the developer-user synchronization is in progress, then saving
@@ -1009,7 +1008,7 @@ function apigee_edge_user_presave(UserInterface $account) {
     ];
     if ($previous instanceof ClientErrorException && $previous->getEdgeErrorCode()) {
       if ($previous->getEdgeErrorCode() === Developer::APIGEE_EDGE_ERROR_CODE_DEVELOPER_DOES_NOT_EXISTS) {
-        \Drupal::service('logger.channel.apigee_edge')->info('Could not update @developer developer entity because it does not exist on Edge. Automatically trying to create a new developer entity.', $context);
+        \Drupal::service('logger.channel.apigee_edge')->info('Could not update @developer developer entity because it does not exist on Apigee Edge. Automatically trying to create a new developer entity.', $context);
         try {
           // Forcibly mark developer entity as new to send POST request to Edge
           // instead of PUT. This should be a better way then clearing
@@ -1119,7 +1118,7 @@ function apigee_edge_form_field_ui_field_storage_add_form_alter(array &$form, Fo
   if ($form_state->get('entity_type_id') === 'user') {
     $form['apigee_edge_sync'] = [
       '#type' => 'checkbox',
-      '#title' => t('Synchronise to Apigee Edge'),
+      '#title' => t('Synchronize to Apigee Edge'),
     ];
     $form['#submit'][] = 'apigee_edge_field_ui_field_storage_add_form_submit';
   }
@@ -1230,15 +1229,13 @@ function apigee_edge_developer_storage_load(array $entities) {
   $mail_uid_map = $query->execute()->fetchAllKeyed();
 
   foreach ($entities as $entity) {
-    // If developer id is not in this map it means the developer does
-    // not exist in Drupal yet (developer syncing between Edge and Drupal is
-    // required) or the developer id has not been stored in
-    // related Drupal user yet.
-    // This can be fixed with running developer sync too,
-    // because it could happen that the user had been
-    // created in Drupal before Edge connected was configured.
-    // Although, this could be a result of a previous error
-    // but there should be a log about that.
+    // If developer id is not in this map it means the developer does not exist
+    // in Drupal yet (developer syncing between Apigee Edge and Drupal is
+    // required) or the developer id has not been stored in related Drupal user
+    // yet. This can be fixed with running developer sync too, because it could
+    // happen that the user had been created in Drupal before Apigee Edge
+    // connected was configured. Although, this could be a result of a previous
+    // error but there should be a log about that.
     if (isset($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]])) {
       $entity->setOwnerId($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]]);
     }
@@ -1277,15 +1274,13 @@ function apigee_edge_developer_app_storage_load(array $entities) {
   }
 
   foreach ($entities as $entity) {
-    // If developer id is not in this map it means the developer does
-    // not exist in Drupal yet (developer syncing between Edge and Drupal is
-    // required) or the developer id has not been stored in
-    // related Drupal user yet.
-    // This can be fixed with running developer sync too,
-    // because it could happen that the user had been
-    // created in Drupal before Edge connected was configured.
-    // Although, this could be a result of a previous error
-    // but there should be a log about that.
+    // If developer id is not in this map it means the developer does not exist
+    // in Drupal yet (developer syncing between Apigee Edge and Drupal is
+    // required) or the developer id has not been stored in related Drupal user
+    // yet. This can be fixed with running developer sync too, because it could
+    // happen that the user had been created in Drupal before Apigee Edge
+    // connected was configured. Although, this could be a result of a previous
+    // error but there should be a log about that.
     if (isset($developerId_mail_map[$entity->getDeveloperId()]) && isset($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]])) {
       $entity->setOwnerId($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]]);
     }
@@ -1299,7 +1294,7 @@ function apigee_edge_developer_app_storage_load(array $entities) {
  * possible scenarios when a cache invalidation issue could occur and this
  * function would return a false-positive result.
  *
- * @param string $productName
+ * @param string $product_name
  *   API Product name.
  * @param \Drupal\Core\Session\AccountInterface|null $account
  *   User object. Default is the current user.
@@ -1307,7 +1302,7 @@ function apigee_edge_developer_app_storage_load(array $entities) {
  * @return bool
  *   TRUE if user has at least one app with the API Product, FALSE otherwise.
  */
-function _apigee_edge_user_has_an_app_with_product(string $productName, AccountInterface $account = NULL) : bool {
+function _apigee_edge_user_has_an_app_with_product(string $product_name, AccountInterface $account = NULL): bool {
   if ($account === NULL) {
     $account = Drupal::currentUser()->getAccount();
   }
@@ -1326,7 +1321,7 @@ function _apigee_edge_user_has_an_app_with_product(string $productName, AccountI
         $productNames = array_map(function (CredentialProduct $product) {
           return $product->getApiproduct();
         }, $credential->getApiProducts());
-        if (in_array($productName, $productNames)) {
+        if (in_array($product_name, $productNames)) {
           return TRUE;
         }
       }
@@ -1352,7 +1347,7 @@ function _apigee_edge_user_has_an_app_with_product(string $productName, AccountI
  * @return bool
  *   TRUE if the developer-user synchronization is in progress, else FALSE.
  */
-function _apigee_edge_set_sync_in_progress(?bool $in_progress = NULL) {
+function _apigee_edge_set_sync_in_progress(?bool $in_progress = NULL): bool {
   static $state;
   if ($in_progress !== NULL) {
     $state = $in_progress;
@@ -1366,7 +1361,7 @@ function _apigee_edge_set_sync_in_progress(?bool $in_progress = NULL) {
  * @return bool
  *   TRUE if the developer-user synchronization is in progress, else FALSE.
  */
-function _apigee_edge_is_sync_in_progress() {
+function _apigee_edge_is_sync_in_progress(): bool {
   return _apigee_edge_set_sync_in_progress();
 }
 
@@ -1380,7 +1375,7 @@ function _apigee_edge_is_sync_in_progress() {
  * @return \Drupal\Core\StringTranslation\TranslatableMarkup
  *   Title of "My developer apps".
  */
-function apigee_edge_get_my_developer_apps_title(?UserInterface $user = NULL) {
+function apigee_edge_get_my_developer_apps_title(?UserInterface $user = NULL): TranslatableMarkup {
   $args['@developer_app'] = \Drupal::entityTypeManager()->getDefinition('developer_app')->getPluralLabel();
   if (isset($user)) {
     $args['@user'] = Markup::create($user->getDisplayName());

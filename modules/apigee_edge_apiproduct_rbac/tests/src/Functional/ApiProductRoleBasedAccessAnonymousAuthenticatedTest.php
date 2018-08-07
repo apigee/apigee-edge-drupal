@@ -36,13 +36,16 @@ use Drupal\Core\Session\AccountInterface;
 class ApiProductRoleBasedAccessAnonymousAuthenticatedTest extends ApiProductRoleBasedAccessTestBase {
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function setUp() {
     parent::setUp();
     $this->ridCombinations = $this->calculateRidCombinations([AccountInterface::ANONYMOUS_ROLE, AccountInterface::AUTHENTICATED_ROLE]);
   }
 
+  /**
+   * Tests entity access with authenticated/anonymous roles.
+   */
   public function testDeveloperAppEditForm() {
     $this->markTestSkipped('ApiProductRoleBasedAccessAuthenticatedInternalTest validates this.');
   }

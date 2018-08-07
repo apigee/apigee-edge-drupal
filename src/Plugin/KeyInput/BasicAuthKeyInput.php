@@ -49,7 +49,7 @@ class BasicAuthKeyInput extends KeyInputBase {
     $form['organization'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Organization'),
-      '#description' => $this->t('Name of the organization on Edge. Changing this value could make your site stop working.'),
+      '#description' => $this->t('Name of the organization on Apigee Edge. Changing this value could make your site stop working.'),
       '#required' => $key->getKeyType()->getPluginDefinition()['multivalue']['fields']['organization']['required'],
       '#default_value' => $values['organization'],
       '#attributes' => ['autocomplete' => 'off'],
@@ -65,7 +65,7 @@ class BasicAuthKeyInput extends KeyInputBase {
     $form['password'] = [
       '#type' => 'password',
       '#title' => $this->t('Password'),
-      '#description' => t("Organization user's password that is used for authenticating with the endpoint."),
+      '#description' => $this->t("Organization user's password that is used for authenticating with the endpoint."),
       '#required' => $key->getKeyType()->getPluginDefinition()['multivalue']['fields']['password']['required'],
       '#attributes' => ['autocomplete' => 'off'],
     ];

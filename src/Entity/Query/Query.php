@@ -64,12 +64,12 @@ class Query extends QueryBase implements QueryInterface {
    *   - OR: at least one of the conditions on the query need to match.
    * @param array $namespaces
    *   List of potential namespaces of the classes belonging to this query.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, string $conjunction, array $namespaces, EntityTypeManagerInterface $manager) {
+  public function __construct(EntityTypeInterface $entity_type, string $conjunction, array $namespaces, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($entity_type, $conjunction, $namespaces);
-    $this->entityTypeManager = $manager;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -135,7 +135,7 @@ class Query extends QueryBase implements QueryInterface {
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
-  protected function getEntityIdProperties() {
+  protected function getEntityIdProperties(): array {
     $storage = $this->entityTypeManager->getStorage($this->entityTypeId);
     /** @var \Apigee\Edge\Entity\EntityInterface $entity */
     $entity = $storage->create();
@@ -150,7 +150,7 @@ class Query extends QueryBase implements QueryInterface {
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
-  protected function getFromStorage() {
+  protected function getFromStorage(): array {
     $storage = $this->entityTypeManager->getStorage($this->entityTypeId);
     // The worst case: load all entities from Apigee Edge.
     $ids = NULL;

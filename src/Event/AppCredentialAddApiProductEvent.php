@@ -30,6 +30,8 @@ class AppCredentialAddApiProductEvent extends AbstractAppCredentialEvent {
   const EVENT_NAME = 'apigee_edge.app_credential.add_api_product';
 
   /**
+   * Array of recently added API product names.
+   *
    * @var string[]
    */
   private $newProducts;
@@ -37,20 +39,20 @@ class AppCredentialAddApiProductEvent extends AbstractAppCredentialEvent {
   /**
    * AppCredentialAddApiProductEvent constructor.
    *
-   * @param string $appType
+   * @param string $add_type
    *   Either company or developer.
-   * @param string $ownerId
+   * @param string $owner_id
    *   Company name or developer id (email) depending on the appType.
-   * @param string $appName
+   * @param string $app_name
    *   Name of the app.
    * @param \Apigee\Edge\Api\Management\Entity\AppCredentialInterface $credential
    *   The app credential that has been created.
-   * @param array $newProducts
+   * @param array $new_products
    *   Array of API product names that has just been added to the key.
    */
-  public function __construct(string $appType, string $ownerId, string $appName, AppCredentialInterface $credential, array $newProducts) {
-    parent::__construct($appType, $ownerId, $appName, $credential);
-    $this->newProducts = $newProducts;
+  public function __construct(string $add_type, string $owner_id, string $app_name, AppCredentialInterface $credential, array $new_products) {
+    parent::__construct($add_type, $owner_id, $app_name, $credential);
+    $this->newProducts = $new_products;
   }
 
   /**

@@ -65,25 +65,25 @@ class ApiClientProfiler {
   /**
    * ApiClientProfiler constructor.
    *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   Config factory.
    * @param \Psr\Log\LoggerInterface $logger
    *   Logger.
-   * @param \Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager $debugMessageFormatterPlugin
+   * @param \Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager $debug_messageFormatter_plugin
    *   Debug message formatter plugin manager.
    */
-  public function __construct(ConfigFactoryInterface $configFactory, LoggerInterface $logger, DebugMessageFormatterPluginManager $debugMessageFormatterPlugin) {
+  public function __construct(ConfigFactoryInterface $config_factory, LoggerInterface $logger, DebugMessageFormatterPluginManager $debug_messageFormatter_plugin) {
     // On module install, this constructor is called earlier than
     // the module's configuration would have been imported to the database.
     // In that case the $formatterPluginId is missing and it causes fatal
     // errors.
-    $formatterPluginId = $configFactory->get('apigee_edge_debug.settings')->get('formatter');
+    $formatterPluginId = $config_factory->get('apigee_edge_debug.settings')->get('formatter');
     if ($formatterPluginId) {
-      $this->formatter = $debugMessageFormatterPlugin->createInstance($formatterPluginId);
+      $this->formatter = $debug_messageFormatter_plugin->createInstance($formatterPluginId);
     }
-    $this->logFormat = $configFactory->get('apigee_edge_debug.settings')->get('log_message_format');
+    $this->logFormat = $config_factory->get('apigee_edge_debug.settings')->get('log_message_format');
     $this->logger = $logger;
-    $this->debugMessageFormatterPlugin = $debugMessageFormatterPlugin;
+    $this->debugMessageFormatterPlugin = $debug_messageFormatter_plugin;
   }
 
   /**
@@ -118,8 +118,8 @@ class ApiClientProfiler {
           // Do not modify the original request object in the subsequent calls.
           $request_clone = clone $request;
           $level = LogLevel::DEBUG;
-          // Do not log this request if it has not been made by the Apigee
-          // Edge SDK connector.
+          // Do not log this request if it has not been made by the Apigee Edge
+          // SDK connector.
           if (!$request_clone->hasHeader(SDKConnector::HEADER)) {
             return;
           }

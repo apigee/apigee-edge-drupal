@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\apigee_edge;
+namespace Drupal\apigee_edge\Exception;
 
 use Apigee\Edge\Exception\ApiException;
 

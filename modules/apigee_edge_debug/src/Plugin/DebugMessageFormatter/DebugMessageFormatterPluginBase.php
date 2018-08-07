@@ -91,7 +91,7 @@ abstract class DebugMessageFormatterPluginBase extends PluginBase implements Con
   /**
    * {@inheritdoc}
    */
-  public function formatRequest(RequestInterface $request) {
+  public function formatRequest(RequestInterface $request): string {
     // Do not modify the original request object.
     if ($this->removeCredentials) {
       $request = $request->withoutHeader('Authorization');
@@ -125,7 +125,7 @@ abstract class DebugMessageFormatterPluginBase extends PluginBase implements Con
   /**
    * {@inheritdoc}
    */
-  public function formatResponse(ResponseInterface $response, RequestInterface $request) {
+  public function formatResponse(ResponseInterface $response, RequestInterface $request): string {
     if ($this->removeCredentials) {
       $request = $request->withoutHeader('Authorization');
       if ($request->getMethod() === 'POST' && $request->getUri()->getPath() === '/oauth/token') {
@@ -162,7 +162,7 @@ abstract class DebugMessageFormatterPluginBase extends PluginBase implements Con
    * @return array
    *   Array of measured times.
    */
-  protected function getTimeStatsInSeconds(TransferStats $stats, int $precision = 3) {
+  protected function getTimeStatsInSeconds(TransferStats $stats, int $precision = 3): array {
     $time_stats = array_filter($stats->getHandlerStats(), function ($key) {
       return preg_match('/_time$/', $key);
     }, ARRAY_FILTER_USE_KEY);

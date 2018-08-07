@@ -36,7 +36,10 @@ use Drupal\Core\Session\AccountInterface;
  */
 class ApiProductRoleBasedAccessMissingAttributeTest extends ApiProductRoleBasedAccessTestBase {
 
-  public function testEntityAccess(): void {
+  /**
+   * Tests entity access with empty/missing attributes.
+   */
+  public function testEntityAccess() {
     // Some utility functions that we are going to use here.
     $checkRoles = function (callable $checkViewAccess, callable $checkAssignAccess, string $messageSuffix) {
       foreach (self::SUPPORTED_OPERATIONS as $operation) {
@@ -81,6 +84,9 @@ class ApiProductRoleBasedAccessMissingAttributeTest extends ApiProductRoleBasedA
     $this->config('apigee_edge_apiproduct_rbac.settings')->set('grant_access_if_attribute_missing', FALSE)->save();
   }
 
+  /**
+   * Tests entity access.
+   */
   public function testDeveloperAppEditForm() {
     $this->markTestSkipped('ApiProductRoleBasedAccessAuthenticatedInternalTest validates this.');
   }

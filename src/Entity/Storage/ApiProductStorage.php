@@ -37,7 +37,7 @@ class ApiProductStorage extends EdgeEntityStorageBase implements ApiProductStora
   /**
    * Constructs an APIProductStorage instance.
    *
-   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdkConnector
+   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
    *   The SDK connector service.
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
@@ -47,11 +47,11 @@ class ApiProductStorage extends EdgeEntityStorageBase implements ApiProductStora
    *   The logger to be used.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config
    *   Configuration factory.
-   * @param \Drupal\Component\Datetime\TimeInterface $systemTime
+   * @param \Drupal\Component\Datetime\TimeInterface $system_time
    *   System time.
    */
-  public function __construct(SDKConnectorInterface $sdkConnector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, ConfigFactoryInterface $config, TimeInterface $systemTime) {
-    parent::__construct($sdkConnector, $entity_type, $cache, $logger, $systemTime);
+  public function __construct(SDKConnectorInterface $sdk_connector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, ConfigFactoryInterface $config, TimeInterface $system_time) {
+    parent::__construct($sdk_connector, $entity_type, $cache, $logger, $system_time);
     $this->cacheExpiration = $config->get('apigee_edge.api_product_settings')->get('cache_expiration');
   }
 
@@ -74,7 +74,7 @@ class ApiProductStorage extends EdgeEntityStorageBase implements ApiProductStora
   /**
    * {@inheritdoc}
    */
-  public function getController(SDKConnectorInterface $connector) : EntityCrudOperationsControllerInterface {
+  public function getController(SDKConnectorInterface $connector): EntityCrudOperationsControllerInterface {
     return new ApiProductController($connector->getOrganization(), $connector->getClient(), $this->entityClass);
   }
 

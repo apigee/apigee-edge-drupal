@@ -34,7 +34,7 @@ trait DrupalEntityControllerAwareTrait {
   /**
    * {@inheritdoc}
    */
-  public function loadMultiple(array $ids = NULL) : array {
+  public function loadMultiple(array $ids = NULL): array {
     if ($ids !== NULL && count($ids) === 1) {
       $entity = $this->load(reset($ids));
       return [$entity->id() => $entity];

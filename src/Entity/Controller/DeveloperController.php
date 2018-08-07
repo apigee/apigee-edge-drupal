@@ -36,6 +36,8 @@ class DeveloperController extends EdgeDeveloperController implements DrupalEntit
   }
 
   /**
+   * The FQCN of the entity class.
+   *
    * @var string
    */
   private $entityClass;
@@ -47,24 +49,24 @@ class DeveloperController extends EdgeDeveloperController implements DrupalEntit
    *   The organization name.
    * @param \Apigee\Edge\ClientInterface $client
    *   The API client.
-   * @param string $entityClass
+   * @param string $entity_class
    *   The FQCN of the entity class that is used in Drupal.
-   * @param array $entityNormalizers
+   * @param array $entity_normalizers
    *   Array of entity normalizers.
-   * @param \Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface|null $organizationController
+   * @param \Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface|null $organization_controller
    *   The organization controller.
    *
    * @throws \ReflectionException
    * @throws \InvalidArgumentException
    */
-  public function __construct(string $organization, ClientInterface $client, string $entityClass, array $entityNormalizers = [], ?OrganizationControllerInterface $organizationController = NULL) {
-    parent::__construct($organization, $client, $entityNormalizers, $organizationController);
-    $rc = new \ReflectionClass($entityClass);
+  public function __construct(string $organization, ClientInterface $client, string $entity_class, array $entity_normalizers = [], ?OrganizationControllerInterface $organization_controller = NULL) {
+    parent::__construct($organization, $client, $entity_normalizers, $organization_controller);
+    $rc = new \ReflectionClass($entity_class);
     $interface = DeveloperInterface::class;
     if (!$rc->implementsInterface($interface)) {
       throw new \InvalidArgumentException("Entity class must implement {$interface}.");
     }
-    $this->entityClass = $entityClass;
+    $this->entityClass = $entity_class;
   }
 
   /**

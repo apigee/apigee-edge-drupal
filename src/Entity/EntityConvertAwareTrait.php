@@ -23,12 +23,15 @@ namespace Drupal\apigee_edge\Entity;
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 
+/**
+ * Trait to implement EntityConvertInterface for converting entities.
+ */
 trait EntityConvertAwareTrait {
 
   /**
    * {@inheritdoc}
    */
-  public static function convertToSdkEntity(EntityInterface $drupal_entity, string $sdkEntityClass): EdgeEntityInterface {
+  public static function convertToSdkEntity(EntityInterface $drupal_entity, string $sdk_entity_class): EdgeEntityInterface {
     // Because Drupal entities are the subclasses of SDK entities we can
     // do this. We can not use $this->entityTransformer to transform between
     // Drupal and SDK entities because of Drupal's TypedData system that
@@ -40,7 +43,7 @@ trait EntityConvertAwareTrait {
     $values = array_filter($values, function ($value) {
       return !is_null($value);
     });
-    $rc = new \ReflectionClass($sdkEntityClass);
+    $rc = new \ReflectionClass($sdk_entity_class);
     /** @var \Apigee\Edge\Entity\EntityInterface $sdkEntity */
     $sdkEntity = $rc->newInstance($values);
     return $sdkEntity;
@@ -49,7 +52,7 @@ trait EntityConvertAwareTrait {
   /**
    * {@inheritdoc}
    */
-  public static function convertToDrupalEntity(EdgeEntityInterface $sdk_entity, string $drupalEntityClass) : EntityInterface {
+  public static function convertToDrupalEntity(EdgeEntityInterface $sdk_entity, string $drupal_entity_class): EntityInterface {
     $values = [];
     // The goal is to create an array that is 100% compatible with the
     // structure an SDK entity's constructor can accept that is why we
@@ -74,7 +77,7 @@ trait EntityConvertAwareTrait {
     $values = array_filter($values, function ($value) {
       return !is_null($value);
     });
-    $rm = new \ReflectionMethod($drupalEntityClass, 'create');
+    $rm = new \ReflectionMethod($drupal_entity_class, 'create');
     /** @var \Drupal\Core\Entity\EntityInterface $drupalEntity */
     $drupalEntity = $rm->invoke(NULL, $values);
     // Only mark Drupal entity as new if the SDK entity's ID property is empty.

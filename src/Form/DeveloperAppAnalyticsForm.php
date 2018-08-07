@@ -48,6 +48,13 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
   use DeveloperStatusCheckTrait;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * The SDK connector service.
    *
    * @var \Drupal\apigee_edge\SDKConnectorInterface
@@ -75,15 +82,12 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
    *   The entity type manager.
    * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
    *   The SDK connector service.
-   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
-   *   The messenger service.
    * @param \Drupal\Core\TempStore\PrivateTempStoreFactory $tempstore_private
    *   The private tempstore factory.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, SDKConnectorInterface $sdk_connector, MessengerInterface $messenger, PrivateTempStoreFactory $tempstore_private) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, SDKConnectorInterface $sdk_connector, PrivateTempStoreFactory $tempstore_private) {
     $this->entityTypeManager = $entity_type_manager;
     $this->sdkConnector = $sdk_connector;
-    $this->messenger = $messenger;
     $this->store = $tempstore_private->get('apigee_edge.analytics');
   }
 
@@ -94,7 +98,6 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
     return new static(
       $container->get('entity_type.manager'),
       $container->get('apigee_edge.sdk_connector'),
-      $container->get('messenger'),
       $container->get('tempstore.private')
     );
   }
@@ -277,7 +280,7 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
    * @return bool
    *   TRUE if the parameters are correctly set, else FALSE.
    */
-  protected function validateQueryString(array $form, $metric, $since, $until) : bool {
+  protected function validateQueryString(array $form, $metric, $since, $until): bool {
     if ($metric === NULL || $since === NULL || $until === NULL) {
       return FALSE;
     }
@@ -440,9 +443,9 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
   /**
    * {@inheritdoc}
    */
-  public function getPageTitle(RouteMatchInterface $routeMatch): string {
+  public function getPageTitle(RouteMatchInterface $route_match): string {
     return $this->t('Analytics of @name', [
-      '@name' => Markup::create($routeMatch->getParameter('developer_app')->label()),
+      '@name' => Markup::create($route_match->getParameter('developer_app')->label()),
     ]);
   }
 

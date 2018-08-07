@@ -35,7 +35,7 @@ interface DebugMessageFormatterPluginInterface {
    * @return string
    *   The ID of the debug message formatter plugin.
    */
-  public function getId() : string;
+  public function getId(): string;
 
   /**
    * Returns the label of the debug message formatter plugin.
@@ -43,7 +43,7 @@ interface DebugMessageFormatterPluginInterface {
    * @return string
    *   The label of the debug message formatter plugin.
    */
-  public function getLabel() : string;
+  public function getLabel(): string;
 
   /**
    * Formats a request.
@@ -54,7 +54,7 @@ interface DebugMessageFormatterPluginInterface {
    * @return string
    *   Formatted request.
    */
-  public function formatRequest(RequestInterface $request);
+  public function formatRequest(RequestInterface $request): string;
 
   /**
    * Formats a response.
@@ -67,7 +67,7 @@ interface DebugMessageFormatterPluginInterface {
    * @return string
    *   Formatted response.
    */
-  public function formatResponse(ResponseInterface $response, RequestInterface $request);
+  public function formatResponse(ResponseInterface $response, RequestInterface $request): string;
 
   /**
    * Formats stats object.
@@ -78,6 +78,6 @@ interface DebugMessageFormatterPluginInterface {
    * @return string
    *   Formatted output.
    */
-  public function formatStats(TransferStats $stats) : string;
+  public function formatStats(TransferStats $stats): string;
 
 }

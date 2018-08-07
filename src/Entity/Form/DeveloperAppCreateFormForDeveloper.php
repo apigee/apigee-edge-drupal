@@ -26,6 +26,7 @@ use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -52,26 +53,26 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
   /**
    * DeveloperCreateDeveloperAppForm constructor.
    *
-   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdkConnector
+   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
    *   SDK connector service.
-   * @param \Drupal\Core\Config\ConfigFactory $configFactory
+   * @param \Drupal\Core\Config\ConfigFactory $config_factory
    *   Config factory.
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entityManager
+   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
    *   Entity manager.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   Entity type manager.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   Module handler service.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
-  public function __construct(SDKConnectorInterface $sdkConnector, ConfigFactory $configFactory, EntityManagerInterface $entityManager, EntityTypeManagerInterface $entityTypeManager, ModuleHandlerInterface $moduleHandler) {
-    parent::__construct($sdkConnector, $configFactory, $entityTypeManager);
-    $this->sdkConnector = $sdkConnector;
-    $this->configFactory = $configFactory;
-    $this->entityManager = $entityManager;
-    $this->entityTypeManager = $entityTypeManager;
-    $this->moduleHandler = $moduleHandler;
+  public function __construct(SDKConnectorInterface $sdk_connector, ConfigFactory $config_factory, EntityManagerInterface $entity_manager, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler) {
+    parent::__construct($sdk_connector, $config_factory, $entity_type_manager);
+    $this->sdkConnector = $sdk_connector;
+    $this->configFactory = $config_factory;
+    $this->entityManager = $entity_manager;
+    $this->entityTypeManager = $entity_type_manager;
+    $this->moduleHandler = $module_handler;
     $this->entity = $this->entityTypeManager->getStorage('developer_app')->create();
   }
 
@@ -124,7 +125,7 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
   /**
    * {@inheritdoc}
    */
-  protected function getRedirectUrl() {
+  protected function getRedirectUrl(): Url {
     $entity = $this->getEntity();
     return $entity->toUrl('collection-by-developer');
   }

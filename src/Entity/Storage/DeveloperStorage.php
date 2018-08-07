@@ -38,13 +38,16 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorageInterface {
 
   /**
-   * @var \Drupal\Core\Database\Connection*/
+   * The database connection.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
   protected $database;
 
   /**
    * Constructs an DeveloperStorage instance.
    *
-   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdkConnector
+   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
    *   The SDK connector service.
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
@@ -54,11 +57,11 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
    *   The logger to be used.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config
    *   Configuration factory.
-   * @param \Drupal\Component\Datetime\TimeInterface $systemTime
+   * @param \Drupal\Component\Datetime\TimeInterface $system_time
    *   System time.
    */
-  public function __construct(SDKConnectorInterface $sdkConnector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, ConfigFactoryInterface $config, TimeInterface $systemTime) {
-    parent::__construct($sdkConnector, $entity_type, $cache, $logger, $systemTime);
+  public function __construct(SDKConnectorInterface $sdk_connector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, ConfigFactoryInterface $config, TimeInterface $system_time) {
+    parent::__construct($sdk_connector, $entity_type, $cache, $logger, $system_time);
     $this->cacheExpiration = $config->get('apigee_edge.developer_settings')->get('cache_expiration');
   }
 

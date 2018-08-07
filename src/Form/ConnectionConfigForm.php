@@ -82,7 +82,7 @@ class ConnectionConfigForm extends ConfigFormBase {
     $form['connect_timeout'] = [
       '#type' => 'number',
       '#title' => $this->t('Connection timeout'),
-      '#description' => $this->t('Number of seconds before an HTTP connection to Edge is assumed to have timed out.'),
+      '#description' => $this->t('Number of seconds before an HTTP connection to Apigee Edge is assumed to have timed out.'),
       '#default_value' => $config['http_client_connect_timeout'],
       '#min' => 0,
       '#step' => 0.1,
@@ -92,7 +92,7 @@ class ConnectionConfigForm extends ConfigFormBase {
     $form['request_timeout'] = [
       '#type' => 'number',
       '#title' => $this->t('Request timeout'),
-      '#description' => $this->t('Number of seconds before an HTTP response from Edge is assumed to have timed out.'),
+      '#description' => $this->t('Number of seconds before an HTTP response from Apigee Edge is assumed to have timed out.'),
       '#default_value' => $config['http_client_timeout'],
       '#min' => 0,
       '#step' => 0.1,

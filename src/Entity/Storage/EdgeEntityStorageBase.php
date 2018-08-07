@@ -35,7 +35,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Base class for Edge entity storage handlers.
+ * Base class for Apigee Edge entity storage handlers.
  *
  * Contains implementations that were only available for content entities.
  *
@@ -85,7 +85,7 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
   /**
    * Constructs an EdgeEntityStorageBase instance.
    *
-   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdkConnector
+   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
    *   The SDK connector service.
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
@@ -93,15 +93,15 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
    *   The cache backend to be used.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger to be used.
-   * @param \Drupal\Component\Datetime\TimeInterface $systemTime
+   * @param \Drupal\Component\Datetime\TimeInterface $system_time
    *   The system time.
    */
-  public function __construct(SDKConnectorInterface $sdkConnector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, TimeInterface $systemTime) {
+  public function __construct(SDKConnectorInterface $sdk_connector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, TimeInterface $system_time) {
     parent::__construct($entity_type);
-    $this->sdkConnector = $sdkConnector;
+    $this->sdkConnector = $sdk_connector;
     $this->cacheBackend = $cache;
     $this->logger = $logger;
-    $this->systemTime = $systemTime;
+    $this->systemTime = $system_time;
   }
 
   /**
@@ -411,8 +411,8 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
   /**
    * Wraps communication with Apigee Edge.
    *
-   * This function converts exceptions from Edge into EntityStorageException and
-   * logs the original exceptions.
+   * This function converts exceptions from Apigee Edge into
+   * EntityStorageException and logs the original exceptions.
    *
    * @param callable $action
    *   Communication to perform.

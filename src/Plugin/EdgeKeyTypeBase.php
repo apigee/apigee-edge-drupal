@@ -20,7 +20,7 @@
 namespace Drupal\apigee_edge\Plugin;
 
 use Apigee\Edge\Client;
-use Drupal\apigee_edge\KeyValueMalformedException;
+use Drupal\apigee_edge\Exception\KeyValueMalformedException;
 use Drupal\Component\Serialization\Json;
 use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyTypeBase;

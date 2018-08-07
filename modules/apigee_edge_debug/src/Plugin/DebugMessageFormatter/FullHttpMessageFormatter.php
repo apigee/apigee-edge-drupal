@@ -75,7 +75,7 @@ class FullHttpMessageFormatter extends DebugMessageFormatterPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function formatResponse(ResponseInterface $response, RequestInterface $request) {
+  public function formatResponse(ResponseInterface $response, RequestInterface $request): string {
     return sprintf("Response body got truncated to %d characters.\n\n%s", $this->maxBodyLength, parent::formatResponse($response, $request));
   }
 

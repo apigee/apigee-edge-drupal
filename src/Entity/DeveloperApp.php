@@ -258,7 +258,7 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
    * We use the app id for this and uuid() because app name is only unique
    * together with developerId.
    */
-  public function id(): ? string {
+  public function id(): ?string {
     return $this->getAppId();
   }
 

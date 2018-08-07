@@ -125,7 +125,7 @@ trait FieldableEdgeEntityBaseTrait {
    * @return array
    *   Array with property names.
    */
-  protected static function propertyToFieldBlackList() : array {
+  protected static function propertyToFieldBlackList(): array {
     return [];
   }
 
@@ -138,7 +138,7 @@ trait FieldableEdgeEntityBaseTrait {
    * @return bool
    *   TRUE if it is blacklisted, FALSE otherwise.
    */
-  private static function isBackListedProperty(string $property) : bool {
+  private static function isBackListedProperty(string $property): bool {
     return in_array($property, static::propertyToFieldBlackList());
   }
 
@@ -149,7 +149,7 @@ trait FieldableEdgeEntityBaseTrait {
    *   An associative array where keys are entity properties and values are
    *   field types.
    */
-  protected static function propertyToFieldStaticMap() : array {
+  protected static function propertyToFieldStaticMap(): array {
     return [];
   }
 
@@ -163,7 +163,7 @@ trait FieldableEdgeEntityBaseTrait {
    *   Type of the field that should represent an entity property.
    *   Default is string.
    */
-  private static function getFieldType(string $property) : string {
+  private static function getFieldType(string $property): string {
     return array_key_exists($property, static::propertyToFieldStaticMap()) ? static::propertyToFieldStaticMap()[$property] : 'string';
   }
 
@@ -178,7 +178,7 @@ trait FieldableEdgeEntityBaseTrait {
    * @return \Drupal\Core\Field\BaseFieldDefinition|null
    *   Base field definition if found, null otherwise.
    */
-  protected static function getBaseFieldDefinition(string $name, string $type): ? BaseFieldDefinition {
+  protected static function getBaseFieldDefinition(string $name, string $type): ?BaseFieldDefinition {
     $label = ucwords(preg_replace('/([a-z])([A-Z])/', '$1 $2', $name));
     $is_array = strpos($type, 'list_') === 0;
 
@@ -264,7 +264,7 @@ trait FieldableEdgeEntityBaseTrait {
    *   Machine name of a field.
    *
    * @return mixed|null
-   *   Value of a field from the mapped Edge attribute.
+   *   Value of a field from the mapped Apigee Edge attribute.
    */
   protected function getOriginalFieldData(string $field_name) {
     $getter = 'get' . ucfirst($field_name);

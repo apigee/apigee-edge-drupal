@@ -184,8 +184,8 @@ class Developer extends EdgeDeveloper implements DeveloperInterface {
   /**
    * {@inheritdoc}
    */
-  public function setOriginalEmail(string $originalEmail) {
-    $this->originalEmail = $originalEmail;
+  public function setOriginalEmail(string $original_email) {
+    $this->originalEmail = $original_email;
   }
 
   /**

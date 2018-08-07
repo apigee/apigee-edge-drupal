@@ -39,7 +39,7 @@ trait CachedEntityConfigurationFormAwareTrait {
    * @return array
    *   The extended form render array.
    */
-  public function addCacheConfigElements(array $form, FormStateInterface $form_state) {
+  public function addCacheConfigElements(array $form, FormStateInterface $form_state): array {
     $form['cache'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Caching'),
@@ -97,7 +97,7 @@ trait CachedEntityConfigurationFormAwareTrait {
    * @return string
    *   The if of a configuration object.
    */
-  abstract public function getConfigNameWithCacheSettings();
+  abstract public function getConfigNameWithCacheSettings(): string;
 
   /**
    * Returns the name of the entity type that is being cached.
@@ -105,6 +105,6 @@ trait CachedEntityConfigurationFormAwareTrait {
    * @return string
    *   The id of an entity type.
    */
-  abstract public function getEntityType();
+  abstract public function getEntityType(): string;
 
 }

@@ -53,7 +53,7 @@ class DeveloperSettingsForm extends ConfigFormBase {
 
     $form['email_verification_on_registration'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('When a new user registers and the developer email address is already taken on Edge but not in Drupal'),
+      '#title' => $this->t('When a new user registers and the developer email address is already taken on Apigee Edge but not in Drupal'),
       '#collapsible' => FALSE,
     ];
 
@@ -163,7 +163,7 @@ class DeveloperSettingsForm extends ConfigFormBase {
 
     $form['email_verification_on_edit'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('When a Drupal user changes its email address and the email address is already taken on Edge but not in Drupal'),
+      '#title' => $this->t('When a Drupal user changes its email address and the email address is already taken on Apigee Edge but not in Drupal'),
       '#collapsible' => FALSE,
     ];
     $form['email_verification_on_edit']['user_edit_error_message'] = [
