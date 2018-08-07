@@ -40,6 +40,10 @@
             },
             "drupal/key": {
                 "Fix implementation of NoneKeyInput": "https://www.drupal.org/files/issues/2018-06-27/key-fix-implementation-of-nonekeyinput-2982124-2.patch"
+            },
+            "apigee/apigee-client-php": {
+                "Handle empty results properly": "https://github.com/apigee/apigee-client-php/pull/12.diff",
+                "Dropped support of paginated entity listing from developer- and company apps, plus other fixes" : "https://github.com/apigee/apigee-client-php/pull/13.diff"
             }
         }
     }

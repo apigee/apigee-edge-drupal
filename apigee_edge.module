@@ -23,12 +23,10 @@
  * Main module file for Apigee Edge.
  */
 
+use Apigee\Edge\Api\Management\Serializer\AppCredentialSerializer;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
-use Apigee\Edge\Api\Management\Normalizer\AppCredentialNormalizer;
-use Apigee\Edge\Entity\EntityTransformer;
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\ClientErrorException;
-use Apigee\Edge\Normalizer\CredentialProductNormalizer;
 use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
@@ -55,7 +53,6 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\TempStore\TempStoreException;
 use Drupal\Core\Url;
 use Drupal\user\UserInterface;
-use Drupal\user\Entity\User;
 
 define('APIGEE_EDGE_USER_REGISTRATION_SOURCE', 'apigee_edge_user_registration_source');
 
@@ -862,9 +859,9 @@ function template_preprocess_app_credential(array &$variables) {
   $credential = $variables['elements']['#credential'];
   /** @var \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter */
   $dateFormatter = Drupal::service('date.formatter');
-  $normalizer = new EntityTransformer([new AppCredentialNormalizer(), new CredentialProductNormalizer()]);
+  $serializer = new AppCredentialSerializer();
   // Convert app entity to an array.
-  $normalized = (array) $normalizer->normalize($credential);
+  $normalized = (array) $serializer->normalize($credential);
 
   $properties_in_primary = [
     'consumerKey' => [

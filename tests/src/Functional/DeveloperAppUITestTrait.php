@@ -21,7 +21,6 @@
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Apigee\Edge\Structure\CredentialProduct;
-use Behat\Mink\Element\NodeElement;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;

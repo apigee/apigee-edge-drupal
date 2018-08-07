@@ -115,7 +115,7 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
    *   Developer app controller from the SDK.
    */
   protected function createDeveloperAppController(string $developerId): EdgeDeveloperAppControllerInterface {
-    return new EdgeDeveloperAppController($this->getOrganisation(), $developerId, $this->client);
+    return new EdgeDeveloperAppController($this->getOrganisationName(), $developerId, $this->client);
   }
 
   /**
