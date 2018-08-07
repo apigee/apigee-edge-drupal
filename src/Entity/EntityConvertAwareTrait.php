@@ -30,11 +30,11 @@ trait EntityConvertAwareTrait {
    */
   public static function convertToSdkEntity(EntityInterface $drupal_entity, string $sdkEntityClass): EdgeEntityInterface {
     // Because Drupal entities are the subclasses of SDK entities we can
-    // do this. We can not use $this->entityTransformer to transform between
+    // do this. We can not use $this->entitySerializer to transform between
     // Drupal and SDK entities because of Drupal's TypedData system that
     // causes CircularReferenceException by default. If we fix that problem
     // with a custom normalizer we get back a normalized structure that can not
-    // denormalized by our entityTransformer without additional workarounds.
+    // denormalized by our entitySerializer without additional workarounds.
     $values = $drupal_entity->toArray();
     // Get rid of useless but also problematic null values.
     $values = array_filter($values, function ($value) {
