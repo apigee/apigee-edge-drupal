@@ -213,7 +213,8 @@ class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     // Create and test keys with too low timeouts.
     $this->createKey('key_basic_auth_private_file_low_timeout', 'apigee_edge_basic_auth', 'apigee_edge_private_file', $this->validCredentials);
     $this->createKey('key_oauth_private_file_low_timeout', 'apigee_edge_oauth', 'apigee_edge_private_file', $this->validCredentials);
-    $this->setHttpClientParameters(0.1, 0.1);
+    $timeout = 0.1;
+    $this->setHttpClientParameters($timeout, $timeout);
     $this->assertKeyTestConnection('key_basic_auth_private_file_low_timeout', '', "Failed to connect to Apigee Edge. The connection timeout threshold ({$timeout}) or the request timeout ({$timeout}) is too low or something is wrong with the connection. Error message: cURL error 28:");
     $this->assertKeyTestConnection('key_oauth_private_file_low_timeout', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The connection timeout threshold ({$timeout}) or the request timeout ({$timeout}) is too low or something is wrong with the connection. Error message: cURL error 28:");
     $this->assertKeySave('key_basic_auth_private_file_low_timeout', '', "Failed to connect to Apigee Edge. The connection timeout threshold ({$timeout}) or the request timeout ({$timeout}) is too low or something is wrong with the connection. Error message: cURL error 28:");

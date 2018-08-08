@@ -198,8 +198,8 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function getPageTitle(RouteMatchInterface $routeMatch): string {
-    $account = $routeMatch->getParameter('user');
+  public function getPageTitle(RouteMatchInterface $route_match): string {
+    $account = $route_match->getParameter('user');
     if ($account->id() == $this->currentUser->id()) {
       return apigee_edge_get_my_developer_apps_title();
     }

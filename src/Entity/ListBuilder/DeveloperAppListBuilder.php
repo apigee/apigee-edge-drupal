@@ -500,7 +500,7 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
   /**
    * {@inheritdoc}
    */
-  public function getPageTitle(RouteMatchInterface $routeMatch): string {
+  public function getPageTitle(RouteMatchInterface $route_match): string {
     return $this->t('@developer_app', [
       '@developer_app' => $this->getDeveloperAppEntityDefinition()->getPluralLabel(),
     ]);
