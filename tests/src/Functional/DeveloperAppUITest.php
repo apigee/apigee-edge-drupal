@@ -461,11 +461,11 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalGet($app_edit_url);
     // Also test field description.
     $this->assertSession()->pageTextContains($description);
-    $this->drupalPostForm($app_edit_url, [], t('Save'));
+    $this->drupalPostForm($app_edit_url, [], 'Save');
     $this->assertSession()->pageTextContains("The URL {$callback_url} is not valid.");
-    $this->drupalPostForm($app_edit_url, ['callbackUrl[0][value]' => 'http://example.com'], t('Save'));
+    $this->drupalPostForm($app_edit_url, ['callbackUrl[0][value]' => 'http://example.com'], 'Save');
     $this->assertSession()->pageTextContains("Callback URL field is not in the right format.");
-    $this->drupalPostForm($app_edit_url, ['callbackUrl[0][value]' => 'https://example.com'], t('Save'));
+    $this->drupalPostForm($app_edit_url, ['callbackUrl[0][value]' => 'https://example.com'], 'Save');
     $this->assertSession()->pageTextContains('Developer App details have been successfully updated.');
     $this->assertSession()->pageTextContains('https://example.com');
   }

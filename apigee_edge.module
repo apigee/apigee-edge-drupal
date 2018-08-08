@@ -1148,12 +1148,13 @@ function apigee_edge_field_ui_field_storage_add_form_submit(array &$form, FormSt
  * Implements hook_key_delete().
  */
 function apigee_edge_key_delete(EntityInterface $entity) {
-  /** @var \Drupal\key\KeyInterface $entity */
-  if (\Drupal::state()->get('apigee_edge.auth')['active_key'] === $entity->id()) {
-    \Drupal::state()->set('apigee_edge.auth', [
+  $state = \Drupal::state();
+  if ($state->get('apigee_edge.auth')['active_key'] === $entity->id()) {
+    $state->set('apigee_edge.auth', [
       'active_key' => '',
       'active_key_oauth_token' => '',
     ]);
+    $state->resetCache();
   }
 }
 
