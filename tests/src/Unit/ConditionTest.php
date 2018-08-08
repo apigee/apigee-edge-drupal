@@ -360,7 +360,7 @@ class ConditionTest extends UnitTestCase {
         public function __construct(string $id, int $foo_bar, bool $foo_baz) {
           $this->id = $id;
           $this->fooBar = $foo_bar;
-          $this->foo_baz = $foo_baz;
+          $this->fooBaz = $foo_baz;
         }
 
         /**

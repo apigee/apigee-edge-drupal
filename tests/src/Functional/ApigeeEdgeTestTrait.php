@@ -99,7 +99,7 @@ trait ApigeeEdgeTestTrait {
       'active_key_oauth_token' => $active_key_oauth_token,
     ]);
     $this->container->get('state')->resetCache();
-}
+  }
 
   /**
    * Creates a Drupal account.
