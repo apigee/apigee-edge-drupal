@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge\Controller;
 
+use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder;
@@ -95,7 +96,7 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
     // either there is connection error or the site is out of sync with
     // Apigee Edge.
     if ($developerId === NULL) {
-      return [];
+      throw new DeveloperDoesNotExistException($user->getEmail());
     }
 
     $query = $this->storage->getQuery()
