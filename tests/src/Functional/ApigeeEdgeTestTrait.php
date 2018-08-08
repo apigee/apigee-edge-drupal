@@ -56,34 +56,50 @@ trait ApigeeEdgeTestTrait {
       self::fail('Could not create key for testing.');
     }
 
-    $keys = [
+    $this->container->get('state')->set('apigee_edge.auth', [
       'active_key' => 'test',
       'active_key_oauth_token' => '',
-    ];
-    $this->container->get('state')->set('apigee_edge.auth', $keys);
+    ]);
+    $this->container->get('state')->resetCache();
   }
 
   /**
    * Restores the active key.
    */
   protected function restoreKey() {
-    $keys = [
+    $this->container->get('state')->set('apigee_edge.auth', [
       'active_key' => 'test',
       'active_key_oauth_token' => '',
-    ];
-    $this->container->get('state')->set('apigee_edge.auth', $keys);
+    ]);
+    $this->container->get('state')->resetCache();
   }
 
   /**
    * Removes the active key for testing with unset API credentials.
    */
   protected function invalidateKey() {
-    $keys = [
+    $this->container->get('state')->set('apigee_edge.auth', [
       'active_key' => '',
       'active_key_oauth_token' => '',
-    ];
-    $this->container->get('state')->set('apigee_edge.auth', $keys);
+    ]);
+    $this->container->get('state')->resetCache();
   }
+
+  /**
+   * Set active authentication keys in states.
+   *
+   * @param string $active_key
+   *   The active authentication key.
+   * @param string $active_key_oauth_token
+   *   The active OAuth token key.
+   */
+  protected function setKey(string $active_key, string $active_key_oauth_token) {
+    $this->container->get('state')->set('apigee_edge.auth', [
+      'active_key' => $active_key,
+      'active_key_oauth_token' => $active_key_oauth_token,
+    ]);
+    $this->container->get('state')->resetCache();
+}
 
   /**
    * Creates a Drupal account.

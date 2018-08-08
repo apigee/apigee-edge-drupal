@@ -73,7 +73,7 @@ class DeveloperAppCredentialController extends EdgeDeveloperAppCredentialControl
    */
   public function addProducts(string $consumer_key, array $api_products): AppCredentialInterface {
     $credential = parent::addProducts($consumer_key, $api_products);
-    \Drupal::service('event_dispatcher')->dispatch(AppCredentialAddApiProductEvent::EVENT_NAME, new AppCredentialAddApiProductEvent(AppCredentialCreateEvent::APP_TYPE_DEVELOPER, $this->developerId, $this->appName, $credential, $apiProducts));
+    \Drupal::service('event_dispatcher')->dispatch(AppCredentialAddApiProductEvent::EVENT_NAME, new AppCredentialAddApiProductEvent(AppCredentialCreateEvent::APP_TYPE_DEVELOPER, $this->developerId, $this->appName, $credential, $api_products));
     // We have to clear all, see method's description for explanation.
     $this->clearAppCredentialsFromStorage($this->developerId, $this->appName);
     return $credential;
