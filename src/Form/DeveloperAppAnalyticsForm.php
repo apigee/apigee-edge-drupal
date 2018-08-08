@@ -31,7 +31,6 @@ use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\TempStore\PrivateTempStoreFactory;
@@ -287,25 +286,25 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
 
     try {
       if (!array_key_exists($metric, $form['controls']['metrics']['#options'])) {
-        $this->messenger->addError($this->t('Invalid parameter metric in the URL.'));
+        $this->messenger()->addError($this->t('Invalid parameter metric in the URL.'));
         return FALSE;
       }
 
       $since = DrupalDateTime::createFromTimestamp($since);
       $until = DrupalDateTime::createFromTimestamp($until);
       if ($since->diff($until)->invert === 1) {
-        $this->messenger->addError($this->t('The end date cannot be before the start date.'));
+        $this->messenger()->addError($this->t('The end date cannot be before the start date.'));
         return FALSE;
       }
       if ($since->diff(new DrupalDateTime())->invert === 1) {
-        $this->messenger->addError($this->t('Start date cannot be in future. The current local time of the Developer Portal: @time', [
+        $this->messenger()->addError($this->t('Start date cannot be in future. The current local time of the Developer Portal: @time', [
           '@time' => new DrupalDateTime(),
         ]));
         return FALSE;
       }
     }
     catch (\InvalidArgumentException $exception) {
-      $this->messenger->addError($this->t('Invalid URL query parameters.'));
+      $this->messenger()->addError($this->t('Invalid URL query parameters.'));
       return FALSE;
     }
 
@@ -339,7 +338,7 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
       $analytics = $stats_controller->getOptimizedMetricsByDimensions(['apps'], $stats_query);
     }
     catch (MomentException $exception) {
-      $this->messenger->addError($this->t('Invalid datetime parameters.'));
+      $this->messenger()->addError($this->t('Invalid datetime parameters.'));
     }
 
     $date_time_zone = new \DateTimeZone($this->currentUser()->getTimeZone());
