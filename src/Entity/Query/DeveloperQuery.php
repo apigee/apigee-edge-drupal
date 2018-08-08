@@ -28,7 +28,7 @@ class DeveloperQuery extends Query {
   /**
    * {@inheritdoc}
    */
-  protected function getEntityIdProperties() {
+  protected function getEntityIdProperties(): array {
     $ids = parent::getEntityIdProperties();
     $ids[] = 'email';
     return $ids;

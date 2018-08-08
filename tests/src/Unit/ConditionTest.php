@@ -32,11 +32,15 @@ use Drupal\Tests\UnitTestCase;
 class ConditionTest extends UnitTestCase {
 
   /**
+   * Entity data.
+   *
    * @var array
    */
   protected $entityData = [];
 
   /**
+   * Array of entities.
+   *
    * @var \Apigee\Edge\Entity\EntityInterface[]
    */
   protected $entities = [];
@@ -176,6 +180,7 @@ class ConditionTest extends UnitTestCase {
    * Creates a Condition object with a mock query parameter.
    *
    * @param string $conjunction
+   *   The operator to use to combine conditions: 'AND' or 'OR'.
    *
    * @return \Drupal\apigee_edge\Entity\Query\Condition
    *   Mock conditional object.
@@ -183,48 +188,114 @@ class ConditionTest extends UnitTestCase {
   protected function mockCondition($conjunction = 'AND'): Condition {
     return new Condition($conjunction, new class implements QueryInterface {
 
+      /**
+       * {@inheritdoc}
+       */
       public function addTag($tag) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function hasTag($tag) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function hasAllTags() {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function hasAnyTag() {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function addMetaData($key, $object) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function getMetaData($key) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function getEntityTypeId() {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function condition($field, $value = NULL, $operator = NULL, $langcode = NULL) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function exists($field, $langcode = NULL) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function notExists($field, $langcode = NULL) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function pager($limit = 10, $element = NULL) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function range($start = NULL, $length = NULL) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function sort($field, $direction = 'ASC', $langcode = NULL) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function count() {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function tableSort(&$headers) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function accessCheck($access_check = TRUE) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function execute() {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function andConditionGroup() {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function orConditionGroup() {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function currentRevision() {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function allRevisions() {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function latestRevision() {}
 
     });
@@ -274,12 +345,22 @@ class ConditionTest extends UnitTestCase {
         /**
          * @var bool
          */
-        protected $foo_baz;
+        protected $fooBaz;
 
-        public function __construct(string $id, int $foobar, bool $foobaz) {
+        /**
+         * Constructs a new dummy entity.
+         *
+         * @param string $id
+         *   ID of the entity.
+         * @param int $foo_bar
+         *   Dummy property.
+         * @param bool $foo_baz
+         *   Dummy property.
+         */
+        public function __construct(string $id, int $foo_bar, bool $foo_baz) {
           $this->id = $id;
-          $this->fooBar = $foobar;
-          $this->foo_baz = $foobaz;
+          $this->fooBar = $foo_bar;
+          $this->foo_baz = $foo_baz;
         }
 
         /**
@@ -305,10 +386,11 @@ class ConditionTest extends UnitTestCase {
         }
 
         /**
-         * @param int $fooBar
+         * @param int $foo_bar
+         *   Value to set.
          */
-        public function setFooBar(int $fooBar): void {
-          $this->fooBar = $fooBar;
+        public function setFooBar(int $foo_bar): void {
+          $this->fooBar = $foo_bar;
         }
 
         /**
@@ -316,14 +398,15 @@ class ConditionTest extends UnitTestCase {
          *   Returns true of false.
          */
         public function isFooBaz(): bool {
-          return $this->foo_baz;
+          return $this->fooBaz;
         }
 
         /**
          * @param bool $foo_baz
+         *   Value to set.
          */
         public function setFooBaz(bool $foo_baz): void {
-          $this->foo_baz = $foo_baz;
+          $this->fooBaz = $foo_baz;
         }
 
       };

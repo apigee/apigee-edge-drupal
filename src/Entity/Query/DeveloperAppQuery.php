@@ -31,7 +31,7 @@ class DeveloperAppQuery extends Query {
   /**
    * {@inheritdoc}
    */
-  protected function getFromStorage() {
+  protected function getFromStorage(): array {
     /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperAppStorage $storage */
     $storage = $this->entityTypeManager->getStorage($this->entityTypeId);
     $ids = NULL;
