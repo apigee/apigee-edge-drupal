@@ -4,8 +4,7 @@ apigee_edge.error_page:
     _controller: '\Drupal\apigee_edge\Controller\ErrorPageController::render'
     _title_callback: '\Drupal\apigee_edge\Controller\ErrorPageController::getPageTitle'
   requirements:
-    _permission: 'access content'
-    _user_is_logged_in: 'TRUE'
+    _access: 'TRUE'
 
 apigee_edge.admin_config_edge:
   path: '/admin/config/apigee-edge'
@@ -86,6 +85,7 @@ apigee_edge.settings.product.caching:
     _title: 'API Product caching'
   requirements:
     _permission: 'administer apigee edge'
+
 apigee_edge.settings.product.access_control:
   path: '/admin/config/apigee-edge/product-settings/access-control'
   defaults:
