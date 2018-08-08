@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge\ParamConverter;
 
+use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\ParamConverter\ParamConverterInterface;
@@ -103,6 +104,7 @@ class DeveloperAppNameConverter implements ParamConverterInterface {
         // it has existed before because someone knows the URL of the view
         // app page of one of its app.
         $this->logger->critical('%class: Unable to find developer id for %user user.', ['%class' => get_called_class(), '%user' => $user->getDisplayName()]);
+        throw new DeveloperDoesNotExistException($user->getEmail());
       }
     }
 

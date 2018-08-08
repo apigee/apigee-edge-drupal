@@ -26,7 +26,11 @@ services:
 
   apigee_edge.exception_subscriber:
     class: Drupal\apigee_edge\EventSubscriber\EdgeExceptionSubscriber
-    arguments: ['@url_generator']
+    arguments:
+      - '@http_kernel'
+      - '@logger.channel.php'
+      - '@redirect.destination'
+      - '@router.no_access_checks'
     tags:
       - { name: event_subscriber }
 

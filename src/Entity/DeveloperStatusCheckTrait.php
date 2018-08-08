@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge\Entity;
 
+use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
 use Drupal\Core\Url;
 use Drupal\user\Entity\User;
 
@@ -43,8 +44,11 @@ trait DeveloperStatusCheckTrait {
 
     $user = User::load($uid);
     /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
-    $developer = Developer::load($user->getEmail());
-    if (!isset($developer) || $developer->getStatus() === Developer::STATUS_INACTIVE) {
+    if (!($developer = Developer::load($user->getEmail()))) {
+      throw new DeveloperDoesNotExistException($user->getEmail());
+    }
+
+    if ($developer->getStatus() === Developer::STATUS_INACTIVE) {
       // Displays different warning message for admin users.
       $message = $user->id() === \Drupal::currentUser()->id()
         ? t('Your developer account has inactive status so you will not be able to use your credentials until your account is enabled. Please contact the Developer Portal support for further assistance.')
