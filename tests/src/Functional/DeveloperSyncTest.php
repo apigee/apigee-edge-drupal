@@ -31,9 +31,11 @@ use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Developer synchronization test.
+ * Developer-user synchronization test.
  *
  * @group apigee_edge
+ * @group apigee_edge_developer
+ * @group apigee_edge_field
  */
 class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
 
@@ -162,7 +164,7 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
 
     // Create users in Drupal. Do not let run apigee_edge_user_presave(), so
     // the corresponding developer won't be created.
-    _apigee_edge_set_sync_in_progress(TRUE);
+    $this->disableUserPresave();
     for ($i = 0; $i < self::DEVELOPER_TO_CREATE_PER_TYPE; $i++) {
       $user = $this->createAccount([], TRUE, $this->prefix);
       foreach ($this->fields as $field_type => $data) {
@@ -171,7 +173,7 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       $user->save();
       $this->drupalUsers[$user->getEmail()] = $user;
     }
-    _apigee_edge_set_sync_in_progress(FALSE);
+    $this->enableUserPresave();
 
     // Create synchronized users and change attribute values only on Apigee
     // Edge.
@@ -221,7 +223,7 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
 
       // Do not let run apigee_edge_user_presave(), so the corresponding
       // developer won't be updated.
-      _apigee_edge_set_sync_in_progress(TRUE);
+      $this->disableUserPresave();
       foreach ($this->fields as $field_type => $data) {
         $this->modifiedDrupalUsers[$user->getEmail()]->set($this->fieldNamePrefix . $data['name'], $data['data_changed']);
       }
@@ -237,7 +239,7 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       // only.
       $this->modifiedDrupalUsers[$user->getEmail()]->setChangedTime($this->container->get('datetime.time')->getCurrentTime() + 100);
       $this->modifiedDrupalUsers[$user->getEmail()]->save();
-      _apigee_edge_set_sync_in_progress(FALSE);
+      $this->enableUserPresave();
     }
 
     // Developer's username already exists. Should not be copied into Drupal.

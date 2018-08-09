@@ -76,9 +76,9 @@ class EmailTest extends ApigeeEdgeFunctionalTestBase {
   public function editUserWithAlreadyExistingEmailTest() {
     // Create a new user in Drupal. It is not necessary to create a developer
     // for this user, so skip apigee_edge_user_presave().
-    _apigee_edge_set_sync_in_progress(TRUE);
+    $this->disableUserPresave();
     $account = $this->createAccount();
-    _apigee_edge_set_sync_in_progress(FALSE);
+    $this->enableUserPresave();
 
     $this->drupalLogin($account);
     $this->drupalPostForm(Url::fromRoute('entity.user.edit_form', ['user' => $account->id()]), [

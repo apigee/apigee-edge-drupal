@@ -26,7 +26,6 @@ use Drupal\Core\Url;
  * Module administration permission test.
  *
  * @group apigee_edge
- * @group apigee_edge_configuration
  * @group apigee_edge_permissions
  */
 class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
@@ -56,9 +55,9 @@ class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
 
     // Test access with authenticated role. It is not necessary to create a
     // developer here so skip apigee_edge_user_presave().
-    _apigee_edge_set_sync_in_progress(TRUE);
+    $this->disableUserPresave();
     $account = $this->createAccount();
-    _apigee_edge_set_sync_in_progress(FALSE);
+    $this->enableUserPresave();
     $this->drupalLogin($account);
     $this->assertPaths(FALSE);
 

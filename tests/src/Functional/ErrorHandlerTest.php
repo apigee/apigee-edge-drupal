@@ -52,10 +52,10 @@ class ErrorHandlerTest extends ApigeeEdgeFunctionalTestBase {
     $this->prefix = $this->randomMachineName();
     // It is not necessary to create a developer here so skip
     // apigee_edge_user_presave().
-    _apigee_edge_set_sync_in_progress(TRUE);
+    $this->disableUserPresave();
     $this->drupalUser = $this->createAccount([], TRUE, $this->prefix);
     $this->drupalUser->save();
-    _apigee_edge_set_sync_in_progress(FALSE);
+    $this->enableUserPresave();
   }
 
   /**

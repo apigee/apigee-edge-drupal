@@ -102,11 +102,28 @@ trait ApigeeEdgeTestTrait {
   }
 
   /**
+   * The corresponding developer will be created if a Drupal user is saved.
+   */
+  protected function enableUserPresave() {
+    _apigee_edge_set_sync_in_progress(FALSE);
+  }
+
+  /**
+   * The corresponding developer will not be created if a Drupal user is saved.
+   */
+  protected function disableUserPresave() {
+    _apigee_edge_set_sync_in_progress(TRUE);
+  }
+
+  /**
    * Creates a Drupal account.
    *
    * @param array $permissions
+   *   Permissions to add.
    * @param bool $status
+   *   Status of the Drupal account.
    * @param string $prefix
+   *   Prefix of the Drupal account's email.
    *
    * @return \Drupal\user\UserInterface
    *   Drupal user.
@@ -176,9 +193,12 @@ trait ApigeeEdgeTestTrait {
    *   Owner of the app.
    * @param array $products
    *   List of associated API products.
+   *
+   * @return \Drupal\apigee_edge\Entity\DeveloperAppInterface
+   *   The created developer app entity.
    */
   protected function createDeveloperApp(array $data, UserInterface $owner, array $products = []) {
-    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
+    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $app */
     $app = DeveloperApp::create($data);
     $app->setOwner($owner);
     $app->save();
@@ -202,16 +222,14 @@ trait ApigeeEdgeTestTrait {
    * @param string $email
    *   Email address of a user.
    *
-   * @return \Drupal\apigee_edge\Entity\DeveloperApp[]|null
+   * @return \Drupal\apigee_edge\Entity\DeveloperAppInterface[]|null
    *   Array of developer apps of the user or if user does not exist as
    *   developer on Apigee Edge.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   protected function getApps(string $email): ?array {
     $developer = Developer::load($email);
     if ($developer) {
-      /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperAppStorage $storage */
+      /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperAppStorageInterface $storage */
       $storage = \Drupal::entityTypeManager()->getStorage('developer_app');
       return $storage->loadByDeveloper($developer->uuid());
     }
@@ -260,6 +278,7 @@ trait ApigeeEdgeTestTrait {
    * available.
    *
    * @param string $name
+   *   Name of the link.
    */
   protected function clickLinkProperly(string $name) {
     list($path, $query) = $this->findLink($name);
@@ -291,6 +310,15 @@ trait ApigeeEdgeTestTrait {
     return [$parts['path'], $query];
   }
 
+  /**
+   * Returns absolute URL starts with a slash.
+   *
+   * @param string $url
+   *   The URL.
+   *
+   * @return string
+   *   URL starts with a slash, if the URL is absolute.
+   */
   protected static function fixUrl(string $url): string {
     if (strpos($url, 'http:') === 0 || strpos($url, 'https:') === 0) {
       return $url;

@@ -26,6 +26,8 @@ use Drupal\apigee_edge\Entity\DeveloperApp;
  * Developer and developer app entity query test.
  *
  * @group apigee_edge
+ * @group apigee_edge_developer
+ * @group apigee_edge_developer_app
  */
 class QueryTest extends ApigeeEdgeFunctionalTestBase {
 

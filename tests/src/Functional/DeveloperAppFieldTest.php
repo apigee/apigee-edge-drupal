@@ -29,6 +29,8 @@ use Drupal\Core\Url;
 use Drupal\field_ui\Tests\FieldUiTestTrait;
 
 /**
+ * Fieldable developer app test.
+ *
  * @group apigee_edge
  * @group apigee_edge_developer_app
  * @group apigee_edge_field
@@ -46,19 +48,25 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
   ];
 
   /**
+   * The Drupal user that belongs to the developer app's developer.
+   *
    * @var \Drupal\user\UserInterface
    */
   protected $account;
 
   /**
-   * @var \Drupal\apigee_edge\Entity\ApiProductInterface
-   */
-  protected $product;
-
-  /**
+   * The owner of the developer app.
+   *
    * @var \Drupal\apigee_edge\Entity\DeveloperInterface
    */
   protected $developer;
+
+  /**
+   * Developer app to test.
+   *
+   * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface
+   */
+  protected $developerApp;
 
   /**
    * {@inheritdoc}
@@ -76,8 +84,16 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
       'administer developer_app form display',
       'administer developer_app display',
     ]);
-    $this->product = $this->createProduct();
     $this->developer = Developer::load($this->account->getEmail());
+
+    $this->developerApp = DeveloperApp::create([
+      'name' => $this->randomMachineName(),
+      'status' => App::STATUS_APPROVED,
+      'developerId' => $this->developer->getDeveloperId(),
+    ]);
+    $this->developerApp->setOwner($this->account);
+    $this->developerApp->save();
+
     $this->drupalLogin($this->account);
   }
 
@@ -90,16 +106,26 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
     }
     catch (\Exception $exception) {
     }
-    try {
-      $this->product->delete();
-    }
-    catch (\Exception $exception) {
-    }
     parent::tearDown();
   }
 
-  public function testFieldStorageFormatters() {
-    $field_name_prefix = (string) \Drupal::config('field_ui.settings')->get('field_prefix');
+  /**
+   * Tests fieldable developer app entity.
+   */
+  public function testFieldableDeveloperApp() {
+    $this->fieldStorageFormattersTest();
+    $this->typesTest();
+    $this->requiredFieldTest();
+    $this->formRegionTest();
+    $this->viewRegionTest();
+    $this->credentialsViewTest();
+  }
+
+  /**
+   * Tests field storage formatters (CSV and JSON).
+   */
+  protected function fieldStorageFormattersTest() {
+    $field_name_prefix = (string) $this->config('field_ui.settings')->get('field_prefix');
 
     $paragraph = trim($this->getRandomGenerator()->paragraphs(1));
     $paragraphs = trim($this->getRandomGenerator()->paragraphs());
@@ -117,9 +143,8 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
         'type' => 'boolean',
         'data' => [
           ['value' => TRUE],
-          ['value' => FALSE],
         ],
-        'encoded' => '1,',
+        'encoded' => '1',
       ],
       strtolower($this->randomMachineName()) => [
         'type' => 'float',
@@ -201,15 +226,33 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
         'encoded' => "\"{$paragraphs}\"",
       ],
       strtolower($this->randomMachineName()) => [
+        'type' => 'email',
+        'data' => [
+          ['value' => 'test@example.com'],
+          ['value' => 'test_2@example.com'],
+        ],
+        'encoded' => 'test@example.com,test_2@example.com',
+      ],
+      strtolower($this->randomMachineName()) => [
+        'type' => 'timestamp',
+        'data' => [
+          ['value' => 1531212177],
+          ['value' => 1531234234],
+        ],
+        'encoded' => '1531212177,1531234234',
+      ],
+      strtolower($this->randomMachineName()) => [
         'type' => 'link',
         'data' => $link,
         'encoded' => json_encode($link),
       ],
     ];
 
+    // Add fields to developer app.
+    $add_field_path = Url::fromRoute('apigee_edge.settings.app')->toString();
     foreach ($fields as $name => $data) {
       $this->fieldUIAddNewField(
-        '/admin/config/apigee-edge/app-settings',
+        $add_field_path,
         $name, strtoupper($name),
         $data['type'],
         ($data['settings'] ?? []) + [
@@ -220,208 +263,194 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
     }
 
     drupal_flush_all_caches();
+    $this->developerApp = DeveloperApp::load($this->developerApp->id());
 
-    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
-    $app = DeveloperApp::create([
-      'name' => $this->randomMachineName(),
-      'status' => App::STATUS_APPROVED,
-      'developerId' => $this->developer->getDeveloperId(),
-    ]);
-    $app->setOwner($this->account);
+    // Save field values as developer app entity attributes.
     foreach ($fields as $name => $data) {
       $full_field_name = "{$field_name_prefix}{$name}";
-      $app->set($full_field_name, $data['data']);
+      $this->developerApp->set($full_field_name, $data['data']);
     }
-    $app->save();
+    $this->developerApp->save();
 
-    drupal_flush_all_caches();
-
-    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $loadedApp */
-    $loadedApp = DeveloperApp::load($app->id());
+    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $loaded_app */
+    $loaded_app = DeveloperApp::load($this->developerApp->id());
     /** @var \Drupal\apigee_edge\SDKConnectorInterface $connector */
     $connector = $this->container->get('apigee_edge.sdk_connector');
     $controller = new DeveloperAppController($connector->getOrganization(), $this->developer->getDeveloperId(), $connector->getClient());
     /** @var \Apigee\Edge\Api\Management\Entity\DeveloperApp $rawLoadedApp */
-    $rawLoadedApp = $controller->load($app->getName());
+    $rawLoadedApp = $controller->load($this->developerApp->getName());
 
     foreach ($fields as $name => $data) {
       $full_field_name = "{$field_name_prefix}{$name}";
-      $this->assertEquals($data['data'], $loadedApp->get($full_field_name)->getValue());
+      $this->assertEquals($data['data'], $loaded_app->get($full_field_name)->getValue());
       $this->assertEquals($data['encoded'], $rawLoadedApp->getAttributeValue($name));
     }
-
-    $app->delete();
   }
 
   /**
-   * @dataProvider fieldDataProvider
+   * Tests developer app entity preSave().
    */
-  public function testField(string $field_type, array $storage_edit, array $field_edit, array $field_data) {
-    $field_name_prefix = (string) \Drupal::config('field_ui.settings')->get('field_prefix');
-    $field_name = strtolower($this->randomMachineName());
-    $this->fieldUIAddNewField(
-      '/admin/config/apigee-edge/app-settings',
-      $field_name, strtoupper($field_name),
-      $field_type,
-      $storage_edit,
-      $field_edit
-    );
-    drupal_flush_all_caches();
-
-    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
-    $app = DeveloperApp::create([
-      'name' => $this->randomMachineName(),
-      'status' => App::STATUS_APPROVED,
-      'developerId' => $this->developer->getDeveloperId(),
-    ]);
-    $app->setOwner($this->account);
-    $full_field_name = "{$field_name_prefix}{$field_name}";
-    $app->set($full_field_name, $field_data);
-    $app->save();
-
-    drupal_flush_all_caches();
-
-    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $loadedApp */
-    $loadedApp = DeveloperApp::load($app->id());
-
-    $this->assertEquals($field_data, $loadedApp->get($full_field_name)->getValue());
-
-    $app->delete();
-  }
-
-  public function fieldDataProvider() {
-    return [
-      'link' => [
-        'link',
-        [],
-        [],
-        [
-          [
-            'uri' => 'http://example.com',
-            'title' => 'Example',
-            'options' => [],
-            'attributes' => [],
-          ],
-        ],
-      ],
-      'long string' => [
-        'string_long',
-        [
-          'cardinality' => -1,
-        ],
-        [],
-        [
-          [
-            'value' => $this->getRandomGenerator()->paragraphs(),
-          ],
-          [
-            'value' => $this->getRandomGenerator()->paragraphs(),
-          ],
-          [
-            'value' => $this->getRandomGenerator()->paragraphs(),
-          ],
-          [
-            'value' => $this->getRandomGenerator()->paragraphs(),
-          ],
-          [
-            'value' => $this->getRandomGenerator()->paragraphs(),
-          ],
-        ],
-      ],
-      'long text' => [
-        'text_long',
-        [
-          'cardinality' => -1,
-        ],
-        [],
-        // Weights added to ensure that assertEquals() can be used for
-        // comparision.
-        [
-          [
-            'value' => $this->getRandomGenerator()->paragraphs(),
-            '_weight' => 0,
-          ],
-          [
-            'value' => $this->getRandomGenerator()->paragraphs(),
-            '_weight' => 1,
-          ],
-          [
-            'value' => $this->getRandomGenerator()->paragraphs(),
-            '_weight' => 2,
-          ],
-          [
-            'value' => $this->getRandomGenerator()->paragraphs(),
-            '_weight' => 3,
-          ],
-          [
-            'value' => $this->getRandomGenerator()->paragraphs(),
-            '_weight' => 4,
-          ],
-        ],
-      ],
-    ];
-  }
-
-  public function testTypes() {
-    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
-    $app = DeveloperApp::create([
-      'name' => $this->randomMachineName(),
-      'status' => App::STATUS_APPROVED,
-      'developerId' => $this->developer->getDeveloperId(),
-    ]);
-
+  protected function typesTest() {
     $field_values = [
       'scopes' => ['a', 'b', 'c'],
       'displayName' => $this->getRandomGenerator()->word(16),
     ];
 
     foreach ($field_values as $field_name => $field_value) {
-      $app->set($field_name, $field_value);
+      $this->developerApp->set($field_name, $field_value);
     }
 
-    $app->preSave(new class() implements EntityStorageInterface {
+    $this->developerApp->preSave(new class() implements EntityStorageInterface {
 
+      /**
+       * {@inheritdoc}
+       */
       public function resetCache(array $ids = NULL) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function loadMultiple(array $ids = NULL) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function load($id) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function loadUnchanged($id) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function loadRevision($revision_id) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function deleteRevision($revision_id) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function loadByProperties(array $values = []) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function create(array $values = []) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function delete(array $entities) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function save(EntityInterface $entity) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function hasData() {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function getQuery($conjunction = 'AND') {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function getAggregateQuery($conjunction = 'AND') {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function getEntityTypeId() {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function getEntityType() {}
 
     });
 
     foreach ($field_values as $field_name => $field_value) {
       $getter = 'get' . ucfirst($field_name);
-      $value = call_user_func([$app, $getter]);
+      $value = call_user_func([$this->developerApp, $getter]);
       if ($value instanceof \DateTimeImmutable) {
         $value = $value->getTimestamp();
       }
 
       $this->assertEquals($field_value, $value);
     }
+  }
+
+  /**
+   * Tests settings base fields required.
+   */
+  protected function requiredFieldTest() {
+    // The form can be saved with default settings.
+    $this->submitBaseFieldConfigForm();
+    // Move the callbackUrl to hidden.
+    $this->submitFormDisplay(['callbackUrl' => 'hidden']);
+    // The callbackUrl can't be required.
+    $this->submitBaseFieldConfigForm(TRUE, TRUE, FALSE);
+    // Move back callbackUrl to visible.
+    $this->submitFormDisplay(['callbackUrl' => 'content']);
+    // The callbackUrl can be required.
+    $this->submitBaseFieldConfigForm(TRUE, TRUE);
+    // The callbackUrl can't be hidden.
+    $this->submitFormDisplay(['callbackUrl' => 'hidden'], FALSE);
+    // The callbackUrl is not required.
+    $this->submitBaseFieldConfigForm(FALSE, FALSE);
+  }
+
+  /**
+   * Tests form regions.
+   */
+  protected function formRegionTest() {
+    $this->assertFieldVisibleOnEntityForm('Callback URL');
+    $this->submitFormDisplay(['callbackUrl' => 'hidden']);
+    $this->assertFieldVisibleOnEntityForm('Callback URL', FALSE);
+    $this->submitFormDisplay(['callbackUrl' => 'content']);
+    $this->assertFieldVisibleOnEntityForm('Callback URL');
+  }
+
+  /**
+   * Tests the view regions.
+   */
+  protected function viewRegionTest() {
+    $callbackUrl = 'https://' . strtolower($this->randomMachineName()) . '.example.com';
+    $this->developerApp->setCallbackUrl($callbackUrl);
+    $this->developerApp->save();
+
+    $assert = function (bool $visible = TRUE) use ($callbackUrl) {
+      $this->assertFieldVisibleOnEntityDisplay($this->developerApp->getName(), 'Callback URL', $callbackUrl, $visible);
+    };
+
+    $this->submitViewDisplay(['callbackUrl' => 'content']);
+    $assert(TRUE);
+    $this->submitViewDisplay(['callbackUrl' => 'hidden']);
+    $assert(FALSE);
+  }
+
+  /**
+   * Tests showing and hiding credentials on the developer app view.
+   */
+  protected function credentialsViewTest() {
+    $assert = function (bool $visible = TRUE) {
+      $this->assertFieldVisibleOnEntityDisplay($this->developerApp->getName(), 'Credential', 'Key Status', $visible);
+    };
+
+    $this->submitViewDisplay(['credentials' => 'hidden']);
+    $assert(FALSE);
+    $this->submitViewDisplay(['credentials' => 'content']);
+    $assert(TRUE);
   }
 
   /**
@@ -459,11 +488,9 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
    */
   protected function submitFormDisplay(array $region_overrides = [], bool $expect_success = TRUE) {
     $edit = [];
-
     foreach ($region_overrides as $field => $region) {
       $edit["fields[{$field}][region]"] = $region;
     }
-
     $this->drupalPostForm('/admin/config/apigee-edge/app-settings/form-display', $edit, 'Save');
 
     if ($expect_success) {
@@ -483,32 +510,12 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
    */
   protected function submitViewDisplay(array $region_overrides = []) {
     $edit = [];
-
     foreach ($region_overrides as $field => $region) {
       $edit["fields[{$field}][region]"] = $region;
     }
-
     $this->drupalPostForm('/admin/config/apigee-edge/app-settings/display', $edit, 'Save');
 
     $this->assertSession()->pageTextContains('Your settings have been saved.');
-  }
-
-  /**
-   * Tests settings base fields required.
-   */
-  public function testRequired() {
-    // The form can be saved with default settings.
-    $this->submitBaseFieldConfigForm();
-    // Move the callbackUrl to hidden.
-    $this->submitFormDisplay(['callbackUrl' => 'hidden']);
-    // The callbackUrl can't be required.
-    $this->submitBaseFieldConfigForm(TRUE, TRUE, FALSE);
-    // Move back callbackUrl to visible.
-    $this->submitFormDisplay(['callbackUrl' => 'content']);
-    // callbackUrl can be required.
-    $this->submitBaseFieldConfigForm(TRUE, TRUE);
-    // callbackUrl can't be hidden.
-    $this->submitFormDisplay(['callbackUrl' => 'hidden'], FALSE);
   }
 
   /**
@@ -544,7 +551,10 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
    *   Whether it should be visible or not.
    */
   protected function assertFieldVisibleOnEntityDisplay(string $app_name, string $field_label, string $field_value, bool $visible = TRUE) {
-    $this->drupalGet("/user/{$this->account->id()}/apps/{$app_name}");
+    $this->drupalGet(Url::fromRoute('entity.developer_app.canonical_by_developer', [
+      'user' => $this->account->id(),
+      'app' => $app_name,
+    ]));
     if ($visible) {
       $this->assertSession()->pageTextContains($field_label);
       $this->assertSession()->pageTextContains($field_value);
@@ -553,78 +563,6 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
       $this->assertSession()->pageTextNotContains($field_label);
       $this->assertSession()->pageTextNotContains($field_value);
     }
-  }
-
-  /**
-   * Creates an app with the UI.
-   *
-   * @param array $extra_values
-   *   Extra value for the form, besides name and displayName.
-   *
-   * @return string
-   *   The machine name of the app.
-   */
-  protected function createApp(array $extra_values = []): string {
-    $name = strtolower($this->randomMachineName());
-
-    $this->drupalPostForm(
-      Url::fromRoute('entity.developer_app.add_form_for_developer', [
-        'user' => $this->account->id(),
-      ]),
-      $extra_values + [
-        'displayName[0][value]' => $name,
-        'name' => $name,
-        "api_products[{$this->product->getName()}]" => $this->product->getName(),
-      ],
-      'Add developer app');
-    $this->assertSession()->pageTextContains($name);
-
-    return $name;
-  }
-
-  /**
-   * Tests form regions.
-   */
-  public function testFormRegion() {
-    $this->assertFieldVisibleOnEntityForm('Callback URL');
-    $this->submitFormDisplay(['callbackUrl' => 'hidden']);
-    $this->assertFieldVisibleOnEntityForm('Callback URL', FALSE);
-    $this->submitFormDisplay(['callbackUrl' => 'content']);
-    $this->assertFieldVisibleOnEntityForm('Callback URL');
-  }
-
-  /**
-   * Tests the view regions.
-   */
-  public function testViewRegion() {
-    $callbackUrl = 'https://' . strtolower($this->randomMachineName()) . '.example.com';
-    $name = $this->createApp([
-      'callbackUrl[0][value]' => $callbackUrl,
-    ]);
-
-    $assert = function (bool $visible = TRUE) use ($name, $callbackUrl) {
-      $this->assertFieldVisibleOnEntityDisplay($name, 'Callback URL', $callbackUrl, $visible);
-    };
-
-    $this->submitViewDisplay(['callbackUrl' => 'content']);
-    $assert(TRUE);
-    $this->submitViewDisplay(['callbackUrl' => 'hidden']);
-    $assert(FALSE);
-  }
-
-  /**
-   * Tests showing and hiding credentials on the developer app view.
-   */
-  public function testCredentialsView() {
-    $name = $this->createApp();
-    $assert = function (bool $visible = TRUE) use ($name) {
-      $this->assertFieldVisibleOnEntityDisplay($name, 'Credential', 'Key Status', $visible);
-    };
-
-    $this->submitViewDisplay(['credentials' => 'hidden']);
-    $assert(FALSE);
-    $this->submitViewDisplay(['credentials' => 'content']);
-    $assert(TRUE);
   }
 
 }
