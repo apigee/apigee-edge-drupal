@@ -47,7 +47,7 @@ class DeveloperAppCredentialEventTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * The owner of the developer app.
    *
-   * @var \Drupal\apigee_edge\Entity\Developer
+   * @var \Drupal\apigee_edge\Entity\DeveloperInterface
    */
   protected $developer;
 

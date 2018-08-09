@@ -33,7 +33,7 @@ class AppSettingsFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
   /**
    * Default API product entity.
    *
-   * @var \Drupal\apigee_edge\Entity\ApiProduct
+   * @var \Drupal\apigee_edge\Entity\ApiProductInterface
    */
   protected $defaultApiProduct;
 
