@@ -44,10 +44,13 @@ class ApiProductRoleBasedAccessAnonymousAuthenticatedTest extends ApiProductRole
   }
 
   /**
-   * Tests entity access with authenticated/anonymous roles.
+   * {@inheritdoc}
+   *
+   * \Drupal\Tests\apigee_edge\Functional\ApiProductAccessTest validates
+   * developerAppEditFormTest().
    */
-  public function testDeveloperAppEditForm() {
-    $this->markTestSkipped('ApiProductRoleBasedAccessAuthenticatedInternalTest validates this.');
+  public function testApiProductAccess() {
+    $this->entityAccessTest();
   }
 
 }

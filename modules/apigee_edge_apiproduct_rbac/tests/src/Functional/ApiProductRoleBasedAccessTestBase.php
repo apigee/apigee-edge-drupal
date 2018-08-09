@@ -79,10 +79,10 @@ abstract class ApiProductRoleBasedAccessTestBase extends ApiProductAccessTest {
     foreach (array_keys($this->roleStorage->loadMultiple()) as $rid) {
       foreach ($settings as $visibility => $roles) {
         if (in_array($rid, $roles)) {
-          $post["rbac[{$rid}][{$this->products[$visibility]->id()}]"] = TRUE;
+          $post["rbac[{$rid}][{$this->apiProducts[$visibility]->id()}]"] = TRUE;
         }
         else {
-          $post["rbac[{$rid}][{$this->products[$visibility]->id()}]"] = FALSE;
+          $post["rbac[{$rid}][{$this->apiProducts[$visibility]->id()}]"] = FALSE;
         }
       }
     }
