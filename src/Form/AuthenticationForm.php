@@ -379,7 +379,7 @@ class AuthenticationForm extends ConfigFormBase {
         $key_token->deleteKeyValue();
       }
       $this->sdkConnector->testConnection($key, $key_token);
-      $this->messenger->addStatus($this->t('Connection successful.'));
+      $this->messenger()->addStatus($this->t('Connection successful.'));
     }
     catch (\Exception $exception) {
       watchdog_exception('apigee_edge', $exception);

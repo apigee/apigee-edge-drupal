@@ -39,7 +39,7 @@ class ErrorHandlerTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * Drupal user.
    *
-   * @var \Drupal\user\Entity\User
+   * @var \Drupal\user\UserInterface
    */
   protected $drupalUser;
 
@@ -64,7 +64,7 @@ class ErrorHandlerTest extends ApigeeEdgeFunctionalTestBase {
   public function testErrorPages() {
     $this->drupalLogin($this->rootUser);
     $errorPageTitle = $this->getRandomGenerator()->word(16);
-    $this->drupalPostForm('/admin/config/apigee-edge/error-page-settings', [
+    $this->drupalPostForm(Url::fromRoute('apigee_edge.settings.error_page'), [
       'error_page_title' => $errorPageTitle,
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('The configuration options have been saved.');

@@ -110,6 +110,7 @@ class ConnectionConfigForm extends ConfigFormBase {
     $config['http_client_connect_timeout'] = $form_state->getValue('connect_timeout');
     $config['http_client_timeout'] = $form_state->getValue('request_timeout');
     $this->state->set('apigee_edge.client', $config);
+    $this->state->resetCache();
     parent::submitForm($form, $form_state);
   }
 
