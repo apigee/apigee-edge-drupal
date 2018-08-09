@@ -299,32 +299,6 @@ trait ApigeeEdgeTestTrait {
   }
 
   /**
-   * Get a private or protected property for testing/documentation purposes.
-   *
-   * How to use for MyClass->foo:
-   *   $object = new MyClass();
-   *   $foo = getPrivateMethod($object, 'foo');
-   *   $foo->getValue($object);
-   *
-   * @param object $object
-   *   The instantiated instance of your class.
-   * @param string $property_name
-   *   The name of your private/protected property.
-   *
-   * @return \ReflectionProperty
-   *   The property you asked for
-   *
-   * @throws \ReflectionException
-   *   If the class or object do not exist.
-   */
-  public static function getInvisibleProperty($object, $property_name) {
-    $reflection = new \ReflectionClass($object);
-    $property = $reflection->getProperty($property_name);
-    $property->setAccessible(TRUE);
-    return $property;
-  }
-
-  /**
    * Installs a given list of modules and rebuilds the cache.
    *
    * @param string[] $module_list
@@ -334,7 +308,6 @@ trait ApigeeEdgeTestTrait {
    */
   protected function installExtraModules(array $module_list) {
     \Drupal::service('module_installer')->install($module_list);
-
     // Installing modules updates the container and needs a router rebuild.
     $this->container = \Drupal::getContainer();
     $this->container->get('router.builder')->rebuildIfNeeded();

@@ -413,8 +413,6 @@ class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
   /**
    * Set HTTP client request and connect timeouts.
    *
-   * Tests connection config form, HTTP client configuration.
-   *
    * @param float $connect_timeout
    *   The connect timeout.
    * @param float $request_timeout
@@ -425,23 +423,7 @@ class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
       'connect_timeout' => $connect_timeout,
       'request_timeout' => $request_timeout,
     ], 'Save configuration');
-
-    // Update the test process's kernel with a new service container.
-    $this->rebuildContainer();
-    /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
-    $sdk_connector = $this->container->get('apigee_edge.sdk_connector');
-    // Get the client object from the SDK connector.
-    $api_client = $sdk_connector->getClient();
-    $ro = new \ReflectionObject($api_client);
-    $rm = $ro->getMethod('getHttpClient');
-    $rm->setAccessible(TRUE);
-    /** @var \Http\Client\Common\PluginClient $plugin_client */
-    $plugin_client = $rm->invoke($api_client);
-    $httplug_client = parent::getInvisibleProperty($plugin_client, 'client')->getValue($plugin_client);
-    /** @var \GuzzleHttp\Client $client */
-    $http_client = parent::getInvisibleProperty($httplug_client, 'client')->getValue($httplug_client);
-    $this->assertEquals($connect_timeout, $http_client->getConfig('connect_timeout'));
-    $this->assertEquals($request_timeout, $http_client->getConfig('timeout'));
+    $this->assertSession()->pageTextContains('The configuration options have been saved.');
   }
 
 }
