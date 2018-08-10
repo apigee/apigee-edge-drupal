@@ -102,6 +102,7 @@ class DeveloperAppCredentialEventTest extends ApigeeEdgeFunctionalTestBase {
       }
     }
     catch (\Exception $exception) {
+      $this->logException($exception);
     }
     try {
       if ($this->apiProduct !== NULL) {
@@ -109,6 +110,7 @@ class DeveloperAppCredentialEventTest extends ApigeeEdgeFunctionalTestBase {
       }
     }
     catch (\Exception $exception) {
+      $this->logException($exception);
     }
     parent::tearDown();
   }
