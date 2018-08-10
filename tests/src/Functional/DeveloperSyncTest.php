@@ -443,7 +443,7 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
     foreach ($developers_to_delete as $email => $entity) {
       try {
         /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
-        if ($developer = Developer::load($email) !== NULL) {
+        if (($developer = Developer::load($email)) !== NULL) {
           $developer->delete();
         }
       }
@@ -453,7 +453,7 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
     }
     try {
       /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
-      if ($developer = Developer::load("{$this->prefix}.reserved@example.com") !== NULL) {
+      if (($developer = Developer::load("{$this->prefix}.reserved@example.com")) !== NULL) {
         $developer->delete();
       }
     }
