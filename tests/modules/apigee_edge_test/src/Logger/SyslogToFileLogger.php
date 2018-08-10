@@ -31,6 +31,8 @@ use Drupal\syslog\Logger\SysLog;
 class SyslogToFileLogger extends SysLog {
 
   /**
+   * The database service.
+   *
    * @var \Drupal\Core\Database\Connection
    */
   private $database;
@@ -39,8 +41,11 @@ class SyslogToFileLogger extends SysLog {
    * SyslogToFileLogger constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   A configuration factory instance.
    * @param \Drupal\Core\Logger\LogMessageParserInterface $parser
+   *   The parser to use when extracting message variables.
    * @param \Drupal\Core\Database\Connection $database
+   *   The database service.
    */
   public function __construct(ConfigFactoryInterface $config_factory, LogMessageParserInterface $parser, Connection $database) {
     parent::__construct($config_factory, $parser);

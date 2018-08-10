@@ -34,6 +34,41 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalJavascriptTestBase {
   use DeveloperAppUITestTrait;
 
   /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+    $this->products[] = $this->createProduct();
+    $this->account = $this->createAccount(static::$permissions);
+    $this->drupalLogin($this->account);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function tearDown() {
+    try {
+      if ($this->account !== NULL) {
+        $this->account->delete();
+      }
+    }
+    catch (\Exception $exception) {
+      $this->logException($exception);
+    }
+    foreach ($this->products as $product) {
+      try {
+        if ($product !== NULL) {
+          $product->delete();
+        }
+      }
+      catch (\Exception $exception) {
+        $this->logException($exception);
+      }
+    }
+    parent::tearDown();
+  }
+
+  /**
    * Tests callback url validation on the client-side.
    */
   public function testCallbackUrlValidationClientSide() {
@@ -51,12 +86,11 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalJavascriptTestBase {
       ->set('callback_url_pattern_error_message', $pattern_error_message)
       ->save();
 
-    $this->products[] = $product = $this->createProduct();
     $app = $this->createDeveloperApp([
       'name' => $this->randomMachineName(),
       'displayName' => $this->randomString(),
       'callbackUrl' => $this->randomMachineName(),
-    ], $this->account, [$product->id()]);
+    ], $this->account, [$this->products[0]->id()]);
     $app_edit_url = $app->toUrl('edit-form-for-developer');
 
     $this->drupalGet($app_edit_url);

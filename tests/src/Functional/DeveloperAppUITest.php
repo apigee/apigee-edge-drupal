@@ -37,6 +37,53 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   protected const DUPLICATE_MACHINE_NAME = 'The machine-readable name is already in use. It must be unique.';
 
   /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+
+    // We can not override self::$modules in this trait because that would
+    // conflict with \Drupal\Tests\BrowserTestBase::$modules where both
+    // traits are being used.
+    $this->installExtraModules(['block']);
+    $this->drupalPlaceBlock('local_tasks_block');
+    $this->drupalPlaceBlock('system_breadcrumb_block');
+
+    $config = $this->config('apigee_edge.dangerzone');
+    $config->set('skip_developer_app_settings_validation', TRUE);
+    $config->save();
+
+    $this->products[] = $this->createProduct();
+    $this->account = $this->createAccount(static::$permissions);
+    $this->drupalLogin($this->account);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function tearDown() {
+    try {
+      if ($this->account !== NULL) {
+        $this->account->delete();
+      }
+    }
+    catch (\Exception $exception) {
+      $this->logException($exception);
+    }
+    foreach ($this->products as $product) {
+      try {
+        if ($product !== NULL) {
+          $product->delete();
+        }
+      }
+      catch (\Exception $exception) {
+        $this->logException($exception);
+      }
+    }
+    parent::tearDown();
+  }
+
+  /**
    * Tests the developer app label modification.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException

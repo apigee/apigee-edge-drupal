@@ -24,6 +24,7 @@ use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
+use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\Core\Url;
 use Drupal\user\UserInterface;
 
@@ -37,17 +38,22 @@ trait DeveloperAppUITestTrait {
   /**
    * Default user.
    *
-   * @var \Drupal\user\Entity\User
+   * @var \Drupal\user\UserInterface
    */
   protected $account;
 
   /**
-   * Default product.
+   * Array of created products.
    *
    * @var \Drupal\apigee_edge\Entity\ApiProduct[]
    */
   protected $products = [];
 
+  /**
+   * Permissions of created users.
+   *
+   * @var array
+   */
   protected static $permissions = [
     'administer apigee edge',
     'create developer_app',
@@ -57,42 +63,10 @@ trait DeveloperAppUITestTrait {
   ];
 
   /**
-   * {@inheritdoc}
-   */
-  protected function setUp() {
-    parent::setUp();
-
-    // We can not override self::$modules in this trait because that would
-    // conflict with \Drupal\Tests\BrowserTestBase::$modules where both
-    // traits are being used.
-    $this->installExtraModules(['block']);
-    $this->drupalPlaceBlock('local_tasks_block');
-    $this->drupalPlaceBlock('system_breadcrumb_block');
-
-    $config = \Drupal::configFactory()->getEditable('apigee_edge.dangerzone');
-    $config->set('skip_developer_app_settings_validation', TRUE);
-    $config->save();
-
-    $this->products[] = $this->createProduct();
-    $this->account = $this->createAccount(static::$permissions);
-    $this->drupalLogin($this->account);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function tearDown() {
-    $this->account->delete();
-    foreach ($this->products as $product) {
-      $product->delete();
-    }
-    parent::tearDown();
-  }
-
-  /**
    * Goes to the users' create app form.
    *
    * @param \Drupal\user\UserInterface|null $account
+   *   The user entity.
    */
   protected function gotoCreateAppForm(?UserInterface $account = NULL) {
     if ($account === NULL) {
@@ -148,6 +122,16 @@ trait DeveloperAppUITestTrait {
     );
   }
 
+  /**
+   * Submit developer app edit form.
+   *
+   * @param array $data
+   *   Form data.
+   * @param string $app_name
+   *   App name.
+   * @param \Drupal\user\UserInterface|null $account
+   *   Owner of the developer app.
+   */
   protected function postEditAppForm(array $data, string $app_name, ?UserInterface $account = NULL) {
     if ($account === NULL) {
       $account = $this->account;
@@ -173,11 +157,11 @@ trait DeveloperAppUITestTrait {
    * @param string $name
    *   Name of the app.
    *
-   * @return \Drupal\apigee_edge\Entity\DeveloperApp|null
+   * @return \Drupal\apigee_edge\Entity\DeveloperAppInterface|null
    *   Developer app or null.
    */
-  protected function assertDeveloperAppExists(string $name): ?DeveloperApp {
-    /** @var \Drupal\apigee_edge\Entity\DeveloperApp[] $apps */
+  protected function assertDeveloperAppExists(string $name): ?DeveloperAppInterface {
+    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface[] $apps */
     $apps = $this->getApps();
     $found = NULL;
     foreach ($apps as $app) {
@@ -203,6 +187,7 @@ trait DeveloperAppUITestTrait {
    * @param callable|null $afterUpdate
    *   Additional asserts after the app is created.
    * @param \Drupal\user\UserInterface|null $account
+   *   Owner of the app.
    */
   protected function assertAppCrud(?callable $beforeCreate = NULL, ?callable $afterCreate = NULL, ?callable $beforeUpdate = NULL, ?callable $afterUpdate = NULL, ?UserInterface $account = NULL) {
     if ($account === NULL) {
@@ -288,7 +273,8 @@ trait DeveloperAppUITestTrait {
   /**
    * Creates an app and assigns products to it.
    *
-   * @param \Drupal\apigee_edge\Entity\ApiProduct[] $products
+   * @param \Drupal\apigee_edge\Entity\ApiProductInterface[] $products
+   *   API products associated with the developer app.
    * @param bool $multiple
    *   Allow submitting multiple products.
    * @param bool $display_as_select
@@ -346,10 +332,10 @@ trait DeveloperAppUITestTrait {
    * @param string $name
    *   Name of the developer app.
    *
-   * @return \Drupal\apigee_edge\Entity\DeveloperApp|null
+   * @return \Drupal\apigee_edge\Entity\DeveloperAppInterface|null
    *   Loaded developer app or null if not found.
    */
-  protected function loadDeveloperApp(string $name): ?DeveloperApp {
+  protected function loadDeveloperApp(string $name): ?DeveloperAppInterface {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp[] $apps */
     $apps = DeveloperApp::loadMultiple();
 

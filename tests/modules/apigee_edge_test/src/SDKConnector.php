@@ -49,6 +49,8 @@ class SDKConnector extends OriginalSDKConnector implements SDKConnectorInterface
   private $innerService;
 
   /**
+   * A logger instance.
+   *
    * @var \Psr\Log\LoggerInterface
    */
   private $logger;
@@ -109,7 +111,7 @@ class SDKConnector extends OriginalSDKConnector implements SDKConnectorInterface
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function httpClientConfiguration(): array {
     return $this->innerService->httpClientConfiguration();
