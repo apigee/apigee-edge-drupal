@@ -442,20 +442,31 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
     $developers_to_delete = array_merge($this->edgeDevelopers, $this->drupalUsers, $this->modifiedEdgeDevelopers, $this->modifiedDrupalUsers);
     foreach ($developers_to_delete as $email => $entity) {
       try {
-        Developer::load($email)->delete();
+        /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
+        if ($developer = Developer::load($email) !== NULL) {
+          $developer->delete();
+        }
       }
       catch (\Exception $exception) {
+        $this->logException($exception);
       }
     }
     try {
-      Developer::load("{$this->prefix}.reserved@example.com")->delete();
+      /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
+      if ($developer = Developer::load("{$this->prefix}.reserved@example.com") !== NULL) {
+        $developer->delete();
+      }
     }
     catch (\Exception $exception) {
+      $this->logException($exception);
     }
     try {
-      $this->inactiveDeveloper->delete();
+      if ($this->inactiveDeveloper !== NULL) {
+        $this->inactiveDeveloper->delete();
+      }
     }
     catch (\Exception $exception) {
+      $this->logException($exception);
     }
     parent::tearDown();
   }

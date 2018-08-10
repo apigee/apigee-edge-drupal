@@ -82,6 +82,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
       }
     }
     catch (\Exception $exception) {
+      $this->logException($exception);
     }
     try {
       if ($this->developerCreatedByAdmin !== NULL) {
@@ -89,6 +90,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
       }
     }
     catch (\Exception $exception) {
+      $this->logException($exception);
     }
     parent::tearDown();
   }

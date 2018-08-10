@@ -102,9 +102,12 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
    */
   protected function tearDown() {
     try {
-      $this->account->delete();
+      if ($this->account !== NULL) {
+        $this->account->delete();
+      }
     }
     catch (\Exception $exception) {
+      $this->logException($exception);
     }
     parent::tearDown();
   }

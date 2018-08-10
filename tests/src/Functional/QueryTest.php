@@ -109,9 +109,12 @@ class QueryTest extends ApigeeEdgeFunctionalTestBase {
   protected function tearDown() {
     foreach ($this->edgeDevelopers as $developer) {
       try {
-        $developer->delete();
+        if ($developer !== NULL) {
+          $developer->delete();
+        }
       }
       catch (\Exception $exception) {
+        $this->logException($exception);
       }
     }
     parent::tearDown();

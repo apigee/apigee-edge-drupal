@@ -93,7 +93,8 @@ class CacheTest extends ApigeeEdgeFunctionalTestBase {
       try {
         $this->developer->delete();
       }
-      catch (\Exception $ex) {
+      catch (\Exception $exception) {
+        $this->logException($exception);
       }
     }
     parent::tearDown();

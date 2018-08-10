@@ -341,4 +341,17 @@ trait ApigeeEdgeTestTrait {
     $this->container->get('router.builder')->rebuildIfNeeded();
   }
 
+  /**
+   * Log the given exception using the class short name as type.
+   *
+   * @param \Exception $exception
+   *   Exception to log.
+   * @param string $suffix
+   *   Suffix for type string.
+   */
+  protected function logException(\Exception $exception, string $suffix = '') {
+    $ro = new \ReflectionObject($this);
+    watchdog_exception("{$ro->getShortName()}{$suffix}", $exception);
+  }
+
 }

@@ -100,9 +100,12 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
    */
   protected function tearDown() {
     try {
-      $this->developer->delete();
+      if ($this->developer !== NULL) {
+        $this->developer->delete();
+      }
     }
     catch (\Exception $exception) {
+      $this->logException($exception);
     }
     parent::tearDown();
   }

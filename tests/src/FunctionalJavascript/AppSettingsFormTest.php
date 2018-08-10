@@ -53,6 +53,7 @@ class AppSettingsFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
       $this->defaultApiProduct->delete();
     }
     catch (\Exception $exception) {
+      $this->logException($exception);
     }
     parent::tearDown();
   }

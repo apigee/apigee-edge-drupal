@@ -136,10 +136,12 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
     $entities = array_merge($this->users, $this->apiProducts);
     foreach ($entities as $entity) {
       try {
-        $entity->delete();
+        if ($entity !== NULL) {
+          $entity->delete();
+        }
       }
-      catch (\Exception $e) {
-        // Just catch.
+      catch (\Exception $exception) {
+        $this->logException($exception);
       }
     }
 

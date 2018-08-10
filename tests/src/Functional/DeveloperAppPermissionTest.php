@@ -155,16 +155,20 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
    */
   protected function tearDown() {
     try {
-      $this->otherAccount->delete();
+      if ($this->otherAccount !== NULL) {
+        $this->otherAccount->delete();
+      }
     }
     catch (\Exception $exception) {
-
+      $this->logException($exception);
     }
     try {
-      $this->myAccount->delete();
+      if ($this->myAccount !== NULL) {
+        $this->myAccount->delete();
+      }
     }
     catch (\Exception $exception) {
-
+      $this->logException($exception);
     }
     parent::tearDown();
   }
