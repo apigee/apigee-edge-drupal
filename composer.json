@@ -43,7 +43,8 @@
             },
             "apigee/apigee-client-php": {
                 "Handle empty results properly": "https://github.com/apigee/apigee-client-php/pull/12.diff",
-                "Dropped support of paginated entity listing from developer- and company apps, plus other fixes" : "https://github.com/apigee/apigee-client-php/pull/13.diff"
+                "Dropped support of paginated entity listing from developer- and company apps, plus other fixes" : "https://github.com/apigee/apigee-client-php/pull/13.diff",
+                "Small code style and logic fixes" : "https://github.com/apigee/apigee-client-php/pull/14.diff"
             }
         }
     }

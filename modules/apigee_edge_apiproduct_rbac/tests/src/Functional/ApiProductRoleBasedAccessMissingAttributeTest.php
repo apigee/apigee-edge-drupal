@@ -36,7 +36,20 @@ use Drupal\Core\Session\AccountInterface;
  */
 class ApiProductRoleBasedAccessMissingAttributeTest extends ApiProductRoleBasedAccessTestBase {
 
-  public function testEntityAccess(): void {
+  /**
+   * {@inheritdoc}
+   *
+   * \Drupal\Tests\apigee_edge\Functional\ApiProductAccessTest validates
+   * developerAppEditFormTest().
+   */
+  public function testApiProductAccess() {
+    $this->entityAccessTest();
+  }
+
+  /**
+   * Tests entity access with empty/missing attributes.
+   */
+  protected function entityAccessTest() {
     // Some utility functions that we are going to use here.
     $checkRoles = function (callable $checkViewAccess, callable $checkAssignAccess, string $messageSuffix) {
       foreach (self::SUPPORTED_OPERATIONS as $operation) {
@@ -51,23 +64,23 @@ class ApiProductRoleBasedAccessMissingAttributeTest extends ApiProductRoleBasedA
       }
     };
     $shouldNotHaveAccess = function (string $operation, string $role, string $messageSuffix) {
-      $this->assertFalse($this->products[self::PUBLIC_VISIBILITY]->access($operation, $this->users[$role]), "\"{$role}\" user should not had \"{$operation}\" access when {$messageSuffix}.");
+      $this->assertFalse($this->apiProducts[self::PUBLIC_VISIBILITY]->access($operation, $this->users[$role]), "\"{$role}\" user should not had \"{$operation}\" access when {$messageSuffix}.");
     };
     $shouldHaveAccess = function (string $operation, string $role, string $messageSuffix) {
-      $this->assertTrue($this->products[self::PUBLIC_VISIBILITY]->access($operation, $this->users[$role]), "\"{$role}\" user should had \"{$operation}\" access when {$messageSuffix}.");
+      $this->assertTrue($this->apiProducts[self::PUBLIC_VISIBILITY]->access($operation, $this->users[$role]), "\"{$role}\" user should had \"{$operation}\" access when {$messageSuffix}.");
     };
 
     // Ensure default configuration.
     $this->config('apigee_edge_apiproduct_rbac.settings')->set('grant_access_if_attribute_missing', FALSE)->save();
     $this->accessControlHandler->resetCache();
     // It should not have, but just to make it sure.
-    if ($this->products[self::PUBLIC_VISIBILITY]->hasAttribute($this->rbacAttributeName)) {
-      $this->products[self::PUBLIC_VISIBILITY]->deleteAttribute($this->rbacAttributeName);
+    if ($this->apiProducts[self::PUBLIC_VISIBILITY]->hasAttribute($this->rbacAttributeName)) {
+      $this->apiProducts[self::PUBLIC_VISIBILITY]->deleteAttribute($this->rbacAttributeName);
     }
     // No attribute.
     $checkRoles($shouldNotHaveAccess, $shouldNotHaveAccess, 'attribute did not exist');
     // Empty attribute value.
-    $this->products[self::PUBLIC_VISIBILITY]->setAttribute($this->rbacAttributeName, '');
+    $this->apiProducts[self::PUBLIC_VISIBILITY]->setAttribute($this->rbacAttributeName, '');
     $checkRoles($shouldNotHaveAccess, $shouldNotHaveAccess, 'attribute value was empty');
 
     $this->config('apigee_edge_apiproduct_rbac.settings')->set('grant_access_if_attribute_missing', TRUE)->save();
@@ -75,14 +88,10 @@ class ApiProductRoleBasedAccessMissingAttributeTest extends ApiProductRoleBasedA
     // Empty attribute value.
     $checkRoles($shouldHaveAccess, $shouldHaveAccess, 'attribute value was empty');
     // No attribute.
-    $this->products[self::PUBLIC_VISIBILITY]->deleteAttribute($this->rbacAttributeName);
+    $this->apiProducts[self::PUBLIC_VISIBILITY]->deleteAttribute($this->rbacAttributeName);
     $checkRoles($shouldHaveAccess, $shouldHaveAccess, 'attribute did not exist');
     // Revert to the original configuration.
     $this->config('apigee_edge_apiproduct_rbac.settings')->set('grant_access_if_attribute_missing', FALSE)->save();
-  }
-
-  public function testDeveloperAppEditForm() {
-    $this->markTestSkipped('ApiProductRoleBasedAccessAuthenticatedInternalTest validates this.');
   }
 
 }

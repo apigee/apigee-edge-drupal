@@ -34,6 +34,41 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalJavascriptTestBase {
   use DeveloperAppUITestTrait;
 
   /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+    $this->products[] = $this->createProduct();
+    $this->account = $this->createAccount(static::$permissions);
+    $this->drupalLogin($this->account);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function tearDown() {
+    try {
+      if ($this->account !== NULL) {
+        $this->account->delete();
+      }
+    }
+    catch (\Exception $exception) {
+      $this->logException($exception);
+    }
+    foreach ($this->products as $product) {
+      try {
+        if ($product !== NULL) {
+          $product->delete();
+        }
+      }
+      catch (\Exception $exception) {
+        $this->logException($exception);
+      }
+    }
+    parent::tearDown();
+  }
+
+  /**
    * Tests callback url validation on the client-side.
    */
   public function testCallbackUrlValidationClientSide() {
@@ -51,27 +86,26 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalJavascriptTestBase {
       ->set('callback_url_pattern_error_message', $pattern_error_message)
       ->save();
 
-    $this->products[] = $product = $this->createProduct();
     $app = $this->createDeveloperApp([
       'name' => $this->randomMachineName(),
       'displayName' => $this->randomString(),
       'callbackUrl' => $this->randomMachineName(),
-    ], $this->account, [$product->id()]);
+    ], $this->account, [$this->products[0]->id()]);
     $app_edit_url = $app->toUrl('edit-form-for-developer');
 
     $this->drupalGet($app_edit_url);
-    $this->drupalPostForm($app_edit_url, [], t('Save'));
+    $this->drupalPostForm($app_edit_url, [], 'Save');
     $this->createScreenshot('DeveloperAppUITest-' . __FUNCTION__);
     $this->assertFalse($isValidInput());
     $checkValidationMessage('Please enter a URL.');
-    $this->drupalPostForm($app_edit_url, ['callbackUrl[0][value]' => 'http://example.com'], t('Save'));
+    $this->drupalPostForm($app_edit_url, ['callbackUrl[0][value]' => 'http://example.com'], 'Save');
     $this->createScreenshot('DeveloperAppUITest-' . __FUNCTION__);
     $this->assertFalse($isValidInput());
     // The format in Firefox is different, it is only one line:
     // "Please match the requested format: {$pattern_description}.".
     $checkValidationMessage('Please match the requested format.');
     $this->assertEquals($pattern_error_message, $this->getSession()->evaluateScript('document.getElementById("edit-callbackurl-0-value").title'));
-    $this->drupalPostForm($app_edit_url, ['callbackUrl[0][value]' => 'https://example.com'], t('Save'));
+    $this->drupalPostForm($app_edit_url, ['callbackUrl[0][value]' => 'https://example.com'], 'Save');
     $this->assertSession()->pageTextContains('Developer App details have been successfully updated.');
     $this->assertSession()->pageTextContains('https://example.com');
   }

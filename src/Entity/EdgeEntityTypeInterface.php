@@ -22,7 +22,7 @@ namespace Drupal\apigee_edge\Entity;
 use Drupal\Core\Entity\EntityTypeInterface;
 
 /**
- * Provides an interface for an Edge entity type and its metadata.
+ * Provides an interface for an Apigee Edge entity type and its metadata.
  */
 interface EdgeEntityTypeInterface extends EntityTypeInterface {
 

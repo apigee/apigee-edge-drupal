@@ -28,9 +28,14 @@ use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Utility\Random;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
+/**
+ * Developer app credential generate event subscriber.
+ */
 class OverrideAppKeysOnGenerate implements EventSubscriberInterface {
 
   /**
+   * The SDK Connector service.
+   *
    * @var \Drupal\apigee_edge\SDKConnectorInterface
    */
   private $sdkConnector;

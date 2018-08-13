@@ -31,7 +31,6 @@ use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\TempStore\PrivateTempStoreFactory;
@@ -46,6 +45,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitleInterface {
 
   use DeveloperStatusCheckTrait;
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
 
   /**
    * The SDK connector service.
@@ -75,15 +81,12 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
    *   The entity type manager.
    * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
    *   The SDK connector service.
-   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
-   *   The messenger service.
    * @param \Drupal\Core\TempStore\PrivateTempStoreFactory $tempstore_private
    *   The private tempstore factory.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, SDKConnectorInterface $sdk_connector, MessengerInterface $messenger, PrivateTempStoreFactory $tempstore_private) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, SDKConnectorInterface $sdk_connector, PrivateTempStoreFactory $tempstore_private) {
     $this->entityTypeManager = $entity_type_manager;
     $this->sdkConnector = $sdk_connector;
-    $this->messenger = $messenger;
     $this->store = $tempstore_private->get('apigee_edge.analytics');
   }
 
@@ -94,7 +97,6 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
     return new static(
       $container->get('entity_type.manager'),
       $container->get('apigee_edge.sdk_connector'),
-      $container->get('messenger'),
       $container->get('tempstore.private')
     );
   }
@@ -277,32 +279,32 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
    * @return bool
    *   TRUE if the parameters are correctly set, else FALSE.
    */
-  protected function validateQueryString(array $form, $metric, $since, $until) : bool {
+  protected function validateQueryString(array $form, $metric, $since, $until): bool {
     if ($metric === NULL || $since === NULL || $until === NULL) {
       return FALSE;
     }
 
     try {
       if (!array_key_exists($metric, $form['controls']['metrics']['#options'])) {
-        $this->messenger->addError($this->t('Invalid parameter metric in the URL.'));
+        $this->messenger()->addError($this->t('Invalid parameter metric in the URL.'));
         return FALSE;
       }
 
       $since = DrupalDateTime::createFromTimestamp($since);
       $until = DrupalDateTime::createFromTimestamp($until);
       if ($since->diff($until)->invert === 1) {
-        $this->messenger->addError($this->t('The end date cannot be before the start date.'));
+        $this->messenger()->addError($this->t('The end date cannot be before the start date.'));
         return FALSE;
       }
       if ($since->diff(new DrupalDateTime())->invert === 1) {
-        $this->messenger->addError($this->t('Start date cannot be in future. The current local time of the Developer Portal: @time', [
+        $this->messenger()->addError($this->t('Start date cannot be in future. The current local time of the Developer Portal: @time', [
           '@time' => new DrupalDateTime(),
         ]));
         return FALSE;
       }
     }
     catch (\InvalidArgumentException $exception) {
-      $this->messenger->addError($this->t('Invalid URL query parameters.'));
+      $this->messenger()->addError($this->t('Invalid URL query parameters.'));
       return FALSE;
     }
 
@@ -336,7 +338,7 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
       $analytics = $stats_controller->getOptimizedMetricsByDimensions(['apps'], $stats_query);
     }
     catch (MomentException $exception) {
-      $this->messenger->addError($this->t('Invalid datetime parameters.'));
+      $this->messenger()->addError($this->t('Invalid datetime parameters.'));
     }
 
     $date_time_zone = new \DateTimeZone($this->currentUser()->getTimeZone());
@@ -440,9 +442,9 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
   /**
    * {@inheritdoc}
    */
-  public function getPageTitle(RouteMatchInterface $routeMatch): string {
+  public function getPageTitle(RouteMatchInterface $route_match): string {
     return $this->t('Analytics of @name', [
-      '@name' => Markup::create($routeMatch->getParameter('developer_app')->label()),
+      '@name' => Markup::create($route_match->getParameter('developer_app')->label()),
     ]);
   }
 

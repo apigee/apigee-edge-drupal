@@ -20,18 +20,46 @@
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Drupal\apigee_edge\Entity\Developer;
+use Drupal\apigee_edge\Entity\DeveloperInterface;
+use Drupal\Core\Url;
 
 /**
- * Create, delete, update Developer entity tests.
+ * Create, delete, update developer entity tests.
  *
  * @group apigee_edge
  * @group apigee_edge_developer
  */
 class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
 
+  const USER_REGISTRATION_UNAVAILABLE = 'User registration is temporarily unavailable. Try again later or contact the site administrator.';
+
+  /**
+   * {@inheritdoc}
+   */
   protected static $modules = [
     'views',
   ];
+
+  /**
+   * The developer entity storage.
+   *
+   * @var \Drupal\apigee_edge\Entity\Storage\DeveloperStorageInterface
+   */
+  protected $developerStorage;
+
+  /**
+   * The registered developer entity.
+   *
+   * @var \Drupal\apigee_edge\Entity\DeveloperInterface
+   */
+  protected $developerRegistered;
+
+  /**
+   * The developer created by admin.
+   *
+   * @var \Drupal\apigee_edge\Entity\DeveloperInterface
+   */
+  protected $developerCreatedByAdmin;
 
   /**
    * {@inheritdoc}
@@ -39,25 +67,52 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
   protected function setUp() {
     parent::setUp();
     // Allow visitor account creation with administrative approval.
-    $user_settings = \Drupal::configFactory()->getEditable('user.settings');
+    $user_settings = $this->config('user.settings');
     $user_settings->set('register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL)->save(TRUE);
+    $this->developerStorage = $this->container->get('entity_type.manager')->getStorage('developer');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function tearDown() {
+    try {
+      if ($this->developerRegistered !== NULL) {
+        $this->developerRegistered->delete();
+      }
+    }
+    catch (\Exception $exception) {
+      $this->logException($exception);
+    }
+    try {
+      if ($this->developerCreatedByAdmin !== NULL) {
+        $this->developerCreatedByAdmin->delete();
+      }
+    }
+    catch (\Exception $exception) {
+      $this->logException($exception);
+    }
+    parent::tearDown();
+  }
+
+  /**
+   * Tests developer registration and create by admin.
+   */
+  public function testDeveloperRegisterAndCreate() {
+    $this->developerRegisterTest();
+    $this->developerCreateByAdminTest();
   }
 
   /**
    * Tests user/developer registration and edit.
-   *
-   * @throws \Behat\Mink\Exception\ResponseTextException
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
-  public function testDeveloperRegister() {
-    $this->drupalGet('/user/register');
-
+  protected function developerRegisterTest() {
     $test_user = [
+      'email' => $this->randomMachineName() . '@example.com',
       'username' => $this->randomMachineName(),
       'first_name' => $this->getRandomGenerator()->word(16),
       'last_name' => $this->getRandomGenerator()->word(16),
     ];
-    $test_user['email'] = "{$test_user['username']}@example.com";
 
     $formdata = [
       'mail' => $test_user['email'],
@@ -68,70 +123,55 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
 
     // Try to register with incorrect API credentials.
     $this->invalidateKey();
-    $this->submitForm($formdata, 'Create new account');
-    $this->assertSession()->pageTextContains('User registration is temporarily unavailable. Try again later or contact the site administrator.');
+    $this->drupalPostForm(Url::fromRoute('user.register'), $formdata, 'Create new account');
+    $this->assertSession()->pageTextContains(self::USER_REGISTRATION_UNAVAILABLE);
 
     // Try to register with correct API credentials.
     $this->restoreKey();
-    $this->submitForm($formdata, 'Create new account');
+    $this->drupalPostForm(Url::fromRoute('user.register'), $formdata, 'Create new account');
 
     /** @var \Drupal\user\Entity\User $account */
     $account = user_load_by_mail($test_user['email']);
     $this->assertNotEmpty($account, 'Account is created');
 
-    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
-    $developer = Developer::load($test_user['email']);
-    $this->assertNotEmpty($developer);
+    $this->developerRegistered = Developer::load($test_user['email']);
+    $this->assertNotEmpty($this->developerRegistered);
 
-    $this->assertEquals($developer->getEmail(), $test_user['email']);
-    $this->assertEquals($developer->getFirstName(), $test_user['first_name']);
-    $this->assertEquals($developer->getLastName(), $test_user['last_name']);
-    $this->assertEquals($developer->getUserName(), $test_user['username']);
-    $this->assertEquals($developer->getStatus(), $developer::STATUS_INACTIVE);
+    $this->assertEquals($this->developerRegistered->getEmail(), $test_user['email']);
+    $this->assertEquals($this->developerRegistered->getFirstName(), $test_user['first_name']);
+    $this->assertEquals($this->developerRegistered->getLastName(), $test_user['last_name']);
+    $this->assertEquals($this->developerRegistered->getUserName(), $test_user['username']);
+    $this->assertEquals($this->developerRegistered->getStatus(), DeveloperInterface::STATUS_INACTIVE);
 
     $this->drupalLogin($this->rootUser);
-    $this->drupalGet("/user/{$account->id()}/edit");
+    $this->drupalPostForm(Url::fromRoute('entity.user.edit_form', ['user' => $account->id()]), ['status' => '1'], 'Save');
 
-    $formdata['status'] = '1';
-    $this->submitForm($formdata, 'Save');
+    // Ensure that entity static cache is also invalidated in this scope too.
+    $this->developerStorage->resetCache([$test_user['email']]);
+    $this->developerRegistered = Developer::load($test_user['email']);
 
-    // Ensure that entity static cache is also invalidated in this scope
-    // too.
-    \Drupal::entityTypeManager()->getStorage('developer')->resetCache([$test_user['email']]);
-    $developer = Developer::load($test_user['email']);
-
-    $this->assertEquals($developer->getEmail(), $test_user['email']);
-    $this->assertEquals($developer->getFirstName(), $test_user['first_name']);
-    $this->assertEquals($developer->getLastName(), $test_user['last_name']);
-    $this->assertEquals($developer->getUserName(), $test_user['username']);
-    $this->assertEquals($developer->getStatus(), $developer::STATUS_ACTIVE);
-
-    $developer->delete();
+    $this->assertEquals($this->developerRegistered->getEmail(), $test_user['email']);
+    $this->assertEquals($this->developerRegistered->getFirstName(), $test_user['first_name']);
+    $this->assertEquals($this->developerRegistered->getLastName(), $test_user['last_name']);
+    $this->assertEquals($this->developerRegistered->getUserName(), $test_user['username']);
+    $this->assertEquals($this->developerRegistered->getStatus(), DeveloperInterface::STATUS_ACTIVE);
   }
 
   /**
-   * Create user by admin.
-   *
-   * Tests creating, editing and deleting developer entity
-   * if the Drupal user registered by the admin.
-   *
-   * @throws \Behat\Mink\Exception\ElementNotFoundException
-   * @throws \Behat\Mink\Exception\ResponseTextException
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * Tests creating, editing and deleting developer entity by admin.
    */
-  public function testDeveloperRegisteredByAdmin() {
-    // Create blocked user by the admin.
+  protected function developerCreateByAdminTest() {
+    // Create blocked user by admin.
     $this->drupalLogin($this->rootUser);
-    $this->drupalGet('/admin/people/create');
 
     $test_user = [
+      'email' => $this->randomMachineName() . '@example.com',
       'first_name' => $this->getRandomGenerator()->word(16),
       'last_name' => $this->getRandomGenerator()->word(16),
       'username' => $this->randomMachineName(),
       'password' => user_password(),
       'status' => '0',
     ];
-    $test_user['email'] = "{$test_user['username']}@example.com";
 
     $formdata = [
       'mail' => $test_user['email'],
@@ -145,29 +185,27 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
 
     // Try to register with incorrect API credentials.
     $this->invalidateKey();
-    $this->submitForm($formdata, 'Create new account');
-    $this->assertSession()->pageTextContains('User registration is temporarily unavailable. Try again later or contact the site administrator.');
+    $this->drupalPostForm(Url::fromRoute('user.admin_create'), $formdata, 'Create new account');
+    $this->assertSession()->pageTextContains(self::USER_REGISTRATION_UNAVAILABLE);
 
     // Try to register with correct API credentials.
     $this->restoreKey();
-    $this->submitForm($formdata, 'Create new account');
+    $this->drupalPostForm(Url::fromRoute('user.admin_create'), $formdata, 'Create new account');
 
     /** @var \Drupal\user\Entity\User $account */
     $account = user_load_by_mail($test_user['email']);
     $this->assertNotEmpty($account);
 
-    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
-    $developer = Developer::load($test_user['email']);
-    $this->assertNotEmpty($developer);
+    $this->developerCreatedByAdmin = Developer::load($test_user['email']);
+    $this->assertNotEmpty($this->developerCreatedByAdmin);
 
-    $this->assertEquals($developer->getEmail(), $test_user['email']);
-    $this->assertEquals($developer->getFirstName(), $test_user['first_name']);
-    $this->assertEquals($developer->getLastName(), $test_user['last_name']);
-    $this->assertEquals($developer->getUserName(), $test_user['username']);
-    $this->assertEquals($developer->getStatus(), $developer::STATUS_INACTIVE);
+    $this->assertEquals($this->developerCreatedByAdmin->getEmail(), $test_user['email']);
+    $this->assertEquals($this->developerCreatedByAdmin->getFirstName(), $test_user['first_name']);
+    $this->assertEquals($this->developerCreatedByAdmin->getLastName(), $test_user['last_name']);
+    $this->assertEquals($this->developerCreatedByAdmin->getUserName(), $test_user['username']);
+    $this->assertEquals($this->developerCreatedByAdmin->getStatus(), DeveloperInterface::STATUS_INACTIVE);
 
     // Unblock and edit the user's email, first name, last name by the admin.
-    $this->drupalGet("/user/{$account->id()}/edit");
     $test_user['email'] = "mod.{$test_user['email']}";
     $test_user['first_name'] = "(mod) {$test_user['first_name']}";
     $test_user['last_name'] = "(mod) {$test_user['last_name']}";
@@ -177,7 +215,8 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $formdata['first_name[0][value]'] = $test_user['first_name'];
     $formdata['last_name[0][value]'] = $test_user['last_name'];
     $formdata['status'] = $test_user['status'];
-    $this->submitForm($formdata, 'Save');
+
+    $this->drupalPostForm(Url::fromRoute('entity.user.edit_form', ['user' => $account->id()]), $formdata, 'Save');
 
     $account = user_load_by_mail($test_user['email']);
     $this->assertNotEmpty($account);
@@ -185,18 +224,18 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     // Ensure that entity static cache is also invalidated in this scope
     // too. TODO Maybe introduce a loadUnchanged() method on developer or
     // use storage's loadUnchanged() instead.
-    \Drupal::entityTypeManager()->getStorage('developer')->resetCache([$test_user['email']]);
-    $developer = Developer::load($test_user['email']);
-    $this->assertNotEmpty($developer);
+    $this->developerStorage->resetCache([$test_user['email']]);
+    $this->developerCreatedByAdmin = Developer::load($test_user['email']);
+    $this->assertNotEmpty($this->developerCreatedByAdmin);
 
-    $this->assertEquals($developer->getEmail(), $test_user['email']);
-    $this->assertEquals($developer->getFirstName(), $test_user['first_name']);
-    $this->assertEquals($developer->getLastName(), $test_user['last_name']);
-    $this->assertEquals($developer->getUserName(), $test_user['username']);
-    $this->assertEquals($developer->getStatus(), $developer::STATUS_ACTIVE);
+    $this->assertEquals($this->developerCreatedByAdmin->getEmail(), $test_user['email']);
+    $this->assertEquals($this->developerCreatedByAdmin->getFirstName(), $test_user['first_name']);
+    $this->assertEquals($this->developerCreatedByAdmin->getLastName(), $test_user['last_name']);
+    $this->assertEquals($this->developerCreatedByAdmin->getUserName(), $test_user['username']);
+    $this->assertEquals($this->developerCreatedByAdmin->getStatus(), DeveloperInterface::STATUS_ACTIVE);
 
     // Block the user's account on the people form.
-    $this->drupalGet('/admin/people');
+    $this->drupalGet(Url::fromRoute('entity.user.collection'));
     $this->getSession()->getPage()->selectFieldOption('edit-action', 'user_block_user_action');
     $this->getSession()->getPage()->checkField('edit-user-bulk-form-0');
     $this->getSession()->getPage()->pressButton('edit-submit');
@@ -204,12 +243,11 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     // Ensure that entity static cache is also invalidated in this scope
     // too. TODO Maybe introduce a loadUnchanged() method on developer or
     // use storage's loadUnchanged() instead.
-    \Drupal::entityTypeManager()->getStorage('developer')->resetCache([$test_user['email']]);
-    $developer = Developer::load($test_user['email']);
-    $this->assertEquals($developer->getStatus(), $developer::STATUS_INACTIVE);
+    $this->developerStorage->resetCache([$test_user['email']]);
+    $this->developerCreatedByAdmin = Developer::load($test_user['email']);
+    $this->assertEquals($this->developerCreatedByAdmin->getStatus(), DeveloperInterface::STATUS_INACTIVE);
 
     // Block user on the cancel form using the user_cancel_block method.
-    $this->drupalGet("/user/{$account->id()}/edit");
     $test_user['status'] = '1';
     $formdata = [
       'mail' => $test_user['email'],
@@ -220,20 +258,19 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
       'pass[pass2]' => $test_user['password'],
       'status' => $test_user['status'],
     ];
-    $this->submitForm($formdata, 'Save');
 
-    $this->drupalGet("/user/{$account->id()}/cancel");
+    $this->drupalPostForm(Url::fromRoute('entity.user.edit_form', ['user' => $account->id()]), $formdata, 'Save');
+
     $formdata = [
       'user_cancel_method' => 'user_cancel_block',
     ];
-    $this->submitForm($formdata, 'Cancel account');
+    $this->drupalPostForm($account->toUrl('cancel-form')->toString(), $formdata, 'Cancel account');
 
-    $developer = Developer::load($test_user['email']);
-    $this->assertNotEmpty($developer);
-    $this->assertEquals($developer->getStatus(), $developer::STATUS_INACTIVE);
+    $this->developerCreatedByAdmin = Developer::load($test_user['email']);
+    $this->assertNotEmpty($this->developerCreatedByAdmin);
+    $this->assertEquals($this->developerCreatedByAdmin->getStatus(), DeveloperInterface::STATUS_INACTIVE);
 
     // Block user on the cancel form using the user_cancel_reassign method.
-    $this->drupalGet("/user/{$account->id()}/edit");
     $test_user['status'] = '1';
     $formdata = [
       'mail' => $test_user['email'],
@@ -244,29 +281,27 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
       'pass[pass2]' => $test_user['password'],
       'status' => $test_user['status'],
     ];
-    $this->submitForm($formdata, 'Save');
+    $this->drupalPostForm(Url::fromRoute('entity.user.edit_form', ['user' => $account->id()]), $formdata, 'Save');
 
-    $this->drupalGet("/user/{$account->id()}/cancel");
     $formdata = [
       'user_cancel_method' => 'user_cancel_block_unpublish',
     ];
-    $this->submitForm($formdata, 'Cancel account');
+    $this->drupalPostForm($account->toUrl('cancel-form')->toString(), $formdata, 'Cancel account');
 
-    $developer = Developer::load($test_user['email']);
-    $this->assertNotEmpty($developer);
-    $this->assertEquals($developer->getStatus(), $developer::STATUS_INACTIVE);
+    $this->developerCreatedByAdmin = Developer::load($test_user['email']);
+    $this->assertNotEmpty($this->developerCreatedByAdmin);
+    $this->assertEquals($this->developerCreatedByAdmin->getStatus(), DeveloperInterface::STATUS_INACTIVE);
 
     // Delete user by admin.
-    $this->drupalGet("/user/{$account->id()}/cancel");
     $formdata = [
       'user_cancel_method' => 'user_cancel_delete',
     ];
-    $this->submitForm($formdata, 'Cancel account');
+    $this->drupalPostForm($account->toUrl('cancel-form')->toString(), $formdata, 'Cancel account');
 
     // Ensure that entity static cache is also invalidated in this scope
     // too. TODO Maybe introduce a loadUnchanged() method on developer or
     // use storage's loadUnchanged() instead.
-    \Drupal::entityTypeManager()->getStorage('developer')->resetCache([$test_user['email']]);
+    $this->developerStorage->resetCache([$test_user['email']]);
     $this->assertFalse(Developer::load($test_user['email']), 'Developer does not exists anymore.');
   }
 

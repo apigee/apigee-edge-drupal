@@ -66,7 +66,7 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
   /**
    * Constructs an DeveloperAppStorage instance.
    *
-   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdkConnector
+   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
    *   The SDK connector service.
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
@@ -74,20 +74,20 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
    *   The cache backend to be used.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger to be used.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config
    *   Configuration factory.
-   * @param \Drupal\Component\Datetime\TimeInterface $systemTime
+   * @param \Drupal\Component\Datetime\TimeInterface $system_time
    *   System time.
-   * @param \Egulias\EmailValidator\EmailValidatorInterface $emailValidator
+   * @param \Egulias\EmailValidator\EmailValidatorInterface $email_validator
    *   Email validator.
    */
-  public function __construct(SDKConnectorInterface $sdkConnector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, EntityTypeManagerInterface $entityTypeManager, ConfigFactoryInterface $config, TimeInterface $systemTime, EmailValidatorInterface $emailValidator) {
-    parent::__construct($sdkConnector, $entity_type, $cache, $logger, $systemTime);
-    $this->entityTypeManager = $entityTypeManager;
+  public function __construct(SDKConnectorInterface $sdk_connector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config, TimeInterface $system_time, EmailValidatorInterface $email_validator) {
+    parent::__construct($sdk_connector, $entity_type, $cache, $logger, $system_time);
+    $this->entityTypeManager = $entity_type_manager;
     $this->cacheExpiration = $config->get('apigee_edge.common_app_settings')->get('cache_expiration');
-    $this->emailValidator = $emailValidator;
+    $this->emailValidator = $email_validator;
   }
 
   /**
@@ -155,14 +155,14 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
   /**
    * {@inheritdoc}
    */
-  public function loadByDeveloper(string $developerId): array {
+  public function loadByDeveloper(string $developer_id): array {
     $query = $this->getQuery();
     // We have to figure out whether this is an email or a UUID.
-    if ($this->emailValidator->isValid($developerId)) {
-      $query->condition('email', $developerId);
+    if ($this->emailValidator->isValid($developer_id)) {
+      $query->condition('email', $developer_id);
     }
     else {
-      $query->condition('developerId', $developerId);
+      $query->condition('developerId', $developer_id);
     }
     $ids = $query->execute();
     return $this->loadMultiple(array_values($ids));
@@ -258,19 +258,19 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
    * Developer Id and app name together also represents a unique developer app
    * entity.
    *
-   * @param string $developerId
+   * @param string $developer_id
    *   The uuid of a developer.
-   * @param string $appName
+   * @param string $app_name
    *   The name of a developer app.
    *
    * @return string
    *   Unique cache cid.
    */
-  private function buildCacheIdForAppName(string $developerId, string $appName) {
+  private function buildCacheIdForAppName(string $developer_id, string $app_name) {
     // We do not need to worry about the length of the cid because the cache
     // backend should ensure that the length of the cid is not too long.
     // @see \Drupal\Core\Cache\DatabaseBackend::normalizeCid()
-    return "app_names:{$this->entityTypeId}:{$developerId}:{$appName}";
+    return "app_names:{$this->entityTypeId}:{$developer_id}:{$app_name}";
   }
 
   /**
@@ -299,16 +299,16 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
   /**
    * Returns cached app id for a developerId and app name.
    *
-   * @param string $developerId
+   * @param string $developer_id
    *   UUID of a developer.
-   * @param string $appName
+   * @param string $app_name
    *   Name of an app owner by the provided developerId.
    *
    * @return null|string
    *   The app id if it found, null otherwise.
    */
-  public function getCachedAppId(string $developerId, string $appName) {
-    $item = $this->cacheBackend->get($this->buildCacheIdForAppName($developerId, $appName));
+  public function getCachedAppId(string $developer_id, string $app_name) {
+    $item = $this->cacheBackend->get($this->buildCacheIdForAppName($developer_id, $app_name));
     return $item ? $item->data : NULL;
   }
 

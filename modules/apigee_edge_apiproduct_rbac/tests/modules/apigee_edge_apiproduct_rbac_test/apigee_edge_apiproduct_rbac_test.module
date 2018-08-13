@@ -20,6 +20,11 @@
  */
 
 /**
+ * @file
+ * Module file for Apigee Edge: API Product RBAC tests.
+ */
+
+/**
  * Implements hook_entity_type_build().
  */
 function apigee_edge_apiproduct_rbac_test_entity_type_build(array &$entity_types) {

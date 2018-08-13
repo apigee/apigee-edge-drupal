@@ -24,6 +24,7 @@ use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\Core\Url;
 
 /**
  * Developer app analytics test.
@@ -63,15 +64,15 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
-   * @throws \Exception
    */
   protected function setUp() {
     parent::setUp();
 
-    $this->account = $this->createAccount(['analytics own developer_app']);
-    $this->developer = Developer::createFromDrupalUser($this->account);
+    $this->account = $this->createAccount([
+      'analytics own developer_app',
+      'analytics any developer_app',
+    ]);
+    $this->developer = Developer::load($this->account->getEmail());
 
     $this->developerApp = DeveloperApp::create([
       'name' => $this->randomMachineName(),
@@ -96,61 +97,39 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   protected function tearDown() {
-    $this->developer->delete();
+    try {
+      if ($this->developer !== NULL) {
+        $this->developer->delete();
+      }
+    }
+    catch (\Exception $exception) {
+      $this->logException($exception);
+    }
     parent::tearDown();
   }
 
   /**
    * Tests the analytics page with the logged in developer app owner.
-   *
-   * @throws \Behat\Mink\Exception\ResponseTextException
    */
-  public function testAuthenticatedUserAnalytics() {
+  public function testAnalytics() {
     $this->drupalLogin($this->account);
 
-    $path = "/user/{$this->account->id()}/apps/{$this->developerApp->getName()}/analytics";
-    $this->visitAnalyticsPage($path);
-    $this->visitAnalyticsPage($path, TRUE);
-  }
-
-  /**
-   * Tests the analytics page with the logged in admin user.
-   *
-   * @throws \Behat\Mink\Exception\ResponseTextException
-   */
-  public function testAdminAnalytics() {
-    $this->drupalLogin($this->rootUser);
-
-    $path = "/developer-apps/{$this->developerApp->id()}/analytics";
+    $path = Url::fromRoute('entity.developer_app.analytics_for_developer', [
+      'user' => $this->account->id(),
+      'app' => $this->developerApp->getName(),
+    ])->toString();
     $this->visitAnalyticsPage($path);
     $this->visitAnalyticsPage($path, TRUE);
 
-    $path = "/user/{$this->account->id()}/apps/{$this->developerApp->getName()}/analytics";
+    $path = Url::fromRoute('entity.developer_app.analytics', [
+      'developer_app' => $this->developerApp->id(),
+    ])->toString();
     $this->visitAnalyticsPage($path);
     $this->visitAnalyticsPage($path, TRUE);
-  }
 
-  /**
-   * Tests the export analytics route.
-   *
-   * @throws \Drupal\Core\TempStore\TempStoreException
-   */
-  public function testExportAnalytics() {
-    $this->drupalLogin($this->rootUser);
-    $data_id = Crypt::randomBytesBase64();
-    $this->drupalGet("/analytics/export/{$data_id}/csv");
-    $this->assertEquals(403, $this->getSession()->getStatusCode());
-
-    // Without CSRF token.
-    $store = $this->container->get('tempstore.private')->get('apigee_edge.analytics');
-    /** @var \Drupal\Core\TempStore\PrivateTempStore $store */
-    $store->set($data_id = Crypt::randomBytesBase64(), []);
-    $this->drupalGet("/analytics/export/{$data_id}/csv");
-    $this->assertEquals(403, $this->getSession()->getStatusCode());
+    $this->exportAnalyticsTest();
   }
 
   /**
@@ -160,9 +139,6 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
    *   The path of the analytics page.
    * @param bool $appendQueryParameters
    *   A boolean indicating whether the URL query parameters should be appended.
-   *
-   * @throws \Behat\Mink\Exception\ResponseTextException
-   * @throws \Exception
    */
   protected function visitAnalyticsPage(string $path, bool $appendQueryParameters = FALSE) {
     if ($appendQueryParameters) {
@@ -226,14 +202,29 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * Asserts the visited analytics page.
-   *
-   * @throws \Behat\Mink\Exception\ResponseTextException
    */
   protected function assertAnalyticsPage() {
     $this->assertSession()->pageTextContains("Analytics of {$this->developerApp->label()}");
     $this->assertSession()->pageTextContains("Your timezone: {$this->loggedInUser->getTimeZone()}");
     $this->assertSession()->pageTextContains('No performance data is available for the criteria you supplied.');
     $this->assertSession()->pageTextNotContains('Export CSV');
+  }
+
+  /**
+   * Tests the export analytics route.
+   */
+  protected function exportAnalyticsTest() {
+    $this->drupalLogin($this->rootUser);
+    $data_id = Crypt::randomBytesBase64();
+    $this->drupalGet(Url::fromRoute('apigee_edge.export_analytics.csv', ['data_id' => $data_id]));
+    $this->assertEquals(403, $this->getSession()->getStatusCode());
+
+    // Without CSRF token.
+    $store = $this->container->get('tempstore.private')->get('apigee_edge.analytics');
+    /** @var \Drupal\Core\TempStore\PrivateTempStore $store */
+    $store->set($data_id = Crypt::randomBytesBase64(), []);
+    $this->drupalGet(Url::fromRoute('apigee_edge.export_analytics.csv', ['data_id' => $data_id]));
+    $this->assertEquals(403, $this->getSession()->getStatusCode());
   }
 
 }

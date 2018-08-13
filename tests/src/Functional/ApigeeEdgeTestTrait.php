@@ -56,46 +56,79 @@ trait ApigeeEdgeTestTrait {
       self::fail('Could not create key for testing.');
     }
 
-    $keys = [
+    $this->container->get('state')->set('apigee_edge.auth', [
       'active_key' => 'test',
       'active_key_oauth_token' => '',
-    ];
-    $this->container->get('state')->set('apigee_edge.auth', $keys);
+    ]);
+    $this->container->get('state')->resetCache();
   }
 
   /**
    * Restores the active key.
    */
   protected function restoreKey() {
-    $keys = [
+    $this->container->get('state')->set('apigee_edge.auth', [
       'active_key' => 'test',
       'active_key_oauth_token' => '',
-    ];
-    $this->container->get('state')->set('apigee_edge.auth', $keys);
+    ]);
+    $this->container->get('state')->resetCache();
   }
 
   /**
    * Removes the active key for testing with unset API credentials.
    */
   protected function invalidateKey() {
-    $keys = [
+    $this->container->get('state')->set('apigee_edge.auth', [
       'active_key' => '',
       'active_key_oauth_token' => '',
-    ];
-    $this->container->get('state')->set('apigee_edge.auth', $keys);
+    ]);
+    $this->container->get('state')->resetCache();
+  }
+
+  /**
+   * Set active authentication keys in states.
+   *
+   * @param string $active_key
+   *   The active authentication key.
+   * @param string $active_key_oauth_token
+   *   The active OAuth token key.
+   */
+  protected function setKey(string $active_key, string $active_key_oauth_token) {
+    $this->container->get('state')->set('apigee_edge.auth', [
+      'active_key' => $active_key,
+      'active_key_oauth_token' => $active_key_oauth_token,
+    ]);
+    $this->container->get('state')->resetCache();
+  }
+
+  /**
+   * The corresponding developer will be created if a Drupal user is saved.
+   */
+  protected function enableUserPresave() {
+    _apigee_edge_set_sync_in_progress(FALSE);
+  }
+
+  /**
+   * The corresponding developer will not be created if a Drupal user is saved.
+   */
+  protected function disableUserPresave() {
+    _apigee_edge_set_sync_in_progress(TRUE);
   }
 
   /**
    * Creates a Drupal account.
    *
    * @param array $permissions
+   *   Permissions to add.
    * @param bool $status
+   *   Status of the Drupal account.
    * @param string $prefix
+   *   Prefix of the Drupal account's email.
    *
    * @return \Drupal\user\UserInterface
    *   Drupal user.
    */
-  protected function createAccount(array $permissions = [], bool $status = TRUE, string $prefix = '') : ?UserInterface {
+  protected function createAccount(array $permissions = [], bool $status = TRUE, string $prefix = ''): ?UserInterface {
     $rid = NULL;
     if ($permissions) {
       $rid = $this->createRole($permissions);
@@ -139,7 +172,7 @@ trait ApigeeEdgeTestTrait {
    * @return \Drupal\apigee_edge\Entity\ApiProduct
    *   (SDK) API product object.
    */
-  protected function createProduct() : ApiProduct {
+  protected function createProduct(): ApiProduct {
     /** @var \Drupal\apigee_edge\Entity\ApiProduct $product */
     $product = ApiProduct::create([
       'name' => $this->randomMachineName(),
@@ -160,9 +193,12 @@ trait ApigeeEdgeTestTrait {
    *   Owner of the app.
    * @param array $products
    *   List of associated API products.
+   *
+   * @return \Drupal\apigee_edge\Entity\DeveloperAppInterface
+   *   The created developer app entity.
    */
   protected function createDeveloperApp(array $data, UserInterface $owner, array $products = []) {
-    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
+    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $app */
     $app = DeveloperApp::create($data);
     $app->setOwner($owner);
     $app->save();
@@ -186,16 +222,14 @@ trait ApigeeEdgeTestTrait {
    * @param string $email
    *   Email address of a user.
    *
-   * @return \Drupal\apigee_edge\Entity\DeveloperApp[]|null
+   * @return \Drupal\apigee_edge\Entity\DeveloperAppInterface[]|null
    *   Array of developer apps of the user or if user does not exist as
-   *   developer on Edge.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   *   developer on Apigee Edge.
    */
   protected function getApps(string $email): ?array {
     $developer = Developer::load($email);
     if ($developer) {
-      /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperAppStorage $storage */
+      /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperAppStorageInterface $storage */
       $storage = \Drupal::entityTypeManager()->getStorage('developer_app');
       return $storage->loadByDeveloper($developer->uuid());
     }
@@ -244,6 +278,7 @@ trait ApigeeEdgeTestTrait {
    * available.
    *
    * @param string $name
+   *   Name of the link.
    */
   protected function clickLinkProperly(string $name) {
     list($path, $query) = $this->findLink($name);
@@ -275,37 +310,20 @@ trait ApigeeEdgeTestTrait {
     return [$parts['path'], $query];
   }
 
+  /**
+   * Returns absolute URL starts with a slash.
+   *
+   * @param string $url
+   *   The URL.
+   *
+   * @return string
+   *   URL starts with a slash, if the URL is absolute.
+   */
   protected static function fixUrl(string $url): string {
     if (strpos($url, 'http:') === 0 || strpos($url, 'https:') === 0) {
       return $url;
     }
     return (strpos($url, '/') === 0) ? $url : "/{$url}";
-  }
-
-  /**
-   * Get a private or protected property for testing/documentation purposes.
-   *
-   * How to use for MyClass->foo:
-   *   $object = new MyClass();
-   *   $foo = getPrivateMethod($object, 'foo');
-   *   $foo->getValue($object);
-   *
-   * @param object $object
-   *   The instantiated instance of your class.
-   * @param string $property_name
-   *   The name of your private/protected property.
-   *
-   * @return \ReflectionProperty
-   *   The property you asked for
-   *
-   * @throws \ReflectionException
-   *   If the class or object do not exist.
-   */
-  public static function getInvisibleProperty($object, $property_name) {
-    $reflection = new \ReflectionClass($object);
-    $property = $reflection->getProperty($property_name);
-    $property->setAccessible(TRUE);
-    return $property;
   }
 
   /**
@@ -318,10 +336,22 @@ trait ApigeeEdgeTestTrait {
    */
   protected function installExtraModules(array $module_list) {
     \Drupal::service('module_installer')->install($module_list);
-
     // Installing modules updates the container and needs a router rebuild.
     $this->container = \Drupal::getContainer();
     $this->container->get('router.builder')->rebuildIfNeeded();
+  }
+
+  /**
+   * Log the given exception using the class short name as type.
+   *
+   * @param \Exception $exception
+   *   Exception to log.
+   * @param string $suffix
+   *   Suffix for type string.
+   */
+  protected function logException(\Exception $exception, string $suffix = '') {
+    $ro = new \ReflectionObject($this);
+    watchdog_exception("{$ro->getShortName()}{$suffix}", $exception);
   }
 
 }

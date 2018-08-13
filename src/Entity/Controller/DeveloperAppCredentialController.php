@@ -44,11 +44,9 @@ class DeveloperAppCredentialController extends EdgeDeveloperAppCredentialControl
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\TempStore\TempStoreException
    */
-  public function create(string $consumerKey, string $consumerSecret): AppCredentialInterface {
-    $credential = parent::create($consumerKey, $consumerSecret);
+  public function create(string $consumer_key, string $consumer_secret): AppCredentialInterface {
+    $credential = parent::create($consumer_key, $consumer_secret);
     \Drupal::service('event_dispatcher')->dispatch(AppCredentialCreateEvent::EVENT_NAME, new AppCredentialCreateEvent(AppCredentialCreateEvent::APP_TYPE_DEVELOPER, $this->developerId, $this->appName, $credential));
     $this->clearAppCredentialsFromStorage($this->developerId, $this->appName);
     return $credential;
@@ -56,17 +54,15 @@ class DeveloperAppCredentialController extends EdgeDeveloperAppCredentialControl
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\TempStore\TempStoreException
    */
   public function generate(
-    array $apiProducts,
-    AttributesProperty $appAttributes,
-    string $callbackUrl,
+    array $api_products,
+    AttributesProperty $app_attributes,
+    string $callback_url,
     array $scopes = [],
-    string $keyExpiresIn = '-1'
+    string $key_expires_in = '-1'
   ): AppCredentialInterface {
-    $credential = parent::generate($apiProducts, $appAttributes, $callbackUrl, $scopes, $keyExpiresIn);
+    $credential = parent::generate($api_products, $app_attributes, $callback_url, $scopes, $key_expires_in);
     \Drupal::service('event_dispatcher')->dispatch(AppCredentialGenerateEvent::EVENT_NAME, new AppCredentialGenerateEvent(AppCredentialCreateEvent::APP_TYPE_DEVELOPER, $this->developerId, $this->appName, $credential));
     $this->clearAppCredentialsFromStorage($this->developerId, $this->appName);
     return $credential;
@@ -74,12 +70,10 @@ class DeveloperAppCredentialController extends EdgeDeveloperAppCredentialControl
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\TempStore\TempStoreException
    */
-  public function addProducts(string $consumerKey, array $apiProducts): AppCredentialInterface {
-    $credential = parent::addProducts($consumerKey, $apiProducts);
-    \Drupal::service('event_dispatcher')->dispatch(AppCredentialAddApiProductEvent::EVENT_NAME, new AppCredentialAddApiProductEvent(AppCredentialCreateEvent::APP_TYPE_DEVELOPER, $this->developerId, $this->appName, $credential, $apiProducts));
+  public function addProducts(string $consumer_key, array $api_products): AppCredentialInterface {
+    $credential = parent::addProducts($consumer_key, $api_products);
+    \Drupal::service('event_dispatcher')->dispatch(AppCredentialAddApiProductEvent::EVENT_NAME, new AppCredentialAddApiProductEvent(AppCredentialCreateEvent::APP_TYPE_DEVELOPER, $this->developerId, $this->appName, $credential, $api_products));
     // We have to clear all, see method's description for explanation.
     $this->clearAppCredentialsFromStorage($this->developerId, $this->appName);
     return $credential;
@@ -87,33 +81,27 @@ class DeveloperAppCredentialController extends EdgeDeveloperAppCredentialControl
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\TempStore\TempStoreException
    */
-  public function updateAttributes(string $consumerKey, AttributesProperty $attributes): AttributesProperty {
-    $attributes = parent::updateAttributes($consumerKey, $attributes);
+  public function updateAttributes(string $consumer_key, AttributesProperty $attributes): AttributesProperty {
+    $attributes = parent::updateAttributes($consumer_key, $attributes);
     $this->clearAppCredentialsFromStorage($this->developerId, $this->appName);
     return $attributes;
   }
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\TempStore\TempStoreException
    */
-  public function setApiProductStatus(string $consumerKey, string $apiProduct, string $status): void {
-    parent::setApiProductStatus($consumerKey, $apiProduct, $status);
+  public function setApiProductStatus(string $consumer_key, string $api_product, string $status): void {
+    parent::setApiProductStatus($consumer_key, $api_product, $status);
     // We have to clear all, see method's description for explanation.
     $this->clearAppCredentialsFromStorage($this->developerId, $this->appName);
   }
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\TempStore\TempStoreException
    */
-  public function deleteApiProduct(string $consumerKey, string $apiProduct): AppCredentialInterface {
-    $credential = parent::deleteApiProduct($consumerKey, $apiProduct);
+  public function deleteApiProduct(string $consumer_key, string $api_product): AppCredentialInterface {
+    $credential = parent::deleteApiProduct($consumer_key, $api_product);
     // We have to clear all, see method's description for explanation.
     $this->clearAppCredentialsFromStorage($this->developerId, $this->appName);
     return $credential;
@@ -121,11 +109,9 @@ class DeveloperAppCredentialController extends EdgeDeveloperAppCredentialControl
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\TempStore\TempStoreException
    */
-  public function overrideScopes(string $consumerKey, array $scopes): AppCredentialInterface {
-    $credential = parent::overrideScopes($consumerKey, $scopes);
+  public function overrideScopes(string $consumer_key, array $scopes): AppCredentialInterface {
+    $credential = parent::overrideScopes($consumer_key, $scopes);
     // We have to clear all, see method's description for explanation.
     $this->clearAppCredentialsFromStorage($this->developerId, $this->appName);
     return $credential;
@@ -133,22 +119,18 @@ class DeveloperAppCredentialController extends EdgeDeveloperAppCredentialControl
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\TempStore\TempStoreException
    */
-  public function setStatus(string $entityId, string $status): void {
-    parent::setStatus($entityId, $status);
+  public function setStatus(string $entity_id, string $status): void {
+    parent::setStatus($entity_id, $status);
     // We have to clear all, see method's description for explanation.
     $this->clearAppCredentialsFromStorage($this->developerId, $this->appName);
   }
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\TempStore\TempStoreException
    */
-  public function delete(string $entityId): AppCredentialInterface {
-    $entity = parent::delete($entityId);
+  public function delete(string $entity_id): AppCredentialInterface {
+    $entity = parent::delete($entity_id);
     \Drupal::service('event_dispatcher')->dispatch(AppCredentialDeleteEvent::EVENT_NAME, new AppCredentialDeleteEvent(AppCredentialCreateEvent::APP_TYPE_DEVELOPER, $this->developerId, $this->appName, $entity));
     // We have to clear all, see method's description for explanation.
     $this->clearAppCredentialsFromStorage($this->developerId, $this->appName);

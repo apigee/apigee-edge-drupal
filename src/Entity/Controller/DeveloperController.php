@@ -37,6 +37,8 @@ class DeveloperController extends EdgeDeveloperController implements DrupalEntit
   }
 
   /**
+   * The FQCN of the entity class.
+   *
    * @var string
    */
   private $entityClass;
@@ -48,23 +50,23 @@ class DeveloperController extends EdgeDeveloperController implements DrupalEntit
    *   The organization name.
    * @param \Apigee\Edge\ClientInterface $client
    *   The API client.
-   * @param string $entityClass
+   * @param string $entity_class
    *   The FQCN of the entity class that is used in Drupal.
-   * @param \Apigee\Edge\Serializer\EntitySerializerInterface|null $entitySerializer
+   * @param \Apigee\Edge\Serializer\EntitySerializerInterface|null $entity_serializer
    *   The entity serializer.
-   * @param \Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface|null $organizationController
+   * @param \Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface|null $organization_controller
    *   The organization controller.
    *
    * @throws \ReflectionException
    */
-  public function __construct(string $organization, ClientInterface $client, string $entityClass, ?EntitySerializerInterface $entitySerializer = NULL, ?OrganizationControllerInterface $organizationController = NULL) {
-    parent::__construct($organization, $client, $entitySerializer, $organizationController);
-    $rc = new \ReflectionClass($entityClass);
+  public function __construct(string $organization, ClientInterface $client, string $entity_class, ?EntitySerializerInterface $entity_serializer = NULL, ?OrganizationControllerInterface $organization_controller = NULL) {
+    parent::__construct($organization, $client, $entity_serializer, $organization_controller);
+    $rc = new \ReflectionClass($entity_class);
     $interface = DeveloperInterface::class;
     if (!$rc->implementsInterface($interface)) {
       throw new \InvalidArgumentException("Entity class must implement {$interface}.");
     }
-    $this->entityClass = $entityClass;
+    $this->entityClass = $entity_class;
   }
 
   /**

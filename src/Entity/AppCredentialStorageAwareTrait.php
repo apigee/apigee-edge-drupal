@@ -50,43 +50,43 @@ trait AppCredentialStorageAwareTrait {
   /**
    * Generates a collection id for an app.
    *
-   * @param string $ownerId
+   * @param string $owner_id
    *   Developer Id or company app name that owns an app.
-   * @param string $appName
+   * @param string $app_name
    *   Name of an app! (Not the UUID of the app, because credentials API works
    *   with app name instead of id.)
    *
    * @return string
    *   The collection id.
    */
-  private function generateCollectionForApp(string $ownerId, string $appName) : string {
-    return "{$ownerId}-{$appName}";
+  private function generateCollectionForApp(string $owner_id, string $app_name): string {
+    return "{$owner_id}-{$app_name}";
   }
 
   /**
    * Retrieve app credentials from a user's private credential storage.
    *
-   * @param string $ownerId
+   * @param string $owner_id
    *   Developer Id or company app name that owns an app.
-   * @param string $appName
+   * @param string $app_name
    *   Name of an app! (Not the UUID of the app, because credentials API works
    *   with app name instead of id.)
    *
    * @return \Apigee\Edge\Api\Management\Entity\AppCredentialInterface[]|null
    *   Array of app credentials from cache or null if no entry found in cache.
    */
-  protected function getAppCredentialsFromStorage(string $ownerId, string $appName) {
+  protected function getAppCredentialsFromStorage(string $owner_id, string $app_name) {
     /** @var \Drupal\Core\TempStore\PrivateTempStore $store */
-    $store = $this->getStore()->get($this->generateCollectionForApp($ownerId, $appName));
+    $store = $this->getStore()->get($this->generateCollectionForApp($owner_id, $app_name));
     return $store->get('credentials');
   }
 
   /**
    * Stores am app's credentials in a user's private credential storage.
    *
-   * @param string $ownerId
+   * @param string $owner_id
    *   Developer Id or company app name that owns an app.
-   * @param string $appName
+   * @param string $app_name
    *   Name of an app! (Not the UUID of the app, because credentials API works
    *   with app name instead of id.)
    * @param \Apigee\Edge\Api\Management\Entity\AppCredentialInterface[]|array $credentials
@@ -94,9 +94,9 @@ trait AppCredentialStorageAwareTrait {
    *
    * @throws \Drupal\Core\TempStore\TempStoreException
    */
-  protected function saveAppCredentialsToStorage(string $ownerId, string $appName, array $credentials) : void {
+  protected function saveAppCredentialsToStorage(string $owner_id, string $app_name, array $credentials): void {
     /** @var \Drupal\Core\TempStore\PrivateTempStore $store */
-    $store = $this->getStore()->get($this->generateCollectionForApp($ownerId, $appName));
+    $store = $this->getStore()->get($this->generateCollectionForApp($owner_id, $app_name));
     $store->set('credentials', $credentials);
   }
 
@@ -110,9 +110,9 @@ trait AppCredentialStorageAwareTrait {
    * data from Apigee Edge again. (There is no "list app keys by app" API
    * endpoint.)EntityConvertAwareTrait.
    *
-   * @param string $ownerId
+   * @param string $owner_id
    *   Developer Id or company app name that owns an app.
-   * @param string $appName
+   * @param string $app_name
    *   Name of an app! (Not the UUID of the app, because credentials API works
    *   with app name instead of id.)
    *
@@ -121,9 +121,9 @@ trait AppCredentialStorageAwareTrait {
    *
    * @throws \Drupal\Core\TempStore\TempStoreException
    */
-  protected function clearAppCredentialsFromStorage(string $ownerId, string $appName) : bool {
+  protected function clearAppCredentialsFromStorage(string $owner_id, string $app_name): bool {
     /** @var \Drupal\Core\TempStore\PrivateTempStore $store */
-    $store = $this->getStore()->get($this->generateCollectionForApp($ownerId, $appName));
+    $store = $this->getStore()->get($this->generateCollectionForApp($owner_id, $app_name));
     $return = $store->delete('credentials');
     // Shared store's delete method does not return anything.
     // Why these storages do not implement a common interface to ensure their

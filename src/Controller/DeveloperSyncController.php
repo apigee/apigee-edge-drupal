@@ -79,7 +79,7 @@ class DeveloperSyncController extends ControllerBase {
    * @return string
    *   Job tag.
    */
-  protected static function generateTag(string $type) : string {
+  protected static function generateTag(string $type): string {
     return "developer_sync_{$type}_" . user_password();
   }
 
@@ -104,7 +104,7 @@ class DeveloperSyncController extends ControllerBase {
    * @return \Symfony\Component\HttpFoundation\RedirectResponse
    *   HTTP response doing a redirect.
    */
-  public function schedule(Request $request) {
+  public function schedule(Request $request): RedirectResponse {
     $destination = $request->query->get('destination');
 
     $job = new DeveloperSync(static::getFilter());
@@ -127,7 +127,7 @@ class DeveloperSyncController extends ControllerBase {
    * @return \Symfony\Component\HttpFoundation\RedirectResponse
    *   HTTP response doing a redirect.
    */
-  public function run(Request $request) {
+  public function run(Request $request): RedirectResponse {
     $destination = $request->query->get('destination');
     $batch = static::getBatch();
     batch_set($batch);

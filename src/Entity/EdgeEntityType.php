@@ -27,7 +27,7 @@ use Drupal\Core\Entity\EntityViewBuilder;
 use Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider;
 
 /**
- * Provides an implementation of an Edge entity type and its metadata.
+ * Provides an implementation of an Apigee Edge entity type and its metadata.
  */
 class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
 
@@ -91,7 +91,7 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
    * @return \Drupal\Core\Config\ImmutableConfig
    *   Config object.
    */
-  protected function getConfigWithEntityLabels() : ImmutableConfig {
+  protected function getConfigWithEntityLabels(): ImmutableConfig {
     return \Drupal::config("apigee_edge.{$this->id}_settings");
   }
 

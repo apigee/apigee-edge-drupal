@@ -57,11 +57,11 @@ class QueryFactory implements QueryFactoryInterface, EventSubscriberInterface {
   /**
    * Constructs a QueryFactory object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
-    $this->entityTypeManager = $entityTypeManager;
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+    $this->entityTypeManager = $entity_type_manager;
     $this->namespaces = QueryBase::getNamespaces($this);
   }
 

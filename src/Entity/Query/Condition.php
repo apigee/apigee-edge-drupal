@@ -116,7 +116,7 @@ class Condition extends ConditionBase implements ConditionInterface {
    * @return callable
    *   Filter function.
    */
-  protected static function matchProperty(array $condition) : callable {
+  protected static function matchProperty(array $condition): callable {
     return function ($item) use ($condition) : bool {
       $value = static::getProperty($item, $condition['field']);
 

@@ -33,7 +33,7 @@ class AppSettingsFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
   /**
    * Default API product entity.
    *
-   * @var \Drupal\apigee_edge\Entity\ApiProduct
+   * @var \Drupal\apigee_edge\Entity\ApiProductInterface
    */
   protected $defaultApiProduct;
 
@@ -49,7 +49,12 @@ class AppSettingsFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
    * {@inheritdoc}
    */
   protected function tearDown() {
-    $this->defaultApiProduct->delete();
+    try {
+      $this->defaultApiProduct->delete();
+    }
+    catch (\Exception $exception) {
+      $this->logException($exception);
+    }
     parent::tearDown();
   }
 

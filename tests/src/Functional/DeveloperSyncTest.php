@@ -31,13 +31,23 @@ use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Developer synchronization test.
+ * Developer-user synchronization test.
  *
  * @group apigee_edge
+ * @group apigee_edge_developer
+ * @group apigee_edge_field
  */
 class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
 
   use FieldUiTestTrait;
+
+  /**
+   * Number of developers to create from each type.
+   *
+   * Exists only in Drupal, exists only on Apigee Edge, most recent in Drupal,
+   * most recent on Apigee Edge.
+   */
+  const DEVELOPER_TO_CREATE_PER_TYPE = 1;
 
   /**
    * {@inheritdoc}
@@ -136,7 +146,7 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
     $this->setUpUserFields();
 
     // Create developers on Apigee Edge.
-    for ($i = 0; $i < 2; $i++) {
+    for ($i = 0; $i < self::DEVELOPER_TO_CREATE_PER_TYPE; $i++) {
       $mail = "{$this->prefix}.{$this->randomMachineName()}@example.com";
       $this->edgeDevelopers[$mail] = Developer::create([
         'email' => $mail,
@@ -154,8 +164,8 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
 
     // Create users in Drupal. Do not let run apigee_edge_user_presave(), so
     // the corresponding developer won't be created.
-    _apigee_edge_set_sync_in_progress(TRUE);
-    for ($i = 0; $i < 2; $i++) {
+    $this->disableUserPresave();
+    for ($i = 0; $i < self::DEVELOPER_TO_CREATE_PER_TYPE; $i++) {
       $user = $this->createAccount([], TRUE, $this->prefix);
       foreach ($this->fields as $field_type => $data) {
         $user->set($this->fieldNamePrefix . $data['name'], $data['data']);
@@ -163,11 +173,11 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       $user->save();
       $this->drupalUsers[$user->getEmail()] = $user;
     }
-    _apigee_edge_set_sync_in_progress(FALSE);
+    $this->enableUserPresave();
 
     // Create synchronized users and change attribute values only on Apigee
     // Edge.
-    for ($i = 0; $i < 2; $i++) {
+    for ($i = 0; $i < self::DEVELOPER_TO_CREATE_PER_TYPE; $i++) {
       $user = $this->createAccount([], TRUE, $this->prefix);
       foreach ($this->fields as $field_type => $data) {
         $user->set($this->fieldNamePrefix . $data['name'], $data['data']);
@@ -197,7 +207,7 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
     }
 
     // Create synchronized users and change field values only in Drupal.
-    for ($i = 0; $i < 2; $i++) {
+    for ($i = 0; $i < self::DEVELOPER_TO_CREATE_PER_TYPE; $i++) {
       $user = $this->createAccount([], TRUE, $this->prefix);
       foreach ($this->fields as $field_type => $data) {
         $user->set($this->fieldNamePrefix . $data['name'], $data['data']);
@@ -213,7 +223,7 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
 
       // Do not let run apigee_edge_user_presave(), so the corresponding
       // developer won't be updated.
-      _apigee_edge_set_sync_in_progress(TRUE);
+      $this->disableUserPresave();
       foreach ($this->fields as $field_type => $data) {
         $this->modifiedDrupalUsers[$user->getEmail()]->set($this->fieldNamePrefix . $data['name'], $data['data_changed']);
       }
@@ -229,7 +239,7 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       // only.
       $this->modifiedDrupalUsers[$user->getEmail()]->setChangedTime($this->container->get('datetime.time')->getCurrentTime() + 100);
       $this->modifiedDrupalUsers[$user->getEmail()]->save();
-      _apigee_edge_set_sync_in_progress(FALSE);
+      $this->enableUserPresave();
     }
 
     // Developer's username already exists. Should not be copied into Drupal.
@@ -369,7 +379,7 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
 
     foreach ($this->fields as $field_type => $data) {
       $this->fieldUIAddNewField(
-        '/admin/config/people/accounts',
+        Url::fromRoute('entity.user.admin_form')->toString(),
         $data['name'],
         strtoupper($data['name']),
         $field_type,
@@ -383,7 +393,7 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
     // Create a Drupal user field that is not linked to any Apigee Edge
     // developer attribute. It should be unchanged after sync on both sides.
     $this->fieldUIAddNewField(
-      '/admin/config/people/accounts',
+      Url::fromRoute('entity.user.admin_form')->toString(),
       'one_track_field',
       strtoupper('one_track_field'),
       'string',
@@ -397,7 +407,7 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
     // (invalid email address). The invalid value should not be copied into the
     // Drupal user's field.
     $this->fieldUIAddNewField(
-      '/admin/config/people/accounts',
+      Url::fromRoute('entity.user.admin_form')->toString(),
       'invalid_email',
       strtoupper('invalid_email'),
       'email',
@@ -432,20 +442,31 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
     $developers_to_delete = array_merge($this->edgeDevelopers, $this->drupalUsers, $this->modifiedEdgeDevelopers, $this->modifiedDrupalUsers);
     foreach ($developers_to_delete as $email => $entity) {
       try {
-        Developer::load($email)->delete();
+        /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
+        if (($developer = Developer::load($email)) !== NULL) {
+          $developer->delete();
+        }
       }
       catch (\Exception $exception) {
+        $this->logException($exception);
       }
     }
     try {
-      Developer::load("{$this->prefix}.reserved@example.com")->delete();
+      /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
+      if (($developer = Developer::load("{$this->prefix}.reserved@example.com")) !== NULL) {
+        $developer->delete();
+      }
     }
     catch (\Exception $exception) {
+      $this->logException($exception);
     }
     try {
-      $this->inactiveDeveloper->delete();
+      if ($this->inactiveDeveloper !== NULL) {
+        $this->inactiveDeveloper->delete();
+      }
     }
     catch (\Exception $exception) {
+      $this->logException($exception);
     }
     parent::tearDown();
   }

@@ -19,9 +19,13 @@
 
 namespace Drupal\Tests\apigee_edge\Functional;
 
+use Drupal\Core\Discovery\YamlDiscovery;
+use Drupal\Core\Url;
+
 /**
+ * Module administration permission test.
+ *
  * @group apigee_edge
- * @group apigee_edge_configuration
  * @group apigee_edge_permissions
  */
 class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
@@ -42,47 +46,23 @@ class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
-   * {@inheritdoc}
+   * Tests access to the admin pages with admin/authenticated/anonymous roles.
    */
-  protected function tearDown() {
-    if ($this->loggedInUser) {
-      $account = $this->loggedInUser;
-      $this->drupalLogout();
-      $account->delete();
-    }
-    parent::tearDown();
-  }
-
-  /**
-   * Tests access to the admin pages with an admin account.
-   */
-  public function testAdminAccess() {
-    $account = $this->createAccount([
-      'administer apigee edge',
-      'administer developer_app fields',
-      'administer developer_app form display',
-      'administer developer_app display',
-    ]);
-    $this->drupalLogin($account);
+  public function testAccess() {
+    // Test access with admin role.
+    $this->drupalLogin($this->rootUser);
     $this->assertPaths(TRUE);
-  }
 
-  /**
-   * Tests access to the admin pages with a normal account.
-   */
-  public function testAuthenticatedAccess() {
-    $account = $this->createAccount([]);
+    // Test access with authenticated role. It is not necessary to create a
+    // developer here so skip apigee_edge_user_presave().
+    $this->disableUserPresave();
+    $account = $this->createAccount();
+    $this->enableUserPresave();
     $this->drupalLogin($account);
     $this->assertPaths(FALSE);
-  }
 
-  /**
-   * Tests access to the admin pages as an anonymous user.
-   */
-  public function testAnonymousAccess() {
-    if ($this->loggedInUser) {
-      $this->drupalLogout();
-    }
+    // Test access with anonymous role.
+    $this->drupalLogout();
     $this->assertPaths(FALSE);
   }
 
@@ -104,42 +84,35 @@ class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
       $this->assertEquals($expected_code, $this->getSession()->getStatusCode(), $path);
     };
 
-    // General settings related admin pages.
-    $visit_path('/admin/config/apigee-edge');
-    $visit_path('/admin/config/apigee-edge/error-page-settings');
-    $visit_path('/admin/config/apigee-edge/settings');
-    $visit_path('/admin/config/apigee-edge/connection-config');
+    // Get all routes defined by the module and check every route that requires
+    // the permission "administer apigee edge".
+    $module_path = $this->container->get('module_handler')->getModule('apigee_edge')->getPath();
+    $discovery = new YamlDiscovery('routing', [
+      'apigee_edge' => DRUPAL_ROOT . '/' . $module_path,
+    ]);
+    $module_routes = $discovery->findAll()['apigee_edge'];
 
-    // Developer entity related admin pages.
-    $visit_path('/admin/config/apigee-edge/developer-settings');
-    $visit_path('/admin/config/apigee-edge/developer-settings/attributes');
-    $visit_path('/admin/config/apigee-edge/developer-settings/caching');
-    $visit_path('/admin/config/apigee-edge/developer-settings/sync');
+    // These routes are checked manually.
+    unset($module_routes['apigee_edge.developer_sync.run'], $module_routes['apigee_edge.developer_sync.schedule']);
 
-    if ($access) {
-      list($schedule_path, $schedule_query) = $this->findLink('Background');
-      list($run_path, $run_query) = $this->findLink('Now');
-      $visit_path($schedule_path, $schedule_query);
-      $visit_path($run_path, $run_query);
+    foreach ($module_routes as $route => $data) {
+      // Check routes that require permission "administer apigee edge".
+      if (in_array('administer apigee edge', $data['requirements'])) {
+        $visit_path($data['path']);
+        if ($route === 'apigee_edge.settings.developer.sync') {
+          if ($access) {
+            list($schedule_path, $schedule_query) = $this->findLink('Background');
+            list($run_path, $run_query) = $this->findLink('Now');
+            $visit_path($schedule_path, $schedule_query);
+            $visit_path($run_path, $run_query);
+          }
+          else {
+            $visit_path(Url::fromRoute('apigee_edge.developer_sync.run')->getInternalPath());
+            $visit_path(Url::fromRoute('apigee_edge.developer_sync.schedule')->getInternalPath());
+          }
+        }
+      }
     }
-    else {
-      $visit_path('/admin/config/apigee-edge/sync/schedule');
-      $visit_path('/admin/config/apigee-edge/sync/run');
-    }
-
-    // API Product entity related admin pages.
-    $visit_path('/admin/config/apigee-edge/product-settings/alias');
-    $visit_path('/admin/config/apigee-edge/product-settings/caching');
-
-    // Developer app entity related admin pages.
-    $visit_path('/admin/config/apigee-edge/app-settings');
-    $visit_path('/admin/config/apigee-edge/app-settings/alias');
-    $visit_path('/admin/config/apigee-edge/app-settings/caching');
-    $visit_path('/admin/config/apigee-edge/app-settings/fields');
-    $visit_path('/admin/config/apigee-edge/app-settings/form-display');
-    $visit_path('/admin/config/apigee-edge/app-settings/display');
-    $visit_path('/admin/config/apigee-edge/app-settings/analytics');
-    $visit_path('/admin/config/apigee-edge/app-settings/credentials');
   }
 
 }

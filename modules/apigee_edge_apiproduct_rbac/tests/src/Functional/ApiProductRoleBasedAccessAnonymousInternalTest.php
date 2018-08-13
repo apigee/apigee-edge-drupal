@@ -36,15 +36,21 @@ use Drupal\Core\Session\AccountInterface;
 class ApiProductRoleBasedAccessAnonymousInternalTest extends ApiProductRoleBasedAccessTestBase {
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function setUp() {
     parent::setUp();
     $this->ridCombinations = $this->calculateRidCombinations([AccountInterface::ANONYMOUS_ROLE, self::INTERNAL_ROLE]);
   }
 
-  public function testDeveloperAppEditForm() {
-    $this->markTestSkipped('ApiProductRoleBasedAccessAuthenticatedInternalTest validates this.');
+  /**
+   * {@inheritdoc}
+   *
+   * \Drupal\Tests\apigee_edge\Functional\ApiProductAccessTest validates
+   * developerAppEditFormTest().
+   */
+  public function testApiProductAccess() {
+    $this->entityAccessTest();
   }
 
 }

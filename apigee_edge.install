@@ -23,7 +23,7 @@
  * Install, update and uninstall functions for Apigee Edge.
  */
 
-use Drupal\apigee_edge\KeyValueMalformedException;
+use Drupal\apigee_edge\Exception\KeyValueMalformedException;
 use Drupal\Core\Url;
 use Drupal\user\RoleInterface;
 
@@ -41,7 +41,7 @@ function apigee_edge_requirements($phase) {
     if (!empty($missing_mails)) {
       $requirements['apigee_edge_missing_mail'] = [
         'title' => t('Apigee Edge'),
-        'description' => t('The module can be installed only if all users have emails in Drupal, because email is a required attribute on Edge.'),
+        'description' => t('The module can be installed only if all users have emails in Drupal, because email is a required attribute on Apigee Edge.'),
         'severity' => REQUIREMENT_ERROR,
       ];
     }
@@ -56,7 +56,7 @@ function apigee_edge_requirements($phase) {
       $requirements['apigee_edge_connection_error'] = [
         'title' => t('Apigee Edge'),
         'value' => $exception->getMessage(),
-        'description' => t('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Edge server is unreachable. Visit the <a href=":url">Apigee Edge Configuration</a> page to get more information.', [
+        'description' => t('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Apigee Edge server is unreachable. Visit the <a href=":url">Apigee Edge Configuration</a> page to get more information.', [
           ':url' => Url::fromRoute('apigee_edge.settings', ['destination' => 'admin/reports/status'])->toString(),
         ]),
         'severity' => REQUIREMENT_WARNING,

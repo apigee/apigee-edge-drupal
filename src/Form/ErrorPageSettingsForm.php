@@ -75,7 +75,7 @@ class ErrorPageSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->configFactory->getEditable('apigee_edge.error_page')
+    $this->config('apigee_edge.error_page')
       ->set('error_page_title', $form_state->getValue('error_page_title'))
       ->set('error_page_content.format', $form_state->getValue(['error_page_content', 'format']))
       ->set('error_page_content.value', $form_state->getValue(['error_page_content', 'value']))

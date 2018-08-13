@@ -23,6 +23,7 @@ use Apigee\Edge\Api\Management\Controller\OrganizationController;
 use Apigee\Edge\Client;
 use Apigee\Edge\ClientInterface;
 use Apigee\Edge\HttpClient\Utility\Builder;
+use Drupal\apigee_edge\Exception\KeyNotFoundException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\apigee_edge\Plugin\EdgeOauthKeyTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -97,6 +98,8 @@ class SDKConnector implements SDKConnectorInterface {
   protected $infoParser;
 
   /**
+   * The HTTP client factory.
+   *
    * @var \Drupal\Core\Http\ClientFactory
    */
   private $clientFactory;

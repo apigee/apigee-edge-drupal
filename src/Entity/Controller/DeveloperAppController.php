@@ -93,13 +93,13 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   /**
    * {@inheritdoc}
    */
-  public function load(string $entityId): EdgeEntityInterface {
-    if (isset(static::$cacheByAppId[$entityId])) {
-      $app = static::$cacheByAppId[$entityId];
+  public function load(string $entity_id): EdgeEntityInterface {
+    if (isset(static::$cacheByAppId[$entity_id])) {
+      $app = static::$cacheByAppId[$entity_id];
     }
     else {
       /** @var \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface $app */
-      $app = $this->loadApp($entityId);
+      $app = $this->loadApp($entity_id);
       $this->saveEntityToStaticCaches($app);
     }
     return EntityConvertAwareTrait::convertToDrupalEntity($app, DeveloperApp::class);
@@ -108,14 +108,14 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   /**
    * Creates a developer app controller.
    *
-   * @param string $developerId
+   * @param string $developer_id
    *   UUID or email address of a developer.
    *
    * @return \Apigee\Edge\Api\Management\Controller\DeveloperAppControllerInterface
    *   Developer app controller from the SDK.
    */
-  protected function createDeveloperAppController(string $developerId): EdgeDeveloperAppControllerInterface {
-    return new EdgeDeveloperAppController($this->getOrganisationName(), $developerId, $this->client);
+  protected function createDeveloperAppController(string $developer_id): EdgeDeveloperAppControllerInterface {
+    return new EdgeDeveloperAppController($this->getOrganisationName(), $developer_id, $this->client);
   }
 
   /**
@@ -145,9 +145,9 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
    *
    * @see \Drupal\apigee_edge\Entity\Storage\DeveloperAppStorage::doDelete()
    */
-  public function delete(string $entityId): EdgeEntityInterface {
+  public function delete(string $entity_id): EdgeEntityInterface {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
-    $entity = $this->loadApp($entityId);
+    $entity = $this->loadApp($entity_id);
     $controller = $this->createDeveloperAppController($entity->getDeveloperId());
     $return = $controller->delete($entity->getName());
     $this->removeEntityFromCache($entity);
@@ -157,7 +157,7 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   /**
    * {@inheritdoc}
    */
-  public function getEntities(PagerInterface $pager = NULL, string $idGetter = NULL): array {
+  public function getEntities(PagerInterface $pager = NULL, string $id_getter = NULL): array {
     $developerAppIds = $this->getEntityIds($pager);
     // Do not care about what is in the static cache, we have to load all
     // developer app entities anyway.
@@ -181,14 +181,14 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   /**
    * {@inheritdoc}
    */
-  public function loadByAppName(string $developerId, string $appName) : EdgeEntityInterface {
-    if (isset(static::$cacheByDeveloperIdAppName[$developerId][$appName])) {
-      $app = static::$cacheByDeveloperIdAppName[$developerId][$appName];
+  public function loadByAppName(string $developer_id, string $app_name): EdgeEntityInterface {
+    if (isset(static::$cacheByDeveloperIdAppName[$developer_id][$app_name])) {
+      $app = static::$cacheByDeveloperIdAppName[$developer_id][$app_name];
     }
     else {
-      $controller = $this->createDeveloperAppController($developerId);
+      $controller = $this->createDeveloperAppController($developer_id);
       /** @var \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface $app */
-      $app = $controller->load($appName);
+      $app = $controller->load($app_name);
       $this->saveEntityToStaticCaches($app);
     }
     return EntityConvertAwareTrait::convertToDrupalEntity($app, DeveloperApp::class);
@@ -197,7 +197,7 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   /**
    * {@inheritdoc}
    */
-  public function getEntitiesByDeveloper(string $developerId): array {
+  public function getEntitiesByDeveloper(string $developer_id): array {
     // This only works if the passed developer id is actually the developer id
     // (uuid) of a developer and not the email address of it.
     // Adding an additional cache layer that would use developer email
@@ -205,12 +205,12 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
     // example in the delete() method we would need to load the developer
     // entity to get the email address of the app owner and invalidate related
     // entries in that cache too.
-    if (isset(static::$cacheByDeveloperIdAppName[$developerId])) {
-      $apps = static::$cacheByDeveloperIdAppName[$developerId];
+    if (isset(static::$cacheByDeveloperIdAppName[$developer_id])) {
+      $apps = static::$cacheByDeveloperIdAppName[$developer_id];
     }
     else {
       /** @var \Apigee\Edge\Api\Management\Controller\DeveloperAppControllerInterface $controller */
-      $controller = $this->createDeveloperAppController($developerId);
+      $controller = $this->createDeveloperAppController($developer_id);
       $apps = $controller->getEntities();
       $this->saveEntitiesToStaticCache($apps);
     }
@@ -226,16 +226,16 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   /**
    * {@inheritdoc}
    */
-  public function getEntityIdsByDeveloper(string $developerId): array {
+  public function getEntityIdsByDeveloper(string $developer_id): array {
     /** @var \Apigee\Edge\Api\Management\Controller\DeveloperAppControllerInterface $controller */
-    $controller = $this->createDeveloperAppController($developerId);
+    $controller = $this->createDeveloperAppController($developer_id);
     return $controller->getEntityIds();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function removeEntityFromCache(AppInterface $app) : void {
+  public function removeEntityFromCache(AppInterface $app): void {
     // Do not try to remove non developer apps (ex.: company apps) to this
     // cache.
     if (!in_array(EdgeDeveloperAppInterface::class, class_implements($app))) {
@@ -256,7 +256,7 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
    * @throws \Drupal\Core\TempStore\TempStoreException
    *   If saving credentials to the intermediate credential storage fails.
    */
-  private function saveEntityToStaticCaches(AppInterface $app) : void {
+  private function saveEntityToStaticCaches(AppInterface $app): void {
     // Do not try to save non developer apps (ex.: company apps) to this cache.
     if (!in_array(EdgeDeveloperAppInterface::class, class_implements($app))) {
       return;
@@ -324,13 +324,13 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   /**
    * {@inheritdoc}
    */
-  public function loadApp(string $appId): AppInterface {
-    if (isset(static::$cacheByAppId[$appId])) {
-      $app = static::$cacheByAppId[$appId];
+  public function loadApp(string $app_id): AppInterface {
+    if (isset(static::$cacheByAppId[$app_id])) {
+      $app = static::$cacheByAppId[$app_id];
     }
     else {
       /** @var \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface $app */
-      $app = parent::loadApp($appId);
+      $app = parent::loadApp($app_id);
       $this->saveEntityToStaticCaches($app);
     }
     return $app;
@@ -339,8 +339,8 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   /**
    * {@inheritdoc}
    */
-  public function listApps(bool $includeCredentials = TRUE, PagerInterface $pager = NULL): array {
-    $apps = parent::listApps($includeCredentials, $pager);
+  public function listApps(bool $include_credentials = TRUE, PagerInterface $pager = NULL): array {
+    $apps = parent::listApps($include_credentials, $pager);
     $this->saveEntitiesToStaticCache($apps);
     return $apps;
   }
@@ -348,8 +348,8 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   /**
    * {@inheritdoc}
    */
-  public function listAppsByStatus(string $status, bool $includeCredentials = TRUE, PagerInterface $pager = NULL): array {
-    $apps = parent::listAppsByStatus($status, $includeCredentials, $pager);
+  public function listAppsByStatus(string $status, bool $include_credentials = TRUE, PagerInterface $pager = NULL): array {
+    $apps = parent::listAppsByStatus($status, $include_credentials, $pager);
     $this->saveEntitiesToStaticCache($apps);
     return $apps;
   }

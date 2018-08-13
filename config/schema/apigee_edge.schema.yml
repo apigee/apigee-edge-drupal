@@ -93,7 +93,7 @@ apigee_edge.developer_settings:
       type: string
     display_only_error_message_content:
       type: mapping
-      label: 'Error message when a new user registers and the developer email address is already taken on Edge but not in Drupal'
+      label: 'Error message when a new user registers and the developer email address is already taken on Apigee Edge but not in Drupal'
       mapping:
         format:
           type: string
@@ -116,7 +116,7 @@ apigee_edge.developer_settings:
       type: integer
     user_edit_error_message:
       type: mapping
-      label: 'Error message displayed to a user when the email address is already taken on Edge but not in Drupal'
+      label: 'Error message displayed to a user when the email address is already taken on Apigee Edge but not in Drupal'
       mapping:
         format:
           type: string

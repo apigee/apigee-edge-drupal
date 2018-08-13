@@ -53,31 +53,49 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
   protected const SUPPORTED_OPERATIONS = ['view', 'view label', 'assign'];
 
   /**
-   * @var \Drupal\apigee_edge\Entity\ApiProductInterface[]*/
-  protected $products = [];
+   * Array of created API products.
+   *
+   * @var \Drupal\apigee_edge\Entity\ApiProductInterface[]
+   */
+  protected $apiProducts = [];
 
   /**
-   * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface[]*/
-  protected $apps = [];
+   * Array of created developer apps.
+   *
+   * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface[]
+   */
+  protected $developerApps = [];
 
   /**
-   * @var \Drupal\user\UserInterface[]*/
+   * Array of created Drupal users.
+   *
+   * @var \Drupal\user\UserInterface[]
+   */
   protected $users = [];
 
   /**
-   * @var \Drupal\user\RoleStorageInterface*/
+   * User role storage.
+   *
+   * @var \Drupal\user\RoleStorageInterface
+   */
   protected $roleStorage;
 
   /**
-   * @var \Drupal\Core\Entity\EntityAccessControlHandler*/
+   * API product access control handler.
+   *
+   * @var \Drupal\Core\Entity\EntityAccessControlHandlerInterface
+   */
   protected $accessControlHandler;
 
   /**
-   * @var array*/
+   * All possible role combinations.
+   *
+   * @var array
+   */
   protected $ridCombinations;
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function setUp() {
     parent::setUp();
@@ -96,39 +114,52 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
     $this->users[self::INTERNAL_ROLE]->save();
 
     foreach (self::VISIBILITIES as $visibility) {
-      /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $apiproduct */
-      $apiproduct = ApiProduct::create([
+      /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $api_product */
+      $api_product = ApiProduct::create([
         'name' => $this->randomMachineName(),
         'displayName' => $this->randomMachineName(),
         'approvalType' => ApiProduct::APPROVAL_TYPE_AUTO,
       ]);
-      $apiproduct->setAttribute('access', $visibility);
-      $apiproduct->save();
-      $this->products[$visibility] = $apiproduct;
+      $api_product->setAttribute('access', $visibility);
+      $api_product->save();
+      $this->apiProducts[$visibility] = $api_product;
     }
 
     $this->ridCombinations = $this->calculateRidCombinations(array_keys($this->roleStorage->loadMultiple()));
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function tearDown() {
     /** @var \Drupal\Core\Entity\EntityInterface[] $entities */
-    $entities = array_merge($this->users, $this->products);
+    $entities = array_merge($this->users, $this->apiProducts);
     foreach ($entities as $entity) {
       try {
-        $entity->delete();
+        if ($entity !== NULL) {
+          $entity->delete();
+        }
       }
-      catch (\Exception $e) {
-        // Just catch.
+      catch (\Exception $exception) {
+        $this->logException($exception);
       }
     }
 
     parent::tearDown();
   }
 
-  public function testEntityAccess() : void {
+  /**
+   * Tests API product entity access.
+   */
+  public function testApiProductAccess() {
+    $this->entityAccessTest();
+    $this->developerAppEditFormTest();
+  }
+
+  /**
+   * Tests "Access by visibility" access control.
+   */
+  protected function entityAccessTest() {
     $authenticatedRoles = array_filter(array_keys($this->roleStorage->loadMultiple()), function ($rid) {
       return $rid !== AccountInterface::ANONYMOUS_ROLE;
     });
@@ -153,7 +184,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
         // recalculated.
         $this->accessControlHandler->resetCache();
         foreach ($this->users as $userRole => $user) {
-          foreach ($this->products as $product) {
+          foreach ($this->apiProducts as $product) {
             $rolesWithAccess = $this->getRolesWithAccess($product);
             // Saved configuration designedly contains only the authenticated
             // role and not all (authenticated) roles.
@@ -183,7 +214,6 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
         }
       }
     }
-    $x = 1;
   }
 
   /**
@@ -193,36 +223,36 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
    * access control is working properly on API products. We just have to
    * confirm that developer app/edit forms as leveraging it properly.
    */
-  public function testDeveloperAppEditForm() {
+  protected function developerAppEditFormTest() {
     // Some utility functions that we are going to use here.
     $onlyPublicProductVisible = function () {
       $this->checkProductVisibility(
         [
-          $this->products[self::PUBLIC_VISIBILITY]->label(),
+          $this->apiProducts[self::PUBLIC_VISIBILITY]->label(),
         ],
         [
-          $this->products[self::PRIVATE_VISIBILITY]->label(),
-          $this->products[self::INTERNAL_VISIBILITY]->label(),
+          $this->apiProducts[self::PRIVATE_VISIBILITY]->label(),
+          $this->apiProducts[self::INTERNAL_VISIBILITY]->label(),
         ]
       );
     };
     $allProductsVisible = function () {
       $this->checkProductVisibility(
         [
-          $this->products[self::PUBLIC_VISIBILITY]->label(),
-          $this->products[self::PRIVATE_VISIBILITY]->label(),
-          $this->products[self::INTERNAL_VISIBILITY]->label(),
+          $this->apiProducts[self::PUBLIC_VISIBILITY]->label(),
+          $this->apiProducts[self::PRIVATE_VISIBILITY]->label(),
+          $this->apiProducts[self::INTERNAL_VISIBILITY]->label(),
         ]
       );
     };
     $justPublicAndPrivateVisible = function () {
       $this->checkProductVisibility(
         [
-          $this->products[self::PUBLIC_VISIBILITY]->label(),
-          $this->products[self::PRIVATE_VISIBILITY]->label(),
+          $this->apiProducts[self::PUBLIC_VISIBILITY]->label(),
+          $this->apiProducts[self::PRIVATE_VISIBILITY]->label(),
         ],
         [
-          $this->products[self::INTERNAL_VISIBILITY]->label(),
+          $this->apiProducts[self::INTERNAL_VISIBILITY]->label(),
         ]
       );
     };
@@ -234,22 +264,23 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
       self::INTERNAL_VISIBILITY => [],
     ]);
 
-    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $authUserApp */
-    $authUserApp = DeveloperApp::create([
+    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $auth_user_app */
+    $auth_user_app = DeveloperApp::create([
       'name' => $this->randomMachineName(),
       'status' => App::STATUS_APPROVED,
       'developerId' => $this->users[AccountInterface::AUTHENTICATED_ROLE]->get('apigee_edge_developer_id')->value,
     ]);
-    $authUserApp->setOwner($this->users[AccountInterface::AUTHENTICATED_ROLE]);
-    $authUserApp->save();
+    $auth_user_app->setOwner($this->users[AccountInterface::AUTHENTICATED_ROLE]);
+    $auth_user_app->save();
 
-    $bypassUserApp = DeveloperApp::create([
+    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $bypass_user_app */
+    $bypass_user_app = DeveloperApp::create([
       'name' => $this->randomMachineName(),
       'status' => App::STATUS_APPROVED,
       'developerId' => $this->users[self::USER_WITH_BYPASS_PERM]->get('apigee_edge_developer_id')->value,
     ]);
-    $bypassUserApp->setOwner($this->users[self::USER_WITH_BYPASS_PERM]);
-    $bypassUserApp->save();
+    $bypass_user_app->setOwner($this->users[self::USER_WITH_BYPASS_PERM]);
+    $bypass_user_app->save();
 
     // >> Authenticated user.
     $this->drupalLogin($this->users[AccountInterface::AUTHENTICATED_ROLE]);
@@ -260,7 +291,10 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
       'user' => $this->users[AccountInterface::AUTHENTICATED_ROLE]->id(),
     ]));
     $onlyPublicProductVisible();
-    $this->drupalGet("/user/{$this->users[AccountInterface::AUTHENTICATED_ROLE]->id()}/apps/{$authUserApp->getName()}/edit");
+    $this->drupalGet(Url::fromRoute('entity.developer_app.edit_form_for_developer', [
+      'user' => $this->users[AccountInterface::AUTHENTICATED_ROLE]->id(),
+      'app' => $auth_user_app->getName(),
+    ]));
     $onlyPublicProductVisible();
     $this->drupalLogout();
 
@@ -280,7 +314,10 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
       'user' => $this->users[AccountInterface::AUTHENTICATED_ROLE]->id(),
     ]));
     $onlyPublicProductVisible();
-    $this->drupalGet("/user/{$this->users[AccountInterface::AUTHENTICATED_ROLE]->id()}/apps/{$authUserApp->getName()}/edit");
+    $this->drupalGet(Url::fromRoute('entity.developer_app.edit_form_for_developer', [
+      'user' => $this->users[AccountInterface::AUTHENTICATED_ROLE]->id(),
+      'app' => $auth_user_app->getName(),
+    ]));
     $onlyPublicProductVisible();
 
     // But on the its own add/edit app forms s/he should see all API products.
@@ -288,11 +325,12 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
       'user' => $this->users[self::USER_WITH_BYPASS_PERM]->id(),
     ]));
     $allProductsVisible();
-    $this->drupalGet("/user/{$this->users[self::USER_WITH_BYPASS_PERM]->id()}/apps/{$bypassUserApp->getName()}/edit");
+    $this->drupalGet(Url::fromRoute('entity.developer_app.edit_form_for_developer', [
+      'user' => $this->users[self::USER_WITH_BYPASS_PERM]->id(),
+      'app' => $bypass_user_app->getName(),
+    ]));
     $this->drupalLogout();
 
-    // We do not need this anymore.
-    $bypassUserApp->delete();
     // Remove extra role from the user.
     $this->users[self::USER_WITH_BYPASS_PERM]->removeRole($role);
     $this->users[self::USER_WITH_BYPASS_PERM]->save();
@@ -300,11 +338,11 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
     // Add a private API Product to auth. user's app.
     /** @var \Drupal\apigee_edge\SDKConnectorInterface $connector */
     $connector = $this->container->get('apigee_edge.sdk_connector');
-    $dacc = new DeveloperAppCredentialController($connector->getOrganization(), $this->users[AccountInterface::AUTHENTICATED_ROLE]->get('apigee_edge_developer_id')->value, $authUserApp->getName(), $connector->getClient());
+    $dacc = new DeveloperAppCredentialController($connector->getOrganization(), $this->users[AccountInterface::AUTHENTICATED_ROLE]->get('apigee_edge_developer_id')->value, $auth_user_app->getName(), $connector->getClient());
     /** @var \Apigee\Edge\Api\Management\Entity\AppCredentialInterface $credential */
-    $credentials = $authUserApp->getCredentials();
+    $credentials = $auth_user_app->getCredentials();
     $credential = reset($credentials);
-    $dacc->addProducts($credential->getConsumerKey(), [$this->products[self::PRIVATE_VISIBILITY]->id()]);
+    $dacc->addProducts($credential->getConsumerKey(), [$this->apiProducts[self::PRIVATE_VISIBILITY]->id()]);
 
     // >> Auth. user.
     $this->drupalLogin($this->users[AccountInterface::AUTHENTICATED_ROLE]);
@@ -316,12 +354,13 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
     $onlyPublicProductVisible();
     // But on the app's edit form that contains the private API product that
     // should be visible as well.
-    $this->drupalGet("/user/{$this->users[AccountInterface::AUTHENTICATED_ROLE]->id()}/apps/{$authUserApp->getName()}/edit");
+    $this->drupalGet(Url::fromRoute('entity.developer_app.edit_form_for_developer', [
+      'user' => $this->users[AccountInterface::AUTHENTICATED_ROLE]->id(),
+      'app' => $auth_user_app->getName(),
+    ]));
     $justPublicAndPrivateVisible();
     $this->drupalLogout();
     // << Auth. user.
-    // Clean up.
-    $authUserApp->delete();
   }
 
   /**
@@ -333,7 +372,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
    * @return array
    *   All possible combinations calculated from rids.
    */
-  protected function calculateRidCombinations(array $rids) : array {
+  protected function calculateRidCombinations(array $rids): array {
     $ridCombinations = [[]];
     foreach ($rids as $rid) {
       foreach ($ridCombinations as $ridCombination) {
@@ -349,7 +388,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
    * @return array
    *   Multidimensional array with all possible combinations.
    */
-  private function calculateTestCombinations() : array {
+  private function calculateTestCombinations(): array {
     $ridCombinations = $this->ridCombinations;
 
     $visibilityCombinations = [[]];
@@ -375,7 +414,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
    *   Associate array where keys are public, private, internal and values are
    *   role ids.
    */
-  protected function saveAccessSettings(array $settings) : void {
+  protected function saveAccessSettings(array $settings) {
     $this->config('apigee_edge.api_product_settings')
       ->set('access', $settings)
       ->save();
@@ -390,7 +429,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
    * @return array
    *   Array of role ids.
    */
-  protected function getRolesWithAccess(ApiProductInterface $product) : array {
+  protected function getRolesWithAccess(ApiProductInterface $product): array {
     $prodVisibility = $product->getAttributeValue('access');
     return $this->config('apigee_edge.api_product_settings')
       ->get('access')[$prodVisibility] ?? [];
@@ -413,7 +452,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
    * @return string
    *   Error message.
    */
-  protected function messageIfUserShouldHaveAccessByRole(string $operation, UserInterface $user, string $user_rid, array $rids_with_access, ApiProductInterface $product) : string {
+  protected function messageIfUserShouldHaveAccessByRole(string $operation, UserInterface $user, string $user_rid, array $rids_with_access, ApiProductInterface $product): string {
     return sprintf('User with "%s" role should have "%s" access to an API Product with "%s" visibility. Roles with access granted: %s.', $user_rid, $operation, ($product->getAttributeValue('access') ?? 'public'), implode(', ', $rids_with_access));
   }
 
@@ -428,7 +467,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
    * @return string
    *   Error message.
    */
-  protected function messageIfUserShouldHaveAccessWithBypassPerm(string $operation, UserInterface $user) : string {
+  protected function messageIfUserShouldHaveAccessWithBypassPerm(string $operation, UserInterface $user): string {
     return "User with \"Bypass API Product access control\" permission should have \"{$operation}\" access to the API product.";
   }
 
@@ -449,7 +488,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
    * @return string
    *   Error message.
    */
-  protected function messageIfUserShouldNotHaveAccess(string $operation, UserInterface $user, string $user_rid, array $rids_with_access, ApiProductInterface $product) : string {
+  protected function messageIfUserShouldNotHaveAccess(string $operation, UserInterface $user, string $user_rid, array $rids_with_access, ApiProductInterface $product): string {
     return sprintf('"%s" user without "Bypass API Product access control" permission should not have "%s" access to an API Product with "%s" visibility. Roles with access granted: %s.', $user_rid, $operation, ($product->getAttributeValue('access') ?? 'public'), implode(', ', $rids_with_access));
   }
 

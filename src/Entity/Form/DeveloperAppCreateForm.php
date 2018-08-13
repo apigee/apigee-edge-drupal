@@ -238,7 +238,7 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
    * @return \Drupal\Core\Url
    *   The redirect URL.
    */
-  protected function getRedirectUrl() {
+  protected function getRedirectUrl(): Url {
     $entity = $this->getEntity();
     if ($entity->hasLinkTemplate('collection')) {
       // If available, return the collection URL.

@@ -28,7 +28,6 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Exception\UndefinedLinkTemplateException;
 use Drupal\Core\Entity\RevisionableInterface;
-use Drupal\Core\Language\Language;
 use Drupal\Core\Link;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
@@ -77,7 +76,7 @@ trait EdgeEntityBaseTrait {
   /**
    * {@inheritdoc}
    */
-  public function id(): ? string {
+  public function id(): ?string {
     return $this->uuid() === NULL ? parent::id() : $this->uuid();
   }
 
@@ -490,13 +489,13 @@ trait EdgeEntityBaseTrait {
   /**
    * Invalidates an entity's cache tags upon delete.
    *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entityType
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityInterface[] $entities
    *   An array of entities.
    */
-  protected static function invalidateCacheTagsOnDelete(EntityTypeInterface $entityType, array $entities) {
-    $tags = $entityType->getListCacheTags();
+  protected static function invalidateCacheTagsOnDelete(EntityTypeInterface $entity_type, array $entities) {
+    $tags = $entity_type->getListCacheTags();
     foreach ($entities as $entity) {
       $tags = Cache::mergeTags($tags, $entity->getCacheTagsToInvalidate());
     }
@@ -600,7 +599,7 @@ trait EdgeEntityBaseTrait {
   /**
    * {@inheritdoc}
    */
-  public function setPropertyValue(string $property, $value) : void {
+  public function setPropertyValue(string $property, $value): void {
     // Ignore NULL values, because those are not supported by setters of
     // the SDK entities.
     if ($value === NULL) {

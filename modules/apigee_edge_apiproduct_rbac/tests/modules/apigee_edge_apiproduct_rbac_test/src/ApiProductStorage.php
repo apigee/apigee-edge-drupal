@@ -37,22 +37,32 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 final class ApiProductStorage extends OriginalApiProductStorage {
 
   /**
-   * @var \Drupal\Core\State\StateInterface*/
+   * The state key/value store.
+   *
+   * @var \Drupal\Core\State\StateInterface
+   */
   private $state;
 
   /**
    * ApiProductStorage constructor.
    *
-   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdkConnector
+   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
+   *   The SDK connector service.
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type definition.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache
+   *   The cache backend to be used.
    * @param \Psr\Log\LoggerInterface $logger
+   *   The logger to be used.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config
-   * @param \Drupal\Component\Datetime\TimeInterface $systemTime
+   *   Configuration factory.
+   * @param \Drupal\Component\Datetime\TimeInterface $system_time
+   *   System time.
    * @param \Drupal\Core\State\StateInterface $state
+   *   The state key/value store.
    */
-  public function __construct(SDKConnectorInterface $sdkConnector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, ConfigFactoryInterface $config, TimeInterface $systemTime, StateInterface $state) {
-    parent::__construct($sdkConnector, $entity_type, $cache, $logger, $config, $systemTime);
+  public function __construct(SDKConnectorInterface $sdk_connector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, ConfigFactoryInterface $config, TimeInterface $system_time, StateInterface $state) {
+    parent::__construct($sdk_connector, $entity_type, $cache, $logger, $config, $system_time);
     $this->state = $state;
   }
 

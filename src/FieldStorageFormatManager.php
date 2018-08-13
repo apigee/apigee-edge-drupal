@@ -26,6 +26,9 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Traversable;
 
+/**
+ * Provides a FieldStorageFormat plugin manager.
+ */
 class FieldStorageFormatManager extends DefaultPluginManager {
 
   /**

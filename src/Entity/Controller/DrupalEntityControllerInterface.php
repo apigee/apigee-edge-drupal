@@ -44,7 +44,7 @@ interface DrupalEntityControllerInterface extends EntityCrudOperationsController
    * @return \Drupal\Core\Entity\EntityInterface[]|\Apigee\Edge\Entity\EntityInterface[]
    *   Array of entities that are both Drupal and SDK entities in the same time.
    */
-  public function loadMultiple(array $ids = NULL) : array;
+  public function loadMultiple(array $ids = NULL): array;
 
   /**
    * Converts a Drupal entity into an SDK entity.

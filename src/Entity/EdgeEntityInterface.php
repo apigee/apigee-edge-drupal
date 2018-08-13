@@ -35,6 +35,6 @@ interface EdgeEntityInterface extends EntityInterface {
    * @param mixed $value
    *   Property value to be set.
    */
-  public function setPropertyValue(string $property, $value) : void;
+  public function setPropertyValue(string $property, $value): void;
 
 }

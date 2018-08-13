@@ -22,26 +22,22 @@ namespace Drupal\apigee_edge\Annotation;
 use Drupal\Component\Annotation\Plugin;
 
 /**
+ * Defines an Apigee Edge field storage formatter annotation object.
+ *
  * @Annotation
  */
 class ApigeeFieldStorageFormat extends Plugin {
 
   /**
+   * The ID of the formatter.
+   *
    * @var string
    */
   public $id;
 
   /**
-   * @var string
-   */
-  public $class;
-
-  /**
-   * @var string
-   */
-  public $provider;
-
-  /**
+   * The label of the formatter.
+   *
    * @var string
    */
   public $label;

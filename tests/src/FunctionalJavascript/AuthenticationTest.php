@@ -28,6 +28,7 @@ use Drupal\key\Entity\Key;
  * Apigee Edge API credentials, authentication form, key integration test.
  *
  * @group apigee_edge
+ * @group apigee_edge_javascript
  */
 class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
@@ -213,18 +214,12 @@ class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $this->createKey('key_basic_auth_private_file_low_timeout', 'apigee_edge_basic_auth', 'apigee_edge_private_file', $this->validCredentials);
     $this->createKey('key_oauth_private_file_low_timeout', 'apigee_edge_oauth', 'apigee_edge_private_file', $this->validCredentials);
     $timeout = 0.1;
-    $this->drupalPostForm(Url::fromRoute('apigee_edge.settings.connection_config'), [
-      'connect_timeout' => $timeout,
-      'request_timeout' => $timeout,
-    ], 'Save configuration');
+    $this->setHttpClientParameters($timeout, $timeout);
     $this->assertKeyTestConnection('key_basic_auth_private_file_low_timeout', '', "Failed to connect to Apigee Edge. The connection timeout threshold ({$timeout}) or the request timeout ({$timeout}) is too low or something is wrong with the connection. Error message: cURL error 28:");
     $this->assertKeyTestConnection('key_oauth_private_file_low_timeout', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The connection timeout threshold ({$timeout}) or the request timeout ({$timeout}) is too low or something is wrong with the connection. Error message: cURL error 28:");
     $this->assertKeySave('key_basic_auth_private_file_low_timeout', '', "Failed to connect to Apigee Edge. The connection timeout threshold ({$timeout}) or the request timeout ({$timeout}) is too low or something is wrong with the connection. Error message: cURL error 28:");
     $this->assertKeySave('key_oauth_private_file_low_timeout', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The connection timeout threshold ({$timeout}) or the request timeout ({$timeout}) is too low or something is wrong with the connection. Error message: cURL error 28:");
-    $this->drupalPostForm(Url::fromRoute('apigee_edge.settings.connection_config'), [
-      'connect_timeout' => 30,
-      'request_timeout' => 30,
-    ], 'Save configuration');
+    $this->setHttpClientParameters(30, 30);
 
     // Delete every key, check authentication form and state.
     foreach ($this->keys as $key_id) {
@@ -413,6 +408,22 @@ class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
     $this->getSession()->getPage()->pressButton('edit-submit');
     $this->assertSession()->pageTextContains('The private file system is not configured properly. Visit the File system settings page to specify the private file system path.');
+  }
+
+  /**
+   * Set HTTP client request and connect timeouts.
+   *
+   * @param float $connect_timeout
+   *   The connect timeout.
+   * @param float $request_timeout
+   *   The request timeout.
+   */
+  protected function setHttpClientParameters(float $connect_timeout, float $request_timeout) {
+    $this->drupalPostForm(Url::fromRoute('apigee_edge.settings.connection_config'), [
+      'connect_timeout' => $connect_timeout,
+      'request_timeout' => $request_timeout,
+    ], 'Save configuration');
+    $this->assertSession()->pageTextContains('The configuration options have been saved.');
   }
 
 }

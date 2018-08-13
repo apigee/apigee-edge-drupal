@@ -28,7 +28,7 @@ use Drupal\Core\Field\FormatterBase;
  * @FieldFormatter(
  *   id = "status_property",
  *   label = @Translation("Status property"),
- *   description = "Custom field formatter for Edge status properties.",
+ *   description = @Translation("Custom field formatter for Apigee Edge status properties."),
  *   field_types = {
  *     "string",
  *   }
@@ -40,7 +40,7 @@ class StatusPropertyFormatter extends FormatterBase {
    * {@inheritdoc}
    */
   public function settingsSummary() {
-    $summary[] = t('Displays formatted Edge status property.');
+    $summary[] = $this->t('Displays formatted Apigee Edge status property.');
     return $summary;
   }
 

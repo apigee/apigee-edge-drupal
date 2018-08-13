@@ -25,6 +25,8 @@ use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\user\RoleInterface;
 
 /**
+ * Developer app entity permission test.
+ *
  * @group apigee_edge
  * @group apigee_edge_developer_app
  * @group apigee_edge_permissions
@@ -60,36 +62,50 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
   ];
 
   /**
+   * The entity type.
+   *
    * @var \Drupal\Core\Entity\EntityTypeInterface
    */
   protected $entityType;
 
   /**
+   * My Drupal account.
+   *
    * @var \Drupal\user\UserInterface
    */
   protected $myAccount;
 
   /**
+   * Other Drupal account.
+   *
    * @var \Drupal\user\UserInterface
    */
   protected $otherAccount;
 
   /**
-   * @var \Drupal\apigee_edge\Entity\DeveloperApp
+   * My developer app.
+   *
+   * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface
    */
-  protected $myApp;
+  protected $myDeveloperApp;
 
   /**
-   * @var \Drupal\apigee_edge\Entity\DeveloperApp
+   * Other's developer app.
+   *
+   * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface
    */
-  protected $otherApp;
+  protected $otherDeveloperApp;
 
   /**
-   * @var \Drupal\user\Entity\Role[]
+   * User roles.
+   *
+   * @var \Drupal\user\RoleInterface[]
    */
   protected $roles;
 
   /**
+   * Developer app entity routes.
+   *
    * @var string[]
    */
   protected $entityRoutes;
@@ -100,7 +116,7 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
   protected function setUp() {
     parent::setUp();
 
-    $this->entityType = \Drupal::entityTypeManager()->getDefinition('developer_app');
+    $this->entityType = $this->container->get('entity_type.manager')->getDefinition('developer_app');
     $this->entityRoutes = array_keys($this->entityType->get('links'));
 
     $this->revokeDefaultAuthUserPermissions();
@@ -113,21 +129,21 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
     /** @var \Drupal\apigee_edge\Entity\Developer $otherDeveloper */
     $otherDeveloper = Developer::load($this->otherAccount->getEmail());
 
-    $this->myApp = DeveloperApp::create([
+    $this->myDeveloperApp = DeveloperApp::create([
       'name' => $this->randomMachineName(),
       'status' => App::STATUS_APPROVED,
       'developerId' => $myDeveloper->uuid(),
     ]);
-    $this->myApp->save();
-    $this->myApp->setOwner($this->myAccount);
+    $this->myDeveloperApp->save();
+    $this->myDeveloperApp->setOwner($this->myAccount);
 
-    $this->otherApp = DeveloperApp::create([
+    $this->otherDeveloperApp = DeveloperApp::create([
       'name' => $this->randomMachineName(),
       'status' => App::STATUS_APPROVED,
       'developerId' => $otherDeveloper->uuid(),
     ]);
-    $this->otherApp->save();
-    $this->otherApp->setOwner($this->otherAccount);
+    $this->otherDeveloperApp->save();
+    $this->otherDeveloperApp->setOwner($this->otherAccount);
 
     foreach (array_keys(static::PERMISSION_MATRIX) as $permission) {
       $this->roles[$permission] = $this->createRole([$permission]);
@@ -138,12 +154,32 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function tearDown() {
-    $this->otherApp->delete();
-    $this->myApp->delete();
-    $this->otherAccount->delete();
-    $this->myAccount->delete();
-
+    try {
+      if ($this->otherAccount !== NULL) {
+        $this->otherAccount->delete();
+      }
+    }
+    catch (\Exception $exception) {
+      $this->logException($exception);
+    }
+    try {
+      if ($this->myAccount !== NULL) {
+        $this->myAccount->delete();
+      }
+    }
+    catch (\Exception $exception) {
+      $this->logException($exception);
+    }
     parent::tearDown();
+  }
+
+  /**
+   * Tests pages and permissions.
+   */
+  public function testPermissions() {
+    foreach (array_keys(static::PERMISSION_MATRIX) as $permission) {
+      $this->assertPermission($permission);
+    }
   }
 
   /**
@@ -164,15 +200,6 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
-   * Tests pages and permissions.
-   */
-  public function testPermissions() {
-    foreach (array_keys(static::PERMISSION_MATRIX) as $permission) {
-      $this->assertPermission($permission);
-    }
-  }
-
-  /**
    * Asserts that an account with a given permission can or can't access pages.
    *
    * @param string $permission
@@ -188,7 +215,11 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
       $this->myAccount->removeRole($old_role);
     }
     $this->myAccount->addRole($this->roles[$permission]);
+
+    // It is not necessary to save the developer associated with this user.
+    $this->disableUserPresave();
     $this->myAccount->save();
+    $this->enableUserPresave();
 
     $routesWithAccess = static::PERMISSION_MATRIX[$permission];
     // A user with this permission has access to all routes by this entity.
@@ -197,8 +228,8 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
     }
 
     foreach ($this->entityRoutes as $rel) {
-      $myUrl = static::fixUrl((string) $this->myApp->url($rel));
-      $otherUrl = static::fixUrl((string) $this->otherApp->url($rel));
+      $myUrl = static::fixUrl((string) $this->myDeveloperApp->url($rel));
+      $otherUrl = static::fixUrl((string) $this->otherDeveloperApp->url($rel));
       $shouldAccess = in_array($rel, $routesWithAccess);
       if (strpos($permission, ' any ') !== FALSE) {
         $this->visitPages($myUrl, $shouldAccess, $rel, $permission);
@@ -219,13 +250,17 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
    * Visits pages as both "my" user and the other user.
    *
    * @param string $url
-   * @param bool $myAccess
+   *   URL of the page to visit.
+   * @param bool $my_access
+   *   True if there is access to the page.
    * @param string $rel
+   *   Entity route.
    * @param string $permission
+   *   Permission.
    */
-  protected function visitPages(string $url, bool $myAccess, string $rel, string $permission) {
+  protected function visitPages(string $url, bool $my_access, string $rel, string $permission) {
     $this->drupalLogin($this->myAccount);
-    $this->visitPage($url, $myAccess, $rel, $permission);
+    $this->visitPage($url, $my_access, $rel, $permission);
     $this->drupalLogin($this->otherAccount);
     $this->visitPage($url, FALSE, $rel, $permission);
     $this->drupalLogout();
@@ -235,9 +270,13 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
    * Visits a single page.
    *
    * @param string $url
+   *   URL of the page to visit.
    * @param bool $access
+   *   True if there is access to the page.
    * @param string $rel
+   *   Entity route.
    * @param string $permission
+   *   Permission.
    */
   protected function visitPage(string $url, bool $access, string $rel, string $permission) {
     $this->drupalGet($url);

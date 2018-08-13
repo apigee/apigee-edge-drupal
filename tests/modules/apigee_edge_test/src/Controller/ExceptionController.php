@@ -23,8 +23,14 @@ use Apigee\Edge\Exception\ApiException;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityStorageException;
 
+/**
+ * Throw exception to test the connection error page.
+ */
 class ExceptionController extends ControllerBase {
 
+  /**
+   * Throws a new EntityStorageException.
+   */
   public function entityStorage() {
     try {
       $this->api();
@@ -34,6 +40,9 @@ class ExceptionController extends ControllerBase {
     }
   }
 
+  /**
+   * Throws a new ApiException.
+   */
   public function api() {
     throw new ApiException();
   }

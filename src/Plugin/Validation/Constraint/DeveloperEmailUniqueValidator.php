@@ -33,6 +33,8 @@ use Symfony\Component\Validator\ConstraintValidator;
 class DeveloperEmailUniqueValidator extends ConstraintValidator implements ContainerInjectionInterface {
 
   /**
+   * The entity type manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   private $entityTypeManager;
@@ -47,11 +49,11 @@ class DeveloperEmailUniqueValidator extends ConstraintValidator implements Conta
   /**
    * DeveloperEmailUniqueValidator constructor.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   Entity type manager.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
-    $this->entityTypeManager = $entityTypeManager;
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -79,8 +81,8 @@ class DeveloperEmailUniqueValidator extends ConstraintValidator implements Conta
       }
     }
     catch (\Exception $exception) {
-      // Nothing to do here, if there is no connection to Edge interrupt the
-      // registration in the
+      // Nothing to do here, if there is no connection to Apigee Edge interrupt
+      // the registration in the
       // apigee_edge_form_user_form_api_connection_validate() function.
     }
   }

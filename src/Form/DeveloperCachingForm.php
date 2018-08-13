@@ -22,6 +22,9 @@ namespace Drupal\apigee_edge\Form;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 
+/**
+ * Provides a form for changing Developer caching related settings.
+ */
 class DeveloperCachingForm extends ConfigFormBase {
 
   use CachedEntityConfigurationFormAwareTrait;
@@ -59,14 +62,14 @@ class DeveloperCachingForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getConfigNameWithCacheSettings() {
+  public function getConfigNameWithCacheSettings(): string {
     return 'apigee_edge.developer_settings';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getEntityType() {
+  public function getEntityType(): string {
     return 'developer';
   }
 

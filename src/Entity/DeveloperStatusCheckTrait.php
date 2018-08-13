@@ -29,7 +29,7 @@ use Drupal\user\Entity\User;
 trait DeveloperStatusCheckTrait {
 
   /**
-   * Checks the status of the given user's Edge developer.
+   * Checks the status of the given user's Apigee Edge developer.
    *
    * Checks the status of the developer assigned to the given Drupal user
    * and notifies the current user if the developer's status is inactive.

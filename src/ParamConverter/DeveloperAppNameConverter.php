@@ -48,13 +48,13 @@ class DeveloperAppNameConverter implements ParamConverterInterface {
   /**
    * Constructs a DeveloperAppNameParameterConverter.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   Entity type manager.
    * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
    *   The logger.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager, LoggerChannelInterface $logger) {
-    $this->entityTypeManager = $entityTypeManager;
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, LoggerChannelInterface $logger) {
+    $this->entityTypeManager = $entity_type_manager;
     $this->logger = $logger;
   }
 

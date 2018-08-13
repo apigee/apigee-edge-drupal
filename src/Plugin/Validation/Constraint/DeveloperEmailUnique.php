@@ -35,6 +35,8 @@ use Symfony\Component\Validator\Constraint;
 class DeveloperEmailUnique extends Constraint {
 
   /**
+   * Error message to display.
+   *
    * @var string
    */
   public $message;

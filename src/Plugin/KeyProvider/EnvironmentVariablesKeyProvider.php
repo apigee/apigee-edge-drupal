@@ -73,7 +73,7 @@ class EnvironmentVariablesKeyProvider extends KeyProviderBase implements KeyPlug
     }
 
     if (!empty($missing_env_variables)) {
-      $form_state->setError($form, t('The following environment variables are not set: @missing_env_variables.', [
+      $form_state->setError($form, $this->t('The following environment variables are not set: @missing_env_variables.', [
         '@missing_env_variables' => implode(', ', $missing_env_variables),
       ]));
     }

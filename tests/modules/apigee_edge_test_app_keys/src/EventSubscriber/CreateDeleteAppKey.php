@@ -26,14 +26,21 @@ use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\State\StateInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
+/**
+ * Developer app credential create/delete event subscriber.
+ */
 class CreateDeleteAppKey implements EventSubscriberInterface {
 
   /**
+   * The state service.
+   *
    * @var \Drupal\Core\State\StateInterface
    */
   private $state;
 
   /**
+   * The time service.
+   *
    * @var \Drupal\Component\Datetime\TimeInterface
    */
   private $time;
@@ -65,6 +72,7 @@ class CreateDeleteAppKey implements EventSubscriberInterface {
    * Creates a states entry when a dev. app credential is created or deleted.
    *
    * @param \Drupal\apigee_edge\Event\AppCredentialDeleteEvent|\Drupal\apigee_edge\Event\AppCredentialCreateEvent $event
+   *   The developer app credential create or delete event.
    */
   public function onAppKeyCreateDelete($event) {
     $this->state->set(static::generateStateKey($event->getAppType(), $event->getOwnerId(), $event->getAppName(), $event->getCredential()->id()), $this->time->getCurrentTime());
@@ -73,20 +81,20 @@ class CreateDeleteAppKey implements EventSubscriberInterface {
   /**
    * Generates a unique states key for an app credential.
    *
-   * @param string $appType
+   * @param string $app_type
    *   Either "developer" or "company".
-   * @param string $ownerId
+   * @param string $owner_id
    *   Developer id or company name.
-   * @param string $appName
+   * @param string $app_name
    *   App name.
-   * @param string $credentialKey
+   * @param string $credential_key
    *   Credential key.
    *
    * @return string
    *   States key.
    */
-  public static function generateStateKey(string $appType, string $ownerId, string $appName, string $credentialKey) : string {
-    return "{$appType}-{$ownerId}-{$appName}-{$credentialKey}";
+  public static function generateStateKey(string $app_type, string $owner_id, string $app_name, string $credential_key): string {
+    return "{$app_type}-{$owner_id}-{$app_name}-{$credential_key}";
   }
 
 }

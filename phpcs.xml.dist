@@ -10,13 +10,6 @@
 
   <rule ref="Drupal"/>
 
-  <!-- The following rules are intentionally disabled. -->
-  <rule ref="Drupal.Commenting.ClassComment.Missing">
-    <severity>0</severity>
-  </rule>
-  <rule ref="Drupal.Commenting.DocComment.MissingShort">
-    <severity>0</severity>
-  </rule>
   <!-- Copyright header must be visible on all PHP files, including classes in a namespace. -->
   <rule ref="Drupal.Commenting.FileComment.NamespaceNoFileDoc">
     <severity>0</severity>
@@ -26,14 +19,4 @@
     <severity>0</severity>
   </rule>
 
-  <!-- Following rules are intentionally disabled on tests. -->
-  <rule ref="Drupal.Commenting.FunctionComment.MissingParamComment">
-    <exclude-pattern>*/tests/*</exclude-pattern>
-  </rule>
-  <rule ref="Drupal.Commenting.FunctionComment.Missing">
-    <exclude-pattern>*/tests/*</exclude-pattern>
-  </rule>
-  <rule ref="Drupal.Commenting.DocComment.MissingShort">
-    <exclude-pattern>*/tests/*</exclude-pattern>
-  </rule>
 </ruleset>

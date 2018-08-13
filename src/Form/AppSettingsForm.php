@@ -183,7 +183,7 @@ class AppSettingsForm extends ConfigFormBase {
    *
    * @see https://www.drupal.org/project/drupal/issues/2855139
    */
-  public function apiProductListCallback(array &$form, FormStateInterface $form_state) : AjaxResponse {
+  public function apiProductListCallback(array &$form, FormStateInterface $form_state): AjaxResponse {
     $response = new AjaxResponse();
     $response->addCommand(new ReplaceCommand('#default-api-product-multiple', $this->renderer->render($form['api_product']['default_api_product_multiple_container'])));
     return $response;

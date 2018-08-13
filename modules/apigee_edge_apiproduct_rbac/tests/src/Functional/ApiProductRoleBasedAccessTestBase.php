@@ -21,6 +21,7 @@
 namespace Drupal\Tests\apigee_edge_apiproduct_rbac\Functional;
 
 use Drupal\apigee_edge\Entity\ApiProductInterface;
+use Drupal\Core\Url;
 use Drupal\Tests\apigee_edge\Functional\ApiProductAccessTest;
 use Drupal\user\UserInterface;
 
@@ -36,7 +37,10 @@ abstract class ApiProductRoleBasedAccessTestBase extends ApiProductAccessTest {
   protected const USER_WITH_ADMIN_PERM = 'user_with_admin_perm';
 
   /**
-   * @var string*/
+   * API product RBAC attribute name.
+   *
+   * @var string
+   */
   protected $rbacAttributeName;
 
   /**
@@ -47,7 +51,7 @@ abstract class ApiProductRoleBasedAccessTestBase extends ApiProductAccessTest {
   ];
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function setUp() {
     parent::setUp();
@@ -68,27 +72,27 @@ abstract class ApiProductRoleBasedAccessTestBase extends ApiProductAccessTest {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function saveAccessSettings(array $settings): void {
+  protected function saveAccessSettings(array $settings) {
     $post = [];
     foreach (array_keys($this->roleStorage->loadMultiple()) as $rid) {
       foreach ($settings as $visibility => $roles) {
         if (in_array($rid, $roles)) {
-          $post["rbac[{$rid}][{$this->products[$visibility]->id()}]"] = TRUE;
+          $post["rbac[{$rid}][{$this->apiProducts[$visibility]->id()}]"] = TRUE;
         }
         else {
-          $post["rbac[{$rid}][{$this->products[$visibility]->id()}]"] = FALSE;
+          $post["rbac[{$rid}][{$this->apiProducts[$visibility]->id()}]"] = FALSE;
         }
       }
     }
     $this->drupalLogin($this->users[self::USER_WITH_ADMIN_PERM]);
-    $this->drupalPostForm('/admin/config/apigee-edge/product-settings/access-control', $post, 'Save configuration');
+    $this->drupalPostForm(Url::fromRoute('apigee_edge.settings.product.access_control'), $post, 'Save configuration');
     $this->drupalLogout();
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function getRolesWithAccess(ApiProductInterface $product): array {
     $value = $product->getAttributeValue($this->rbacAttributeName) ?? '';
@@ -96,14 +100,14 @@ abstract class ApiProductRoleBasedAccessTestBase extends ApiProductAccessTest {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function messageIfUserShouldHaveAccessByRole(string $operation, UserInterface $user, string $user_rid, array $rids_with_access, ApiProductInterface $product): string {
     return sprintf('User with "%s" role should have "%s" access to this API Product. RBAC attribute value: "%s". Roles with access granted: %s.', $user_rid, $operation, $product->getAttributeValue($this->rbacAttributeName), implode(', ', $rids_with_access));
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function messageIfUserShouldNotHaveAccess(string $operation, UserInterface $user, string $user_rid, array $rids_with_access, ApiProductInterface $product): string {
     return sprintf('"%s" user without "Bypass API Product access control" permission should not have "%s" access to this API Product. RBAC attribute value: "%s". Roles with access granted: %s.', $user_rid, $operation, $product->getAttributeValue($this->rbacAttributeName), implode(', ', $rids_with_access));
