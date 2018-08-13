@@ -118,7 +118,10 @@ class CacheTest extends ApigeeEdgeFunctionalTestBase {
    * Tests that credentials are not cached, but found on the app page.
    */
   protected function credentialsTest() {
-    $this->drupalGet("/user/{$this->account->id()}/apps/{$this->developerApp->getName()}");
+    $this->drupalGet(Url::fromRoute('entity.developer_app.canonical_by_developer', [
+      'user' => $this->account->id(),
+      'app' => $this->developerApp->getName(),
+    ]));
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $loadedApp */
     $loadedApp = DeveloperApp::load($this->developerApp->id());
     $this->assertNotEmpty($loadedApp, 'Developer App loaded');

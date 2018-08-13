@@ -33,7 +33,7 @@ final class RoleBasedAccessSettingsBatch {
   /**
    * Batch operation callback.
    *
-   * @param array $produc_name_display_name_map
+   * @param array $product_name_display_name_map
    *   Associative array where keys are the names (ids) of API Products and
    *   values are their display names.
    * @param array $product_name_rids_map
@@ -50,10 +50,10 @@ final class RoleBasedAccessSettingsBatch {
    *
    * @see callback_batch_operation()
    */
-  public static function batchOperation(array $produc_name_display_name_map, array $product_name_rids_map, string $attribute_name, string $original_attribute_name, array &$context): void {
+  public static function batchOperation(array $product_name_display_name_map, array $product_name_rids_map, string $attribute_name, string $original_attribute_name, array &$context): void {
     if (!isset($context['sandbox']['progress'])) {
       $context['sandbox']['progress'] = 0;
-      $context['sandbox']['max'] = count($produc_name_display_name_map);
+      $context['sandbox']['max'] = count($product_name_display_name_map);
     }
 
     // Process API Products by groups of 5.
@@ -62,7 +62,7 @@ final class RoleBasedAccessSettingsBatch {
     /** @var \Apigee\Edge\Api\Management\Controller\ApiProductControllerInterface $controller */
     $controller = $storage->getController(\Drupal::service('apigee_edge.sdk_connector'));
 
-    foreach (array_slice($produc_name_display_name_map, $context['sandbox']['progress'], 5) as $product_name => $product_display_name) {
+    foreach (array_slice($product_name_display_name_map, $context['sandbox']['progress'], 5) as $product_name => $product_display_name) {
       $context['message'] = t('Updating %d API Product...', ['%d' => $product_display_name]);
       $rids = $product_name_rids_map[$product_name] ?? [];
       try {
