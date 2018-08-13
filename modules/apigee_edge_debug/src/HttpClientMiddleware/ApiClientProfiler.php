@@ -69,21 +69,21 @@ class ApiClientProfiler {
    *   Config factory.
    * @param \Psr\Log\LoggerInterface $logger
    *   Logger.
-   * @param \Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager $debug_messageFormatter_plugin
+   * @param \Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager $debug_message_formatter_plugin
    *   Debug message formatter plugin manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, LoggerInterface $logger, DebugMessageFormatterPluginManager $debug_messageFormatter_plugin) {
+  public function __construct(ConfigFactoryInterface $config_factory, LoggerInterface $logger, DebugMessageFormatterPluginManager $debug_message_formatter_plugin) {
     // On module install, this constructor is called earlier than
     // the module's configuration would have been imported to the database.
     // In that case the $formatterPluginId is missing and it causes fatal
     // errors.
     $formatterPluginId = $config_factory->get('apigee_edge_debug.settings')->get('formatter');
     if ($formatterPluginId) {
-      $this->formatter = $debug_messageFormatter_plugin->createInstance($formatterPluginId);
+      $this->formatter = $debug_message_formatter_plugin->createInstance($formatterPluginId);
     }
     $this->logFormat = $config_factory->get('apigee_edge_debug.settings')->get('log_message_format');
     $this->logger = $logger;
-    $this->debugMessageFormatterPlugin = $debug_messageFormatter_plugin;
+    $this->debugMessageFormatterPlugin = $debug_message_formatter_plugin;
   }
 
   /**
