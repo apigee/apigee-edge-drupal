@@ -1013,7 +1013,6 @@ function apigee_edge_user_presave(UserInterface $account) {
           // "originalEmail" property's value on the entity.
           $developer->enforceIsNew(TRUE);
           $developer->save();
-          $developer_id = $developer->getDeveloperId();
         }
         catch (\Exception $e) {
           $context = [
