@@ -99,6 +99,8 @@ needs to be set on your system. These variables are:
 * `APIGEE_EDGE_USERNAME`
 * `APIGEE_EDGE_PASSWORD`.
 
+Value of `APIGEE_EDGE_USERNAME` should be an email address of an Apigee Edge user with **Organization administrator role** if you do not want to bump into permission issues in tests. Tests failed with "Forbidden" could be a sign of the insufficient permissions.
+
 You can set these environment variables multiple ways, either by defining them
 with `export` or `set` in the terminal or creating a copy of the `core/phpunit.xml.dist`
 file as `core/phpunit.xml` and specifying them in that file.
