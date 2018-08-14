@@ -120,6 +120,9 @@ final class ApiProductController extends OriginalApiProductController {
    * {@inheritdoc}
    */
   public function delete(string $entity_id): EntityInterface {
+    // Because we crated API products on Apigee Edge in create() we also have
+    // to delete them.
+    parent::delete($entity_id);
     $data = $this->state->get($this->generateApiProductStateKey($entity_id));
     if (NULL === $data) {
       throw new ApiException("API Product with {$entity_id} has not found in the storage.");
