@@ -1077,6 +1077,12 @@ function apigee_edge_user_cancel(array $edit, UserInterface $account, $method) {
  * Implements hook_user_delete().
  */
 function apigee_edge_user_delete(UserInterface $account) {
+  // Do not try to delete developer of the anonymous user because it does
+  // not exist.
+  if ($account->isAnonymous()) {
+    return;
+  }
+
   try {
     /** @var \Drupal\apigee_edge\Entity\Developer $developer */
     $developer = Developer::load($account->getEmail());
