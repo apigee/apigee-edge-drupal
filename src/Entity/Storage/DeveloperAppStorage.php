@@ -120,7 +120,7 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
    * @method listByDeveloper
    */
   public function getController(SDKConnectorInterface $connector): EntityCrudOperationsControllerInterface {
-    return new DeveloperAppController($connector->getOrganization(), $connector->getClient());
+    return new DeveloperAppController($connector->getOrganization(), $connector->getClient(), $this->entityClass);
   }
 
   /**
@@ -278,10 +278,9 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
    */
   public function resetCache(array $ids = NULL) {
     parent::resetCache($ids);
-    if ($ids) {
+    if ($this->entityType->isStaticallyCacheable() && $ids) {
       $tags = [];
       foreach ($ids as $id) {
-        unset($this->entities[$id]);
         $tags[] = "{$this->entityTypeId}:{$id}:app_name";
       }
       if ($this->entityType->isPersistentlyCacheable()) {
@@ -289,7 +288,6 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
       }
     }
     else {
-      $this->entities = [];
       if ($this->entityType->isPersistentlyCacheable()) {
         Cache::invalidateTags([$this->entityTypeId . ':app_names']);
       }

@@ -19,7 +19,6 @@
 
 namespace Drupal\Tests\apigee_edge\Functional;
 
-use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperInterface;
 use Drupal\Core\Url;
 
@@ -134,7 +133,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $account = user_load_by_mail($test_user['email']);
     $this->assertNotEmpty($account, 'Account is created');
 
-    $this->developerRegistered = Developer::load($test_user['email']);
+    $this->developerRegistered = $this->developerStorage->load($test_user['email']);
     $this->assertNotEmpty($this->developerRegistered);
 
     $this->assertEquals($this->developerRegistered->getEmail(), $test_user['email']);
@@ -148,7 +147,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
 
     // Ensure that entity static cache is also invalidated in this scope too.
     $this->developerStorage->resetCache([$test_user['email']]);
-    $this->developerRegistered = Developer::load($test_user['email']);
+    $this->developerRegistered = $this->developerStorage->load($test_user['email']);
 
     $this->assertEquals($this->developerRegistered->getEmail(), $test_user['email']);
     $this->assertEquals($this->developerRegistered->getFirstName(), $test_user['first_name']);
@@ -196,7 +195,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $account = user_load_by_mail($test_user['email']);
     $this->assertNotEmpty($account);
 
-    $this->developerCreatedByAdmin = Developer::load($test_user['email']);
+    $this->developerCreatedByAdmin = $this->developerStorage->load($test_user['email']);
     $this->assertNotEmpty($this->developerCreatedByAdmin);
 
     $this->assertEquals($this->developerCreatedByAdmin->getEmail(), $test_user['email']);
@@ -225,7 +224,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     // too. TODO Maybe introduce a loadUnchanged() method on developer or
     // use storage's loadUnchanged() instead.
     $this->developerStorage->resetCache([$test_user['email']]);
-    $this->developerCreatedByAdmin = Developer::load($test_user['email']);
+    $this->developerCreatedByAdmin = $this->developerStorage->load($test_user['email']);
     $this->assertNotEmpty($this->developerCreatedByAdmin);
 
     $this->assertEquals($this->developerCreatedByAdmin->getEmail(), $test_user['email']);
@@ -244,7 +243,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     // too. TODO Maybe introduce a loadUnchanged() method on developer or
     // use storage's loadUnchanged() instead.
     $this->developerStorage->resetCache([$test_user['email']]);
-    $this->developerCreatedByAdmin = Developer::load($test_user['email']);
+    $this->developerCreatedByAdmin = $this->developerStorage->load($test_user['email']);
     $this->assertEquals($this->developerCreatedByAdmin->getStatus(), DeveloperInterface::STATUS_INACTIVE);
 
     // Block user on the cancel form using the user_cancel_block method.
@@ -266,7 +265,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     ];
     $this->drupalPostForm($account->toUrl('cancel-form')->toString(), $formdata, 'Cancel account');
 
-    $this->developerCreatedByAdmin = Developer::load($test_user['email']);
+    $this->developerCreatedByAdmin = $this->developerStorage->load($test_user['email']);
     $this->assertNotEmpty($this->developerCreatedByAdmin);
     $this->assertEquals($this->developerCreatedByAdmin->getStatus(), DeveloperInterface::STATUS_INACTIVE);
 
@@ -288,7 +287,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     ];
     $this->drupalPostForm($account->toUrl('cancel-form')->toString(), $formdata, 'Cancel account');
 
-    $this->developerCreatedByAdmin = Developer::load($test_user['email']);
+    $this->developerCreatedByAdmin = $this->developerStorage->load($test_user['email']);
     $this->assertNotEmpty($this->developerCreatedByAdmin);
     $this->assertEquals($this->developerCreatedByAdmin->getStatus(), DeveloperInterface::STATUS_INACTIVE);
 
@@ -302,7 +301,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     // too. TODO Maybe introduce a loadUnchanged() method on developer or
     // use storage's loadUnchanged() instead.
     $this->developerStorage->resetCache([$test_user['email']]);
-    $this->assertFalse(Developer::load($test_user['email']), 'Developer does not exists anymore.');
+    $this->assertFalse($this->developerStorage->load($test_user['email']), 'Developer does not exists anymore.');
   }
 
 }

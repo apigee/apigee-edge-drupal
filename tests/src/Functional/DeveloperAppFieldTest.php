@@ -27,6 +27,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Url;
 use Drupal\field_ui\Tests\FieldUiTestTrait;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Fieldable developer app test.
@@ -533,6 +534,7 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalGet(Url::fromRoute('entity.developer_app.add_form_for_developer', [
       'user' => $this->account->id(),
     ]));
+    $this->assertEquals(Response::HTTP_OK, $this->getSession()->getStatusCode());
     if ($visible) {
       $this->assertSession()->pageTextContains($field_label);
     }

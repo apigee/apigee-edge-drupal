@@ -69,31 +69,101 @@ class QueryFactory implements QueryFactoryInterface, EventSubscriberInterface {
    * {@inheritdoc}
    */
   public function get(EntityTypeInterface $entity_type, $conjunction) {
-    $queryClass = Query::class;
     if (array_key_exists($entity_type->getClass(), self::$queryClassmap)) {
       $queryClass = self::$queryClassmap[$entity_type->getClass()];
     }
     else {
-      // Try to find entity type specific query class based on the following
-      // naming convention. If entity is called "Foo" then a "FooQuery" class
-      // must exist under \Drupal\apigee_edge\Entity\Query namespace and it
-      // must extend the \Drupal\apigee_edge\Entity\Query\Query class.
-      // Otherwise the default \Drupal\apigee_edge\Entity\Query\Query class
-      // if being used.
-      $tmp = explode('\\', $entity_type->getClass());
-      $entityName = end($tmp);
-      $tmp = explode('\\', $queryClass);
-      // Remove 'Query' from the end of the FQCN.
-      array_pop($tmp);
-      $tmp[] = $entityName . 'Query';
-      $entityQueryClass = implode('\\', $tmp);
-      if (class_exists($entityQueryClass) && in_array($queryClass, class_parents($entityQueryClass))) {
-        $queryClass = $entityQueryClass;
-      }
+      $queryClass = $this->findQueryClassForEntityType($entity_type) ?? Query::class;
       self::$queryClassmap[$entity_type->getClass()] = $queryClass;
     }
     $rc = new \ReflectionClass($queryClass);
     return $rc->newInstance($entity_type, $conjunction, $this->namespaces, $this->entityTypeManager);
+  }
+
+  /**
+   * Finds the appropriate query class for an entity type.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   Entity type.
+   *
+   * @return null|string
+   *   Query class or null if not found.
+   */
+  protected function findQueryClassForEntityType(EntityTypeInterface $entity_type): ?string {
+    foreach ($this->entityClasses($entity_type) as $class) {
+      if (($queryClass = $this->findQueryClass($class))) {
+        return $queryClass;
+      }
+    }
+    return NULL;
+  }
+
+  /**
+   * Returns the entity class and its parents.
+   *
+   * This list is used to look up possible query classes.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   Entity type.
+   *
+   * @return array
+   *   List of classes.
+   */
+  protected function entityClasses(EntityTypeInterface $entity_type): array {
+    $classes = [];
+    $class = $entity_type->getClass();
+    while ($class) {
+      $classes[] = $class;
+      $class = get_parent_class($class);
+    }
+    return $classes;
+  }
+
+  /**
+   * Attempts to find a query class for a given entity class.
+   *
+   * Try to find entity type specific query class based on the following
+   * naming convention. If entity is called "Foo" then a "FooQuery" class
+   * must exist under \Drupal\apigee_edge\Entity\Query namespace and it
+   * must extend the \Drupal\apigee_edge\Entity\Query\Query class.
+   * Otherwise the default \Drupal\apigee_edge\Entity\Query\Query class
+   * if being used.
+   *
+   * @param string $class
+   *   Entity class.
+   *
+   * @return null|string
+   *   Query class or null if not found.
+   */
+  protected function findQueryClass(string $class): ?string {
+    $entityClassParts = explode('\\', $class);
+    $entityName = array_pop($entityClassParts);
+    $localEntityQueryClass = implode('\\', $entityClassParts) . "\\Query\\{$entityName}Query";
+    if ($this->isValidQueryClass($localEntityQueryClass)) {
+      return $localEntityQueryClass;
+    }
+    $queryClassParts = explode('\\', Query::class);
+    // Remove 'Query' from the end of the FQCN.
+    array_pop($queryClassParts);
+    $queryClassParts[] = $entityName . 'Query';
+    $entityQueryClass = implode('\\', $queryClassParts);
+    if ($this->isValidQueryClass($entityQueryClass)) {
+      return $entityQueryClass;
+    }
+    return NULL;
+  }
+
+  /**
+   * Checks if a proposed query class is valid.
+   *
+   * @param string $class
+   *   Query class.
+   *
+   * @return bool
+   *   Decision.
+   */
+  protected function isValidQueryClass(string $class): bool {
+    return class_exists($class) && in_array(Query::class, class_parents($class));
   }
 
   /**

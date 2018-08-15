@@ -23,6 +23,9 @@
  * Helper module for the apigee_edge tests.
  */
 
+use Drupal\apigee_edge_test\Entity\OverriddenApiProduct;
+use Drupal\apigee_edge_test\Entity\OverriddenDeveloper;
+use Drupal\apigee_edge_test\Entity\OverriddenDeveloperApp;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\UserInterface;
 
@@ -37,4 +40,32 @@ function apigee_edge_test_apigee_edge_my_developer_apps_title_alter(Translatable
   $title = new TranslatableMarkup('Foo @original', [
     '@original' => $title,
   ]);
+}
+
+/**
+ * Implements hook_entity_type_alter().
+ *
+ * @param \Drupal\Core\Entity\EntityTypeInterface[] $entity_types
+ *   Entity types.
+ */
+function apigee_edge_test_entity_type_alter(array &$entity_types) {
+  foreach (_apigee_edge_entity_class_mapping() as $entity_type => $entity_class) {
+    if (isset($entity_types[$entity_type])) {
+      $entity_types[$entity_type]->setClass($entity_class);
+    }
+  }
+}
+
+/**
+ * A list of entity types and class overrides.
+ *
+ * @return array
+ *   Override map.
+ */
+function _apigee_edge_entity_class_mapping(): array {
+  return [
+    'developer' => OverriddenDeveloper::class,
+    'developer_app' => OverriddenDeveloperApp::class,
+    'api_product' => OverriddenApiProduct::class,
+  ];
 }

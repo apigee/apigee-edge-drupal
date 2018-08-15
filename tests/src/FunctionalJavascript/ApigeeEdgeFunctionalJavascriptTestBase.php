@@ -20,13 +20,13 @@
 namespace Drupal\Tests\apigee_edge\FunctionalJavascript;
 
 use Drupal\FunctionalJavascriptTests\DrupalSelenium2Driver;
-use Drupal\FunctionalJavascriptTests\JavascriptTestBase;
+use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
 use Drupal\Tests\apigee_edge\Functional\ApigeeEdgeTestTrait;
 
 /**
  * Base class for functional javascript tests.
  */
-abstract class ApigeeEdgeFunctionalJavascriptTestBase extends JavascriptTestBase {
+abstract class ApigeeEdgeFunctionalJavascriptTestBase extends WebDriverTestBase {
 
   use ApigeeEdgeTestTrait;
 

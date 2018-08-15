@@ -71,7 +71,7 @@ trait ApigeeEdgeTestTrait {
       'active_key' => 'test',
       'active_key_oauth_token' => '',
     ]);
-    $this->container->get('state')->resetCache();
+    drupal_flush_all_caches();
   }
 
   /**
@@ -82,7 +82,7 @@ trait ApigeeEdgeTestTrait {
       'active_key' => '',
       'active_key_oauth_token' => '',
     ]);
-    $this->container->get('state')->resetCache();
+    drupal_flush_all_caches();
   }
 
   /**

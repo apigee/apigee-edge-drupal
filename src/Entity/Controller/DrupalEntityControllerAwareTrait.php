@@ -20,7 +20,10 @@
 
 namespace Drupal\apigee_edge\Entity\Controller;
 
+use Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface;
+use Apigee\Edge\ClientInterface;
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
+use Apigee\Edge\Serializer\EntitySerializerInterface;
 use Drupal\apigee_edge\Entity\EntityConvertAwareTrait;
 use Drupal\Core\Entity\EntityInterface;
 
@@ -32,15 +35,46 @@ use Drupal\Core\Entity\EntityInterface;
 trait DrupalEntityControllerAwareTrait {
 
   /**
+   * The FQCN of the Drupal entity class.
+   *
+   * @var string
+   */
+  protected $entityClass;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(string $organization, ClientInterface $client, string $entity_class, ?EntitySerializerInterface $entity_serializer = NULL, ?OrganizationControllerInterface $organization_controller = NULL) {
+    parent::__construct($organization, $client, $entity_serializer, $organization_controller);
+    $rc = new \ReflectionClass($entity_class);
+    $interface = $this->getInterface();
+    if (!$rc->implementsInterface($interface)) {
+      throw new \InvalidArgumentException("Entity class must implement {$interface}");
+    }
+    $this->entityClass = $entity_class;
+  }
+
+  /**
+   * The interface class of the current entity.
+   *
+   * @return string
+   *   Interface class.
+   */
+  abstract protected function getInterface(): string;
+
+  /**
    * {@inheritdoc}
    */
   public function loadMultiple(array $ids = NULL): array {
     if ($ids !== NULL && count($ids) === 1) {
+      /** @var \Apigee\Edge\Entity\EntityInterface $entity */
       $entity = $this->load(reset($ids));
-      return [$entity->id() => $entity];
+      return [$entity->id() => $this->convertToDrupalEntity($entity)];
     }
 
-    $allEntities = $this->getEntities();
+    $allEntities = array_map(function (EdgeEntityInterface $entity): EntityInterface {
+      return $this->convertToDrupalEntity($entity);
+    }, $this->getEntities());
     if ($ids === NULL) {
       return $allEntities;
     }
@@ -58,7 +92,20 @@ trait DrupalEntityControllerAwareTrait {
    *   Apigee Edge entity in the SDK.
    */
   public function convertToSdkEntity(EntityInterface $drupal_entity): EdgeEntityInterface {
-    return EntityConvertAwareTrait::convertToSdkEntity($drupal_entity, parent::getEntityClass());
+    return EntityConvertAwareTrait::convertToSdkEntity($drupal_entity, $this->getEntityClass());
+  }
+
+  /**
+   * Converts an SDK entity into a Drupal entity.
+   *
+   * @param \Apigee\Edge\Entity\EntityInterface $sdk_entity
+   *   Apigee Edge entity in the SDK.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface
+   *   Apigee Edge entity in Drupal.
+   */
+  public function convertToDrupalEntity(EdgeEntityInterface $sdk_entity): EntityInterface {
+    return EntityConvertAwareTrait::convertToDrupalEntity($sdk_entity, $this->entityClass);
   }
 
 }

@@ -29,6 +29,7 @@ use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
 use Apigee\Edge\Structure\PagerInterface;
 use Drupal\apigee_edge\Entity\AppCredentialStorageAwareTrait;
 use Drupal\apigee_edge\Entity\DeveloperApp;
+use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\apigee_edge\Entity\EntityConvertAwareTrait;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\EntityInterface;
@@ -102,7 +103,11 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
       $app = $this->loadApp($entity_id);
       $this->saveEntityToStaticCaches($app);
     }
-    return EntityConvertAwareTrait::convertToDrupalEntity($app, DeveloperApp::class);
+
+    /** @var \Apigee\Edge\Entity\EntityInterface $entity */
+    $entity = EntityConvertAwareTrait::convertToDrupalEntity($app, $this->entityClass);
+
+    return $entity;
   }
 
   /**
@@ -166,7 +171,7 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
     $this->saveEntitiesToStaticCache($allApps);
     $apps = array_intersect_key($allApps, array_flip($developerAppIds));
     $converted = array_map(function (EdgeDeveloperApp $app) {
-      return EntityConvertAwareTrait::convertToDrupalEntity($app, DeveloperApp::class);
+      return EntityConvertAwareTrait::convertToDrupalEntity($app, $this->entityClass);
     }, $apps);
     return $converted;
   }
@@ -191,7 +196,11 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
       $app = $controller->load($app_name);
       $this->saveEntityToStaticCaches($app);
     }
-    return EntityConvertAwareTrait::convertToDrupalEntity($app, DeveloperApp::class);
+
+    /** @var \Apigee\Edge\Entity\EntityInterface $entity */
+    $entity = EntityConvertAwareTrait::convertToDrupalEntity($app, $this->entityClass);
+
+    return $entity;
   }
 
   /**
@@ -316,7 +325,7 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
     }
 
     $converted = array_map(function (EdgeDeveloperApp $app) {
-      return EntityConvertAwareTrait::convertToDrupalEntity($app, DeveloperApp::class);
+      return EntityConvertAwareTrait::convertToDrupalEntity($app, $this->entityClass);
     }, $apps);
     return $converted;
   }
@@ -352,6 +361,13 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
     $apps = parent::listAppsByStatus($status, $include_credentials, $pager);
     $this->saveEntitiesToStaticCache($apps);
     return $apps;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getInterface(): string {
+    return DeveloperAppInterface::class;
   }
 
 }
