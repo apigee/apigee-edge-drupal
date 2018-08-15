@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2018 Google Inc.
  *
@@ -21,6 +22,6 @@ namespace Drupal\apigee_edge_test\Entity;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 
 /**
- * Class OverriddenDeveloperApp
+ * Class OverriddenDeveloperApp.
  */
 class OverriddenDeveloperApp extends DeveloperApp {}

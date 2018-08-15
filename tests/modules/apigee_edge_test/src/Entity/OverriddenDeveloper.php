@@ -22,6 +22,6 @@ namespace Drupal\apigee_edge_test\Entity;
 use Drupal\apigee_edge\Entity\Developer;
 
 /**
- * Class OverriddenDeveloper
+ * Class OverriddenDeveloper.
  */
 class OverriddenDeveloper extends Developer {}

@@ -22,6 +22,6 @@ namespace Drupal\apigee_edge_test\Entity;
 use Drupal\apigee_edge\Entity\ApiProduct;
 
 /**
- * Class OverriddenApiProduct
+ * Class OverriddenApiProduct.
  */
 class OverriddenApiProduct extends ApiProduct {}

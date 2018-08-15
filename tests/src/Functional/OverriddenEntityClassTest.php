@@ -20,6 +20,8 @@
 namespace Drupal\Tests\apigee_edge\Functional;
 
 /**
+ * Tests entity class overriding for the Edge entity types.
+ *
  * @group apigee_edge
  */
 class OverriddenEntityClassTest extends ApigeeEdgeFunctionalTestBase {
