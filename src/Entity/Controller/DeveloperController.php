@@ -36,7 +36,7 @@ class DeveloperController extends EdgeDeveloperController implements DrupalEntit
   /**
    * {@inheritdoc}
    */
-  protected function getInterface(): string {
+  protected function getEntityInterface(): string {
     return DeveloperInterface::class;
   }
 

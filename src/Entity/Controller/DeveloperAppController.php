@@ -366,7 +366,7 @@ class DeveloperAppController extends AppController implements DeveloperAppContro
   /**
    * {@inheritdoc}
    */
-  protected function getInterface(): string {
+  protected function getEntityInterface(): string {
     return DeveloperAppInterface::class;
   }
 

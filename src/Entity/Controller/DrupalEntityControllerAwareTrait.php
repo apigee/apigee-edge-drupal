@@ -47,7 +47,7 @@ trait DrupalEntityControllerAwareTrait {
   public function __construct(string $organization, ClientInterface $client, string $entity_class, ?EntitySerializerInterface $entity_serializer = NULL, ?OrganizationControllerInterface $organization_controller = NULL) {
     parent::__construct($organization, $client, $entity_serializer, $organization_controller);
     $rc = new \ReflectionClass($entity_class);
-    $interface = $this->getInterface();
+    $interface = $this->getEntityInterface();
     if (!$rc->implementsInterface($interface)) {
       throw new \InvalidArgumentException("Entity class must implement {$interface}");
     }
@@ -60,7 +60,7 @@ trait DrupalEntityControllerAwareTrait {
    * @return string
    *   Interface class.
    */
-  abstract protected function getInterface(): string;
+  abstract protected function getEntityInterface(): string;
 
   /**
    * {@inheritdoc}

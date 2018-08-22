@@ -3,7 +3,7 @@ Apigee Edge Drupal module
 
 The Apigee Edge module enables you to integrate Drupal 8 with Apigee Edge.
 
-**Note**: The Apigee Edge module requires Drupal 8.5.x or higher and PHP 7.1 or higher.
+**Note**: The Apigee Edge module requires Drupal 8.6.x or higher and PHP 7.1 or higher.
 
 ### Installing
 

@@ -32,7 +32,7 @@ class ApiProductController extends EdgeApiProductController implements DrupalEnt
   /**
    * {@inheritdoc}
    */
-  protected function getInterface(): string {
+  protected function getEntityInterface(): string {
     return ApiProductInterface::class;
   }
 
