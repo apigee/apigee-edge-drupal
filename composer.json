@@ -35,8 +35,7 @@
         },
         "patches": {
             "drupal/core": {
-                "(For testing) Drupal core tests actually requires PHPUnit >= 6.5": "https://www.drupal.org/files/issues/2018-04-11/require_phpunit_65-2947888-5.patch",
-                "(For testing) Time Ago summary does not render on Manage Display for Datetime": "https://www.drupal.org/files/issues/2686409-45.patch"
+                "(For testing) Time Ago summary does not render on Manage Display for Datetime": "https://www.drupal.org/files/issues/2018-08-06/2686409-61.patch"
             },
             "drupal/key": {
                 "Fix implementation of NoneKeyInput": "https://www.drupal.org/files/issues/2018-06-27/key-fix-implementation-of-nonekeyinput-2982124-2.patch"
