@@ -44,9 +44,6 @@ function apigee_edge_test_apigee_edge_my_developer_apps_title_alter(Translatable
 
 /**
  * Implements hook_entity_type_alter().
- *
- * @param \Drupal\Core\Entity\EntityTypeInterface[] $entity_types
- *   Entity types.
  */
 function apigee_edge_test_entity_type_alter(array &$entity_types) {
   foreach (_apigee_edge_entity_class_mapping() as $entity_type => $entity_class) {

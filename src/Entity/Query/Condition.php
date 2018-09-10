@@ -19,7 +19,6 @@
 
 namespace Drupal\apigee_edge\Entity\Query;
 
-use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Entity\Query\ConditionBase;
 use Drupal\Core\Entity\Query\ConditionInterface;
 use Drupal\Core\Entity\Query\QueryException;
