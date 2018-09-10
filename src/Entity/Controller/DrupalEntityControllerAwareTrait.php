@@ -107,7 +107,7 @@ trait DrupalEntityControllerAwareTrait {
    * @return \Drupal\Core\Entity\EntityInterface
    *   Apigee Edge entity in Drupal.
    */
-  public function convertToDrupalEntity(EdgeEntityInterface $sdk_entity): EntityInterface {
+  protected function convertToDrupalEntity(EdgeEntityInterface $sdk_entity): EntityInterface {
     return EntityConvertAwareTrait::convertToDrupalEntity($sdk_entity, $this->entityClass);
   }
 
