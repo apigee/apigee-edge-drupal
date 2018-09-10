@@ -32,7 +32,8 @@ use Drupal\user\UserInterface;
  *   label = @Translation("Developer"),
  *   handlers = {
  *     "storage" = "\Drupal\apigee_edge\Entity\Storage\DeveloperStorage",
- *   }
+ *   },
+ *   query_class = "Drupal\apigee_edge\Entity\Query\DeveloperQuery",
  * )
  */
 class Developer extends EdgeDeveloper implements DeveloperInterface {
