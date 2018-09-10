@@ -369,17 +369,19 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
    * {@inheritdoc}
    */
   public function resetCache(array $ids = NULL) {
-    if ($ids) {
+    if ($this->entityType->isStaticallyCacheable() && $ids) {
       $cids = [];
       foreach ($ids as $id) {
-        unset($this->entities[$id]);
-        $cids[] = $this->buildCacheId($id);
+        $cid = $this->buildCacheId($id);
+        $cids[] = $cid;
+        $this->memoryCache->delete($cid);
       }
       if ($this->entityType->isPersistentlyCacheable()) {
         $this->cacheBackend->deleteMultiple($cids);
       }
     }
     else {
+      $this->memoryCache->invalidateTags([$this->memoryCacheTag]);
       $this->entities = [];
       if ($this->entityType->isPersistentlyCacheable()) {
         Cache::invalidateTags([$this->entityTypeId . ':values']);

@@ -17,21 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Entity;
+namespace Drupal\apigee_edge_test\Entity;
 
-use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\apigee_edge\Entity\ApiProduct;
 
 /**
- * Provides an interface for an Apigee Edge entity type and its metadata.
+ * Class OverriddenApiProduct.
  */
-interface EdgeEntityTypeInterface extends EntityTypeInterface {
-
-  /**
-   * Returns the fully-qualified class name of the query class for this entity.
-   *
-   * @return string
-   *   The FQCN of the query class.
-   */
-  public function getQueryClass(): string;
-
-}
+class OverriddenApiProduct extends ApiProduct {}

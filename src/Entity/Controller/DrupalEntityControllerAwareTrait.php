@@ -32,15 +32,52 @@ use Drupal\Core\Entity\EntityInterface;
 trait DrupalEntityControllerAwareTrait {
 
   /**
+   * The FQCN of the Drupal entity class.
+   *
+   * @var string
+   */
+  protected $entityClass;
+
+  /**
+   * Sets the entity class that is used by the controller in Drupal.
+   *
+   * This must be called in all constructors.
+   *
+   * @param string $entity_class
+   *   The FQCN of the entity class.
+   *
+   * @throws \InvalidArgumentException
+   *   If the provided class is not instance of the required interface.
+   */
+  private function setEntityClass(string $entity_class): void {
+    $rc = new \ReflectionClass($entity_class);
+    if (!$rc->implementsInterface($this->entityInterface())) {
+      throw new \InvalidArgumentException("Entity class must implement {$this->entityInterface()}");
+    }
+    $this->entityClass = $entity_class;
+  }
+
+  /**
+   * The FQCN of the interface that the class must extend.
+   *
+   * @return string
+   *   The fully-qualified class name of the interface.
+   */
+  abstract protected function entityInterface(): string;
+
+  /**
    * {@inheritdoc}
    */
   public function loadMultiple(array $ids = NULL): array {
     if ($ids !== NULL && count($ids) === 1) {
+      /** @var \Apigee\Edge\Entity\EntityInterface $entity */
       $entity = $this->load(reset($ids));
-      return [$entity->id() => $entity];
+      return [$entity->id() => $this->convertToDrupalEntity($entity)];
     }
 
-    $allEntities = $this->getEntities();
+    $allEntities = array_map(function (EdgeEntityInterface $entity): EntityInterface {
+      return $this->convertToDrupalEntity($entity);
+    }, $this->getEntities());
     if ($ids === NULL) {
       return $allEntities;
     }
@@ -58,7 +95,20 @@ trait DrupalEntityControllerAwareTrait {
    *   Apigee Edge entity in the SDK.
    */
   public function convertToSdkEntity(EntityInterface $drupal_entity): EdgeEntityInterface {
-    return EntityConvertAwareTrait::convertToSdkEntity($drupal_entity, parent::getEntityClass());
+    return EntityConvertAwareTrait::convertToSdkEntity($drupal_entity, $this->getEntityClass());
+  }
+
+  /**
+   * Converts an SDK entity into a Drupal entity.
+   *
+   * @param \Apigee\Edge\Entity\EntityInterface $sdk_entity
+   *   Apigee Edge entity in the SDK.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface
+   *   Apigee Edge entity in Drupal.
+   */
+  protected function convertToDrupalEntity(EdgeEntityInterface $sdk_entity): EntityInterface {
+    return EntityConvertAwareTrait::convertToDrupalEntity($sdk_entity, $this->entityClass);
   }
 
 }

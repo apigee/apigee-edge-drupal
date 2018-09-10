@@ -17,21 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Entity;
-
-use Drupal\Core\Entity\EntityTypeInterface;
+namespace Drupal\Tests\apigee_edge\Functional;
 
 /**
- * Provides an interface for an Apigee Edge entity type and its metadata.
+ * Tests entity class overriding for the Edge entity types.
+ *
+ * @group apigee_edge
  */
-interface EdgeEntityTypeInterface extends EntityTypeInterface {
+class OverriddenEntityClassTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
-   * Returns the fully-qualified class name of the query class for this entity.
-   *
-   * @return string
-   *   The FQCN of the query class.
+   * Tests class overriding.
    */
-  public function getQueryClass(): string;
+  public function testClassOverride() {
+    /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $manager */
+    $manager = $this->container->get('entity_type.manager');
+    foreach (_apigee_edge_entity_class_mapping() as $entity_type => $entity_class) {
+      $entity = $manager->getStorage($entity_type)->create();
+      $this->assertInstanceOf($entity_class, $entity);
+    }
+  }
 
 }

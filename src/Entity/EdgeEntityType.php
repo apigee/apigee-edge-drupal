@@ -32,6 +32,13 @@ use Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider;
 class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
 
   /**
+   * The FQCN of the query class used for this entity.
+   *
+   * @var string
+   */
+  protected $query_class = 'Drupal\apigee_edge\Entity\Query\Query';
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(array $definition) {
@@ -49,6 +56,7 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
       'canonical' => "/{$this->id}/{{$this->id}}",
       'collection' => "/{$this->id}",
     ];
+
     // Add entity type id to the list cache tags to help easier cache
     // invalidation.
     $this->list_cache_tags[] = $this->id;
@@ -111,6 +119,13 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
       }
     }
     return $keys;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getQueryClass(): string {
+    return $this->query_class;
   }
 
 }

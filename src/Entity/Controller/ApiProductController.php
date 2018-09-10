@@ -21,6 +21,7 @@
 namespace Drupal\apigee_edge\Entity\Controller;
 
 use Apigee\Edge\Api\Management\Controller\ApiProductController as EdgeApiProductController;
+use Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface;
 use Apigee\Edge\ClientInterface;
 use Apigee\Edge\Serializer\EntitySerializerInterface;
 use Drupal\apigee_edge\Entity\ApiProductInterface;
@@ -32,41 +33,29 @@ class ApiProductController extends EdgeApiProductController implements DrupalEnt
   use DrupalEntityControllerAwareTrait;
 
   /**
-   * THE FQCN of the entity class.
-   *
-   * @var string
-   */
-  private $entityClass;
-
-  /**
    * ApiProductController constructor.
    *
    * @param string $organization
-   *   The organization name.
+   *   Name of the organization.
    * @param \Apigee\Edge\ClientInterface $client
    *   The API client.
    * @param string $entity_class
-   *   The FQCN of the entity class that is used in Drupal.
+   *   The FQCN of the entity class used by this controller.
    * @param \Apigee\Edge\Serializer\EntitySerializerInterface|null $entity_serializer
    *   The entity serializer.
-   *
-   * @throws \ReflectionException
+   * @param \Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface|null $organization_controller
+   *   The organization controller.
    */
-  public function __construct(string $organization, ClientInterface $client, string $entity_class, ?EntitySerializerInterface $entity_serializer = NULL) {
-    parent::__construct($organization, $client, $entity_serializer);
-    $interface = ApiProductInterface::class;
-    $rc = new \ReflectionClass($entity_class);
-    if (!$rc->implementsInterface($interface)) {
-      throw new \InvalidArgumentException("Entity class must implement {$interface}.");
-    }
-    $this->entityClass = $entity_class;
+  public function __construct(string $organization, ClientInterface $client, string $entity_class, ?EntitySerializerInterface $entity_serializer = NULL, ?OrganizationControllerInterface $organization_controller = NULL) {
+    parent::__construct($organization, $client, $entity_serializer, $organization_controller);
+    $this->setEntityClass($entity_class);
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getEntityClass(): string {
-    return $this->entityClass;
+  protected function entityInterface(): string {
+    return ApiProductInterface::class;
   }
 
 }

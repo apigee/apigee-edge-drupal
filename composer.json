@@ -7,7 +7,7 @@
         "php": ">=7.1",
         "apigee/apigee-client-php": "^2.0",
         "cweagans/composer-patches": "^1.6.5",
-        "drupal/core": "^8.5",
+        "drupal/core": "^8.6",
         "drupal/entity": "^1.0",
         "drupal/key": "^1.7",
         "php-http/guzzle6-adapter": "^1.1.1"
@@ -17,7 +17,7 @@
         "drush/drush": "^9.0",
         "egulias/email-validator": "1.2.14",
         "phpunit/phpunit": "^6.5",
-        "webflo/drupal-core-require-dev": "^8.5"
+        "webflo/drupal-core-require-dev": "^8.6"
     },
     "conflict": {
         "apigee/apigee-client-php": "< 2.0.0-alpha4"
@@ -35,8 +35,7 @@
         },
         "patches": {
             "drupal/core": {
-                "(For testing) Drupal core tests actually requires PHPUnit >= 6.5": "https://www.drupal.org/files/issues/2018-04-11/require_phpunit_65-2947888-5.patch",
-                "(For testing) Time Ago summary does not render on Manage Display for Datetime": "https://www.drupal.org/files/issues/2686409-45.patch"
+                "(For testing) Time Ago summary does not render on Manage Display for Datetime": "https://www.drupal.org/files/issues/2018-08-06/2686409-61.patch"
             },
             "drupal/key": {
                 "Fix implementation of NoneKeyInput": "https://www.drupal.org/files/issues/2018-06-27/key-fix-implementation-of-nonekeyinput-2982124-2.patch"

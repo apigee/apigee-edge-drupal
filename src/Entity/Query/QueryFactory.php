@@ -69,30 +69,8 @@ class QueryFactory implements QueryFactoryInterface, EventSubscriberInterface {
    * {@inheritdoc}
    */
   public function get(EntityTypeInterface $entity_type, $conjunction) {
-    $queryClass = Query::class;
-    if (array_key_exists($entity_type->getClass(), self::$queryClassmap)) {
-      $queryClass = self::$queryClassmap[$entity_type->getClass()];
-    }
-    else {
-      // Try to find entity type specific query class based on the following
-      // naming convention. If entity is called "Foo" then a "FooQuery" class
-      // must exist under \Drupal\apigee_edge\Entity\Query namespace and it
-      // must extend the \Drupal\apigee_edge\Entity\Query\Query class.
-      // Otherwise the default \Drupal\apigee_edge\Entity\Query\Query class
-      // if being used.
-      $tmp = explode('\\', $entity_type->getClass());
-      $entityName = end($tmp);
-      $tmp = explode('\\', $queryClass);
-      // Remove 'Query' from the end of the FQCN.
-      array_pop($tmp);
-      $tmp[] = $entityName . 'Query';
-      $entityQueryClass = implode('\\', $tmp);
-      if (class_exists($entityQueryClass) && in_array($queryClass, class_parents($entityQueryClass))) {
-        $queryClass = $entityQueryClass;
-      }
-      self::$queryClassmap[$entity_type->getClass()] = $queryClass;
-    }
-    $rc = new \ReflectionClass($queryClass);
+    /** @var \Drupal\apigee_edge\Entity\EdgeEntityTypeInterface $entity_type */
+    $rc = new \ReflectionClass($entity_type->getQueryClass());
     return $rc->newInstance($entity_type, $conjunction, $this->namespaces, $this->entityTypeManager);
   }
 

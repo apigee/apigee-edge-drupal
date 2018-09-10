@@ -19,7 +19,6 @@
 
 namespace Drupal\apigee_edge\Entity\Query;
 
-use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Entity\Query\ConditionBase;
 use Drupal\Core\Entity\Query\ConditionInterface;
 use Drupal\Core\Entity\Query\QueryException;
@@ -93,10 +92,10 @@ class Condition extends ConditionBase implements ConditionInterface {
 
         // Normalize the value to lower case.
         if (is_array($condition['value'])) {
-          $condition['value'] = array_map([Unicode::class, 'strtolower'], $condition['value']);
+          $condition['value'] = array_map('mb_strtolower', $condition['value']);
         }
         elseif (is_string($condition['value'])) {
-          $condition['value'] = Unicode::strtolower($condition['value']);
+          $condition['value'] = mb_strtolower($condition['value']);
         }
 
         $filters[] = static::matchProperty($condition);
@@ -129,7 +128,7 @@ class Condition extends ConditionBase implements ConditionInterface {
 
       if (isset($value)) {
         if (!is_bool($value)) {
-          $value = Unicode::strtolower($value);
+          $value = mb_strtolower($value);
         }
 
         switch ($condition['operator']) {
