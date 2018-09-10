@@ -20,10 +20,7 @@
 
 namespace Drupal\apigee_edge\Entity\Controller;
 
-use Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface;
-use Apigee\Edge\ClientInterface;
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
-use Apigee\Edge\Serializer\EntitySerializerInterface;
 use Drupal\apigee_edge\Entity\EntityConvertAwareTrait;
 use Drupal\Core\Entity\EntityInterface;
 
@@ -42,25 +39,31 @@ trait DrupalEntityControllerAwareTrait {
   protected $entityClass;
 
   /**
-   * {@inheritdoc}
+   * Sets the entity class that is used by the controller in Drupal.
+   *
+   * This must be called in all constructors.
+   *
+   * @param string $entity_class
+   *   The FQCN of the entity class.
+   *
+   * @throws \InvalidArgumentException
+   *   If the provided class is not instance of the required interface.
    */
-  public function __construct(string $organization, ClientInterface $client, string $entity_class, ?EntitySerializerInterface $entity_serializer = NULL, ?OrganizationControllerInterface $organization_controller = NULL) {
-    parent::__construct($organization, $client, $entity_serializer, $organization_controller);
+  private function setEntityClass(string $entity_class): void {
     $rc = new \ReflectionClass($entity_class);
-    $interface = $this->getEntityInterface();
-    if (!$rc->implementsInterface($interface)) {
-      throw new \InvalidArgumentException("Entity class must implement {$interface}");
+    if (!$rc->implementsInterface($this->entityInterface())) {
+      throw new \InvalidArgumentException("Entity class must implement {$this->entityInterface()}");
     }
     $this->entityClass = $entity_class;
   }
 
   /**
-   * The interface class of the current entity.
+   * The FQCN of the interface that the class must extend.
    *
    * @return string
-   *   Interface class.
+   *   The fully-qualified class name of the interface.
    */
-  abstract protected function getEntityInterface(): string;
+  abstract protected function entityInterface(): string;
 
   /**
    * {@inheritdoc}
