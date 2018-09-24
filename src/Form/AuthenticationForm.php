@@ -22,6 +22,8 @@ namespace Drupal\apigee_edge\Form;
 use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
+use Drupal\apigee_edge\Exception\KeyValueMalformedException;
+use Drupal\apigee_edge\OauthTokenStorage;
 use Drupal\apigee_edge\Plugin\KeyType\OauthKeyType;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Render\MarkupInterface;
@@ -317,7 +319,7 @@ class AuthenticationForm extends ConfigFormBase {
               'value' => 'apigee_edge_oauth',
             ],
           ],
-          'or',
+          'xor',
           [
             ':input[name="key_basic_auth"]' => [
               'checked' => TRUE,
@@ -345,7 +347,7 @@ class AuthenticationForm extends ConfigFormBase {
             'value' => 'apigee_edge_oauth',
           ],
         ],
-        'or',
+        'xor',
         [
           ':input[name="key_basic_auth"]' => [
             'checked' => TRUE,
@@ -374,9 +376,11 @@ class AuthenticationForm extends ConfigFormBase {
       $key_token = $this->keyRepository->getKey($form_state->getValue('key_oauth_token'));
     }
     try {
-      // Ensure that testing connection using clean token storage.
+      // Ensure that testing connection using clean token storage (delete key
+      // value instead of the key itself).
       if (isset($key_token)) {
-        $key_token->deleteKeyValue();
+        $oauth_token_storage = new OauthTokenStorage($key_token);
+        $oauth_token_storage->removeToken();
       }
       $this->sdkConnector->testConnection($key, $key_token);
       $this->messenger()->addStatus($this->t('Connection successful.'));
@@ -526,10 +530,20 @@ class AuthenticationForm extends ConfigFormBase {
     $key_type = $key->getKeyType();
 
     $credentials = [
-      'endpoint' => $key_type->getEndpoint($key),
-      'organization' => $key_type->getOrganization($key),
-      'username' => $key_type->getUsername($key),
+      'endpoint' => '',
+      'organization' => '',
+      'username' => '',
     ];
+
+    try {
+      $credentials['endpoint'] = $key_type->getEndpoint($key);
+      $credentials['organization'] = $key_type->getOrganization($key);
+      $credentials['username'] = $key_type->getUsername($key);
+    }
+    catch (KeyValueMalformedException $exception) {
+      // Could not read the credentials because the key value storage is
+      // malformed.
+    }
 
     $keys = [
       'key_type' => get_class($key_type),
