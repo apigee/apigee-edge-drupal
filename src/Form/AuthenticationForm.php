@@ -388,7 +388,7 @@ class AuthenticationForm extends ConfigFormBase {
     catch (\Exception $exception) {
       watchdog_exception('apigee_edge', $exception);
 
-      $form_state->setError($form, $this->t('@suggestion Error message: %response.', [
+      $form_state->setError($form, $this->t('@suggestion Error message: %response', [
         '@suggestion' => $this->createSuggestion($exception, $key),
         '%response' => $exception->getMessage(),
       ]));
@@ -529,11 +529,7 @@ class AuthenticationForm extends ConfigFormBase {
     /** @var \Drupal\apigee_edge\Plugin\KeyType\BasicAuthKeyType $key_type */
     $key_type = $key->getKeyType();
 
-    $credentials = [
-      'endpoint' => '',
-      'organization' => '',
-      'username' => '',
-    ];
+    $credentials = [];
 
     try {
       $credentials['endpoint'] = $key_type->getEndpoint($key);
