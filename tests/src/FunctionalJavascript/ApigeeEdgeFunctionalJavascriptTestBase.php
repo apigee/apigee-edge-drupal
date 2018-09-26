@@ -29,7 +29,7 @@ use Drupal\Tests\apigee_edge\Functional\ApigeeEdgeTestTrait;
 abstract class ApigeeEdgeFunctionalJavascriptTestBase extends WebDriverTestBase {
 
   use ApigeeEdgeTestTrait;
-  
+
   /**
    * {@inheritdoc}
    */
