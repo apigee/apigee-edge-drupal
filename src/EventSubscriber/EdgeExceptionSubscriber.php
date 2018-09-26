@@ -47,6 +47,7 @@ class EdgeExceptionSubscriber extends DefaultExceptionHtmlSubscriber {
    */
   public function onException(GetResponseForExceptionEvent $event) {
     if ($event->getException() instanceof ApiException || $event->getException()->getPrevious() instanceof ApiException) {
+      watchdog_exception('apigee_edge', $event->getException());
       $this->makeSubrequest($event, '/api-communication-error', Response::HTTP_SERVICE_UNAVAILABLE);
     }
   }
