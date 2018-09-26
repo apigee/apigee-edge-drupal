@@ -162,20 +162,20 @@ class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $invalidCredentials['username'] = "{$this->randomGenerator->word(8)}@example.com";
     $this->createKey('key_basic_auth_private_file_invalid_username', 'apigee_edge_basic_auth', 'apigee_edge_private_file', $invalidCredentials);
     $this->createKey('key_oauth_private_file_invalid_username', 'apigee_edge_oauth', 'apigee_edge_private_file', $invalidCredentials);
-    $this->assertKeyTestConnection('key_basic_auth_private_file_invalid_username', '', "Failed to connect to Apigee Edge. The given username ({$invalidCredentials['username']}) or password is incorrect. Error message: Unauthorized.");
-    $this->assertKeyTestConnection('key_oauth_private_file_invalid_username', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The given username ({$invalidCredentials['username']}) or password is incorrect. Error message: {\"error\":\"unauthorized\",\"error_description\":\"Bad credentials\"}.");
-    $this->assertKeySave('key_basic_auth_private_file_invalid_username', '', "Failed to connect to Apigee Edge. The given username ({$invalidCredentials['username']}) or password is incorrect. Error message: Unauthorized.");
-    $this->assertKeySave('key_oauth_private_file_invalid_username', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The given username ({$invalidCredentials['username']}) or password is incorrect. Error message: {\"error\":\"unauthorized\",\"error_description\":\"Bad credentials\"}.");
+    $this->assertKeyTestConnection('key_basic_auth_private_file_invalid_username', '', "Failed to connect to Apigee Edge. The given username ({$invalidCredentials['username']}) or password is incorrect. Error message: Unauthorized");
+    $this->assertKeyTestConnection('key_oauth_private_file_invalid_username', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The given username ({$invalidCredentials['username']}) or password is incorrect. Error message: {\"error\":\"unauthorized\",\"error_description\":\"Bad credentials\"}");
+    $this->assertKeySave('key_basic_auth_private_file_invalid_username', '', "Failed to connect to Apigee Edge. The given username ({$invalidCredentials['username']}) or password is incorrect. Error message: Unauthorized");
+    $this->assertKeySave('key_oauth_private_file_invalid_username', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The given username ({$invalidCredentials['username']}) or password is incorrect. Error message: {\"error\":\"unauthorized\",\"error_description\":\"Bad credentials\"}");
 
     // Create and test keys with invalid organization.
     $invalidCredentials = $this->validCredentials;
     $invalidCredentials['organization'] = $this->randomGenerator->word(8);
     $this->createKey('key_basic_auth_private_file_invalid_organization', 'apigee_edge_basic_auth', 'apigee_edge_private_file', $invalidCredentials);
     $this->createKey('key_oauth_private_file_invalid_organization', 'apigee_edge_oauth', 'apigee_edge_private_file', $invalidCredentials);
-    $this->assertKeyTestConnection('key_basic_auth_private_file_invalid_organization', '', "Failed to connect to Apigee Edge. The given organization name ({$invalidCredentials['organization']}) is incorrect. Error message: Forbidden.");
-    $this->assertKeyTestConnection('key_oauth_private_file_invalid_organization', 'key_oauth_token', "Failed to connect to Apigee Edge. The given organization name ({$invalidCredentials['organization']}) is incorrect. Error message: Forbidden.");
-    $this->assertKeySave('key_basic_auth_private_file_invalid_organization', '', "Failed to connect to Apigee Edge. The given organization name ({$invalidCredentials['organization']}) is incorrect. Error message: Forbidden.");
-    $this->assertKeySave('key_oauth_private_file_invalid_organization', 'key_oauth_token', "Failed to connect to Apigee Edge. The given organization name ({$invalidCredentials['organization']}) is incorrect. Error message: Forbidden.");
+    $this->assertKeyTestConnection('key_basic_auth_private_file_invalid_organization', '', "Failed to connect to Apigee Edge. The given organization name ({$invalidCredentials['organization']}) is incorrect. Error message: Forbidden");
+    $this->assertKeyTestConnection('key_oauth_private_file_invalid_organization', 'key_oauth_token', "Failed to connect to Apigee Edge. The given organization name ({$invalidCredentials['organization']}) is incorrect. Error message: Forbidden");
+    $this->assertKeySave('key_basic_auth_private_file_invalid_organization', '', "Failed to connect to Apigee Edge. The given organization name ({$invalidCredentials['organization']}) is incorrect. Error message: Forbidden");
+    $this->assertKeySave('key_oauth_private_file_invalid_organization', 'key_oauth_token', "Failed to connect to Apigee Edge. The given organization name ({$invalidCredentials['organization']}) is incorrect. Error message: Forbidden");
 
     // Create and test keys with invalid endpoint.
     $invalidCredentials = $this->validCredentials;
@@ -183,32 +183,32 @@ class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $host = substr($invalidCredentials['endpoint'], 8);
     $this->createKey('key_basic_auth_private_file_invalid_endpoint', 'apigee_edge_basic_auth', 'apigee_edge_private_file', $invalidCredentials);
     $this->createKey('key_oauth_private_file_invalid_endpoint', 'apigee_edge_oauth', 'apigee_edge_private_file', $invalidCredentials);
-    $this->assertKeyTestConnection('key_basic_auth_private_file_invalid_endpoint', '', "Failed to connect to Apigee Edge. The given endpoint ({$invalidCredentials['endpoint']}) is incorrect or something is wrong with the connection. Error message: cURL error 6: Could not resolve host: {$host} (see http://curl.haxx.se/libcurl/c/libcurl-errors.html).");
-    $this->assertKeyTestConnection('key_oauth_private_file_invalid_endpoint', 'key_oauth_token', "Failed to connect to Apigee Edge. The given endpoint ({$invalidCredentials['endpoint']}) is incorrect or something is wrong with the connection. Error message: cURL error 6: Could not resolve host: {$host} (see http://curl.haxx.se/libcurl/c/libcurl-errors.html).");
-    $this->assertKeySave('key_basic_auth_private_file_invalid_endpoint', '', "Failed to connect to Apigee Edge. The given endpoint ({$invalidCredentials['endpoint']}) is incorrect or something is wrong with the connection. Error message: cURL error 6: Could not resolve host: {$host} (see http://curl.haxx.se/libcurl/c/libcurl-errors.html).");
-    $this->assertKeySave('key_oauth_private_file_invalid_endpoint', 'key_oauth_token', "Failed to connect to Apigee Edge. The given endpoint ({$invalidCredentials['endpoint']}) is incorrect or something is wrong with the connection. Error message: cURL error 6: Could not resolve host: {$host} (see http://curl.haxx.se/libcurl/c/libcurl-errors.html).");
+    $this->assertKeyTestConnection('key_basic_auth_private_file_invalid_endpoint', '', "Failed to connect to Apigee Edge. The given endpoint ({$invalidCredentials['endpoint']}) is incorrect or something is wrong with the connection. Error message: cURL error 6: Could not resolve host: {$host} (see http://curl.haxx.se/libcurl/c/libcurl-errors.html)");
+    $this->assertKeyTestConnection('key_oauth_private_file_invalid_endpoint', 'key_oauth_token', "Failed to connect to Apigee Edge. The given endpoint ({$invalidCredentials['endpoint']}) is incorrect or something is wrong with the connection. Error message: cURL error 6: Could not resolve host: {$host} (see http://curl.haxx.se/libcurl/c/libcurl-errors.html)");
+    $this->assertKeySave('key_basic_auth_private_file_invalid_endpoint', '', "Failed to connect to Apigee Edge. The given endpoint ({$invalidCredentials['endpoint']}) is incorrect or something is wrong with the connection. Error message: cURL error 6: Could not resolve host: {$host} (see http://curl.haxx.se/libcurl/c/libcurl-errors.html)");
+    $this->assertKeySave('key_oauth_private_file_invalid_endpoint', 'key_oauth_token', "Failed to connect to Apigee Edge. The given endpoint ({$invalidCredentials['endpoint']}) is incorrect or something is wrong with the connection. Error message: cURL error 6: Could not resolve host: {$host} (see http://curl.haxx.se/libcurl/c/libcurl-errors.html)");
 
     // Create and test keys with invalid authorization server.
     $invalidCredentials = $this->validCredentials;
     $invalidCredentials['authorization_server'] = "https://{$this->randomGenerator->word(8)}.com";
     $host = substr($invalidCredentials['authorization_server'], 8);
     $this->createKey('key_oauth_private_file_invalid_authorization_server', 'apigee_edge_oauth', 'apigee_edge_private_file', $invalidCredentials);
-    $this->assertKeyTestConnection('key_oauth_private_file_invalid_authorization_server', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The given authorization server ({$invalidCredentials['authorization_server']}) is incorrect or something is wrong with the connection. Error message: cURL error 6: Could not resolve host: {$host} (see http://curl.haxx.se/libcurl/c/libcurl-errors.html).");
-    $this->assertKeySave('key_oauth_private_file_invalid_authorization_server', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The given authorization server ({$invalidCredentials['authorization_server']}) is incorrect or something is wrong with the connection. Error message: cURL error 6: Could not resolve host: {$host} (see http://curl.haxx.se/libcurl/c/libcurl-errors.html).");
+    $this->assertKeyTestConnection('key_oauth_private_file_invalid_authorization_server', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The given authorization server ({$invalidCredentials['authorization_server']}) is incorrect or something is wrong with the connection. Error message: cURL error 6: Could not resolve host: {$host} (see http://curl.haxx.se/libcurl/c/libcurl-errors.html)");
+    $this->assertKeySave('key_oauth_private_file_invalid_authorization_server', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The given authorization server ({$invalidCredentials['authorization_server']}) is incorrect or something is wrong with the connection. Error message: cURL error 6: Could not resolve host: {$host} (see http://curl.haxx.se/libcurl/c/libcurl-errors.html)");
 
     // Create and test keys with invalid client_secret.
     $invalidCredentials = $this->validCredentials;
     $invalidCredentials['client_secret'] = $this->randomGenerator->word(8);
     $this->createKey('key_oauth_private_file_invalid_client_secret', 'apigee_edge_oauth', 'apigee_edge_private_file', $invalidCredentials);
-    $this->assertKeyTestConnection('key_oauth_private_file_invalid_client_secret', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The given username ({$invalidCredentials['username']}) or password or client ID (edgecli) or client secret is incorrect. Error message: {\"error\":\"unauthorized\",\"error_description\":\"Bad credentials\"}.");
-    $this->assertKeySave('key_oauth_private_file_invalid_client_secret', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The given username ({$invalidCredentials['username']}) or password or client ID (edgecli) or client secret is incorrect. Error message: {\"error\":\"unauthorized\",\"error_description\":\"Bad credentials\"}.");
+    $this->assertKeyTestConnection('key_oauth_private_file_invalid_client_secret', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The given username ({$invalidCredentials['username']}) or password or client ID (edgecli) or client secret is incorrect. Error message: {\"error\":\"unauthorized\",\"error_description\":\"Bad credentials\"}");
+    $this->assertKeySave('key_oauth_private_file_invalid_client_secret', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The given username ({$invalidCredentials['username']}) or password or client ID (edgecli) or client secret is incorrect. Error message: {\"error\":\"unauthorized\",\"error_description\":\"Bad credentials\"}");
 
     // Create and test keys with invalid client_id.
     $invalidCredentials = $this->validCredentials;
     $invalidCredentials['client_id'] = $this->randomGenerator->word(8);
     $this->createKey('key_oauth_private_file_invalid_client_id', 'apigee_edge_oauth', 'apigee_edge_private_file', $invalidCredentials);
-    $this->assertKeyTestConnection('key_oauth_private_file_invalid_client_id', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The given username ({$invalidCredentials['username']}) or password or client ID ({$invalidCredentials['client_id']}) or client secret is incorrect. Error message: {\"error\":\"unauthorized\",\"error_description\":\"Bad credentials\"}.");
-    $this->assertKeySave('key_oauth_private_file_invalid_client_id', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The given username ({$invalidCredentials['username']}) or password or client ID ({$invalidCredentials['client_id']}) or client secret is incorrect. Error message: {\"error\":\"unauthorized\",\"error_description\":\"Bad credentials\"}.");
+    $this->assertKeyTestConnection('key_oauth_private_file_invalid_client_id', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The given username ({$invalidCredentials['username']}) or password or client ID ({$invalidCredentials['client_id']}) or client secret is incorrect. Error message: {\"error\":\"unauthorized\",\"error_description\":\"Bad credentials\"}");
+    $this->assertKeySave('key_oauth_private_file_invalid_client_id', 'key_oauth_token', "Failed to connect to the OAuth authorization server. The given username ({$invalidCredentials['username']}) or password or client ID ({$invalidCredentials['client_id']}) or client secret is incorrect. Error message: {\"error\":\"unauthorized\",\"error_description\":\"Bad credentials\"}");
 
     // Create and test keys with too low timeouts.
     $this->createKey('key_basic_auth_private_file_low_timeout', 'apigee_edge_basic_auth', 'apigee_edge_private_file', $this->validCredentials);

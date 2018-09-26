@@ -55,7 +55,7 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
    * {@inheritdoc}
    */
   public function getOrganization(KeyInterface $key): string {
-    if ($key->getKeyValues()['organization'] === NULL) {
+    if (!isset($key->getKeyValues()['organization'])) {
       throw new KeyValueMalformedException('organization');
     }
     return $key->getKeyValues()['organization'];
@@ -65,7 +65,7 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
    * {@inheritdoc}
    */
   public function getUsername(KeyInterface $key): string {
-    if ($key->getKeyValues()['username'] === NULL) {
+    if (!isset($key->getKeyValues()['username'])) {
       throw new KeyValueMalformedException('username');
     }
     return $key->getKeyValues()['username'];
@@ -75,7 +75,7 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
    * {@inheritdoc}
    */
   public function getPassword(KeyInterface $key): string {
-    if ($key->getKeyValues()['password'] === NULL) {
+    if (!isset($key->getKeyValues()['password'])) {
       throw new KeyValueMalformedException('password');
     }
     return $key->getKeyValues()['password'];

@@ -91,10 +91,10 @@ class BasicAuthKeyType extends EdgeKeyTypeBase {
 
       /** @var \Drupal\Core\StringTranslation\TranslatableMarkup $field */
       if (!isset($value[$id])) {
-        $form_state->setError($error_element, $this->t('The key value is missing the field %field.', ['%field' => $field->render()]));
+        $form_state->setError($error_element, $this->t('The key value is missing the field %field.', ['%field' => $field['label']->render()]));
       }
       elseif (empty($value[$id])) {
-        $form_state->setError($error_element, $this->t('The key value field %field is empty.', ['%field' => $field->render()]));
+        $form_state->setError($error_element, $this->t('The key value field %field is empty.', ['%field' => $field['label']->render()]));
       }
     }
   }

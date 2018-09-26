@@ -33,15 +33,6 @@ abstract class ApigeeEdgeFunctionalJavascriptTestBase extends WebDriverTestBase 
   /**
    * {@inheritdoc}
    */
-  public function __construct($name = NULL, array $data = [], $dataName = '') {
-    // Use DrupalSelenium2Driver instead of PhantomJSDriver.
-    $this->minkDefaultDriverClass = DrupalSelenium2Driver::class;
-    parent::__construct($name, $data, $dataName);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function createScreenshot($filename_prefix = '', $set_background_color = TRUE) {
     $log_dir = getenv('APIGEE_EDGE_TEST_LOG_DIR');
     if (!$log_dir) {
