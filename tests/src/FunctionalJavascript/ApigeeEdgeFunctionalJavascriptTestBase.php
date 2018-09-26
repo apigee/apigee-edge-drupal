@@ -29,16 +29,7 @@ use Drupal\Tests\apigee_edge\Functional\ApigeeEdgeTestTrait;
 abstract class ApigeeEdgeFunctionalJavascriptTestBase extends WebDriverTestBase {
 
   use ApigeeEdgeTestTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct($name = NULL, array $data = [], $dataName = '') {
-    // Use DrupalSelenium2Driver instead of PhantomJSDriver.
-    $this->minkDefaultDriverClass = DrupalSelenium2Driver::class;
-    parent::__construct($name, $data, $dataName);
-  }
-
+  
   /**
    * {@inheritdoc}
    */
