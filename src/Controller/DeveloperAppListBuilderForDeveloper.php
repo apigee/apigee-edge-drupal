@@ -155,10 +155,19 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
   /**
    * {@inheritdoc}
    */
-  protected function getUniqueCssIdForApp(DeveloperAppInterface $app): string {
+  protected function getUniqueCssIdForAppInfoRow(DeveloperAppInterface $developer_app): string {
     // If we are listing the apps of a developer than developer app name is also
     // unique.
-    return Html::getUniqueId($app->getName());
+    return Html::cleanCssIdentifier("{$developer_app->getName()}-info");
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getUniqueCssIdForAppWarningRow(DeveloperAppInterface $developer_app): string {
+    // If we are listing the apps of a developer than developer app name is also
+    // unique.
+    return Html::cleanCssIdentifier("{$developer_app->getName()}-warning");
   }
 
   /**
