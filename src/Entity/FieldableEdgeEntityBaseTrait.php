@@ -377,13 +377,25 @@ trait FieldableEdgeEntityBaseTrait {
     // (We do not change the structure of values that does not belong to
     // base fields).
     if (is_array($value) && $this->getFieldDefinition($field_name) instanceof BaseFieldDefinition && $this->getFieldDefinition($field_name)->getCardinality() === 1) {
-      $exists = FALSE;
-      $value = NestedArray::getValue($value, ['0', 'value'], $exists);
-      if (!$exists) {
-        $value = NestedArray::getValue($value, ['value'], $exists);
-        if (!$exists) {
-          // We should know about this.
-          throw new EdgeFieldException(sprintf('Unable to retrieve value of %s base field on %s.', $field_name, get_called_class()));
+      if (count($value) === 0) {
+        $value = '';
+      }
+      else {
+        $exists = FALSE;
+        $new_value = NestedArray::getValue($value, ['0', 'value'], $exists);
+        if ($exists) {
+          $value = $new_value;
+        }
+        else {
+          $new_value = NestedArray::getValue($value, ['value'], $exists);
+          if ($exists) {
+            $value = $new_value;
+          }
+          else {
+            $called_class = get_called_class();
+            $exported_value = var_export($value, TRUE);
+            throw new EdgeFieldException("Unable to retrieve value of {$field_name} base field on {$called_class} from {$exported_value}.");
+          }
         }
       }
     }
