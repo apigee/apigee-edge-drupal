@@ -393,8 +393,7 @@ trait FieldableEdgeEntityBaseTrait {
           }
           else {
             $called_class = get_called_class();
-            $exported_value = var_export($value, TRUE);
-            throw new EdgeFieldException("Unable to retrieve value of {$field_name} base field on {$called_class} from {$exported_value}.");
+            throw new EdgeFieldException("Unable to retrieve value of {$field_name} base field on {$called_class}.");
           }
         }
       }
