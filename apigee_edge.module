@@ -1155,12 +1155,12 @@ function apigee_edge_field_ui_field_storage_add_form_submit(array &$form, FormSt
 function apigee_edge_key_delete(EntityInterface $entity) {
   /** @var \Drupal\key\KeyInterface $entity */
   $active_key = \Drupal::configFactory()
-    ->get('apigee_edge.client')
+    ->get('apigee_edge.auth')
     ->get('active_key');
 
   if ($active_key === $entity->id()) {
     \Drupal::configFactory()
-      ->getEditable('apigee_edge.client')
+      ->getEditable('apigee_edge.auth')
       ->set('active_key', '')
       ->set('active_key_oauth_token', '')
       ->save();

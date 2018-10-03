@@ -1,5 +1,3 @@
-active_key: ''
-active_key_oauth_token: ''
 http_client_connect_timeout: 30
 http_client_timeout: 30
 http_client_proxy: ''

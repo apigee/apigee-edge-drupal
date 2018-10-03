@@ -107,7 +107,7 @@ class AuthenticationForm extends ConfigFormBase {
    */
   protected function getEditableConfigNames() {
     return [
-      'apigee_edge.client',
+      'apigee_edge.auth',
     ];
   }
 
@@ -115,7 +115,7 @@ class AuthenticationForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $config = $this->config('apigee_edge.client');
+    $config = $this->config('apigee_edge.auth');
     $form = parent::buildForm($form, $form_state);
     $form['#prefix'] = '<div id="apigee-edge-auth-form">';
     $form['#suffix'] = '</div>';
@@ -568,13 +568,13 @@ class AuthenticationForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     if ($form_state->getValue('key_type') === 'apigee_edge_basic_auth') {
-      $this->config('apigee_edge.client')
+      $this->config('apigee_edge.auth')
         ->set('active_key', $form_state->getValue('key_basic_auth'))
         ->set('active_key_oauth_token', '')
         ->save();
     }
     elseif ($form_state->getValue('key_type') === 'apigee_edge_oauth') {
-      $this->config('apigee_edge.client')
+      $this->config('apigee_edge.auth')
         ->set('active_key', $form_state->getValue('key_oauth'))
         ->set('active_key_oauth_token', $form_state->getValue('key_oauth_token'))
         ->save();
