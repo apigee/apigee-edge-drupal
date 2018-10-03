@@ -26,7 +26,6 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\InfoParserInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Http\ClientFactory;
-use Drupal\Core\State\StateInterface;
 use Drupal\key\KeyRepositoryInterface;
 
 /**
@@ -69,7 +68,7 @@ class SDKConnector extends OriginalSDKConnector implements SDKConnectorInterface
    * @param \Drupal\Core\Extension\InfoParserInterface $info_parser
    *   Info file parser service.
    */
-  public function __construct(SDKConnectorInterface $inner_service, ClientFactory $client_factory, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ModuleHandlerInterface $module_handler, InfoParserInterface $info_parser) {
+  public function __construct(SDKConnectorInterface $inner_service, ClientFactory $client_factory, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, InfoParserInterface $info_parser) {
     $this->innerService = $inner_service;
     parent::__construct($client_factory, $key_repository, $entity_type_manager, $state, $module_handler, $info_parser);
   }

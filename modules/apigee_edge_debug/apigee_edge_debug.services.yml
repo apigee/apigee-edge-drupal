@@ -8,7 +8,7 @@ services:
     decorates: apigee_edge.sdk_connector
     decoration_priority: -10
     public: false
-    arguments: ['@apigee_edge_debug.sdk_connector.inner', '@http_client_factory', '@key.repository', '@entity_type.manager', '@state', '@module_handler', '@info_parser']
+    arguments: ['@apigee_edge_debug.sdk_connector.inner', '@http_client_factory', '@key.repository', '@entity_type.manager', '@module_handler', '@info_parser']
 
   plugin.manager.apigee_edge_debug.debug_message_formatter:
     class: Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager
