@@ -26,7 +26,7 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 /**
  * Interface for fieldable Edge entities.
  */
-interface FieldableEdgeEntityInterface extends FieldableEntityInterface, EdgeEntityInterface {
+interface FieldableEdgeEntityInterface extends \IteratorAggregate, FieldableEntityInterface, EdgeEntityInterface {
 
   /**
    * Converts a field name to an attribute name.
