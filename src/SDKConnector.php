@@ -135,19 +135,16 @@ class SDKConnector implements SDKConnectorInterface {
    * Allows to override some configuration of the http client built by the
    * factory for the API client.
    *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   Config factory object.
-   *
    * @return array
    *   Associative array of configuration settings.
    *
    * @see http://docs.guzzlephp.org/en/stable/request-options.html
    */
-  protected function getHttpClientConfiguration(ConfigFactoryInterface $config_factory): array {
+  protected function httpClientConfiguration(): array {
     return [
-      'connect_timeout' => $config_factory->get('apigee_edge.client')->get('http_client_connect_timeout'),
-      'timeout' => $config_factory->get('apigee_edge.client')->get('http_client_timeout'),
-      'proxy' => $config_factory->get('apigee_edge.client')->get('http_client_proxy'),
+      'connect_timeout' => $this->configFactory->get('apigee_edge.client')->get('http_client_connect_timeout') ?? 30,
+      'timeout' => $this->configFactory->get('apigee_edge.client')->get('http_client_timeout') ?? 30,
+      'proxy' => $this->configFactory->get('apigee_edge.client')->get('http_client_proxy') ?? '',
     ];
   }
 

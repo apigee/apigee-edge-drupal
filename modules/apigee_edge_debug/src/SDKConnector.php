@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge_debug;
 
 use Drupal\apigee_edge\SDKConnector as OriginalSDKConnector;
 use Drupal\apigee_edge\SDKConnectorInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\InfoParserInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -61,16 +62,16 @@ class SDKConnector extends OriginalSDKConnector implements SDKConnectorInterface
    *   The key repository.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   Entity type manager service.
-   * @param \Drupal\Core\State\StateInterface $state
-   *   The state key/value store.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The factory for configuration objects.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   Module handler service.
    * @param \Drupal\Core\Extension\InfoParserInterface $info_parser
    *   Info file parser service.
    */
-  public function __construct(SDKConnectorInterface $inner_service, ClientFactory $client_factory, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, InfoParserInterface $info_parser) {
+  public function __construct(SDKConnectorInterface $inner_service, ClientFactory $client_factory, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $module_handler, InfoParserInterface $info_parser) {
     $this->innerService = $inner_service;
-    parent::__construct($client_factory, $key_repository, $entity_type_manager, $state, $module_handler, $info_parser);
+    parent::__construct($client_factory, $key_repository, $entity_type_manager, $config_factory, $module_handler, $info_parser);
   }
 
   /**

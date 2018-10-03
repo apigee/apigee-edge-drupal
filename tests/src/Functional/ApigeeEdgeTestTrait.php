@@ -55,21 +55,56 @@ trait ApigeeEdgeTestTrait {
     catch (EntityStorageException $exception) {
       self::fail('Could not create key for testing.');
     }
-    $this->config('apigee_edge.client')->set('active_key', 'test')->save();
+    $this->restoreKey();
   }
 
   /**
    * Restores the active key.
    */
   protected function restoreKey() {
-    $this->config('apigee_edge.client')->set('active_key', 'test')->save();
+    $this->config('apigee_edge.client')
+      ->set('active_key', 'test')
+      ->set('active_key_oauth_token', '')
+      ->save();
   }
 
   /**
    * Removes the active key for testing with unset API credentials.
    */
   protected function invalidateKey() {
-    $this->config('apigee_edge.client')->set('active_key', '')->save();
+    $this->config('apigee_edge.client')
+      ->set('active_key', '')
+      ->set('active_key_oauth_token', '')
+      ->save();
+  }
+
+  /**
+   * Set active authentication keys in states.
+   *
+   * @param string $active_key
+   *   The active authentication key.
+   * @param string $active_key_oauth_token
+   *   The active OAuth token key.
+   */
+  protected function setKey(string $active_key, string $active_key_oauth_token) {
+    $this->config('apigee_edge.client')
+      ->set('active_key', $active_key)
+      ->set('active_key_oauth_token', $active_key_oauth_token)
+      ->save();
+  }
+
+  /**
+   * The corresponding developer will be created if a Drupal user is saved.
+   */
+  protected function enableUserPresave() {
+    _apigee_edge_set_sync_in_progress(FALSE);
+  }
+
+  /**
+   * The corresponding developer will not be created if a Drupal user is saved.
+   */
+  protected function disableUserPresave() {
+    _apigee_edge_set_sync_in_progress(TRUE);
   }
 
   /**
