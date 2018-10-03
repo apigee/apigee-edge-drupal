@@ -94,8 +94,8 @@ class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
   public function testAuthentication() {
     // Delete pre-defined test key.
     Key::load('test')->delete();
-    $this->assertEmpty($this->container->get('state')->get('apigee_edge.auth')['active_key']);
-    $this->assertEmpty($this->container->get('state')->get('apigee_edge.auth')['active_key_oauth_token']);
+    $this->assertEmpty($this->config('apigee_edge.auth')->get('active_key'));
+    $this->assertEmpty($this->config('apigee_edge.auth')->get('active_key_oauth_token'));
 
     // Create a key entity using key's default type and provider, then visit
     // authentication form and ensure that there are no available Apigee Edge
@@ -226,8 +226,8 @@ class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
       Key::load($key_id)->delete();
     }
     $this->drupalGet(Url::fromRoute('apigee_edge.settings'));
-    $this->assertEmpty($this->container->get('state')->get('apigee_edge.auth')['active_key']);
-    $this->assertEmpty($this->container->get('state')->get('apigee_edge.auth')['active_key_oauth_token']);
+    $this->assertEmpty($this->config('apigee_edge.auth')->get('active_key'));
+    $this->assertEmpty($this->config('apigee_edge.auth')->get('active_key_oauth_token'));
     $this->assertSession()->pageTextContains(self::NO_AVAILABLE_BASIC_AUTH_KEY);
     $this->getSession()->getPage()->selectFieldOption('edit-key-type', 'apigee_edge_oauth');
     $this->assertSession()->pageTextContains(self::NO_AVAILABLE_OAUTH_KEY);
@@ -350,15 +350,15 @@ class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     if (empty($message)) {
       $this->assertSession()->pageTextContains('The configuration options have been saved');
       $this->assertSession()->pageTextNotContains(self::DEBUG_INFORMATION_TITLE);
-      $this->assertEquals($this->container->get('state')->get('apigee_edge.auth')['active_key'], $key_id);
-      $this->assertEquals($this->container->get('state')->get('apigee_edge.auth')['active_key_oauth_token'], $key_token_id);
+      $this->assertEquals($this->config('apigee_edge.auth')->get('active_key'), $key_id);
+      $this->assertEquals($this->config('apigee_edge.auth')->get('active_key_oauth_token'), $key_token_id);
       $this->container->get('apigee_edge.sdk_connector')->testConnection();
     }
     else {
       $this->assertSession()->pageTextContains($message);
       $this->assertSession()->pageTextContains(self::DEBUG_INFORMATION_TITLE);
       $this->assertDebugText($key_id);
-      $this->assertNotEquals($this->container->get('state')->get('apigee_edge.auth')['active_key'], $key_id);
+      $this->assertNotEquals($this->config('apigee_edge.auth')->get('active_key'), $key_id);
     }
   }
 

@@ -31,7 +31,6 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\State\StateInterface;
 use Drupal\Core\Url;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
@@ -43,13 +42,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Provides a form for saving the Apigee Edge API authentication key.
  */
 class AuthenticationForm extends ConfigFormBase {
-
-  /**
-   * The state key/value store.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
 
   /**
    * The key repository.
@@ -77,8 +69,6 @@ class AuthenticationForm extends ConfigFormBase {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
-   * @param \Drupal\Core\State\StateInterface $state
-   *   The state key/value store.
    * @param \Drupal\key\KeyRepositoryInterface $key_repository
    *   The key repository.
    * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
@@ -86,9 +76,8 @@ class AuthenticationForm extends ConfigFormBase {
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   Module handler service.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, StateInterface $state, KeyRepositoryInterface $key_repository, SDKConnectorInterface $sdk_connector, ModuleHandlerInterface $module_handler) {
+  public function __construct(ConfigFactoryInterface $config_factory, KeyRepositoryInterface $key_repository, SDKConnectorInterface $sdk_connector, ModuleHandlerInterface $module_handler) {
     parent::__construct($config_factory);
-    $this->state = $state;
     $this->keyRepository = $key_repository;
     $this->sdkConnector = $sdk_connector;
     $this->moduleHandler = $module_handler;
@@ -100,7 +89,6 @@ class AuthenticationForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
-      $container->get('state'),
       $container->get('key.repository'),
       $container->get('apigee_edge.sdk_connector'),
       $container->get('module_handler')
@@ -118,14 +106,16 @@ class AuthenticationForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   protected function getEditableConfigNames() {
-    return [];
+    return [
+      'apigee_edge.auth',
+    ];
   }
 
   /**
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $keys = $this->state->get('apigee_edge.auth');
+    $config = $this->config('apigee_edge.auth');
     $form = parent::buildForm($form, $form_state);
     $form['#prefix'] = '<div id="apigee-edge-auth-form">';
     $form['#suffix'] = '</div>';
@@ -158,7 +148,7 @@ class AuthenticationForm extends ConfigFormBase {
         ':url' => Url::fromRoute('entity.key.edit_form', ['key' => $key_id, 'destination' => 'admin/config/apigee-edge/settings'])->toString(),
       ]);
     }
-    $basic_auth_default_value = array_key_exists($keys['active_key'], $basic_auth_keys) ? $keys['active_key'] : NULL;
+    $basic_auth_default_value = array_key_exists($config->get('active_key'), $basic_auth_keys) ? $config->get('active_key') : NULL;
 
     // Loading OAuth keys.
     $oauth_keys = $this->keyRepository->getKeyNamesAsOptions(['type' => 'apigee_edge_oauth']);
@@ -168,7 +158,7 @@ class AuthenticationForm extends ConfigFormBase {
         ':url' => Url::fromRoute('entity.key.edit_form', ['key' => $key_id, 'destination' => 'admin/config/apigee-edge/settings'])->toString(),
       ]);
     }
-    $oauth_default_value = array_key_exists($keys['active_key'], $oauth_keys) ? $keys['active_key'] : NULL;
+    $oauth_default_value = array_key_exists($config->get('active_key'), $oauth_keys) ? $config->get('active_key') : NULL;
 
     // Loading OAuth token keys.
     $oauth_token_keys = $this->keyRepository->getKeyNamesAsOptions(['type' => 'apigee_edge_oauth_token']);
@@ -178,7 +168,7 @@ class AuthenticationForm extends ConfigFormBase {
         ':url' => Url::fromRoute('entity.key.edit_form', ['key' => $key_id, 'destination' => 'admin/config/apigee-edge/settings'])->toString(),
       ]);
     }
-    $oauth_token_default_value = array_key_exists($keys['active_key_oauth_token'], $oauth_token_keys) ? $keys['active_key_oauth_token'] : NULL;
+    $oauth_token_default_value = array_key_exists($config->get('active_key_oauth_token'), $oauth_token_keys) ? $config->get('active_key_oauth_token') : NULL;
 
     $form['authentication']['key_type'] = [
       '#type' => 'select',
@@ -449,8 +439,8 @@ class AuthenticationForm extends ConfigFormBase {
           if ($curl_exception->getHandlerContext()['errno'] === CURLE_OPERATION_TIMEDOUT) {
             $suggestion = $this->t('@fail_text The connection timeout threshold (%connect_timeout) or the request timeout (%timeout) is too low or something is wrong with the connection.', [
               '@fail_text' => $fail_text,
-              '%connect_timeout' => $this->state->get('apigee_edge.client')['http_client_connect_timeout'],
-              '%timeout' => $this->state->get('apigee_edge.client')['http_client_timeout'],
+              '%connect_timeout' => $this->config('apigee_edge.client')->get('http_client_connect_timeout'),
+              '%timeout' => $this->config('apigee_edge.client')->get('http_client_timeout'),
             ]);
           }
           // The remote host was not resolved (authorization server).
@@ -494,8 +484,8 @@ class AuthenticationForm extends ConfigFormBase {
           if ($curl_exception->getHandlerContext()['errno'] === CURLE_OPERATION_TIMEDOUT) {
             $suggestion = $this->t('@fail_text The connection timeout threshold (%connect_timeout) or the request timeout (%timeout) is too low or something is wrong with the connection.', [
               '@fail_text' => $fail_text,
-              '%connect_timeout' => $this->state->get('apigee_edge.client')['http_client_connect_timeout'],
-              '%timeout' => $this->state->get('apigee_edge.client')['http_client_timeout'],
+              '%connect_timeout' => $this->config('apigee_edge.client')->get('http_client_connect_timeout'),
+              '%timeout' => $this->config('apigee_edge.client')->get('http_client_timeout'),
             ]);
           }
           // The remote host was not resolved (endpoint).
@@ -566,7 +556,7 @@ class AuthenticationForm extends ConfigFormBase {
       PHP_EOL .
       json_encode($keys, JSON_PRETTY_PRINT) .
       PHP_EOL .
-      json_encode($this->state->get('apigee_edge.client'), JSON_PRETTY_PRINT) .
+      json_encode($this->config('apigee_edge.client')->get(), JSON_PRETTY_PRINT) .
       PHP_EOL .
       $exception_text;
 
@@ -577,20 +567,18 @@ class AuthenticationForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $keys = $this->state->get('apigee_edge.auth');
     if ($form_state->getValue('key_type') === 'apigee_edge_basic_auth') {
-      $keys['active_key'] = $form_state->getValue('key_basic_auth');
-      $keys['active_key_oauth_token'] = '';
-      $this->state->set('apigee_edge.auth', $keys);
+      $this->config('apigee_edge.auth')
+        ->set('active_key', $form_state->getValue('key_basic_auth'))
+        ->set('active_key_oauth_token', '')
+        ->save();
     }
     elseif ($form_state->getValue('key_type') === 'apigee_edge_oauth') {
-      $keys['active_key'] = $form_state->getValue('key_oauth');
-      $keys['active_key_oauth_token'] = $form_state->getValue('key_oauth_token');
-      $this->state->set('apigee_edge.auth', $keys);
+      $this->config('apigee_edge.auth')
+        ->set('active_key', $form_state->getValue('key_oauth'))
+        ->set('active_key_oauth_token', $form_state->getValue('key_oauth_token'))
+        ->save();
     }
-    // Reset state's static cache to correctly display the active key in the
-    // form's key list.
-    $this->state->resetCache();
     parent::submitForm($form, $form_state);
   }
 
