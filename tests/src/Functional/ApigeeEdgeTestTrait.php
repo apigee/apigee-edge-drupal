@@ -55,38 +55,31 @@ trait ApigeeEdgeTestTrait {
     catch (EntityStorageException $exception) {
       self::fail('Could not create key for testing.');
     }
-
-    $this->container->get('state')->set('apigee_edge.auth', [
-      'active_key' => 'test',
-      'active_key_oauth_token' => '',
-    ]);
-    $this->container->get('state')->resetCache();
+    $this->restoreKey();
   }
 
   /**
    * Restores the active key.
    */
   protected function restoreKey() {
-    $this->container->get('state')->set('apigee_edge.auth', [
-      'active_key' => 'test',
-      'active_key_oauth_token' => '',
-    ]);
-    $this->container->get('state')->resetCache();
+    $this->config('apigee_edge.auth')
+      ->set('active_key', 'test')
+      ->set('active_key_oauth_token', '')
+      ->save();
   }
 
   /**
    * Removes the active key for testing with unset API credentials.
    */
   protected function invalidateKey() {
-    $this->container->get('state')->set('apigee_edge.auth', [
-      'active_key' => '',
-      'active_key_oauth_token' => '',
-    ]);
-    $this->container->get('state')->resetCache();
+    $this->config('apigee_edge.auth')
+      ->set('active_key', '')
+      ->set('active_key_oauth_token', '')
+      ->save();
   }
 
   /**
-   * Set active authentication keys in states.
+   * Set active authentication keys in config.
    *
    * @param string $active_key
    *   The active authentication key.
@@ -94,11 +87,10 @@ trait ApigeeEdgeTestTrait {
    *   The active OAuth token key.
    */
   protected function setKey(string $active_key, string $active_key_oauth_token) {
-    $this->container->get('state')->set('apigee_edge.auth', [
-      'active_key' => $active_key,
-      'active_key_oauth_token' => $active_key_oauth_token,
-    ]);
-    $this->container->get('state')->resetCache();
+    $this->config('apigee_edge.auth')
+      ->set('active_key', $active_key)
+      ->set('active_key_oauth_token', $active_key_oauth_token)
+      ->save();
   }
 
   /**

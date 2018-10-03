@@ -26,11 +26,11 @@ use Apigee\Edge\HttpClient\Utility\Builder;
 use Drupal\apigee_edge\Exception\KeyNotFoundException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\apigee_edge\Plugin\EdgeOauthKeyTypeInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\InfoParserInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Http\ClientFactory;
-use Drupal\Core\State\StateInterface;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
 use Http\Adapter\Guzzle6\Client as GuzzleClientAdapter;
@@ -63,11 +63,11 @@ class SDKConnector implements SDKConnectorInterface {
   private static $userAgentPrefix = NULL;
 
   /**
-   * The state key/value store.
+   * The config factory.
    *
-   * @var \Drupal\Core\State\StateInterface
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
-  protected $state;
+  protected $configFactory;
 
   /**
    * The key repository.
@@ -113,18 +113,18 @@ class SDKConnector implements SDKConnectorInterface {
    *   The key repository.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   Entity type manager service.
-   * @param \Drupal\Core\State\StateInterface $state
-   *   The state key/value store.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The factory for configuration objects.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   Module handler service.
    * @param \Drupal\Core\Extension\InfoParserInterface $infoParser
    *   Info file parser service.
    */
-  public function __construct(ClientFactory $clientFactory, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ModuleHandlerInterface $moduleHandler, InfoParserInterface $infoParser) {
+  public function __construct(ClientFactory $clientFactory, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $moduleHandler, InfoParserInterface $infoParser) {
     $this->clientFactory = $clientFactory;
     $this->entityTypeManager = $entity_type_manager;
     $this->keyRepository = $key_repository;
-    $this->state = $state;
+    $this->configFactory = $config_factory;
     $this->moduleHandler = $moduleHandler;
     $this->infoParser = $infoParser;
   }
@@ -141,11 +141,10 @@ class SDKConnector implements SDKConnectorInterface {
    * @see http://docs.guzzlephp.org/en/stable/request-options.html
    */
   protected function httpClientConfiguration(): array {
-    $config = $this->state->get('apigee_edge.client');
     return [
-      'connect_timeout' => $config['http_client_connect_timeout'] ?? 30,
-      'timeout' => $config['http_client_timeout'] ?? 30,
-      'proxy' => $config['http_client_proxy'] ?? '',
+      'connect_timeout' => $this->configFactory->get('apigee_edge.client')->get('http_client_connect_timeout') ?? 30,
+      'timeout' => $this->configFactory->get('apigee_edge.client')->get('http_client_timeout') ?? 30,
+      'proxy' => $this->configFactory->get('apigee_edge.client')->get('http_client_proxy') ?? '',
     ];
   }
 
@@ -197,12 +196,11 @@ class SDKConnector implements SDKConnectorInterface {
    */
   private function getCredentials(): CredentialsInterface {
     if (self::$credentials === NULL) {
-      $keys = $this->state->get('apigee_edge.auth');
-      $key = $this->keyRepository->getKey($keys['active_key']);
+      $key = $this->keyRepository->getKey($this->configFactory->get('apigee_edge.auth')->get('active_key'));
       if ($key === NULL) {
         throw new KeyNotFoundException('Apigee Edge API authentication key not found.');
       }
-      $key_token = $this->keyRepository->getKey($keys['active_key_oauth_token']);
+      $key_token = $this->keyRepository->getKey($this->configFactory->get('apigee_edge.auth')->get('active_key_oauth_token'));
       self::$credentials = $this->buildCredentials($key, $key_token);
     }
 

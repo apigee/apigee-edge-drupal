@@ -19,7 +19,6 @@
 
 namespace Drupal\Tests\apigee_edge\FunctionalJavascript;
 
-use Drupal\FunctionalJavascriptTests\DrupalSelenium2Driver;
 use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
 use Drupal\Tests\apigee_edge\Functional\ApigeeEdgeTestTrait;
 
