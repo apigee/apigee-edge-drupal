@@ -95,7 +95,9 @@ class DeveloperAppDeleteForm extends EntityDeleteForm implements DeveloperAppPag
     /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app */
     $developer_app = $this->entity;
     if ($element['#value'] !== $developer_app->getName()) {
-      $form_state->setError($element, $this->t('App name does not match app you are attempting to delete.'));
+      $form_state->setError($element, $this->t('@developer_app name does not match app you are attempting to delete.',
+        ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel()])
+      );
     }
   }
 
