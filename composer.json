@@ -20,7 +20,7 @@
         "webflo/drupal-core-require-dev": "^8.6"
     },
     "conflict": {
-        "apigee/apigee-client-php": "< 2.0.0-alpha4",
+        "apigee/apigee-client-php": "<2.0.0-alpha5",
         "php-http/client-common": ">1.7"
     },
     "config": {
@@ -40,9 +40,6 @@
             },
             "drupal/key": {
                 "Fix implementation of NoneKeyInput": "https://www.drupal.org/files/issues/2018-06-27/key-fix-implementation-of-nonekeyinput-2982124-2.patch"
-            },
-            "apigee/apigee-client-php": {
-                "Ensure compatibility with latest changes since alpha4": "https://github.com/apigee/apigee-client-php/compare/2.0.0-alpha4...2.x.diff"
             }
         }
     }
