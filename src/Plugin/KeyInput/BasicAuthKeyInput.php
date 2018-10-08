@@ -76,7 +76,7 @@ class BasicAuthKeyInput extends KeyInputBase {
         '%endpoint' => ClientInterface::DEFAULT_ENDPOINT,
       ]),
       '#required' => $key->getKeyType()->getPluginDefinition()['multivalue']['fields']['endpoint']['required'],
-      '#default_value' => $values['endpoint'],
+      '#default_value' => $values['endpoint'] ?? '',
       '#attributes' => ['autocomplete' => 'off'],
     ];
 

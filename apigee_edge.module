@@ -1086,7 +1086,10 @@ function apigee_edge_user_delete(UserInterface $account) {
   try {
     /** @var \Drupal\apigee_edge\Entity\Developer $developer */
     $developer = Developer::load($account->getEmail());
-    $developer->delete();
+    // Sanity check, the developer may not exist in Apigee Edge.
+    if ($developer) {
+      $developer->delete();
+    }
   }
   catch (\Exception $exception) {
     $context = [
