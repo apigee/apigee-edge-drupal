@@ -1002,7 +1002,11 @@ function apigee_edge_user_presave(UserInterface $account) {
     $context = [
       '@developer' => $account->getEmail(),
       '@message' => (string) $exception,
-      '@operation' => $account->isNew() ? 'create' : 'update',
+      // UID 1 (created meanwhile the install process by config_installer) is
+      // not a new account.
+      // @see \Drupal\config_installer\Form\SiteConfigureForm::submitForm()
+      // Also, id() returns a string not an integer.
+      '@operation' => $account->isNew() || $account->id() == 1 ? 'create' : 'update',
     ];
     if ($previous instanceof ClientErrorException && $previous->getEdgeErrorCode()) {
       if ($previous->getEdgeErrorCode() === Developer::APIGEE_EDGE_ERROR_CODE_DEVELOPER_DOES_NOT_EXISTS) {

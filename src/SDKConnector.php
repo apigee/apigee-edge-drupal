@@ -23,7 +23,7 @@ use Apigee\Edge\Api\Management\Controller\OrganizationController;
 use Apigee\Edge\Client;
 use Apigee\Edge\ClientInterface;
 use Apigee\Edge\HttpClient\Utility\Builder;
-use Drupal\apigee_edge\Exception\KeyNotFoundException;
+use Drupal\apigee_edge\Exception\AuthenticationKeyException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\apigee_edge\Plugin\EdgeOauthKeyTypeInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -196,9 +196,13 @@ class SDKConnector implements SDKConnectorInterface {
    */
   private function getCredentials(): CredentialsInterface {
     if (self::$credentials === NULL) {
-      $key = $this->keyRepository->getKey($this->configFactory->get('apigee_edge.auth')->get('active_key'));
+      $active_key = $this->configFactory->get('apigee_edge.auth')->get('active_key');
+      if (empty($active_key)) {
+        throw new AuthenticationKeyException('Apigee Edge API authentication key is not set.');
+      }
+      $key = $this->keyRepository->getKey($active_key);
       if ($key === NULL) {
-        throw new KeyNotFoundException('Apigee Edge API authentication key not found.');
+        throw new AuthenticationKeyException(sprintf('Apigee Edge API authentication key not found with "%s" id.', $active_key));
       }
       $key_token = $this->keyRepository->getKey($this->configFactory->get('apigee_edge.auth')->get('active_key_oauth_token'));
       self::$credentials = $this->buildCredentials($key, $key_token);
@@ -234,7 +238,7 @@ class SDKConnector implements SDKConnectorInterface {
     if ($key->getKeyType() instanceof EdgeKeyTypeInterface) {
       if ($key->getKeyType() instanceof EdgeOauthKeyTypeInterface) {
         if ($key_token === NULL) {
-          throw new KeyNotFoundException('Apigee Edge OAuth token key not found.');
+          throw new AuthenticationKeyException('Apigee Edge OAuth token key not found.');
         }
         return new OauthCredentials($key, $key_token);
       }
