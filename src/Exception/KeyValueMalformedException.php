@@ -37,7 +37,10 @@ class KeyValueMalformedException extends AuthenticationKeyException {
   }
 
   /**
+   * Returns the name of the problematic field of a key.
+   *
    * @return string
+   *   Name of the field.
    */
   public function getProblematicField(): string {
     return $this->problematicField;
