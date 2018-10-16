@@ -55,7 +55,7 @@ class UserUpdate extends UserCreateUpdate {
    * {@inheritdoc}
    */
   public function __toString(): string {
-    return t('Updating user (@email) in Drupal from Apigee Edge.', [
+    return t('Updating user (@email) from Apigee Edge.', [
       '@email' => $this->email,
     ])->render();
   }
