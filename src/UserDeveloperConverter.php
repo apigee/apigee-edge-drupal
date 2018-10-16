@@ -43,28 +43,28 @@ class UserDeveloperConverter implements UserDeveloperConverterInterface {
    *
    * @var \Drupal\Core\Config\ConfigFactory
    */
-  private $configFactory;
+  protected $configFactory;
 
   /**
    * Field storage formatter service.
    *
    * @var \Drupal\apigee_edge\Plugin\FieldStorageFormatManagerInterface
    */
-  private $fieldStorageFormatManager;
+  protected $fieldStorageFormatManager;
 
   /**
    * Entity type manager service.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  private $entityTypeManager;
+  protected $entityTypeManager;
 
   /**
    * Field-attribute converter service.
    *
    * @var \Drupal\apigee_edge\FieldAttributeConverterInterface
    */
-  private $fieldAttributeConverter;
+  protected $fieldAttributeConverter;
 
   /**
    * UserToDeveloper constructor.
