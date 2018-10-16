@@ -221,6 +221,8 @@ class UserDeveloperConverter implements UserDeveloperConverterInterface {
       $user->set($field_name, $formatter->decode($developer_attribute_value));
       $violations = $user->get($field_name)->validate();
       if ($violations->count() > 0) {
+        // Clear invalid field value.
+        $user->set($field_name, NULL);
         foreach ($violations as $violation) {
           $problems[] = new DeveloperToUserConversationInvalidValueException($attribute_name, $field_name, $violation, $developer);
         }
