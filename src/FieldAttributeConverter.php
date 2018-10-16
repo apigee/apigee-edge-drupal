@@ -71,9 +71,7 @@ class FieldAttributeConverter implements FieldAttributeConverterInterface {
    */
   public function getFieldName(string $attribute_name): string {
     $field_prefix = $this->getFieldPrefix();
-    return strpos($attribute_name, $field_prefix) === 0 ?
-      $attribute_name :
-      $field_prefix . $attribute_name;
+    return strpos($attribute_name, $field_prefix) === 0 ? $attribute_name : $field_prefix . $attribute_name;
   }
 
 }
