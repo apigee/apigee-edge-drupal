@@ -593,10 +593,10 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       $this->assertContains("Copying user ({$email}) to Apigee Edge from Drupal.", $printed_output);
     }
     foreach ($this->modifiedEdgeDevelopers as $email => $developer) {
-      $this->assertContains("Refreshing user ({$email}) in Drupal.", $printed_output);
+      $this->assertContains("Updating user ({$email}) in Drupal.", $printed_output);
     }
     foreach ($this->modifiedDrupalUsers as $email => $user) {
-      $this->assertContains("Refreshing developer ({$email}) on Apigee Edge.", $printed_output);
+      $this->assertContains("Updating developer ({$email}) on Apigee Edge.", $printed_output);
     }
 
     $this->verify();
