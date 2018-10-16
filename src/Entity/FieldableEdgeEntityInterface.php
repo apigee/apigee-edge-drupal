@@ -29,28 +29,6 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 interface FieldableEdgeEntityInterface extends \IteratorAggregate, FieldableEntityInterface, EdgeEntityInterface {
 
   /**
-   * Converts a field name to an attribute name.
-   *
-   * @param string $field_name
-   *   Machine name of a field.
-   *
-   * @return string
-   *   Name of the mapped attribute.
-   */
-  public static function getAttributeName(string $field_name): string;
-
-  /**
-   * Converts an attribute name to a field name.
-   *
-   * @param string $attribute_name
-   *   Name of an attribute.
-   *
-   * @return string
-   *   Machine name of the mapped field.
-   */
-  public static function getFieldName(string $attribute_name): string;
-
-  /**
    * Gets field value from the related attribute.
    *
    * @param string $field_name
