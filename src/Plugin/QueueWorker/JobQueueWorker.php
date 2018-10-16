@@ -19,8 +19,8 @@
 
 namespace Drupal\apigee_edge\Plugin\QueueWorker;
 
-use Drupal\apigee_edge\Job;
-use Drupal\apigee_edge\JobExecutor;
+use Drupal\apigee_edge\Job\Job;
+use Drupal\apigee_edge\JobExecutorInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Queue\QueueFactory;
 use Drupal\Core\Queue\QueueWorkerBase;
@@ -53,7 +53,7 @@ class JobQueueWorker extends QueueWorkerBase implements ContainerFactoryPluginIn
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, JobExecutor $executor, QueueFactory $queue_factory) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, JobExecutorInterface $executor, QueueFactory $queue_factory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->executor = $executor;
     $this->queue = $queue_factory->get('apigee_edge_job');

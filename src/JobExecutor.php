@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge;
 
+use Drupal\apigee_edge\Job\Job;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Queue\QueueFactory;
@@ -26,7 +27,7 @@ use Drupal\Core\Queue\QueueFactory;
 /**
  * Job executor service.
  */
-class JobExecutor {
+class JobExecutor implements JobExecutorInterface {
 
   /**
    * Database connection.
@@ -68,7 +69,7 @@ class JobExecutor {
   /**
    * Ensures that a job exists with a given status.
    *
-   * @param \Drupal\apigee_edge\Job $job
+   * @param \Drupal\apigee_edge\Job\Job $job
    *   Job object.
    * @param int $status
    *   Job status.
@@ -81,12 +82,7 @@ class JobExecutor {
   }
 
   /**
-   * Saves a job.
-   *
-   * @param \Drupal\apigee_edge\Job $job
-   *   Job object.
-   *
-   * @throws \Exception
+   * {@inheritdoc}
    */
   public function save(Job $job) {
     $now = $this->time->getCurrentTime();
@@ -108,13 +104,7 @@ class JobExecutor {
   }
 
   /**
-   * Loads a job from the database.
-   *
-   * @param string $id
-   *   Job id.
-   *
-   * @return \Drupal\apigee_edge\Job|null
-   *   Loaded job object or null if it does not exit.
+   * {@inheritdoc}
    */
   public function load(string $id): ?Job {
     $query = $this->connection->select('apigee_edge_job', 'j')
@@ -126,13 +116,7 @@ class JobExecutor {
   }
 
   /**
-   * Claims a job if one is available.
-   *
-   * @param null|string $tag
-   *   Optional tag to filter with.
-   *
-   * @return \Drupal\apigee_edge\Job|null
-   *   Job object or null if there is no available.
+   * {@inheritdoc}
    */
   public function select(?string $tag = NULL): ?Job {
     // TODO handle race conditions.
@@ -147,7 +131,7 @@ class JobExecutor {
     $jobdata = $query->execute()->fetchField();
 
     if ($jobdata) {
-      /** @var \Drupal\apigee_edge\Job $job */
+      /** @var \Drupal\apigee_edge\Job\Job $job */
       $job = unserialize($jobdata);
       $this->ensure($job, Job::SELECTED);
 
@@ -158,17 +142,7 @@ class JobExecutor {
   }
 
   /**
-   * Executes a job synchronously.
-   *
-   * @param \Drupal\apigee_edge\Job $job
-   *   Job to run.
-   * @param bool $update
-   *   Whether to save the job into the database after it ran.
-   *   Setting this to false means that it is the caller's responsibility to
-   *   save the job into the database, else the job will be stuck in the
-   *   "running" state.
-   *
-   * @throws \Exception
+   * {@inheritdoc}
    */
   public function call(Job $job, bool $update = TRUE) {
     $this->ensure($job, Job::RUNNING);
@@ -189,14 +163,7 @@ class JobExecutor {
   }
 
   /**
-   * Executes a job asynchronously.
-   *
-   * This puts the job into the "apigee_edge_job" cron queue.
-   *
-   * @param \Drupal\apigee_edge\Job $job
-   *   The job to execute later.
-   *
-   * @throws \Exception
+   * {@inheritdoc}
    */
   public function cast(Job $job) {
     $this->save($job);
@@ -204,15 +171,7 @@ class JobExecutor {
   }
 
   /**
-   * Counts jobs in the queue.
-   *
-   * @param null|string $tag
-   *   Optional tag to filter with.
-   * @param array|null $statuses
-   *   Optional statues to filter with.
-   *
-   * @return int
-   *   Number of counted jobs.
+   * {@inheritdoc}
    */
   public function countJobs(?string $tag = NULL, ?array $statuses = NULL): int {
     $query = $this->connection->select('apigee_edge_job', 'j');

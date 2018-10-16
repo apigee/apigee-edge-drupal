@@ -19,9 +19,9 @@
 
 namespace Drupal\apigee_edge\Controller;
 
-use Drupal\apigee_edge\Job;
 use Drupal\apigee_edge\Job\DeveloperSync;
-use Drupal\apigee_edge\JobExecutor;
+use Drupal\apigee_edge\Job\Job;
+use Drupal\apigee_edge\JobExecutorInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Messenger\MessengerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -50,12 +50,12 @@ class DeveloperSyncController extends ControllerBase {
   /**
    * DeveloperSyncController constructor.
    *
-   * @param \Drupal\apigee_edge\JobExecutor $executor
+   * @param \Drupal\apigee_edge\JobExecutorInterface $executor
    *   The job executor service.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
    */
-  public function __construct(JobExecutor $executor, MessengerInterface $messenger) {
+  public function __construct(JobExecutorInterface $executor, MessengerInterface $messenger) {
     $this->executor = $executor;
     $this->messenger = $messenger;
   }
