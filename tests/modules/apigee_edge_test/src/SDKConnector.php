@@ -23,7 +23,7 @@ namespace Drupal\apigee_edge_test;
 use Apigee\Edge\Client;
 use Apigee\Edge\ClientInterface;
 use Apigee\Edge\Exception\ApiResponseException;
-use Drupal\apigee_edge\SDKConnector as OriginalSDKConnector;
+use Drupal\apigee_edge\SDKConnector as DecoratedSDKConnector;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -39,7 +39,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Service decorator for SDKConnector.
  */
-class SDKConnector extends OriginalSDKConnector implements SDKConnectorInterface {
+final class SDKConnector extends DecoratedSDKConnector implements SDKConnectorInterface {
 
   /**
    * The inner SDK connector service.

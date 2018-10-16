@@ -28,7 +28,7 @@ use Drupal\syslog\Logger\SysLog;
 /**
  * Logs Apigee Edge debug messages to a file in the root of Drupal.
  */
-class ApigeeEdgeDebugToFileLogger extends SysLog {
+final class ApigeeEdgeDebugToFileLogger extends SysLog {
 
   /**
    * The database service.

@@ -24,4 +24,4 @@ use Drupal\apigee_edge\Entity\DeveloperApp;
 /**
  * Class OverriddenDeveloperApp.
  */
-class OverriddenDeveloperApp extends DeveloperApp {}
+final class OverriddenDeveloperApp extends DeveloperApp {}
