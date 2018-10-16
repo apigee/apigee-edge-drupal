@@ -123,7 +123,7 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * The field storage format manager service.
    *
-   * @var \Drupal\apigee_edge\FieldStorageFormatManager
+   * @var \Drupal\apigee_edge\Plugin\FieldStorageFormatManager
    */
   protected $formatManager;
 
