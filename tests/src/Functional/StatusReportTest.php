@@ -60,7 +60,7 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->pageTextContains(self::CANNOT_CONNECT_LONG);
 
     // Set invalid authentication key id.
-    $this->setKey('default');
+    $this->setKey('default', '');
     $this->drupalGet($status_report_path);
     $this->assertSession()->pageTextContains(self::KEY_NOT_FOUND);
     $this->assertSession()->pageTextContains(self::CANNOT_CONNECT_MALFORMED);
