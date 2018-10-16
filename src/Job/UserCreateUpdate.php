@@ -162,7 +162,7 @@ abstract class UserCreateUpdate extends EdgeJob {
       $context += [
         '%field_name' => $problem->getTarget(),
         '%attribute_name' => $problem->getSource(),
-        '%field_value' => $problem->getViolation()->getInvalidValue()->value,
+        '%field_value' => is_object($problem->getViolation()->getInvalidValue()) ? $problem->getViolation()->getInvalidValue()->value : $problem->getViolation()->getInvalidValue(),
         '%message' => $problem->getViolation()->getMessage(),
       ];
       $this->logger()->warning($message, $context);
