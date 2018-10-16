@@ -24,6 +24,7 @@ use Apigee\Edge\Client;
 use Apigee\Edge\ClientInterface;
 use Apigee\Edge\HttpClient\Utility\Builder;
 use Drupal\apigee_edge\Exception\AuthenticationKeyException;
+use Drupal\apigee_edge\Exception\AuthenticationKeyNotFoundException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\apigee_edge\Plugin\EdgeOauthKeyTypeInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -202,9 +203,19 @@ class SDKConnector implements SDKConnectorInterface {
       }
       $key = $this->keyRepository->getKey($active_key);
       if ($key === NULL) {
-        throw new AuthenticationKeyException(sprintf('Apigee Edge API authentication key not found with "%s" id.', $active_key));
+        throw new AuthenticationKeyNotFoundException($active_key, 'Apigee Edge API authentication key not found with "@id" id.');
       }
-      $key_token = $this->keyRepository->getKey($this->configFactory->get('apigee_edge.auth')->get('active_key_oauth_token'));
+      $key_token = NULL;
+      if ($key->getKeyType() instanceof EdgeOauthKeyTypeInterface) {
+        $active_token_key = $this->configFactory->get('apigee_edge.auth')->get('active_key_oauth_token');
+        if (empty($active_token_key)) {
+          throw new AuthenticationKeyException('Apigee Edge OAuth token key is not set.');
+        }
+        $key_token = $this->keyRepository->getKey($active_token_key);
+        if ($key_token === NULL) {
+          throw new AuthenticationKeyNotFoundException($active_token_key, 'Apigee Edge OAuth token key not found with "@id" id.');
+        }
+      }
       self::$credentials = $this->buildCredentials($key, $key_token);
     }
 
@@ -237,15 +248,12 @@ class SDKConnector implements SDKConnectorInterface {
   private function buildCredentials(KeyInterface $key, KeyInterface $key_token = NULL): CredentialsInterface {
     if ($key->getKeyType() instanceof EdgeKeyTypeInterface) {
       if ($key->getKeyType() instanceof EdgeOauthKeyTypeInterface) {
-        if ($key_token === NULL) {
-          throw new AuthenticationKeyException('Apigee Edge OAuth token key not found.');
-        }
         return new OauthCredentials($key, $key_token);
       }
       return new Credentials($key);
     }
     else {
-      throw new \InvalidArgumentException("Type of {$key->id()} key does not implement EdgeKeyTypeInterface.");
+      throw new AuthenticationKeyException("Type of {$key->id()} key does not implement EdgeKeyTypeInterface.");
     }
   }
 
