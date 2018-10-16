@@ -20,11 +20,11 @@
 
 namespace Drupal\apigee_edge\Exception;
 
-use Drupal\Core\Field\FieldException;
-
 /**
- * Decorator around Drupal's FieldException.
+ * Module specific base exception interface.
+ *
+ * All exceptions thrown by this module should implement this.
  */
-class EdgeFieldException extends FieldException implements ApigeeEdgeExceptionInterface {
+interface ApigeeEdgeExceptionInterface extends \Throwable {
 
 }

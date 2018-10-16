@@ -20,12 +20,11 @@
 namespace Drupal\apigee_edge\Exception;
 
 use Apigee\Edge\Exception\ApiException;
-use Throwable;
 
 /**
  * This exception is thrown when the developer for a user cannot be loaded.
  */
-class DeveloperDoesNotExistException extends ApiException {
+class DeveloperDoesNotExistException extends ApiException implements ApigeeEdgeExceptionInterface {
 
   /**
    * Email address of the developer that is supposed to exist.

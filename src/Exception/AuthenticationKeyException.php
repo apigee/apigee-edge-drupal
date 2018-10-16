@@ -7,6 +7,6 @@ use Apigee\Edge\Exception\ApiException;
 /**
  * Defines an exception for authentication key problems.
  */
-class AuthenticationKeyException extends ApiException {
+class AuthenticationKeyException extends ApiException implements ApigeeEdgeExceptionInterface {
 
 }

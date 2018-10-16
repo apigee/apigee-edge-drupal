@@ -2,13 +2,12 @@
 
 namespace Drupal\apigee_edge\Exception;
 
-use Apigee\Edge\Exception\ApiException;
 use Throwable;
 
 /**
  * Defines an exception for when a key value is malformed.
  */
-class KeyValueMalformedException extends AuthenticationKeyException {
+class KeyValueMalformedException extends AuthenticationKeyException implements ApigeeEdgeExceptionInterface {
 
   /**
    * The key value field that is malformed.
