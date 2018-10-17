@@ -28,7 +28,7 @@ use Drupal\syslog\Logger\SysLog;
 /**
  * Redirects Drupal logs to a file.
  */
-class SyslogToFileLogger extends SysLog {
+final class SyslogToFileLogger extends SysLog {
 
   /**
    * The database service.

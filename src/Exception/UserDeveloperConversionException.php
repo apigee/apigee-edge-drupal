@@ -20,11 +20,9 @@
 
 namespace Drupal\apigee_edge\Exception;
 
-use Drupal\Core\Field\FieldException;
-
 /**
- * Decorator around Drupal's FieldException.
+ * Base class for user to developer or developer to user conversion errors.
  */
-class EdgeFieldException extends FieldException implements ApigeeEdgeExceptionInterface {
+class UserDeveloperConversionException extends \RuntimeException implements ApigeeEdgeExceptionInterface {
 
 }

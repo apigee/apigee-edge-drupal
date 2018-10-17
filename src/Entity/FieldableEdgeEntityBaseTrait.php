@@ -46,7 +46,6 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
  */
 trait FieldableEdgeEntityBaseTrait {
 
-  use FieldableEdgeEntityUtilityTrait;
   use EdgeEntityBaseTrait {
     preSave as private traitPreSave;
     postSave as private traitPostSave;
@@ -279,7 +278,9 @@ trait FieldableEdgeEntityBaseTrait {
    * {@inheritdoc}
    */
   public function getFieldValueFromAttribute(string $field_name, AttributesProperty $attributes) {
-    $attribute_name = static::getAttributeName($field_name);
+    /** @var \Drupal\apigee_edge\FieldAttributeConverterInterface $field_attribute_converter */
+    $field_attribute_converter = \Drupal::service('apigee_edge.converter.field_attribute');
+    $attribute_name = $field_attribute_converter->getAttributeName($field_name);
     if ($attributes->has($attribute_name)) {
       $attribute_value = $attributes->getValue($attribute_name);
       if (($formatter = $this->findAttributeStorageFormatter($field_name))) {
@@ -307,7 +308,7 @@ trait FieldableEdgeEntityBaseTrait {
 
     $type = $bundle_fields[$field_name]->getType();
 
-    /** @var \Drupal\apigee_edge\FieldStorageFormatManager $format_manager */
+    /** @var \Drupal\apigee_edge\Plugin\FieldStorageFormatManager $format_manager */
     $format_manager = \Drupal::service('plugin.manager.apigee_field_storage_format');
     return $format_manager->lookupPluginForFieldType($type);
   }
@@ -317,11 +318,13 @@ trait FieldableEdgeEntityBaseTrait {
    */
   public function get($field_name): FieldItemListInterface {
     if (empty($this->fields[$field_name])) {
+      /** @var \Drupal\apigee_edge\FieldAttributeConverterInterface $field_attribute_converter */
+      $field_attribute_converter = \Drupal::service('apigee_edge.converter.field_attribute');
       $value = $this->getOriginalFieldData($field_name);
       $definitions = $this->getFieldDefinitions();
 
       if (!isset($definitions[$field_name])) {
-        $field_name = static::getFieldName($field_name);
+        $field_name = $field_attribute_converter->getFieldName($field_name);
       }
 
       if (isset($value) && array_key_exists($field_name, static::propertyToFieldStaticMap()) && static::getFieldType($field_name) === 'timestamp') {
@@ -349,10 +352,12 @@ trait FieldableEdgeEntityBaseTrait {
    * {@inheritdoc}
    */
   public function set($field_name, $value, $notify = TRUE) {
+    /** @var \Drupal\apigee_edge\FieldAttributeConverterInterface $field_attribute_converter */
+    $field_attribute_converter = \Drupal::service('apigee_edge.converter.field_attribute');
     // Do not try to set values of fields that does not exists.
     // Also blacklisted properties does not have a field in Drupal and their
     // value changes should not be saved on entity properties either.
-    if (!$this->hasField($field_name) || static::isBackListedProperty(static::getAttributeName($field_name))) {
+    if (!$this->hasField($field_name) || static::isBackListedProperty($field_attribute_converter->getAttributeName($field_name))) {
       return $this;
     }
 
@@ -406,7 +411,7 @@ trait FieldableEdgeEntityBaseTrait {
     // find a property for sure.)
     $setter = 'set' . ucfirst($field_name);
     if (!method_exists($this, $setter)) {
-      $attribute_name = static::getAttributeName($field_name);
+      $attribute_name = $field_attribute_converter->getAttributeName($field_name);
       if (($formatter = $this->findAttributeStorageFormatter($field_name))) {
         $this->attributes->add($attribute_name, $formatter->encode($value));
       }

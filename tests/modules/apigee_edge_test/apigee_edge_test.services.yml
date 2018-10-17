@@ -23,3 +23,10 @@ services:
     decoration_priority: 0
     public: false
     arguments: ['@apigee_edge_test.sdk_connector.inner', '@logger.channel.apigee_edge_test', '@http_client_factory', '@key.repository', '@entity_type.manager', '@config.factory', '@module_handler', '@info_parser']
+
+  apigee_edge_test.converter.user_developer:
+    class: Drupal\apigee_edge_test\UserDeveloperConverter
+    decorates: apigee_edge.converter.user_developer
+    decoration_priority: 0
+    public: false
+    arguments: ['@apigee_edge_test.converter.user_developer.inner', '@config.factory', '@entity_type.manager', '@plugin.manager.apigee_field_storage_format', '@apigee_edge.converter.field_attribute']

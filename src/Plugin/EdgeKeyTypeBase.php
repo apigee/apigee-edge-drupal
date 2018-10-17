@@ -20,7 +20,7 @@
 namespace Drupal\apigee_edge\Plugin;
 
 use Apigee\Edge\Client;
-use Drupal\apigee_edge\Exception\KeyValueMalformedException;
+use Drupal\apigee_edge\Exception\AuthenticationKeyValueMalformedException;
 use Drupal\Component\Serialization\Json;
 use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyTypeBase;
@@ -56,7 +56,7 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
    */
   public function getOrganization(KeyInterface $key): string {
     if (!isset($key->getKeyValues()['organization'])) {
-      throw new KeyValueMalformedException('organization');
+      throw new AuthenticationKeyValueMalformedException('organization');
     }
     return $key->getKeyValues()['organization'];
   }
@@ -66,7 +66,7 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
    */
   public function getUsername(KeyInterface $key): string {
     if (!isset($key->getKeyValues()['username'])) {
-      throw new KeyValueMalformedException('username');
+      throw new AuthenticationKeyValueMalformedException('username');
     }
     return $key->getKeyValues()['username'];
   }
@@ -76,7 +76,7 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
    */
   public function getPassword(KeyInterface $key): string {
     if (!isset($key->getKeyValues()['password'])) {
-      throw new KeyValueMalformedException('password');
+      throw new AuthenticationKeyValueMalformedException('password');
     }
     return $key->getKeyValues()['password'];
   }

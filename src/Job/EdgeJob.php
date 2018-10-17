@@ -19,7 +19,6 @@
 
 namespace Drupal\apigee_edge\Job;
 
-use Drupal\apigee_edge\Job;
 use Drupal\apigee_edge\SDKConnectorInterface;
 
 /**

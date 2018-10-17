@@ -24,4 +24,4 @@ use Drupal\apigee_edge\Entity\ApiProduct;
 /**
  * Class OverriddenApiProduct.
  */
-class OverriddenApiProduct extends ApiProduct {}
+final class OverriddenApiProduct extends ApiProduct {}

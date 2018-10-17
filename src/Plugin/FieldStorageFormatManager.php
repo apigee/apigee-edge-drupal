@@ -17,10 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge;
+namespace Drupal\apigee_edge\Plugin;
 
 use Drupal\apigee_edge\Annotation\ApigeeFieldStorageFormat;
-use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormatInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
@@ -29,7 +28,7 @@ use Traversable;
 /**
  * Provides a FieldStorageFormat plugin manager.
  */
-class FieldStorageFormatManager extends DefaultPluginManager {
+class FieldStorageFormatManager extends DefaultPluginManager implements FieldStorageFormatManagerInterface {
 
   /**
    * {@inheritdoc}
@@ -59,13 +58,7 @@ class FieldStorageFormatManager extends DefaultPluginManager {
   }
 
   /**
-   * Finds a plugin to format a given field type.
-   *
-   * @param string $field_type
-   *   Field type.
-   *
-   * @return \Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormatInterface|null
-   *   Storage formatter if found. Null if not.
+   * {@inheritdoc}
    */
   public function lookupPluginForFieldType(string $field_type): ?ApigeeFieldStorageFormatInterface {
     $definitions = $this->getDefinitions();

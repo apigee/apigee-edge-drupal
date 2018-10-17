@@ -30,7 +30,9 @@ use Drupal\key\Entity\Key;
  */
 class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
 
-  const KEY_NOT_FOUND = 'Apigee Edge API authentication key not found.';
+  const KEY_NOT_SET = 'Apigee Edge API authentication key is not set.';
+
+  const KEY_NOT_FOUND = 'Apigee Edge API authentication key not found with "default" id.';
 
   const KEY_MALFORMED = 'Apigee Edge API authentication key is malformed or not readable.';
 
@@ -54,8 +56,14 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
     // Delete authentication key.
     $this->invalidateKey();
     $this->drupalGet($status_report_path);
-    $this->assertSession()->pageTextContains(self::KEY_NOT_FOUND);
+    $this->assertSession()->pageTextContains(self::KEY_NOT_SET);
     $this->assertSession()->pageTextContains(self::CANNOT_CONNECT_LONG);
+
+    // Set invalid authentication key id.
+    $this->setKey('default', '');
+    $this->drupalGet($status_report_path);
+    $this->assertSession()->pageTextContains(self::KEY_NOT_FOUND);
+    $this->assertSession()->pageTextContains(self::CANNOT_CONNECT_MALFORMED);
 
     // Create new Apigee Edge basic auth key with private file provider.
     $key = Key::create([

@@ -19,19 +19,68 @@
 
 namespace Drupal\apigee_edge\Form;
 
-use Drupal\apigee_edge\Entity\FieldableEdgeEntityUtilityTrait;
+use Drupal\apigee_edge\FieldAttributeConverter;
+use Drupal\apigee_edge\Plugin\FieldStorageFormatManagerInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\FieldConfigInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a form for changing the developer attribute related settings.
  */
 class DeveloperAttributesSettingsForm extends ConfigFormBase {
 
-  use FieldableEdgeEntityUtilityTrait;
+  /**
+   * Field-attribute converter service.
+   *
+   * @var \Drupal\apigee_edge\FieldAttributeConverter
+   */
+  private $fieldAttributeConverter;
+
+  /**
+   * Entity field manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
+   */
+  private $entityFieldManager;
+
+  /**
+   * Field storage formatter service.
+   *
+   * @var \Drupal\apigee_edge\Plugin\FieldStorageFormatManagerInterface
+   */
+  private $fieldStorageFormatManager;
+
+  /**
+   * DeveloperAttributesSettingsForm constructor.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   Config factory service.
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   *   Entity field manager service.
+   * @param \Drupal\apigee_edge\Plugin\FieldStorageFormatManagerInterface $field_storage_format_manager
+   *   Field storage format manager service.
+   * @param \Drupal\apigee_edge\FieldAttributeConverter $field_attribute_converter
+   *   Field name to attribute name converted service.
+   */
+  public function __construct(ConfigFactoryInterface $config_factory, EntityFieldManagerInterface $entity_field_manager, FieldStorageFormatManagerInterface $field_storage_format_manager, FieldAttributeConverter $field_attribute_converter) {
+    parent::__construct($config_factory);
+    $this->fieldAttributeConverter = $field_attribute_converter;
+    $this->entityFieldManager = $entity_field_manager;
+    $this->fieldStorageFormatManager = $field_storage_format_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static($container->get('config.factory'), $container->get('entity_field.manager'), $container->get('plugin.manager.apigee_field_storage_format'), $container->get('apigee_edge.converter.field_attribute'));
+  }
 
   /**
    * {@inheritdoc}
@@ -69,25 +118,23 @@ class DeveloperAttributesSettingsForm extends ConfigFormBase {
       ]),
     ];
 
-    $fields = array_filter(\Drupal::service('entity_field.manager')->getFieldDefinitions('user', 'user'), function ($field_definition) {
+    $fields = array_filter($this->entityFieldManager->getFieldDefinitions('user', 'user'), function ($field_definition) {
       return $field_definition instanceof FieldConfigInterface;
     });
     uasort($fields, [FieldConfig::class, 'sort']);
 
     $options = $default_values = [];
-    /** @var \Drupal\apigee_edge\FieldStorageFormatManager $format_manager */
-    $format_manager = \Drupal::service('plugin.manager.apigee_field_storage_format');
     /** @var \Drupal\field\FieldConfigInterface $field */
     foreach ($fields as $field) {
       $options[$field->getName()] = [
         'field_label' => $field->getLabel(),
         'field_name' => $field->getName(),
         'field_type' => $field->getType(),
-        'attribute_name' => static::getAttributeName($field->getName()),
+        'attribute_name' => $this->fieldAttributeConverter->getAttributeName($field->getName()),
       ];
-      $formatter = $format_manager->lookupPluginForFieldType($field->getType());
+      $formatter = $this->fieldStorageFormatManager->lookupPluginForFieldType($field->getType());
       if (isset($formatter)) {
-        $rc = new \ReflectionClass($format_manager->lookupPluginForFieldType($field->getType()));
+        $rc = new \ReflectionClass($this->fieldStorageFormatManager->lookupPluginForFieldType($field->getType()));
         $short_name = $rc->getShortName();
         $options[$field->getName()]['field_storage_formatter'] = $short_name;
       }

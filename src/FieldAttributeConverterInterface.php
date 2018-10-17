@@ -18,13 +18,33 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Exception;
-
-use Drupal\Core\Field\FieldException;
+namespace Drupal\apigee_edge;
 
 /**
- * Decorator around Drupal's FieldException.
+ * Field-attribute converter service definition.
  */
-class EdgeFieldException extends FieldException implements ApigeeEdgeExceptionInterface {
+interface FieldAttributeConverterInterface {
+
+  /**
+   * Returns the name of the mapped attribute to a field.
+   *
+   * @param string $field_name
+   *   Name of a field.
+   *
+   * @return string
+   *   Name of the mapped attribute.
+   */
+  public function getAttributeName(string $field_name): string;
+
+  /**
+   * Returns the name of the mapped field to an attribute.
+   *
+   * @param string $attribute_name
+   *   Name of an attribute.
+   *
+   * @return string
+   *   Name of the mapped field.
+   */
+  public function getFieldName(string $attribute_name): string;
 
 }

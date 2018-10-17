@@ -19,7 +19,6 @@
 
 namespace Drupal\apigee_edge\Job;
 
-use Drupal\apigee_edge\Job;
 use Drupal\apigee_edge\JobExecutor;
 
 /**
@@ -40,7 +39,7 @@ trait JobCreatorTrait {
   /**
    * Schedules a job for execution.
    *
-   * @param \Drupal\apigee_edge\Job $job
+   * @param \Drupal\apigee_edge\Job\Job $job
    *   The job shluld be schedules.
    */
   protected function scheduleJob(Job $job) {
@@ -50,7 +49,7 @@ trait JobCreatorTrait {
   /**
    * Schedules multiple jobs for execution.
    *
-   * @param \Drupal\apigee_edge\Job[] $jobs
+   * @param \Drupal\apigee_edge\Job\Job[] $jobs
    *   The array of the jobs should be scheduled.
    */
   protected function scheduleJobs(array $jobs) {

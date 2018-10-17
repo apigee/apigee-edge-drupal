@@ -24,16 +24,18 @@
  */
 
 use Apigee\Edge\Api\Management\Serializer\AppCredentialSerializer;
-use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\ClientErrorException;
 use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
+use Drupal\apigee_edge\Exception\UserDeveloperConversionNoStorageFormatterFoundException;
+use Drupal\apigee_edge\Exception\UserDeveloperConversionUserFieldDoesNotExistException;
 use Drupal\apigee_edge\Form\DeveloperSettingsForm;
 use Drupal\apigee_edge\JobExecutor;
 use Drupal\apigee_edge\Plugin\Field\FieldType\ApigeeEdgeDeveloperIdFieldItem;
 use Drupal\apigee_edge\Plugin\Validation\Constraint\DeveloperEmailUniqueValidator;
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Render\PlainTextOutput;
 use Drupal\Component\Utility\Crypt;
 use Drupal\Component\Utility\Xss;
@@ -52,6 +54,7 @@ use Drupal\Core\Site\Settings;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\TempStore\TempStoreException;
 use Drupal\Core\Url;
+use Drupal\Core\Utility\Error;
 use Drupal\user\UserInterface;
 
 define('APIGEE_EDGE_USER_REGISTRATION_SOURCE', 'apigee_edge_user_registration_source');
@@ -541,6 +544,7 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
       }
       catch (\Exception $exception) {
         // Nothing to do here, if there is no connection to Apigee Edge
+        // Nothing to do here, if there is no connection to Apigee Edge
         // interrupt the registration in the
         // apigee_edge_form_user_form_api_connection_validate() function.
       }
@@ -991,10 +995,42 @@ function apigee_edge_user_presave(UserInterface $account) {
     return;
   }
 
-  $developer_id = NULL;
+  /** @var \Drupal\apigee_edge\UserDeveloperConverterInterface $user_developer */
+  $user_developer = \Drupal::service('apigee_edge.converter.user_developer');
+  /** @var \Drupal\apigee_edge\FieldAttributeConverterInterface $field_to_attribute */
+  $field_to_attribute = \Drupal::service('apigee_edge.converter.field_attribute');
+  /** @var \Drupal\Core\Logger\LoggerChannelInterface $logger */
+  $logger = \Drupal::service('logger.channel.apigee_edge');
   try {
     /** @var \Drupal\apigee_edge\Entity\Developer $developer */
-    $developer = Developer::createFromDrupalUser($account);
+    $result = $user_developer->convertUser($account);
+    // There were no changes.
+    if ($result->getSuccessfullyAppliedChanges() === 0) {
+      return;
+    }
+    // Log problems occurred meanwhile the conversion process.
+    foreach ($result->getProblems() as $conversionProblem) {
+      $context = [
+        '%mail' => $account->getEmail(),
+        'link' => $account->toLink()->toString(),
+      ];
+      if ($conversionProblem instanceof UserDeveloperConversionUserFieldDoesNotExistException) {
+        $message = "Skipping %mail developer's %attribute_name attribute update because %field_name field does not exist.";
+        $context['%field_name'] = $conversionProblem->getFieldName();
+        $context['%attribute_name'] = $field_to_attribute->getAttributeName($conversionProblem->getFieldName());
+        $logger->warning($message, $context);
+      }
+      elseif ($conversionProblem instanceof UserDeveloperConversionNoStorageFormatterFoundException) {
+        $message = "Skipping %mail developer's %attribute_name attribute update because there is no available storage formatter for %field_type field type.";
+        $context['%field_type'] = $conversionProblem->getFieldDefinition()->getType();
+        $context['%attribute_name'] = $field_to_attribute->getAttributeName($conversionProblem->getFieldDefinition()->getName());
+        $logger->warning($message, $context);
+      }
+      else {
+        $logger->warning($conversionProblem->getMessage());
+      }
+    }
+    $developer = $result->getDeveloper();
     $developer->save();
   }
   catch (\Exception $exception) {
@@ -1018,16 +1054,17 @@ function apigee_edge_user_presave(UserInterface $account) {
           $developer->enforceIsNew(TRUE);
           $developer->save();
         }
-        catch (\Exception $e) {
+        catch (\Exception $exception) {
           $context = [
             '@developer' => $account->getEmail(),
             '@message' => (string) $exception,
           ];
-          watchdog_exception('apigee_edge', $exception, 'Could not create developer entity: @developer. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
+          $context += Error::decodeException($exception);
+          $logger->error('Could not create developer entity: @developer. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
         }
       }
       elseif ($previous->getEdgeErrorCode() === Developer::APIGEE_EDGE_ERROR_CODE_DEVELOPER_ALREADY_EXISTS) {
-        \Drupal::service('logger.channel.apigee_edge')->info($previous->getMessage());
+        $logger->info($previous->getMessage());
         $developer = Developer::load($account->getEmail());
         if ($developer) {
           $developer_id = $developer->getDeveloperId();
@@ -1035,24 +1072,25 @@ function apigee_edge_user_presave(UserInterface $account) {
           // that already belongs to a developer on Apigee Edge then override
           // its stored developer data there with the new one.
           if (isset($account->{APIGEE_EDGE_USER_REGISTRATION_SOURCE}) && $account->{APIGEE_EDGE_USER_REGISTRATION_SOURCE} === 'user_register_form') {
-            $developer = Developer::createFromDrupalUser($account);
+            $developer = $user_developer->convertUser($account);
             $developer->setDeveloperId($developer_id);
             $developer->enforceIsNew(FALSE);
             try {
               $developer->save();
             }
-            catch (ApiException $e) {
-              \Drupal::service('logger.channel.apigee_edge')->error("Unable to update existing @developer developer's data after registered on the portal.", $context);
+            catch (ApiException $exception) {
+              $logger->error("Unable to update existing @developer developer's data after registered on the portal.", $context);
             }
           }
         }
         else {
-          \Drupal::service('logger.channel.apigee_edge')->error("Unable to save @developer developer's developer id on user.", $context);
+          $logger->error("Unable to save @developer developer's developer id on user.", $context);
         }
       }
     }
     else {
-      watchdog_exception('apigee_edge', $exception, 'Could not @operation developer entity: @developer. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
+      $context += Error::decodeException($exception);
+      $logger->error('Could not @operation developer entity: @developer. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
     }
   }
 }
@@ -1062,9 +1100,13 @@ function apigee_edge_user_presave(UserInterface $account) {
  */
 function apigee_edge_user_cancel(array $edit, UserInterface $account, $method) {
   if ($method === 'user_cancel_block_unpublish' || $method === 'user_cancel_block') {
+    /** @var \Drupal\apigee_edge\UserDeveloperConverterInterface $user_developer */
+    $user_developer = \Drupal::service('apigee_edge.converter.user_developer');
+    /** @var \Drupal\Core\Logger\LoggerChannelInterface $logger */
+    $logger = \Drupal::service('logger.channel.apigee_edge');
     try {
       /** @var \Drupal\apigee_edge\Entity\Developer $developer */
-      $developer = Developer::createFromDrupalUser($account);
+      $developer = $user_developer->convertUser($account)->getDeveloper();
       $developer->save();
     }
     catch (\Exception $exception) {
@@ -1072,7 +1114,8 @@ function apigee_edge_user_cancel(array $edit, UserInterface $account, $method) {
         '@developer' => $account->getEmail(),
         '@message' => (string) $exception,
       ];
-      watchdog_exception('apigee_edge', $exception, 'Could not block @developer developer. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
+      $context += Error::decodeException($exception);
+      $logger->error('Could not block @developer developer. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
     }
   }
 }

@@ -2,13 +2,12 @@
 
 namespace Drupal\apigee_edge\Exception;
 
-use Apigee\Edge\Exception\ApiException;
 use Throwable;
 
 /**
  * Defines an exception for when a key value is malformed.
  */
-class KeyValueMalformedException extends AuthenticationKeyException {
+class AuthenticationKeyValueMalformedException extends AuthenticationKeyException implements ApigeeEdgeExceptionInterface {
 
   /**
    * The key value field that is malformed.
@@ -20,6 +19,8 @@ class KeyValueMalformedException extends AuthenticationKeyException {
   /**
    * KeyValueMalformedException constructor.
    *
+   * We do not expose the name of problematic field by default in the message.
+   *
    * @param string $problematic_field
    *   Name of the field that caused the issue.
    * @param string $message
@@ -29,10 +30,9 @@ class KeyValueMalformedException extends AuthenticationKeyException {
    * @param \Throwable|null $previous
    *   Previous exception.
    */
-  public function __construct($problematic_field, $message = '', $code = 0, Throwable $previous = NULL) {
+  public function __construct($problematic_field, $message = 'Apigee Edge API authentication key is malformed or not readable.', $code = 0, Throwable $previous = NULL) {
     $this->problematicField = $problematic_field;
-    // We do not expose the name of problematic field by default in the message.
-    $message = $message ?: t('Apigee Edge API authentication key is malformed or not readable.');
+    $message = strtr($message, ['@field' => $problematic_field]);
     parent::__construct($message, $code, $previous);
   }
 

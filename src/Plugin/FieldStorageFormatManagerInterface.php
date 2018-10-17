@@ -18,13 +18,25 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Exception;
+namespace Drupal\apigee_edge\Plugin;
 
-use Drupal\Core\Field\FieldException;
+use Drupal\Component\Plugin\Discovery\CachedDiscoveryInterface;
+use Drupal\Component\Plugin\PluginManagerInterface;
 
 /**
- * Decorator around Drupal's FieldException.
+ * Field storage formatter plugin definition.
  */
-class EdgeFieldException extends FieldException implements ApigeeEdgeExceptionInterface {
+interface FieldStorageFormatManagerInterface extends PluginManagerInterface, CachedDiscoveryInterface {
+
+  /**
+   * Finds a plugin to format a given field type.
+   *
+   * @param string $field_type
+   *   Field type.
+   *
+   * @return \Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormatInterface|null
+   *   Storage formatter if found. NULL if not.
+   */
+  public function lookupPluginForFieldType(string $field_type): ?ApigeeFieldStorageFormatInterface;
 
 }

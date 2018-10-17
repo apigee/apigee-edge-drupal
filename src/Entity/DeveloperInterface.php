@@ -32,9 +32,15 @@ interface DeveloperInterface extends EdgeDeveloperInterface, EdgeEntityInterface
    *
    * @param null|string $originalEmail
    *   The original email address.
-   *
-   * @internal
    */
   public function setOriginalEmail(string $originalEmail);
+
+  /**
+   * Set status of the developer.
+   *
+   * @param string $status
+   *   Status of the entity.
+   */
+  public function setStatus(string $status): void;
 
 }

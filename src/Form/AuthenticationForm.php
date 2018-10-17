@@ -22,7 +22,7 @@ namespace Drupal\apigee_edge\Form;
 use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
-use Drupal\apigee_edge\Exception\KeyValueMalformedException;
+use Drupal\apigee_edge\Exception\AuthenticationKeyValueMalformedException;
 use Drupal\apigee_edge\OauthTokenStorage;
 use Drupal\apigee_edge\Plugin\KeyType\OauthKeyType;
 use Drupal\apigee_edge\SDKConnectorInterface;
@@ -526,7 +526,7 @@ class AuthenticationForm extends ConfigFormBase {
       $credentials['organization'] = $key_type->getOrganization($key);
       $credentials['username'] = $key_type->getUsername($key);
     }
-    catch (KeyValueMalformedException $exception) {
+    catch (AuthenticationKeyValueMalformedException $exception) {
       // Could not read the credentials because the key value storage is
       // malformed.
     }

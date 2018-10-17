@@ -26,7 +26,7 @@ use Drupal\Core\Entity\EntityStorageException;
 /**
  * Throw exception to test the connection error page.
  */
-class ExceptionController extends ControllerBase {
+final class ExceptionController extends ControllerBase {
 
   /**
    * Throws a new EntityStorageException.

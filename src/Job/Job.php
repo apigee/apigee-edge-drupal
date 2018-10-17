@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge;
+namespace Drupal\apigee_edge\Job;
 
 /**
  * Defines the Job class.
@@ -105,6 +105,15 @@ abstract class Job {
    * @var int
    */
   protected $status = self::IDLE;
+
+  /**
+   * Job constructor.
+   */
+  public function __construct() {
+    /** @var \Drupal\Component\Uuid\UuidInterface $uuid_service */
+    $uuid_service = \Drupal::service('uuid');
+    $this->id = $uuid_service->generate();
+  }
 
   /**
    * Gets the job id.
@@ -206,15 +215,6 @@ abstract class Job {
    */
   public function getMessages(): array {
     return $this->messages;
-  }
-
-  /**
-   * Job constructor.
-   */
-  public function __construct() {
-    /** @var \Drupal\Component\Uuid\UuidInterface $uuid_service */
-    $uuid_service = \Drupal::service('uuid');
-    $this->id = $uuid_service->generate();
   }
 
   /**
