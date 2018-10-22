@@ -54,7 +54,7 @@ class MockHandlerStack extends MockHandler {
    */
   public function __construct(\Twig_Environment $twig, QueueFactory $queue_factory) {
     $this->twig = $twig;
-    $this->database_queue = $queue_factory->get('apigee_m10n_mock_responses', TRUE);
+    $this->database_queue = $queue_factory->get('apigee_edge_mock_responses', TRUE);
 
     parent::__construct();
   }

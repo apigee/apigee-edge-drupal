@@ -1,4 +1,4 @@
-name: Apigee Monetization Test Module
+name: Apigee Edge Test Module
 description: Helpers and an api middleware used for testing.
 package: Apigee
 

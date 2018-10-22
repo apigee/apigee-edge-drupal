@@ -22,7 +22,6 @@ namespace Drupal\apigee_mock_client;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Http\ClientFactory;
 use Drupal\Core\Site\Settings;
-use Drupal\apigee_m10n\EnvironmentVariable;
 use Drupal\Core\State\StateInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
@@ -65,13 +64,13 @@ class MockHttpClientFactory extends ClientFactory {
     $this->mock_stack = $mock_stack;
 
     // Check for the integration enabled environment variable.
-    if ($enabled = getenv(EnvironmentVariable::$APIGEE_INTEGRATION_ENABLE)) {
+    if ($enabled = getenv('APIGEE_INTEGRATION_ENABLE')) {
       $this->integration_enabled = !empty($enabled);
       // Callbacks won't have access to the same environment variables so save
       // the flag to state.
-      $state->set(EnvironmentVariable::$APIGEE_INTEGRATION_ENABLE, $enabled);
+      $state->set('APIGEE_INTEGRATION_ENABLE', $enabled);
     } else {
-      $this->integration_enabled = !empty($state->get(EnvironmentVariable::$APIGEE_INTEGRATION_ENABLE, FALSE));
+      $this->integration_enabled = !empty($state->get('APIGEE_INTEGRATION_ENABLE', FALSE));
     }
 
     parent::__construct($stack);
