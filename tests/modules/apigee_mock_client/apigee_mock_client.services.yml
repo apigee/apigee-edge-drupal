@@ -1,0 +1,22 @@
+services:
+  apigee_mock_client.mock_http_handler_stack:
+    class: Drupal\apigee_mock_client\MockHandlerStack
+    arguments: ['@apigee_mock_client_twig', '@queue']
+  apigee_mock_client.mock_http_client_factory:
+    class: Drupal\apigee_mock_client\MockHttpClientFactory
+    arguments: ['@http_handler_stack', '@apigee_mock_client.mock_http_handler_stack', '@state']
+
+  apigee_mock_client_twig:
+    class: \Twig_Environment
+    arguments: ['@apigee_mock_client_twig_json.loader']
+  apigee_mock_client_twig_json.loader:
+    class: \Twig_Loader_Chain
+    public: false
+    tags:
+      - { name: service_collector, tag: apigee_mock_client_twig.loader, call: addLoader, required: TRUE }
+  ## Adds `apigee_mock_client/response-templates` to the template search path ##
+  apigee_mock_client_twig_json.loader.filesystem:
+    class: Drupal\apigee_mock_client\TwigExtension\ModulePathLoader
+    arguments: ['apigee_mock_client', '@module_handler']
+    tags:
+      - { name: apigee_mock_client_twig.loader, priority: 100 }

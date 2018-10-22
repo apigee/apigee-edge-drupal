@@ -1,0 +1,15 @@
+{#
+/**
+ * @file
+ *   - GET /v1/mint/organizations/{org}/any-getter
+ *
+ * Response Code: 404
+ *
+ * Variables: @see `product.json.twig`
+ */
+#}
+{
+    "code" : "mint.resourceDoesNotExist",
+    "message" : "{{ message|default('The requested object does nto exist.') }}",
+    "contexts" : [ ]
+}

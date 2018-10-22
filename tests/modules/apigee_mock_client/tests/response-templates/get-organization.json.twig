@@ -1,0 +1,55 @@
+{#
+/**
+ * @file
+ *   GET /v1/organizations/{org}
+ *
+ * Response Code: 200
+ *
+ * Variables:
+ * - org_name:              The name of the org.
+ * - monetization_enabled:  (string) "true"|"false" Whether monetizaiton is enabled.
+ */
+#}
+{
+    "createdAt": 1502328769129,
+    "createdBy": "user@example.com",
+    "displayName": "{{ org_name|default('example') }}",
+    "environments": [
+        "prod",
+        "dev",
+        "test",
+        "portal"
+    ],
+    "lastModifiedAt": 1533757994970,
+    "lastModifiedBy": "user@example.com",
+    "name": "{{ org_name|default('example') }}",
+    "properties": {
+        "property": [
+            {
+                "name": "features.isSmbOrganization",
+                "value": "false"
+            },
+            {
+                "name": "features.isMonetizationEnabled",
+                "value": "{{ monetization_enabled|default('false') }}"
+            },
+            {
+                "name": "features.isConnectorsEnabled",
+                "value": "true"
+            },
+            {
+                "name": "features.isCpsEnabled",
+                "value": "true"
+            },
+            {
+                "name": "features.isEdgeFunctionsEnabled",
+                "value": "true"
+            },
+            {
+                "name": "features.isApiMonitoringEnabled",
+                "value": "true"
+            }
+        ]
+    },
+    "type": "paid"
+}

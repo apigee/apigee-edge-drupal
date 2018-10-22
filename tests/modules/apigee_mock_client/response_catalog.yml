@@ -1,0 +1,7 @@
+responses:
+  post_developers:
+    status_code: 201
+  no_content:
+    status_code: 204
+  get_not_found:
+    status_code: 404

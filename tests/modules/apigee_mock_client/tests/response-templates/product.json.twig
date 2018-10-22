@@ -1,0 +1,27 @@
+{#
+/**
+ * @file
+ *   Package include file. Use this whenever an package is a part of an object.
+ *
+ * Usage:
+ *   @code
+ *   {% include 'org.json.twig' %}
+ *   @endcode
+ *
+ * Variables:
+ *   - id: ID of the API product.
+ *   - description: Description of API product.
+ *   - display_name: User-friendly display name of the API product.
+ *   - name: Name of the API product.
+ *   - status: Status indicator for the API product. Valid values include: CREATED, ACTIVE, INACTIVE. This value is maintained but not currently used by the API product.
+ */
+#}
+{
+    "description" : "{{ product.description|default('All about the Foo.') }}",
+    "displayName" : "{{ product.displayName|default('The Foo') }}",
+    "id" : "{{ product.id|default('foo') }}",
+    "name" : "{{ product.name|default('Foo') }}",
+    "organization" : {% include 'org.json.twig' %},
+    "status" : "{{ product.status|default('CREATED') }}",
+    "transactionSuccessCriteria" : "txProviderStatus == 'OK'"
+}
