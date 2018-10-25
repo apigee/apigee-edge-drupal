@@ -430,7 +430,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $controller->setStatus($this->account->getEmail(), Developer::STATUS_INACTIVE);
 
     $this->drupalGet("/user/{$this->account->id()}/apps");
-    $this->assertSession()->pageTextContains('Your developer account has inactive status so you will not be able to use your credentials until your account is enabled. Please contact the Developer Portal support for further assistance.');
+    $this->assertSession()->pageTextContains('Your developer account has inactive status so you will not be able to use your credentials until your account is enabled. Please contact support for further assistance.');
 
     $this->drupalLogin($this->rootUser);
     $this->drupalGet("/user/{$this->account->id()}/apps");
@@ -441,7 +441,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    * Ensures warning messages are visible if multiple products/app is disabled.
    */
   public function testWarningMessagesIfMultipleProductsDisabled() {
-    $admin_warning_message = 'Access to multiple API Products will be retained until an app is edited and the developer is prompted to confirm a single API Product selection.';
+    $admin_warning_message = 'Access to multiple API products will be retained until an app is edited and the developer is prompted to confirm a single API Product selection.';
     $end_user_warning_message = 'Foos status now require selection of a single Bar; multiple Bar selection is no longer supported. Confirm your Bar selection below.';
     $app_settings_url = Url::fromRoute('apigee_edge.settings.app');
 

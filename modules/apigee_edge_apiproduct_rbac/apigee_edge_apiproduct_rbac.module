@@ -160,7 +160,7 @@ function apigee_edge_apiproduct_rbac_form_apigee_edge_api_product_access_control
 
   $form['rbac']['api_products'] = [
     '#type' => 'table',
-    '#header' => [t('API Products')],
+    '#header' => [t('API products')],
     '#id' => 'rbac-settings',
     '#attributes' => ['class' => ['rbac-settings', 'js-rbac-settings']],
     '#sticky' => TRUE,
@@ -269,7 +269,7 @@ function apigee_edge_apiproduct_rbac_form_apigee_edge_api_product_access_control
  * Returns a batch for updating RBAC settings on API products.
  *
  * @param array $product_name_display_name_map
- *   Associative array where keys are the names (ids) of API Products and values
+ *   Associative array where keys are the names (ids) of API products and values
  *   are their display names.
  * @param array $product_name_rids_map
  *   Associative array where keys are the API product names (ids) and values
@@ -298,7 +298,7 @@ function _apigee_edge_apiproduct_rbac_batch(array $product_name_display_name_map
       ],
     ],
     'finished' => '\Drupal\apigee_edge_apiproduct_rbac\RoleBasedAccessSettingsBatch::batchFinishedCallback',
-    'title' => t('Updating @attribute attribute on API Products...', ['@attribute' => $attr_name]),
+    'title' => t('Updating @attribute attribute on API products...', ['@attribute' => $attr_name]),
     // We use a single multi-pass operation, so the default
     // 'Remaining x of y operations' message will be confusing here.
     'progress_message' => '',

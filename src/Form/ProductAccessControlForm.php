@@ -86,7 +86,7 @@ class ProductAccessControlForm extends ConfigFormBase {
     $form['access'] = [
       '#type' => 'details',
       '#title' => $this->t('Access by visibility'),
-      '#description' => $this->t('Limit access to API Products by "Access" settings on Apigee Edge.'),
+      '#description' => $this->t('Limit access to API products by "Access" settings on Apigee Edge.'),
       '#open' => TRUE,
       '#tree' => TRUE,
     ];

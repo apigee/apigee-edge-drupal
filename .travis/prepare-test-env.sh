@@ -3,7 +3,7 @@
 set -e
 
 if [[ -z "${APIGEE_EDGE_ENDPOINT}" ]] || [[ -z "${APIGEE_EDGE_USERNAME}" ]] || [[ -z "${APIGEE_EDGE_PASSWORD}" ]] || [[ -z "${APIGEE_EDGE_ORGANIZATION}" ]]; then
-  echo "Incomplete configuration. Please make sure the following environment variables exist and not empty: APIGEE_EDGE_ENDPOINT, APIGEE_EDGE_USERNAME, APIGEE_EDGE_PASSWORD, APIGEE_EDGE_ORGANIZATION."
+  echo "Incomplete configuration. Make sure the following environment variables exist and not empty: APIGEE_EDGE_ENDPOINT, APIGEE_EDGE_USERNAME, APIGEE_EDGE_PASSWORD, APIGEE_EDGE_ORGANIZATION."
   exit 1
 fi
 

@@ -84,8 +84,18 @@ class DeveloperSyncForm extends FormBase {
       '#title' => $this->t('Synchronize developers'),
       '#open' => TRUE,
     ];
+
+    $output = '<p>' . $this->t('Developer synchronization will:') . '<p>';
+    $output .= '<ol>';
+    $output .= '<li>' . $this->t('Create Drupal users for any Apigee Edge developers that are in this Drupal system') . '</li>';
+    $output .= '<li>' . $this->t('Create developers in Apigee Edge for all users in this Drupal system that are not already in Apigee Edge') . '</li>';
+    $output .= '</ol>';
+    $output .= '<p>' . $this->t('Note that any Drupal users that are created will have a random password generated and will need to reset their password to log in. The "Run Developer Sync" button will sync the developers, displaying a progress bar on the screen while running. The "Background Developer Sync" button will run the developer sync process in batches each time <a href=":cron_url">cron</a> runs and may take multiple cron runs to complete.', [':cron_url' => Url::fromRoute('system.cron_settings')->toString()]) . '</p>';
+
+    $form['sync']['description']['#markup'] = $output;
+
     $form['sync']['sync_submit'] = [
-      '#title' => $this->t('Now'),
+      '#title' => $this->t('Run Developer Sync'),
       '#type' => 'link',
       '#url' => $this->buildUrl('apigee_edge.developer_sync.run'),
       '#attributes' => [
@@ -96,22 +106,13 @@ class DeveloperSyncForm extends FormBase {
       ],
     ];
     $form['sync']['background_sync_submit'] = [
-      '#title' => $this->t('Background'),
+      '#title' => $this->t('Background Developer Sync'),
       '#type' => 'link',
       '#url' => $this->buildUrl('apigee_edge.developer_sync.schedule'),
       '#attributes' => [
         'class' => [
           'button',
         ],
-      ],
-    ];
-    $form['sync']['sync_info'] = [
-      '#type' => 'html_tag',
-      '#tag' => 'span',
-      '#value' => '?',
-      '#attributes' => [
-        'class' => 'info-circle',
-        'title' => $this->t('A background sync is recommended for large numbers of developers.'),
       ],
     ];
 
