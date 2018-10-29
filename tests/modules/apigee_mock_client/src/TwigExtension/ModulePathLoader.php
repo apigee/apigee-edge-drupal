@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2018 Google Inc.
  *
@@ -37,14 +38,16 @@ class ModulePathLoader extends \Twig_Loader_Filesystem {
   public function __construct($module_name, ModuleHandlerInterface $module_handler) {
     $modules = $module_handler->getModuleList();
 
-    $paths = array_map(function($module) {
+    $paths = array_map(function ($module) {
       return $module->getPath() . '/tests/response-templates';
     }, $modules);
 
-    $paths = array_filter($paths, function($path) {
+    $paths = array_filter($paths, function ($path) {
       return strpos($path, 'core/') !== 0 && is_dir(DRUPAL_ROOT . "/{$path}");
     });
 
     parent::__construct($paths);
+
   }
+
 }

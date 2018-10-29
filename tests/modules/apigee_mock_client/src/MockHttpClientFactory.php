@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2018 Google Inc.
  *
@@ -27,7 +28,11 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 
-
+/**
+ * Class MockHttpClientFactory.
+ *
+ * @package Drupal\apigee_mock_client
+ */
 class MockHttpClientFactory extends ClientFactory {
 
   /**
@@ -57,7 +62,10 @@ class MockHttpClientFactory extends ClientFactory {
    * @param \GuzzleHttp\HandlerStack $stack
    *   The handler stack.
    * @param \GuzzleHttp\Handler\MockHandler $mock_stack
+   *   The mock handler stack (Allows us to queue responses).
    * @param \Drupal\Core\State\StateInterface $state
+   *   Drupal state service, used to determine whether tests should be run
+   *   using the mock handler or against a remote edge instance.
    */
   public function __construct(HandlerStack $stack, MockHandler $mock_stack, StateInterface $state) {
     $this->stack = $stack;
@@ -69,7 +77,8 @@ class MockHttpClientFactory extends ClientFactory {
       // Callbacks won't have access to the same environment variables so save
       // the flag to state.
       $state->set('APIGEE_INTEGRATION_ENABLE', $enabled);
-    } else {
+    }
+    else {
       $this->integration_enabled = !empty($state->get('APIGEE_INTEGRATION_ENABLE', FALSE));
     }
 
@@ -100,11 +109,13 @@ class MockHttpClientFactory extends ClientFactory {
         'http' => NULL,
         'https' => NULL,
         'no' => [],
-      ]
+      ],
     ];
 
     $config = NestedArray::mergeDeep($default_config, Settings::get('http_client_config', []), $config);
 
     return new Client($config);
+
   }
+
 }
