@@ -85,17 +85,27 @@ class DeveloperSyncForm extends FormBase {
       '#open' => TRUE,
     ];
 
-    $output = '<p>' . $this->t('Developer synchronization will:') . '<p>';
-    $output .= '<ol>';
-    $output .= '<li>' . $this->t('Create Drupal users for any Apigee Edge developers that are in this Drupal system') . '</li>';
-    $output .= '<li>' . $this->t('Create developers in Apigee Edge for all users in this Drupal system that are not already in Apigee Edge') . '</li>';
-    $output .= '</ol>';
-    $output .= '<p>' . $this->t('Note that any Drupal users that are created will have a random password generated and will need to reset their password to log in. The "Run Developer Sync" button will sync the developers, displaying a progress bar on the screen while running. The "Background Developer Sync" button will run the developer sync process in batches each time <a href=":cron_url">cron</a> runs and may take multiple cron runs to complete.', [':cron_url' => Url::fromRoute('system.cron_settings')->toString()]) . '</p>';
-
-    $form['sync']['description']['#markup'] = $output;
+    $form['sync']['description'] = [
+      '#type' => 'container',
+      'p1' => [
+        '#type' => 'markup',
+        '#markup' => '<p>' . $this->t('Developer synchronization will:') . '</p>',
+      ],
+      'list' => [
+        '#theme' => 'item_list',
+        '#items' => [
+          'Create Drupal users for any Apigee Edge developers that are in this Drupal system',
+          'Create developers in Apigee Edge for all users in this Drupal system that are not already in Apigee Edge',
+        ],
+      ],
+      'p2' => [
+        '#type' => 'markup',
+        '#markup' => '<p>' . $this->t('Note that any Drupal users that are created will have a random password generated and will need to reset their password to log in. The "Run developer sync" button will sync the developers, displaying a progress bar on the screen while running. The "Background developer sync" button will run the developer sync process in batches each time <a href=":cron_url">cron</a> runs and may take multiple cron runs to complete.', [':cron_url' => Url::fromRoute('system.cron_settings')->toString()]) . '</p>',
+      ],
+    ];
 
     $form['sync']['sync_submit'] = [
-      '#title' => $this->t('Run Developer Sync'),
+      '#title' => $this->t('Run developer sync'),
       '#type' => 'link',
       '#url' => $this->buildUrl('apigee_edge.developer_sync.run'),
       '#attributes' => [
@@ -106,7 +116,7 @@ class DeveloperSyncForm extends FormBase {
       ],
     ];
     $form['sync']['background_sync_submit'] = [
-      '#title' => $this->t('Background Developer Sync'),
+      '#title' => $this->t('Background developer sync'),
       '#type' => 'link',
       '#url' => $this->buildUrl('apigee_edge.developer_sync.schedule'),
       '#attributes' => [
