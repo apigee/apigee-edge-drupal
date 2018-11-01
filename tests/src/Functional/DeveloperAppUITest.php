@@ -156,7 +156,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
       'id_verification' => $name,
     ], 'Delete');
 
-    $this->assertSession()->pageTextContains("The {$name} developer app has been deleted.");
+    $this->assertSession()->pageTextContains("The {$name} app has been deleted.");
     $apps = array_filter($this->getApps(), function (DeveloperApp $app) use ($name): bool {
       return $app->getName() === $name;
     });
@@ -513,7 +513,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalPostForm($app_edit_url, ['callbackUrl[0][value]' => 'http://example.com'], 'Save');
     $this->assertSession()->pageTextContains("Callback URL field is not in the right format.");
     $this->drupalPostForm($app_edit_url, ['callbackUrl[0][value]' => 'https://example.com'], 'Save');
-    $this->assertSession()->pageTextContains('Developer App details have been successfully updated.');
+    $this->assertSession()->pageTextContains('App details have been successfully updated.');
     $this->assertSession()->pageTextContains('https://example.com');
   }
 

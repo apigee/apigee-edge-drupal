@@ -106,7 +106,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $checkValidationMessage('Please match the requested format.');
     $this->assertEquals($pattern_error_message, $this->getSession()->evaluateScript('document.getElementById("edit-callbackurl-0-value").title'));
     $this->drupalPostForm($app_edit_url, ['callbackUrl[0][value]' => 'https://example.com'], 'Save');
-    $this->assertSession()->pageTextContains('Developer App details have been successfully updated.');
+    $this->assertSession()->pageTextContains('App details have been successfully updated.');
     $this->assertSession()->pageTextContains('https://example.com');
   }
 

@@ -549,7 +549,7 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
    */
   public function testDeveloperSync() {
     $this->drupalGet(Url::fromRoute('apigee_edge.settings.developer.sync'));
-    $this->clickLinkProperly('Now');
+    $this->clickLinkProperly('Run developer sync');
     $this->assertSession()->pageTextContains('Apigee Edge developers are in sync with Drupal users.');
     $this->verify();
   }
