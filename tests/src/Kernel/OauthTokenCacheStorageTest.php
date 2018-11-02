@@ -30,6 +30,10 @@ use Drupal\KernelTests\KernelTestBase;
  * @group apigee_edge_kernel
  */
 class OauthTokenCacheStorageTest extends KernelTestBase {
+
+  /**
+   * {@inheritdoc}
+   */
   protected static $modules = [
     'apigee_edge',
     'key'
@@ -49,6 +53,11 @@ class OauthTokenCacheStorageTest extends KernelTestBase {
    */
   protected $token_data;
 
+  /**
+   * {@inheritdoc}
+   *
+   * @throws \Exception
+   */
   public function setUp() {
     parent::setUp();
 
@@ -93,6 +102,9 @@ class OauthTokenCacheStorageTest extends KernelTestBase {
     static::assertLessThan(2, abs($this->token_data['expires_in']+$current_time - $cached_token->expire));
   }
 
+  /**
+   * Test the get and has methods of the cache storage.
+   */
   public function testGetters() {
     // Will use this to test expire.
     $current_time = time();
@@ -114,6 +126,5 @@ class OauthTokenCacheStorageTest extends KernelTestBase {
 
     // The token should still be valid for 5 minutes.
     static::assertTrue($this->token_storage->hasExpired());
-
   }
 }
