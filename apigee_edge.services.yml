@@ -10,6 +10,13 @@ services:
     factory: cache_factory:get
     arguments: [apigee_edge_entity]
 
+  cache.apigee_edge:
+    class: Drupal\Core\Cache\CacheBackendInterface
+    tags:
+      - { name: cache.bin }
+    factory: cache_factory:get
+    arguments: [apigee_edge_credentials]
+
   apigee_edge.cli:
     class: Drupal\apigee_edge\CliService
 
@@ -123,3 +130,7 @@ services:
   apigee_edge.converter.user_developer:
     class: Drupal\apigee_edge\UserDeveloperConverter
     arguments: ['@config.factory', '@entity_type.manager', '@plugin.manager.apigee_field_storage_format', '@apigee_edge.converter.field_attribute']
+
+  apigee_edge.token_storage:
+    class: Drupal\apigee_edge\OauthTokenCacheStorage
+    arguments: ['@cache.apigee_edge']
