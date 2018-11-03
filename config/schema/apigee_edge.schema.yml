@@ -183,6 +183,12 @@ apigee_edge.sync:
       sequence:
         type: string
 
+key.type.apigee_auth:
+  type: sequence
+
+key.input.apigee_auth_input:
+  type: sequence
+
 key.type.apigee_edge_basic_auth:
   type: sequence
 

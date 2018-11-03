@@ -20,6 +20,7 @@
 namespace Drupal\apigee_edge\Plugin;
 
 use Apigee\Edge\Client;
+use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use Drupal\apigee_edge\Exception\AuthenticationKeyValueMalformedException;
 use Drupal\Component\Serialization\Json;
 use Drupal\key\KeyInterface;
@@ -80,5 +81,24 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
     }
     return $key->getKeyValues()['password'];
   }
+  /**
+   * {@inheritdoc}
+   */
+  public function getAuthorizationServer(KeyInterface $key): string {
+    return $key->getKeyValues()['authorization_server'] ?? Oauth::DEFAULT_AUTHORIZATION_SERVER;
+  }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getClientId(KeyInterface $key): string {
+    return $key->getKeyValues()['client_id'] ?? Oauth::DEFAULT_CLIENT_ID;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getClientSecret(KeyInterface $key): string {
+    return $key->getKeyValues()['client_secret'] ?? Oauth::DEFAULT_CLIENT_SECRET;
+  }
 }
