@@ -23,17 +23,19 @@ use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use Drupal\apigee_edge\Exception\AuthenticationKeyValueMalformedException;
-use Drupal\apigee_edge\OauthTokenStorage;
 use Drupal\apigee_edge\Plugin\KeyType\OauthKeyType;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Render\MarkupInterface;
+use Drupal\Component\Serialization\Json;
+use Drupal\Component\Utility\Random;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Url;
+use Drupal\key\Entity\Key;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
+use Drupal\key\Plugin\KeyPluginFormInterface;
 use GuzzleHttp\Exception\ConnectException;
 use Http\Client\Exception\NetworkException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -63,6 +65,13 @@ class AuthenticationForm extends ConfigFormBase {
    * @var \Drupal\Core\Extension\ModuleHandlerInterface
    */
   protected $moduleHandler;
+
+  /**
+   * The active key.
+   *
+   * @var \Drupal\key\KeyInterface
+   */
+  protected $activeKey;
 
   /**
    * Constructs a new AuthenticationForm.
@@ -115,12 +124,58 @@ class AuthenticationForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $config = $this->config('apigee_edge.auth');
     $form = parent::buildForm($form, $form_state);
+
+    $config = $this->config('apigee_edge.auth');
+
     $form['#prefix'] = '<div id="apigee-edge-auth-form">';
     $form['#suffix'] = '</div>';
     $form['#attached']['library'][] = 'apigee_edge/apigee_edge.admin';
 
+    // Gets the active key.
+    if(!($active_key_id = $config->get('active_key')) || !($active_key = Key::load($active_key_id))) {
+      $active_key = $this->generateNewAuthKey();
+    }
+
+    // Save the key for later use.
+    $this->activeKey = $active_key;
+
+    $form['connection_settings'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Edge connection settings'),
+      '#description' => $this->t('Apigee connection settings.'),
+      '#open' => TRUE,
+      '#parents' => ['key_input_settings'],
+      '#tree' => TRUE,
+    ];
+    if ($active_key->getKeyInput() instanceof KeyPluginFormInterface) {
+      // Save the settings in form state.
+      $form_state->set('key_value', $this->getKeyValueValues($active_key));
+      // Create a form state for this sub form.
+      $plugin_form_state = $this->createPluginFormState('key_input', $form_state);
+      $plugin_form = $active_key->getKeyInput()->buildConfigurationForm([], $plugin_form_state);
+
+      $form['connection_settings'] += $plugin_form ;
+      $form_state->setValue('connection_settings', $plugin_form_state->getValues());
+    }
+
+    $submittable_state =  [
+      [
+        ':input[name="key_input_settings[auth_method]"]' => ['value' => 'basic'],
+        ':input[name="key_input_settings[password]"]' => ['filled' => TRUE],
+        ':input[name="key_input_settings[organization]"]' => ['filled' => TRUE],
+        ':input[name="key_input_settings[username]"]' => ['filled' => TRUE],
+      ],
+      'xor',
+      [
+        ':input[name="key_input_settings[auth_method]"]' => ['value' => 'oauth'],
+        ':input[name="key_input_settings[password]"]' => ['filled' => TRUE],
+        ':input[name="key_input_settings[organization]"]' => ['filled' => TRUE],
+        ':input[name="key_input_settings[username]"]' => ['filled' => TRUE],
+        ':input[name="key_input_settings[client_id]"]' => ['filled' => TRUE],
+        ':input[name="key_input_settings[client_secret]"]' => ['filled' => TRUE],
+      ],
+    ];
     $form['debug'] = [
       '#type' => 'details',
       '#title' => $this->t('Debug information'),
@@ -133,151 +188,6 @@ class AuthenticationForm extends ConfigFormBase {
       '#rows' => 20,
     ];
 
-    $form['authentication'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Authentication key'),
-      '#description' => $this->t('Select an available key. If the desired key is not listed, create a new key below.'),
-      '#open' => TRUE,
-    ];
-
-    // Loading basic authentication keys.
-    $basic_auth_keys = $this->keyRepository->getKeyNamesAsOptions(['type' => 'apigee_edge_basic_auth']);
-    foreach ($basic_auth_keys as $key_id => $key_name) {
-      $basic_auth_keys[$key_id] = $this->t('@key_name <a href=":url">Edit</a>', [
-        '@key_name' => $key_name,
-        ':url' => Url::fromRoute('entity.key.edit_form', ['key' => $key_id, 'destination' => 'admin/config/apigee-edge/settings'])->toString(),
-      ]);
-    }
-    $basic_auth_default_value = array_key_exists($config->get('active_key'), $basic_auth_keys) ? $config->get('active_key') : NULL;
-
-    // Loading OAuth keys.
-    $oauth_keys = $this->keyRepository->getKeyNamesAsOptions(['type' => 'apigee_edge_oauth']);
-    foreach ($oauth_keys as $key_id => $key_name) {
-      $oauth_keys[$key_id] = $this->t('@key_name <a href=":url">Edit</a>', [
-        '@key_name' => $key_name,
-        ':url' => Url::fromRoute('entity.key.edit_form', ['key' => $key_id, 'destination' => 'admin/config/apigee-edge/settings'])->toString(),
-      ]);
-    }
-    $oauth_default_value = array_key_exists($config->get('active_key'), $oauth_keys) ? $config->get('active_key') : NULL;
-
-    // Loading OAuth token keys.
-    $oauth_token_keys = $this->keyRepository->getKeyNamesAsOptions(['type' => 'apigee_edge_oauth_token']);
-    foreach ($oauth_token_keys as $key_id => $key_name) {
-      $oauth_token_keys[$key_id] = $this->t('@key_name <a href=":url">Edit</a>', [
-        '@key_name' => $key_name,
-        ':url' => Url::fromRoute('entity.key.edit_form', ['key' => $key_id, 'destination' => 'admin/config/apigee-edge/settings'])->toString(),
-      ]);
-    }
-    $oauth_token_default_value = array_key_exists($config->get('active_key_oauth_token'), $oauth_token_keys) ? $config->get('active_key_oauth_token') : NULL;
-
-    $form['authentication']['key_type'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Apigee Edge API authentication type'),
-      '#options' => [
-        'apigee_edge_basic_auth' => $this->t('Basic authentication'),
-        'apigee_edge_oauth' => $this->t('OAuth'),
-      ],
-      '#default_value' => isset($oauth_default_value) ? 'apigee_edge_oauth' : 'apigee_edge_basic_auth',
-      '#required' => TRUE,
-    ];
-
-    $form['authentication']['key_basic_auth'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Basic authentication keys'),
-      '#options' => $basic_auth_keys,
-      '#access' => !empty($basic_auth_keys),
-      '#default_value' => $basic_auth_default_value,
-      '#required' => FALSE,
-      '#states' => [
-        'visible' => [
-          ':input[name="key_type"]' => [
-            'value' => 'apigee_edge_basic_auth',
-          ],
-        ],
-      ],
-    ];
-
-    if (empty($basic_auth_keys)) {
-      $form['authentication']['key_basic_auth_missing'] = [
-        '#type' => 'item',
-        '#title' => $this->t('There is no available basic authentication key for connecting to Apigee Edge.'),
-        '#description' => $this->t('Select an OAuth key or <a href=":link">create a new basic authentication key</a>.', [
-          ':link' => Url::fromRoute('entity.key.add_form', ['destination' => 'admin/config/apigee-edge/settings'])->toString(),
-        ]),
-        '#states' => [
-          'visible' => [
-            ':input[name="key_type"]' => [
-              'value' => 'apigee_edge_basic_auth',
-            ],
-          ],
-        ],
-      ];
-    }
-
-    $form['authentication']['key_oauth'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('OAuth keys'),
-      '#options' => $oauth_keys,
-      '#access' => !empty($oauth_keys) && !empty($oauth_token_keys),
-      '#default_value' => $oauth_default_value,
-      '#states' => [
-        'visible' => [
-          ':input[name="key_type"]' => [
-            'value' => 'apigee_edge_oauth',
-          ],
-        ],
-      ],
-    ];
-
-    $form['authentication']['key_oauth_token'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('OAuth token keys'),
-      '#options' => $oauth_token_keys,
-      '#access' => !empty($oauth_keys) && !empty($oauth_token_keys),
-      '#default_value' => $oauth_token_default_value,
-      '#states' => [
-        'visible' => [
-          ':input[name="key_type"]' => [
-            'value' => 'apigee_edge_oauth',
-          ],
-        ],
-      ],
-    ];
-
-    if (empty($oauth_keys)) {
-      $form['authentication']['key_oauth_missing'] = [
-        '#type' => 'item',
-        '#title' => $this->t('There is no available OAuth key for connecting to Apigee Edge.'),
-        '#description' => $this->t('Select a basic authentication key or <a href=":link">create a new OAuth key</a>.', [
-          ':link' => Url::fromRoute('entity.key.add_form', ['destination' => 'admin/config/apigee-edge/settings'])->toString(),
-        ]),
-        '#states' => [
-          'visible' => [
-            ':input[name="key_type"]' => [
-              'value' => 'apigee_edge_oauth',
-            ],
-          ],
-        ],
-      ];
-    }
-
-    if (empty($oauth_token_keys)) {
-      $form['authentication']['key_oauth_token_missing'] = [
-        '#type' => 'item',
-        '#title' => $this->t('There is no available OAuth token key for connecting to Apigee Edge.'),
-        '#description' => $this->t('Select a basic authentication key or <a href=":link">create a new OAuth token key</a>.', [
-          ':link' => Url::fromRoute('entity.key.add_form', ['destination' => 'admin/config/apigee-edge/settings'])->toString(),
-        ]),
-        '#states' => [
-          'visible' => [
-            ':input[name="key_type"]' => [
-              'value' => 'apigee_edge_oauth',
-            ],
-          ],
-        ],
-      ];
-    }
-
     $form['test_connection'] = [
       '#type' => 'details',
       '#title' => $this->t('Test connection'),
@@ -286,8 +196,8 @@ class AuthenticationForm extends ConfigFormBase {
     ];
     $form['test_connection']['test_connection_submit'] = [
       '#type' => 'submit',
+      '#executes_submit_callback' => FALSE,
       '#value' => $this->t('Send request'),
-      '#disabled' => !$form['authentication']['key_basic_auth']['#access'] && !$form['authentication']['key_oauth']['#access'],
       '#ajax' => [
         'callback' => '::ajaxCallback',
         'wrapper' => 'apigee-edge-auth-form',
@@ -297,57 +207,13 @@ class AuthenticationForm extends ConfigFormBase {
         ],
       ],
       '#states' => [
-        'enabled' => [
-          [
-            ':input[name="key_oauth"]' => [
-              'checked' => TRUE,
-            ],
-            ':input[name="key_oauth_token"]' => [
-              'checked' => TRUE,
-            ],
-            ':input[name="key_type"]' => [
-              'value' => 'apigee_edge_oauth',
-            ],
-          ],
-          'xor',
-          [
-            ':input[name="key_basic_auth"]' => [
-              'checked' => TRUE,
-            ],
-            ':input[name="key_type"]' => [
-              'value' => 'apigee_edge_basic_auth',
-            ],
-          ],
-        ],
+        'enabled' => $submittable_state,
       ],
-      '#submit' => ['::validateForm'],
+      '#submit' => ['::ajaxCallback'],
     ];
 
-    $form['actions']['submit']['#disabled'] = !$form['authentication']['key_basic_auth']['#access'] && !$form['authentication']['key_oauth']['#access'];
-    $form['actions']['submit']['#states'] = [
-      'enabled' => [
-        [
-          ':input[name="key_oauth"]' => [
-            'checked' => TRUE,
-          ],
-          ':input[name="key_oauth_token"]' => [
-            'checked' => TRUE,
-          ],
-          ':input[name="key_type"]' => [
-            'value' => 'apigee_edge_oauth',
-          ],
-        ],
-        'xor',
-        [
-          ':input[name="key_basic_auth"]' => [
-            'checked' => TRUE,
-          ],
-          ':input[name="key_type"]' => [
-            'value' => 'apigee_edge_basic_auth',
-          ],
-        ],
-      ],
-    ];
+    $form['actions']['submit']['#states'] = ['enabled' => $submittable_state];
+    $form['actions']['#disabled'] = !$this->keyIsWritable($active_key);
 
     return $form;
   }
@@ -356,37 +222,86 @@ class AuthenticationForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    $key = NULL;
-    $key_token = NULL;
-    if ($form_state->getValue('key_type') === 'apigee_edge_basic_auth') {
-      $key = $this->keyRepository->getKey($form_state->getValue('key_basic_auth'));
-    }
-    elseif ($form_state->getValue('key_type') === 'apigee_edge_oauth') {
-      $key = $this->keyRepository->getKey($form_state->getValue('key_oauth'));
-      $key_token = $this->keyRepository->getKey($form_state->getValue('key_oauth_token'));
-    }
-    try {
-      // Ensure that testing connection using clean token storage (delete key
-      // value instead of the key itself).
-      if (isset($key_token)) {
-        $oauth_token_storage = new OauthTokenStorage($key_token);
-        $oauth_token_storage->removeToken();
+    parent::validateForm($form, $form_state);
+
+    $active_key = $this->activeKey;
+
+    // Check whether or not we know how to write to this key.
+    if ($this->keyIsWritable($active_key)) {
+      // Get the key input plugin.
+      $input_plugin = $active_key->getKeyInput();
+      $plugin_form_state = $this->createPluginFormState('key_input', $form_state);
+
+      $processed_values = $input_plugin->processSubmittedKeyValue($plugin_form_state);
+
+      if ($form_state->isSubmitted()) {
+        // Save the processed value for the submit handler.
+        $form_state->set('processed_submitted', $processed_values['processed_submitted']);
       }
-      $this->sdkConnector->testConnection($key, $key_token);
-      $this->messenger()->addStatus($this->t('Connection successful.'));
-    }
-    catch (\Exception $exception) {
-      watchdog_exception('apigee_edge', $exception);
 
-      $form_state->setError($form, $this->t('@suggestion Error message: %response', [
-        '@suggestion' => $this->createSuggestion($exception, $key),
-        '%response' => $exception->getMessage(),
-      ]));
+      $input_plugin->validateConfigurationForm($form, $plugin_form_state);
+      $form_state->setValue('key_input_settings', $plugin_form_state->getValues());
+      $this->moveFormStateErrors($plugin_form_state, $form_state);
+      $this->moveFormStateStorage($plugin_form_state, $form_state);
 
-      // Display debug information.
-      $form['debug']['#access'] = $form['debug']['debug_text']['#access'] = TRUE;
-      $form['debug']['debug_text']['#value'] = $this->createDebugText($exception, $key, $key_token);
+
+      // Create a temp key for testing.
+      $random = new Random();
+      $test_key = Key::create([
+        'id' => strtolower($random->name(16)),
+        'key_type' => $active_key->getKeyType()->getPluginID(),
+        'key_input' => $active_key->getKeyInput()->getPluginID(),
+        'key_provider' => 'config',
+      ]);
+      // Set the key_value value on the test key.
+      $test_key->getKeyProvider()
+        ->setKeyValue($test_key, $processed_values['processed_submitted']);
+    } else {
+      // There will be no input form for the key since it's not writable so just
+      // use the active key for testing.
+      $test_key = $active_key;
     }
+
+    // Test the connection.
+    if (!empty($test_key->getKeyValue())) {
+      try {
+        $this->sdkConnector->testConnection($test_key);
+        $this->messenger()->addStatus($this->t('Connection successful.'));
+      } catch (\Exception $exception) {
+        watchdog_exception('apigee_edge', $exception);
+
+        $form_state->setError($form, $this->t('@suggestion Error message: %response', [
+          '@suggestion' => $this->createSuggestion($exception, $test_key),
+          '%response' => $exception->getMessage(),
+        ]));
+
+        // Display debug information.
+        $form['debug']['#access'] = $form['debug']['debug_text']['#access'] = TRUE;
+        $form['debug']['debug_text']['#value'] = $this->createDebugText($exception, $test_key, NULL);
+      }
+    } else {
+      $form_state->setError($form, $this->t('Connection information is not available in the currently active key.'));
+    }
+
+    // Throw an error if the key is not writable.
+    if($form_state->isSubmitted() && !$this->keyIsWritable($active_key)) {
+      $form_state->setError($form, $this->t('The active authentication key is not writable.'));
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    // Get the processed value from the form state.
+    $processed_submitted = $form_state->get('processed_submitted');
+
+    if (!empty($key_value)) {
+      // Save the key value data to the source.
+      $this->activeKey->getKeyProvider()->setKeyValue($processed_submitted);
+    }
+
+    parent::submitForm($form, $form_state);
   }
 
   /**
@@ -564,25 +479,6 @@ class AuthenticationForm extends ConfigFormBase {
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    if ($form_state->getValue('key_type') === 'apigee_edge_basic_auth') {
-      $this->config('apigee_edge.auth')
-        ->set('active_key', $form_state->getValue('key_basic_auth'))
-        ->set('active_key_oauth_token', '')
-        ->save();
-    }
-    elseif ($form_state->getValue('key_type') === 'apigee_edge_oauth') {
-      $this->config('apigee_edge.auth')
-        ->set('active_key', $form_state->getValue('key_oauth'))
-        ->set('active_key_oauth_token', $form_state->getValue('key_oauth_token'))
-        ->save();
-    }
-    parent::submitForm($form, $form_state);
-  }
-
-  /**
    * Pass form array to the AJAX callback.
    *
    * @param array $form
@@ -597,4 +493,144 @@ class AuthenticationForm extends ConfigFormBase {
     return $form;
   }
 
+  /**
+   * Creates a new auth key stored in a file.
+   *
+   * @return \Drupal\key\KeyInterface
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  public function generateNewAuthKey() {
+    // Create a new key name.
+    $new_key_id = 'apigee_edge_connection_default';
+    $file_path = 'private://.apigee/apigee_auth_apigee_edge.json';
+    $new_key = NULL;
+
+    // The directory has to be passed by reference.
+    $key_directory = 'private://.apigee';
+    file_prepare_directory($key_directory, FILE_CREATE_DIRECTORY);
+
+    // Make sure the key and the associated key file do not exist.
+    for ($i=1; (Key::load($new_key_id) || file_exists($file_path)); $i++) {
+      $new_key_id = "apigee_edge_connection_default_{$i}";
+      $file_path = "private://.apigee/apigee_edge_connection_default_{$i}.json";
+    }
+
+    // Save an empty object to the file.
+    file_put_contents($file_path, Json::encode((object) []));
+
+    // Create a new key.
+    $new_key = Key::create([
+      'id' => $new_key_id,
+      'label' => $this->t('Apigee Edge connection'),
+      'description' => $this->t('Contains the credentials for connecting to Apigee Edge.'),
+      'key_type' => 'apigee_auth',
+      'key_input' => 'apigee_auth_input',
+      'key_provider' => 'apigee_edge_private_file',
+    ]);
+    $new_key->save();
+
+    // Save the active key.
+    $this
+      ->config('apigee_edge.auth')
+      ->set('active_key', $new_key->id())
+      ->save();
+
+    return $new_key;
+  }
+
+
+  /**
+   * Moves form errors from one form state to another.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $from
+   *   The form state object to move from.
+   * @param \Drupal\Core\Form\FormStateInterface $to
+   *   The form state object to move to.
+   */
+  protected function moveFormStateErrors(FormStateInterface $from, FormStateInterface $to) {
+    foreach ($from->getErrors() as $name => $error) {
+      $to->setErrorByName($name, $error);
+    }
+  }
+
+  /**
+   * Moves storage variables from one form state to another.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $from
+   *   The form state object to move from.
+   * @param \Drupal\Core\Form\FormStateInterface $to
+   *   The form state object to move to.
+   */
+  protected function moveFormStateStorage(FormStateInterface $from, FormStateInterface $to) {
+    foreach ($from->getStorage() as $index => $value) {
+      $to->set($index, $value);
+    }
+  }
+
+  /**
+   * Creates a FormStateInterface object for a plugin.
+   *
+   * @param string $type
+   *   The plugin type ID.
+   * @param FormStateInterface $form_state
+   *   The form state to copy values from.
+   *
+   * @return FormStateInterface
+   *   A clone of the form state object with values from the plugin.
+   */
+  protected function createPluginFormState($type, FormStateInterface $form_state) {
+    // Clone the form state.
+    $plugin_form_state = clone $form_state;
+
+    // Clear the values, except for this plugin type's settings.
+    $plugin_form_state->setValues($form_state->getValue($type . '_settings', []));
+
+    return $plugin_form_state;
+  }
+
+  /**
+   * Tests whether we know how to write to a key.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key to test.
+   *
+   * @return bool
+   *   Wheter the file key is writable.
+   */
+  protected function keyIsWritable(KeyInterface $key) {
+    // Get the key value provider.
+    $provider = $key->getKeyProvider();
+    $provider_definition = $provider->getPluginDefinition();
+    // Get whether the a key value is accepted by the provider.
+    return !empty($provider_definition['key_value']['accepted']);
+  }
+
+  /**
+   * Get `key_value` values for further processing.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *
+   * @return array
+   */
+  protected function getKeyValueValues(KeyInterface $key) {
+    // Setup options for `::obscureKeyValue`.
+    $obscure_options = [
+      'key_type_id' => $key->getKeyType()->getPluginId(),
+      'key_type_group' => $key->getKeyType()->getPluginDefinition()['group'],
+      'key_provider_id' => $key->getKeyProvider()->getPluginId(),
+    ];
+
+    // Get values.
+    $original = $key->getKeyValue();
+    $processed_original = $key->getKeyInput()->processExistingKeyValue($original);
+    $obscured = $key->getKeyProvider()->obscureKeyValue($processed_original, $obscure_options);
+
+    return [
+      'original' => $original,
+      'processed_original' => $processed_original,
+      'obscured' => $obscured,
+      'current' => (!empty($obscured)) ? $obscured : $processed_original,
+    ];
+  }
 }
