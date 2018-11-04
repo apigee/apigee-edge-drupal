@@ -26,7 +26,6 @@ use Drupal\apigee_edge\Exception\AuthenticationKeyValueMalformedException;
 use Drupal\apigee_edge\Plugin\KeyType\OauthKeyType;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Render\MarkupInterface;
-use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\Random;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -503,21 +502,14 @@ class AuthenticationForm extends ConfigFormBase {
   public function generateNewAuthKey() {
     // Create a new key name.
     $new_key_id = 'apigee_edge_connection_default';
-    $file_path = 'private://.apigee/apigee_auth_apigee_edge.json';
+    $file_path = "private://{$new_key_id}_apigee_edge.json";
     $new_key = NULL;
-
-    // The directory has to be passed by reference.
-    $key_directory = 'private://.apigee';
-    file_prepare_directory($key_directory, FILE_CREATE_DIRECTORY);
 
     // Make sure the key and the associated key file do not exist.
     for ($i=1; (Key::load($new_key_id) || file_exists($file_path)); $i++) {
       $new_key_id = "apigee_edge_connection_default_{$i}";
-      $file_path = "private://.apigee/apigee_edge_connection_default_{$i}.json";
+      $file_path = "private://{$new_key_id}_apigee_edge.json";
     }
-
-    // Save an empty object to the file.
-    file_put_contents($file_path, Json::encode((object) []));
 
     // Create a new key.
     $new_key = Key::create([
@@ -529,6 +521,8 @@ class AuthenticationForm extends ConfigFormBase {
       'key_provider' => 'apigee_edge_private_file',
     ]);
     $new_key->save();
+    // Write out an empty key.
+    $new_key->getKeyProvider()->setKeyValue('{"auth_method": "basic"}');
 
     // Save the active key.
     $this
@@ -538,7 +532,6 @@ class AuthenticationForm extends ConfigFormBase {
 
     return $new_key;
   }
-
 
   /**
    * Moves form errors from one form state to another.
