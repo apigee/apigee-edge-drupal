@@ -95,8 +95,8 @@ class DeveloperSyncForm extends FormBase {
       'list' => [
         '#theme' => 'item_list',
         '#items' => [
-          'Create Drupal users for any Apigee Edge developers that are in this Drupal system',
-          'Create developers in Apigee Edge for all users in this Drupal system that are not already in Apigee Edge',
+          $this->t('Create Drupal users for any Apigee Edge developers that are in this Drupal system'),
+          $this->t('Create developers in Apigee Edge for all users in this Drupal system that are not already in Apigee Edge'),
         ],
       ],
       'p2' => [
