@@ -47,7 +47,7 @@ trait TestKeyBuilderTrait {
     $file_path = 'public://.apigee/apigee_auth_apigee_edge.json';
 
     // Save an empty object to the file.
-    file_put_contents($file_path, Json::encode((object) []));
+    file_put_contents($file_path, '{"auth_method": "basic"}');
 
     // Create a new key.
     $this->test_key = Key::create([

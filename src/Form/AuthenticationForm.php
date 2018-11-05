@@ -45,6 +45,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class AuthenticationForm extends ConfigFormBase {
 
   /**
+   * The config named used by this form.
+   */
+  const CONFIG_NAME = 'apigee_edge.auth';
+
+  /**
    * The key repository.
    *
    * @var \Drupal\key\KeyRepositoryInterface
@@ -114,9 +119,7 @@ class AuthenticationForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   protected function getEditableConfigNames() {
-    return [
-      'apigee_edge.auth',
-    ];
+    return [static::CONFIG_NAME];
   }
 
   /**
@@ -125,7 +128,7 @@ class AuthenticationForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildForm($form, $form_state);
 
-    $config = $this->config('apigee_edge.auth');
+    $config = $this->config(static::CONFIG_NAME);
 
     $form['#prefix'] = '<div id="apigee-edge-auth-form">';
     $form['#suffix'] = '</div>';
@@ -499,7 +502,7 @@ class AuthenticationForm extends ConfigFormBase {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function generateNewAuthKey() {
+  protected function generateNewAuthKey() {
     // Create a new key name.
     $new_key_id = 'apigee_edge_connection_default';
     $file_path = "private://{$new_key_id}_apigee_edge.json";
@@ -522,11 +525,11 @@ class AuthenticationForm extends ConfigFormBase {
     ]);
     $new_key->save();
     // Write out an empty key.
-    $new_key->getKeyProvider()->setKeyValue('{"auth_method": "basic"}');
+    $new_key->getKeyProvider()->setKeyValue($new_key, '{"auth_method": "basic"}');
 
     // Save the active key.
     $this
-      ->config('apigee_edge.auth')
+      ->config(static::CONFIG_NAME)
       ->set('active_key', $new_key->id())
       ->save();
 
