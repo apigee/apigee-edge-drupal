@@ -15,7 +15,7 @@ services:
     tags:
       - { name: cache.bin }
     factory: cache_factory:get
-    arguments: [apigee_edge_credentials]
+    arguments: [apigee_edge]
 
   apigee_edge.cli:
     class: Drupal\apigee_edge\CliService
