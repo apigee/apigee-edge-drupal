@@ -89,6 +89,12 @@ git push -u origin patch-2:patch-2 # Push changes to your repo.
 ## Create PR on Github.
 ``` 
 
+## Testing
+
+We are in the process of migrating tests from a full integration system that makes calls to apigee edge to a system that 
+uses a mock guzzle client to queue expected responses from twig files. All new tests should use the apigee_mock_client module,
+see apigee_edge/tests/modules/apigee_mock_client/README.md for more details.
+
 ## Running tests
 
 Before you could start testing this module some environment variables

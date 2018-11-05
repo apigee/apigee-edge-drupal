@@ -1,4 +1,4 @@
-name: Apigee Edge Test Module
+name: Apigee Edge Mock Client Testing Module
 description: Helpers and an api middleware used for testing.
 package: Apigee
 

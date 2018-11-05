@@ -72,14 +72,14 @@ class MockHttpClientFactory extends ClientFactory {
     $this->mock_stack = $mock_stack;
 
     // Check for the integration enabled environment variable.
-    if ($enabled = getenv('APIGEE_INTEGRATION_ENABLE')) {
+    if ($enabled = getenv('APIGEE_MOCK_CLIENT_INTEGRATION_ENABLE')) {
       $this->integration_enabled = !empty($enabled);
       // Callbacks won't have access to the same environment variables so save
       // the flag to state.
-      $state->set('APIGEE_INTEGRATION_ENABLE', $enabled);
+      $state->set('APIGEE_MOCK_CLIENT_INTEGRATION_ENABLE', $enabled);
     }
     else {
-      $this->integration_enabled = !empty($state->get('APIGEE_INTEGRATION_ENABLE', FALSE));
+      $this->integration_enabled = !empty($state->get('APIGEE_MOCK_CLIENT_INTEGRATION_ENABLE', FALSE));
     }
 
     parent::__construct($stack);

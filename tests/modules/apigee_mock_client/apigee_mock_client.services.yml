@@ -16,7 +16,7 @@ services:
       - { name: service_collector, tag: apigee_mock_client_twig.loader, call: addLoader, required: TRUE }
   ## Adds `apigee_mock_client/response-templates` to the template search path ##
   apigee_mock_client_twig_json.loader.filesystem:
-    class: Drupal\apigee_mock_client\TwigExtension\ModulePathLoader
-    arguments: ['apigee_mock_client', '@module_handler']
+    class: Drupal\apigee_mock_client\TwigExtension\ResponseTemplateLoader
+    arguments: ['@module_handler']
     tags:
       - { name: apigee_mock_client_twig.loader, priority: 100 }

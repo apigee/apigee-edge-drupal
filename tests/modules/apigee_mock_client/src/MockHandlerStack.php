@@ -91,12 +91,12 @@ class MockHandlerStack extends MockHandler {
    * @throws \Twig_Error_Runtime
    * @throws \Twig_Error_Syntax
    */
-  public function queueFromResponseFile($response_ids) {
+  public function queueMockResponse($response_ids) {
     $org_name = \Drupal::service('apigee_edge.sdk_connector')
       ->getOrganization();
 
     if (empty($this->responses)) {
-      // Get the module path for this module.
+      // Get the module path for this module. @todo: inject this dependency.
       $module_path = \Drupal::moduleHandler()
         ->getModule('apigee_mock_client')
         ->getPath();
@@ -108,7 +108,6 @@ class MockHandlerStack extends MockHandler {
       // associative array has been passed.
       $id = !is_array($item) ? $item : $index;
       // Body text can have elements replaced in it for certain values.
-      // See: http://php.net/strtr
       $context = is_array($item) ? $item : [];
       $context['org_name'] = isset($context['org_name']) ? $context['org_name'] : $org_name;
 

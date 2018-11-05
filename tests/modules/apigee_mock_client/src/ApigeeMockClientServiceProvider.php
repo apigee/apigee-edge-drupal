@@ -25,13 +25,11 @@ use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
 
 /**
- * Class ApigeeM10nTestServiceProvide.
+ * Class ApigeeMockClientServiceProvider.
  *
  * This class is automatically picked up by the container builder.
  * See:
  * https://www.drupal.org/docs/8/api/services-and-dependency-injection/altering-existing-services-providing-dynamic-services.
- *
- * @package Drupal\apigee_mock_client
  */
 class ApigeeMockClientServiceProvider extends ServiceProviderBase {
 
