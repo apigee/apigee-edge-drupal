@@ -144,7 +144,7 @@ class AuthenticationForm extends ConfigFormBase {
 
     $form['connection_settings'] = [
       '#type' => 'details',
-      '#title' => $this->t('Edge connection settings'),
+      '#title' => $this->t('Apigee edge connection settings'),
       '#description' => $this->t('Apigee connection settings.'),
       '#open' => TRUE,
       '#parents' => ['key_input_settings'],
