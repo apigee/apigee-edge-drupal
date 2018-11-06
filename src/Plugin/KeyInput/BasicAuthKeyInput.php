@@ -35,6 +35,9 @@ use Drupal\key\Plugin\KeyInputBase;
  *   label = @Translation("Apigee Edge basic authentication credentials input fields."),
  *   description = @Translation("Provides input text fields for Apigee Edge basic authentication credentials.")
  * )
+ *
+ * @deprecated deprecated since version 8.x-1.0-alpha9.
+ *   Use the `apigee_auth` key type instead.
  */
 class BasicAuthKeyInput extends KeyInputBase {
 

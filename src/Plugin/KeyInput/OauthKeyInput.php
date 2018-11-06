@@ -34,6 +34,9 @@ use Drupal\Core\Form\FormStateInterface;
  *   label = @Translation("Apigee Edge OAuth credentials input fields."),
  *   description = @Translation("Provides input text fields for Apigee Edge OAuth credentials.")
  * )
+ *
+ * @deprecated deprecated since version 8.x-1.0-alpha9.
+ *   Use the `apigee_auth` key type instead.
  */
 class OauthKeyInput extends BasicAuthKeyInput {
 

@@ -70,6 +70,9 @@ use Http\Message\Authentication;
  *     }
  *   }
  * )
+ *
+ * @deprecated deprecated since version 8.x-1.0-alpha9.
+ *   Use the `apigee_auth` key type instead.
  */
 class OauthKeyType extends BasicAuthKeyType implements EdgeOauthKeyTypeInterface {
 
