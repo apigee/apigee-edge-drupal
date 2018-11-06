@@ -21,7 +21,6 @@ namespace Drupal\apigee_edge\Plugin\KeyType;
 
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use Drupal\apigee_edge\OauthAuthentication;
-use Drupal\apigee_edge\OauthTokenStorage;
 use Drupal\apigee_edge\Plugin\EdgeOauthKeyTypeInterface;
 use Drupal\key\KeyInterface;
 use Http\Message\Authentication;
@@ -98,8 +97,8 @@ class OauthKeyType extends BasicAuthKeyType implements EdgeOauthKeyTypeInterface
   /**
    * {@inheritdoc}
    */
-  public function getAuthenticationMethod(KeyInterface $key, KeyInterface $key_token = NULL): Authentication {
-    return new OauthAuthentication($this->getUsername($key), $this->getPassword($key), new OauthTokenStorage($key_token), NULL, $this->getClientId($key), $this->getClientSecret($key), NULL, $this->getAuthorizationServer($key));
+  public function getAuthenticationMethod(KeyInterface $key): Authentication {
+    return new OauthAuthentication($this->getUsername($key), $this->getPassword($key), \Drupal::service('apigee_edge.token_storage'), NULL, $this->getClientId($key), $this->getClientSecret($key), NULL, $this->getAuthorizationServer($key));
   }
 
 }

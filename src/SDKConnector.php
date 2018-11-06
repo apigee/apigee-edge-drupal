@@ -165,17 +165,14 @@ class SDKConnector implements SDKConnectorInterface {
       if (self::$client === NULL) {
         $credentials = $this->getCredentials();
         /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $key_type */
-        $client = self::$client = $this->buildClient($credentials->getAuthentication(), $credentials->getKeyType()->getEndpoint($credentials->getKey()));
+        self::$client = $this->buildClient($credentials->getAuthentication(), $credentials->getKeyType()->getEndpoint($credentials->getKey()));
       }
-      else {
-        $client = self::$client;
-      }
+
+      return self::$client;
     }
     else {
-      $client = $this->buildClient($authentication, $endpoint);
+      return $this->buildClient($authentication, $endpoint);
     }
-
-    return $client;
   }
 
   /**
@@ -201,22 +198,10 @@ class SDKConnector implements SDKConnectorInterface {
       if (empty($active_key)) {
         throw new AuthenticationKeyException('Apigee Edge API authentication key is not set.');
       }
-      $key = $this->keyRepository->getKey($active_key);
-      if ($key === NULL) {
+      if (!($key = $this->keyRepository->getKey($active_key))) {
         throw new AuthenticationKeyNotFoundException($active_key, 'Apigee Edge API authentication key not found with "@id" id.');
       }
-      $key_token = NULL;
-      if ($key->getKeyType() instanceof EdgeOauthKeyTypeInterface) {
-        $active_token_key = $this->configFactory->get('apigee_edge.auth')->get('active_key_oauth_token');
-        if (empty($active_token_key)) {
-          throw new AuthenticationKeyException('Apigee Edge OAuth token key is not set.');
-        }
-        $key_token = $this->keyRepository->getKey($active_token_key);
-        if ($key_token === NULL) {
-          throw new AuthenticationKeyNotFoundException($active_token_key, 'Apigee Edge OAuth token key not found with "@id" id.');
-        }
-      }
-      self::$credentials = $this->buildCredentials($key, $key_token);
+      self::$credentials = $this->buildCredentials($key);
     }
 
     return self::$credentials;
@@ -239,16 +224,15 @@ class SDKConnector implements SDKConnectorInterface {
    *
    * @param \Drupal\key\KeyInterface $key
    *   The key entity which stores the API credentials.
-   * @param \Drupal\key\KeyInterface|null $key_token
-   *   The OAuth token key entity.
    *
    * @return \Drupal\apigee_edge\CredentialsInterface
    *   The credentials.
    */
-  private function buildCredentials(KeyInterface $key, KeyInterface $key_token = NULL): CredentialsInterface {
+  private function buildCredentials(KeyInterface $key): CredentialsInterface {
+    /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $key */
     if ($key->getKeyType() instanceof EdgeKeyTypeInterface) {
-      if ($key->getKeyType() instanceof EdgeOauthKeyTypeInterface) {
-        return new OauthCredentials($key, $key_token);
+      if ($key->getKeyType()->getAuthenticationType() === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC) {
+        return new OauthCredentials($key);
       }
       return new Credentials($key);
     }
@@ -277,9 +261,9 @@ class SDKConnector implements SDKConnectorInterface {
   /**
    * {@inheritdoc}
    */
-  public function testConnection(KeyInterface $key = NULL, KeyInterface $key_token = NULL) {
+  public function testConnection(KeyInterface $key = NULL) {
     if ($key !== NULL) {
-      $credentials = $this->buildCredentials($key, $key_token);
+      $credentials = $this->buildCredentials($key);
       $client = $this->buildClient($credentials->getAuthentication(), $credentials->getKeyType()->getEndpoint($credentials->getKey()));
     }
     else {

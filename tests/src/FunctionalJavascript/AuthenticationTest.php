@@ -32,8 +32,6 @@ use Drupal\key\Entity\Key;
  */
 class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
-  const NO_AVAILABLE_BASIC_AUTH_KEY = 'There is no available basic authentication key for connecting to Apigee Edge.';
-
   const NO_AVAILABLE_OAUTH_KEY = 'There is no available OAuth key for connecting to Apigee Edge.';
 
   const NO_AVAILABLE_OAUTH_TOKEN_KEY = 'There is no available OAuth token key for connecting to Apigee Edge.';
@@ -95,7 +93,6 @@ class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     // Delete pre-defined test key.
     Key::load('test')->delete();
     $this->assertEmpty($this->config('apigee_edge.auth')->get('active_key'));
-    $this->assertEmpty($this->config('apigee_edge.auth')->get('active_key_oauth_token'));
 
     // Create a key entity using key's default type and provider, then visit
     // authentication form and ensure that there are no available Apigee Edge
@@ -227,7 +224,6 @@ class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     }
     $this->drupalGet(Url::fromRoute('apigee_edge.settings'));
     $this->assertEmpty($this->config('apigee_edge.auth')->get('active_key'));
-    $this->assertEmpty($this->config('apigee_edge.auth')->get('active_key_oauth_token'));
     $this->assertSession()->pageTextContains(self::NO_AVAILABLE_BASIC_AUTH_KEY);
     $this->getSession()->getPage()->selectFieldOption('edit-key-type', 'apigee_edge_oauth');
     $this->assertSession()->pageTextContains(self::NO_AVAILABLE_OAUTH_KEY);
@@ -351,7 +347,6 @@ class AuthenticationTest extends ApigeeEdgeFunctionalJavascriptTestBase {
       $this->assertSession()->pageTextContains('The configuration options have been saved');
       $this->assertSession()->pageTextNotContains(self::DEBUG_INFORMATION_TITLE);
       $this->assertEquals($this->config('apigee_edge.auth')->get('active_key'), $key_id);
-      $this->assertEquals($this->config('apigee_edge.auth')->get('active_key_oauth_token'), $key_token_id);
       $this->container->get('apigee_edge.sdk_connector')->testConnection();
     }
     else {

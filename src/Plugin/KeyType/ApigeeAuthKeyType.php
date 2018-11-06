@@ -19,7 +19,6 @@
 
 namespace Drupal\apigee_edge\Plugin\KeyType;
 
-use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use Drupal\apigee_edge\OauthAuthentication;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -120,12 +119,12 @@ class ApigeeAuthKeyType extends EdgeKeyTypeBase {
   /**
    * {@inheritdoc}
    */
-  public function getAuthenticationMethod(KeyInterface $key, KeyInterface $key_token = NULL): Authentication {
+  public function getAuthenticationMethod(KeyInterface $key): Authentication {
     $values = $key->getKeyValues();
     if ($values['auth_method'] === 'basic') {
       // Use basic authentication.
       return new BasicAuth($this->getUsername($key), $this->getPassword($key));
-    } else  {
+    } else {
       // Use Oauth.
       return new OauthAuthentication($this->getUsername($key), $this->getPassword($key), \Drupal::service('apigee_edge.token_storage'), NULL, $this->getClientId($key), $this->getClientSecret($key), NULL, $this->getAuthorizationServer($key));
     }

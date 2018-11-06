@@ -1212,7 +1212,6 @@ function apigee_edge_key_delete(EntityInterface $entity) {
     \Drupal::configFactory()
       ->getEditable('apigee_edge.auth')
       ->set('active_key', '')
-      ->set('active_key_oauth_token', '')
       ->save();
   }
 }

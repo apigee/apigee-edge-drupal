@@ -64,7 +64,6 @@ trait ApigeeEdgeTestTrait {
   protected function restoreKey() {
     $this->config('apigee_edge.auth')
       ->set('active_key', 'test')
-      ->set('active_key_oauth_token', '')
       ->save();
   }
 
@@ -74,7 +73,6 @@ trait ApigeeEdgeTestTrait {
   protected function invalidateKey() {
     $this->config('apigee_edge.auth')
       ->set('active_key', '')
-      ->set('active_key_oauth_token', '')
       ->save();
   }
 
@@ -83,13 +81,10 @@ trait ApigeeEdgeTestTrait {
    *
    * @param string $active_key
    *   The active authentication key.
-   * @param string $active_key_oauth_token
-   *   The active OAuth token key.
    */
-  protected function setKey(string $active_key, string $active_key_oauth_token) {
+  protected function setKey(string $active_key) {
     $this->config('apigee_edge.auth')
       ->set('active_key', $active_key)
-      ->set('active_key_oauth_token', $active_key_oauth_token)
       ->save();
   }
 

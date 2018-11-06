@@ -19,8 +19,6 @@ apigee_edge.auth:
   mapping:
     active_key:
       type: string
-    active_key_oauth_token:
-      type: string
 
 apigee_edge.client:
   type: config_object
@@ -193,9 +191,6 @@ key.type.apigee_edge_basic_auth:
   type: sequence
 
 key.type.apigee_edge_oauth:
-  type: sequence
-
-key.type.apigee_edge_oauth_token:
   type: sequence
 
 key.input.apigee_edge_basic_auth_input:

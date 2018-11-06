@@ -60,7 +60,7 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->pageTextContains(self::CANNOT_CONNECT_LONG);
 
     // Set invalid authentication key id.
-    $this->setKey('default', '');
+    $this->setKey('default');
     $this->drupalGet($status_report_path);
     $this->assertSession()->pageTextContains(self::KEY_NOT_FOUND);
     $this->assertSession()->pageTextContains(self::CANNOT_CONNECT_MALFORMED);
@@ -80,7 +80,7 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
       'password' => getenv('APIGEE_EDGE_PASSWORD'),
     ]));
     $key->save();
-    $this->setKey('private_file', '');
+    $this->setKey('private_file');
 
     $this->drupalGet($status_report_path);
     $this->assertSession()->pageTextNotContains(self::CANNOT_CONNECT_SHORT);
@@ -114,15 +114,7 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
     ]));
     $key->save();
 
-    // Create new Apigee Edge OAuth token key with private file provider.
-    Key::create([
-      'id' => 'private_file_token',
-      'label' => 'Private file_token',
-      'key_type' => 'apigee_edge_oauth_token',
-      'key_provider' => 'apigee_edge_private_file',
-      'key_input' => 'none',
-    ])->save();
-    $this->setKey('private_file_oauth', 'private_file_token');
+    $this->setKey('private_file_oauth');
 
     $this->drupalGet($status_report_path);
     $this->assertSession()->pageTextNotContains(self::CANNOT_CONNECT_SHORT);

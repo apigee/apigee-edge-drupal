@@ -20,7 +20,6 @@
 namespace Drupal\apigee_edge;
 
 use Drupal\apigee_edge\Plugin\EdgeOauthKeyTypeInterface;
-use Drupal\apigee_edge\Plugin\EdgeOauthTokenKeyTypeInterface;
 use Drupal\key\KeyInterface;
 use Http\Message\Authentication;
 
@@ -30,43 +29,28 @@ use Http\Message\Authentication;
 class OauthCredentials extends Credentials {
 
   /**
-   * The OAuth token key entity.
-   *
-   * @var \Drupal\key\KeyInterface
-   */
-  protected $keyToken;
-
-  /**
    * OauthCredentials constructor.
    *
    * @param \Drupal\key\KeyInterface $key
    *   The key entity which stores the API credentials.
-   * @param \Drupal\key\KeyInterface $key_token
-   *   The OAuth token key entity.
    *
    * @throws \InvalidArgumentException
    *   An InvalidArgumentException is thrown if the key type
-   *   does not implement EdgeOauthKeyTypeInterface and the
-   *   token key does not implement EdgeOauthTokenKeyTypeInterface.
+   *   does not implement EdgeOauthKeyTypeInterface.
    */
-  public function __construct(KeyInterface $key, KeyInterface $key_token) {
-    parent::__construct($key);
-
+  public function __construct(KeyInterface $key) {
     if (!($key->getKeyType() instanceof EdgeOauthKeyTypeInterface)) {
       throw new \InvalidArgumentException("Type of {$key->id()} OAuth key does not implement EdgeOauthKeyTypeInterface.");
     }
-    if (!($key_token->getKeyType() instanceof EdgeOauthTokenKeyTypeInterface)) {
-      throw new \InvalidArgumentException("Type of {$key_token->id()} OAuth token key does not implement EdgeOauthTokenKeyTypeInterface.");
-    }
 
-    $this->keyToken = $key_token;
+    parent::__construct($key);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getAuthentication(): Authentication {
-    return $this->keyType->getAuthenticationMethod($this->key, $this->keyToken);
+    return $this->keyType->getAuthenticationMethod($this->key);
   }
 
 }
