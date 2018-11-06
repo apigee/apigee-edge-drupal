@@ -259,7 +259,19 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
 
         // Ignore problematic null values.
         if ($value !== NULL) {
-          $rm->invoke($destination, $value);
+          if (is_array($value)) {
+            if (empty($value)) {
+              // Clear the value of the property.
+              // @see \Apigee\Edge\Structure\BaseObject::__construct()
+              $rm->invoke($destination);
+            }
+            else {
+              $rm->invoke($destination, ...$value);
+            }
+          }
+          else {
+            $rm->invoke($destination, $value);
+          }
         }
       }
     }

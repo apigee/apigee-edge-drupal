@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge\Entity;
 
+use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
 use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -285,7 +286,7 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
   /**
    * {@inheritdoc}
    */
-  public function setCredentials(array $credentials): void {
+  public function setCredentials(AppCredentialInterface ...$credentials): void {
     // We do not want to store credentials in the object because
     // object properties get saved to the persistent cache.
     // @see \Drupal\apigee_edge\Entity\Storage\EdgeEntityStorageBase::setPersistentCache()
