@@ -20,8 +20,7 @@
         "webflo/drupal-core-require-dev": "^8.6"
     },
     "conflict": {
-        "apigee/apigee-client-php": "<2.0.0-alpha5",
-        "php-http/client-common": ">1.7"
+        "apigee/apigee-client-php": "<2.0.0-alpha5"
     },
     "config": {
         "sort-packages": true
