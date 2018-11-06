@@ -19,6 +19,7 @@
 
 namespace Drupal\Tests\apigee_edge\Traits;
 
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\key\Entity\Key;
 
@@ -47,7 +48,7 @@ trait TestKeyBuilderTrait {
     $file_path = 'public://.apigee/apigee_auth_apigee_edge.json';
 
     // Save an empty object to the file.
-    file_put_contents($file_path, '{"auth_method": "basic"}');
+    file_put_contents($file_path, '{"auth_type": "basic"}');
 
     // Create a new key.
     $this->test_key = Key::create([
@@ -67,7 +68,7 @@ trait TestKeyBuilderTrait {
 
   public function populateTestKeyValues() {
     $input_settings = [
-      'auth_method' => 'oauth',
+      'auth_type' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH,
       'organization' => strtolower($this->randomMachineName()),
       'username' => strtolower($this->randomMachineName()),
       'password' => $this->randomString(16),

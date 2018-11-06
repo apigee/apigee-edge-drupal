@@ -21,6 +21,7 @@ namespace Drupal\apigee_edge\Plugin\KeyType;
 
 use Drupal\apigee_edge\OauthAuthentication;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeBase;
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\key\KeyInterface;
 use Http\Message\Authentication;
@@ -40,8 +41,8 @@ use Http\Message\Authentication\BasicAuth;
  *   multivalue = {
  *     "enabled" = true,
  *     "fields" = {
- *       "auth_method" = {
- *         "label" = @Translation("Authentication method"),
+ *       "auth_type" = {
+ *         "label" = @Translation("Authentication type"),
  *         "required" = true
  *       },
  *       "organization" = {
@@ -121,12 +122,12 @@ class ApigeeAuthKeyType extends EdgeKeyTypeBase {
    */
   public function getAuthenticationMethod(KeyInterface $key): Authentication {
     $values = $key->getKeyValues();
-    if ($values['auth_method'] === 'basic') {
+    if ($values['auth_type'] === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
+      // Use Oauth authentication.
+      return new OauthAuthentication($this->getUsername($key), $this->getPassword($key), \Drupal::service('apigee_edge.token_storage'), NULL, $this->getClientId($key), $this->getClientSecret($key), NULL, $this->getAuthorizationServer($key));
+    } else {
       // Use basic authentication.
       return new BasicAuth($this->getUsername($key), $this->getPassword($key));
-    } else {
-      // Use Oauth.
-      return new OauthAuthentication($this->getUsername($key), $this->getPassword($key), \Drupal::service('apigee_edge.token_storage'), NULL, $this->getClientId($key), $this->getClientSecret($key), NULL, $this->getAuthorizationServer($key));
     }
   }
 

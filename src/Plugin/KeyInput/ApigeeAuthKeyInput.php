@@ -21,6 +21,7 @@ namespace Drupal\apigee_edge\Plugin\KeyInput;
 
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use Apigee\Edge\ClientInterface;
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\key\Plugin\KeyInputBase;
@@ -45,16 +46,16 @@ class ApigeeAuthKeyInput extends KeyInputBase {
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $values = Json::decode($form_state->get('key_value')['current']);
 
-    $form['auth_method'] = [
+    $form['auth_type'] = [
       '#type' => 'select',
-      '#title' => $this->t('Authentication method'),
+      '#title' => $this->t('Authentication type'),
       '#description' => $this->t('Select the authentication method to use.'),
       '#required' => TRUE,
       '#options' => [
-        'oauth' => $this->t('OAuth'),
-        'basic' => $this->t('HTTP basic'),
+        EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH => $this->t('OAuth'),
+        EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC => $this->t('HTTP basic'),
       ],
-      '#default_value' => $values['auth_method'] ?? 'basic',
+      '#default_value' => $values['auth_type'] ?? EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC,
     ];
 
     $form['organization'] = [
@@ -99,7 +100,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#attributes' => ['autocomplete' => 'off'],
       '#states' => [
         'visible' => [
-          ':input[name="key_input_settings[auth_method]"]' => ['value' => 'oauth'],
+          ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH],
         ],
       ],
     ];
@@ -113,7 +114,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#attributes' => ['autocomplete' => 'off'],
       '#states' => [
         'visible' => [
-          ':input[name="key_input_settings[auth_method]"]' => ['value' => 'oauth'],
+          ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH],
         ],
       ],
     ];
@@ -127,7 +128,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#attributes' => ['autocomplete' => 'off'],
       '#states' => [
         'visible' => [
-          ':input[name="key_input_settings[auth_method]"]' => ['value' => 'oauth'],
+          ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH],
         ],
       ],
     ];

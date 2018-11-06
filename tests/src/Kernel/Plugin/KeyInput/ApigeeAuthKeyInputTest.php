@@ -19,6 +19,7 @@
 
 namespace Drupal\Tests\apigee_edge\Kernel\Plugin\KeyInput;
 
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\apigee_edge\Plugin\KeyInput\ApigeeAuthKeyInput;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormState;
@@ -79,7 +80,7 @@ class ApigeeAuthKeyInputTest extends KernelTestBase {
     $form = $this->test_key->getKeyInput()->buildConfigurationForm([], $plugin_form_state);
 
     static::assertSame([
-      'auth_method',
+      'auth_type',
       'organization',
       'username',
       'password',
@@ -100,7 +101,7 @@ class ApigeeAuthKeyInputTest extends KernelTestBase {
 
     // Generate random input settings for basic auth.
     $input_settings = [
-      'auth_method' => 'oauth',
+      'auth_type' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH,
       'organization' => strtolower($this->randomMachineName()),
       'username' => strtolower($this->randomMachineName()),
       'password' => $this->randomString(16),

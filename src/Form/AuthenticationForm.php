@@ -23,9 +23,11 @@ use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use Drupal\apigee_edge\Exception\AuthenticationKeyValueMalformedException;
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\apigee_edge\Plugin\KeyType\OauthKeyType;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Render\MarkupInterface;
+use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\Random;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -163,14 +165,14 @@ class AuthenticationForm extends ConfigFormBase {
 
     $submittable_state =  [
       [
-        ':input[name="key_input_settings[auth_method]"]' => ['value' => 'basic'],
+        ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC],
         ':input[name="key_input_settings[password]"]' => ['filled' => TRUE],
         ':input[name="key_input_settings[organization]"]' => ['filled' => TRUE],
         ':input[name="key_input_settings[username]"]' => ['filled' => TRUE],
       ],
       'xor',
       [
-        ':input[name="key_input_settings[auth_method]"]' => ['value' => 'oauth'],
+        ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH],
         ':input[name="key_input_settings[password]"]' => ['filled' => TRUE],
         ':input[name="key_input_settings[organization]"]' => ['filled' => TRUE],
         ':input[name="key_input_settings[username]"]' => ['filled' => TRUE],
@@ -525,7 +527,8 @@ class AuthenticationForm extends ConfigFormBase {
     ]);
     $new_key->save();
     // Write out an empty key.
-    $new_key->getKeyProvider()->setKeyValue($new_key, '{"auth_method": "basic"}');
+    $new_key->getKeyProvider()
+      ->setKeyValue($new_key, Json::encode((object) ['auth_type' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC]));
 
     // Save the active key.
     $this

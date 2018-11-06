@@ -20,6 +20,7 @@
 namespace Drupal\Tests\apigee_edge\Kernel\Form;
 
 use Drupal\apigee_edge\Form\AuthenticationForm;
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\DrupalKernel;
@@ -93,11 +94,11 @@ class AuthenticationFormTest extends KernelTestBase {
 
     $decoded = Json::decode($active_key->getKeyValue());
 
-    static::assertSame('basic', $form["connection_settings"]["auth_method"]["#value"]);
+    static::assertSame(EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC, $form["connection_settings"]["auth_type"]["#value"]);
     static::assertEmpty($form["connection_settings"]["organization"]["#value"]);
     static::assertEmpty($form["connection_settings"]["username"]["#value"]);
     static::assertEmpty($form["connection_settings"]["password"]["#value"]);
-    static::assertSame('basic', $decoded['auth_method']);
+    static::assertSame(EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC, $decoded['auth_type']);
   }
 
   /**
