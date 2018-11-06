@@ -40,7 +40,7 @@ class MockHandlerStack extends MockHandler {
    *
    * @var array
    */
-  protected $responses;
+  protected $responses = [];
 
   /**
    * The twig environment for getting response data.
