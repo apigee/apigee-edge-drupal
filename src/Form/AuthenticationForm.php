@@ -629,4 +629,18 @@ class AuthenticationForm extends ConfigFormBase {
       'current' => (!empty($obscured)) ? $obscured : $processed_original,
     ];
   }
+
+  /**
+   * Get the Form entity.
+   *
+   * Some of the legacy `key_input` plugins rely on this being an entity form so
+   * we need to return the active key as the entity..
+   *
+   * @return \Drupal\Core\Entity\EntityInterface
+   *   The active key.
+   */
+  public function getEntity() {
+    return $this->activeKey;
+  }
+
 }

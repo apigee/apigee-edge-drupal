@@ -42,7 +42,7 @@ class AuthenticationFormTest extends KernelTestBase {
   protected static $modules = [
     'system',
     'apigee_edge',
-    'key'
+    'key',
   ];
 
   /**
@@ -89,6 +89,8 @@ class AuthenticationFormTest extends KernelTestBase {
 
     // The form should have created a new key and saved some empty values to it.
     $active_key = Key::load($this->config(AuthenticationForm::CONFIG_NAME)->get('active_key'));
+    static::assertSame($active_key->id(), $form_state->getFormObject()->getEntity()->id());
+
     $decoded = Json::decode($active_key->getKeyValue());
 
     static::assertSame('basic', $form["connection_settings"]["auth_method"]["#value"]);
@@ -106,4 +108,5 @@ class AuthenticationFormTest extends KernelTestBase {
     $container->register('stream_wrapper.private', 'Drupal\Core\StreamWrapper\PrivateStream')
       ->addTag('stream_wrapper', ['scheme' => 'private']);
   }
+
 }
