@@ -609,7 +609,18 @@ trait EdgeEntityBaseTrait {
     // (Check number of parameters if it becomes necessary.)
     $setter = 'set' . ucfirst($property);
     if (method_exists($this, $setter)) {
-      $this->{$setter}($value);
+      // Support for setters with variable-length arguments.
+      if (is_array($value)) {
+        if (empty($value)) {
+          $this->{$setter}();
+        }
+        else {
+          $this->{$setter}(...$value);
+        }
+      }
+      else {
+        $this->{$setter}($value);
+      }
     }
   }
 
