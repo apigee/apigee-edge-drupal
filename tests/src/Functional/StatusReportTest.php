@@ -19,6 +19,7 @@
 
 namespace Drupal\Tests\apigee_edge\Functional;
 
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Url;
 use Drupal\key\Entity\Key;
@@ -69,11 +70,12 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
     $key = Key::create([
       'id' => 'private_file',
       'label' => 'Private file',
-      'key_type' => 'apigee_edge_basic_auth',
+      'key_type' => 'apigee_auth',
       'key_provider' => 'apigee_edge_private_file',
-      'key_input' => 'apigee_edge_basic_auth_input',
+      'key_input' => 'apigee_auth_input',
     ]);
     $key->setKeyValue(Json::encode([
+      'auth_type' => getenv('APIGEE_EDGE_AUTH_TYPE'),
       'endpoint' => getenv('APIGEE_EDGE_ENDPOINT'),
       'organization' => getenv('APIGEE_EDGE_ORGANIZATION'),
       'username' => getenv('APIGEE_EDGE_USERNAME'),
@@ -87,6 +89,7 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
 
     // Use wrong credentials.
     $key->setKeyValue(Json::encode([
+      'auth_type' => getenv('APIGEE_EDGE_AUTH_TYPE'),
       'endpoint' => getenv('APIGEE_EDGE_ENDPOINT'),
       'organization' => getenv('APIGEE_EDGE_ORGANIZATION'),
       'username' => getenv('APIGEE_EDGE_USERNAME'),
@@ -102,11 +105,12 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
     $key = Key::create([
       'id' => 'private_file_oauth',
       'label' => 'Private file oauth',
-      'key_type' => 'apigee_edge_oauth',
+      'key_type' => 'apigee_auth',
       'key_provider' => 'apigee_edge_private_file',
-      'key_input' => 'apigee_edge_oauth_input',
+      'key_input' => 'apigee_auth_input',
     ]);
     $key->setKeyValue(Json::encode([
+      'auth_type' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH,
       'endpoint' => getenv('APIGEE_EDGE_ENDPOINT'),
       'organization' => getenv('APIGEE_EDGE_ORGANIZATION'),
       'username' => getenv('APIGEE_EDGE_USERNAME'),
@@ -121,6 +125,7 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
 
     // Use wrong credentials.
     $key->setKeyValue(Json::encode([
+      'auth_type' => getenv('APIGEE_EDGE_AUTH_TYPE'),
       'endpoint' => getenv('APIGEE_EDGE_ENDPOINT'),
       'organization' => $this->getRandomGenerator()->name(),
       'username' => getenv('APIGEE_EDGE_USERNAME'),

@@ -45,9 +45,9 @@ trait ApigeeEdgeTestTrait {
     $key = Key::create([
       'id' => 'test',
       'label' => 'test',
-      'key_type' => 'apigee_edge_basic_auth',
+      'key_type' => 'apigee_auth',
       'key_provider' => 'apigee_edge_environment_variables',
-      'key_input' => 'apigee_edge_basic_auth_input',
+      'key_input' => 'apigee_auth_input',
     ]);
     try {
       $key->save();
@@ -55,6 +55,8 @@ trait ApigeeEdgeTestTrait {
     catch (EntityStorageException $exception) {
       self::fail('Could not create key for testing.');
     }
+
+    $key->getKeyProvider()->setKeyValue($key, $key->getKeyValue());
     $this->restoreKey();
   }
 
