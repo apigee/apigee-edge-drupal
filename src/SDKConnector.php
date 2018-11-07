@@ -231,7 +231,7 @@ class SDKConnector implements SDKConnectorInterface {
   private function buildCredentials(KeyInterface $key): CredentialsInterface {
     /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $key */
     if ($key->getKeyType() instanceof EdgeKeyTypeInterface) {
-      if ($key->getKeyType()->getAuthenticationType() === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC) {
+      if ($key->getKeyType()->getAuthenticationType($key) === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
         return new OauthCredentials($key);
       }
       return new Credentials($key);
