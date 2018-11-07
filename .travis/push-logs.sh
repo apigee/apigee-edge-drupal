@@ -3,7 +3,7 @@
 set -e
 
 if [[ -z "${LOGS_REPO_USER}" ]] || [[ -z "${LOGS_REPO_PASSWORD}" ]] || [[ -z "${LOGS_REPO_HOST}" ]] || [[ -z "${LOGS_REPO_NAME}" ]]; then
-  echo "There is at least one missing information about the destination repo. Please make sure the following environment variables exist and not empty: LOGS_REPO_USER, LOGS_REPO_PASSWORD, LOGS_REPO_HOST, LOGS_REPO_NAME."
+  echo "There is at least one missing information about the destination repo. Make sure the following environment variables exist and not empty: LOGS_REPO_USER, LOGS_REPO_PASSWORD, LOGS_REPO_HOST, LOGS_REPO_NAME."
   exit 0
 fi
 

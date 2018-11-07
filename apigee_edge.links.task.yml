@@ -5,7 +5,7 @@ apigee_edge.settings:
 
 apigee_edge.settings.connection_config:
   route_name: apigee_edge.settings.connection_config
-  title: 'Connection config'
+  title: 'Connection settings'
   base_route: apigee_edge.settings
 
 apigee_edge.settings.error_page:
@@ -15,7 +15,7 @@ apigee_edge.settings.error_page:
 
 apigee_edge.settings.app:
   route_name: apigee_edge.settings.app
-  title: 'API Product associations'
+  title: 'API product associations'
   base_route: apigee_edge.settings.app
   weight: -10
 

@@ -28,9 +28,9 @@ This project follows [Google's Open Source Community Guidelines](https://opensou
 
 # Suggested contributing workflow
 
-## For a start
+## To start
 * Fork this project on Github.
-* If you do not have an Apigee Edge trial organization please create a new one
+* If you do not have an Apigee Edge trial organization, create a new one
 [here](https://login.apigee.com/login).
 * Register on https://travis-ci.org.
 * Open https://travis-ci.org/[YOUR-GITHUB-USERNAME]/apigee-edge-drupal and click
@@ -42,10 +42,12 @@ required environment variables in the [Testing](#testing) section.)
 
 ## For daily work
 * Create a new branch in your fork repository, ex.: patch-1.
-* Add changes to the code. If you implement new features please always add new
-tests to cover the implemented functionality. If you modify existing features please always update related tests if needed.
+* Add changes to the code. If you implement new features, add new
+tests to cover the implemented functionality. If you modify existing features, update related tests.
 * Push your changes to your repo's patch-1 branch.
-* Wait until all Travis CI test jobs finish and _pass_.
+* Wait until all Travis CI test jobs finish and _pass_. (If any of them fails
+restart them once or twice. They may have failed due to an API communication error. You can 
+identify these type of issues from logs.)
 * Create [new pull request](https://github.com/apigee/apigee-edge-drupal/pull/new/8.x-1.x)
 and do not forget to add a link to Travis CI build that can confirm your code is working.
 
@@ -148,7 +150,7 @@ repository URL:
 `https://${LOGS_REPO_USER}:${LOGS_REPO_PASSWORD}@${LOGS_REPO_HOST}/${LOGS_REPO_USER}/${LOGS_REPO_NAME}.git`
 
 ### If your pull request relies on changes that are not yet available in Apigee Edge Client Library for PHP's latest stable release
-Please *temporary* add required changes as patches to module's composer.json.
+You should *temporarily* add required changes as patches to module's composer.json.
 This way this module's tests could pass on Travis CI.
 
 #### Example:

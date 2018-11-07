@@ -34,7 +34,7 @@ final class RoleBasedAccessSettingsBatch {
    * Batch operation callback.
    *
    * @param array $product_name_display_name_map
-   *   Associative array where keys are the names (ids) of API Products and
+   *   Associative array where keys are the names (ids) of API products and
    *   values are their display names.
    * @param array $product_name_rids_map
    *   Associative array where keys are the API product names (ids) and values
@@ -56,7 +56,7 @@ final class RoleBasedAccessSettingsBatch {
       $context['sandbox']['max'] = count($product_name_display_name_map);
     }
 
-    // Process API Products by groups of 5.
+    // Process API products by groups of 5.
     /** @var \Drupal\apigee_edge\Entity\Storage\ApiProductStorageInterface $storage */
     $storage = \Drupal::entityTypeManager()->getStorage('api_product');
     /** @var \Apigee\Edge\Api\Management\Controller\ApiProductControllerInterface $controller */
@@ -118,7 +118,7 @@ final class RoleBasedAccessSettingsBatch {
     $failed = $results['failed'] ?? [];
 
     if ($success && !empty($updated) && empty($failed)) {
-      \Drupal::messenger()->addStatus(t('All API product attributes have been updated successfully'));
+      \Drupal::messenger()->addStatus(t('All API product attributes have been updated successfully.'));
     }
     elseif (!empty($updated) || !empty($failed)) {
       if (!empty($updated)) {
@@ -126,7 +126,7 @@ final class RoleBasedAccessSettingsBatch {
           '#theme' => 'item_list',
           '#items' => $updated,
         ];
-        $message = \Drupal::translation()->formatPlural(count($updated), '@product API product successfully updated.', '@count API Products successfully updated: @products',
+        $message = \Drupal::translation()->formatPlural(count($updated), '@product API product successfully updated.', '@count API products successfully updated: @products.',
           [
             '@product' => reset($updated),
             '@products' => \Drupal::service('renderer')->render($items),
@@ -140,7 +140,7 @@ final class RoleBasedAccessSettingsBatch {
           '#theme' => 'item_list',
           '#items' => $failed,
         ];
-        $message = \Drupal::translation()->formatPlural(count($failed), 'An API product failed failed: @product.', '@count API Products could not be updated: @products',
+        $message = \Drupal::translation()->formatPlural(count($failed), 'An API product failed failed: @product.', '@count API products could not be updated: @products.',
           [
             '@product' => reset($failed),
             '@products' => \Drupal::service('renderer')->render($items),
