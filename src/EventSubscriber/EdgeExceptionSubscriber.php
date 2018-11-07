@@ -20,6 +20,7 @@
 namespace Drupal\apigee_edge\EventSubscriber;
 
 use Apigee\Edge\Exception\ApiException;
+use Drupal\apigee_edge\Exception\AuthenticationKeyValueMalformedException;
 use Drupal\Core\EventSubscriber\DefaultExceptionHtmlSubscriber;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
@@ -46,7 +47,13 @@ class EdgeExceptionSubscriber extends DefaultExceptionHtmlSubscriber {
    *   The exception event.
    */
   public function onException(GetResponseForExceptionEvent $event) {
-    if ($event->getException() instanceof ApiException || $event->getException()->getPrevious() instanceof ApiException) {
+    $exception = $event->getException();
+
+    // Creating a sub request on `AuthenticationKeyValueMalformedException` can
+    // cause an infinite loop.
+    if (!($exception instanceof AuthenticationKeyValueMalformedException)
+      && ($exception instanceof ApiException || $exception->getPrevious() instanceof ApiException)
+    ) {
       watchdog_exception('apigee_edge', $event->getException());
       $this->makeSubrequest($event, '/api-communication-error', Response::HTTP_SERVICE_UNAVAILABLE);
     }
