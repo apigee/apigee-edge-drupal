@@ -25,8 +25,8 @@ apigee_edge.app:
   weight: -8
 
 apigee_edge.product:
-  title: 'API Products'
-  description: 'API Product settings.'
+  title: 'API products'
+  description: 'API product settings.'
   parent: system.admin_config_edge
   route_name: apigee_edge.settings.product.alias
   weight: -2

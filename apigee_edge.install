@@ -57,7 +57,7 @@ function apigee_edge_requirements($phase) {
       $requirements['apigee_edge_connection_error'] = [
         'title' => t('Apigee Edge'),
         'value' => $exception->getMessage(),
-        'description' => t('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Apigee Edge server is unreachable. Visit the <a href=":url">Apigee Edge Configuration</a> page to get more information.', [
+        'description' => t('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Apigee Edge server is unreachable. Visit the <a href=":url">Apigee Edge general settings</a> page to get more information.', [
           ':url' => Url::fromRoute('apigee_edge.settings', ['destination' => 'admin/reports/status'])->toString(),
         ]),
         'severity' => REQUIREMENT_WARNING,

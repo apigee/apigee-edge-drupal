@@ -51,7 +51,7 @@ class ErrorPageSettingsForm extends ConfigFormBase {
 
     $form['error_page'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('The displayed title and content on the error page.'),
+      '#title' => $this->t('Title and content displayed on error page'),
       '#collapsible' => FALSE,
     ];
 

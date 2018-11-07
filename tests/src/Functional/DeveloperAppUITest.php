@@ -156,7 +156,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
       'id_verification' => $name,
     ], 'Delete');
 
-    $this->assertSession()->pageTextContains("The {$name} developer app has been deleted.");
+    $this->assertSession()->pageTextContains("The {$name} app has been deleted.");
     $apps = array_filter($this->getApps(), function (DeveloperApp $app) use ($name): bool {
       return $app->getName() === $name;
     });
@@ -430,7 +430,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $controller->setStatus($this->account->getEmail(), Developer::STATUS_INACTIVE);
 
     $this->drupalGet("/user/{$this->account->id()}/apps");
-    $this->assertSession()->pageTextContains('Your developer account has inactive status so you will not be able to use your credentials until your account is enabled. Please contact the Developer Portal support for further assistance.');
+    $this->assertSession()->pageTextContains('Your developer account has inactive status so you will not be able to use your credentials until your account is enabled. Please contact support for further assistance.');
 
     $this->drupalLogin($this->rootUser);
     $this->drupalGet("/user/{$this->account->id()}/apps");
@@ -441,7 +441,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    * Ensures warning messages are visible if multiple products/app is disabled.
    */
   public function testWarningMessagesIfMultipleProductsDisabled() {
-    $admin_warning_message = 'Access to multiple API Products will be retained until an app is edited and the developer is prompted to confirm a single API Product selection.';
+    $admin_warning_message = 'Access to multiple API products will be retained until an app is edited and the developer is prompted to confirm a single API Product selection.';
     $end_user_warning_message = 'Foos status now require selection of a single Bar; multiple Bar selection is no longer supported. Confirm your Bar selection below.';
     $app_settings_url = Url::fromRoute('apigee_edge.settings.app');
 
@@ -513,7 +513,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalPostForm($app_edit_url, ['callbackUrl[0][value]' => 'http://example.com'], 'Save');
     $this->assertSession()->pageTextContains("Callback URL field is not in the right format.");
     $this->drupalPostForm($app_edit_url, ['callbackUrl[0][value]' => 'https://example.com'], 'Save');
-    $this->assertSession()->pageTextContains('Developer App details have been successfully updated.');
+    $this->assertSession()->pageTextContains('App details have been successfully updated.');
     $this->assertSession()->pageTextContains('https://example.com');
   }
 

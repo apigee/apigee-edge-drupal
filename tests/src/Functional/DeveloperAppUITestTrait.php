@@ -118,7 +118,7 @@ trait DeveloperAppUITestTrait {
           'user' => $account->id(),
         ]),
       $data,
-      'Add developer app'
+      'Add app'
     );
   }
 

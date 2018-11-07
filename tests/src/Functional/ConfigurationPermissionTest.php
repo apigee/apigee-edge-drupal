@@ -101,8 +101,8 @@ class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
         $visit_path($data['path']);
         if ($route === 'apigee_edge.settings.developer.sync') {
           if ($access) {
-            list($schedule_path, $schedule_query) = $this->findLink('Background');
-            list($run_path, $run_query) = $this->findLink('Now');
+            list($schedule_path, $schedule_query) = $this->findLink('Background developer sync');
+            list($run_path, $run_query) = $this->findLink('Run developer sync');
             $visit_path($schedule_path, $schedule_query);
             $visit_path($run_path, $run_query);
           }

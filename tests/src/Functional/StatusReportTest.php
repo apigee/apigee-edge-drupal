@@ -38,7 +38,7 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
 
   const CANNOT_CONNECT_SHORT = 'Cannot connect to Apigee Edge server.';
 
-  const CANNOT_CONNECT_LONG = 'Cannot connect to Apigee Edge server. You have either given wrong credential details or the Apigee Edge server is unreachable. Visit the Apigee Edge Configuration page to get more information.';
+  const CANNOT_CONNECT_LONG = 'Cannot connect to Apigee Edge server. You have either given wrong credential details or the Apigee Edge server is unreachable. Visit the Apigee Edge general settings page to get more information.';
 
   const CANNOT_CONNECT_MALFORMED = 'Cannot connect to Apigee Edge server. Check the settings and the requirements of the active key\'s provider. Visit the Key Configuration page to get more information.';
 

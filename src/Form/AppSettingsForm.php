@@ -95,7 +95,7 @@ class AppSettingsForm extends ConfigFormBase {
 
     // Someone has overridden the default setting.
     if (!$generalConfig->get('multiple_products')) {
-      $this->messenger()->addWarning($this->t('Access to multiple API Products will be retained until an app is edited and the developer is prompted to confirm a single API Product selection.'));
+      $this->messenger()->addWarning($this->t('Access to multiple API products will be retained until an app is edited and the developer is prompted to confirm a single API product selection.'));
     }
 
     /** @var string[] $default_products */
