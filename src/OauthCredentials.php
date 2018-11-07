@@ -19,7 +19,7 @@
 
 namespace Drupal\apigee_edge;
 
-use Drupal\apigee_edge\Plugin\EdgeOauthKeyTypeInterface;
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\key\KeyInterface;
 use Http\Message\Authentication;
 
@@ -39,11 +39,15 @@ class OauthCredentials extends Credentials {
    *   does not implement EdgeOauthKeyTypeInterface.
    */
   public function __construct(KeyInterface $key) {
-    if (!($key->getKeyType() instanceof EdgeOauthKeyTypeInterface)) {
-      throw new \InvalidArgumentException("Type of {$key->id()} OAuth key does not implement EdgeOauthKeyTypeInterface.");
-    }
 
-    parent::__construct($key);
+    if ($key->getKeyType() instanceof EdgeKeyTypeInterface
+      && ($auth_type = $key->getKeyType()->getAuthenticationType($key))
+      && $auth_type === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH
+    ) {
+      parent::__construct($key);
+    } else {
+      throw new \InvalidArgumentException("The `{$key->id()}` key is not configured for OAuth.");
+    }
   }
 
   /**
