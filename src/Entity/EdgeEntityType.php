@@ -113,9 +113,10 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
     if (!isset($keys['id'])) {
       $rc = new \ReflectionClass($this->getClass());
       // SDK entities can tell their primary id property.
-      if ($rc->hasMethod('idProperty')) {
-        $obj = $rc->newInstance();
-        $keys['id'] = $obj->idProperty();
+      $method = 'idProperty';
+      if ($rc->hasMethod($method)) {
+        $rm = $rc->getMethod($method);
+        $keys['id'] = $rm->invoke(NULL, $method);
       }
     }
     return $keys;

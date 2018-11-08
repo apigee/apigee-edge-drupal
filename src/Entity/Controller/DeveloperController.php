@@ -73,7 +73,7 @@ class DeveloperController extends EdgeDeveloperController implements DrupalEntit
     // we do not need to load the developer by Apigee Edge always.
     // \Drupal\apigee_edge\Entity\Developer::id() always returns the proper
     // email address for this operation.
-    $entity->{'set' . $entity->idProperty()}($drupal_entity->id());
+    $entity->{'set' . $entity::idProperty()}($drupal_entity->id());
     return $entity;
   }
 
