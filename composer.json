@@ -20,8 +20,7 @@
         "webflo/drupal-core-require-dev": "^8.6"
     },
     "conflict": {
-        "apigee/apigee-client-php": "<2.0.0-alpha5",
-        "php-http/client-common": ">1.7"
+        "apigee/apigee-client-php": "<2.0.0-alpha6"
     },
     "config": {
         "sort-packages": true
@@ -35,9 +34,6 @@
             }
         },
         "patches": {
-            "apigee/apigee-client-php": {
-                "Refactored Management API tests and various improvements #25": "https://github.com/apigee/apigee-client-php/pull/25.diff"
-            },
             "drupal/core": {
                 "(For testing) Time Ago summary does not render on Manage Display for Datetime": "https://www.drupal.org/files/issues/2018-08-06/2686409-61.patch"
             },

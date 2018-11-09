@@ -139,7 +139,7 @@ class Query extends QueryBase implements QueryInterface {
     $storage = $this->entityTypeManager->getStorage($this->entityTypeId);
     /** @var \Apigee\Edge\Entity\EntityInterface $entity */
     $entity = $storage->create();
-    return [$entity->idProperty()];
+    return [$entity::idProperty()];
   }
 
   /**
