@@ -34,9 +34,6 @@
             }
         },
         "patches": {
-            "apigee/apigee-client-php": {
-                "Make idProperty() static #27": "https://github.com/apigee/apigee-client-php/pull/27.diff"
-            },
             "drupal/core": {
                 "(For testing) Time Ago summary does not render on Manage Display for Datetime": "https://www.drupal.org/files/issues/2018-08-06/2686409-61.patch"
             },
