@@ -72,14 +72,14 @@ class MockHttpClientFactory extends ClientFactory {
     $this->mock_stack = $mock_stack;
 
     // Check for the integration enabled environment variable.
-    if ($enabled = getenv('APIGEE_MOCK_CLIENT_INTEGRATION_ENABLE')) {
+    if ($enabled = getenv('APIGEE_MOCK_CLIENT_MOCK_SERVER_ENABLED')) {
       $this->integration_enabled = !empty($enabled);
       // Callbacks won't have access to the same environment variables so save
       // the flag to state.
-      $state->set('APIGEE_MOCK_CLIENT_INTEGRATION_ENABLE', $enabled);
+      $state->set('APIGEE_MOCK_CLIENT_MOCK_SERVER_ENABLED', $enabled);
     }
     else {
-      $this->integration_enabled = !empty($state->get('APIGEE_MOCK_CLIENT_INTEGRATION_ENABLE', FALSE));
+      $this->integration_enabled = !empty($state->get('APIGEE_MOCK_CLIENT_MOCK_SERVER_ENABLED', FALSE));
     }
 
     parent::__construct($stack);
@@ -89,33 +89,11 @@ class MockHttpClientFactory extends ClientFactory {
    * {@inheritdoc}
    */
   public function fromOptions(array $config = []) {
-    $default_config = [
-      // Security consideration: we must not use the certificate authority
-      // file shipped with Guzzle because it can easily get outdated if a
-      // certificate authority is hacked. Instead, we rely on the certificate
-      // authority file provided by the operating system which is more likely
-      // going to be updated in a timely fashion. This overrides the default
-      // path to the pem file bundled with Guzzle.
-      'verify' => TRUE,
-      'timeout' => 30,
-      'headers' => [
-        'User-Agent' => 'Drupal/' . \Drupal::VERSION . ' (+https://www.drupal.org/) ' . \GuzzleHttp\default_user_agent(),
-      ],
-      // @todo replace with state api b/c functional tests don't have access to environment variables (as far as I can tell).
+    $config = [
       'handler' => $this->integration_enabled ? $this->stack : $this->mock_stack,
-      // Security consideration: prevent Guzzle from using environment variables
-      // to configure the outbound proxy.
-      'proxy' => [
-        'http' => NULL,
-        'https' => NULL,
-        'no' => [],
-      ],
     ];
 
-    $config = NestedArray::mergeDeep($default_config, Settings::get('http_client_config', []), $config);
-
-    return new Client($config);
-
+    return parent::fromOptions($config);
   }
 
 }

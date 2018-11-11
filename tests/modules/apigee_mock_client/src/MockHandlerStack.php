@@ -75,15 +75,11 @@ class MockHandlerStack extends MockHandler {
    * Queue a response that is in the catalog.
    *
    * Dynamic values can be passed and
-   * will be replaced in the response. For example `['foo' => [':bar' =>
-   * 'baz']]` will load the catalog entry named `foo `and replace `:bar` with
-   * "baz" in the body text.
+   * will be replaced in the response.
    *
    * @param string|array $response_ids
-   *   The response id to queue in one of the following formats:
-   *     - `'foo'`
-   *     - `['foo', 'bar']` // Queue multiple responses.
-   *     - `['foo' => [':bar' => 'baz']]` // w/ replacements for response body.
+   *   The name of the response template to queue (without file extension)
+   *   e.g. `get-developer` or `get_developer` @see /tests/response-templates
    *
    * @return $this
    *

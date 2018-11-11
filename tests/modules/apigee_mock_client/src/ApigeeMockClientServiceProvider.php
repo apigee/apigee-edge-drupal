@@ -27,6 +27,9 @@ use Symfony\Component\DependencyInjection\Reference;
 /**
  * Class ApigeeMockClientServiceProvider.
  *
+ * @TODO replace this with a service decorator that injects the apigee_mock_client.mock_http_client_factory dependency.
+ * @SEE https://github.com/apigee/apigee-edge-drupal/pull/79#discussion_r229186448
+ *
  * This class is automatically picked up by the container builder.
  * See:
  * https://www.drupal.org/docs/8/api/services-and-dependency-injection/altering-existing-services-providing-dynamic-services.
