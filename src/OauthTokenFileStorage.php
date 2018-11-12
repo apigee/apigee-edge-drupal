@@ -42,38 +42,45 @@ class OauthTokenFileStorage implements OauthTokenStorageInterface {
   protected $leeway = 30;
 
   /**
+   * An internally cached token data store.
+   *
+   * @var array
+   */
+  private static $token_data;
+
+  /**
    * {@inheritdoc}
    */
   public function getAccessToken(): ?string {
-    return $this->getFromStorage()['access_token'];
+    return $this->getTokenData()['access_token'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getTokenType(): ?string {
-    return $this->getFromStorage()['token_type'];
+    return $this->getTokenData()['token_type'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getRefreshToken(): ?string {
-    return $this->getFromStorage()['refresh_token'];
+    return $this->getTokenData()['refresh_token'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getScope(): string {
-    return $this->getFromStorage()['scope'];
+    return $this->getTokenData()['scope'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getExpires(): int {
-    $token_data = $this->getFromStorage();
+    $token_data = $this->getTokenData();
     return $token_data['expires'] ?? -1;
   }
 
@@ -94,7 +101,7 @@ class OauthTokenFileStorage implements OauthTokenStorageInterface {
    */
   public function markExpired(): void {
     // Gets token data.
-    $token_data = $this->getFromStorage();
+    $token_data = $this->getTokenData();
     // Expire in the past.
     $token_data['expires_in'] = -1;
     // Save the token data.
@@ -116,13 +123,37 @@ class OauthTokenFileStorage implements OauthTokenStorageInterface {
 
     // Write the obfuscated token data to a private file.
     file_unmanaged_save_data(base64_encode(serialize($data)), static::OAUTH_TOKEN_PATH, FILE_EXISTS_REPLACE);
+
+    // Update the cached value.
+    static::$token_data = $data;
   }
 
   /**
    * {@inheritdoc}
    */
   public function removeToken(): void {
+    // Remove the data from the static cache.
+    static::$token_data = NULL;
+    // Remove the token data from storage.
     file_unmanaged_delete(static::OAUTH_TOKEN_PATH);
+  }
+
+  /**
+   * Gets all token data from storage.
+   *
+   * @param bool $reset
+   *   Whether or not to reload the token data.
+   *
+   * @return array
+   *   The token data.
+   */
+  protected function getTokenData($reset = FALSE): array {
+    // Load from storage if the cached value is empty.
+    if ($reset || empty(static::$token_data)) {
+      static::$token_data = $this->getFromStorage();
+    }
+
+    return static::$token_data;
   }
 
   /**

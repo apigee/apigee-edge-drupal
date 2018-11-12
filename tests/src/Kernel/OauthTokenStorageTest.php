@@ -91,9 +91,7 @@ class OauthTokenStorageTest extends KernelTestBase {
   }
 
   /**
-   * Test that saving a token produces the expected cache result.
-   *
-   * @throws \Exception
+   * Test that saving a token produces the expected file data.
    */
   public function testSaveToken() {
     // Will use this to test expire.
@@ -111,6 +109,26 @@ class OauthTokenStorageTest extends KernelTestBase {
     static::assertSame($this->token_data['scope'], $stored_token['scope']);
     // The difference in the timestamp should be 1 or 0 seconds.
     static::assertLessThan(2, abs($this->token_data['expires_in'] + $current_time - $stored_token['expires']));
+  }
+
+  /**
+   * Test the token storage is using static cache.
+   */
+  public function testStaticCaching() {
+    // Save the token.
+    $this->token_storage->saveToken($this->token_data);
+
+    $acccess_token = $this->token_storage->getAccessToken();
+
+    // Load raw token data.
+    $stored_token = unserialize(base64_decode(file_get_contents(OauthTokenFileStorage::OAUTH_TOKEN_PATH)));
+
+    // Create a new access token and write it to file.
+    $stored_token['access_token'] = strtolower($this->randomMachineName(32));
+    file_unmanaged_save_data(base64_encode(serialize($stored_token)), OauthTokenFileStorage::OAUTH_TOKEN_PATH, FILE_EXISTS_REPLACE);
+
+    // Make sure the cached version is still returned.
+    static::assertSame($acccess_token, $this->token_storage->getAccessToken());
   }
 
   /**
