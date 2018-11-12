@@ -28,7 +28,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 class ResponseTemplateLoader extends \Twig_Loader_Filesystem {
 
   /**
-   * Constructs a new FilesystemLoader object .
+   * Constructs a new FilesystemLoader object.
    *
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler service.

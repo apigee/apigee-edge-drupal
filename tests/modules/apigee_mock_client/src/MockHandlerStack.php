@@ -79,7 +79,7 @@ class MockHandlerStack extends MockHandler {
    *
    * @param string|array $response_ids
    *   The name of the response template to queue (without file extension)
-   *   e.g. `get-developer` or `get_developer` @see /tests/response-templates
+   *   e.g. `get-developer` or `get_developer` @see /tests/response-templates.
    *
    * @return $this
    *
