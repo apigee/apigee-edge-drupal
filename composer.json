@@ -7,7 +7,7 @@
         "php": ">=7.1",
         "apigee/apigee-client-php": "^2.0",
         "cweagans/composer-patches": "^1.6.5",
-        "drupal/core": "^8.6",
+        "drupal/core": "^8.6.3",
         "drupal/entity": "^1.0",
         "drupal/key": "^1.7",
         "php-http/guzzle6-adapter": "^1.1.1"
@@ -34,9 +34,6 @@
             }
         },
         "patches": {
-            "drupal/core": {
-                "(For testing) Time Ago summary does not render on Manage Display for Datetime": "https://www.drupal.org/files/issues/2018-08-06/2686409-61.patch"
-            },
             "drupal/key": {
                 "Fix implementation of NoneKeyInput": "https://www.drupal.org/files/issues/2018-06-27/key-fix-implementation-of-nonekeyinput-2982124-2.patch"
             }
