@@ -37,6 +37,7 @@ use Drupal\key\Entity\Key;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
 use Drupal\key\Plugin\KeyPluginFormInterface;
+use Drupal\key\Plugin\KeyProviderSettableValueInterface;
 use GuzzleHttp\Exception\ConnectException;
 use Http\Client\Exception\NetworkException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -300,9 +301,11 @@ class AuthenticationForm extends ConfigFormBase {
     // Get the processed value from the form state.
     $processed_submitted = $form_state->get('processed_submitted');
 
-    if (!empty($key_value)) {
-      // Save the key value data to the source.
-      $this->activeKey->getKeyProvider()->setKeyValue($processed_submitted);
+    if (!empty($processed_submitted) && $this->keyIsWritable($this->activeKey)) {
+      // Set the active key's value.
+      $this->activeKey
+        ->getKeyProvider()
+        ->setKeyValue($this->activeKey, $processed_submitted);
     }
 
     parent::submitForm($form, $form_state);
@@ -526,9 +529,11 @@ class AuthenticationForm extends ConfigFormBase {
       'key_provider' => 'apigee_edge_private_file',
     ]);
     $new_key->save();
+
+    /** @var \Drupal\apigee_edge\Plugin\KeyProvider\PrivateFileKeyProvider $provider */
+    $provider = $new_key->getKeyProvider();
     // Write out an empty key.
-    $new_key->getKeyProvider()
-      ->setKeyValue($new_key, Json::encode((object) ['auth_type' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC]));
+    $provider->setKeyValue($new_key, Json::encode((object) ['auth_type' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC]));
 
     // Save the active key.
     $this
@@ -595,14 +600,10 @@ class AuthenticationForm extends ConfigFormBase {
    *   The key to test.
    *
    * @return bool
-   *   Wheter the file key is writable.
+   *   Whether the file key is writable.
    */
   protected function keyIsWritable(KeyInterface $key) {
-    // Get the key value provider.
-    $provider = $key->getKeyProvider();
-    $provider_definition = $provider->getPluginDefinition();
-    // Get whether the a key value is accepted by the provider.
-    return !empty($provider_definition['key_value']['accepted']);
+    return ($key->getKeyProvider() instanceof KeyProviderSettableValueInterface);
   }
 
   /**
