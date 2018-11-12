@@ -149,8 +149,9 @@ class ApigeeAuthKeyInput extends KeyInputBase {
     $input_values = $form_state->getValues();
     // Remove `key_value` so it doesn't get double encoded.
     unset($input_values['key_value']);
-    // Reset values to just `key_value`;
+    // Reset values to just `key_value`.
     $form_state->setValues(['key_value' => Json::encode(array_filter($input_values))]);
     return parent::processSubmittedKeyValue($form_state);
   }
+
 }

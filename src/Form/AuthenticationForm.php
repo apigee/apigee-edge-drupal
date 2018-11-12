@@ -159,11 +159,11 @@ class AuthenticationForm extends ConfigFormBase {
       $plugin_form_state = $this->createPluginFormState('key_input', $form_state);
       $plugin_form = $active_key->getKeyInput()->buildConfigurationForm([], $plugin_form_state);
 
-      $form['connection_settings'] += $plugin_form ;
+      $form['connection_settings'] += $plugin_form;
       $form_state->setValue('connection_settings', $plugin_form_state->getValues());
     }
 
-    $submittable_state =  [
+    $submittable_state = [
       [
         ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC],
         ':input[name="key_input_settings[password]"]' => ['filled' => TRUE],

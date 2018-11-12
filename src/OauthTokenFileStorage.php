@@ -20,19 +20,16 @@
 namespace Drupal\apigee_edge;
 
 use Apigee\Edge\HttpClient\Plugin\Authentication\OauthTokenStorageInterface;
-use Drupal\Core\Cache\CacheBackendInterface;
-use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Storing and returning OAuth access token data.
  */
-class OauthTokenCacheStorage implements OauthTokenStorageInterface, ContainerInjectionInterface {
+class OauthTokenFileStorage implements OauthTokenStorageInterface {
 
   /**
-   * The access token cache ID.
+   * The storage location for oauth data.
    */
-  const OAUTH_TOKEN_CID = 'apigee_edge.oauth_token';
+  const OAUTH_TOKEN_PATH = 'private://.apigee_edge/oauth.dat';
 
   /**
    * Ensures that token gets refreshed earlier than it expires.
@@ -45,64 +42,39 @@ class OauthTokenCacheStorage implements OauthTokenStorageInterface, ContainerInj
   protected $leeway = 30;
 
   /**
-   * The cache that is used to store the oauth keys.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
-   */
-  protected $cache;
-
-  /**
-   * OauthTokenCacheStorage constructor.
-   *
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
-   */
-  public function __construct(CacheBackendInterface $cache) {
-    $this->cache = $cache;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('cache.apigee_edge')
-    );
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function getAccessToken(): ?string {
-    return $this->getFromCache()['access_token'];
+    return $this->getFromStorage()['access_token'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getTokenType(): ?string {
-    return $this->getFromCache()['token_type'];
+    return $this->getFromStorage()['token_type'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getRefreshToken(): ?string {
-    return $this->getFromCache()['refresh_token'];
+    return $this->getFromStorage()['refresh_token'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getScope(): string {
-    return $this->getFromCache()['scope'];
+    return $this->getFromStorage()['scope'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getExpires(): int {
-    $cache = $this->cache->get(static::OAUTH_TOKEN_CID, TRUE);
-    return $cache->expire ?? -1;
+    $token_data = $this->getFromStorage();
+    return $token_data['expires'] ?? -1;
   }
 
   /**
@@ -121,7 +93,12 @@ class OauthTokenCacheStorage implements OauthTokenStorageInterface, ContainerInj
    * {@inheritdoc}
    */
   public function markExpired(): void {
-    $this->removeToken();
+    // Gets token data.
+    $token_data = $this->getFromStorage();
+    // Expire in the past.
+    $token_data['expires_in'] = -1;
+    // Save the token data.
+    $this->saveToken($token_data);
   }
 
   /**
@@ -129,30 +106,43 @@ class OauthTokenCacheStorage implements OauthTokenStorageInterface, ContainerInj
    */
   public function saveToken(array $data): void {
     // Calculate the cache expiration.
-    $expires = $data['expires_in'] + time();
+    $data['expires'] = $data['expires_in'] + time();
     // Remove the expires_in data.
     unset($data['expires_in']);
 
-    // Save token data.
-    $this->cache->set(static::OAUTH_TOKEN_CID, $data, $expires);
+    // Gets the file directory so we can make sure it exists.
+    $file_path = dirname(static::OAUTH_TOKEN_PATH);
+    file_prepare_directory($file_path, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+
+    // Write the obfuscated token data to a private file.
+    file_unmanaged_save_data(base64_encode(serialize($data)), static::OAUTH_TOKEN_PATH, FILE_EXISTS_REPLACE);
   }
 
   /**
    * {@inheritdoc}
    */
   public function removeToken(): void {
-    $this->cache->delete(static::OAUTH_TOKEN_CID);
+    file_unmanaged_delete(static::OAUTH_TOKEN_PATH);
   }
 
-  protected function getFromCache(): ?array {
-    // Get cache data.
-    $cached = $this->cache->get(static::OAUTH_TOKEN_CID);
-    return $cached->data ?? [
+  /**
+   * Gets the token data from storage.
+   *
+   * @return array
+   *   The token data or an empty array.
+   */
+  protected function getFromStorage(): array {
+    // Get the token data from the file store.
+    if ($raw_data = file_get_contents(static::OAUTH_TOKEN_PATH)) {
+      $data = unserialize(base64_decode($raw_data));
+    }
+    return $data ?? [
       'access_token' => NULL,
       'token_type' => NULL,
-      'expires_in' => NULL,
+      'expires' => NULL,
       'refresh_token' => NULL,
       'scope' => '',
     ];
   }
+
 }

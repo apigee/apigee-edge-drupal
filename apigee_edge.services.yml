@@ -132,5 +132,4 @@ services:
     arguments: ['@config.factory', '@entity_type.manager', '@plugin.manager.apigee_field_storage_format', '@apigee_edge.converter.field_attribute']
 
   apigee_edge.token_storage:
-    class: Drupal\apigee_edge\OauthTokenCacheStorage
-    arguments: ['@cache.apigee_edge']
+    class: Drupal\apigee_edge\OauthTokenFileStorage
