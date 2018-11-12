@@ -92,4 +92,5 @@ class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $this->assertSession()->fieldValueEquals('Organization', $active_key->getKeyType()->getOrganization($active_key));
     $this->assertSession()->fieldValueEquals('Username', $active_key->getKeyType()->getUsername($active_key));
   }
+
 }

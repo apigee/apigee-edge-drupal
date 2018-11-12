@@ -45,7 +45,8 @@ class OauthCredentials extends Credentials {
       && $auth_type === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH
     ) {
       parent::__construct($key);
-    } else {
+    }
+    else {
       throw new \InvalidArgumentException("The `{$key->id()}` key is not configured for OAuth.");
     }
   }

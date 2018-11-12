@@ -91,6 +91,7 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
     }
     return $key->getKeyValues()['password'];
   }
+
   /**
    * {@inheritdoc}
    */
@@ -111,4 +112,5 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
   public function getClientSecret(KeyInterface $key): string {
     return $key->getKeyValues()['client_secret'] ?? Oauth::DEFAULT_CLIENT_SECRET;
   }
+
 }

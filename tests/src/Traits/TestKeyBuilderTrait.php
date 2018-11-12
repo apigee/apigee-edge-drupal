@@ -23,7 +23,9 @@ use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\key\Entity\Key;
 
-
+/**
+ * A trait to build test keys.
+ */
 trait TestKeyBuilderTrait {
 
   /**
@@ -66,6 +68,9 @@ trait TestKeyBuilderTrait {
     $this->test_key->save();
   }
 
+  /**
+   * Populates key value data.
+   */
   public function populateTestKeyValues() {
     $input_settings = [
       'auth_type' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH,
@@ -89,4 +94,5 @@ trait TestKeyBuilderTrait {
     // Reset static cache.
     static::assertSame($file_content, $this->test_key->getKeyValue(TRUE));
   }
+
 }

@@ -27,7 +27,6 @@ use Drupal\Core\Render\Element;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\apigee_edge\Traits\TestKeyBuilderTrait;
 
-
 /**
  * OAuth cache storage tests.
  *

@@ -138,7 +138,7 @@ class AuthenticationForm extends ConfigFormBase {
     $form['#attached']['library'][] = 'apigee_edge/apigee_edge.admin';
 
     // Gets the active key.
-    if(!($active_key_id = $config->get('active_key')) || !($active_key = Key::load($active_key_id))) {
+    if (!($active_key_id = $config->get('active_key')) || !($active_key = Key::load($active_key_id))) {
       $active_key = $this->generateNewAuthKey();
     }
 
@@ -249,7 +249,6 @@ class AuthenticationForm extends ConfigFormBase {
       $this->moveFormStateErrors($plugin_form_state, $form_state);
       $this->moveFormStateStorage($plugin_form_state, $form_state);
 
-
       // Create a temp key for testing.
       $random = new Random();
       $test_key = Key::create([
@@ -261,7 +260,8 @@ class AuthenticationForm extends ConfigFormBase {
       // Set the key_value value on the test key.
       $test_key->getKeyProvider()
         ->setKeyValue($test_key, $processed_values['processed_submitted']);
-    } else {
+    }
+    else {
       // There will be no input form for the key since it's not writable so just
       // use the active key for testing.
       $test_key = $active_key;
@@ -272,7 +272,8 @@ class AuthenticationForm extends ConfigFormBase {
       try {
         $this->sdkConnector->testConnection($test_key);
         $this->messenger()->addStatus($this->t('Connection successful.'));
-      } catch (\Exception $exception) {
+      }
+      catch (\Exception $exception) {
         watchdog_exception('apigee_edge', $exception);
 
         $form_state->setError($form, $this->t('@suggestion Error message: %response', [
@@ -284,12 +285,13 @@ class AuthenticationForm extends ConfigFormBase {
         $form['debug']['#access'] = $form['debug']['debug_text']['#access'] = TRUE;
         $form['debug']['debug_text']['#value'] = $this->createDebugText($exception, $test_key, NULL);
       }
-    } else {
+    }
+    else {
       $form_state->setError($form, $this->t('Connection information is not available in the currently active key.'));
     }
 
     // Throw an error if the key is not writable.
-    if($form_state->isSubmitted() && !$this->keyIsWritable($active_key)) {
+    if ($form_state->isSubmitted() && !$this->keyIsWritable($active_key)) {
       $form_state->setError($form, $this->t('The active authentication key is not writable.'));
     }
   }
@@ -504,8 +506,10 @@ class AuthenticationForm extends ConfigFormBase {
    * Creates a new auth key stored in a file.
    *
    * @return \Drupal\key\KeyInterface
+   *   A new auth key.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
+   * @throws \Drupal\key\Exception\KeyValueNotSetException
    */
   protected function generateNewAuthKey() {
     // Create a new key name.
@@ -514,7 +518,7 @@ class AuthenticationForm extends ConfigFormBase {
     $new_key = NULL;
 
     // Make sure the key and the associated key file do not exist.
-    for ($i=1; (Key::load($new_key_id) || file_exists($file_path)); $i++) {
+    for ($i = 1; (Key::load($new_key_id) || file_exists($file_path)); $i++) {
       $new_key_id = "apigee_edge_connection_default_{$i}";
       $file_path = "private://{$new_key_id}_apigee_edge.json";
     }
@@ -577,10 +581,10 @@ class AuthenticationForm extends ConfigFormBase {
    *
    * @param string $type
    *   The plugin type ID.
-   * @param FormStateInterface $form_state
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state to copy values from.
    *
-   * @return FormStateInterface
+   * @return \Drupal\Core\Form\FormStateInterface
    *   A clone of the form state object with values from the plugin.
    */
   protected function createPluginFormState($type, FormStateInterface $form_state) {
@@ -610,8 +614,10 @@ class AuthenticationForm extends ConfigFormBase {
    * Get `key_value` values for further processing.
    *
    * @param \Drupal\key\KeyInterface $key
+   *   An auth key.
    *
    * @return array
+   *   An array or values processed by the plugin form.
    */
   protected function getKeyValueValues(KeyInterface $key) {
     // Setup options for `::obscureKeyValue`.
