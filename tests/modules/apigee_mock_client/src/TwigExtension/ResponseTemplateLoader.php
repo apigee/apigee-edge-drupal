@@ -40,7 +40,7 @@ class ResponseTemplateLoader extends \Twig_Loader_Filesystem {
       return $module->getPath() . '/tests/response-templates';
     }, $modules);
 
-    // Filter out core paths and those that don't contain a response-templates directory.
+    // Filter out core paths & those without a response-templates directory.
     $paths = array_filter($paths, function ($path) {
       return (strpos($path, 'core/') !== 0) && is_dir(DRUPAL_ROOT . "/{$path}");
     });

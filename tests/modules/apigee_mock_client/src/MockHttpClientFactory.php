@@ -20,11 +20,8 @@
 
 namespace Drupal\apigee_mock_client;
 
-use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Http\ClientFactory;
-use Drupal\Core\Site\Settings;
 use Drupal\Core\State\StateInterface;
-use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 
