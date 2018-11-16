@@ -3,24 +3,26 @@
 /**
  * Copyright 2018 Google Inc.
  *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * version 2 as published by the Free Software Foundation.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
- * License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
  */
 
 namespace Drupal\apigee_edge\Entity;
 
-use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
 use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
+use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
+use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Url;
@@ -79,37 +81,162 @@ use Drupal\user\UserInterface;
  *   field_ui_base_route = "apigee_edge.settings.app",
  * )
  */
-class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
-
-  use AppCredentialStorageAwareTrait;
-  use FieldableEdgeEntityBaseTrait {
-    set as private traitSet;
-    id as private traitId;
-    label as private traitLabel;
-    urlRouteParameters as private traitUrlRouteParameters;
-    baseFieldDefinitions as private traitBaseFieldDefinitions;
-  }
+class DeveloperApp extends App implements DeveloperAppInterface {
 
   /**
-   * The Drupal user ID which belongs to the developer app.
+   * The cached Drupal UID.
+   *
+   * Use getOwnerId() to return the correct value.
    *
    * @var null|int
    */
   protected $drupalUserId;
 
   /**
-   * {@inheritdoc}
+   * The decorated developer app entity from the SDK.
+   *
+   * @var \Apigee\Edge\Api\Management\Entity\DeveloperApp
    */
-  public function __construct(array $values = []) {
-    $values = array_filter($values);
-    parent::__construct($values);
-    $this->entityTypeId = 'developer_app';
+  protected $decorated;
+
+  /**
+   * DeveloperApp constructor.
+   *
+   * @param array $values
+   *   An array of values to set, keyed by property name.
+   * @param null|string $entity_type
+   *   Type of the entity. It is optional because constructor sets its default
+   *   value.
+   * @param \Apigee\Edge\Entity\EntityInterface|null $decorated
+   *   The SDK entity that this Drupal entity decorates.
+   */
+  public function __construct(array $values, ?string $entity_type = NULL, ?EdgeEntityInterface $decorated = NULL) {
+    // Little help to make it easier to initialize a new developer app object
+    // with a property configured developerId which is required in app
+    // creation.
+    // @see DeveloperAppEntityControllerProxy::create()
+    if (isset($values['drupalUserId'])) {
+      $this->setOwnerId($values['drupalUserId']);
+    }
+    /** @var \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface $decorated */
+    $entity_type = $entity_type ?? 'developer_app';
+    parent::__construct($values, $entity_type, $decorated);
+  }
+
+  /**
+   * We have to override this.
+   *
+   * This is how we could make it compatible with the SDK's
+   * entity interface that has return type hint.
+   */
+  public function id(): ?string {
+    return parent::id();
   }
 
   /**
    * {@inheritdoc}
    */
-  protected static function propertyToFieldStaticMap(): array {
+  public function getOwner() {
+    $ownerId = $this->getOwnerId();
+    return $ownerId === NULL ? NULL : User::load($ownerId);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setOwner(UserInterface $account) {
+    $this->setOwnerId($account->id());
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getOwnerId() {
+    if ($this->drupalUserId === NULL) {
+      if ($this->getDeveloperId()) {
+        $developer = Developer::load($this->getDeveloperId());
+        if ($developer) {
+          /** @var \Drupal\user\Entity\UserInterface $account */
+          $account = user_load_by_mail($developer->getEmail());
+          if ($account) {
+            $this->drupalUserId = $account->id();
+          }
+        }
+      }
+    }
+
+    return $this->drupalUserId;
+  }
+
+  /**
+   * Sets the entity owner's user ID.
+   *
+   * @param int $uid
+   *   The owner user id.
+   *
+   * @return $this
+   */
+  public function setOwnerId($uid) {
+    $this->drupalUserId = $uid;
+    $user = User::load($uid);
+    if ($user) {
+      $developer = Developer::load($user->getEmail());
+      if ($developer) {
+        $this->decorated->setDeveloperId($developer->uuid());
+      }
+      else {
+        // Sanity check, probably someone called this method with invalid data.
+        throw new InvalidArgumentException("Developer with {$user->getEmail()} email does not exist on Apigee Edge.");
+      }
+    }
+    else {
+      // Sanity check, probably someone called this method with invalid data.
+      throw new InvalidArgumentException("User with {$uid} id does not exist.");
+    }
+
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static function decoratedClass(): string {
+    return EdgeDeveloperApp::class;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function idProperty(): string {
+    return EdgeDeveloperApp::idProperty();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function uniqueIdProperties(): array {
+    return array_merge(parent::uniqueIdProperties(), ['appId']);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getAppOwner(): string {
+    return $this->getDeveloperId();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getDeveloperId(): ?string {
+    return $this->decorated->getDeveloperId();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static function propertyToBaseFieldTypeMap(): array {
     return [
       // UUIDs (developerId, appId) managed on Apigee Edge so we do not
       // want to expose them as UUID fields. Same applies for createdAt and
@@ -134,13 +261,13 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
   /**
    * {@inheritdoc}
    */
-  protected static function propertyToFieldBlackList(): array {
-    return [
+  protected static function propertyToBaseFieldBlackList(): array {
+    return array_merge(parent::propertyToBaseFieldBlackList(), [
       // We expose each attribute as a field.
       'attributes',
       // We expose credentials as a pseudo field.
       'credentials',
-    ];
+    ]);
   }
 
   /**
@@ -148,7 +275,7 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     /** @var \Drupal\Core\Field\BaseFieldDefinition[] $definitions */
-    $definitions = self::traitBaseFieldDefinitions($entity_type);
+    $definitions = parent::baseFieldDefinitions($entity_type);
     $developer_app_singular_label = \Drupal::entityTypeManager()->getDefinition('developer_app')->getSingularLabel();
 
     $definitions['name']->setRequired(TRUE);
@@ -239,43 +366,27 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
   public function set($field_name, $value, $notify = TRUE) {
     // If the callback URL value is not a valid URL then save an empty string
     // as the field value and set the callbackUrl property to the original
-    // value. It's not necessary if the value's type is array, in this case the
-    // field value is set on the developer app edit form.
+    // value. (So we can display the original (invalid URL) on the edit form.)
+    // This trick is not necessary if the value's type is array because in this
+    // case the field value is set on the developer app edit form.
     if ($field_name === 'callbackUrl' && !is_array($value)) {
       try {
         Url::fromUri($value);
       }
       catch (\Exception $exception) {
-        $developer_app = $this->traitSet($field_name, '', $notify);
+        $developer_app = parent::set($field_name, '', $notify);
         $developer_app->setCallbackUrl($value);
         return $developer_app;
       }
     }
-    return $this->traitSet($field_name, $value, $notify);
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * We use the app id for this and uuid() because app name is only unique
-   * together with developerId.
-   */
-  public function id(): ?string {
-    return $this->getAppId();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function uuid() {
-    return $this->getAppId();
+    return parent::set($field_name, $value, $notify);
   }
 
   /**
    * {@inheritdoc}
    */
   public function label() {
-    $label = $this->traitLabel();
+    $label = parent::label();
     // Return app name instead of app id if display name is missing.
     if ($label === $this->id()) {
       $label = $this->getName();
@@ -286,113 +397,25 @@ class DeveloperApp extends EdgeDeveloperApp implements DeveloperAppInterface {
   /**
    * {@inheritdoc}
    */
-  public function setCredentials(AppCredentialInterface ...$credentials): void {
-    // We do not want to store credentials in the object because
-    // object properties get saved to the persistent cache.
-    // @see \Drupal\apigee_edge\Entity\Storage\EdgeEntityStorageBase::setPersistentCache()
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * Try to load the app credential's from user's private credential storage
-   * or if those are missing load them from Apigee Edge.
-   *
-   * In Drupal this method always returns the actually saved credentials from
-   * Apigee Edge. It new returns what has been on the object!
-   *
-   * @see \Drupal\apigee_edge\KeyValueStore\AppCredentialStorageFactoryInterface
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   */
-  public function getCredentials(): array {
-    // When an app is created the app id is empty.
-    if (empty($this->appId)) {
-      return [];
-    }
-    if ($this->getAppCredentialsFromStorage($this->developerId, $this->name) === NULL) {
-      /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdkConnector */
-      $sdkConnector = \Drupal::service('apigee_edge.sdk_connector');
-      /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperAppStorageInterface $developerAppStorage */
-      $developerAppStorage = $this->entityTypeManager()->getStorage('developer_app');
-      // Use our own developer controller because it ensures that loaded app
-      // credentials also get stored in user's private credential storage.
-      /** @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerInterface $dac */
-      $dac = $developerAppStorage->getController($sdkConnector);
-      $dac->removeEntityFromCache($this);
-      $dac->load($this->appId);
-    }
-    $credentials = $this->getAppCredentialsFromStorage($this->developerId, $this->name);
-    return $credentials === NULL ? [] : $credentials;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getOwner() {
-    return $this->drupalUserId === NULL ? NULL : User::load($this->drupalUserId);
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @internal
-   */
-  public function setOwner(UserInterface $account) {
-    $this->setOwnerId($account->id());
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getOwnerId() {
-    return $this->drupalUserId;
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @internal
-   */
-  public function setOwnerId($uid) {
-    $this->drupalUserId = $uid;
-    $user = User::load($uid);
-    if ($user) {
-      $developer = Developer::load($user->getEmail());
-      if ($developer) {
-        $this->developerId = $developer->uuid();
-      }
-      else {
-        // Sanity check, probably someone called this method with invalid data.
-        throw new \InvalidArgumentException("Developer with {$user->getEmail()} email does not exist on Apigee Edge.");
-      }
-    }
-    else {
-      // Sanity check, probably someone called this method with invalid data.
-      throw new \InvalidArgumentException("User with {$uid} id does not exist.");
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   protected function urlRouteParameters($rel) {
-    $params = $this->traitUrlRouteParameters($rel);
-    if ($rel === 'add-form-for-developer') {
-      $params['user'] = $this->drupalUserId;
-      unset($params['developer_app']);
-    }
-    elseif ($rel === 'collection-by-developer') {
-      $params['user'] = $this->drupalUserId;
-      unset($params['developer_app']);
-    }
-    elseif (in_array($rel, [
+    $params = parent::urlRouteParameters($rel);
+
+    $for_developer_routes = [
       'canonical-by-developer',
       'edit-form-for-developer',
       'delete-form-for-developer',
       'analytics-for-developer',
-    ])) {
-      $params['user'] = $this->drupalUserId;
+    ];
+    if ($rel === 'add-form-for-developer') {
+      $params['user'] = $this->getOwnerId();
+      unset($params['developer_app']);
+    }
+    elseif ($rel === 'collection-by-developer') {
+      $params['user'] = $this->getOwnerId();
+      unset($params['developer_app']);
+    }
+    elseif (in_array($rel, $for_developer_routes)) {
+      $params['user'] = $this->getOwnerId();
       $params['app'] = $this->getName();
       unset($params['developer_app']);
     }
