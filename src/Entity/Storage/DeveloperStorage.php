@@ -20,72 +20,72 @@
 namespace Drupal\apigee_edge\Entity\Storage;
 
 use Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface;
-use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
-use Drupal\apigee_edge\Entity\Controller\DeveloperController;
-use Drupal\apigee_edge\SDKConnectorInterface;
+use Apigee\Edge\Exception\ApiException;
+use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\ManagementApiEdgeEntityControllerProxy;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Controller class for developers.
+ * Entity storage implementation for developers.
  */
 class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorageInterface {
 
   /**
-   * The database connection.
+   * The developer controller service.
    *
-   * @var \Drupal\Core\Database\Connection
+   * @var \Drupal\apigee_edge\Entity\Controller\DeveloperControllerInterface
    */
-  protected $database;
+  private $developerController;
 
   /**
    * Constructs an DeveloperStorage instance.
    *
-   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
-   *   The SDK connector service.
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
    *   The cache backend to be used.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   The logger to be used.
+   * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface $memory_cache
+   *   The memory cache.
+   * @param \Drupal\Component\Datetime\TimeInterface $system_time
+   *   The system time.
+   * @param \Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface $developer_controller
+   *   The developer controller service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config
    *   Configuration factory.
-   * @param \Drupal\Component\Datetime\TimeInterface $system_time
-   *   System time.
    */
-  public function __construct(SDKConnectorInterface $sdk_connector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, ConfigFactoryInterface $config, TimeInterface $system_time) {
-    parent::__construct($sdk_connector, $entity_type, $cache, $logger, $system_time);
+  public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, DeveloperControllerInterface $developer_controller, ConfigFactoryInterface $config) {
+    parent::__construct($entity_type, $cache_backend, $memory_cache, $system_time);
     $this->cacheExpiration = $config->get('apigee_edge.developer_settings')->get('cache_expiration');
+    $this->developerController = $developer_controller;
   }
 
   /**
    * {@inheritdoc}
    */
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
-    /** @var \Psr\Log\LoggerInterface $logger */
-    $logger = $container->get('logger.channel.apigee_edge');
     return new static(
-      $container->get('apigee_edge.sdk_connector'),
       $entity_type,
       $container->get('cache.apigee_edge_entity'),
-      $logger,
-      $container->get('config.factory'),
-      $container->get('datetime.time')
+      $container->get('entity.memory_cache'),
+      $container->get('datetime.time'),
+      $container->get('apigee_edge.controller.developer'),
+      $container->get('config.factory')
     );
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getController(SDKConnectorInterface $connector): EntityCrudOperationsControllerInterface {
-    return new DeveloperController($connector->getOrganization(), $connector->getClient(), $this->entityClass);
+  public function entityController(): EdgeEntityControllerInterface {
+    return new ManagementApiEdgeEntityControllerProxy($this->developerController);
   }
 
   /**
@@ -104,7 +104,8 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
     if ($ids) {
       $entitiesByDeveloperId = [];
       foreach ($entities as $entity) {
-        // It could be integer if ids were UUIDs.
+        // It could be an integer if developer UUID has been used as as an id
+        // instead of the email address.
         if (is_object($entity)) {
           /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $entity */
           $entitiesByDeveloperId[$entity->getDeveloperId()] = $entity;
@@ -120,15 +121,7 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
       }
       $entities = $requestedEntities;
     }
-    else {
-      // Remove duplicates because it could happen that one entity is
-      // referenced in this array both with its email (Drupal ID) and developer
-      // id (UUID).
-      $entities = array_filter($entities, function ($entity, $key) {
-        /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $entity */
-        return $entity->getEmail() === $key;
-      }, ARRAY_FILTER_USE_BOTH);
-    }
+
     return $entities;
   }
 
@@ -141,14 +134,20 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
     $result = parent::doSave($id, $entity);
 
     // In case of entity update, the original email must be
-    // replaced by the new email before a new API call.
+    // cleared before a new API call.
     if ($result === SAVED_UPDATED) {
-      $entity->setOriginalEmail($entity->getEmail());
+      $entity->resetOriginalEmail();
     }
-    $this->withController(function (DeveloperControllerInterface $controller) use ($entity, $developer_status) {
-      $controller->setStatus($entity->id(), $developer_status);
-      $entity->setStatus($developer_status);
-    });
+    // Change the status of the developer in Apigee Edge.
+    // TODO Only change it if it has changed.
+    try {
+      $this->developerController->setStatus($entity->id(), $developer_status);
+    }
+    catch (ApiException $exception) {
+      throw new EntityStorageException($exception->getMessage(), $exception->getCode(), $exception);
+    }
+    // Apply status change in the entity object as well.
+    $entity->setStatus($developer_status);
 
     return $result;
   }
