@@ -153,7 +153,7 @@ apigee_edge.developer_sync.run:
 apigee_edge.user.my_apps:
   path: '/user/apps'
   defaults:
-    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppListBuilderForDeveloper::myAppsPage'
+    _controller: '\Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilderForDeveloper::myAppsPage'
     _title_callback: 'apigee_edge_developer_app_entity_operation_title'
   requirements:
     _permission: 'view own developer_app'
@@ -228,8 +228,8 @@ entity.developer_app.canonical_by_developer:
 entity.developer_app.collection_by_developer:
   path: '/user/{user}/apps'
   defaults:
-    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppListBuilderForDeveloper::render'
-    _title_callback: '\Drupal\apigee_edge\Controller\DeveloperAppListBuilderForDeveloper::getPageTitle'
+    _controller: '\Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilderForDeveloper::render'
+    _title_callback: '\Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilderForDeveloper::getPageTitle'
   requirements:
      user: '\d+'
      _custom_access: '\Drupal\apigee_edge\Access\MyAppsAccessCheck::access'
