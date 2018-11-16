@@ -3,45 +3,41 @@
 /**
  * Copyright 2018 Google Inc.
  *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * version 2 as published by the Free Software Foundation.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
- * License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
  */
 
 namespace Drupal\apigee_edge\Entity\Storage;
 
-use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
-use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
+use Apigee\Edge\Entity\EntityInterface as SdkEntityInterface;
 use Apigee\Edge\Exception\ApiException;
-use Drupal\apigee_edge\Entity\Controller\DrupalEntityControllerInterface;
-use Drupal\apigee_edge\SDKConnectorInterface;
+use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
+use Drupal\apigee_edge\Entity\EdgeEntityInterface as DrupalEdgeEntityInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityStorageBase;
+use Drupal\Core\Entity\EntityStorageBase as DrupalEntityStorageBase;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Base class for Apigee Edge entity storage handlers.
- *
- * Contains implementations that were only available for content entities.
- *
- * @see \Drupal\Core\Entity\ContentEntityStorageBase
+ * Base entity storage class for Apigee Edge entities.
  */
-abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEntityStorageInterface {
+abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements EdgeEntityStorageInterface {
 
   /**
    * Initial status for saving a item to Apigee Edge.
@@ -57,13 +53,6 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
    * @var \Drupal\Core\Cache\CacheBackendInterface
    */
   protected $cacheBackend;
-
-  /**
-   * The SDK Connector service.
-   *
-   * @var \Drupal\apigee_edge\SDKConnectorInterface
-   */
-  protected $sdkConnector;
 
   /**
    * Number of seconds until an entity can be served from cache.
@@ -85,22 +74,18 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
   /**
    * Constructs an EdgeEntityStorageBase instance.
    *
-   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
-   *   The SDK connector service.
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
    *   The cache backend to be used.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   The logger to be used.
+   * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface $memory_cache
+   *   The memory cache.
    * @param \Drupal\Component\Datetime\TimeInterface $system_time
    *   The system time.
    */
-  public function __construct(SDKConnectorInterface $sdk_connector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, TimeInterface $system_time) {
-    parent::__construct($entity_type);
-    $this->sdkConnector = $sdk_connector;
-    $this->cacheBackend = $cache;
-    $this->logger = $logger;
+  public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time) {
+    parent::__construct($entity_type, $memory_cache);
+    $this->cacheBackend = $cache_backend;
     $this->systemTime = $system_time;
   }
 
@@ -108,13 +93,10 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
    * {@inheritdoc}
    */
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
-    /** @var \Psr\Log\LoggerInterface $logger */
-    $logger = $container->get('logger.channel.apigee_edge');
     return new static(
-      $container->get('apigee_edge.sdk_connector'),
       $entity_type,
       $container->get('cache.apigee_edge_entity'),
-      $logger,
+      $container->get('entity.memory_cache'),
       $container->get('datetime.time')
     );
   }
@@ -127,6 +109,101 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
     // that were loaded from $ids.
     $entities_from_cache = $this->getFromPersistentCache($ids);
     return $entities_from_cache + $this->getFromStorage($ids);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function has($id, EntityInterface $entity) {
+    return !$entity->isNew();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function doDelete($entities) {
+    $this->withController(function (EdgeEntityControllerInterface $controller) use ($entities) {
+      foreach ($entities as $entity) {
+        /** @var \Drupal\Core\Entity\EntityInterface $entity */
+        $controller->delete($entity->id());
+      }
+    });
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function doSave($id, EntityInterface $entity) {
+    $result = static::SAVED_UNKNOWN;
+    $this->withController(function (EdgeEntityControllerInterface $controller) use ($id, $entity, &$result) {
+      /** @var \Drupal\apigee_edge\Entity\EdgeEntityInterface $entity */
+      if ($entity->isNew()) {
+        $controller->create($entity->decorated());
+        $result = SAVED_NEW;
+      }
+      else {
+        $controller->update($entity->decorated());
+        $result = SAVED_UPDATED;
+      }
+    });
+    return $result;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getQueryServiceName() {
+    return 'entity.query.edge';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function loadRevision($revision_id) {
+    return NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function deleteRevision($revision_id) {
+    return NULL;
+  }
+
+  /**
+   * Wraps communication with Apigee Edge.
+   *
+   * This function converts exceptions from Apigee Edge into
+   * EntityStorageException and logs the original exceptions.
+   *
+   * @param callable $action
+   *   Communication to perform.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   *   The converted exception.
+   */
+  protected function withController(callable $action) {
+    try {
+      $action($this->entityController());
+    }
+    catch (\Exception $ex) {
+      throw new EntityStorageException($ex->getMessage(), $ex->getCode(), $ex);
+    }
+  }
+
+  /**
+   * Creates a new Drupal entity from an SDK entity.
+   *
+   * @param \Apigee\Edge\Entity\EntityInterface $sdk_entity
+   *   An SDK entity.
+   *
+   * @return \Drupal\apigee_edge\Entity\EdgeEntityInterface
+   *   The Drupal entity that decorates the SDK entity.
+   */
+  protected function createNewInstance(SdkEntityInterface $sdk_entity): DrupalEdgeEntityInterface {
+    $rc = new \ReflectionClass($this->entityClass);
+    $rm = $rc->getMethod('createFrom');
+    return $rm->invoke(NULL, $sdk_entity);
   }
 
   /**
@@ -144,19 +221,52 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
   protected function getFromStorage(array $ids = NULL) {
     $entities = [];
 
-    if ($ids === NULL || $ids) {
-      $this->withController(function ($controller) use ($ids, &$entities) {
-        /** @var \Drupal\apigee_edge\Entity\Controller\DrupalEntityControllerInterface $controller */
+    // If ids is an empty array there is nothing to do.
+    // Probably every entities could have been found in the persistent cache.
+    // Node::loadMultiple() works the same.
+    if (is_array($ids) && empty($ids)) {
+      return $entities;
+    }
+
+    $this->withController(function (EdgeEntityControllerInterface $controller) use ($ids, &$entities) {
+      // Speed up things by loading only one entity.
+      if ($ids !== NULL && count($ids) === 1) {
+        // TODO When user's email changes do not ask Apigee Edge 3 times
+        // whether a developer exists with the new email address or not.
+        $tmp = [];
         try {
-          $entities = $controller->loadMultiple($ids);
-          $this->invokeStorageLoadHook($entities);
-          $this->setPersistentCache($entities);
+          $entity = $controller->load(reset($ids));
+          $tmp[$entity->id()] = $entity;
         }
         catch (ApiException $e) {
           // Entity with id may not exists.
         }
-      });
-    }
+      }
+      else {
+        // There is nothing else we could do we have to load all entities
+        // from Apigee Edge.
+        $tmp = $controller->loadAll();
+      }
+      // Returned entities are SDK entities and not Drupal entities,
+      // what if the id is used in Drupal is different than what
+      // SDK uses? (ex.: developer)
+      foreach ($tmp as $id => $entity) {
+        $drupal_entity = $this->createNewInstance($entity);
+        if ($ids === NULL) {
+          $entities[$drupal_entity->id()] = $drupal_entity;
+        }
+        elseif ($referenced_ids = array_intersect($drupal_entity->uniqueIds(), $ids)) {
+          if (count($referenced_ids) > 1) {
+            // Sanity check, why would someone try to load the same entity
+            // by using more than one of its unique id.
+            throw new EntityStorageException(sprintf('The same entity should be referenced only with one id, got %s.', implode($referenced_ids)));
+          }
+          $entities[reset($referenced_ids)] = $drupal_entity;
+        }
+      }
+      $this->invokeStorageLoadHook($entities);
+      $this->setPersistentCache($entities);
+    });
 
     return $entities;
   }
@@ -164,7 +274,10 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
   /**
    * Invokes hook_entity_storage_load().
    *
-   * @param \Drupal\Core\Entity\ContentEntityInterface[] $entities
+   * TODO Should we trigger "edge" entity storage load hooks instead?
+   * Hooks may thing they get a content entity when they does not.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface[] $entities
    *   List of entities, keyed on the entity ID.
    */
   protected function invokeStorageLoadHook(array &$entities) {
@@ -183,108 +296,13 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
   }
 
   /**
-   * {@inheritdoc}
-   */
-  protected function has($id, EntityInterface $entity) {
-    return !$entity->isNew();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function doDelete($entities) {
-    $this->withController(function (EntityCrudOperationsControllerInterface $controller) use ($entities) {
-      foreach ($entities as $entity) {
-        /** @var \Drupal\Core\Entity\EntityInterface $entity */
-        $controller->delete($entity->id());
-      }
-    });
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
-   */
-  protected function doSave($id, EntityInterface $entity) {
-    $result = static::SAVED_UNKNOWN;
-    /** @var \Drupal\Core\Entity\EntityInterface $entity */
-    $this->withController(function (DrupalEntityControllerInterface $controller) use ($id, $entity, &$result) {
-      // Convert Drupal entity back to an SDK entity and with that:
-      // - prevent sending additional Drupal-only properties to Apigee Edge
-      // - prevent serialization/normalization errors
-      //   (CircularReferenceException) caused by TypedData objects on Drupal
-      //   entities.
-      $sdkEntity = $controller->convertToSdkEntity($entity);
-      if ($entity->isNew()) {
-        $controller->create($sdkEntity);
-        $this->applyChanges($sdkEntity, $entity);
-        $result = SAVED_NEW;
-      }
-      else {
-        $controller->update($sdkEntity);
-        $this->applyChanges($sdkEntity, $entity);
-        $result = SAVED_UPDATED;
-      }
-    });
-    return $result;
-  }
-
-  /**
-   * Copies all properties to $destination from $source.
-   *
-   * @param \Apigee\Edge\Entity\EntityInterface $source
-   *   The source SDK entity object.
-   * @param \Drupal\Core\Entity\EntityInterface $destination
-   *   The destination Drupal entity object.
-   *
-   * @throws \ReflectionException
-   */
-  protected function applyChanges(EdgeEntityInterface $source, EntityInterface $destination) {
-    $roDst = new \ReflectionObject($destination);
-    $roSrc = new \ReflectionObject($source);
-    foreach ($roDst->getProperties() as $property) {
-      $setter = 'set' . ucfirst($property->getName());
-      if ($roDst->hasMethod($setter)) {
-        $rm = new \ReflectionMethod($destination, $setter);
-        $value = NULL;
-        $getter = 'get' . ucfirst($property->getName());
-        $isser = 'is' . ucfirst($property->getName());
-        if ($roSrc->hasMethod($getter)) {
-          $value = $source->{$getter}();
-        }
-        elseif ($roSrc->hasMethod($isser)) {
-          $value = $source->{$isser}();
-        }
-
-        // Ignore problematic null values.
-        if ($value !== NULL) {
-          if (is_array($value)) {
-            if (empty($value)) {
-              // Clear the value of the property.
-              // @see \Apigee\Edge\Structure\BaseObject::__construct()
-              $rm->invoke($destination);
-            }
-            else {
-              $rm->invoke($destination, ...$value);
-            }
-          }
-          else {
-            $rm->invoke($destination, $value);
-          }
-        }
-      }
-    }
-  }
-
-  /**
    * Gets entities from the persistent cache backend.
    *
    * @param array|null &$ids
    *   If not empty, return entities that match these IDs. IDs that were found
    *   will be removed from the list.
    *
-   * @return \Drupal\Core\Entity\ContentEntityInterface[]
+   * @return \Drupal\Core\Entity\EntityInterface[]
    *   Array of entities from the persistent cache.
    */
   protected function getFromPersistentCache(array &$ids = NULL) {
@@ -394,52 +412,9 @@ abstract class EdgeEntityStorageBase extends EntityStorageBase implements EdgeEn
     }
     else {
       $this->memoryCache->invalidateTags([$this->memoryCacheTag]);
-      $this->entities = [];
       if ($this->entityType->isPersistentlyCacheable()) {
         Cache::invalidateTags([$this->entityTypeId . ':values']);
       }
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getQueryServiceName() {
-    return 'entity.query.edge';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function loadRevision($revision_id) {
-    return NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function deleteRevision($revision_id) {
-    return NULL;
-  }
-
-  /**
-   * Wraps communication with Apigee Edge.
-   *
-   * This function converts exceptions from Apigee Edge into
-   * EntityStorageException and logs the original exceptions.
-   *
-   * @param callable $action
-   *   Communication to perform.
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
-   *   The converted exception.
-   */
-  protected function withController(callable $action) {
-    try {
-      $action($this->getController($this->sdkConnector));
-    }
-    catch (\Exception $ex) {
-      throw new EntityStorageException($ex->getMessage(), $ex->getCode(), $ex);
     }
   }
 
