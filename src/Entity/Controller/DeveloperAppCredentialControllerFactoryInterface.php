@@ -20,22 +20,23 @@
 
 namespace Drupal\apigee_edge\Entity\Controller;
 
-use Apigee\Edge\Api\Management\Controller\AppCredentialController as EdgeAppCredentialController;
-use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController as EdgeDeveloperAppCredentialController;
-
 /**
- * Definition of the developer app credential controller service.
- *
- * This integrates the Management API's Developer app credential controller
- * from the SDK's with Drupal.
+ * Base definition of the developer app credential factory service.
  */
-final class DeveloperAppCredentialController extends AppCredentialControllerBase implements DeveloperAppCredentialControllerInterface {
+interface DeveloperAppCredentialControllerFactoryInterface {
 
   /**
-   * {@inheritdoc}
+   * Returns a preconfigured controller for the owner's app.
+   *
+   * @param string $owner
+   *   Email address or id (uuid) of a developer.
+   * @param string $appName
+   *   Name of an app. (Not an app id, because app credentials endpoints does
+   *   not allow to use them.)
+   *
+   * @return \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerInterface
+   *   The developer app credentials controller.
    */
-  protected function decorated(): EdgeAppCredentialController {
-    return new EdgeDeveloperAppCredentialController($this->connector->getOrganization(), $this->owner, $this->appName, $this->connector->getClient());
-  }
+  public function developerAppCredentialController(string $owner, string $appName): DeveloperAppCredentialControllerInterface;
 
 }
