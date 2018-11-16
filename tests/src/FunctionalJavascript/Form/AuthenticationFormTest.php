@@ -86,11 +86,53 @@ class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
   /**
    * Tests Apigee Edge key types, key providers and authentication form.
    */
-  public function testAuthentication() {
+  public function testAuthenticationForm() {
     $active_key = Key::load($this->config(AuthenticationForm::CONFIG_NAME)->get('active_key'));
     $this->drupalGet(Url::fromRoute('apigee_edge.settings'));
     $this->assertSession()->fieldValueEquals('Organization', $active_key->getKeyType()->getOrganization($active_key));
     $this->assertSession()->fieldValueEquals('Username', $active_key->getKeyType()->getUsername($active_key));
+
+    // Tests the default settings.
+    $this->assertSession()->fieldValueEquals('Authentication type', 'basic');
+
+    // Test states API.
+    static::assertFalse($this->cssSelect('#edit-key-input-settings-authorization-server')[0]->isVisible());
+    static::assertFalse($this->cssSelect('#edit-key-input-settings-client-id')[0]->isVisible());
+    static::assertFalse($this->cssSelect('#edit-key-input-settings-client-secret')[0]->isVisible());
+
+    // Switch to oauth.
+    $this->cssSelect('#edit-key-input-settings-auth-type')[0]->setValue('oauth');
+
+    static::assertTrue($this->cssSelect('#edit-key-input-settings-authorization-server')[0]->isVisible());
+    static::assertTrue($this->cssSelect('#edit-key-input-settings-client-id')[0]->isVisible());
+    static::assertTrue($this->cssSelect('#edit-key-input-settings-client-secret')[0]->isVisible());
+
+    // Test the form is disabled without a password.
+    static::assertTrue($this->cssSelect('#edit-test-connection-submit')[0]->hasAttribute('disabled'));
+    static::assertTrue($this->cssSelect('#edit-submit')[0]->hasAttribute('disabled'));
+
+    // Set the password.
+    $this->cssSelect('#edit-key-input-settings-password')[0]->setValue($active_key->getKeyType()->getPassword($active_key));
+
+    // Make sure the form is now enabled.
+    static::assertFalse($this->cssSelect('#edit-test-connection-submit')[0]->hasAttribute('disabled'));
+    static::assertFalse($this->cssSelect('#edit-submit')[0]->hasAttribute('disabled'));
+
+    // Switch back to basic auth.
+    $this->cssSelect('#edit-key-input-settings-auth-type')[0]->setValue('basic');
+    // Make sure the form is still enabled.
+    static::assertFalse($this->cssSelect('#edit-test-connection-submit')[0]->hasAttribute('disabled'));
+    static::assertFalse($this->cssSelect('#edit-submit')[0]->hasAttribute('disabled'));
+
+    // Test for a connection.
+    $this->getSession()->getPage()->pressButton('Send request');
+    $this->assertSession()->waitForElementVisible('css', '.ajax-progress.ajax-progress-throbber');
+    $this->assertSession()->elementTextContains('css', '.ajax-progress.ajax-progress-throbber', 'Waiting for response...');
+
+    // Wait for the test to complete.
+    $this->assertSession()->assertWaitOnAjaxRequest(50000);
+    $this->assertSession()->elementTextContains('css', '.messages.messages--status', 'Connection successful.');
+
   }
 
 }
