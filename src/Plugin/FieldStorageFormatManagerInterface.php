@@ -34,9 +34,9 @@ interface FieldStorageFormatManagerInterface extends PluginManagerInterface, Cac
    * @param string $field_type
    *   Field type.
    *
-   * @return \Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormatInterface|null
+   * @return \Drupal\apigee_edge\Plugin\FieldStorageFormatInterface|null
    *   Storage formatter if found. NULL if not.
    */
-  public function lookupPluginForFieldType(string $field_type): ?ApigeeFieldStorageFormatInterface;
+  public function lookupPluginForFieldType(string $field_type): ?FieldStorageFormatInterface;
 
 }

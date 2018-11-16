@@ -19,7 +19,7 @@
 
 namespace Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormat;
 
-use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormatInterface;
+use Drupal\apigee_edge\Plugin\FieldStorageFormatInterface;
 
 /**
  * CSV formatter for Apigee Edge field storage.
@@ -49,7 +49,7 @@ use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormatInterface;
  *
  * @see https://github.com/symfony/symfony/issues/27447
  */
-class CSV implements ApigeeFieldStorageFormatInterface {
+class CSV implements FieldStorageFormatInterface {
 
   /**
    * {@inheritdoc}
