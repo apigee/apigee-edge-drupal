@@ -20,15 +20,14 @@
 
 namespace Drupal\apigee_edge_apiproduct_rbac_test;
 
-use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface;
 use Drupal\apigee_edge\Entity\Storage\ApiProductStorage as OriginalApiProductStorage;
-use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\State\StateInterface;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -44,25 +43,25 @@ final class ApiProductStorage extends OriginalApiProductStorage {
   private $state;
 
   /**
-   * ApiProductStorage constructor.
+   * Constructs an APIProductStorage instance.
    *
-   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
-   *   The SDK connector service.
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
    *   The cache backend to be used.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   The logger to be used.
+   * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface $memory_cache
+   *   The memory cache.
+   * @param \Drupal\Component\Datetime\TimeInterface $system_time
+   *   The system time.
+   * @param \Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface $api_product_controller
+   *   The API product controller service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config
    *   Configuration factory.
-   * @param \Drupal\Component\Datetime\TimeInterface $system_time
-   *   System time.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state key/value store.
    */
-  public function __construct(SDKConnectorInterface $sdk_connector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, ConfigFactoryInterface $config, TimeInterface $system_time, StateInterface $state) {
-    parent::__construct($sdk_connector, $entity_type, $cache, $logger, $config, $system_time);
+  public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, ApiProductControllerInterface $api_product_controller, ConfigFactoryInterface $config, StateInterface $state) {
+    parent::__construct($entity_type, $cache_backend, $memory_cache, $system_time, $api_product_controller, $config);
     $this->state = $state;
   }
 
@@ -70,24 +69,15 @@ final class ApiProductStorage extends OriginalApiProductStorage {
    * {@inheritdoc}
    */
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
-    /** @var \Psr\Log\LoggerInterface $logger */
-    $logger = $container->get('logger.channel.apigee_edge');
     return new static(
-      $container->get('apigee_edge.sdk_connector'),
       $entity_type,
       $container->get('cache.apigee_edge_entity'),
-      $logger,
-      $container->get('config.factory'),
+      $container->get('entity.memory_cache'),
       $container->get('datetime.time'),
+      $container->get('apigee_edge.controller.api_product'),
+      $container->get('config.factory'),
       $container->get('state')
     );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getController(SDKConnectorInterface $connector): EntityCrudOperationsControllerInterface {
-    return new ApiProductController($connector->getOrganization(), $connector->getClient(), $this->entityClass, $this->state);
   }
 
 }

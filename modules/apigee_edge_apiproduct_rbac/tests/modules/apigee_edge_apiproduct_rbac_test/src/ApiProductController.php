@@ -20,16 +20,14 @@
 
 namespace Drupal\apigee_edge_apiproduct_rbac_test;
 
-use Apigee\Edge\Api\Management\Serializer\AttributesPropertyAwareEntitySerializer;
-use Apigee\Edge\ClientInterface;
+use Apigee\Edge\Api\Management\Serializer\ApiProductSerializer;
 use Apigee\Edge\Entity\EntityInterface;
 use Apigee\Edge\Exception\ApiException;
-use Apigee\Edge\Serializer\EntitySerializerInterface;
 use Apigee\Edge\Structure\AttributesProperty;
 use Apigee\Edge\Structure\PagerInterface;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\ApiProductInterface;
-use Drupal\apigee_edge\Entity\Controller\ApiProductController as OriginalApiProductController;
+use Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface;
 use Drupal\Core\State\StateInterface;
 
 /**
@@ -38,11 +36,20 @@ use Drupal\Core\State\StateInterface;
  * This speeds up testing because attributes gets saved to Drupal's database
  * rather than Apigee Edge.
  */
-final class ApiProductController extends OriginalApiProductController {
+final class ApiProductController implements ApiProductControllerInterface {
 
   private const STATE_API_PRODUCT_KEY_PREFIX = 'api_product_';
+
   private const STATE_API_PRODUCT_ATTR_KEY_PREFIX = 'api_product_attr_';
+
   private const STATE_API_PRODUCT_LIST_KEY = 'api_products';
+
+  /**
+   * The decorated service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface
+   */
+  private $innerService;
 
   /**
    * The state key/value store.
@@ -52,32 +59,24 @@ final class ApiProductController extends OriginalApiProductController {
   private $state;
 
   /**
-   * Attribute serializer.
+   * The entity serializer.
    *
-   * @var \Apigee\Edge\Api\Management\Serializer\AttributesPropertyAwareEntitySerializer
+   * @var \Apigee\Edge\Serializer\EntitySerializerInterface
    */
-  private $attributesSerializer;
+  private $entitySerializer;
 
   /**
    * ApiProductController constructor.
    *
-   * @param string $organization
-   *   The organization name.
-   * @param \Apigee\Edge\ClientInterface $client
-   *   The API client.
-   * @param string $entity_class
-   *   The FQCN of the entity class that is used in Drupal.
+   * @param \Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface $inner_service
+   *   The decorated API product controller service.
    * @param \Drupal\Core\State\StateInterface $state
-   *   The state key/value store.
-   * @param \Apigee\Edge\Serializer\EntitySerializerInterface|null $entity_serializer
-   *   The entitu serializer.
-   *
-   * @throws \ReflectionException
+   *   The States API.
    */
-  public function __construct(string $organization, ClientInterface $client, string $entity_class, StateInterface $state, ?EntitySerializerInterface $entity_serializer = NULL) {
-    parent::__construct($organization, $client, $entity_class, $entity_serializer);
+  public function __construct(ApiProductControllerInterface $inner_service, StateInterface $state) {
+    $this->innerService = $inner_service;
     $this->state = $state;
-    $this->attributesSerializer = new AttributesPropertyAwareEntitySerializer();
+    $this->entitySerializer = new ApiProductSerializer();
   }
 
   /**
@@ -86,7 +85,7 @@ final class ApiProductController extends OriginalApiProductController {
   public function create(EntityInterface $entity): void {
     // We still have to create entities on Apigee Edge otherwise they can
     // not be assigned to developer apps (unless they gets mocked too).
-    parent::create($entity);
+    $this->innerService->create($entity);
     /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $entity */
     $this->state->set($this->generateApiProductStateKey($entity->id()), $this->entitySerializer->normalize($entity));
     $this->updateAttributes($entity->id(), $entity->getAttributes());
@@ -122,7 +121,7 @@ final class ApiProductController extends OriginalApiProductController {
   public function delete(string $entity_id): EntityInterface {
     // Because we crated API products on Apigee Edge in create() we also have
     // to delete them.
-    parent::delete($entity_id);
+    $this->innerService->delete($entity_id);
     $data = $this->state->get($this->generateApiProductStateKey($entity_id));
     if (NULL === $data) {
       throw new ApiException("API Product with {$entity_id} has not found in the storage.");
@@ -167,7 +166,7 @@ final class ApiProductController extends OriginalApiProductController {
    * {@inheritdoc}
    */
   public function updateAttributes(string $entity_id, AttributesProperty $attributes): AttributesProperty {
-    $this->state->set($this->generateApiProductAttributeStateKey($entity_id), $this->attributesSerializer->normalize($attributes));
+    $this->state->set($this->generateApiProductAttributeStateKey($entity_id), $this->entitySerializer->normalize($attributes));
     return $attributes;
   }
 
@@ -209,6 +208,55 @@ final class ApiProductController extends OriginalApiProductController {
       $property = $this->entitySerializer->denormalize($attributes, AttributesProperty::class);
       $entity->setAttributes($property);
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function searchByAttribute(string $attributeName, string $attributeValue): array {
+    return $this->innerService->searchByAttribute($attributeName, $attributeValue);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getAttribute(string $entityId, string $name): string {
+    return $this->innerService->getAttribute($entityId, $name);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function updateAttribute(string $entityId, string $name, string $value): string {
+    return $this->innerService->updateAttribute($entityId, $name, $value);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function deleteAttribute(string $entityId, string $name): void {
+    $this->innerService->deleteAttribute($entityId, $name);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getOrganisationName(): string {
+    $this->innerService->getOrganisationName();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function createPager(int $limit = 0, ?string $startKey = NULL): PagerInterface {
+    return $this->innerService->createPager($limit, $startKey);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEntityIds(PagerInterface $pager = NULL): array {
+    return $this->innerService->getEntityIds($pager);
   }
 
 }
