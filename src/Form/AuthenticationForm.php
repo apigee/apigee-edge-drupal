@@ -177,8 +177,6 @@ class AuthenticationForm extends ConfigFormBase {
         ':input[name="key_input_settings[password]"]' => ['filled' => TRUE],
         ':input[name="key_input_settings[organization]"]' => ['filled' => TRUE],
         ':input[name="key_input_settings[username]"]' => ['filled' => TRUE],
-        ':input[name="key_input_settings[client_id]"]' => ['filled' => TRUE],
-        ':input[name="key_input_settings[client_secret]"]' => ['filled' => TRUE],
       ],
     ];
     $form['debug'] = [
