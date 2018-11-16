@@ -19,8 +19,8 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
+use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
-use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -53,8 +53,8 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
   /**
    * DeveloperCreateDeveloperAppForm constructor.
    *
-   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
-   *   SDK connector service.
+   * @param \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory
+   *   The app credential controller factory.
    * @param \Drupal\Core\Config\ConfigFactory $config_factory
    *   Config factory.
    * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
@@ -65,10 +65,11 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
    *   Module handler service.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(SDKConnectorInterface $sdk_connector, ConfigFactory $config_factory, EntityManagerInterface $entity_manager, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler) {
-    parent::__construct($sdk_connector, $config_factory, $entity_type_manager);
-    $this->sdkConnector = $sdk_connector;
+  public function __construct(DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory, ConfigFactory $config_factory, EntityManagerInterface $entity_manager, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler) {
+    parent::__construct($app_credential_controller_factory, $config_factory, $entity_type_manager);
+    $this->appCredentialControllerFactory = $app_credential_controller_factory;
     $this->configFactory = $config_factory;
     $this->entityManager = $entity_manager;
     $this->entityTypeManager = $entity_type_manager;
@@ -81,7 +82,7 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('apigee_edge.sdk_connector'),
+      $container->get('apigee_edge.controller.developer_app_credential_factory'),
       $container->get('config.factory'),
       $container->get('entity.manager'),
       $container->get('entity_type.manager'),
