@@ -17,6 +17,41 @@ services:
     class: Drupal\apigee_edge\SDKConnector
     arguments: ['@http_client_factory', '@key.repository', '@entity_type.manager', '@config.factory', '@module_handler', '@info_parser']
 
+  apigee_edge.controller.organization:
+    class: Drupal\apigee_edge\Entity\Controller\OrganizationController
+    arguments: ['@apigee_edge.sdk_connector']
+
+  apigee_edge.controller.developer:
+    class: Drupal\apigee_edge\Entity\Controller\DeveloperController
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.controller.organization']
+
+  apigee_edge.controller.api_product:
+    class: Drupal\apigee_edge\Entity\Controller\ApiProductController
+    arguments: ['@apigee_edge.sdk_connector']
+
+  apigee_edge.controller.app:
+    class: Drupal\apigee_edge\Entity\Controller\AppController
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.controller.organization', '@apigee_edge.controller.cache.apps']
+
+  apigee_edge.controller.developer_app_controller_factory:
+    class: Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerFactory
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.controller.organization', '@apigee_edge.controller.cache.developer_app_cache_factory', '@email.validator']
+
+  apigee_edge.controller.developer_app_credential_factory:
+    class: Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactory
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.controller.cache.developer_app_cache_factory', '@event_dispatcher']
+
+  apigee_edge.controller.cache.apps:
+    class: Drupal\apigee_edge\Entity\Controller\Cache\AppCache
+    arguments: ['@apigee_edge.memory_cache.apps']
+
+  apigee_edge.controller.cache.developer_app_cache_factory:
+    class: Drupal\apigee_edge\Entity\Controller\Cache\DeveloperAppCacheFactory
+    arguments: ['@email.validator', '@apigee_edge.memory_cache.apps']
+
+  apigee_edge.memory_cache.apps:
+    class: Drupal\Core\Cache\MemoryCache\MemoryCache
+
   apigee_edge.job_executor:
     class: Drupal\apigee_edge\JobExecutor
     arguments: ['@database', '@datetime.time', '@queue']
@@ -83,7 +118,7 @@ services:
 
   apigee_edge.converter.field_attribute:
     class: Drupal\apigee_edge\FieldAttributeConverter
-    arguments: ['@config.factory']
+    arguments: ['@entity_field.manager', '@plugin.manager.apigee_field_storage_format', '@config.factory']
 
   apigee_edge.converter.user_developer:
     class: Drupal\apigee_edge\UserDeveloperConverter
