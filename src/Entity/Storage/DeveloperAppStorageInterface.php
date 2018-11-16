@@ -22,7 +22,7 @@ namespace Drupal\apigee_edge\Entity\Storage;
 /**
  * Defines an interface for developer app entity storage classes.
  */
-interface DeveloperAppStorageInterface extends FieldableEdgeEntityStorageInterface {
+interface DeveloperAppStorageInterface extends AttributesAwareFieldableEdgeEntityStorageInterface {
 
   /**
    * Loads developer apps by developer.

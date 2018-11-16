@@ -3,142 +3,144 @@
 /**
  * Copyright 2018 Google Inc.
  *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * version 2 as published by the Free Software Foundation.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
- * License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
  */
 
 namespace Drupal\apigee_edge\Entity\Storage;
 
-use Apigee\Edge\Controller\EntityCrudOperationsControllerInterface;
-use Drupal\apigee_edge\Entity\AppCredentialStorageAwareTrait;
-use Drupal\apigee_edge\Entity\Controller\DeveloperAppController;
-use Drupal\apigee_edge\SDKConnectorInterface;
+use Drupal\apigee_edge\Entity\Controller\AppControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface;
+use Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerFactoryInterface;
+use Drupal\apigee_edge\Entity\Controller\DeveloperAppEdgeEntityControllerProxy;
+use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
+use Drupal\apigee_edge\Entity\FieldableEdgeEntityInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Entity\FieldableEntityInterface;
 use Egulias\EmailValidator\EmailValidatorInterface;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Controller class for developer apps.
+ * Entity storage class for Developer app entities.
  */
-class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements DeveloperAppStorageInterface {
-
-  use AppCredentialStorageAwareTrait;
+class DeveloperAppStorage extends AttributesAwareFieldableEdgeEntityStorageBase implements DeveloperAppStorageInterface {
 
   /**
-   * The entity type manager.
+   * The app entity controller for unified CRUDL operations.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   * @var \Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface
    */
-  protected $entityTypeManager;
+  private $appEntityController;
 
   /**
-   * The database connection.
+   * The developer app controller service.
    *
-   * @var \Drupal\Core\Database\Connection
+   * @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerFactoryInterface
    */
-  protected $database;
+  private $developerAppControllerFactory;
 
   /**
-   * The email validator.
+   * The app controller service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\AppControllerInterface
+   */
+  private $appController;
+
+  /**
+   * The email validator service.
    *
    * @var \Egulias\EmailValidator\EmailValidatorInterface
    */
   private $emailValidator;
 
   /**
-   * Constructs an DeveloperAppStorage instance.
+   * The app cache service.
    *
-   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
-   *   The SDK connector service.
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface
+   */
+  private $appCache;
+
+  /**
+   * DeveloperAppStorage constructor.
+   *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
    *   The cache backend to be used.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   The logger to be used.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
+   * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface $memory_cache
+   *   The memory cache.
+   * @param \Drupal\Component\Datetime\TimeInterface $system_time
+   *   The system time.
+   * @param \Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerFactoryInterface $developer_app_controller_factory
+   *   The developer app controller factory service.
+   * @param \Drupal\apigee_edge\Entity\Controller\AppControllerInterface $app_controller
+   *   The app controller service.
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface $app_cache
+   *   The app cache.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config
    *   Configuration factory.
-   * @param \Drupal\Component\Datetime\TimeInterface $system_time
-   *   System time.
    * @param \Egulias\EmailValidator\EmailValidatorInterface $email_validator
-   *   Email validator.
+   *   The email validator service.
    */
-  public function __construct(SDKConnectorInterface $sdk_connector, EntityTypeInterface $entity_type, CacheBackendInterface $cache, LoggerInterface $logger, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config, TimeInterface $system_time, EmailValidatorInterface $email_validator) {
-    parent::__construct($sdk_connector, $entity_type, $cache, $logger, $system_time);
-    $this->entityTypeManager = $entity_type_manager;
-    $this->cacheExpiration = $config->get('apigee_edge.common_app_settings')->get('cache_expiration');
+  public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, DeveloperAppControllerFactoryInterface $developer_app_controller_factory, AppControllerInterface $app_controller, AppCacheInterface $app_cache, ConfigFactoryInterface $config, EmailValidatorInterface $email_validator) {
+    parent::__construct($entity_type, $cache_backend, $memory_cache, $system_time);
+    $this->developerAppControllerFactory = $developer_app_controller_factory;
+    $this->appController = $app_controller;
+    $this->appEntityController = new DeveloperAppEdgeEntityControllerProxy($developer_app_controller_factory, $app_controller);
+    $this->cacheExpiration = $config->get('apigee_edge.developer_app_settings')->get('cache_expiration');
     $this->emailValidator = $email_validator;
+    $this->appCache = $app_cache;
   }
 
   /**
    * {@inheritdoc}
    */
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
-    /** @var \Psr\Log\LoggerInterface $logger */
-    $logger = $container->get('logger.channel.apigee_edge');
     return new static(
-      $container->get('apigee_edge.sdk_connector'),
       $entity_type,
       $container->get('cache.apigee_edge_entity'),
-      $logger,
-      $container->get('entity_type.manager'),
-      $container->get('config.factory'),
+      $container->get('entity.memory_cache'),
       $container->get('datetime.time'),
+      $container->get('apigee_edge.controller.developer_app_controller_factory'),
+      $container->get('apigee_edge.controller.app'),
+      $container->get('apigee_edge.controller.cache.apps'),
+      $container->get('config.factory'),
       $container->get('email.validator')
     );
-  }
-
-  /**
-   * Gets a DeveloperAppController instance.
-   *
-   * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
-   *   The SDK Connector service.
-   *
-   * @return \Apigee\Edge\Controller\EntityCrudOperationsControllerInterface
-   *   The DeveloperAppController instance.
-   *
-   * @method listByDeveloper
-   */
-  public function getController(SDKConnectorInterface $connector): EntityCrudOperationsControllerInterface {
-    return new DeveloperAppController($connector->getOrganization(), $connector->getClient(), $this->entityClass);
   }
 
   /**
    * {@inheritdoc}
    */
   public function loadUnchanged($id) {
-    /** @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerInterface $controller */
-    // Clear developer app controller's static cache.
-    $controller = $this->getController($this->sdkConnector);
-    $entity = $this->load($id);
-    $controller->removeEntityFromCache($entity);
+    /** @var \Apigee\Edge\Api\Management\Entity\AppInterface $entity */
+    $entity = $this->entityController()->load($id);
+    // TODO Expose this on the interface. This is the second time that it is
+    // needed.
+    $this->appCache->removeAppFromCache($entity);
     return parent::loadUnchanged($id);
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function initFieldValues(FieldableEntityInterface $entity, array $values = [], array $field_names = []) {
+  protected function initFieldValues(FieldableEdgeEntityInterface $entity, array $values = [], array $field_names = []) {
     // Initialize display name and description field's value from the display
     // name attribute if needed.
     // @see \Apigee\Edge\Api\Management\Entity\App::getDisplayName()
@@ -155,9 +157,17 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
   /**
    * {@inheritdoc}
    */
+  public function entityController(): EdgeEntityControllerInterface {
+    return $this->appEntityController;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function loadByDeveloper(string $developer_id): array {
     $query = $this->getQuery();
-    // We have to figure out whether this is an email or a UUID.
+    // We have to figure out whether this is an email or a UUID to call the
+    // best API endpoint that is possible.
     if ($this->emailValidator->isValid($developer_id)) {
       $query->condition('email', $developer_id);
     }
@@ -166,25 +176,6 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
     }
     $ids = $query->execute();
     return $this->loadMultiple(array_values($ids));
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\TempStore\TempStoreException
-   */
-  protected function doDelete($entities) {
-    parent::doDelete($entities);
-    // We remove app credential from user's private app credential storage
-    // here instead of in resetCache(), because there we would only have
-    // appId-s but what we need is appName + developerId for this.
-    // Also, most cache invalidation happens in the controller level, but
-    // we do this here for the above discussed reasons.
-    // @see \Drupal\apigee_edge\Entity\Controller\DeveloperAppController
-    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
-    foreach ($entities as $entity) {
-      $this->clearAppCredentialsFromStorage($entity->getDeveloperId(), $entity->getName());
-    }
   }
 
   /**
@@ -292,6 +283,14 @@ class DeveloperAppStorage extends FieldableEdgeEntityStorageBase implements Deve
         Cache::invalidateTags([$this->entityTypeId . ':app_names']);
       }
     }
+    // We do not reset the app cache because app controllers handles the
+    // cache invalidation.
+    // We tried to call it once here, but then we had some trouble with app
+    // creation. After an app has been created in doSave() doPostSave() called
+    // this method. Because we cleared to controller's app cache the
+    // DeveloperAppCreateForm::save() could not load the credential form the
+    // app. (Of course, we do not want to re-load the app just because of this.)
+    // @see \Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm::save()
   }
 
   /**
