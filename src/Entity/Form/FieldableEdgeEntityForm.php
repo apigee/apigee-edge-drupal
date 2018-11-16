@@ -23,13 +23,16 @@ use Drupal\Core\Entity\Display\EntityFormDisplayInterface;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Entity form variant for fieldable Edge entity types.
+ * Base entity form for fieldable Apigee Edge entity types.
+ *
+ * Based on ContentEntityForm.
+ *
+ * @see \Drupal\Core\Entity\ContentEntityForm
  */
-class FieldableEdgeEntityForm extends EntityForm implements EdgeEntityFormInterface {
+abstract class FieldableEdgeEntityForm extends EntityForm implements FieldableEdgeEntityFormInterface {
 
   /**
    * The fieldable entity being used by this form.
@@ -60,34 +63,33 @@ class FieldableEdgeEntityForm extends EntityForm implements EdgeEntityFormInterf
 
   /**
    * {@inheritdoc}
+   *
+   * @see \Drupal\Core\Entity\ContentEntityForm::buildEntity()
+   */
+  public function buildEntity(array $form, FormStateInterface $form_state) {
+    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
+    $entity = parent::buildEntity($form, $form_state);
+
+    // Mark the entity as requiring validation.
+    $entity->setValidationRequired(!$form_state->getTemporaryValue('entity_validated'));
+
+    return $entity;
+  }
+
+  /**
+   * {@inheritdoc}
    */
   protected function copyFormValuesToEntity(EntityInterface $entity, array $form, FormStateInterface $form_state) {
     /** @var \Drupal\apigee_edge\Entity\FieldableEdgeEntityInterface $entity */
-
-    // Widgets are unable to set values of fields properly this is the
-    // reason why the implementation of this method is different from
-    // \Drupal\Core\Entity\ContentEntityForm::copyFormValuesToEntity().
-    // In our case we also want to reflect field value changes on original
-    // entity properties (inherited from the wrapped SDK entity). For this the
-    // a possible solution was to save field values to the related entity
-    // properties in
-    // \Drupal\apigee_edge\Entity\FieldableEdgeEntityBaseTrait::onChange()
-    // (which is automatically called by
-    // \Drupal\Core\TypedData\TypedData::setValue())
-    // but in onChange() we could not access to the _new_ value of the field
-    // only the previous (unmodified) one.
+    // First, extract values from widgets.
     $extracted = $this->getFormDisplay($form_state)->extractFormValues($entity, $form, $form_state);
 
+    // Then extract the values of fields that are not rendered through widgets,
+    // by simply copying from top-level form values. This leaves the fields
+    // that are not being edited within this form untouched.
     foreach ($form_state->getValues() as $name => $values) {
-      if ($entity->hasField($name)) {
-        if (isset($extracted[$name])) {
-          $entity->set($name, array_map(function (FieldItemInterface $item): array {
-            return $item->getValue();
-          }, iterator_to_array($entity->get($name))) ?: []);
-        }
-        else {
-          $entity->set($name, $values);
-        }
+      if ($entity->hasField($name) && !isset($extracted[$name])) {
+        $entity->set($name, $values);
       }
     }
   }
