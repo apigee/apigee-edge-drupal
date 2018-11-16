@@ -20,11 +20,20 @@
 
 namespace Drupal\apigee_edge\Entity\Controller;
 
-use Apigee\Edge\Api\Management\Controller\DeveloperAppControllerInterface as EdgeDeveloperAppControllerInterface;
-
 /**
- * Base definition of the developer app controller service in Drupal.
+ * Interface DeveloperAppControllerFactoryInterface.
  */
-interface DeveloperAppControllerInterface extends EdgeDeveloperAppControllerInterface {
+interface DeveloperAppControllerFactoryInterface {
+
+  /**
+   * Returns a preconfigured developer app controller.
+   *
+   * @param string $owner
+   *   Email address or id (uuid) of a developer.
+   *
+   * @return \Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerInterface
+   *   Developer app controller
+   */
+  public function developerAppController(string $owner): DeveloperAppControllerInterface;
 
 }
