@@ -106,8 +106,10 @@ class DeveloperAppQuery extends Query {
 
     // Load only one developer's apps instead of all apps.
     if ($developer_id !== NULL) {
-      /** @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppController $controller */
-      $controller = $storage->getController(\Drupal::service('apigee_edge.sdk_connector'));
+      /** @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerFactoryInterface $dev_app_controller_factory */
+      $dev_app_controller_factory = \Drupal::service('apigee_edge.controller.developer_app_controller_factory');
+      /** @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerInterface $dev_app_controller */
+      $dev_app_controller = $dev_app_controller_factory->developerAppController($developer_id);
       // Load only one app instead of all apps of a developer.
       if ($app_name !== NULL) {
         // Try to retrieve the appId from the cache, because if load the
@@ -132,7 +134,7 @@ class DeveloperAppQuery extends Query {
 
         try {
           /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
-          $entity = $controller->loadByAppName($developer_id, $app_name);
+          $entity = $dev_app_controller->load($app_name);
           // We have to use the storage because it ensures that next time the
           // app can be found in the cache (and various other things as well).
           return [$storage->load($entity->getAppId())];
@@ -149,7 +151,7 @@ class DeveloperAppQuery extends Query {
         // be smaller compared with retrieving all app entity data - maybe
         // unnecessarily if we already have them in cache - and it should be
         // produced and retrieved more quickly.
-        $appNames = $controller->getEntityIdsByDeveloper($developer_id);
+        $appNames = $dev_app_controller->getEntityIds();
         $cachedAppIds = array_map(function ($appName) use ($storage, $developer_id) {
           return $storage->getCachedAppId($developer_id, $appName);
         }, $appNames);
@@ -176,7 +178,7 @@ class DeveloperAppQuery extends Query {
         $ids = array_map(function ($entity) {
           /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
           return $entity->getAppId();
-        }, $controller->getEntitiesByDeveloper($developer_id));
+        }, $dev_app_controller->getEntities());
         if ($ids) {
           return $storage->loadMultiple($ids);
         }

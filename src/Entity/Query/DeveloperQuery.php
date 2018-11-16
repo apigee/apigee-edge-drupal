@@ -25,13 +25,4 @@ namespace Drupal\apigee_edge\Entity\Query;
  */
 class DeveloperQuery extends Query {
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntityIdProperties(): array {
-    $ids = parent::getEntityIdProperties();
-    $ids[] = 'email';
-    return $ids;
-  }
-
 }
