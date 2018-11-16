@@ -20,26 +20,27 @@
 
 namespace Drupal\apigee_edge\Entity;
 
-use Apigee\Edge\Structure\AttributesProperty;
-use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Entity\FieldableEntityInterface as DrupalFieldableEntityInterface;
 
 /**
- * Interface for fieldable Edge entities.
+ * Base interface for those Apigee Edge entities that are fieldable.
+ *
+ * Fieldable means that they have field UI support and they expose their
+ * properties as base fields.
+ *
+ * According to DrupalFieldableEntityInterface's description \IteratorAggregate
+ * should be implemented.
  */
-interface FieldableEdgeEntityInterface extends \IteratorAggregate, FieldableEntityInterface, EdgeEntityInterface {
+interface FieldableEdgeEntityInterface extends EdgeEntityInterface, \IteratorAggregate, DrupalFieldableEntityInterface {
 
   /**
-   * Gets field value from the related attribute.
+   * Updates the property value on an entity by field name.
    *
    * @param string $field_name
-   *   Name of a field in Drupal.
-   * @param \Apigee\Edge\Structure\AttributesProperty $attributes_property
-   *   Attribute property that contains the attributes on an entity.
-   *
-   * @return mixed|null
-   *   Field value from related attribute. It returns NULL if field does
-   *   not have an attribute on the entity or its value is actually NULL.
+   *   Name of the field (which usually the name of the property.)
+   * @param mixed $value
+   *   Value of the field.
    */
-  public function getFieldValueFromAttribute(string $field_name, AttributesProperty $attributes_property);
+  public function setPropertyValue(string $field_name, $value): void;
 
 }
