@@ -21,6 +21,7 @@
 namespace Drupal\apigee_edge\Entity\Controller;
 
 use Apigee\Edge\Api\Management\Controller\ApiProductController as EdgeApiProductController;
+use Apigee\Edge\Api\Management\Controller\ApiProductControllerInterface as EdgeApiProductControllerInterface;
 use Apigee\Edge\Entity\EntityInterface;
 use Apigee\Edge\Structure\AttributesProperty;
 use Apigee\Edge\Structure\PagerInterface;
@@ -35,11 +36,20 @@ use Drupal\apigee_edge\SDKConnectorInterface;
 final class ApiProductController implements ApiProductControllerInterface {
 
   /**
-   * The decorated API product controller from the SDK.
+   * Local cache for the decorated API product controller from the SDK.
    *
-   * @var \Apigee\Edge\Api\Management\Controller\ApiProductController
+   * @var \Apigee\Edge\Api\Management\Controller\ApiProductController|null
+   *
+   * @see decorated()
    */
-  private $decorated;
+  private $instance;
+
+  /**
+   * The SDK connector.
+   *
+   * @var \Drupal\apigee_edge\SDKConnectorInterface
+   */
+  private $connector;
 
   /**
    * ApiProductController constructor.
@@ -48,105 +58,119 @@ final class ApiProductController implements ApiProductControllerInterface {
    *   The SDK connector service.
    */
   public function __construct(SDKConnectorInterface $connector) {
-    $this->decorated = new EdgeApiProductController($connector->getOrganization(), $connector->getClient());
+    $this->connector = $connector;
+  }
+
+  /**
+   * Returns the decorated API product controller from the SDK.
+   *
+   * @return \Apigee\Edge\Api\Management\Controller\ApiProductControllerInterface
+   *   The initialized API product controller.
+   */
+  private function decorated(): EdgeApiProductControllerInterface {
+    if ($this->instance === NULL) {
+      $this->instance = new EdgeApiProductController($this->connector->getOrganization(), $this->connector->getClient());
+    }
+
+    return $this->instance;
   }
 
   /**
    * {@inheritdoc}
    */
   public function searchByAttribute(string $attributeName, string $attributeValue): array {
-    return $this->decorated->searchByAttribute($attributeName, $attributeValue);
+    return $this->decorated()->searchByAttribute($attributeName, $attributeValue);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getAttributes(string $entityId): AttributesProperty {
-    return $this->decorated->getAttributes($entityId);
+    return $this->decorated()->getAttributes($entityId);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getAttribute(string $entityId, string $name): string {
-    return $this->decorated->getAttribute($entityId, $name);
+    return $this->decorated()->getAttribute($entityId, $name);
   }
 
   /**
    * {@inheritdoc}
    */
   public function updateAttributes(string $entityId, AttributesProperty $attributes): AttributesProperty {
-    return $this->decorated->updateAttributes($entityId, $attributes);
+    return $this->decorated()->updateAttributes($entityId, $attributes);
   }
 
   /**
    * {@inheritdoc}
    */
   public function updateAttribute(string $entityId, string $name, string $value): string {
-    return $this->decorated->updateAttribute($entityId, $name, $value);
+    return $this->decorated()->updateAttribute($entityId, $name, $value);
   }
 
   /**
    * {@inheritdoc}
    */
   public function deleteAttribute(string $entityId, string $name): void {
-    $this->decorated->deleteAttribute($entityId, $name);
+    $this->decorated()->deleteAttribute($entityId, $name);
   }
 
   /**
    * {@inheritdoc}
    */
   public function create(EntityInterface $entity): void {
-    $this->decorated->create($entity);
+    $this->decorated()->create($entity);
   }
 
   /**
    * {@inheritdoc}
    */
   public function delete(string $entityId): EntityInterface {
-    return $this->decorated->delete($entityId);
+    return $this->decorated()->delete($entityId);
   }
 
   /**
    * {@inheritdoc}
    */
   public function load(string $entityId): EntityInterface {
-    return $this->decorated->load($entityId);
+    return $this->decorated()->load($entityId);
   }
 
   /**
    * {@inheritdoc}
    */
   public function update(EntityInterface $entity): void {
-    $this->decorated->update($entity);
+    $this->decorated()->update($entity);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getOrganisationName(): string {
-    return $this->decorated->getOrganisationName();
+    return $this->decorated()->getOrganisationName();
   }
 
   /**
    * {@inheritdoc}
    */
   public function createPager(int $limit = 0, ?string $startKey = NULL): PagerInterface {
-    return $this->decorated->createPager($limit, $startKey);
+    return $this->decorated()->createPager($limit, $startKey);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getEntityIds(PagerInterface $pager = NULL): array {
-    return $this->decorated->getEntityIds($pager);
+    return $this->decorated()->getEntityIds($pager);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getEntities(PagerInterface $pager = NULL, string $key_provider = 'id'): array {
-    return $this->decorated->getEntities($pager, $key_provider);
+    return $this->decorated()->getEntities($pager, $key_provider);
   }
 
 }

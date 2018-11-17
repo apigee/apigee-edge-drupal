@@ -34,6 +34,14 @@ use Drupal\apigee_edge\SDKConnectorInterface;
 abstract class AppByOwnerController extends AppControllerBase implements AppByOwnerControllerInterface {
 
   /**
+   * Local cache for app by owner controller instances.
+   *
+   * @var \Apigee\Edge\Api\Management\Controller\AppByOwnerControllerInterface[]
+   *   Instances of app by owner controllers.
+   */
+  protected $instances = [];
+
+  /**
    * The owner of an app.
    *
    * It could be a developer's email address, uuid or a company's company name.
@@ -60,10 +68,10 @@ abstract class AppByOwnerController extends AppControllerBase implements AppByOw
   }
 
   /**
-   * Returns decorated developer- or company app controller.
+   * Returns the decorated developer- or company app controller.
    *
    * @return \Apigee\Edge\Api\Management\Controller\AppByOwnerControllerInterface
-   *   Developer- or company app controller.
+   *   The initialized developer- or company app controller.
    */
   abstract protected function decorated() : EdgeAppByOwnerControllerInterface;
 

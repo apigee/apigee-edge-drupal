@@ -21,6 +21,7 @@
 namespace Drupal\apigee_edge\Entity\Controller;
 
 use Apigee\Edge\Api\Management\Controller\DeveloperController as EdgeDeveloperController;
+use Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface as EdgeDeveloperControllerInterface;
 use Apigee\Edge\Api\Management\Entity\DeveloperInterface;
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
 use Apigee\Edge\Structure\AttributesProperty;
@@ -41,11 +42,27 @@ use Drupal\apigee_edge\SDKConnectorInterface;
 final class DeveloperController implements DeveloperControllerInterface {
 
   /**
-   * The decorated developer controller from the SDK.
+   * Local cache for the decorated developer controller from the SDK.
    *
-   * @var \Apigee\Edge\Api\Management\Controller\DeveloperController
+   * @var \Apigee\Edge\Api\Management\Controller\DeveloperController|null
+   *
+   * @see decorated()
    */
-  private $decorated;
+  private $instance;
+
+  /**
+   * The SDK connector service.
+   *
+   * @var \Drupal\apigee_edge\SDKConnectorInterface
+   */
+  private $connector;
+
+  /**
+   * The organization controller service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface
+   */
+  private $orgController;
 
   /**
    * DeveloperController constructor.
@@ -56,112 +73,126 @@ final class DeveloperController implements DeveloperControllerInterface {
    *   The organization controller service.
    */
   public function __construct(SDKConnectorInterface $connector, OrganizationControllerInterface $org_controller) {
-    $this->decorated = new EdgeDeveloperController($connector->getOrganization(), $connector->getClient(), NULL, $org_controller);
+    $this->connector = $connector;
+    $this->orgController = $org_controller;
+  }
+
+  /**
+   * Returns the decorated developer controller from the SDK.
+   *
+   * @return \Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface
+   *   The initialized developer controller.
+   */
+  private function decorated(): EdgeDeveloperControllerInterface {
+    if ($this->instance === NULL) {
+      $this->instance = new EdgeDeveloperController($this->connector->getOrganization(), $this->connector->getClient(), NULL, $this->orgController);
+    }
+    return $this->instance;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getDeveloperByApp(string $appName): DeveloperInterface {
-    return $this->decorated->getDeveloperByApp($appName);
+    return $this->decorated()->getDeveloperByApp($appName);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getAttributes(string $entityId): AttributesProperty {
-    return $this->decorated->getAttributes($entityId);
+    return $this->decorated()->getAttributes($entityId);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getAttribute(string $entityId, string $name): string {
-    return $this->decorated->getAttribute($entityId, $name);
+    return $this->decorated()->getAttribute($entityId, $name);
   }
 
   /**
    * {@inheritdoc}
    */
   public function updateAttributes(string $entityId, AttributesProperty $attributes): AttributesProperty {
-    return $this->decorated->updateAttributes($entityId, $attributes);
+    return $this->decorated()->updateAttributes($entityId, $attributes);
   }
 
   /**
    * {@inheritdoc}
    */
   public function updateAttribute(string $entityId, string $name, string $value): string {
-    return $this->decorated->updateAttribute($entityId, $name, $value);
+    return $this->decorated()->updateAttribute($entityId, $name, $value);
   }
 
   /**
    * {@inheritdoc}
    */
   public function deleteAttribute(string $entityId, string $name): void {
-    $this->decorated->deleteAttribute($entityId, $name);
+    $this->decorated()->deleteAttribute($entityId, $name);
   }
 
   /**
    * {@inheritdoc}
    */
   public function create(EdgeEntityInterface $entity): void {
-    $this->decorated->create($entity);
+    $this->decorated()->create($entity);
   }
 
   /**
    * {@inheritdoc}
    */
   public function delete(string $entityId): EdgeEntityInterface {
-    return $this->decorated->delete($entityId);
+    return $this->decorated()->delete($entityId);
   }
 
   /**
    * {@inheritdoc}
    */
   public function load(string $entityId): EdgeEntityInterface {
-    return $this->decorated->load($entityId);
+    return $this->decorated()->load($entityId);
   }
 
   /**
    * {@inheritdoc}
    */
   public function update(EdgeEntityInterface $entity): void {
-    $this->decorated->update($entity);
+    $this->decorated()->update($entity);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getOrganisationName(): string {
-    return $this->decorated->getOrganisationName();
+    return $this->decorated()->getOrganisationName();
   }
 
   /**
    * {@inheritdoc}
    */
   public function createPager(int $limit = 0, ?string $startKey = NULL): PagerInterface {
-    return $this->decorated->createPager($limit, $startKey);
+    return $this->decorated()->createPager($limit, $startKey);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getEntityIds(PagerInterface $pager = NULL): array {
-    return $this->decorated->getEntityIds($pager);
+    return $this->decorated()->getEntityIds($pager);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getEntities(PagerInterface $pager = NULL, string $key_provider = 'id'): array {
-    return $this->decorated->getEntities($pager, $key_provider);
+    return $this->decorated()->getEntities($pager, $key_provider);
   }
 
   /**
    * {@inheritdoc}
    */
   public function setStatus(string $entityId, string $status): void {
-    $this->decorated->setStatus($entityId, $status);
+    $this->decorated()->setStatus($entityId, $status);
   }
 
 }

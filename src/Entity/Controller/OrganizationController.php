@@ -21,6 +21,7 @@
 namespace Drupal\apigee_edge\Entity\Controller;
 
 use Apigee\Edge\Api\Management\Controller\OrganizationController as EdgeOrganizationController;
+use Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface as EdgeOrganizationControllerInterface;
 use Apigee\Edge\Entity\EntityInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 
@@ -50,11 +51,20 @@ final class OrganizationController implements OrganizationControllerInterface {
   private $cache = [];
 
   /**
-   * The decorated controller from the SDK.
+   * Local cache for the decorated organization controller from the SDK.
    *
-   * @var \Apigee\Edge\Api\Management\Controller\OrganizationController
+   * @var \Apigee\Edge\Api\Management\Controller\OrganizationController|null
+   *
+   * @see decorated()
    */
-  private $decorated;
+  private $instance;
+
+  /**
+   * The SDK connector service.
+   *
+   * @var \Drupal\apigee_edge\SDKConnectorInterface
+   */
+  private $connector;
 
   /**
    * OrganizationController constructor.
@@ -63,14 +73,28 @@ final class OrganizationController implements OrganizationControllerInterface {
    *   The SDK connector service.
    */
   public function __construct(SDKConnectorInterface $connector) {
-    $this->decorated = new EdgeOrganizationController($connector->getClient());
+    $this->connector = $connector;
+  }
+
+  /**
+   * Returns the decorated organization controller from the SDK.
+   *
+   * @return \Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface
+   *   The initialized organization controller.
+   */
+  private function decorated() : EdgeOrganizationControllerInterface {
+    if ($this->instance === NULL) {
+      $this->instance = new EdgeOrganizationController($this->connector->getClient());
+    }
+
+    return $this->instance;
   }
 
   /**
    * {@inheritdoc}
    */
   public function create(EntityInterface $entity): void {
-    $this->decorated->create($entity);
+    $this->decorated()->create($entity);
     $this->cache[$entity->id()] = $entity;
   }
 
@@ -78,7 +102,7 @@ final class OrganizationController implements OrganizationControllerInterface {
    * {@inheritdoc}
    */
   public function delete(string $entityId): EntityInterface {
-    $entity = $this->decorated->delete($entityId);
+    $entity = $this->decorated()->delete($entityId);
     unset($this->cache[$entityId]);
     return $entity;
   }
@@ -88,7 +112,7 @@ final class OrganizationController implements OrganizationControllerInterface {
    */
   public function load(string $entityId): EntityInterface {
     if (!isset($this->cache[$entityId])) {
-      $this->cache[$entityId] = $this->decorated->load($entityId);
+      $this->cache[$entityId] = $this->decorated()->load($entityId);
     }
     return $this->cache[$entityId];
   }
@@ -97,7 +121,7 @@ final class OrganizationController implements OrganizationControllerInterface {
    * {@inheritdoc}
    */
   public function update(EntityInterface $entity): void {
-    $this->decorated->update($entity);
+    $this->decorated()->update($entity);
     $this->cache[$entity->id()] = $entity;
   }
 
@@ -105,7 +129,7 @@ final class OrganizationController implements OrganizationControllerInterface {
    * {@inheritdoc}
    */
   public function getEntities(): array {
-    $entities = $this->decorated->getEntities();
+    $entities = $this->decorated()->getEntities();
     foreach ($entities as $id => $entity) {
       $this->cache[$id] = $entities;
     }

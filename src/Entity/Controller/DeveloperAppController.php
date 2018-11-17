@@ -67,7 +67,10 @@ final class DeveloperAppController extends AppByOwnerController implements Devel
    * {@inheritdoc}
    */
   protected function decorated(): EdgeAppByOwnerControllerInterface {
-    return new EdgeDeveloperAppController($this->connector->getOrganization(), $this->owner, $this->connector->getClient(), NULL, $this->organizationController);
+    if (!isset($this->instances[$this->owner])) {
+      $this->instances[$this->owner] = new EdgeDeveloperAppController($this->connector->getOrganization(), $this->owner, $this->connector->getClient(), NULL, $this->organizationController);
+    }
+    return $this->instances[$this->owner];
   }
 
   /**

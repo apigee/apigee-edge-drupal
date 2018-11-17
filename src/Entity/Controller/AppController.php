@@ -21,6 +21,7 @@
 namespace Drupal\apigee_edge\Entity\Controller;
 
 use Apigee\Edge\Api\Management\Controller\AppController as EdgeAppController;
+use Apigee\Edge\Api\Management\Controller\AppControllerInterface as EdgeAppControllerInterface;
 use Apigee\Edge\Api\Management\Entity\AppInterface;
 use Apigee\Edge\Structure\PagerInterface;
 use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface;
@@ -38,11 +39,13 @@ use Drupal\apigee_edge\SDKConnectorInterface;
 final class AppController extends AppControllerBase implements AppControllerInterface {
 
   /**
-   * The decorated app controller from the SDK.
+   * Local cache for the decorated app controller from the SDK.
    *
-   * @var \Apigee\Edge\Api\Management\Controller\AppController
+   * @var \Apigee\Edge\Api\Management\Controller\AppController|null
+   *
+   * @see decorated()
    */
-  private $decorated;
+  private $instance;
 
   /**
    * AppController constructor.
@@ -56,7 +59,19 @@ final class AppController extends AppControllerBase implements AppControllerInte
    */
   public function __construct(SDKConnectorInterface $connector, OrganizationControllerInterface $org_controller, AppCacheInterface $app_cache) {
     parent::__construct($connector, $org_controller, $app_cache);
-    $this->decorated = new EdgeAppController($connector->getOrganization(), $connector->getClient(), NULL, $org_controller);
+  }
+
+  /**
+   * Returns the decorated app controller from the SDK.
+   *
+   * @return \Apigee\Edge\Api\Management\Controller\AppControllerInterface
+   *   The initialized app controller.
+   */
+  private function decorated(): EdgeAppControllerInterface {
+    if ($this->instance === NULL) {
+      $this->instance = new EdgeAppController($this->connector->getOrganization(), $this->connector->getClient(), NULL, $this->organizationController);
+    }
+    return $this->instance;
   }
 
   /**
@@ -65,7 +80,7 @@ final class AppController extends AppControllerBase implements AppControllerInte
   public function loadApp(string $appId): AppInterface {
     $app = $this->appCache->getAppFromCacheByAppId($appId);
     if ($app === NULL) {
-      $app = $this->decorated->loadApp($appId);
+      $app = $this->decorated()->loadApp($appId);
       $this->appCache->saveAppsToCache([$app]);
     }
     return $app;
@@ -75,14 +90,14 @@ final class AppController extends AppControllerBase implements AppControllerInte
    * {@inheritdoc}
    */
   public function listAppIds(PagerInterface $pager = NULL): array {
-    return $this->decorated->listAppIds($pager);
+    return $this->decorated()->listAppIds($pager);
   }
 
   /**
    * {@inheritdoc}
    */
   public function listApps(bool $includeCredentials = FALSE, PagerInterface $pager = NULL): array {
-    $apps = $this->decorated->listApps($includeCredentials, $pager);
+    $apps = $this->decorated()->listApps($includeCredentials, $pager);
     // We only cache "complete" apps, we do not cache incomplete apps.
     if ($includeCredentials) {
       $this->appCache->saveAppsToCache($apps);
@@ -106,14 +121,14 @@ final class AppController extends AppControllerBase implements AppControllerInte
    * {@inheritdoc}
    */
   public function listAppIdsByStatus(string $status, PagerInterface $pager = NULL): array {
-    return $this->decorated->listAppIdsByStatus($status, $pager);
+    return $this->decorated()->listAppIdsByStatus($status, $pager);
   }
 
   /**
    * {@inheritdoc}
    */
   public function listAppsByStatus(string $status, bool $includeCredentials = TRUE, PagerInterface $pager = NULL): array {
-    $apps = $this->decorated->listAppsByStatus($status, $includeCredentials, $pager);
+    $apps = $this->decorated()->listAppsByStatus($status, $includeCredentials, $pager);
     // Nice to have, after we have added cache support for methods that return
     // app ids then we can compare the list of apps cached here
     // and the already cached app ids per owner to call allAppsLoadedForOwner()
@@ -127,28 +142,28 @@ final class AppController extends AppControllerBase implements AppControllerInte
    * {@inheritdoc}
    */
   public function listAppIdsByType(string $appType, PagerInterface $pager = NULL): array {
-    return $this->decorated->listAppIdsByType($appType, $pager);
+    return $this->decorated()->listAppIdsByType($appType, $pager);
   }
 
   /**
    * {@inheritdoc}
    */
   public function listAppIdsByFamily(string $appFamily, PagerInterface $pager = NULL): array {
-    return $this->decorated->listAppIdsByFamily($appFamily, $pager);
+    return $this->decorated()->listAppIdsByFamily($appFamily, $pager);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getOrganisationName(): string {
-    return $this->decorated->getOrganisationName();
+    return $this->decorated()->getOrganisationName();
   }
 
   /**
    * {@inheritdoc}
    */
   public function createPager(int $limit = 0, ?string $startKey = NULL): PagerInterface {
-    return $this->decorated->createPager($limit, $startKey);
+    return $this->decorated()->createPager($limit, $startKey);
   }
 
 }

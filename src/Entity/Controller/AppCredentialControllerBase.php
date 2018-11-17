@@ -45,6 +45,14 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 abstract class AppCredentialControllerBase implements AppCredentialControllerInterface {
 
   /**
+   * Local cache for app credential controller instances.
+   *
+   * @var \Apigee\Edge\Api\Management\Controller\AppCredentialControllerInterface[]
+   *   Instances of app credential controllers.
+   */
+  protected $instances = [];
+
+  /**
    * Email address or id (uuid) of a developer, or name of a company.
    *
    * @var string
@@ -125,10 +133,10 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
   }
 
   /**
-   * Returns the decorated app credential controller.
+   * Returns the decorated app credential controller from the SDK.
    *
    * @return \Apigee\Edge\Api\Management\Controller\AppCredentialController
-   *   The app credential controller.
+   *   The initialized app credential controller.
    */
   abstract protected function decorated() : EdgeAppCredentialController;
 

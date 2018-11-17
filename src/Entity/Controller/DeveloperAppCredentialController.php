@@ -35,7 +35,10 @@ final class DeveloperAppCredentialController extends AppCredentialControllerBase
    * {@inheritdoc}
    */
   protected function decorated(): EdgeAppCredentialController {
-    return new EdgeDeveloperAppCredentialController($this->connector->getOrganization(), $this->owner, $this->appName, $this->connector->getClient());
+    if (!isset($this->instances[$this->owner][$this->appName])) {
+      $this->instances[$this->owner][$this->appName] = new EdgeDeveloperAppCredentialController($this->connector->getOrganization(), $this->owner, $this->appName, $this->connector->getClient());
+    }
+    return $this->instances[$this->owner][$this->appName];
   }
 
 }
