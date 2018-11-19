@@ -431,22 +431,22 @@ abstract class FieldableEdgeEntityBase extends EdgeEntityBase implements Fieldab
     }
 
     // Value that is compatible with what a mapped base field can accept.
-    $fieldValue = $value;
+    $field_value = $value;
     if (is_object($value)) {
       // Take care of timestamp fields that value from the SDK is a
       // date object.
       if (static::propertyFieldType($field_name) === 'timestamp') {
         /** @var \DateTimeImmutable $value */
-        $fieldValue = $value->getTimestamp();
+        $field_value = $value->getTimestamp();
       }
       else {
-        $fieldValue = (string) $value;
+        $field_value = (string) $value;
       }
     }
 
     // Save field's value as a field. This calls onChange() that saves
     // field value to the related property.
-    $this->get($field_name)->setValue($fieldValue, $notify);
+    $this->get($field_name)->setValue($field_value, $notify);
 
     return $this;
   }
