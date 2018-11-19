@@ -21,6 +21,7 @@
 namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
+use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Structure\AttributesProperty;
 
 /**
@@ -121,10 +122,23 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
     if (empty($this->getAppId())) {
       return [];
     }
-    // Get app credentials from the shared app cache.
+    // Get app credentials from the shared app cache if available.
     /** @var \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface $app_cache */
     $app_cache = \Drupal::service('apigee_edge.controller.cache.apps');
     $app = $app_cache->getAppFromCacheByAppId($this->getAppId());
+    if ($app === NULL) {
+      // App has not found in cache, we have to load it from Apigee Edge.
+      /** @var \Drupal\apigee_edge\Entity\Controller\AppControllerInterface $app_controller */
+      $app_controller = \Drupal::service('apigee_edge.controller.app');
+      try {
+        $app = $app_controller->loadApp($this->getAppId());
+      }
+      catch (ApiException $e) {
+        // Just catch it and leave app to be NULL.
+        // It should never happen that we have an app id here that does not
+        // belong to an actually existing app in Apigee Edge.
+      }
+    }
     return $app ? $app->getCredentials() : [];
   }
 
