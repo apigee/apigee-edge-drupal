@@ -20,13 +20,13 @@
 
 namespace Drupal\apigee_edge_apiproduct_rbac_test;
 
+use Apigee\Edge\Api\Management\Entity\ApiProduct;
+use Apigee\Edge\Api\Management\Entity\ApiProductInterface;
 use Apigee\Edge\Api\Management\Serializer\ApiProductSerializer;
 use Apigee\Edge\Entity\EntityInterface;
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Structure\AttributesProperty;
 use Apigee\Edge\Structure\PagerInterface;
-use Drupal\apigee_edge\Entity\ApiProduct;
-use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface;
 use Drupal\Core\State\StateInterface;
 
@@ -199,7 +199,7 @@ final class ApiProductController implements ApiProductControllerInterface {
   /**
    * Sets attributes from States API on an API product entity.
    *
-   * @param \Drupal\apigee_edge\Entity\ApiProductInterface $entity
+   * @param \Apigee\Edge\Api\Management\Entity\ApiProductInterface $entity
    *   API product entity.
    */
   private function setAttributesFromStates(ApiProductInterface $entity) {
