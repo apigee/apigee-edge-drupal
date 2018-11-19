@@ -172,11 +172,16 @@ class AppCache implements AppCacheInterface {
     if (!is_array($data->data)) {
       $data->data = [];
     }
-    $ids = [];
+    $remaining_app_names_by_owner = [];
     if (!empty($app_names)) {
-      $ids = array_diff_key($data->data, array_flip($app_names));
+      $app_names_as_keys = array_flip($app_names);
+      $remaining_app_names_by_owner = array_diff_key($data->data, $app_names_as_keys);
+      $app_ids_to_invalidate = array_intersect_key($data->data, $app_names_as_keys);
+      // This is the most important task here, invalidate all app ids in cache
+      // related to the provided app names.
+      $this->cacheBackend->invalidateTags($app_ids_to_invalidate);
     }
-    $this->cacheBackend->set($data->cid, $ids, Cache::PERMANENT, $data->tags);
+    $this->cacheBackend->set($data->cid, $remaining_app_names_by_owner, Cache::PERMANENT, $data->tags);
   }
 
   /**

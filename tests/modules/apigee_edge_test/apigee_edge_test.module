@@ -26,6 +26,7 @@
 use Drupal\apigee_edge_test\Entity\OverriddenApiProduct;
 use Drupal\apigee_edge_test\Entity\OverriddenDeveloper;
 use Drupal\apigee_edge_test\Entity\OverriddenDeveloperApp;
+use Drupal\apigee_edge_test\Entity\Storage\DeveloperAppStorage;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\UserInterface;
 
@@ -46,11 +47,14 @@ function apigee_edge_test_apigee_edge_my_developer_apps_title_alter(Translatable
  * Implements hook_entity_type_alter().
  */
 function apigee_edge_test_entity_type_alter(array &$entity_types) {
+  /* @var $entity_types \Drupal\Core\Entity\EntityTypeInterface[] */
   foreach (_apigee_edge_entity_class_mapping() as $entity_type => $entity_class) {
     if (isset($entity_types[$entity_type])) {
       $entity_types[$entity_type]->setClass($entity_class);
     }
   }
+
+  $entity_types['developer_app']->setStorageClass(DeveloperAppStorage::class);
 }
 
 /**
