@@ -217,6 +217,9 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
 
     $this->drupalPostForm(Url::fromRoute('entity.user.edit_form', ['user' => $account->id()]), $formdata, 'Save');
 
+    // Flush user entity cache to ensure the updated user gets loaded.
+    // (Especially in apigee_edge_developer_app_storage_load().)
+    $this->container->get('entity_type.manager')->getStorage('user')->resetCache([$account->id()]);
     $account = user_load_by_mail($test_user['email']);
     $this->assertNotEmpty($account);
 
