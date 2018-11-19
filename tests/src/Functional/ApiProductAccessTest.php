@@ -23,7 +23,6 @@ namespace Drupal\Tests\apigee_edge\Functional;
 use Apigee\Edge\Api\Management\Entity\App;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\ApiProductInterface;
-use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialController;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
@@ -337,8 +336,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
     // << Bypass user.
     // Add a private API Product to auth. user's app.
     /** @var \Drupal\apigee_edge\SDKConnectorInterface $connector */
-    $connector = $this->container->get('apigee_edge.sdk_connector');
-    $dacc = new DeveloperAppCredentialController($connector->getOrganization(), $this->users[AccountInterface::AUTHENTICATED_ROLE]->get('apigee_edge_developer_id')->value, $auth_user_app->getName(), $connector->getClient());
+    $dacc = $this->container->get('apigee_edge.controller.developer_app_credential_factory')->developerAppCredentialController($this->users[AccountInterface::AUTHENTICATED_ROLE]->get('apigee_edge_developer_id')->value, $auth_user_app->getName());
     /** @var \Apigee\Edge\Api\Management\Entity\AppCredentialInterface $credential */
     $credentials = $auth_user_app->getCredentials();
     $credential = reset($credentials);

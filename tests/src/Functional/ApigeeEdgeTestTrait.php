@@ -201,6 +201,8 @@ trait ApigeeEdgeTestTrait {
       $credentials = $app->getCredentials();
       /** @var \Apigee\Edge\Api\Management\Entity\AppCredentialInterface $credential */
       $credential = reset($credentials);
+      // We use the non-cached, original SDK controller for this not its
+      // Drupal version.
       $dacc = new EdgeDeveloperAppCredentialController($connector->getOrganization(), $app->getDeveloperId(), $app->getName(), $connector->getClient());
       $dacc->addProducts($credential->getConsumerKey(), $products);
     }

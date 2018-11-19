@@ -22,7 +22,6 @@ namespace Drupal\Tests\apigee_edge\Functional;
 use Apigee\Edge\Api\Management\Entity\App;
 use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
 use Drupal\apigee_edge\Entity\ApiProduct;
-use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialController;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\apigee_edge\Event\AppCredentialCreateEvent;
@@ -132,8 +131,7 @@ class DeveloperAppCredentialEventTest extends ApigeeEdgeFunctionalTestBase {
     // Override (default) app key when an app is created.
     $credentials = $this->developerApp->getCredentials();
     $credential = reset($credentials);
-    $connector = $this->container->get('apigee_edge.sdk_connector');
-    $dacc = new DeveloperAppCredentialController($connector->getOrganization(), $this->developerApp->getDeveloperId(), $this->developerApp->getName(), $connector->getClient());
+    $dacc = $this->container->get('apigee_edge.controller.developer_app_credential_factory')->developerAppCredentialController($this->developerApp->getDeveloperId(), $this->developerApp->getName());
     $dacc->delete($credential->getConsumerKey());
 
     // Override app key on generate.
