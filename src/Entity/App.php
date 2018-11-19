@@ -23,6 +23,9 @@ namespace Drupal\apigee_edge\Entity;
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Structure\AttributesProperty;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Url;
 
 /**
  * Base class for App Drupal entities.
@@ -273,6 +276,136 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
    */
   protected function drupalEntityId(): ?string {
     return $this->decorated->getAppId();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
+    /** @var \Drupal\Core\Field\BaseFieldDefinition[] $definitions */
+    $definitions = parent::baseFieldDefinitions($entity_type);
+
+    $definitions['name']->setRequired(TRUE);
+
+    $definitions['displayName']
+      ->setDisplayOptions('view', [
+        'label' => 'inline',
+        'weight' => 0,
+      ])
+      ->setDisplayOptions('form', [
+        'weight' => 0,
+      ]);
+
+    $definitions['callbackUrl'] = BaseFieldDefinition::create('app_callback_url')
+      ->setDisplayOptions('form', [
+        'weight' => 1,
+      ])
+      ->setDisplayOptions('view', [
+        'label' => 'inline',
+        'weight' => 2,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE)
+      ->setLabel(t('Callback URL'));
+
+    $definitions['description']
+      ->setDisplayOptions('form', [
+        'weight' => 2,
+      ])
+      ->setDisplayOptions('view', [
+        'label' => 'inline',
+        'weight' => 4,
+      ]);
+
+    $definitions['status']
+      ->setDisplayOptions('view', [
+        'label' => 'inline',
+        'type' => 'status_property',
+        'weight' => 1,
+      ]);
+
+    $definitions['createdAt']
+      ->setDisplayOptions('view', [
+        'type' => 'timestamp_ago',
+        'label' => 'inline',
+        'weight' => 3,
+      ])
+      ->setLabel(t('Created'));
+
+    $definitions['lastModifiedAt']
+      ->setDisplayOptions('view', [
+        'type' => 'timestamp_ago',
+        'label' => 'inline',
+        'weight' => 5,
+      ])
+      ->setLabel(t('Last updated'));
+
+    // Hide readonly properties from Manage form display list.
+    $read_only_fields = [
+      'appId',
+      'appFamily',
+      'createdAt',
+      'createdBy',
+      'developerId',
+      'lastModifiedAt',
+      'lastModifiedBy',
+      'name',
+      'scopes',
+      'status',
+    ];
+    foreach ($read_only_fields as $field) {
+      $definitions[$field]->setDisplayConfigurable('form', FALSE);
+    }
+
+    return $definitions;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function get($field_name) {
+    $value = parent::get($field_name);
+
+    // Make sure that returned callback url field values are actually valid
+    // URLs. Apigee Edge allows to set anything as callbackUrl value but
+    // Drupal can only accept valid URIs.
+    if ($field_name === 'callbackUrl') {
+      if (!$value->isEmpty()) {
+        foreach ($value->getValue() as $id => $item) {
+          try {
+            Url::fromUri($item['value']);
+          }
+          catch (\Exception $exception) {
+            $value->removeItem($id);
+          }
+        }
+      }
+    }
+
+    return $value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function set($field_name, $value, $notify = TRUE) {
+    // If the callback URL value is not a valid URL then save an empty string
+    // as the field value and set the callbackUrl property to the original
+    // value. (So we can display the original (invalid URL) on the edit form.)
+    // This trick is not necessary if the value's type is array because in this
+    // case the field value is set on the developer app edit form.
+    if ($field_name === 'callbackUrl' && !is_array($value)) {
+      try {
+        Url::fromUri($value);
+      }
+      catch (\Exception $exception) {
+        /** @var \self $app */
+        $app = parent::set($field_name, '', $notify);
+        $app->setCallbackUrl($value);
+        return $app;
+      }
+    }
+    return parent::set($field_name, $value, $notify);
   }
 
 }

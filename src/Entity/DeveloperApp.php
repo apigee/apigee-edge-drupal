@@ -24,8 +24,6 @@ use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
 use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\Core\Url;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
@@ -278,108 +276,18 @@ class DeveloperApp extends App implements DeveloperAppInterface {
     $definitions = parent::baseFieldDefinitions($entity_type);
     $developer_app_singular_label = \Drupal::entityTypeManager()->getDefinition('developer_app')->getSingularLabel();
 
-    $definitions['name']->setRequired(TRUE);
-
     $definitions['displayName']
-      ->setDisplayOptions('view', [
-        'label' => 'inline',
-        'weight' => 0,
-      ])
-      ->setDisplayOptions('form', [
-        'weight' => 0,
-      ])
       ->setLabel(t('@developer_app name', ['@developer_app' => $developer_app_singular_label]));
 
-    $definitions['callbackUrl'] = BaseFieldDefinition::create('app_callback_url')
-      ->setDisplayOptions('form', [
-        'weight' => 1,
-      ])
-      ->setDisplayOptions('view', [
-        'label' => 'inline',
-        'weight' => 2,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayConfigurable('view', TRUE)
-      ->setLabel(t('Callback URL'));
-
-    $definitions['description']
-      ->setDisplayOptions('form', [
-        'weight' => 2,
-      ])
-      ->setDisplayOptions('view', [
-        'label' => 'inline',
-        'weight' => 4,
-      ]);
-
     $definitions['status']
-      ->setDisplayOptions('view', [
-        'label' => 'inline',
-        'type' => 'status_property',
-        'weight' => 1,
-      ])
       ->setLabel(t('@developer_app status', ['@developer_app' => $developer_app_singular_label]));
-
-    $definitions['createdAt']
-      ->setDisplayOptions('view', [
-        'type' => 'timestamp_ago',
-        'label' => 'inline',
-        'weight' => 3,
-      ])
-      ->setLabel(t('Created'));
-
-    $definitions['lastModifiedAt']
-      ->setDisplayOptions('view', [
-        'type' => 'timestamp_ago',
-        'label' => 'inline',
-        'weight' => 5,
-      ])
-      ->setLabel(t('Last updated'));
 
     $developer_app_settings = \Drupal::config('apigee_edge.developer_app_settings');
     foreach ((array) $developer_app_settings->get('required_base_fields') as $required) {
       $definitions[$required]->setRequired(TRUE);
     }
 
-    // Hide readonly properties from Manage form display list.
-    $read_only_fields = [
-      'appId',
-      'appFamily',
-      'createdAt',
-      'createdBy',
-      'developerId',
-      'lastModifiedAt',
-      'lastModifiedBy',
-      'name',
-      'scopes',
-      'status',
-    ];
-    foreach ($read_only_fields as $field) {
-      $definitions[$field]->setDisplayConfigurable('form', FALSE);
-    }
-
     return $definitions;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function set($field_name, $value, $notify = TRUE) {
-    // If the callback URL value is not a valid URL then save an empty string
-    // as the field value and set the callbackUrl property to the original
-    // value. (So we can display the original (invalid URL) on the edit form.)
-    // This trick is not necessary if the value's type is array because in this
-    // case the field value is set on the developer app edit form.
-    if ($field_name === 'callbackUrl' && !is_array($value)) {
-      try {
-        Url::fromUri($value);
-      }
-      catch (\Exception $exception) {
-        $developer_app = parent::set($field_name, '', $notify);
-        $developer_app->setCallbackUrl($value);
-        return $developer_app;
-      }
-    }
-    return parent::set($field_name, $value, $notify);
   }
 
   /**
