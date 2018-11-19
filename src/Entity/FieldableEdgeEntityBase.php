@@ -20,9 +20,7 @@
 
 namespace Drupal\apigee_edge\Entity;
 
-use Drupal\apigee_edge\Exception\EdgeFieldException;
 use Drupal\apigee_edge\Exception\InvalidArgumentException;
-use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\EntityConstraintViolationList;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -224,7 +222,7 @@ abstract class FieldableEdgeEntityBase extends EdgeEntityBase implements Fieldab
    * {@inheritdoc}
    */
   public function get($field_name) {
-    if (empty($this->fields[$field_name])) {
+    if (!isset($this->fields[$field_name])) {
       $value = $this->getFieldValue($field_name);
 
       // Here field name equals the property name.
@@ -380,41 +378,26 @@ abstract class FieldableEdgeEntityBase extends EdgeEntityBase implements Fieldab
    *   Value of a property.
    */
   protected function convertFieldValueToPropertyValue(string $field_name) {
-    // We use the field value here instead of the field data (which is always
-    // an array).
-    $value = $this->get($field_name)->value;
+    /** @var \Drupal\Core\Field\FieldDefinitionInterface $definition */
+    $definition = $this->getFieldDefinition($field_name);
+    if ($definition->getFieldStorageDefinition()->getCardinality() === 1) {
+      $value = $this->get($field_name)->value;
+    }
+    else {
+      // Extract values from multi-value fields the right way. Magic getter
+      // would just return the first item from the list.
+      // @see \Drupal\Core\Field\FieldItemList::__get()
+      $value = [];
+      foreach ($this->get($field_name) as $index => $item) {
+        $value[$index] = $item->value;
+      }
+    }
+
     // Take care of timestamp fields that value in the SDK is a
     // date object.
     if (static::propertyFieldType($field_name) === 'timestamp') {
       /** @var \DateTimeImmutable $value */
       $value = \DateTimeImmutable::createFromFormat('U', $value);
-    }
-    // If a base field's cardinality is 1 it means the underlying property
-    // (in the decorated SDK entity) only accepts a scalar value.
-    // However, some base fields return their values as an array even if their
-    // cardinality is 1. This is what we need to fix here.
-    // (We do not change the structure of values that does not belong to
-    // base fields).
-    elseif (is_array($value) && $this->getFieldDefinition($field_name) instanceof BaseFieldDefinition && $this->getFieldDefinition($field_name)->getCardinality() === 1) {
-      if (count($value) === 0) {
-        $value = '';
-      }
-      else {
-        $exists = FALSE;
-        $new_value = NestedArray::getValue($value, ['0', 'value'], $exists);
-        if ($exists) {
-          $value = $new_value;
-        }
-        else {
-          $new_value = NestedArray::getValue($value, ['value'], $exists);
-          if ($exists) {
-            $value = $new_value;
-          }
-          else {
-            throw new EdgeFieldException(sprintf('Unable to retrieve value of "%s" base field on "%" entity.', $field_name, get_class($this)));
-          }
-        }
-      }
     }
 
     return $value;
