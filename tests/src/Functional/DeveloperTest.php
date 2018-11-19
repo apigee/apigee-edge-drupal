@@ -224,10 +224,8 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $this->assertNotEmpty($account);
 
     // Ensure that entity static cache is also invalidated in this scope
-    // too. TODO Maybe introduce a loadUnchanged() method on developer or
-    // use storage's loadUnchanged() instead.
-    $this->developerStorage->resetCache([$test_user['email']]);
-    $this->developerCreatedByAdmin = $this->developerStorage->load($test_user['email']);
+    // too.
+    $this->developerCreatedByAdmin = $this->developerStorage->loadUnchanged($test_user['email']);
     $this->assertNotEmpty($this->developerCreatedByAdmin);
 
     $this->assertEquals($this->developerCreatedByAdmin->getEmail(), $test_user['email']);
@@ -243,10 +241,8 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $this->getSession()->getPage()->pressButton('edit-submit');
 
     // Ensure that entity static cache is also invalidated in this scope
-    // too. TODO Maybe introduce a loadUnchanged() method on developer or
-    // use storage's loadUnchanged() instead.
-    $this->developerStorage->resetCache([$test_user['email']]);
-    $this->developerCreatedByAdmin = $this->developerStorage->load($test_user['email']);
+    // too.
+    $this->developerCreatedByAdmin = $this->developerStorage->loadUnchanged($test_user['email']);
     $this->assertEquals($this->developerCreatedByAdmin->getStatus(), DeveloperInterface::STATUS_INACTIVE);
 
     // Block user on the cancel form using the user_cancel_block method.
@@ -301,10 +297,8 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalPostForm($account->toUrl('cancel-form')->toString(), $formdata, 'Cancel account');
 
     // Ensure that entity static cache is also invalidated in this scope
-    // too. TODO Maybe introduce a loadUnchanged() method on developer or
-    // use storage's loadUnchanged() instead.
-    $this->developerStorage->resetCache([$test_user['email']]);
-    $this->assertFalse($this->developerStorage->load($test_user['email']), 'Developer does not exists anymore.');
+    // too.
+    $this->assertFalse($this->developerStorage->loadUnchanged($test_user['email']), 'Developer does not exists anymore.');
   }
 
 }
