@@ -21,6 +21,7 @@
 namespace Drupal\apigee_edge\Exception;
 
 use Drupal\apigee_edge\Entity\DeveloperInterface;
+use Drupal\Core\TypedData\Plugin\DataType\ItemList;
 use Symfony\Component\Validator\ConstraintViolationInterface;
 
 /**
@@ -67,11 +68,16 @@ class DeveloperToUserConversationInvalidValueException extends DeveloperToUserCo
    * @param \Throwable|null $previous
    *   Previous exception.
    */
-  public function __construct(string $attribute_name, string $target, ConstraintViolationInterface $violation, DeveloperInterface $developer, string $message = 'Unable to set "@value" value from "@source" source on "@target" target.', int $code = 0, ?\Throwable $previous = NULL) {
+  public function __construct(string $attribute_name, string $target, ConstraintViolationInterface $violation, DeveloperInterface $developer, string $message = 'Unable to set "@value" value from "@source" source on "@target" target. @reason', int $code = 0, ?\Throwable $previous = NULL) {
     $this->source = $attribute_name;
     $this->target = $target;
     $this->violation = $violation;
-    $message = strtr($message, ['@attribute' => $attribute_name]);
+    $message = strtr($message, [
+      '@reason' => $violation->getMessage(),
+      '@source' => $attribute_name,
+      '@target' => $target,
+      '@value' => is_object($violation->getInvalidValue()) ? ($violation->getInvalidValue() instanceof ItemList ? var_export($violation->getInvalidValue()->getValue(), TRUE) : $violation->getInvalidValue()->value) : $violation->getInvalidValue(),
+    ]);
     parent::__construct($developer, $message, $code, $previous);
   }
 
