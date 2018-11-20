@@ -551,6 +551,14 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalGet(Url::fromRoute('apigee_edge.settings.developer.sync'));
     $this->clickLinkProperly('Run developer sync');
     $this->assertSession()->pageTextContains('Apigee Edge developers are in sync with Drupal users.');
+    // Fix cache invalidation issue that makes this test fail.
+    // It seems clearing user storage's cache with the line below does not
+    // clear the _real_ user storage cache which is used by user_load_by_mail().
+    // $this->container->get('entity_type.manager')->getStorage('user')->resetCache();
+    // On the other hand, when a user gets updated entity cache should be
+    // invalidated automatically.
+    // @see https://www.drupal.org/project/drupal/issues/3015002
+    \Drupal::service('entity_type.manager')->getStorage('user')->resetCache();
     $this->verify();
   }
 
