@@ -4,6 +4,7 @@ services:
   database:
     environment:
       MYSQL_MAX_ALLOWED_PACKET: 512M
+      MYSQL_WAIT_TIMEOUT: 28800
   php:
     volumes:
       - log:/mnt/files/log
