@@ -274,9 +274,6 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
   /**
    * Invokes hook_entity_storage_load().
    *
-   * TODO Should we trigger "edge" entity storage load hooks instead?
-   * Hooks may thing they get a content entity when they does not.
-   *
    * @param \Drupal\Core\Entity\EntityInterface[] $entities
    *   List of entities, keyed on the entity ID.
    */
