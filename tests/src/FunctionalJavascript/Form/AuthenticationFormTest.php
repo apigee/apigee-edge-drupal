@@ -85,54 +85,128 @@ class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
   /**
    * Tests Apigee Edge key types, key providers and authentication form.
+   *
+   * @throws \Behat\Mink\Exception\ElementNotFoundException
+   * @throws \Behat\Mink\Exception\ElementTextException
+   * @throws \Behat\Mink\Exception\ExpectationException
    */
   public function testAuthenticationForm() {
+    $web_assert = $this->assertSession();
     $active_key = Key::load($this->config(AuthenticationForm::CONFIG_NAME)->get('active_key'));
+    /** @var \Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType $active_key_type */
+    $active_key_type = $active_key->getKeyType();
+//    /** @var \Drupal\apigee_edge\Plugin\KeyProvider\EnvironmentVariablesKeyProvider $active_key_provider */
+//    $active_key_provider = $active_key->getKeyProvider());
+
     $this->drupalGet(Url::fromRoute('apigee_edge.settings'));
-    $this->assertSession()->fieldValueEquals('Organization', $active_key->getKeyType()->getOrganization($active_key));
-    $this->assertSession()->fieldValueEquals('Username', $active_key->getKeyType()->getUsername($active_key));
+    $page = $this->getSession()->getPage();
+
+    // Test that the visible connection settings match the token values.
+    $web_assert->fieldValueEquals('Organization', $active_key_type->getOrganization($active_key));
+    $web_assert->fieldValueEquals('Username', $active_key_type->getUsername($active_key));
 
     // Tests the default settings.
-    $this->assertSession()->fieldValueEquals('Authentication type', 'basic');
+    $web_assert->fieldValueEquals('Authentication type', 'basic');
+    $web_assert->fieldValueEquals('Password', '');
+    $web_assert->fieldValueEquals('Apigee Edge endpoint', '');
 
-    // Test states API.
+    // Make sure the oauth fields are hidden.
     static::assertFalse($this->cssSelect('#edit-key-input-settings-authorization-server')[0]->isVisible());
     static::assertFalse($this->cssSelect('#edit-key-input-settings-client-id')[0]->isVisible());
     static::assertFalse($this->cssSelect('#edit-key-input-settings-client-secret')[0]->isVisible());
 
     // Switch to oauth.
     $this->cssSelect('#edit-key-input-settings-auth-type')[0]->setValue('oauth');
-
+    // Make sure the oauth fields are visible.
     static::assertTrue($this->cssSelect('#edit-key-input-settings-authorization-server')[0]->isVisible());
     static::assertTrue($this->cssSelect('#edit-key-input-settings-client-id')[0]->isVisible());
     static::assertTrue($this->cssSelect('#edit-key-input-settings-client-secret')[0]->isVisible());
 
     // Test the form is disabled without a password.
-    static::assertTrue($this->cssSelect('#edit-test-connection-submit')[0]->hasAttribute('disabled'));
-    static::assertTrue($this->cssSelect('#edit-submit')[0]->hasAttribute('disabled'));
+    static::assertTrue($this->cssSelect('input[data-drupal-selector="edit-test-connection-submit"]')[0]->hasAttribute('disabled'));
+    static::assertTrue($this->cssSelect('input[data-drupal-selector="edit-submit"]')[0]->hasAttribute('disabled'));
 
     // Set the password.
-    $this->cssSelect('#edit-key-input-settings-password')[0]->setValue($active_key->getKeyType()->getPassword($active_key));
+    $page->fillField('Password', $active_key_type->getPassword($active_key));
 
     // Make sure the form is now enabled.
-    static::assertFalse($this->cssSelect('#edit-test-connection-submit')[0]->hasAttribute('disabled'));
-    static::assertFalse($this->cssSelect('#edit-submit')[0]->hasAttribute('disabled'));
+    static::assertFalse($this->cssSelect('input[data-drupal-selector="edit-test-connection-submit"]')[0]->hasAttribute('disabled'));
+    static::assertFalse($this->cssSelect('input[data-drupal-selector="edit-submit"]')[0]->hasAttribute('disabled'));
+
+    // Test the connection with basic auth.
+    $this->assertSendRequestMessage('.messages--status', 'Connection successful.');
+    static::assertEmpty($this->cssSelect('details[data-drupal-selector="edit-debug"]'));
 
     // Switch back to basic auth.
-    $this->cssSelect('#edit-key-input-settings-auth-type')[0]->setValue('basic');
+    $this->cssSelect('select[data-drupal-selector="edit-key-input-settings-auth-type"]')[0]->setValue('basic');
+    $page->fillField('Password', $active_key_type->getPassword($active_key));
     // Make sure the form is still enabled.
-    static::assertFalse($this->cssSelect('#edit-test-connection-submit')[0]->hasAttribute('disabled'));
-    static::assertFalse($this->cssSelect('#edit-submit')[0]->hasAttribute('disabled'));
+    static::assertFalse($this->cssSelect('input[data-drupal-selector="edit-test-connection-submit"]')[0]->hasAttribute('disabled'));
+    static::assertFalse($this->cssSelect('input[data-drupal-selector="edit-submit"]')[0]->hasAttribute('disabled'));
 
-    // Test for a connection.
-    $this->getSession()->getPage()->pressButton('Send request');
-    $this->assertSession()->waitForElementVisible('css', '.ajax-progress.ajax-progress-throbber');
-    $this->assertSession()->elementTextContains('css', '.ajax-progress.ajax-progress-throbber', 'Waiting for response...');
+    // Test the connection with basic auth.
+    $this->assertSendRequestMessage('.messages--status', 'Connection successful.');
+    static::assertEmpty($this->cssSelect('details[data-drupal-selector="edit-debug"]'));
+
+    /* TEST INVALID PASSWORD */
+    // Change the password.
+    $page->fillField('Password', $this->randomString());
+    $username = $active_key_type->getUsername($active_key);
+    $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given username ({$username}) or password is incorrect. Error message: Unauthorized");
+    static::assertTrue($this->cssSelect('details[data-drupal-selector="edit-debug"]')[0]->isVisible());
+
+    /* TEST INVALID ORG */
+    $page->fillField('Password', $active_key_type->getPassword($active_key));
+    $random_org = $this->randomGenerator->word(16);
+    $page->fillField('Organization', $random_org);
+    $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given organization name ({$random_org}) is incorrect. Error message: Forbidden");
+    $page->fillField('Organization', $active_key_type->getOrganization($active_key));
+    static::assertTrue($this->cssSelect('details[data-drupal-selector="edit-debug"]')[0]->isVisible());
+
+    /* TEST INVALID ENDPOINT */
+    $page->fillField('Password', $active_key_type->getPassword($active_key));
+    $invalid_domain = "{$this->randomGenerator->word(16)}.example.com";
+    $page->fillField('Apigee Edge endpoint', "http://{$invalid_domain}/");
+    $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given endpoint (http://{$invalid_domain}/) is incorrect or something is wrong with the connection. Error message: cURL error 6: Could not resolve host: {$invalid_domain} (see http://curl.haxx.se/libcurl/c/libcurl-errors.html)");
+    static::assertTrue($this->cssSelect('details[data-drupal-selector="edit-debug"]')[0]->isVisible());
+    // Clear the endpoint field.
+    $page->fillField('Apigee Edge endpoint', '');
+
+    /* TEST INVALID AUTH SERVER */
+    // Switch to oauth.
+    $this->cssSelect('select[data-drupal-selector="edit-key-input-settings-auth-type"]')[0]->setValue('oauth');
+    // Set the correct password.
+    $page->fillField('Password', $active_key_type->getPassword($active_key));
+    $invalid_domain = "{$this->randomGenerator->word(16)}.example.com";
+    $page->fillField('Authorization server', "http://{$invalid_domain}/");
+    // @todo: The SDK client is
+    $this->assertSendRequestMessage('.messages--error', "Failed to connect to the OAuth authorization server. The given authorization server (http://{$invalid_domain}/) is incorrect or something is wrong with the connection. Error message: cURL error 6: Could not resolve host: {$invalid_domain} (see http://curl.haxx.se/libcurl/c/libcurl-errors.html)");
+
+  }
+
+  /**
+   * Test an connection settings.
+   *
+   * @param string $message_selector
+   *   Either `.messages--error` or `.messages--error`.
+   * @param string $message
+   *   The error or status message.
+   *
+   * @throws \Behat\Mink\Exception\ElementNotFoundException
+   * @throws \Behat\Mink\Exception\ElementTextException
+   */
+  public function assertSendRequestMessage($message_selector, $message) {
+    $web_assert = $this->assertSession();
+    $page = $this->getSession()->getPage();
+
+    // Press the send request button.
+    $page->pressButton('Send request');
+    $web_assert->waitForElementVisible('css', '.ajax-progress.ajax-progress-throbber');
+    $web_assert->elementTextContains('css', '.ajax-progress.ajax-progress-throbber', 'Waiting for response...');
 
     // Wait for the test to complete.
-    $this->assertSession()->assertWaitOnAjaxRequest(50000);
-    $this->assertSession()->elementTextContains('css', '.messages.messages--status', 'Connection successful.');
-
+    $web_assert->assertWaitOnAjaxRequest(30000);
+    $web_assert->elementTextContains('css', $message_selector, $message);
   }
 
 }
