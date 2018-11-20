@@ -167,7 +167,7 @@ class OauthTokenFileStorage implements OauthTokenStorageInterface {
     if ($raw_data = file_get_contents(static::OAUTH_TOKEN_PATH)) {
       $data = unserialize(base64_decode($raw_data));
     }
-    return $data ?? [
+    return $data ?: [
       'access_token' => NULL,
       'token_type' => NULL,
       'expires' => NULL,
