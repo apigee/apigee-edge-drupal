@@ -1,6 +1,9 @@
 version: "3"
 
 services:
+  database:
+    environment:
+      MYSQL_MAX_ALLOWED_PACKET: 512M
   php:
     volumes:
       - log:/mnt/files/log
