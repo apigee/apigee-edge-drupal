@@ -95,15 +95,16 @@ class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $active_key = Key::load($this->config(AuthenticationForm::CONFIG_NAME)->get('active_key'));
     /** @var \Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType $active_key_type */
     $active_key_type = $active_key->getKeyType();
-//    /** @var \Drupal\apigee_edge\Plugin\KeyProvider\EnvironmentVariablesKeyProvider $active_key_provider */
-//    $active_key_provider = $active_key->getKeyProvider());
+    $active_password = $active_key_type->getPassword($active_key);
+    $active_username = $active_key_type->getUsername($active_key);
+    $active_org      = $active_key_type->getOrganization($active_key);
 
     $this->drupalGet(Url::fromRoute('apigee_edge.settings'));
     $page = $this->getSession()->getPage();
 
     // Test that the visible connection settings match the token values.
-    $web_assert->fieldValueEquals('Organization', $active_key_type->getOrganization($active_key));
-    $web_assert->fieldValueEquals('Username', $active_key_type->getUsername($active_key));
+    $web_assert->fieldValueEquals('Organization', $active_org);
+    $web_assert->fieldValueEquals('Username', $active_username);
 
     // Tests the default settings.
     $web_assert->fieldValueEquals('Authentication type', 'basic');
@@ -127,7 +128,7 @@ class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     static::assertTrue($this->cssSelect('input[data-drupal-selector="edit-submit"]')[0]->hasAttribute('disabled'));
 
     // Set the password.
-    $page->fillField('Password', $active_key_type->getPassword($active_key));
+    $page->fillField('Password', $active_password);
 
     // Make sure the form is now enabled.
     static::assertFalse($this->cssSelect('input[data-drupal-selector="edit-test-connection-submit"]')[0]->hasAttribute('disabled'));
@@ -139,7 +140,7 @@ class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
     // Switch back to basic auth.
     $this->cssSelect('select[data-drupal-selector="edit-key-input-settings-auth-type"]')[0]->setValue('basic');
-    $page->fillField('Password', $active_key_type->getPassword($active_key));
+    $page->fillField('Password', $active_password);
     // Make sure the form is still enabled.
     static::assertFalse($this->cssSelect('input[data-drupal-selector="edit-test-connection-submit"]')[0]->hasAttribute('disabled'));
     static::assertFalse($this->cssSelect('input[data-drupal-selector="edit-submit"]')[0]->hasAttribute('disabled'));
@@ -156,15 +157,15 @@ class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     static::assertTrue($this->cssSelect('details[data-drupal-selector="edit-debug"]')[0]->isVisible());
 
     /* TEST INVALID ORG */
-    $page->fillField('Password', $active_key_type->getPassword($active_key));
+    $page->fillField('Password', $active_password);
     $random_org = $this->randomGenerator->word(16);
     $page->fillField('Organization', $random_org);
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given organization name ({$random_org}) is incorrect. Error message: Forbidden");
-    $page->fillField('Organization', $active_key_type->getOrganization($active_key));
+    $page->fillField('Organization', $active_org);
     static::assertTrue($this->cssSelect('details[data-drupal-selector="edit-debug"]')[0]->isVisible());
 
     /* TEST INVALID ENDPOINT */
-    $page->fillField('Password', $active_key_type->getPassword($active_key));
+    $page->fillField('Password', $active_password);
     $invalid_domain = "{$this->randomGenerator->word(16)}.example.com";
     $page->fillField('Apigee Edge endpoint', "http://{$invalid_domain}/");
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given endpoint (http://{$invalid_domain}/) is incorrect or something is wrong with the connection. Error message: cURL error 6: Could not resolve host: {$invalid_domain} (see http://curl.haxx.se/libcurl/c/libcurl-errors.html)");
@@ -176,12 +177,26 @@ class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     // Switch to oauth.
     $this->cssSelect('select[data-drupal-selector="edit-key-input-settings-auth-type"]')[0]->setValue('oauth');
     // Set the correct password.
-    $page->fillField('Password', $active_key_type->getPassword($active_key));
+    $page->fillField('Password', $active_password);
     $invalid_domain = "{$this->randomGenerator->word(16)}.example.com";
     $page->fillField('Authorization server', "http://{$invalid_domain}/");
-    // @todo: The SDK client is
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to the OAuth authorization server. The given authorization server (http://{$invalid_domain}/) is incorrect or something is wrong with the connection. Error message: cURL error 6: Could not resolve host: {$invalid_domain} (see http://curl.haxx.se/libcurl/c/libcurl-errors.html)");
+    $page->fillField('Authorization server', "");
 
+    /* TEST INVALID CLIENT SECRET */
+    $page->fillField('Password', $active_password);
+    // Set the client secret to a random value.
+    $page->fillField('Client secret', $this->randomGenerator->word(16));
+    $this->assertSendRequestMessage('.messages--error', "Failed to connect to the OAuth authorization server. The given username ({$active_username}) or password or client ID (edgecli) or client secret is incorrect. Error message: {\"error\":\"unauthorized\",\"error_description\":\"Bad credentials\"}");
+    $page->fillField('Client secret', '');
+
+    /* TEST INVALID CLIENT ID */
+    $page->fillField('Password', $active_password);
+    // Set the client id to a random value.
+    $client_id = $this->randomGenerator->word(8);
+    $page->fillField('Client ID', $client_id);
+    $this->assertSendRequestMessage('.messages--error', "Failed to connect to the OAuth authorization server. The given username ({$active_username}) or password or client ID ({$client_id}) or client secret is incorrect. Error message: {\"error\":\"unauthorized\",\"error_description\":\"Bad credentials\"}");
+    $page->fillField('Client ID', '');
   }
 
   /**
