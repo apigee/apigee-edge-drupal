@@ -3,48 +3,34 @@
 /**
  * Copyright 2018 Google Inc.
  *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * version 2 as published by the Free Software Foundation.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
- * License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
  */
 
 namespace Drupal\apigee_edge\Entity\Storage;
 
+use Drupal\apigee_edge\Entity\FieldableEdgeEntityInterface;
+use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 
 /**
- * Adds fields support to entities without making them content entities.
- *
- * @see \Drupal\Core\Entity\ContentEntityStorageBase
+ * Base class for fieldable Apigee Edge entities.
  */
 abstract class FieldableEdgeEntityStorageBase extends EdgeEntityStorageBase implements FieldableEdgeEntityStorageInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function purgeFieldData(FieldDefinitionInterface $field_definition, $batch_size) {
-    // TODO: Implement purgeFieldData() method.
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function finalizePurge(FieldStorageDefinitionInterface $storage_definition) {
-    // TODO: Implement finalizePurge() method.
-  }
 
   /**
    * {@inheritdoc}
@@ -77,80 +63,95 @@ abstract class FieldableEdgeEntityStorageBase extends EdgeEntityStorageBase impl
   /**
    * {@inheritdoc}
    */
-  public function onEntityTypeCreate(EntityTypeInterface $entity_type) {}
+  public function onEntityTypeCreate(EntityTypeInterface $entity_type) {
+  }
 
   /**
    * {@inheritdoc}
    */
-  public function onEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original) {}
+  public function onEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original) {
+  }
 
   /**
    * {@inheritdoc}
    */
-  public function onEntityTypeDelete(EntityTypeInterface $entity_type) {}
+  public function onEntityTypeDelete(EntityTypeInterface $entity_type) {
+  }
 
   /**
    * {@inheritdoc}
    */
-  public function onFieldDefinitionCreate(FieldDefinitionInterface $field_definition) {}
+  public function onFieldDefinitionCreate(FieldDefinitionInterface $field_definition) {
+  }
 
   /**
    * {@inheritdoc}
    */
-  public function onFieldDefinitionUpdate(FieldDefinitionInterface $field_definition, FieldDefinitionInterface $original) {}
+  public function onFieldDefinitionUpdate(FieldDefinitionInterface $field_definition, FieldDefinitionInterface $original) {
+  }
 
   /**
    * {@inheritdoc}
    */
-  public function onFieldDefinitionDelete(FieldDefinitionInterface $field_definition) {}
+  public function onFieldDefinitionDelete(FieldDefinitionInterface $field_definition) {
+  }
 
   /**
    * {@inheritdoc}
    */
-  public function onFieldStorageDefinitionCreate(FieldStorageDefinitionInterface $storage_definition) {}
+  public function onFieldStorageDefinitionCreate(FieldStorageDefinitionInterface $storage_definition) {
+  }
 
   /**
    * {@inheritdoc}
    */
-  public function onFieldStorageDefinitionUpdate(FieldStorageDefinitionInterface $storage_definition, FieldStorageDefinitionInterface $original) {}
+  public function onFieldStorageDefinitionUpdate(FieldStorageDefinitionInterface $storage_definition, FieldStorageDefinitionInterface $original) {
+  }
 
   /**
    * {@inheritdoc}
    */
-  public function onFieldStorageDefinitionDelete(FieldStorageDefinitionInterface $storage_definition) {}
+  public function onFieldStorageDefinitionDelete(FieldStorageDefinitionInterface $storage_definition) {
+  }
 
   /**
    * {@inheritdoc}
    */
   public function countFieldData($storage_definition, $as_bool = FALSE) {
-    /** @var \Drupal\Core\Field\FieldStorageDefinitionInterface $storage_definition */
-    $count = 0;
-    /** @var \Drupal\apigee_edge\Entity\DeveloperApp[] $entities */
-    $entities = $this->loadMultiple();
-    foreach ($entities as $entity) {
-      if ($entity->getAttributeValue($storage_definition->getName()) !== NULL) {
-        $count++;
-      }
-    }
+    return $as_bool ? FALSE : 0;
+  }
 
-    return $count;
+  /**
+   * {@inheritdoc}
+   */
+  public function purgeFieldData(FieldDefinitionInterface $field_definition, $batch_size) {
+    // Should we $this->countFieldData($field_definition); instead?
+    return 0;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function finalizePurge(FieldStorageDefinitionInterface $storage_definition) {
   }
 
   /**
    * {@inheritdoc}
    */
   protected function getPersistentCacheTags(EntityInterface $entity) {
-    $cacheTags = parent::getPersistentCacheTags($entity);
-    $cacheTags[] = 'entity_field_info';
-    return $cacheTags;
+    $tags = parent::getPersistentCacheTags($entity);
+    $tags[] = 'entity_field_info';
+    return $tags;
   }
 
   /**
    * {@inheritdoc}
+   *
+   * @see \Drupal\Core\Entity\ContentEntityStorageBase::doCreate()
    */
   protected function doCreate(array $values) {
-    // Our entities does not support bundles so we removed that part.
-    $entity = new $this->entityClass([], $this->entityTypeId);
+    /** @var \Drupal\apigee_edge\Entity\FieldableEdgeEntityInterface $entity */
+    $entity = parent::doCreate($values);
     $this->initFieldValues($entity, $values);
     return $entity;
   }
@@ -158,7 +159,7 @@ abstract class FieldableEdgeEntityStorageBase extends EdgeEntityStorageBase impl
   /**
    * Initializes field values.
    *
-   * @param \Drupal\Core\Entity\FieldableEntityInterface $entity
+   * @param \Drupal\apigee_edge\Entity\FieldableEdgeEntityInterface $entity
    *   An entity object.
    * @param array $values
    *   (optional) An associative array of initial field values keyed by field
@@ -166,41 +167,34 @@ abstract class FieldableEdgeEntityStorageBase extends EdgeEntityStorageBase impl
    * @param array $field_names
    *   (optional) An associative array of field names to be initialized. If none
    *   is provided all fields will be initialized.
+   *
+   * @see \Drupal\Core\Entity\ContentEntityStorageBase::initFieldValues()
    */
-  protected function initFieldValues(FieldableEntityInterface $entity, array $values = [], array $field_names = []) {
-    /** @var \Drupal\apigee_edge\Entity\FieldableEdgeEntityInterface $entity */
-    // Populate field_name values.
-    foreach ($entity->getFieldDefinitions() as $field_name => $def) {
-      if (!$field_names || isset($field_names[$field_name])) {
-        $value = NULL;
+  protected function initFieldValues(FieldableEdgeEntityInterface $entity, array $values = [], array $field_names = []) {
+    // Populate field values.
+    foreach ($entity as $name => $field) {
+      if (!$field_names || isset($field_names[$name])) {
+        if (isset($values[$name])) {
+          $entity->set($name, $values[$name]);
+        }
+        elseif (!array_key_exists($name, $values)) {
+          $entity->get($name)->applyDefaultValue();
+        }
+      }
+      unset($values[$name]);
+    }
 
-        if (isset($values[$field_name])) {
-          $value = $values[$field_name];
-        }
-        elseif (array_key_exists('attributes', $values)) {
-          $value = $entity->getFieldValueFromAttribute($field_name, $values['attributes']);
-        }
-
-        if ($value === NULL) {
-          $entity->get($field_name)->applyDefaultValue();
-          // Apply default value on the property too.
-          $entity->setPropertyValue($field_name, $entity->get($field_name)->value);
-        }
-        else {
-          // This call also updates the entity property's value.
-          // @see Drupal\apigee_edge\Entity\FieldableEdgeEntityBaseTrait::set()
-          $entity->set($field_name, $value);
-          unset($values[$field_name]);
-        }
+    // Set any passed values for non-defined fields also.
+    foreach ($values as $name => $value) {
+      try {
+        $entity->setPropertyValue($name, $value);
+      }
+      catch (InvalidArgumentException $exception) {
+        // Property not found, which could be fine.
       }
     }
 
-    // Set any passed values for non-exposed properties as fields also.
-    foreach ($values as $field_name => $value) {
-      $entity->setPropertyValue($field_name, $value);
-    }
-
-    // Make sure modules can alter field_name initial values.
+    // Make sure modules can alter field initial values.
     $this->invokeHook('field_values_init', $entity);
   }
 

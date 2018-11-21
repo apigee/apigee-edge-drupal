@@ -20,8 +20,8 @@
 namespace Drupal\apigee_edge\Entity\Form;
 
 use Drupal\apigee_edge\Entity\ApiProductInterface;
+use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
-use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -62,8 +62,8 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
   /**
    * Constructs DeveloperAppEditForm.
    *
-   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
-   *   The SDK Connector service.
+   * @param \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory
+   *   The developer app credential controller factory.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   A config factory for retrieving required config objects.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -73,8 +73,8 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
    */
-  public function __construct(SDKConnectorInterface $sdk_connector, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, MessengerInterface $messenger) {
-    parent::__construct($sdk_connector, $config_factory, $entity_type_manager);
+  public function __construct(DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, MessengerInterface $messenger) {
+    parent::__construct($app_credential_controller_factory, $config_factory, $entity_type_manager);
     $this->renderer = $renderer;
     $this->messenger = $messenger;
   }
@@ -84,7 +84,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('apigee_edge.sdk_connector'),
+      $container->get('apigee_edge.controller.developer_app_credential_factory'),
       $container->get('config.factory'),
       $container->get('entity_type.manager'),
       $container->get('renderer'),

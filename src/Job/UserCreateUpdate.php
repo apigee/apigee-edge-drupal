@@ -28,6 +28,7 @@ use Drupal\apigee_edge\Exception\UserDeveloperConversionException;
 use Drupal\apigee_edge\Exception\UserDeveloperConversionNoStorageFormatterFoundException;
 use Drupal\apigee_edge\Exception\UserDeveloperConversionUserFieldDoesNotExistException;
 use Drupal\apigee_edge\Structure\DeveloperToUserConversionResult;
+use Drupal\Core\TypedData\Plugin\DataType\ItemList;
 use Drupal\Core\Utility\Error;
 
 /**
@@ -162,7 +163,7 @@ abstract class UserCreateUpdate extends EdgeJob {
       $context += [
         '%field_name' => $problem->getTarget(),
         '%attribute_name' => $problem->getSource(),
-        '%field_value' => is_object($problem->getViolation()->getInvalidValue()) ? $problem->getViolation()->getInvalidValue()->value : $problem->getViolation()->getInvalidValue(),
+        '%field_value' => is_object($problem->getViolation()->getInvalidValue()) ? ($problem->getViolation()->getInvalidValue() instanceof ItemList ? var_export($problem->getViolation()->getInvalidValue()->getValue(), TRUE) : $problem->getViolation()->getInvalidValue()->value) : $problem->getViolation()->getInvalidValue(),
         '%message' => $problem->getViolation()->getMessage(),
       ];
       $this->logger()->warning($message, $context);

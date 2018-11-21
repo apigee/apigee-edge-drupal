@@ -25,6 +25,6 @@ use Drupal\user\EntityOwnerInterface;
 /**
  * Defines an interface for developer app entity objects.
  */
-interface DeveloperAppInterface extends EdgeDeveloperAppInterface, FieldableEdgeEntityInterface, EntityOwnerInterface {
+interface DeveloperAppInterface extends EdgeDeveloperAppInterface, AppInterface, EntityOwnerInterface {
 
 }

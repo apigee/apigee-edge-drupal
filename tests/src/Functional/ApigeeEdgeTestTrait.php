@@ -19,10 +19,10 @@
 
 namespace Drupal\Tests\apigee_edge\Functional;
 
+use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController as EdgeDeveloperAppCredentialController;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
-use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController as EdgeDeveloperAppCredentialController;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\key\Entity\Key;
 use Drupal\user\Entity\User;
@@ -201,6 +201,8 @@ trait ApigeeEdgeTestTrait {
       $credentials = $app->getCredentials();
       /** @var \Apigee\Edge\Api\Management\Entity\AppCredentialInterface $credential */
       $credential = reset($credentials);
+      // We use the non-cached, original SDK controller for this not its
+      // Drupal version.
       $dacc = new EdgeDeveloperAppCredentialController($connector->getOrganization(), $app->getDeveloperId(), $app->getName(), $connector->getClient());
       $dacc->addProducts($credential->getConsumerKey(), $products);
     }

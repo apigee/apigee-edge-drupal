@@ -6,7 +6,6 @@
  */
 
 use Apigee\Edge\Exception\ApiException;
-use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialController;
 use Drupal\Component\Utility\Random;
 use Drupal\Core\Entity\EntityInterface;
 
@@ -27,13 +26,9 @@ function apigee_edge_test_app_keys_developer_app_insert(EntityInterface $entity)
   // @see \Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm::save()
   if ($credential->getExpiresAt() === NULL && $credential_lifetime === 0) {
     $random = new Random();
-    $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
-    $dacc = new DeveloperAppCredentialController(
-      $sdk_connector->getOrganization(),
-      $entity->getDeveloperId(),
-      $entity->getName(),
-      $sdk_connector->getClient()
-    );
+    /** @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface $factory */
+    $factory = \Drupal::service('apigee_edge.controller.developer_app_credential_factory');
+    $dacc = $factory->developerAppCredentialController($entity->getDeveloperId(), $entity->getName());
     try {
       $dacc->delete($credential->getConsumerKey());
       try {

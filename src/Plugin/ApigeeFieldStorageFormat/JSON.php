@@ -19,7 +19,7 @@
 
 namespace Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormat;
 
-use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormatInterface;
+use Drupal\apigee_edge\Plugin\FieldStorageFormatInterface;
 
 /**
  * JSON formatter for Apigee Edge field storage.
@@ -31,7 +31,7 @@ use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormatInterface;
  *   weight = 1000,
  * )
  */
-class JSON implements ApigeeFieldStorageFormatInterface {
+class JSON implements FieldStorageFormatInterface {
 
   /**
    * {@inheritdoc}

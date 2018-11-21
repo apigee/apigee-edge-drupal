@@ -288,6 +288,7 @@ class SDKConnector implements SDKConnectorInterface {
     }
 
     try {
+      // We use the original, non-decorated organization controller here.
       $oc = new OrganizationController($client);
       $oc->load($credentials->getKeyType()->getOrganization($credentials->getKey()));
     }

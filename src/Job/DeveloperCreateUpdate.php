@@ -132,14 +132,14 @@ abstract class DeveloperCreateUpdate extends EdgeJob {
       $message = "@operation: %mail developer's %attribute_name attribute has been skipped because %field_name field does not exist.";
       $context['%field_name'] = $problem->getFieldName();
       $context['%attribute_name'] = $this->fieldAttributeConverter()->getAttributeName($problem->getFieldName());
-      $logger->warning($message, $context);
+      $this->logger()->warning($message, $context);
       $this->recordMessage(t("%mail developer's %attribute_name attribute has been skipped because %field_name field does not exist.", $context)->render());
     }
     elseif ($problem instanceof UserDeveloperConversionNoStorageFormatterFoundException) {
       $message = "@operation: %mail developer's %attribute_name attribute has been skipped because there is no available storage formatter for %field_type field type.";
       $context['%field_type'] = $problem->getFieldDefinition()->getType();
       $context['%attribute_name'] = $this->fieldAttributeConverter()->getAttributeName($problem->getFieldDefinition()->getName());
-      $logger->warning($message, $context);
+      $this->logger()->warning($message, $context);
       $this->recordMessage(t("%mail developer's %attribute_name attribute has been skipped because there is no available storage formatter for %field_type field type.", $context)->render());
     }
     else {

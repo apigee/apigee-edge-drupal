@@ -1307,25 +1307,36 @@ function apigee_edge_developer_storage_load(array $entities) {
  * Edge.
  */
 function apigee_edge_developer_app_storage_load(array $entities) {
-  $developerIds = [];
+  $developer_ids = [];
   /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
   foreach ($entities as $entity) {
-    $developerIds[] = $entity->getDeveloperId();
+    $developer_ids[] = $entity->getDeveloperId();
   }
-  $developerIds = array_unique($developerIds);
-  $developerId_mail_map = [];
-  /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperStorageInterface $developerStorage */
-  $developerStorage = \Drupal::entityTypeManager()->getStorage('developer');
-  foreach ($developerStorage->loadByProperties(['developerId' => $developerIds]) as $developer) {
+  $developer_ids = array_unique($developer_ids);
+  $dev_id_mail_map = [];
+  /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperStorageInterface $developer_storage */
+  $developer_storage = \Drupal::entityTypeManager()->getStorage('developer');
+  foreach ($developer_storage->loadByProperties(['developerId' => $developer_ids]) as $developer) {
     /** @var \Drupal\apigee_edge\Entity\Developer $developer */
-    $developerId_mail_map[$developer->uuid()] = $developer->getEmail();
+    $dev_id_mail_map[$developer->uuid()] = $developer->getEmail();
   }
 
-  if ($developerId_mail_map) {
-    $query = \Drupal::database()->select('users_field_data', 'ufd');
-    $query->fields('ufd', ['mail', 'uid'])
-      ->condition('mail', $developerId_mail_map, 'IN');
-    $mail_uid_map = $query->execute()->fetchAllKeyed();
+  // We load all users once with related found email addresses because
+  // \Drupal\apigee_edge\Entity\DeveloperApp::setOwnerId() would load them
+  // anyway but one by one. With this we warm up the user entity cache and
+  // User::load() will return all users from cache.
+  $userStorage = \Drupal::entityTypeManager()->getStorage('user');
+  $uids = $userStorage->getQuery()->condition('mail', $dev_id_mail_map, 'IN')
+    ->execute();
+  $users = $userStorage->loadMultiple($uids);
+
+  if ($dev_id_mail_map) {
+    $mail_developerId_map = array_flip($dev_id_mail_map);
+    foreach ($users as $user) {
+      if (array_key_exists($user->mail->value, $mail_developerId_map)) {
+        $mail_uid_map[$user->mail->value] = $user->id();
+      }
+    }
   }
   else {
     $mail_uid_map = [];
@@ -1335,12 +1346,12 @@ function apigee_edge_developer_app_storage_load(array $entities) {
     // If developer id is not in this map it means the developer does not exist
     // in Drupal yet (developer syncing between Apigee Edge and Drupal is
     // required) or the developer id has not been stored in related Drupal user
-    // yet. This can be fixed with running developer sync too, because it could
-    // happen that the user had been created in Drupal before Apigee Edge
-    // connected was configured. Although, this could be a result of a previous
-    // error but there should be a log about that.
-    if (isset($developerId_mail_map[$entity->getDeveloperId()]) && isset($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]])) {
-      $entity->setOwnerId($mail_uid_map[$developerId_mail_map[$entity->getDeveloperId()]]);
+    // yet. This can be fixed by running developer sync. The reason is simple,
+    // it could happen that the user had been created in Drupal before Apigee
+    // Edge connected was configured. Although, this could be a result of a
+    // previous error but there should be a log about that.
+    if (isset($dev_id_mail_map[$entity->getDeveloperId()]) && isset($mail_uid_map[$dev_id_mail_map[$entity->getDeveloperId()]])) {
+      $entity->setOwnerId($mail_uid_map[$dev_id_mail_map[$entity->getDeveloperId()]]);
     }
   }
 }

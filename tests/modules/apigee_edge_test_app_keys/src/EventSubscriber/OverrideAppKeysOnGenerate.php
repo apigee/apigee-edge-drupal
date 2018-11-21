@@ -22,9 +22,8 @@ namespace Drupal\apigee_edge_test_app_keys\EventSubscriber;
 
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Structure\CredentialProduct;
-use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialController;
+use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface;
 use Drupal\apigee_edge\Event\AppCredentialGenerateEvent;
-use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Utility\Random;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -34,20 +33,20 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class OverrideAppKeysOnGenerate implements EventSubscriberInterface {
 
   /**
-   * The SDK Connector service.
+   * The developer app credential controller factory.
    *
-   * @var \Drupal\apigee_edge\SDKConnectorInterface
+   * @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface
    */
-  private $sdkConnector;
+  private $devAppCredentialControllerFactory;
 
   /**
    * OverrideAppKeysOnGenerate constructor.
    *
-   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdkConnector
-   *   The Apigee Edge SDK connector service.
+   * @param \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface $dev_app_credential_controller_factory
+   *   The developer app credential controller factory.
    */
-  public function __construct(SDKConnectorInterface $sdkConnector) {
-    $this->sdkConnector = $sdkConnector;
+  public function __construct(DeveloperAppCredentialControllerFactoryInterface $dev_app_credential_controller_factory) {
+    $this->devAppCredentialControllerFactory = $dev_app_credential_controller_factory;
   }
 
   /**
@@ -70,12 +69,7 @@ class OverrideAppKeysOnGenerate implements EventSubscriberInterface {
   public function overrideAppKeyOnGenerate(AppCredentialGenerateEvent $event) {
     $random = new Random();
     if ($event->getAppType() === AppCredentialGenerateEvent::APP_TYPE_DEVELOPER) {
-      $credential_controller = new DeveloperAppCredentialController(
-        $this->sdkConnector->getOrganization(),
-        $event->getOwnerId(),
-        $event->getAppName(),
-        $this->sdkConnector->getClient()
-      );
+      $credential_controller = $this->devAppCredentialControllerFactory->developerAppCredentialController($event->getOwnerId(), $event->getAppName());
     }
     else {
       // TODO Finish when Company apps gets supported.

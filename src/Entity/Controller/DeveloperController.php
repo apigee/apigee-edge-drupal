@@ -21,71 +21,178 @@
 namespace Drupal\apigee_edge\Entity\Controller;
 
 use Apigee\Edge\Api\Management\Controller\DeveloperController as EdgeDeveloperController;
-use Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface;
-use Apigee\Edge\ClientInterface;
+use Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface as EdgeDeveloperControllerInterface;
+use Apigee\Edge\Api\Management\Entity\DeveloperInterface;
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
-use Apigee\Edge\Serializer\EntitySerializerInterface;
-use Drupal\apigee_edge\Entity\DeveloperInterface;
-use Drupal\Core\Entity\EntityInterface;
+use Apigee\Edge\Structure\AttributesProperty;
+use Apigee\Edge\Structure\PagerInterface;
+use Drupal\apigee_edge\SDKConnectorInterface;
 
 /**
- * Advanced version of Apigee Edge SDK's developer controller.
+ * Definition of the Developer controller service.
+ *
+ * This integrates the Management API's Developer controller from the
+ * SDK's with Drupal.
+ *
+ * TODO Cache developers in a memory cache.
+ * This could be useful to figure out a developer Id of an already cached
+ * developer from its email address where it is needed. Ex.: app controller,
+ * apigee_edge_developer_id field, etc.
  */
-class DeveloperController extends EdgeDeveloperController implements DrupalEntityControllerInterface {
-  use DrupalEntityControllerAwareTrait {
-    convertToSdkEntity as private privateConvertToSdkEntity;
-  }
+final class DeveloperController implements DeveloperControllerInterface {
+
+  /**
+   * Local cache for the decorated developer controller from the SDK.
+   *
+   * @var \Apigee\Edge\Api\Management\Controller\DeveloperController|null
+   *
+   * @see decorated()
+   */
+  private $instance;
+
+  /**
+   * The SDK connector service.
+   *
+   * @var \Drupal\apigee_edge\SDKConnectorInterface
+   */
+  private $connector;
+
+  /**
+   * The organization controller service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface
+   */
+  private $orgController;
 
   /**
    * DeveloperController constructor.
    *
-   * @param string $organization
-   *   Name of the organization.
-   * @param \Apigee\Edge\ClientInterface $client
-   *   The API client.
-   * @param string $entity_class
-   *   The FQCN of the entity class used by this controller.
-   * @param \Apigee\Edge\Serializer\EntitySerializerInterface|null $entity_serializer
-   *   The entity serializer.
-   * @param \Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface|null $organization_controller
-   *   The organization controller.
+   * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
+   *   The SDK connector service.
+   * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
+   *   The organization controller service.
    */
-  public function __construct(string $organization, ClientInterface $client, string $entity_class, ?EntitySerializerInterface $entity_serializer = NULL, ?OrganizationControllerInterface $organization_controller = NULL) {
-    parent::__construct($organization, $client, $entity_serializer, $organization_controller);
-    $this->setEntityClass($entity_class);
+  public function __construct(SDKConnectorInterface $connector, OrganizationControllerInterface $org_controller) {
+    $this->connector = $connector;
+    $this->orgController = $org_controller;
+  }
+
+  /**
+   * Returns the decorated developer controller from the SDK.
+   *
+   * @return \Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface
+   *   The initialized developer controller.
+   */
+  private function decorated(): EdgeDeveloperControllerInterface {
+    if ($this->instance === NULL) {
+      $this->instance = new EdgeDeveloperController($this->connector->getOrganization(), $this->connector->getClient(), NULL, $this->orgController);
+    }
+    return $this->instance;
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function entityInterface(): string {
-    return DeveloperInterface::class;
+  public function getDeveloperByApp(string $appName): DeveloperInterface {
+    return $this->decorated()->getDeveloperByApp($appName);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function convertToSdkEntity(EntityInterface $drupal_entity): EdgeEntityInterface {
-    /** @var \Apigee\Edge\Entity\EntityInterface $entity */
-    $entity = $this->privateConvertToSdkEntity($drupal_entity);
+  public function getAttributes(string $entityId): AttributesProperty {
+    return $this->decorated()->getAttributes($entityId);
+  }
 
-    // We use the email address as id to save developer entities, this way
-    // we do not need to load the developer by Apigee Edge always.
-    // \Drupal\apigee_edge\Entity\Developer::id() always returns the proper
-    // email address for this operation.
-    $entity->{'set' . $entity::idProperty()}($drupal_entity->id());
-    return $entity;
+  /**
+   * {@inheritdoc}
+   */
+  public function getAttribute(string $entityId, string $name): string {
+    return $this->decorated()->getAttribute($entityId, $name);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function updateAttributes(string $entityId, AttributesProperty $attributes): AttributesProperty {
+    return $this->decorated()->updateAttributes($entityId, $attributes);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function updateAttribute(string $entityId, string $name, string $value): string {
+    return $this->decorated()->updateAttribute($entityId, $name, $value);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function deleteAttribute(string $entityId, string $name): void {
+    $this->decorated()->deleteAttribute($entityId, $name);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function create(EdgeEntityInterface $entity): void {
+    $this->decorated()->create($entity);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function delete(string $entityId): EdgeEntityInterface {
+    return $this->decorated()->delete($entityId);
   }
 
   /**
    * {@inheritdoc}
    */
   public function load(string $entityId): EdgeEntityInterface {
-    $developer = parent::load($entityId);
+    return $this->decorated()->load($entityId);
+  }
 
-    /** @var \Apigee\Edge\Entity\EntityInterface $entity */
-    $entity = $this->convertToDrupalEntity($developer);
-    return $entity;
+  /**
+   * {@inheritdoc}
+   */
+  public function update(EdgeEntityInterface $entity): void {
+    $this->decorated()->update($entity);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getOrganisationName(): string {
+    return $this->decorated()->getOrganisationName();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function createPager(int $limit = 0, ?string $startKey = NULL): PagerInterface {
+    return $this->decorated()->createPager($limit, $startKey);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEntityIds(PagerInterface $pager = NULL): array {
+    return $this->decorated()->getEntityIds($pager);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEntities(PagerInterface $pager = NULL, string $key_provider = 'id'): array {
+    return $this->decorated()->getEntities($pager, $key_provider);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setStatus(string $entityId, string $status): void {
+    $this->decorated()->setStatus($entityId, $status);
   }
 
 }

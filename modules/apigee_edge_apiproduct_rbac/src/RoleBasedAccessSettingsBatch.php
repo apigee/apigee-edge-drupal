@@ -57,10 +57,8 @@ final class RoleBasedAccessSettingsBatch {
     }
 
     // Process API products by groups of 5.
-    /** @var \Drupal\apigee_edge\Entity\Storage\ApiProductStorageInterface $storage */
-    $storage = \Drupal::entityTypeManager()->getStorage('api_product');
     /** @var \Apigee\Edge\Api\Management\Controller\ApiProductControllerInterface $controller */
-    $controller = $storage->getController(\Drupal::service('apigee_edge.sdk_connector'));
+    $controller = \Drupal::service('apigee_edge.controller.api_product');
 
     foreach (array_slice($product_name_display_name_map, $context['sandbox']['progress'], 5) as $product_name => $product_display_name) {
       $context['message'] = t('Updating %d API Product...', ['%d' => $product_display_name]);

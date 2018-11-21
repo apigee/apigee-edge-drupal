@@ -1,0 +1,8 @@
+services:
+
+  apigee_edge_apiproduct_rbac_test.entity.controller.api_product:
+    class: Drupal\apigee_edge_apiproduct_rbac_test\ApiProductController
+    decorates: apigee_edge.controller.api_product
+    decoration_priority: -10
+    public: false
+    arguments: ['@apigee_edge_apiproduct_rbac_test.entity.controller.api_product.inner', '@state']

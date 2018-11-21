@@ -22,7 +22,7 @@ namespace Drupal\apigee_edge\Plugin;
 /**
  * Defines an interface for Apigee Edge field storage formatters.
  */
-interface ApigeeFieldStorageFormatInterface {
+interface FieldStorageFormatInterface {
 
   /**
    * Encodes field data to the target format.

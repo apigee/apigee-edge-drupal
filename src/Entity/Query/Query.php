@@ -131,15 +131,15 @@ class Query extends QueryBase implements QueryInterface {
    * Ex.: Developer => ['email', 'developerId'].
    *
    * @return string[]
-   *   Array of property names that should be considered as primary entity ids.
+   *   Array of property names that should be considered as unique entity ids.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   protected function getEntityIdProperties(): array {
     $storage = $this->entityTypeManager->getStorage($this->entityTypeId);
-    /** @var \Apigee\Edge\Entity\EntityInterface $entity */
+    /** @var \Drupal\apigee_edge\Entity\EdgeEntityInterface $entity */
     $entity = $storage->create();
-    return [$entity::idProperty()];
+    return [$entity::uniqueIdProperties()];
   }
 
   /**

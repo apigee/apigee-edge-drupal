@@ -38,7 +38,7 @@ class FieldStorageFormatManager extends DefaultPluginManager implements FieldSto
       'Plugin/ApigeeFieldStorageFormat',
       $namespaces,
       $module_handler,
-      ApigeeFieldStorageFormatInterface::class,
+      FieldStorageFormatInterface::class,
       ApigeeFieldStorageFormat::class
     );
     $this->alterInfo('apigee_field_storage_format_info');
@@ -60,14 +60,14 @@ class FieldStorageFormatManager extends DefaultPluginManager implements FieldSto
   /**
    * {@inheritdoc}
    */
-  public function lookupPluginForFieldType(string $field_type): ?ApigeeFieldStorageFormatInterface {
+  public function lookupPluginForFieldType(string $field_type): ?FieldStorageFormatInterface {
     $definitions = $this->getDefinitions();
 
     foreach ($definitions as $name => $definition) {
       $fields = $definition['fields'] ?? [];
 
       if (in_array($field_type, $fields) || in_array('*', $fields)) {
-        /** @var \Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormatInterface $instance */
+        /** @var \Drupal\apigee_edge\Plugin\FieldStorageFormatInterface $instance */
         $instance = $this->createInstance($name);
         return $instance;
       }

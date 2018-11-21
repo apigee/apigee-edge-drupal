@@ -138,7 +138,15 @@ class UserDeveloperConverter implements UserDeveloperConverterInterface {
       $formatted_field_value = $formatter->encode($user->get($field_name)->getValue());
       // Do not apply unnecessary changes.
       if ($developer->isNew() || ($developer->getAttributeValue($attribute_name) !== $formatted_field_value)) {
-        $developer->setAttribute($attribute_name, $formatted_field_value);
+        // Do not leave empty attributes on developers because Apigee Edge
+        // Management UI does not like them. (It does not allow to save
+        // entities with empty attribute values.)
+        if ($formatted_field_value === '') {
+          $developer->deleteAttribute($attribute_name);
+        }
+        else {
+          $developer->setAttribute($attribute_name, $formatted_field_value);
+        }
         $successful_changes++;
       }
     }

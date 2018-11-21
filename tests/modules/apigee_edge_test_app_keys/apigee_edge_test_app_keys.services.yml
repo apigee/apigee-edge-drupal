@@ -1,7 +1,7 @@
 services:
   apigee_edge.event_subscriber.override_app_keys_on_generate:
     class: Drupal\apigee_edge_test_app_keys\EventSubscriber\OverrideAppKeysOnGenerate
-    arguments: ['@apigee_edge.sdk_connector']
+    arguments: ['@apigee_edge.controller.developer_app_credential_factory']
     tags:
       - { name: event_subscriber }
   apigee_edge.event_subscriber.create_delete_app_key:

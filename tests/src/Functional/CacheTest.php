@@ -115,31 +115,30 @@ class CacheTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
-   * Tests that credentials are not cached, but found on the app page.
+   * Tests that credentials are not cached, but still available if needed.
    */
   protected function credentialsTest() {
-    $this->drupalGet(Url::fromRoute('entity.developer_app.canonical_by_developer', [
-      'user' => $this->account->id(),
-      'app' => $this->developerApp->getName(),
-    ]));
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $loadedApp */
     $loadedApp = DeveloperApp::load($this->developerApp->id());
     $this->assertNotEmpty($loadedApp, 'Developer App loaded');
 
-    $rc = new \ReflectionClass($loadedApp);
-    $properties = array_filter($rc->getProperties(), function (\ReflectionProperty $property) {
-      return $property->getName() === 'credentials';
-    });
-    $this->assertCount(1, $properties, 'The credentials property found on the DeveloperApp class');
-    /** @var \ReflectionProperty $property */
-    $property = reset($properties);
-    $property->setAccessible(TRUE);
-    $cachedCredentials = $property->getValue($loadedApp);
+    /** @var \Drupal\apigee_edge_test\Entity\Storage\DeveloperAppStorage $storage */
+    $storage = $this->container->get('entity_type.manager')->getStorage('developer_app');
+    $cached_apps = $storage->getFromCache([$loadedApp->id()]);
+    /** @var \Drupal\apigee_edge\Entity\AppInterface $cached_app */
+    $cached_app = reset($cached_apps);
 
-    $this->assertEmpty($cachedCredentials, 'The credentials property is empty.');
-
-    /** @var \Apigee\Edge\Api\Management\Entity\AppCredential[] $credentials */
+    // They are not in the cached SDK entity...
+    $this->assertEmpty($cached_app->decorated()->getCredentials(), 'The credentials property is empty.');
     $credentials = $loadedApp->getCredentials();
+    // But they still available in the Drupal entity.
+    $this->assertNotEmpty($credentials, 'The credentials property is not empty.');
+    // And visible on the UI.
+    /** @var \Apigee\Edge\Api\Management\Entity\AppCredential[] $credentials */
+    $this->drupalGet(Url::fromRoute('entity.developer_app.canonical_by_developer', [
+      'user' => $this->account->id(),
+      'app' => $this->developerApp->getName(),
+    ]));
     $this->assertSession()->pageTextContains($credentials[0]->getConsumerKey());
     $this->assertSession()->pageTextContains($credentials[0]->getConsumerSecret());
   }

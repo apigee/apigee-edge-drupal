@@ -1,6 +1,3 @@
-parameters:
-  factory.apigee_edge.app_credentials_storage: apigee_edge.keyvalue.app_credentials
-
 services:
   logger.channel.apigee_edge:
     parent: logger.channel_base
@@ -19,6 +16,41 @@ services:
   apigee_edge.sdk_connector:
     class: Drupal\apigee_edge\SDKConnector
     arguments: ['@http_client_factory', '@key.repository', '@entity_type.manager', '@config.factory', '@module_handler', '@info_parser']
+
+  apigee_edge.controller.organization:
+    class: Drupal\apigee_edge\Entity\Controller\OrganizationController
+    arguments: ['@apigee_edge.sdk_connector']
+
+  apigee_edge.controller.developer:
+    class: Drupal\apigee_edge\Entity\Controller\DeveloperController
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.controller.organization']
+
+  apigee_edge.controller.api_product:
+    class: Drupal\apigee_edge\Entity\Controller\ApiProductController
+    arguments: ['@apigee_edge.sdk_connector']
+
+  apigee_edge.controller.app:
+    class: Drupal\apigee_edge\Entity\Controller\AppController
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.controller.organization', '@apigee_edge.controller.cache.apps']
+
+  apigee_edge.controller.developer_app_controller_factory:
+    class: Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerFactory
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.controller.organization', '@apigee_edge.controller.cache.developer_app_cache_factory', '@email.validator']
+
+  apigee_edge.controller.developer_app_credential_factory:
+    class: Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactory
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.controller.cache.developer_app_cache_factory', '@event_dispatcher']
+
+  apigee_edge.controller.cache.apps:
+    class: Drupal\apigee_edge\Entity\Controller\Cache\AppCache
+    arguments: ['@apigee_edge.memory_cache.apps']
+
+  apigee_edge.controller.cache.developer_app_cache_factory:
+    class: Drupal\apigee_edge\Entity\Controller\Cache\DeveloperAppCacheFactory
+    arguments: ['@email.validator', '@apigee_edge.memory_cache.apps']
+
+  apigee_edge.memory_cache.apps:
+    class: Drupal\Core\Cache\MemoryCache\MemoryCache
 
   apigee_edge.job_executor:
     class: Drupal\apigee_edge\JobExecutor
@@ -80,32 +112,13 @@ services:
       # Use a higher priority than EntityConverter, see the class for details.
       - { name: paramconverter, priority: 10 }
 
-  apigee_edge.keyvalue.app_credentials:
-    class: Drupal\apigee_edge\KeyValueStore\AppCredentialStorageFactory
-
-  apigee_edge.keyvalue.expirable.app_credentials:
-    parent: keyvalue.expirable
-    arguments:
-      index_1:
-        keyvalue_expirable_default: '%factory.apigee_edge.app_credentials_storage%'
-
-  apigee_edge.tempstore.private.app_credentials:
-    parent: tempstore.private
-    arguments:
-      index_0: '@apigee_edge.keyvalue.expirable.app_credentials'
-
-  apigee_edge.tempstore.shared.app_credentials:
-    parent: tempstore.shared
-    arguments:
-      index_0: '@apigee_edge.keyvalue.expirable.app_credentials'
-
   plugin.manager.apigee_field_storage_format:
     class: Drupal\apigee_edge\Plugin\FieldStorageFormatManager
     parent: default_plugin_manager
 
   apigee_edge.converter.field_attribute:
     class: Drupal\apigee_edge\FieldAttributeConverter
-    arguments: ['@config.factory']
+    arguments: ['@entity_field.manager', '@plugin.manager.apigee_field_storage_format', '@config.factory']
 
   apigee_edge.converter.user_developer:
     class: Drupal\apigee_edge\UserDeveloperConverter

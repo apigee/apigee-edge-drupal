@@ -20,21 +20,65 @@
 
 namespace Drupal\apigee_edge\Entity;
 
-use Drupal\Core\Entity\EntityInterface;
+use Apigee\Edge\Entity\EntityInterface as SdkEntityInterface;
+use Drupal\Core\Entity\EntityInterface as DrupalEntityInterface;
 
 /**
- * Provides enhancements for SDK entity wrappers in Drupal.
+ * Interface EdgeEntityInterface.
+ *
+ * The order of extended interfaces matters. SdkEntityInterface::id() is more
+ * strict than DrupalEntityInterface::id().
  */
-interface EdgeEntityInterface extends EntityInterface {
+interface EdgeEntityInterface extends SdkEntityInterface, DrupalEntityInterface {
 
   /**
-   * Sets the property value on an entity.
+   * Creates a Drupal entity from an SDK Entity.
    *
-   * @param string $property
-   *   Name of the entity property.
-   * @param mixed $value
-   *   Property value to be set.
+   * @param \Apigee\Edge\Entity\EntityInterface $entity
+   *   Entity from the PHP SDK.
+   *
+   * @return \Drupal\apigee_edge\Entity\EdgeEntityInterface
+   *   Drupal entity that decorates the SDK entity.
    */
-  public function setPropertyValue(string $property, $value): void;
+  public static function createFrom(SdkEntityInterface $entity) : self;
+
+  /**
+   * Returns all unique ids how an entity can be referenced in Apigee Edge.
+   *
+   * All these ids can be used in Drupal to load entity as well.
+   *
+   * Ex.: Developer can be referenced by its UUID or its email address.
+   *
+   * @return string[]
+   *   Array of entity properties that stores unique entity ids. Returned
+   *   properties must have a public getter, ex.: 'get' . ucfirst($property).
+   */
+  public static function uniqueIdProperties() : array;
+
+  /**
+   * List of unique ids how an entity can be referenced in Apigee Edge.
+   *
+   * It must return the values of the properties returned by idProperties().
+   *
+   * @see \Drupal\apigee_edge\Entity\EdgeEntityInterface::uniqueIdProperties()
+   *
+   * @return string[]
+   *   Array of unique ids on the entity.
+   */
+  public function uniqueIds(): array;
+
+  /**
+   * Returns the decorated SDK entity.
+   *
+   * THIS IS AN INTERNAL METHOD! You should not do modifications on the
+   * decorated entity object, you should use the decorators for this.
+   * This method only exists because entity storages uses it.
+   *
+   * @return \Apigee\Edge\Entity\EntityInterface
+   *   The decorated SDK entity.
+   *
+   * @internal
+   */
+  public function decorated(): SdkEntityInterface;
 
 }

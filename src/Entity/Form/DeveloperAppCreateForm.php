@@ -19,14 +19,13 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
-use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialControllerInterface;
 use Apigee\Edge\Api\Management\Entity\DeveloperAppInterface;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\ApiProductInterface;
-use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialController;
+use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface;
+use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerInterface;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
-use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -40,24 +39,24 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements DeveloperAppPageTitleInterface {
 
   /**
-   * The SDK Connector service.
+   * The app credential controller factory.
    *
-   * @var \Drupal\apigee_edge\SDKConnectorInterface
+   * @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface
    */
-  protected $sdkConnector;
+  protected $appCredentialControllerFactory;
 
   /**
    * Constructs DeveloperAppCreateForm.
    *
-   * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
-   *   The SDK Connector service.
+   * @param \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory
+   *   The developer app credential controller factory.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   A config factory for retrieving required config objects.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    */
-  public function __construct(SDKConnectorInterface $sdk_connector, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager) {
-    $this->sdkConnector = $sdk_connector;
+  public function __construct(DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager) {
+    $this->appCredentialControllerFactory = $app_credential_controller_factory;
     $this->configFactory = $config_factory;
     $this->entityTypeManager = $entity_type_manager;
   }
@@ -67,7 +66,7 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('apigee_edge.sdk_connector'),
+      $container->get('apigee_edge.controller.developer_app_credential_factory'),
       $container->get('config.factory'),
       $container->get('entity_type.manager')
     );
@@ -265,16 +264,11 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
    * @param \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface $app
    *   The developer app.
    *
-   * @return \Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialControllerInterface
+   * @return \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerInterface
    *   The credential controller for managing app credentials.
    */
   protected function getDeveloperAppCredentialController(DeveloperAppInterface $app): DeveloperAppCredentialControllerInterface {
-    return new DeveloperAppCredentialController(
-      $this->sdkConnector->getOrganization(),
-      $app->getDeveloperId(),
-      $app->getName(),
-      $this->sdkConnector->getClient()
-    );
+    return $this->appCredentialControllerFactory->developerAppCredentialController($app->getDeveloperId(), $app->getName());
   }
 
 }
