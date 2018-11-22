@@ -86,12 +86,12 @@ final class DeveloperAppControllerFactory implements DeveloperAppControllerFacto
   /**
    * {@inheritdoc}
    */
-  public function developerAppController(string $owner): DeveloperAppControllerInterface {
-    if (!isset($this->instances[$owner])) {
-      $this->instances[$owner] = new DeveloperAppController($owner, $this->connector, $this->orgController, $this->appCacheFactory->developerAppCache($owner), $this->emailValidator);
+  public function developerAppController(string $developer): DeveloperAppControllerInterface {
+    if (!isset($this->instances[$developer])) {
+      $this->instances[$developer] = new DeveloperAppController($developer, $this->connector, $this->orgController, $this->appCacheFactory->developerAppCache($developer), $this->emailValidator);
     }
 
-    return $this->instances[$owner];
+    return $this->instances[$developer];
   }
 
 }
