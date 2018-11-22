@@ -98,7 +98,7 @@ abstract class DeveloperCreateUpdate extends EdgeJob {
    *   The converted user entity.
    *
    * @throws \Exception
-   *   Can throw execption to abort developer save.
+   *   Can throw exception to abort developer save.
    */
   protected function beforeDeveloperSave(UserToDeveloperConversionResult $result, UserInterface $user) : void {
     $context = [
