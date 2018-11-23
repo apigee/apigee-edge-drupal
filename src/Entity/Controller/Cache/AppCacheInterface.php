@@ -32,7 +32,7 @@ interface AppCacheInterface {
   public const APP_TYPE_COMPANY = 'company_app';
 
   /**
-   * Saves apps to _all_ caches.
+   * Saves apps to cache.
    *
    * @param \Apigee\Edge\Api\Management\Entity\AppInterface[] $apps
    *   Array of developer- and/or company apps.
@@ -51,7 +51,7 @@ interface AppCacheInterface {
   public function getAppFromCacheByAppId(string $appId): ?AppInterface;
 
   /**
-   * Removes an app from _all_ caches.
+   * Removes an app from the cache.
    *
    * @param \Apigee\Edge\Api\Management\Entity\AppInterface $app
    *   Developer- or company app.

@@ -261,15 +261,17 @@ abstract class FieldableEdgeEntityBase extends EdgeEntityBase implements Fieldab
    *   Value of a field from current object, or null if it does exits.
    */
   protected function getFieldValue(string $field_name) {
-    $getter = 'get' . ucfirst($field_name);
     // We call the getters on the current object instead of the decorated one
     // because they can return the correct information.
     // Because the current object implements the interface of the decorated
     // object there should be any getter on the decorated object that does not
     // have a decorator in the current class (that potentially also calls to the
     // decorated getter method under the hood.)
-    if (method_exists($this, $getter)) {
-      return call_user_func([$this, $getter]);
+    foreach (['get', 'is'] as $prefix) {
+      $getter = $prefix . ucfirst($field_name);
+      if (method_exists($this, $getter)) {
+        return call_user_func([$this, $getter]);
+      }
     }
 
     return NULL;

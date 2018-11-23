@@ -28,12 +28,12 @@ interface DeveloperAppControllerFactoryInterface {
   /**
    * Returns a preconfigured developer app controller.
    *
-   * @param string $owner
+   * @param string $developer
    *   Email address or id (uuid) of a developer.
    *
    * @return \Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerInterface
-   *   Developer app controller
+   *   Developer app controller.
    */
-  public function developerAppController(string $owner): DeveloperAppControllerInterface;
+  public function developerAppController(string $developer): DeveloperAppControllerInterface;
 
 }
