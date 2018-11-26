@@ -117,7 +117,7 @@ class OauthTokenFileStorage implements OauthTokenStorageInterface {
    */
   public function saveToken(array $data): void {
     // Calculate the cache expiration.
-    $data['expires'] = $data['expires_in'] + time();
+    $data['expires'] = isset($data['expires_in']) ? $data['expires_in'] + time() : ($data['expires'] ?? -1);
     // Remove the expires_in data.
     unset($data['expires_in']);
 
