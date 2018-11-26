@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge\Form;
 use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
+use Apigee\Edge\HttpClient\Plugin\Authentication\OauthTokenStorageInterface;
 use Drupal\apigee_edge\Exception\AuthenticationKeyValueMalformedException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\apigee_edge\Plugin\KeyType\OauthKeyType;
@@ -81,6 +82,13 @@ class AuthenticationForm extends ConfigFormBase {
   protected $activeKey;
 
   /**
+   * The oauth token storage.
+   *
+   * @var \Apigee\Edge\HttpClient\Plugin\Authentication\OauthTokenStorageInterface
+   */
+  protected $oauthTokenStorage;
+
+  /**
    * Constructs a new AuthenticationForm.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -91,12 +99,15 @@ class AuthenticationForm extends ConfigFormBase {
    *   SDK connector service.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   Module handler service.
+   * @param \Apigee\Edge\HttpClient\Plugin\Authentication\OauthTokenStorageInterface $oauth_token_storage
+   *   The oauth token storage.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, KeyRepositoryInterface $key_repository, SDKConnectorInterface $sdk_connector, ModuleHandlerInterface $module_handler) {
+  public function __construct(ConfigFactoryInterface $config_factory, KeyRepositoryInterface $key_repository, SDKConnectorInterface $sdk_connector, ModuleHandlerInterface $module_handler, OauthTokenStorageInterface $oauth_token_storage) {
     parent::__construct($config_factory);
     $this->keyRepository = $key_repository;
     $this->sdkConnector = $sdk_connector;
     $this->moduleHandler = $module_handler;
+    $this->oauthTokenStorage = $oauth_token_storage;
   }
 
   /**
@@ -107,7 +118,8 @@ class AuthenticationForm extends ConfigFormBase {
       $container->get('config.factory'),
       $container->get('key.repository'),
       $container->get('apigee_edge.sdk_connector'),
-      $container->get('module_handler')
+      $container->get('module_handler'),
+      $container->get('apigee_edge.token_storage')
     );
   }
 
