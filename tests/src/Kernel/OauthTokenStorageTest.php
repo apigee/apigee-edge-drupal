@@ -64,7 +64,7 @@ class OauthTokenStorageTest extends KernelTestBase {
   public function setUp() {
     parent::setUp();
 
-    $this->token_storage = $this->container->get('apigee_edge.token_storage');
+    $this->token_storage = $this->container->get('apigee_edge.authentication.oauth_token_storage');
     // Create sample token data.
     $this->token_data = [
       'access_token' => strtolower($this->randomMachineName(32)),

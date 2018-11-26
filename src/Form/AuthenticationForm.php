@@ -119,7 +119,7 @@ class AuthenticationForm extends ConfigFormBase {
       $container->get('key.repository'),
       $container->get('apigee_edge.sdk_connector'),
       $container->get('module_handler'),
-      $container->get('apigee_edge.token_storage')
+      $container->get('apigee_edge.authentication.oauth_token_storage')
     );
   }
 

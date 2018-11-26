@@ -123,7 +123,7 @@ class ApigeeAuthKeyType extends EdgeKeyTypeBase {
     $values = $key->getKeyValues();
     if ($values['auth_type'] === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
       // Use Oauth authentication.
-      return new OauthAuthentication($this->getUsername($key), $this->getPassword($key), \Drupal::service('apigee_edge.token_storage'), NULL, $this->getClientId($key), $this->getClientSecret($key), NULL, $this->getAuthorizationServer($key));
+      return new OauthAuthentication($this->getUsername($key), $this->getPassword($key), \Drupal::service('apigee_edge.authentication.oauth_token_storage'), NULL, $this->getClientId($key), $this->getClientSecret($key), NULL, $this->getAuthorizationServer($key));
     }
     else {
       // Use basic authentication.
