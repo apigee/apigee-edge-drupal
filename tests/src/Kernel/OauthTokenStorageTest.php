@@ -158,6 +158,18 @@ class OauthTokenStorageTest extends KernelTestBase {
   }
 
   /**
+   * Test that the tokens are removed when cacke is cleared.
+   */
+  public function testCacheClear() {
+    // Save the token.
+    $this->token_storage->saveToken($this->token_data);
+
+    $access_token = $this->token_storage->getAccessToken();
+    drupal_flush_all_caches();
+    static::assertEmpty($this->token_storage->getAccessToken());
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function register(ContainerBuilder $container) {

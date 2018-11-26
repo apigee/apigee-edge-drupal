@@ -1458,3 +1458,11 @@ function apigee_edge_get_my_developer_apps_title(?UserInterface $user = NULL): T
 
   return $title;
 }
+
+/**
+ * Implements hook_cache_flush().
+ */
+function apigee_edge_cache_flush() {
+  // Clear token data.
+  \Drupal::service('apigee_edge.token_storage')->saveToken([]);
+}

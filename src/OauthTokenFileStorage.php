@@ -52,28 +52,32 @@ class OauthTokenFileStorage implements OauthTokenStorageInterface {
    * {@inheritdoc}
    */
   public function getAccessToken(): ?string {
-    return $this->getTokenData()['access_token'];
+    $token_data = $this->getTokenData();
+    return $token_data['access_token'] ?? NULL;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getTokenType(): ?string {
-    return $this->getTokenData()['token_type'];
+    $token_data = $this->getTokenData();
+    return $token_data['token_type'] ?? NULL;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getRefreshToken(): ?string {
-    return $this->getTokenData()['refresh_token'];
+    $token_data = $this->getTokenData();
+    return $token_data['refresh_token'] ?? NULL;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getScope(): string {
-    return $this->getTokenData()['scope'];
+    $token_data = $this->getTokenData();
+    return $token_data['scope'] ?? NULL;
   }
 
   /**
