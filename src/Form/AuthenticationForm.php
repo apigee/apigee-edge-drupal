@@ -139,23 +139,19 @@ class AuthenticationForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   * @throws \Drupal\key\Exception\KeyValueNotSetException
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildForm($form, $form_state);
-
-    $config = $this->config(static::CONFIG_NAME);
 
     $form['#prefix'] = '<div id="apigee-edge-auth-form">';
     $form['#suffix'] = '</div>';
     $form['#attached']['library'][] = 'apigee_edge/apigee_edge.admin';
 
-    // Gets the active key.
-    if (!($active_key_id = $config->get('active_key')) || !($active_key = Key::load($active_key_id))) {
-      $active_key = $this->generateNewAuthKey();
-    }
-
     // Save the key for later use.
-    $this->activeKey = $active_key;
+    $this->activeKey = $active_key = $this->getActiveKey();
 
     $form['connection_settings'] = [
       '#type' => 'details',
@@ -513,6 +509,26 @@ class AuthenticationForm extends ConfigFormBase {
   }
 
   /**
+   * Get's the current active key or a newly generated one.
+   *
+   * @return \Drupal\key\KeyInterface
+   *   The current active key or a new auth key.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   * @throws \Drupal\key\Exception\KeyValueNotSetException
+   */
+  protected function getActiveKey(): KeyInterface {
+    $config = $this->config(static::CONFIG_NAME);
+
+    // Gets the active key.
+    if (!($active_key_id = $config->get('active_key')) || !($active_key = Key::load($active_key_id))) {
+      $active_key = $this->generateNewAuthKey();
+    }
+
+    return $active_key;
+  }
+
+  /**
    * Creates a new auth key stored in a file.
    *
    * @return \Drupal\key\KeyInterface
@@ -521,7 +537,7 @@ class AuthenticationForm extends ConfigFormBase {
    * @throws \Drupal\Core\Entity\EntityStorageException
    * @throws \Drupal\key\Exception\KeyValueNotSetException
    */
-  protected function generateNewAuthKey() {
+  protected function generateNewAuthKey(): KeyInterface {
     // Create a new key name.
     $new_key_id = 'apigee_edge_connection_default';
     $file_path = "private://{$new_key_id}_apigee_edge.json";
