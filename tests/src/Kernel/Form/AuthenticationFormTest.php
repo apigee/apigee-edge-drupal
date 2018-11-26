@@ -94,10 +94,10 @@ class AuthenticationFormTest extends KernelTestBase {
 
     $decoded = Json::decode($active_key->getKeyValue());
 
-    static::assertSame(EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC, $form["connection_settings"]["auth_type"]["#value"]);
-    static::assertEmpty($form["connection_settings"]["organization"]["#value"]);
-    static::assertEmpty($form["connection_settings"]["username"]["#value"]);
-    static::assertEmpty($form["connection_settings"]["password"]["#value"]);
+    static::assertSame(EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC, $form['connection_settings']['auth_type']['#value']);
+    static::assertEmpty($form['connection_settings']['organization']['#value']);
+    static::assertEmpty($form['connection_settings']['username']['#value']);
+    static::assertEmpty($form['connection_settings']['password']['#value']);
     static::assertSame(EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC, $decoded['auth_type']);
   }
 

@@ -159,8 +159,8 @@ class AuthenticationForm extends ConfigFormBase {
 
     $form['connection_settings'] = [
       '#type' => 'details',
-      '#title' => $this->t('Apigee edge connection settings'),
-      '#description' => $this->t('Apigee connection settings.'),
+      '#title' => $this->t('Apigee Edge connection settings'),
+      '#description' => $this->t('Apigee Edge connection settings.'),
       '#open' => TRUE,
       '#parents' => ['key_input_settings'],
       '#tree' => TRUE,
@@ -335,7 +335,7 @@ class AuthenticationForm extends ConfigFormBase {
    *   The suggestion text to be displayed.
    */
   protected function createSuggestion(\Exception $exception, KeyInterface $key): MarkupInterface {
-    /** @var \Drupal\apigee_edge\Plugin\KeyType\BasicAuthKeyType $key_type */
+    /** @var \Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType $key_type */
     $key_type = $key->getKeyType();
 
     // Failed to connect to the Oauth authorization server.
@@ -450,7 +450,7 @@ class AuthenticationForm extends ConfigFormBase {
    *   The debug text to be displayed.
    */
   protected function createDebugText(\Exception $exception, KeyInterface $key, ?KeyInterface $key_token): string {
-    /** @var \Drupal\apigee_edge\Plugin\KeyType\BasicAuthKeyType $key_type */
+    /** @var \Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType $key_type */
     $key_type = $key->getKeyType();
 
     $credentials = [];
@@ -654,7 +654,7 @@ class AuthenticationForm extends ConfigFormBase {
    * Get the Form entity.
    *
    * Some of the legacy `key_input` plugins rely on this being an entity form so
-   * we need to return the active key as the entity..
+   * we need to return the active key as the entity.
    *
    * @return \Drupal\Core\Entity\EntityInterface
    *   The active key.
