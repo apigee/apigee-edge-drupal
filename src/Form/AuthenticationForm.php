@@ -275,6 +275,12 @@ class AuthenticationForm extends ConfigFormBase {
 
     // Test the connection.
     if (!empty($test_key->getKeyValue())) {
+      /** @var \Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType $test_key_type */
+      $test_auth_type = $test_key->getKeyType()->getAuthenticationType($test_key);
+      if ($test_auth_type === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
+        // Clear existing token data.
+        $this->oauthTokenStorage->saveToken([]);
+      }
       try {
         $this->sdkConnector->testConnection($test_key);
         $this->messenger()->addStatus($this->t('Connection successful.'));
@@ -290,6 +296,12 @@ class AuthenticationForm extends ConfigFormBase {
         // Display debug information.
         $form['debug']['#access'] = $form['debug']['debug_text']['#access'] = TRUE;
         $form['debug']['debug_text']['#value'] = $this->createDebugText($exception, $test_key, NULL);
+      }
+      finally {
+        if ($test_auth_type === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
+          // Clear keys that may have been saved during testing.
+          $this->oauthTokenStorage->saveToken([]);
+        }
       }
     }
     else {
