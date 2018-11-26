@@ -107,7 +107,6 @@ class ApigeeAuthKeyType extends EdgeKeyTypeBase {
 
       $error_element = $form['settings']['input_section']['key_input_settings'][$id] ?? $form;
 
-      /** @var \Drupal\Core\StringTranslation\TranslatableMarkup $field */
       if (!isset($value[$id])) {
         $form_state->setError($error_element, $this->t('The key value is missing the field %field.', ['%field' => $field['label']->render()]));
       }
