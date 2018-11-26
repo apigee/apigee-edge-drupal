@@ -10,13 +10,6 @@ services:
     factory: cache_factory:get
     arguments: [apigee_edge_entity]
 
-  cache.apigee_edge:
-    class: Drupal\Core\Cache\CacheBackendInterface
-    tags:
-      - { name: cache.bin }
-    factory: cache_factory:get
-    arguments: [apigee_edge]
-
   apigee_edge.cli:
     class: Drupal\apigee_edge\CliService
 
