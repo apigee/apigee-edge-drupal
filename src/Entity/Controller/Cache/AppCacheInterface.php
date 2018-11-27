@@ -24,6 +24,8 @@ use Apigee\Edge\Api\Management\Entity\AppInterface;
 
 /**
  * Base definition of app cache used by app controllers in Drupal.
+ *
+ * @internal This interface may change before the first stable release.
  */
 interface AppCacheInterface {
 
