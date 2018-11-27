@@ -2,8 +2,16 @@
 
 set -e
 
-if [[ -z "${APIGEE_EDGE_AUTH_TYPE}" ]] || -z "${APIGEE_EDGE_ENDPOINT}" ]] || [[ -z "${APIGEE_EDGE_USERNAME}" ]] || [[ -z "${APIGEE_EDGE_PASSWORD}" ]] || [[ -z "${APIGEE_EDGE_ORGANIZATION}" ]]; then
-  echo "Incomplete configuration. Make sure the following environment variables exist and not empty: APIGEE_EDGE_AUTH_TYPE, APIGEE_EDGE_ENDPOINT, APIGEE_EDGE_USERNAME, APIGEE_EDGE_PASSWORD, APIGEE_EDGE_ORGANIZATION."
+IS_ENV_VARS_SET=1
+for VAR in APIGEE_EDGE_AUTH_TYPE APIGEE_EDGE_ENDPOINT APIGEE_EDGE_ORGANIZATION APIGEE_EDGE_USERNAME APIGEE_EDGE_PASSWORD; do
+    if [ -z "${!VAR}" ] ; then
+        IS_ENV_VARS_SET=0
+        echo "Incomplete configuration. The variable ${VAR} should exist and not be empty."
+    fi
+done
+
+if [ ${IS_ENV_VARS_SET} -eq 0 ]; then
+  echo "Exiting"
   exit 1
 fi
 
