@@ -106,7 +106,7 @@ class AppCache implements AppCacheInterface {
       $data = (object) [
         'cid' => $owner_cid,
         'data' => [],
-        'expires' => Cache::PERMANENT,
+        'expire' => Cache::PERMANENT,
         'tags' => [$owner_cid],
       ];
     }
