@@ -14,6 +14,7 @@ services:
       # We can not pass these environment variables with `docker-compose run -e` until
       # this has not been improved. https://github.com/wodby/php/pull/21#issuecomment-361200733
       DRUPAL_MODULE_NAME: apigee_edge
+      APIGEE_EDGE_AUTH_TYPE: ${APIGEE_EDGE_AUTH_TYPE}
       APIGEE_EDGE_ENDPOINT: ${APIGEE_EDGE_ENDPOINT}
       APIGEE_EDGE_USERNAME: ${APIGEE_EDGE_USERNAME}
       APIGEE_EDGE_PASSWORD: ${APIGEE_EDGE_PASSWORD}
