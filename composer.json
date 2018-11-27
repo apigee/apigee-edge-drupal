@@ -1,6 +1,6 @@
 {
     "name": "drupal/apigee_edge",
-    "license": "GPL-2.0",
+    "license": "GPL-2.0-or-later",
     "type": "drupal-module",
     "description": "Apigee Edge for Drupal.",
     "require": {

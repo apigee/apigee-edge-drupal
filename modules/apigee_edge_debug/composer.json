@@ -2,7 +2,7 @@
     "name": "drupal/apigee_edge_debug",
     "description": "Debug helper Apigee Edge Drupal integration.",
     "type": "drupal-module",
-    "license": "GPL-2.0",
+    "license": "GPL-2.0-or-later",
     "require": {
         "php": ">=7.1",
         "drupal/apigee_edge": "*",
