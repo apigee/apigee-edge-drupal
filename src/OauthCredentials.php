@@ -36,7 +36,7 @@ class OauthCredentials extends Credentials {
    *
    * @throws \InvalidArgumentException
    *   An InvalidArgumentException is thrown if the key type
-   *   does not implement EdgeOauthKeyTypeInterface.
+   *   does not implement EdgeKeyTypeInterface.
    */
   public function __construct(KeyInterface $key) {
 

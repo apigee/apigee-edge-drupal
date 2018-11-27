@@ -26,7 +26,6 @@ use Apigee\Edge\HttpClient\Utility\Builder;
 use Drupal\apigee_edge\Exception\AuthenticationKeyException;
 use Drupal\apigee_edge\Exception\AuthenticationKeyNotFoundException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
-use Drupal\apigee_edge\Plugin\EdgeOauthKeyTypeInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\InfoParserInterface;
