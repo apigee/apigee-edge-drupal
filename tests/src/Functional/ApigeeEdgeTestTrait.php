@@ -45,9 +45,9 @@ trait ApigeeEdgeTestTrait {
     $key = Key::create([
       'id' => 'test',
       'label' => 'test',
-      'key_type' => 'apigee_edge_basic_auth',
+      'key_type' => 'apigee_auth',
       'key_provider' => 'apigee_edge_environment_variables',
-      'key_input' => 'apigee_edge_basic_auth_input',
+      'key_input' => 'apigee_auth_input',
     ]);
     try {
       $key->save();
@@ -55,6 +55,8 @@ trait ApigeeEdgeTestTrait {
     catch (EntityStorageException $exception) {
       self::fail('Could not create key for testing.');
     }
+
+    $key->getKeyProvider()->setKeyValue($key, $key->getKeyValue());
     $this->restoreKey();
   }
 
@@ -64,7 +66,6 @@ trait ApigeeEdgeTestTrait {
   protected function restoreKey() {
     $this->config('apigee_edge.auth')
       ->set('active_key', 'test')
-      ->set('active_key_oauth_token', '')
       ->save();
   }
 
@@ -74,7 +75,6 @@ trait ApigeeEdgeTestTrait {
   protected function invalidateKey() {
     $this->config('apigee_edge.auth')
       ->set('active_key', '')
-      ->set('active_key_oauth_token', '')
       ->save();
   }
 
@@ -83,13 +83,10 @@ trait ApigeeEdgeTestTrait {
    *
    * @param string $active_key
    *   The active authentication key.
-   * @param string $active_key_oauth_token
-   *   The active OAuth token key.
    */
-  protected function setKey(string $active_key, string $active_key_oauth_token) {
+  protected function setKey(string $active_key) {
     $this->config('apigee_edge.auth')
       ->set('active_key', $active_key)
-      ->set('active_key_oauth_token', $active_key_oauth_token)
       ->save();
   }
 

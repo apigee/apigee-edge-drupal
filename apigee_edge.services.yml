@@ -123,3 +123,6 @@ services:
   apigee_edge.converter.user_developer:
     class: Drupal\apigee_edge\UserDeveloperConverter
     arguments: ['@config.factory', '@entity_type.manager', '@plugin.manager.apigee_field_storage_format', '@apigee_edge.converter.field_attribute']
+
+  apigee_edge.authentication.oauth_token_storage:
+    class: Drupal\apigee_edge\OauthTokenFileStorage

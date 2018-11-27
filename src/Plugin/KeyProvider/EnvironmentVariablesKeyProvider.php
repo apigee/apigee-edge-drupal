@@ -99,7 +99,7 @@ class EnvironmentVariablesKeyProvider extends KeyProviderBase implements KeyPlug
       }
     }
 
-    return Json::encode($key_value);
+    return Json::encode((object) $key_value);
   }
 
   /**

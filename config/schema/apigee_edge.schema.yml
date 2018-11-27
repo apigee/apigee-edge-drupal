@@ -19,7 +19,7 @@ apigee_edge.auth:
   mapping:
     active_key:
       type: string
-    active_key_oauth_token:
+    oauth_token_storage_location:
       type: string
 
 apigee_edge.client:
@@ -183,13 +183,16 @@ apigee_edge.sync:
       sequence:
         type: string
 
+key.type.apigee_auth:
+  type: sequence
+
+key.input.apigee_auth_input:
+  type: sequence
+
 key.type.apigee_edge_basic_auth:
   type: sequence
 
 key.type.apigee_edge_oauth:
-  type: sequence
-
-key.type.apigee_edge_oauth_token:
   type: sequence
 
 key.input.apigee_edge_basic_auth_input:

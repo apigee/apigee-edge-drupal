@@ -23,6 +23,9 @@ services:
     decoration_priority: 0
     public: false
     arguments: ['@apigee_edge_test.sdk_connector.inner', '@logger.channel.apigee_edge_test', '@http_client_factory', '@key.repository', '@entity_type.manager', '@config.factory', '@module_handler', '@info_parser']
+    properties:
+      # Without this property for decorated services, serialization will fail. @see: https://www.drupal.org/project/drupal/issues/2536370
+      _serviceId: apigee_edge.sdk_connector
 
   apigee_edge_test.converter.user_developer:
     class: Drupal\apigee_edge_test\UserDeveloperConverter
@@ -30,3 +33,6 @@ services:
     decoration_priority: 0
     public: false
     arguments: ['@apigee_edge_test.converter.user_developer.inner', '@config.factory', '@entity_type.manager', '@plugin.manager.apigee_field_storage_format', '@apigee_edge.converter.field_attribute']
+    properties:
+      # Without this property for decorated services, serialization will fail. @see: https://www.drupal.org/project/drupal/issues/2536370
+      _serviceId: apigee_edge.converter.user_developer

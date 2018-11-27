@@ -1212,7 +1212,6 @@ function apigee_edge_key_delete(EntityInterface $entity) {
     \Drupal::configFactory()
       ->getEditable('apigee_edge.auth')
       ->set('active_key', '')
-      ->set('active_key_oauth_token', '')
       ->save();
   }
 }
@@ -1458,4 +1457,12 @@ function apigee_edge_get_my_developer_apps_title(?UserInterface $user = NULL): T
   \Drupal::moduleHandler()->alter('apigee_edge_my_developer_apps_title', $title, $user);
 
   return $title;
+}
+
+/**
+ * Implements hook_cache_flush().
+ */
+function apigee_edge_cache_flush() {
+  // Clear token data.
+  \Drupal::service('apigee_edge.authentication.oauth_token_storage')->removeToken();
 }

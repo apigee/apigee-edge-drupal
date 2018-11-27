@@ -27,6 +27,20 @@ use Drupal\key\Plugin\KeyTypeMultivalueInterface;
  */
 interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthenticationMethodInterface {
 
+  const EDGE_AUTH_TYPE_BASIC = 'basic';
+  const EDGE_AUTH_TYPE_OAUTH = 'oauth';
+
+  /**
+   * Gets the authentication type.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
+   *
+   * @return string
+   *   The Authentication type.
+   */
+  public function getAuthenticationType(KeyInterface $key): string;
+
   /**
    * Gets the API endpoint.
    *
@@ -70,5 +84,38 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
    *   The API password.
    */
   public function getPassword(KeyInterface $key): string;
+
+  /**
+   * Gets the authorization server.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
+   *
+   * @return string
+   *   The authorization server.
+   */
+  public function getAuthorizationServer(KeyInterface $key): string;
+
+  /**
+   * Gets the client ID.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
+   *
+   * @return string
+   *   The client ID.
+   */
+  public function getClientId(KeyInterface $key): string;
+
+  /**
+   * Gets the client secret.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
+   *
+   * @return string
+   *   The client secret.
+   */
+  public function getClientSecret(KeyInterface $key): string;
 
 }

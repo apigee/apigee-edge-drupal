@@ -50,13 +50,10 @@ interface SDKConnectorInterface {
    * @param \Drupal\key\KeyInterface|null $key
    *   Key entity to check connection with Edge,
    *   if NULL, then use the stored key.
-   * @param \Drupal\key\KeyInterface|null $key_token
-   *   OAuth token key entity to check connection with Edge,
-   *   if NULL, then use the stored OAuth token key.
    *
    * @throws \Exception
    */
-  public function testConnection(KeyInterface $key = NULL, KeyInterface $key_token = NULL);
+  public function testConnection(KeyInterface $key = NULL);
 
   /**
    * Returns a pre-configured API client with the provided credentials.
