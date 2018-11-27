@@ -121,7 +121,7 @@ class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInt
     // Make sure the folder exists.
     file_prepare_directory($file_path, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
     // Save the token data.
-    if (!\file_unmanaged_save_data($key_value, $file_uri, FILE_EXISTS_REPLACE)) {
+    if (!file_unmanaged_save_data($key_value, $file_uri, FILE_EXISTS_REPLACE)) {
       throw new KeyValueNotSetException();
     }
   }

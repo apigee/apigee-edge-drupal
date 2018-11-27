@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge;
 
+use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\key\KeyInterface;
 use Http\Message\Authentication;
@@ -47,7 +48,7 @@ class OauthCredentials extends Credentials {
       parent::__construct($key);
     }
     else {
-      throw new \InvalidArgumentException("The `{$key->id()}` key is not configured for OAuth.");
+      throw new InvalidArgumentException("The `{$key->id()}` key is not configured for OAuth.");
     }
   }
 
