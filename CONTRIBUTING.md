@@ -103,7 +103,8 @@ needs to be set on your system. These variables are:
 * `APIGEE_EDGE_PASSWORD`
 
 
-Value of `APIGEE_EDGE_AUTH_TYPE` should be set to either 'basic' or 'oauth'.  If you are using `oauth` you will need to also set `APIGEE_EDGE_AUTHORIZATION_SERVER`, `APIGEE_EDGE_CLIENT_ID`, `APIGEE_EDGE_CLIENT_SECRET` values.
+Value of `APIGEE_EDGE_AUTH_TYPE` should be set to either 'basic' or 'oauth'.  If you select `oauth` and have a SAML enabled org you will also need to set `APIGEE_EDGE_AUTHORIZATION_SERVER`, `APIGEE_EDGE_CLIENT_ID`, `APIGEE_EDGE_CLIENT_SECRET` values.
+
 Value of `APIGEE_EDGE_USERNAME` should be an email address of an Apigee Edge user with **Organization administrator role** if you do not want to bump into permission issues in tests. Tests failed with "Forbidden" could be a sign of the insufficient permissions.
 
 You can set these environment variables multiple ways, either by defining them
