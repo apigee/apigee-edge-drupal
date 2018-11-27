@@ -122,7 +122,7 @@ class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInt
     file_prepare_directory($file_path, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
     // Save the token data.
     if (!file_unmanaged_save_data($key_value, $file_uri, FILE_EXISTS_REPLACE)) {
-      throw new KeyValueNotSetException();
+      throw new KeyValueNotSetException('Error saving connection settings to file.');
     }
   }
 
