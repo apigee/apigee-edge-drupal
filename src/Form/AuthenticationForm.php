@@ -250,6 +250,8 @@ class AuthenticationForm extends ConfigFormBase {
         $form_state->set('processed_submitted', $processed_values['processed_submitted']);
       }
 
+      // Validate the key using the input plugin.
+      // @see: `\Drupal\key\Form\KeyFormBase::validateForm()`.
       $input_plugin->validateConfigurationForm($form, $plugin_form_state);
       $form_state->setValue('key_input_settings', $plugin_form_state->getValues());
       $this->moveFormStateErrors($plugin_form_state, $form_state);
@@ -589,6 +591,7 @@ class AuthenticationForm extends ConfigFormBase {
   /**
    * Moves form errors from one form state to another.
    *
+   * Copied from `\Drupal\key\Form\KeyFormBase::moveFormStateErrors()`.
    * @param \Drupal\Core\Form\FormStateInterface $from
    *   The form state object to move from.
    * @param \Drupal\Core\Form\FormStateInterface $to
