@@ -281,7 +281,7 @@ class AuthenticationForm extends ConfigFormBase {
       $test_auth_type = $test_key->getKeyType()->getAuthenticationType($test_key);
       if ($test_auth_type === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
         // Clear existing token data.
-        $this->oauthTokenStorage->saveToken([]);
+        $this->oauthTokenStorage->removeToken();
       }
       try {
         $this->sdkConnector->testConnection($test_key);

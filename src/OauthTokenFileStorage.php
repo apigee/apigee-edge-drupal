@@ -134,10 +134,8 @@ class OauthTokenFileStorage implements OauthTokenStorageInterface {
    * {@inheritdoc}
    */
   public function removeToken(): void {
-    // Remove the data from the static cache.
-    static::$token_data = NULL;
     // Remove the token data from storage.
-    file_unmanaged_delete(static::oauthTokenPath());
+    $this->saveToken([]);
   }
 
   /**
