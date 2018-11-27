@@ -22,6 +22,7 @@ namespace Drupal\Tests\apigee_edge\Kernel;
 use Drupal\apigee_edge\OauthTokenFileStorage;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\DrupalKernel;
+use Drupal\Core\Site\Settings;
 use Drupal\KernelTests\KernelTestBase;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -100,7 +101,7 @@ class OauthTokenStorageTest extends KernelTestBase {
     $this->token_storage->saveToken($this->token_data);
 
     // Load raw token data.
-    $stored_token = unserialize(base64_decode(file_get_contents(OauthTokenFileStorage::OAUTH_TOKEN_PATH)));
+    $stored_token = unserialize(base64_decode(file_get_contents(OauthTokenFileStorage::oauthTokenPath())));
 
     // Test token values.
     static::assertSame($this->token_data['access_token'], $stored_token['access_token']);
@@ -121,11 +122,11 @@ class OauthTokenStorageTest extends KernelTestBase {
     $acccess_token = $this->token_storage->getAccessToken();
 
     // Load raw token data.
-    $stored_token = unserialize(base64_decode(file_get_contents(OauthTokenFileStorage::OAUTH_TOKEN_PATH)));
+    $stored_token = unserialize(base64_decode(file_get_contents(OauthTokenFileStorage::oauthTokenPath())));
 
     // Create a new access token and write it to file.
     $stored_token['access_token'] = strtolower($this->randomMachineName(32));
-    file_unmanaged_save_data(base64_encode(serialize($stored_token)), OauthTokenFileStorage::OAUTH_TOKEN_PATH, FILE_EXISTS_REPLACE);
+    file_unmanaged_save_data(base64_encode(serialize($stored_token)), OauthTokenFileStorage::oauthTokenPath(), FILE_EXISTS_REPLACE);
 
     // Make sure the cached version is still returned.
     static::assertSame($acccess_token, $this->token_storage->getAccessToken());
@@ -164,9 +165,29 @@ class OauthTokenStorageTest extends KernelTestBase {
     // Save the token.
     $this->token_storage->saveToken($this->token_data);
 
-    $access_token = $this->token_storage->getAccessToken();
+    static::assertNotEmpty($this->token_storage->getAccessToken());
     drupal_flush_all_caches();
     static::assertEmpty($this->token_storage->getAccessToken());
+  }
+
+  /**
+   * Test that the tokens are removed when cacke is cleared.
+   */
+  public function testFileLocationSetings() {
+    $settings = Settings::getAll();
+    $settings[OauthTokenFileStorage::OAUTH_TOKEN_FILE_PATH_SETTINGS_KEY] = 'private://.apigee_edge_custom';
+    new Settings($settings);
+
+    $token_path_path = OauthTokenFileStorage::oauthTokenPath();
+    static::assertSame('private://.apigee_edge_custom/oauth.dat', $token_path_path);
+    // Save the token.
+    $this->token_storage->saveToken($this->token_data);
+
+    $token_data = unserialize(base64_decode(file_get_contents($token_path_path)));
+    static::assertSame($this->token_data['access_token'], $token_data['access_token']);
+    static::assertSame($this->token_data['token_type'], $token_data['token_type']);
+    static::assertSame($this->token_data['refresh_token'], $token_data['refresh_token']);
+    static::assertSame($this->token_data['scope'], $token_data['scope']);
   }
 
   /**

@@ -20,16 +20,14 @@
 namespace Drupal\apigee_edge;
 
 use Apigee\Edge\HttpClient\Plugin\Authentication\OauthTokenStorageInterface;
+use Drupal\Core\Site\Settings;
 
 /**
  * Storing and returning OAuth access token data.
  */
 class OauthTokenFileStorage implements OauthTokenStorageInterface {
 
-  /**
-   * The storage location for oauth data.
-   */
-  const OAUTH_TOKEN_PATH = 'private://.apigee_edge/oauth.dat';
+  const OAUTH_TOKEN_FILE_PATH_SETTINGS_KEY = 'apigee_edge_oauth_token_file_path';
 
   /**
    * Ensures that token gets refreshed earlier than it expires.
@@ -122,11 +120,11 @@ class OauthTokenFileStorage implements OauthTokenStorageInterface {
     unset($data['expires_in']);
 
     // Gets the file directory so we can make sure it exists.
-    $file_path = dirname(static::OAUTH_TOKEN_PATH);
+    $file_path = dirname(static::oauthTokenPath());
     file_prepare_directory($file_path, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
 
     // Write the obfuscated token data to a private file.
-    file_unmanaged_save_data(base64_encode(serialize($data)), static::OAUTH_TOKEN_PATH, FILE_EXISTS_REPLACE);
+    file_unmanaged_save_data(base64_encode(serialize($data)), static::oauthTokenPath(), FILE_EXISTS_REPLACE);
 
     // Update the cached value.
     static::$token_data = $data;
@@ -139,7 +137,19 @@ class OauthTokenFileStorage implements OauthTokenStorageInterface {
     // Remove the data from the static cache.
     static::$token_data = NULL;
     // Remove the token data from storage.
-    file_unmanaged_delete(static::OAUTH_TOKEN_PATH);
+    file_unmanaged_delete(static::oauthTokenPath());
+  }
+
+  /**
+   * Gets the storage location for OAuth token data.
+   */
+  public static function oauthTokenPath() {
+    static $token_path;
+
+    $token_path = $token_path
+      ?? rtrim(Settings::get(static::OAUTH_TOKEN_FILE_PATH_SETTINGS_KEY, 'private://.apigee_edge'), " \t\n\r\0\x0B\\/") . '/oauth.dat';
+
+    return $token_path;
   }
 
   /**
@@ -168,7 +178,7 @@ class OauthTokenFileStorage implements OauthTokenStorageInterface {
    */
   protected function getFromStorage(): array {
     // Get the token data from the file store.
-    if ($raw_data = file_get_contents(static::OAUTH_TOKEN_PATH)) {
+    if ($raw_data = file_get_contents(static::oauthTokenPath())) {
       $data = unserialize(base64_decode($raw_data));
     }
     return $data ?: [
