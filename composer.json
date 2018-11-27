@@ -1,6 +1,6 @@
 {
     "name": "drupal/apigee_edge",
-    "license": "GPL-2.0",
+    "license": "GPL-2.0-or-later",
     "type": "drupal-module",
     "description": "Apigee Edge for Drupal.",
     "require": {
@@ -19,9 +19,6 @@
         "egulias/email-validator": "1.2.14",
         "phpunit/phpunit": "^6.5",
         "webflo/drupal-core-require-dev": "^8.6"
-    },
-    "conflict": {
-        "apigee/apigee-client-php": "<2.0.0-alpha6"
     },
     "config": {
         "sort-packages": true
