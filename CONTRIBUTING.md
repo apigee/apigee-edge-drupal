@@ -46,7 +46,7 @@ required environment variables in the [Testing](#testing) section.)
 tests to cover the implemented functionality. If you modify existing features, update related tests.
 * Push your changes to your repo's patch-1 branch.
 * Wait until all Travis CI test jobs finish and _pass_. (If any of them fails
-restart them once or twice. They may have failed due to an API communication error. You can 
+restart them once or twice. They may have failed due to an API communication error. You can
 identify these type of issues from logs.)
 * Create [new pull request](https://github.com/apigee/apigee-edge-drupal/pull/new/8.x-1.x)
 and do not forget to add a link to Travis CI build that can confirm your code is working.
@@ -59,7 +59,7 @@ Update your composer.json and install the module from your fork:
 ```bash
 cd [DRUPAL_ROOT]
 composer config repositories.forked-apigee_edge vcs https://github.com/[YOUR-GITHUB-USERNAME]/apigee-edge-drupal
-composer require drupal/apigee_edge:dev-patch-1 # It is important to require a branch/tag here that does not exist in the Drupal.org repo otherwise code gets pulled from there. For example, dev-8.x-1.x condition would pull the code from Drupal.org repo instead of your fork.  
+composer require drupal/apigee_edge:dev-patch-1 # It is important to require a branch/tag here that does not exist in the Drupal.org repo otherwise code gets pulled from there. For example, dev-8.x-1.x condition would pull the code from Drupal.org repo instead of your fork.
 ```
 
 If you would like to keep your fork always up-to-date with recent changes in
@@ -89,18 +89,21 @@ git checkout -b patch-2 upstream/8.x-1.x
 ## Add your awesome changes.
 git push -u origin patch-2:patch-2 # Push changes to your repo.
 ## Create PR on Github.
-``` 
+```
 
 ## Running tests
 
 Before you could start testing this module some environment variables
 needs to be set on your system. These variables are:
 
+* `APIGEE_EDGE_AUTH_TYPE`
 * `APIGEE_EDGE_ENDPOINT`
 * `APIGEE_EDGE_ORGANIZATION`
 * `APIGEE_EDGE_USERNAME`
-* `APIGEE_EDGE_PASSWORD`.
+* `APIGEE_EDGE_PASSWORD`
 
+
+Value of `APIGEE_EDGE_AUTH_TYPE` should be set to either 'basic' or 'oauth'.  If you are using `oauth` you will need to also set `APIGEE_EDGE_AUTHORIZATION_SERVER`, `APIGEE_EDGE_CLIENT_ID`, `APIGEE_EDGE_CLIENT_SECRET` values.
 Value of `APIGEE_EDGE_USERNAME` should be an email address of an Apigee Edge user with **Organization administrator role** if you do not want to bump into permission issues in tests. Tests failed with "Forbidden" could be a sign of the insufficient permissions.
 
 You can set these environment variables multiple ways, either by defining them
@@ -121,9 +124,9 @@ PHPUnit tests with the following commands:
 ```bash
 cd [DRUPAL_ROOT]/modules/contrib/apigee_edge/.travis
 docker-compose up --build # Build is important because recent changes on module files have to be copied from the host to the container.
-docker-compose run php /opt/drupal-module/.travis/run-test.sh # to run all tests of this module. This command performs some initial setup tasks if test environment has not been configured yet. 
+docker-compose run php /opt/drupal-module/.travis/run-test.sh # to run all tests of this module. This command performs some initial setup tasks if test environment has not been configured yet.
 docker-compose run php /opt/drupal-module/.travis/run-test.sh --filter testAppSettingsForm AppSettingsFormTest build/modules/contrib/apigee_edge/tests/src/FunctionalJavascript/AppSettingsFormTest.php # to run one specific test. If you pass any arguments to run-test.sh those get passed directly to PHPUnit. See [.travis/run-test.sh](run-test.sh).
-docker-compose down --remove-orphans -v # Intermediate data (like module files) must be cleared from the shared volumes otherwise recent changes won't be visible in the container. 
+docker-compose down --remove-orphans -v # Intermediate data (like module files) must be cleared from the shared volumes otherwise recent changes won't be visible in the container.
 ```
 
 You can read more about running Drupal 8 PHPUnit tests [here](https://www.drupal.org/docs/8/phpunit/running-phpunit-tests).
