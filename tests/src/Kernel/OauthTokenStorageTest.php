@@ -19,6 +19,7 @@
 
 namespace Drupal\Tests\apigee_edge\Kernel;
 
+use Drupal\apigee_edge\Form\AuthenticationForm;
 use Drupal\apigee_edge\OauthTokenFileStorage;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\DrupalKernel;
@@ -174,9 +175,9 @@ class OauthTokenStorageTest extends KernelTestBase {
    * Test that the tokens are removed when cacke is cleared.
    */
   public function testFileLocationSetings() {
-    $settings = Settings::getAll();
-    $settings[OauthTokenFileStorage::OAUTH_TOKEN_FILE_PATH_SETTINGS_KEY] = 'private://.apigee_edge_custom';
-    new Settings($settings);
+    $this->config(AuthenticationForm::CONFIG_NAME)
+      ->set('oauth_token_storage_location', 'private://.apigee_edge_custom')
+      ->save();
 
     $token_path_path = OauthTokenFileStorage::oauthTokenPath();
     static::assertSame('private://.apigee_edge_custom/oauth.dat', $token_path_path);

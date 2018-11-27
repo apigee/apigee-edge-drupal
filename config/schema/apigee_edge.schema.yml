@@ -19,6 +19,8 @@ apigee_edge.auth:
   mapping:
     active_key:
       type: string
+    oauth_token_storage_location:
+      type: string
 
 apigee_edge.client:
   type: config_object

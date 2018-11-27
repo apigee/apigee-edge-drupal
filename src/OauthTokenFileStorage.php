@@ -20,14 +20,12 @@
 namespace Drupal\apigee_edge;
 
 use Apigee\Edge\HttpClient\Plugin\Authentication\OauthTokenStorageInterface;
-use Drupal\Core\Site\Settings;
+use Drupal\apigee_edge\Form\AuthenticationForm;
 
 /**
  * Storing and returning OAuth access token data.
  */
 class OauthTokenFileStorage implements OauthTokenStorageInterface {
-
-  const OAUTH_TOKEN_FILE_PATH_SETTINGS_KEY = 'apigee_edge_oauth_token_file_path';
 
   /**
    * Ensures that token gets refreshed earlier than it expires.
@@ -144,8 +142,12 @@ class OauthTokenFileStorage implements OauthTokenStorageInterface {
   public static function oauthTokenPath() {
     static $token_path;
 
-    $token_path = $token_path
-      ?? rtrim(Settings::get(static::OAUTH_TOKEN_FILE_PATH_SETTINGS_KEY, 'private://.apigee_edge'), " \t\n\r\0\x0B\\/") . '/oauth.dat';
+    if (!isset($token_path)) {
+      // Get the file location from config.
+      $location = \Drupal::config(AuthenticationForm::CONFIG_NAME)->get('oauth_token_storage_location');
+
+      $token_path = (!empty($location) ? rtrim($location, " \t\n\r\0\x0B\\/") : 'private://.apigee_edge') . '/oauth.dat';
+    }
 
     return $token_path;
   }
