@@ -24,8 +24,10 @@ use Drupal\apigee_edge\Form\AuthenticationForm;
 
 /**
  * Storing and returning OAuth access token data.
+ *
+ * @internal The implementation may change before the first stable release.
  */
-class OauthTokenFileStorage implements OauthTokenStorageInterface {
+final class OauthTokenFileStorage implements OauthTokenStorageInterface {
 
   /**
    * Ensures that token gets refreshed earlier than it expires.
@@ -39,6 +41,8 @@ class OauthTokenFileStorage implements OauthTokenStorageInterface {
 
   /**
    * An internally cached token data store.
+   *
+   * TODO This does not have to be static.
    *
    * @var array
    */
@@ -138,6 +142,9 @@ class OauthTokenFileStorage implements OauthTokenStorageInterface {
 
   /**
    * Gets the storage location for OAuth token data.
+   *
+   * TODO DI the config factory, save the location (directory only) to a
+   * class property. Only append the file name to the path in saveToken().
    */
   public static function oauthTokenPath() {
     static $token_path;
