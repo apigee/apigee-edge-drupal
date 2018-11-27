@@ -42,15 +42,15 @@ trait TestKeyBuilderTrait {
    */
   public function generateTestKey() {
     // The directory has to be passed by reference.
-    $key_directory = 'public://.apigee';
-    file_prepare_directory($key_directory, FILE_CREATE_DIRECTORY);
+    $key_folder = 'public://.apigee_edge';
+    file_prepare_directory($key_folder, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
 
     // Create a new key name.
     $new_key_id = 'apigee_edge_connection_default';
-    $file_path = 'public://.apigee/apigee_auth_apigee_edge.json';
+    $key_file_path = 'public://.apigee_edge/apigee_auth_apigee_edge.json';
 
     // Save an empty object to the file.
-    file_put_contents($file_path, '{"auth_type": "basic"}');
+    file_put_contents($key_file_path, '{"auth_type": "basic"}');
 
     // Create a new key.
     $this->test_key = Key::create([
@@ -61,7 +61,7 @@ trait TestKeyBuilderTrait {
       'key_input' => 'apigee_auth_input',
       'key_provider' => 'file',
       'key_provider_settings' => [
-        'file_location' => $file_path,
+        'file_location' => $key_file_path,
       ],
     ]);
 

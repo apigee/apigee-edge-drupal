@@ -554,13 +554,13 @@ class AuthenticationForm extends ConfigFormBase {
   protected function generateNewAuthKey(): KeyInterface {
     // Create a new key name.
     $new_key_id = 'apigee_edge_connection_default';
-    $file_path = "private://{$new_key_id}_apigee_edge.json";
+    $file_path = "private://.apigee_edge/{$new_key_id}.json";
     $new_key = NULL;
 
     // Make sure the key and the associated key file do not exist.
     for ($i = 1; (Key::load($new_key_id) || file_exists($file_path)); $i++) {
       $new_key_id = "apigee_edge_connection_default_{$i}";
-      $file_path = "private://{$new_key_id}_apigee_edge.json";
+      $file_path = "private://.apigee_edge/{$new_key_id}.json";
     }
 
     // Create a new key.

@@ -116,7 +116,12 @@ class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInt
    *   Thrown when the key cannot be saved.
    */
   public function setKeyValue(KeyInterface $key, $key_value) {
-    if (!\file_unmanaged_save_data($key_value, $this->getFileUri($key), FILE_EXISTS_REPLACE)) {
+    $file_uri = $this->getFileUri($key);
+    $file_path = dirname($file_uri);
+    // Make sure the folder exists.
+    file_prepare_directory($file_path, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+    // Save the token data.
+    if (!\file_unmanaged_save_data($key_value, $file_uri, FILE_EXISTS_REPLACE)) {
       throw new KeyValueNotSetException();
     }
   }

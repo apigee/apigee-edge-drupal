@@ -72,7 +72,7 @@ class AuthenticationFormTest extends KernelTestBase {
     $private_directory = DrupalKernel::findSitePath(Request::create('/')) . '/private';
     $this->setSetting('file_private_path', $private_directory);
     // Make sure the directory exists.
-    file_prepare_directory($private_directory, FILE_CREATE_DIRECTORY);
+    file_prepare_directory($private_directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
 
     static::assertDirectoryExists($private_directory);
   }
