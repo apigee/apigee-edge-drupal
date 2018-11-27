@@ -592,6 +592,7 @@ class AuthenticationForm extends ConfigFormBase {
    * Moves form errors from one form state to another.
    *
    * Copied from `\Drupal\key\Form\KeyFormBase::moveFormStateErrors()`.
+   *
    * @param \Drupal\Core\Form\FormStateInterface $from
    *   The form state object to move from.
    * @param \Drupal\Core\Form\FormStateInterface $to
