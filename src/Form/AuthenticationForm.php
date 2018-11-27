@@ -607,6 +607,8 @@ class AuthenticationForm extends ConfigFormBase {
   /**
    * Moves storage variables from one form state to another.
    *
+   * Copied from `\Drupal\key\Form\KeyFormBase::moveFormStateStorage()`.
+   *
    * @param \Drupal\Core\Form\FormStateInterface $from
    *   The form state object to move from.
    * @param \Drupal\Core\Form\FormStateInterface $to
@@ -620,6 +622,8 @@ class AuthenticationForm extends ConfigFormBase {
 
   /**
    * Creates a FormStateInterface object for a plugin.
+   *
+   * Copied from `\Drupal\key\Form\KeyFormBase::createPluginFormState()`.
    *
    * @param string $type
    *   The plugin type ID.
