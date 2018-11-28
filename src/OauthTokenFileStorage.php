@@ -206,6 +206,12 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
    * Removes the file in which the OAuth token data is stored.
    */
   public function removeTokenFile(): void {
+    if (strpos($this->tokenFilePath, 'private://') === 0 && empty($this->settings->get('file_private_path'))) {
+      // Do not try to delete the file if private filesystem has not been
+      // configured because in that cause "private://" scheme is not
+      // registered.
+      return;
+    }
     file_unmanaged_delete($this->tokenFilePath);
   }
 
