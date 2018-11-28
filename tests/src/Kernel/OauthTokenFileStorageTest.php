@@ -29,6 +29,9 @@ use Drupal\KernelTests\KernelTestBase;
  *
  * @group apigee_edge
  * @group apigee_edge_kernel
+ *
+ * TODO Test OAuth token storage is only cleared when Apigee Edge authentication
+ * is configured and the authentication method is OAuth.
  */
 class OauthTokenFileStorageTest extends KernelTestBase {
 

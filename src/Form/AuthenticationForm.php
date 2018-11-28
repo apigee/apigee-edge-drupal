@@ -285,6 +285,8 @@ class AuthenticationForm extends ConfigFormBase {
           // Clear existing token data.
           $this->oauthTokenStorage->removeToken();
         }
+        // TODO If email field contains an invalid email request should
+        // not be sent.
         $this->sdkConnector->testConnection($test_key);
         $this->messenger()->addStatus($this->t('Connection successful.'));
       }
@@ -480,6 +482,10 @@ class AuthenticationForm extends ConfigFormBase {
       'key_provider' => get_class($key->getKeyProvider()),
     ];
 
+    // TODO
+    // * Remove deprecated code.
+    // * Fix implementation of this method.
+    // * Provide debug message for OauthTokenStorageException.
     if ($key_type instanceof OauthKeyType) {
       /** @var \Drupal\apigee_edge\Plugin\KeyType\OauthKeyType $key_type */
       $credentials['authorization_server'] = $key_type->getAuthorizationServer($key);
