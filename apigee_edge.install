@@ -25,6 +25,7 @@
 
 use Drupal\apigee_edge\Exception\AuthenticationKeyNotFoundException;
 use Drupal\apigee_edge\Exception\AuthenticationKeyValueMalformedException;
+use Drupal\apigee_edge\OauthTokenFileStorage;
 use Drupal\Core\Url;
 use Drupal\user\RoleInterface;
 
@@ -87,6 +88,19 @@ function apigee_edge_install() {
       'analytics own developer_app',
     ];
     user_role_grant_permissions(RoleInterface::AUTHENTICATED_ID, $authenticated_user_permissions);
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function apigee_edge_uninstall() {
+  // Remove OAuth token data file.
+  // We do not check whether OAuth was the authentication method in use
+  // because this function does not trigger an error if it was not.
+  $storage = \Drupal::service('apigee_edge.authentication.oauth_token_storage');
+  if ($storage instanceof OauthTokenFileStorage) {
+    $storage->removeTokenFile();
   }
 }
 
