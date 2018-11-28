@@ -36,4 +36,5 @@ interface OauthTokenStorageInterface extends EdgeOauthTokenStorageInterface {
    *   Exception with the unfulfilled requirement.
    */
   public function checkRequirements(): void;
+
 }
