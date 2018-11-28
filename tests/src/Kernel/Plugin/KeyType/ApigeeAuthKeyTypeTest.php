@@ -39,7 +39,7 @@ class ApigeeAuthKeyTypeTest extends KernelTestBase {
    */
   protected static $modules = [
     'apigee_edge',
-    'key'
+    'key',
   ];
 
   /**
