@@ -33,6 +33,7 @@ use Drupal\apigee_edge\Exception\UserDeveloperConversionNoStorageFormatterFoundE
 use Drupal\apigee_edge\Exception\UserDeveloperConversionUserFieldDoesNotExistException;
 use Drupal\apigee_edge\Form\DeveloperSettingsForm;
 use Drupal\apigee_edge\JobExecutor;
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\apigee_edge\Plugin\Field\FieldType\ApigeeEdgeDeveloperIdFieldItem;
 use Drupal\apigee_edge\Plugin\Validation\Constraint\DeveloperEmailUniqueValidator;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
@@ -1463,6 +1464,18 @@ function apigee_edge_get_my_developer_apps_title(?UserInterface $user = NULL): T
  * Implements hook_cache_flush().
  */
 function apigee_edge_cache_flush() {
-  // Clear token data.
-  \Drupal::service('apigee_edge.authentication.oauth_token_storage')->removeToken();
+  // Clear OAuth token storage and enforce re-authentication to Apigee Edge.
+  $active_key_id = \Drupal::config('apigee_edge.auth')->get('active_key');
+  if ($active_key_id) {
+    /** @var \Drupal\key\KeyInterface $active_key */
+    $active_key = \Drupal::entityTypeManager()->getStorage('key')->load($active_key_id);
+    if ($active_key) {
+      $key_type = $active_key->getKeyType();
+      if ($key_type instanceof EdgeKeyTypeInterface) {
+        if ($key_type->getAuthenticationType($active_key) === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
+          \Drupal::service('apigee_edge.authentication.oauth_token_storage')->removeToken();
+        }
+      }
+    }
+  }
 }
