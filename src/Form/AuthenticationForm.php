@@ -346,6 +346,11 @@ class AuthenticationForm extends ConfigFormBase {
    *   The suggestion text to be displayed.
    */
   protected function createSuggestion(\Exception $exception, KeyInterface $key): MarkupInterface {
+    $fail_text = $this->t('Failed to connect to Apigee Edge.');
+    // General error message.
+    $suggestion = $this->t('@fail_text', [
+      '@fail_text' => $fail_text,
+    ]);
     /** @var \Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType $key_type */
     $key_type = $key->getKeyType();
 
