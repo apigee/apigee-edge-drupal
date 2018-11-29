@@ -21,19 +21,19 @@
 namespace Drupal\apigee_edge\Entity\Controller\Cache;
 
 /**
- * Base definition of developer app cache factory.
+ * Definition of the app cache that stores apps by their owner and app name.
  */
-interface DeveloperAppCacheFactoryInterface {
+interface AppCacheByOwnerFactoryInterface {
 
   /**
-   * Returns a preconfigured developer app cache.
+   * Returns the same app cache instance for an owner.
    *
    * @param string $owner
-   *   Email address or developer id (uuid) of a developer.
+   *   Developer id (UUID), email address or a company's company name.
    *
-   * @return \Drupal\apigee_edge\Entity\Controller\Cache\DeveloperAppCacheInterface
-   *   The developer app cache of the owner.
+   * @return \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByAppOwner
+   *   The app name cache instance that belongs to the owner.
    */
-  public function developerAppCache(string $owner) : DeveloperAppCacheInterface;
+  public function getAppCache(string $owner): AppCacheByAppOwner;
 
 }
