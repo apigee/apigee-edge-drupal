@@ -129,11 +129,12 @@ class DeveloperAppStorage extends AttributesAwareFieldableEdgeEntityStorageBase 
    * {@inheritdoc}
    */
   public function loadUnchanged($id) {
+    // Id could be an UUID or an app name.
+    // We do not know who is the owner so we have to load the app an invalidate
+    // the app cache entry by the app id (UUID).
     /** @var \Apigee\Edge\Api\Management\Entity\AppInterface $entity */
     $entity = $this->entityController()->load($id);
-    // TODO Expose this on the interface. This is the second time that it is
-    // needed.
-    $this->appCache->removeAppFromCache($entity);
+    $this->appCache->removeEntities([$entity->getAppId()]);
     return parent::loadUnchanged($id);
   }
 
