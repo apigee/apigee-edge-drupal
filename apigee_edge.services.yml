@@ -23,34 +23,67 @@ services:
 
   apigee_edge.controller.developer:
     class: Drupal\apigee_edge\Entity\Controller\DeveloperController
-    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.controller.organization']
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.controller.organization', '@apigee_edge.controller.cache.developer', '@apigee_edge.controller.cache.developer_ids', '@apigee_edge.entity.controller.cache.app_by_owner_factory', '@apigee_edge.entity.controller.cache.app_name_by_owner_factory']
 
   apigee_edge.controller.api_product:
     class: Drupal\apigee_edge\Entity\Controller\ApiProductController
-    arguments: ['@apigee_edge.sdk_connector']
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.controller.organization', '@apigee_edge.controller.cache.api_product', '@apigee_edge.controller.cache.api_product_ids']
 
   apigee_edge.controller.app:
     class: Drupal\apigee_edge\Entity\Controller\AppController
-    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.controller.organization', '@apigee_edge.controller.cache.apps']
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.controller.organization', '@apigee_edge.controller.cache.apps', '@apigee_edge.controller.cache.app_ids', '@apigee_edge.entity.controller.cache.app_by_owner_factory']
 
   apigee_edge.controller.developer_app_controller_factory:
     class: Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerFactory
-    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.controller.organization', '@apigee_edge.controller.cache.developer_app_cache_factory', '@email.validator']
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.controller.organization', '@apigee_edge.controller.cache.apps', '@apigee_edge.entity.controller.cache.app_by_owner_factory', '@apigee_edge.entity.controller.cache.app_name_by_owner_factory', '@email.validator']
 
   apigee_edge.controller.developer_app_credential_factory:
     class: Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactory
-    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.controller.cache.developer_app_cache_factory', '@event_dispatcher']
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.entity.controller.cache.app_by_owner_factory', '@event_dispatcher']
+
+  apigee_edge.controller.cache.entity_cache:
+    class: Drupal\apigee_edge\Entity\Controller\Cache\EntityCache
+    arguments: ['@apigee_edge.cache.memory_cache_factory']
+    abstract: true
+
+  apigee_edge.controller.cache.entity_id_cache:
+    class: Drupal\apigee_edge\Entity\Controller\Cache\EntityIdCache
+    abstract: true
+
+  apigee_edge.controller.cache.api_product:
+    parent: apigee_edge.controller.cache.entity_cache
+    arguments: ['@apigee_edge.controller.cache.api_product_ids', api_product]
+
+  apigee_edge.controller.cache.api_product_ids:
+    parent: apigee_edge.controller.cache.entity_id_cache
+
+  apigee_edge.controller.cache.developer:
+    class: Drupal\apigee_edge\Entity\Controller\Cache\DeveloperCache
+    parent: apigee_edge.controller.cache.entity_cache
+    arguments: ['@apigee_edge.controller.cache.developer_ids', developer]
+
+  apigee_edge.controller.cache.developer_ids:
+    class: Drupal\apigee_edge\Entity\Controller\Cache\DeveloperIdCache
+    parent: apigee_edge.controller.cache.entity_id_cache
 
   apigee_edge.controller.cache.apps:
+    parent: apigee_edge.controller.cache.entity_cache
     class: Drupal\apigee_edge\Entity\Controller\Cache\AppCache
-    arguments: ['@apigee_edge.memory_cache.apps']
+    arguments: ['@apigee_edge.controller.cache.app_ids', 'app']
 
-  apigee_edge.controller.cache.developer_app_cache_factory:
-    class: Drupal\apigee_edge\Entity\Controller\Cache\DeveloperAppCacheFactory
-    arguments: ['@email.validator', '@apigee_edge.memory_cache.apps']
+  apigee_edge.controller.cache.app_ids:
+    parent: apigee_edge.controller.cache.entity_id_cache
+    class: Drupal\apigee_edge\Entity\Controller\Cache\AppIdCache
 
-  apigee_edge.memory_cache.apps:
-    class: Drupal\Core\Cache\MemoryCache\MemoryCache
+  apigee_edge.entity.controller.cache.app_name_by_owner_factory:
+    class: Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactory
+
+  apigee_edge.entity.controller.cache.app_by_owner_factory:
+    class: Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactory
+    arguments: ['@apigee_edge.controller.cache.apps', '@apigee_edge.entity.controller.cache.app_name_by_owner_factory']
+
+  apigee_edge.cache.memory_cache_factory:
+    class: Drupal\apigee_edge\MemoryCacheFactory
 
   apigee_edge.job_executor:
     class: Drupal\apigee_edge\JobExecutor
