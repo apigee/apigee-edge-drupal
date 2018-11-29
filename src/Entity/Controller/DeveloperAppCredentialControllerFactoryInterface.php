@@ -29,7 +29,7 @@ interface DeveloperAppCredentialControllerFactoryInterface {
    * Returns a preconfigured controller for the owner's app.
    *
    * @param string $owner
-   *   Email address or id (uuid) of a developer.
+   *   Email address or id (UUID) of a developer.
    * @param string $appName
    *   Name of an app. (Not an app id, because app credentials endpoints does
    *   not allow to use them.)

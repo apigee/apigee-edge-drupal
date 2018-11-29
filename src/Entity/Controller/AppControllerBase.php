@@ -31,13 +31,6 @@ use Drupal\apigee_edge\SDKConnectorInterface;
 abstract class AppControllerBase {
 
   /**
-   * The app cache.
-   *
-   * @var \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface
-   */
-  protected $appCache;
-
-  /**
    * The organization controller service.
    *
    * @var \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface
@@ -50,6 +43,13 @@ abstract class AppControllerBase {
    * @var \Drupal\apigee_edge\SDKConnectorInterface
    */
   protected $connector;
+
+  /**
+   * The app cache.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface
+   */
+  protected $appCache;
 
   /**
    * AppControllerBase constructor.

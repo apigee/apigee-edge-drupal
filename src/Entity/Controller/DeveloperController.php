@@ -23,9 +23,13 @@ namespace Drupal\apigee_edge\Entity\Controller;
 use Apigee\Edge\Api\Management\Controller\DeveloperController as EdgeDeveloperController;
 use Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface as EdgeDeveloperControllerInterface;
 use Apigee\Edge\Api\Management\Entity\DeveloperInterface;
-use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
-use Apigee\Edge\Structure\AttributesProperty;
-use Apigee\Edge\Structure\PagerInterface;
+use Apigee\Edge\Entity\EntityInterface;
+use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactory;
+use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface;
+use Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactory;
+use Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactoryInterface;
+use Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface;
+use Drupal\apigee_edge\Entity\Controller\Cache\EntityIdCacheInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 
 /**
@@ -33,13 +37,16 @@ use Drupal\apigee_edge\SDKConnectorInterface;
  *
  * This integrates the Management API's Developer controller from the
  * SDK's with Drupal.
- *
- * TODO Cache developers in a memory cache.
- * This could be useful to figure out a developer Id of an already cached
- * developer from its email address where it is needed. Ex.: app controller,
- * apigee_edge_developer_id field, etc.
  */
 final class DeveloperController implements DeveloperControllerInterface {
+
+  use CachedEntityCrudOperationsControllerTrait {
+    delete as private traitDelete;
+  }
+  use CachedPaginatedEntityIdListingControllerTrait;
+  use CachedPaginatedEntityListingControllerTrait;
+  use CachedPaginatedControllerHelperTrait;
+  use CachedAttributesAwareEntityControllerTrait;
 
   /**
    * Local cache for the decorated developer controller from the SDK.
@@ -65,16 +72,70 @@ final class DeveloperController implements DeveloperControllerInterface {
   private $orgController;
 
   /**
+   * The entity cache.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface
+   */
+  private $entityCache;
+
+  /**
+   * The entity id cache.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\EntityIdCacheInterface
+   */
+  private $entityIdCache;
+
+  /**
+   * The app cache by owner factory service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface
+   */
+  private $appCacheByOwnerFactory;
+
+  /**
+   * The app name cache by owner factory service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactoryInterface
+   */
+  private $appNameCacheByOwnerFactory;
+
+  /**
    * DeveloperController constructor.
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
    *   The SDK connector service.
    * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
    *   The organization controller service.
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface $entity_cache
+   *   The entity cache used by this controller.
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\EntityIdCacheInterface $entity_id_cache
+   *   The entity id cache used by this controller.
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface $app_cache_by_owner_factory
+   *   The app cache by owner factory service.
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactoryInterface $app_name_cache_by_owner
+   *   The app name cache by owner factory service.
    */
-  public function __construct(SDKConnectorInterface $connector, OrganizationControllerInterface $org_controller) {
+  public function __construct(SDKConnectorInterface $connector, OrganizationControllerInterface $org_controller, EntityCacheInterface $entity_cache, EntityIdCacheInterface $entity_id_cache, AppCacheByOwnerFactoryInterface $app_cache_by_owner_factory, AppNameCacheByOwnerFactoryInterface $app_name_cache_by_owner) {
     $this->connector = $connector;
     $this->orgController = $org_controller;
+    $this->entityCache = $entity_cache;
+    $this->entityIdCache = $entity_id_cache;
+    $this->appCacheByOwnerFactory = $app_cache_by_owner_factory;
+    $this->appNameCacheByOwnerFactory = $app_name_cache_by_owner;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function entityCache(): EntityCacheInterface {
+    return $this->entityCache;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function entityIdCache(): EntityIdCacheInterface {
+    return $this->entityIdCache;
   }
 
   /**
@@ -83,7 +144,7 @@ final class DeveloperController implements DeveloperControllerInterface {
    * @return \Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface
    *   The initialized developer controller.
    */
-  private function decorated(): EdgeDeveloperControllerInterface {
+  protected function decorated(): EdgeDeveloperControllerInterface {
     if ($this->instance === NULL) {
       $this->instance = new EdgeDeveloperController($this->connector->getOrganization(), $this->connector->getClient(), NULL, $this->orgController);
     }
@@ -94,70 +155,12 @@ final class DeveloperController implements DeveloperControllerInterface {
    * {@inheritdoc}
    */
   public function getDeveloperByApp(string $appName): DeveloperInterface {
-    return $this->decorated()->getDeveloperByApp($appName);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getAttributes(string $entityId): AttributesProperty {
-    return $this->decorated()->getAttributes($entityId);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getAttribute(string $entityId, string $name): string {
-    return $this->decorated()->getAttribute($entityId, $name);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function updateAttributes(string $entityId, AttributesProperty $attributes): AttributesProperty {
-    return $this->decorated()->updateAttributes($entityId, $attributes);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function updateAttribute(string $entityId, string $name, string $value): string {
-    return $this->decorated()->updateAttribute($entityId, $name, $value);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function deleteAttribute(string $entityId, string $name): void {
-    $this->decorated()->deleteAttribute($entityId, $name);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function create(EdgeEntityInterface $entity): void {
-    $this->decorated()->create($entity);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function delete(string $entityId): EdgeEntityInterface {
-    return $this->decorated()->delete($entityId);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function load(string $entityId): EdgeEntityInterface {
-    return $this->decorated()->load($entityId);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function update(EdgeEntityInterface $entity): void {
-    $this->decorated()->update($entity);
+    $developer = $this->decorated()->getDeveloperByApp($appName);
+    // We do not keep cache entries about developer and app relationships so
+    // we could not serve this request from cache but at least we add the
+    // loaded developer to the cache here.
+    $this->entityCache->saveEntities([$developer]);
+    return $developer;
   }
 
   /**
@@ -170,29 +173,37 @@ final class DeveloperController implements DeveloperControllerInterface {
   /**
    * {@inheritdoc}
    */
-  public function createPager(int $limit = 0, ?string $startKey = NULL): PagerInterface {
-    return $this->decorated()->createPager($limit, $startKey);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getEntityIds(PagerInterface $pager = NULL): array {
-    return $this->decorated()->getEntityIds($pager);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getEntities(PagerInterface $pager = NULL, string $key_provider = 'id'): array {
-    return $this->decorated()->getEntities($pager, $key_provider);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function setStatus(string $entityId, string $status): void {
     $this->decorated()->setStatus($entityId, $status);
+    // Enforce reload of entity from Apigee Edge.
+    $this->entityCache->removeEntities([$entityId]);
+    $this->entityCache->allEntitiesInCache(FALSE);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function delete(string $entityId): EntityInterface {
+    /** @var \Apigee\Edge\Api\Management\Entity\DeveloperInterface $entity */
+    $entity = $this->traitDelete($entityId);
+    // Invalidate app caches that belongs to this developer.
+    // This is implementation probably overcomplicated,
+    // we may optimize this later.
+    foreach ([$entity->getEmail(), $entity->getDeveloperId()] as $owner) {
+      $app_cache = $this->appCacheByOwnerFactory->getAppCache($owner);
+      $app_names = [];
+      /** @var \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface $app */
+      foreach ($app_cache->getEntities() as $app) {
+        $app_names[] = $app->getAppId();
+      }
+      $app_cache->removeEntities($app_names);
+      // App cache has cleared all app names that it knows about
+      // but it could happen that there are some remaining app names in the
+      // app name cache that has not be created by app cache.
+      $app_name_cache = $this->appNameCacheByOwnerFactory->getAppNameCache($owner);
+      $app_name_cache->removeIds($app_name_cache->getIds());
+    }
+    return $entity;
   }
 
 }

@@ -20,7 +20,9 @@
 
 namespace Drupal\apigee_edge\Entity\Controller;
 
-use Drupal\apigee_edge\Entity\Controller\Cache\DeveloperAppCacheFactoryInterface;
+use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface;
+use Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactoryInterface;
+use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Egulias\EmailValidator\EmailValidatorInterface;
 
@@ -51,18 +53,32 @@ final class DeveloperAppControllerFactory implements DeveloperAppControllerFacto
   private $orgController;
 
   /**
-   * The developer app cache factory service.
-   *
-   * @var \Drupal\apigee_edge\Entity\Controller\Cache\DeveloperAppCacheFactoryInterface
-   */
-  private $appCacheFactory;
-
-  /**
    * The email validator service.
    *
    * @var \Egulias\EmailValidator\EmailValidatorInterface
    */
   private $emailValidator;
+
+  /**
+   * The app cache that stores apps by their ids (UUIDs).
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface
+   */
+  private $appCache;
+
+  /**
+   * The app cache by owner factory service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface
+   */
+  private $appCacheByOwnerFactory;
+
+  /**
+   * The app name cache by owner factory service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactoryInterface
+   */
+  private $appNameCacheByOwnerFactory;
 
   /**
    * DeveloperAppControllerFactory constructor.
@@ -71,16 +87,22 @@ final class DeveloperAppControllerFactory implements DeveloperAppControllerFacto
    *   The SDK connector service.
    * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
    *   The organization controller service.
-   * @param \Drupal\apigee_edge\Entity\Controller\Cache\DeveloperAppCacheFactoryInterface $app_cache_factory
-   *   The developer app cache factory service.
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface $app_cache
+   *   The app cache that stores apps by their ids (UUIDs).
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface $app_by_owner_app_cache_factory
+   *   The app cache by owner factory service.
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactoryInterface $app_by_owner_app_id_cache_factory
+   *   The app name cache by owner factory service.
    * @param \Egulias\EmailValidator\EmailValidatorInterface $email_validator
    *   The email validator service.
    */
-  public function __construct(SDKConnectorInterface $connector, OrganizationControllerInterface $org_controller, DeveloperAppCacheFactoryInterface $app_cache_factory, EmailValidatorInterface $email_validator) {
+  public function __construct(SDKConnectorInterface $connector, OrganizationControllerInterface $org_controller, AppCacheInterface $app_cache, AppCacheByOwnerFactoryInterface $app_by_owner_app_cache_factory, AppNameCacheByOwnerFactoryInterface $app_by_owner_app_id_cache_factory, EmailValidatorInterface $email_validator) {
     $this->emailValidator = $email_validator;
     $this->connector = $connector;
-    $this->appCacheFactory = $app_cache_factory;
     $this->orgController = $org_controller;
+    $this->appCache = $app_cache;
+    $this->appCacheByOwnerFactory = $app_by_owner_app_cache_factory;
+    $this->appNameCacheByOwnerFactory = $app_by_owner_app_id_cache_factory;
   }
 
   /**
@@ -88,7 +110,7 @@ final class DeveloperAppControllerFactory implements DeveloperAppControllerFacto
    */
   public function developerAppController(string $developer): DeveloperAppControllerInterface {
     if (!isset($this->instances[$developer])) {
-      $this->instances[$developer] = new DeveloperAppController($developer, $this->connector, $this->orgController, $this->appCacheFactory->developerAppCache($developer), $this->emailValidator);
+      $this->instances[$developer] = new DeveloperAppController($developer, $this->connector, $this->orgController, $this->appCache, $this->appCacheByOwnerFactory, $this->appNameCacheByOwnerFactory, $this->emailValidator);
     }
 
     return $this->instances[$developer];

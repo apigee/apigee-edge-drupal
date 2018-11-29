@@ -20,20 +20,19 @@
 
 namespace Drupal\apigee_edge\Entity\Controller;
 
+use Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface;
+
 /**
- * Interface DeveloperAppControllerFactoryInterface.
+ * Trait for those entity controllers that supports entity caches.
  */
-interface DeveloperAppControllerFactoryInterface {
+trait EntityCacheAwareController {
 
   /**
-   * Returns a preconfigured developer app controller.
+   * Returns the entity cache used by the controller.
    *
-   * @param string $developer
-   *   Email address or id (UUID) of a developer.
-   *
-   * @return \Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerInterface
-   *   Developer app controller.
+   * @return \Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface
+   *   The entity cache.
    */
-  public function developerAppController(string $developer): DeveloperAppControllerInterface;
+  abstract protected function entityCache(): EntityCacheInterface;
 
 }
