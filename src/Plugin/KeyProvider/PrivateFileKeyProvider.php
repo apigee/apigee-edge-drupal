@@ -144,7 +144,7 @@ class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInt
    *   The file URI.
    */
   protected function getFileUri(KeyInterface $key): string {
-    return "private://{$key->id()}_apigee_edge.json";
+    return "private://.apigee_edge/{$key->id()}.json";
   }
 
 }

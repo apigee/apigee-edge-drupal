@@ -174,7 +174,7 @@ class OauthTokenStorageTest extends KernelTestBase {
   /**
    * Test that the tokens are removed when cacke is cleared.
    */
-  public function testFileLocationSetings() {
+  public function testFileLocationSettings() {
     $this->config(AuthenticationForm::CONFIG_NAME)
       ->set('oauth_token_storage_location', 'private://.apigee_edge_custom')
       ->save();
