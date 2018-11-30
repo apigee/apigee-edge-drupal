@@ -112,7 +112,8 @@ class EntityIdCache implements EntityIdCacheInterface {
    * {@inheritdoc}
    */
   final public function isAllIdsInCache(): bool {
-    return $this->allIdsInCache;
+    // If ids empty it can not be true that all entity ids in cache.
+    return $this->allIdsInCache && !empty($this->ids);
   }
 
   /**
