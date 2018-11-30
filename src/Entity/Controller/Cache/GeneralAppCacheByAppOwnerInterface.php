@@ -21,10 +21,8 @@
 namespace Drupal\apigee_edge\Entity\Controller\Cache;
 
 /**
- * Definition of the app cache implementation used in developer app controller.
- *
- * @internal This interface may change before the first stable release.
+ * Definition of a cache store for apps of a specific owner.
  */
-interface DeveloperAppCacheInterface extends AppCacheInterface {
+interface GeneralAppCacheByAppOwnerInterface extends AppCacheByAppOwnerInterface {
 
 }

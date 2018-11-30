@@ -24,9 +24,7 @@ use Apigee\Edge\Api\Management\Controller\DeveloperController as EdgeDeveloperCo
 use Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface as EdgeDeveloperControllerInterface;
 use Apigee\Edge\Api\Management\Entity\DeveloperInterface;
 use Apigee\Edge\Entity\EntityInterface;
-use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactory;
 use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface;
-use Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactory;
 use Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactoryInterface;
 use Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface;
 use Drupal\apigee_edge\Entity\Controller\Cache\EntityIdCacheInterface;

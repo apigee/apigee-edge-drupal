@@ -24,9 +24,9 @@ use Apigee\Edge\Api\Management\Controller\AppController as EdgeAppController;
 use Apigee\Edge\Api\Management\Controller\AppControllerInterface as EdgeAppControllerInterface;
 use Apigee\Edge\Api\Management\Entity\AppInterface;
 use Apigee\Edge\Structure\PagerInterface;
-use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface;
 use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface;
 use Drupal\apigee_edge\Entity\Controller\Cache\AppIdCache;
+use Drupal\apigee_edge\Entity\Controller\Cache\GeneralAppCacheByAppOwnerFactoryInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 
 /**
@@ -50,7 +50,7 @@ final class AppController extends AppControllerBase implements AppControllerInte
   private $instance;
 
   /**
-   * The app by owner cache factory service.
+   * The (general) app by owner cache factory service.
    *
    * @var \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface
    */
@@ -74,10 +74,10 @@ final class AppController extends AppControllerBase implements AppControllerInte
    *   The app cache that stores apps by their ids (UUIDs).
    * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppIdCache $app_id_cache
    *   The app id cache that stores app UUIDs.
-   * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface $app_cache_by_owner_factory
-   *   The app cache by owner factory service.
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\GeneralAppCacheByAppOwnerFactoryInterface $app_cache_by_owner_factory
+   *   The (general) app cache by owner factory service.
    */
-  public function __construct(SDKConnectorInterface $connector, OrganizationControllerInterface $org_controller, AppCacheInterface $app_cache, AppIdCache $app_id_cache, AppCacheByOwnerFactoryInterface $app_cache_by_owner_factory) {
+  public function __construct(SDKConnectorInterface $connector, OrganizationControllerInterface $org_controller, AppCacheInterface $app_cache, AppIdCache $app_id_cache, GeneralAppCacheByAppOwnerFactoryInterface $app_cache_by_owner_factory) {
     parent::__construct($connector, $org_controller, $app_cache);
     $this->appByOwnerAppCacheFactory = $app_cache_by_owner_factory;
     $this->appIdCache = $app_id_cache;

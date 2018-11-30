@@ -76,7 +76,7 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
   /**
    * App owner's dedicated app cache that uses app names as cache ids.
    *
-   * @var \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByAppOwner
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\GeneralAppCacheByAppOwner
    */
   protected $appCacheByOwner;
 

@@ -20,26 +20,23 @@
 
 namespace Drupal\apigee_edge\Entity\Controller\Cache;
 
+use Apigee\Edge\Api\Management\Entity\AppInterface;
 use Apigee\Edge\Entity\EntityInterface;
 
 /**
  * Default cache store for apps of a specific owner.
  *
- * Here all ids are an app names and not app UUIDs because all developers and
- * companies have a dedicated instance from this cache. (Therefore app names
- * are unique as cache ids here.)
+ * The owner could be a developer or a company.
+ *
+ * See the interface definition for more details.
+ *
+ * All developers and companies have a dedicated instance from this cache.
+ * (Therefore app names are unique as cache ids here.)
  *
  * @internal Do not create an instance from this directly. Always use the
  * factory.
  */
-final class AppCacheByAppOwner implements EntityCacheInterface {
-
-  /**
-   * An associative array where keys are app names an ids are app ids (UUIDs).
-   *
-   * @var array
-   */
-  private $appNameAppIdMap = [];
+final class GeneralAppCacheByAppOwner implements GeneralAppCacheByAppOwnerInterface {
 
   /**
    * Indicates whether all entities in the cache or not.
@@ -66,16 +63,26 @@ final class AppCacheByAppOwner implements EntityCacheInterface {
   private $appNameCache;
 
   /**
-   * AppCacheByAppOwner constructor.
+   * Developer id (UUID), email address or a company's company name.
    *
+   * @var string
+   */
+  private $owner;
+
+  /**
+   * GeneralAppCacheByAppOwner constructor.
+   *
+   * @param string $owner
+   *   Developer id (UUID), email address or a company's company name.
    * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface $app_cache
    *   The app cache service that stores app by their app id (UUID).
-   * @param \Drupal\apigee_edge\Entity\Controller\Cache\EntityIdCacheInterface $app_name_cache_by_owner
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactoryInterface $app_name_cache_by_owner
    *   Dedicated cache instance that stores a specific owner app names.
    */
-  public function __construct(AppCacheInterface $app_cache, EntityIdCacheInterface $app_name_cache_by_owner) {
+  public function __construct(string $owner, AppCacheInterface $app_cache, AppNameCacheByOwnerFactoryInterface $app_name_cache_by_owner) {
     $this->appCache = $app_cache;
-    $this->appNameCache = $app_name_cache_by_owner;
+    $this->appNameCache = $app_name_cache_by_owner->getAppNameCache($owner);
+    $this->owner = $owner;
   }
 
   /**
@@ -83,10 +90,6 @@ final class AppCacheByAppOwner implements EntityCacheInterface {
    */
   public function saveEntities(array $entities): void {
     $this->appCache->saveEntities($entities);
-    /** @var \Apigee\Edge\Api\Management\Entity\AppInterface $entity */
-    foreach ($entities as $entity) {
-      $this->appNameAppIdMap[$entity->getName()] = $entity->getAppId();
-    }
     // $entity->id() returns app names so this is fine.
     $this->appNameCache->saveEntities($entities);
   }
@@ -95,13 +98,9 @@ final class AppCacheByAppOwner implements EntityCacheInterface {
    * {@inheritdoc}
    */
   public function removeEntities(array $ids): void {
-    $flipped_ids = array_flip($ids);
-    // Find app ids by app names.
-    $app_ids = array_intersect_key($this->appNameAppIdMap, $flipped_ids);
+    $app_ids = $this->getAppIdsByAppNames($ids);
     $this->appCache->removeEntities($app_ids);
     $this->appNameCache->removeIds($ids);
-    // Remove app names from the internal cache.
-    $this->appNameAppIdMap = array_diff_key($this->appNameAppIdMap, $flipped_ids);
   }
 
   /**
@@ -110,17 +109,11 @@ final class AppCacheByAppOwner implements EntityCacheInterface {
   public function getEntities(array $ids = []): array {
     // If $ids is empty all entities should be returned.
     if (empty($ids)) {
-      return $this->appCache->getEntities($this->appNameAppIdMap);
+      $apps = $this->appCache->getAppsByOwner($this->owner);
+      return $apps ?? [];
     }
 
-    $app_ids = array_intersect_key($this->appNameAppIdMap, array_flip($ids));
-    // Not all app names could be translated to app ids.
-    // It is safer to return an empty result here and with that enforce
-    // reload from Apigee Edge.
-    if (empty($app_ids) || count($ids) !== $app_ids) {
-      return [];
-    }
-    return $this->appCache->getEntities($app_ids);
+    return $this->getAppsByAppNames($ids);
   }
 
   /**
@@ -144,6 +137,44 @@ final class AppCacheByAppOwner implements EntityCacheInterface {
    */
   public function isAllEntitiesInCache(): bool {
     return $this->allEntitiesInCache;
+  }
+
+  /**
+   * Returns the app ids from the app cache for the given owner and app names.
+   *
+   * @param array $names
+   *   Array of app names.
+   *
+   * @return array
+   *   Array of app ids (UUIDs).
+   */
+  private function getAppIdsByAppNames(array $names): array {
+    return array_map(function (AppInterface $app) {
+      return $app->getAppId();
+    }, $this->getAppsByAppNames($names));
+  }
+
+  /**
+   * Returns the apps from the app cache for the given owner and app names.
+   *
+   * @param array $names
+   *   Array of app names.
+   *
+   * @return \Apigee\Edge\Api\Management\Entity\AppInterface[]
+   *   Array of apps.
+   */
+  private function getAppsByAppNames(array $names) : array {
+    $apps = [];
+    $apps_by_owner = $this->appCache->getAppsByOwner($this->owner);
+    // There is nothing to invalidate.
+    if ($apps_by_owner === NULL) {
+      return $apps;
+    }
+    $apps = array_filter($apps_by_owner, function (AppInterface $app) use ($names) {
+      return in_array($app->getName(), $names);
+    });
+
+    return $apps;
   }
 
 }
