@@ -64,6 +64,7 @@ final class DeveloperCache extends EntityCache implements EntityCacheInterface {
    */
   protected function doSaveEntities(array $entities): void {
     parent::doSaveEntities($entities);
+    $items = [];
     foreach ($entities as $entity) {
       // Add new cache item that uses developer's email address as a cid instead
       // of developer's id (UUID).
@@ -72,6 +73,7 @@ final class DeveloperCache extends EntityCache implements EntityCacheInterface {
         'tags' => [$entity->getDeveloperId(), $entity->getEmail()],
       ];
     }
+    $this->cacheBackend->setMultiple($items);
   }
 
   /**
