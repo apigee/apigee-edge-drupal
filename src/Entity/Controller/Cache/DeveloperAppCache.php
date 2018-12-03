@@ -89,7 +89,7 @@ final class DeveloperAppCache implements AppCacheByAppOwnerInterface {
    * DeveloperAppCache constructor.
    *
    * @param string $owner
-   *   Developer id (UUID), email address or a company's company name.
+   *   Developer id (UUID), email address.
    * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface $app_cache
    *   The app cache service that stores app by their app id (UUID).
    * @param \Drupal\apigee_edge\Entity\Controller\Cache\GeneralAppCacheByAppOwnerFactoryInterface $app_cache_by_owner_factory
