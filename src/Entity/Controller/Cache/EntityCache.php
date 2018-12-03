@@ -107,6 +107,9 @@ class EntityCache implements EntityCacheInterface {
    * {@inheritdoc}
    */
   final public function removeEntities(array $ids): void {
+    // Remove invalid ids because they cause PHP warnings/notices.
+    // @see https://www.drupal.org/project/drupal/issues/3017753
+    $ids = array_intersect($ids, $this->cacheIds);
     $this->cacheIds = array_diff_key($this->cacheIds, array_flip($ids));
     // If cacheIds is empty now, reset the state. Cache can be marked as
     // "complete" still by calling the setter method if needed.
