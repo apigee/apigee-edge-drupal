@@ -33,6 +33,15 @@ use Drupal\apigee_edge\MemoryCacheFactoryInterface;
 final class DeveloperCache extends EntityCache implements EntityCacheInterface {
 
   /**
+   * An internal cache for developer ids and emails.
+   *
+   * Associative array, keys are developer ids and values are email addresses.
+   *
+   * @var array
+   */
+  private $developerIdEmailMap = [];
+
+  /**
    * DeveloperCache constructor.
    *
    * @param \Drupal\apigee_edge\MemoryCacheFactoryInterface $memory_cache_factory
@@ -55,6 +64,8 @@ final class DeveloperCache extends EntityCache implements EntityCacheInterface {
     foreach ($item as $cid => $developer) {
       $item[$cid]['tags'][] = $entity->getEmail();
     }
+
+    $this->developerIdEmailMap[$entity->getDeveloperId()] = $entity->getEmail();
 
     return $item;
   }
@@ -80,17 +91,21 @@ final class DeveloperCache extends EntityCache implements EntityCacheInterface {
    * {@inheritdoc}
    */
   protected function doRemoveEntities(array $ids): void {
-    $email_addresses = [];
-    /** @var \Apigee\Edge\Api\Management\Entity\DeveloperInterface $entity */
-    foreach ($this->getEntities($ids) as $entity) {
-      $email_addresses[] = $entity->getEmail();
+    if (!empty($ids)) {
+      // If ids are developer ids (UUIDs).
+      $dev_id_email_address_matches = array_intersect_key($this->developerIdEmailMap, array_flip($ids));
+      // If ids are email addresses.
+      $dev_id_email_address_matches += array_flip(array_intersect_key(array_flip($this->developerIdEmailMap), array_flip($ids)));
+      // Because all cached entries tagged with email address and developer
+      // id (UUID) this should invalidate everything that is needed in this
+      // cache...
+      $this->cacheBackend->invalidateTags($ids);
+      // ... although if $ids are developer ids (UUIDs) then the entity id cache
+      // does not get invalidated properly in parent.
+      $this->entityIdCache->removeIds($dev_id_email_address_matches);
+      // Remove removed items from the internal cache.
+      $this->developerIdEmailMap = array_diff_key($this->developerIdEmailMap, $dev_id_email_address_matches);
     }
-    // Because all cached entries tagged with email address and developer
-    // id (UUID) this should invalidate everything that is needed in this cache.
-    $this->cacheBackend->invalidateTags($ids);
-    // Although if $ids are developer ids (UUIDs) then the entity id cache
-    // does not get invalidated properly in parent.
-    $this->entityIdCache->removeIds($email_addresses);
   }
 
 }
