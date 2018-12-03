@@ -171,6 +171,14 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
   }
 
   /**
+   * Returns the wrapped controller instance used by this storage.
+   *
+   * @return \Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface
+   *   The entity controller interface with CRUDL capabilities.
+   */
+  abstract protected function entityController(): EdgeEntityControllerInterface;
+
+  /**
    * Wraps communication with Apigee Edge.
    *
    * This function converts exceptions from Apigee Edge into
