@@ -81,6 +81,11 @@ class EntityIdCache implements EntityIdCacheInterface {
    */
   final public function removeIds(array $ids): void {
     $this->ids = array_diff($this->ids, $ids);
+    // If ids is empty now, reset the state. Cache can be marked as "complete"
+    // still by calling the setter method if needed.
+    if (empty($this->ids)) {
+      $this->allIdsInCache = FALSE;
+    }
     $this->doRemoveIds($ids);
   }
 
@@ -112,8 +117,7 @@ class EntityIdCache implements EntityIdCacheInterface {
    * {@inheritdoc}
    */
   final public function isAllIdsInCache(): bool {
-    // If ids empty it can not be true that all entity ids in cache.
-    return $this->allIdsInCache && !empty($this->ids);
+    return $this->allIdsInCache;
   }
 
   /**

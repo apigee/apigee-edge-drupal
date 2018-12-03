@@ -108,6 +108,11 @@ class EntityCache implements EntityCacheInterface {
    */
   final public function removeEntities(array $ids): void {
     $this->cacheIds = array_diff_key($this->cacheIds, array_flip($ids));
+    // If cacheIds is empty now, reset the state. Cache can be marked as
+    // "complete" still by calling the setter method if needed.
+    if (empty($this->cacheIds)) {
+      $this->allEntitiesInCache = FALSE;
+    }
     $this->cacheBackend->invalidateMultiple($ids);
     $this->entityIdCache->removeIds($ids);
     $this->doRemoveEntities($ids);
