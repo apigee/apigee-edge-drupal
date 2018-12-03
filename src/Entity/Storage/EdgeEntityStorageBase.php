@@ -23,6 +23,7 @@ namespace Drupal\apigee_edge\Entity\Storage;
 use Apigee\Edge\Entity\EntityInterface as SdkEntityInterface;
 use Apigee\Edge\Exception\ApiException;
 use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
 use Drupal\apigee_edge\Entity\EdgeEntityInterface as DrupalEdgeEntityInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\Cache;
@@ -109,6 +110,27 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
     // that were loaded from $ids.
     $entities_from_cache = $this->getFromPersistentCache($ids);
     return $entities_from_cache + $this->getFromStorage($ids);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function loadUnchanged($id) {
+    $this->resetControllerCache([$id]);
+    return parent::loadUnchanged($id);
+  }
+
+  /**
+   * Resets entity controller's cache if it is a cached entity controller.
+   *
+   * @param string[] $ids
+   *   Array of entity ids.
+   */
+  protected function resetControllerCache(array $ids) {
+    $controller = $this->entityController();
+    if ($controller instanceof EntityCacheAwareControllerInterface) {
+      $controller->entityCache()->removeEntities($ids);
+    }
   }
 
   /**
@@ -421,6 +443,10 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
         Cache::invalidateTags([$this->entityTypeId . ':values']);
       }
     }
+    // We do not clear the entity controller's cache here because our main goal
+    // with the entity controller cache to reduce the API calls that we
+    // send to Apigee Edge. Although we do delete the entity controller's cache
+    // when it is necessary, like in loadUnchanged().
   }
 
 }

@@ -21,10 +21,10 @@
 namespace Drupal\apigee_edge\Entity\Storage;
 
 use Drupal\apigee_edge\Entity\Controller\AppControllerInterface;
-use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerFactoryInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppEdgeEntityControllerProxy;
 use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
 use Drupal\apigee_edge\Entity\FieldableEdgeEntityInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\Cache;
@@ -70,13 +70,6 @@ class DeveloperAppStorage extends AttributesAwareFieldableEdgeEntityStorageBase 
   private $emailValidator;
 
   /**
-   * The app cache service.
-   *
-   * @var \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface
-   */
-  private $appCache;
-
-  /**
    * DeveloperAppStorage constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -91,21 +84,18 @@ class DeveloperAppStorage extends AttributesAwareFieldableEdgeEntityStorageBase 
    *   The developer app controller factory service.
    * @param \Drupal\apigee_edge\Entity\Controller\AppControllerInterface $app_controller
    *   The app controller service.
-   * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface $app_cache
-   *   The app cache.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config
    *   Configuration factory.
    * @param \Egulias\EmailValidator\EmailValidatorInterface $email_validator
    *   The email validator service.
    */
-  public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, DeveloperAppControllerFactoryInterface $developer_app_controller_factory, AppControllerInterface $app_controller, AppCacheInterface $app_cache, ConfigFactoryInterface $config, EmailValidatorInterface $email_validator) {
+  public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, DeveloperAppControllerFactoryInterface $developer_app_controller_factory, AppControllerInterface $app_controller, ConfigFactoryInterface $config, EmailValidatorInterface $email_validator) {
     parent::__construct($entity_type, $cache_backend, $memory_cache, $system_time);
     $this->developerAppControllerFactory = $developer_app_controller_factory;
     $this->appController = $app_controller;
     $this->appEntityController = new DeveloperAppEdgeEntityControllerProxy($developer_app_controller_factory, $app_controller);
     $this->cacheExpiration = $config->get('apigee_edge.developer_app_settings')->get('cache_expiration');
     $this->emailValidator = $email_validator;
-    $this->appCache = $app_cache;
   }
 
   /**
@@ -119,7 +109,6 @@ class DeveloperAppStorage extends AttributesAwareFieldableEdgeEntityStorageBase 
       $container->get('datetime.time'),
       $container->get('apigee_edge.controller.developer_app_controller_factory'),
       $container->get('apigee_edge.controller.app'),
-      $container->get('apigee_edge.controller.cache.apps'),
       $container->get('config.factory'),
       $container->get('email.validator')
     );
@@ -129,12 +118,15 @@ class DeveloperAppStorage extends AttributesAwareFieldableEdgeEntityStorageBase 
    * {@inheritdoc}
    */
   public function loadUnchanged($id) {
-    // Id could be an UUID or an app name.
-    // We do not know who is the owner so we have to load the app an invalidate
-    // the app cache entry by the app id (UUID).
-    /** @var \Apigee\Edge\Api\Management\Entity\AppInterface $entity */
-    $entity = $this->entityController()->load($id);
-    $this->appCache->removeEntities([$entity->getAppId()]);
+    // Clear the app controller's cache if it has one.
+    if ($this->appController instanceof EntityCacheAwareControllerInterface) {
+      // Id could be an UUID or an app name.
+      // We do not know who is the owner so we have need the app object to be
+      // invalidate the app cache entry by the app id (UUID).
+      /** @var \Apigee\Edge\Api\Management\Entity\AppInterface $entity */
+      $entity = $this->entityController()->load($id);
+      $this->appController->entityCache()->removeEntities([$entity->getAppId()]);
+    }
     return parent::loadUnchanged($id);
   }
 
@@ -158,7 +150,7 @@ class DeveloperAppStorage extends AttributesAwareFieldableEdgeEntityStorageBase 
   /**
    * {@inheritdoc}
    */
-  public function entityController(): EdgeEntityControllerInterface {
+  protected function entityController(): EdgeEntityControllerInterface {
     return $this->appEntityController;
   }
 
