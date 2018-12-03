@@ -21,6 +21,7 @@
 namespace Drupal\apigee_edge\Entity\Controller;
 
 use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface;
+use Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 
 /**
@@ -28,7 +29,7 @@ use Drupal\apigee_edge\SDKConnectorInterface;
  *
  * Ex. app, developer app, company app.
  */
-abstract class AppControllerBase {
+abstract class AppControllerBase implements EntityCacheAwareControllerInterface {
 
   /**
    * The organization controller service.
@@ -65,6 +66,15 @@ abstract class AppControllerBase {
     $this->connector = $connector;
     $this->organizationController = $org_controller;
     $this->appCache = $app_cache;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function entityCache(): EntityCacheInterface {
+    // Developer apps should always expose the app cache as their entity cache
+    // because this stores the actual app objects.
+    return $this->appCache;
   }
 
 }

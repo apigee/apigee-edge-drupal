@@ -29,7 +29,7 @@ use Apigee\Edge\Structure\PagerInterface;
  */
 trait CachedPaginatedEntityListingControllerTrait {
 
-  use EntityCacheAwareController;
+  use EntityCacheAwareControllerTrait;
 
   /**
    * The decorated entity controller from the SDK.

@@ -36,7 +36,7 @@ use Drupal\apigee_edge\SDKConnectorInterface;
  * This integrates the Management API's Developer controller from the
  * SDK's with Drupal.
  */
-final class DeveloperController implements DeveloperControllerInterface {
+final class DeveloperController implements DeveloperControllerInterface, EntityCacheAwareControllerInterface {
 
   use CachedEntityCrudOperationsControllerTrait {
     delete as private traitDelete;
@@ -125,7 +125,7 @@ final class DeveloperController implements DeveloperControllerInterface {
   /**
    * {@inheritdoc}
    */
-  protected function entityCache(): EntityCacheInterface {
+  public function entityCache(): EntityCacheInterface {
     return $this->entityCache;
   }
 

@@ -32,7 +32,7 @@ use Drupal\apigee_edge\SDKConnectorInterface;
  * This integrates the Management API's API product controller from the
  * SDK's with Drupal.
  */
-final class ApiProductController implements ApiProductControllerInterface {
+final class ApiProductController implements ApiProductControllerInterface, EntityCacheAwareControllerInterface {
 
   use CachedEntityCrudOperationsControllerTrait;
   use CachedPaginatedEntityIdListingControllerTrait;
@@ -127,7 +127,7 @@ final class ApiProductController implements ApiProductControllerInterface {
   /**
    * {@inheritdoc}
    */
-  protected function entityCache(): EntityCacheInterface {
+  public function entityCache(): EntityCacheInterface {
     return $this->entityCache;
   }
 

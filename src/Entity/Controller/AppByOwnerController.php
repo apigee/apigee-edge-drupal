@@ -105,7 +105,7 @@ abstract class AppByOwnerController extends AppControllerBase implements AppByOw
   /**
    * {@inheritdoc}
    */
-  protected function entityCache(): EntityCacheInterface {
+  public function entityCache(): EntityCacheInterface {
     return $this->appCacheByOwner;
   }
 

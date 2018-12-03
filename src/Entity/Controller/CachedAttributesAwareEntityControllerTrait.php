@@ -32,7 +32,7 @@ use Apigee\Edge\Structure\AttributesProperty;
  */
 trait CachedAttributesAwareEntityControllerTrait {
 
-  use EntityCacheAwareController;
+  use EntityCacheAwareControllerTrait;
 
   /**
    * The decorated entity controller from the SDK.
