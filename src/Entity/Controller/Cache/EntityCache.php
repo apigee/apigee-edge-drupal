@@ -109,15 +109,18 @@ class EntityCache implements EntityCacheInterface {
   final public function removeEntities(array $ids): void {
     // Remove invalid ids because they cause PHP warnings/notices.
     // @see https://www.drupal.org/project/drupal/issues/3017753
-    $ids = array_intersect($ids, $this->cacheIds);
-    $this->cacheIds = array_diff_key($this->cacheIds, array_flip($ids));
+    $sanitized_ids = array_intersect($ids, $this->cacheIds);
+    $this->cacheIds = array_diff_key($this->cacheIds, array_flip($sanitized_ids));
     // If cacheIds is empty now, reset the state. Cache can be marked as
     // "complete" still by calling the setter method if needed.
     if (empty($this->cacheIds)) {
       $this->allEntitiesInCache = FALSE;
     }
-    $this->cacheBackend->invalidateMultiple($ids);
-    $this->entityIdCache->removeIds($ids);
+    $this->cacheBackend->invalidateMultiple($sanitized_ids);
+    $this->entityIdCache->removeIds($sanitized_ids);
+    // Pass the original ids instead of the sanitized ones to child classes.
+    // Because an id was not valid in this context it could be valid in that
+    // context.
     $this->doRemoveEntities($ids);
   }
 
