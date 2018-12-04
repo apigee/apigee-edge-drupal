@@ -92,7 +92,11 @@ class AuthenticationFormTest extends KernelTestBase {
     $active_key = Key::load($this->config(AuthenticationForm::CONFIG_NAME)->get('active_key'));
     static::assertSame($active_key->id(), $form_state->getFormObject()->getEntity()->id());
 
-    $decoded = Json::decode($active_key->getKeyValue());
+    $key_value = $active_key->getKeyValue();
+    $decoded = Json::decode($key_value);
+
+    // Get the key contents directly from the file (location test).
+    static::assertSame($key_value, file_get_contents("private://.apigee_edge/{$active_key->id()}.json"));
 
     static::assertSame(EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC, $form['connection_settings']['auth_type']['#value']);
     static::assertEmpty($form['connection_settings']['organization']['#value']);
