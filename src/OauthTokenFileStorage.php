@@ -243,7 +243,7 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
   private function getFromStorage(): array {
     $data = [];
     // Get the token data from the file store.
-    if ($raw_data = file_get_contents($this->tokenFilePath)) {
+    if (file_exists($this->tokenFilePath) && ($raw_data = file_get_contents($this->tokenFilePath))) {
       $data = unserialize(base64_decode($raw_data));
     }
     return is_array($data) ? $data : [];
