@@ -23,10 +23,12 @@
  * Main module file for Apigee Edge.
  */
 
+use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
 use Apigee\Edge\Api\Management\Serializer\AppCredentialSerializer;
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\ClientErrorException;
 use Apigee\Edge\Structure\CredentialProduct;
+use Drupal\apigee_edge\Element\StatusPropertyElement;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Exception\UserDeveloperConversionNoStorageFormatterFoundException;
@@ -52,6 +54,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Site\Settings;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Template\Attribute;
 use Drupal\Core\TempStore\TempStoreException;
 use Drupal\Core\Url;
 use Drupal\Core\Utility\Error;
@@ -91,6 +94,24 @@ function apigee_edge_theme() {
       'render element' => 'element',
     ],
   ];
+}
+
+/**
+ * Prepares variables for status_property templates.
+ *
+ * Default template: status_property.html.twig.
+ *
+ * @param array $variables
+ *   An associative array.
+ */
+function template_preprocess_status_property(array &$variables) {
+  $element = &$variables['element'];
+  $element['value'] = $element['#value'];
+  $classes = ['status-value-' . strtolower($element['#value'])];
+  if ($element['#indicator_status'] !== '') {
+    $classes[] = str_replace('_', '-', $element['#indicator_status']);
+  }
+  $element['attributes'] = new Attribute(['class' => $classes]);
 }
 
 /**
@@ -815,17 +836,21 @@ function template_preprocess_app_credential_product_list(array &$variables) {
       continue;
     }
     $value = '';
+    $indicator_status = '';
     switch ($product->getStatus()) {
       case CredentialProduct::STATUS_APPROVED:
         $value = t('enabled');
+        $indicator_status = StatusPropertyElement::INDICATOR_STATUS_OK;
         break;
 
       case CredentialProduct::STATUS_REVOKED:
         $value = t('disabled');
+        $indicator_status = StatusPropertyElement::INDICATOR_STATUS_ERROR;
         break;
 
       case CredentialProduct::STATUS_PENDING:
         $value = t('pending');
+        $indicator_status = StatusPropertyElement::INDICATOR_STATUS_WARNING;
         break;
     }
     $variables['content'][$product->getApiproduct()] = [
@@ -840,6 +865,7 @@ function template_preprocess_app_credential_product_list(array &$variables) {
       'status' => [
         '#type' => 'status_property',
         '#value' => $value,
+        '#indicator_status' => $indicator_status,
       ],
     ];
   }
@@ -953,6 +979,7 @@ function template_preprocess_app_credential(array &$variables) {
       $variables['primary_wrapper'][$property]['value'] = [
         '#type' => 'status_property',
         '#value' => $value,
+        '#indicator_status' => $value === AppCredentialInterface::STATUS_APPROVED ? StatusPropertyElement::INDICATOR_STATUS_OK : StatusPropertyElement::INDICATOR_STATUS_ERROR,
       ];
     }
     else {

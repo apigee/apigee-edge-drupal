@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge\Entity\ListBuilder;
 use Apigee\Edge\Api\Management\Entity\App;
 use Apigee\Edge\Api\Management\Entity\AppCredential;
 use Apigee\Edge\Structure\CredentialProduct;
+use Drupal\apigee_edge\Element\StatusPropertyElement;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
@@ -310,6 +311,7 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
     $row['data']['app_status']['data'] = [
       '#type' => 'status_property',
       '#value' => $developer_app->getStatus(),
+      '#indicator_status' => $developer_app->getStatus() === DeveloperAppInterface::STATUS_APPROVED ? StatusPropertyElement::INDICATOR_STATUS_OK : StatusPropertyElement::INDICATOR_STATUS_ERROR,
     ];
 
     $row['data'] += parent::buildRow($developer_app);

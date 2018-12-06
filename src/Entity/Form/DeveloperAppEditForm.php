@@ -19,6 +19,8 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
+use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
+use Drupal\apigee_edge\Element\StatusPropertyElement;
 use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
@@ -136,6 +138,7 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
         $credential_status_element = [
           '#type' => 'status_property',
           '#value' => Xss::filter($credential->getStatus()),
+          '#indicator_status' => $credential->getStatus() === AppCredentialInterface::STATUS_APPROVED ? StatusPropertyElement::INDICATOR_STATUS_OK : StatusPropertyElement::INDICATOR_STATUS_ERROR,
         ];
         $rendered_credential_status = $this->renderer->render($credential_status_element);
 
