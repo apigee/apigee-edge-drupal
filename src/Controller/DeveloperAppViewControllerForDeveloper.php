@@ -19,44 +19,19 @@
 
 namespace Drupal\apigee_edge\Controller;
 
-use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
-use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
-use Drupal\Core\Entity\Controller\EntityViewController;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Render\Markup;
-use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
  * Displays the view page of a developer app for a given user on the UI.
  */
-class DeveloperAppViewControllerForDeveloper extends EntityViewController implements DeveloperAppPageTitleInterface {
-
-  use DeveloperStatusCheckTrait;
-  use DeveloperAppCallbackUrlCheckTrait;
+class DeveloperAppViewControllerForDeveloper extends DeveloperAppViewController {
 
   /**
    * {@inheritdoc}
    */
   public function view(EntityInterface $app, $view_mode = 'full') {
-    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $app */
-    $this->checkDeveloperStatus($app->getOwnerId());
-    // Because we use this custom controller class to render the entity the
-    // _entity_view parameter cannot be passed. Create a new route and
-    // controller if another $view_mode should be used.
-    // See \Drupal\Core\Entity\Enhancer\EntityRouteEnhancer.
-    $this->checkCallbackUrl($app, 'default');
     $build = parent::view($app, $view_mode);
     return $build;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getPageTitle(RouteMatchInterface $routeMatch): string {
-    return t('@name @developer_app', [
-      '@name' => Markup::create($routeMatch->getParameter('app')->label()),
-      '@developer_app' => $this->entityManager->getDefinition('developer_app')->getSingularLabel(),
-    ]);
   }
 
 }
