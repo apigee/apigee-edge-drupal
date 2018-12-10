@@ -105,7 +105,7 @@ class EdgeEntityDeleteForm extends EntityDeleteForm {
    *   The error message to be displayed to the user.
    */
   protected function verificationCodeErrorMessage() {
-    return $this->t('The provided text does not match id of @entity that you are attempting to delete.', [
+    return $this->t('The provided text does not match the id of @entity that you are attempting to delete.', [
       '@entity' => $this->entityTypeManager->getDefinition($this->getEntity()
         ->getEntityTypeId())->getLowercaseLabel(),
     ]);
