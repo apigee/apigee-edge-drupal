@@ -39,6 +39,7 @@ use Drupal\user\UserInterface;
  *     singular = "@count Developer App",
  *     plural = "@count Developer Apps",
  *   ),
+ *   config_with_labels = "apigee_edge.developer_app_settings",
  *   handlers = {
  *     "storage" = "Drupal\apigee_edge\Entity\Storage\DeveloperAppStorage",
  *     "access" = "Drupal\apigee_edge\Entity\EdgeEntityAccessControlHandler",
