@@ -25,18 +25,16 @@ use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerInterface;
 use Drupal\apigee_edge\Entity\Developer;
-use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * General form handler for the developer app create forms.
  */
-class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements DeveloperAppPageTitleInterface {
+class DeveloperAppCreateForm extends FieldableEdgeEntityForm {
 
   /**
    * The app credential controller factory.
@@ -206,7 +204,7 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
   public function save(array $form, FormStateInterface $form_state) {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
     $app = $this->entity;
-    $app->save();
+    $result = $app->save();
 
     $dacc = $this->getDeveloperAppCredentialController($app);
 
@@ -229,6 +227,8 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
     }
 
     $form_state->setRedirectUrl($this->getRedirectUrl());
+
+    return $result;
   }
 
   /**
@@ -247,15 +247,6 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm implements Develope
       // Otherwise fall back to the front page.
       return Url::fromRoute('<front>');
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getPageTitle(RouteMatchInterface $routeMatch): string {
-    return $this->t('Add @developer_app', [
-      '@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel(),
-    ]);
   }
 
   /**

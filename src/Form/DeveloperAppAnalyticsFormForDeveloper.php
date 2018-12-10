@@ -21,22 +21,11 @@ namespace Drupal\apigee_edge\Form;
 
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\Markup;
-use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
  * Displays the analytics page of a developer app for a given user on the UI.
  */
 class DeveloperAppAnalyticsFormForDeveloper extends DeveloperAppAnalyticsForm {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getPageTitle(RouteMatchInterface $route_match): string {
-    return $this->t('Analytics of @name', [
-      '@name' => Markup::create($route_match->getParameter('app')->label()),
-    ]);
-  }
 
   // @codingStandardsIgnoreStart
   /**

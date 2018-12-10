@@ -24,29 +24,19 @@ use Apigee\Edge\Api\Management\Entity\AppCredential;
 use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Element\StatusPropertyElement;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
-use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
-use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityListBuilder;
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Render\RendererInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * General entity listing builder for developer apps.
- *
- * ContainerInjectionInterface had to be implemented to make
- * \Drupal\Core\Controller\TitleResolver happy otherwise it would have
- * called the constructor with 0 parameter when it generates the page title
- * by calling getPageTitle().
  */
-class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppPageTitleInterface, ContainerInjectionInterface {
+class DeveloperAppListBuilder extends EdgeEntityListBuilder {
 
   /**
    * The renderer service.
@@ -88,8 +78,6 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
-   *   The entity storage object.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\Render\RendererInterface $renderer
@@ -97,13 +85,11 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack object.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, RequestStack $request_stack) {
-    parent::__construct($entity_type, $storage);
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, RequestStack $request_stack) {
+    parent::__construct($entity_type, $entity_type_manager);
     $this->renderer = $renderer;
     $this->entityTypeManager = $entity_type_manager;
     $this->requestStack = $request_stack;
-    // Disable pager for now.
-    $this->limit = 0;
   }
 
   /**
@@ -112,19 +98,10 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
     return new static(
       $entity_type,
-      $container->get('entity_type.manager')->getStorage($entity_type->id()),
       $container->get('entity_type.manager'),
       $container->get('renderer'),
       $container->get('request_stack')
     );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    $entityType = $container->get('entity_type.manager')->getDefinition('developer_app');
-    return static::createInstance($container, $entityType);
   }
 
   /**
@@ -497,15 +474,6 @@ class DeveloperAppListBuilder extends EntityListBuilder implements DeveloperAppP
       ];
     }
     return $build;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getPageTitle(RouteMatchInterface $route_match): string {
-    return $this->t('@developer_app', [
-      '@developer_app' => $this->getDeveloperAppEntityDefinition()->getPluralLabel(),
-    ]);
   }
 
 }

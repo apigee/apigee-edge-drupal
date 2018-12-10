@@ -19,17 +19,13 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
-use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\Markup;
-use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * General form handler for the developer app delete forms.
  */
-class DeveloperAppDeleteForm extends EdgeEntityDeleteForm implements DeveloperAppPageTitleInterface {
+class DeveloperAppDeleteForm extends EdgeEntityDeleteForm {
 
   use DeveloperStatusCheckTrait;
 
@@ -57,37 +53,8 @@ class DeveloperAppDeleteForm extends EdgeEntityDeleteForm implements DeveloperAp
    * {@inheritdoc}
    */
   protected function verificationCodeErrorMessage() {
-    return $this->t('The name does not match @developer_app you are attempting to delete.', [
+    return $this->t('The name does not match the @developer_app you are attempting to delete.', [
       '@developer_app' => $this->entityTypeManager->getDefinition($this->getEntity()->getEntityTypeId())->getLowercaseLabel(),
-    ]);
-  }
-
-  /**
-   * Builds a translatable page title by using values from args as replacements.
-   *
-   * @param array $args
-   *   An associative array of replacements.
-   *
-   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
-   *   The translatable page title.
-   *
-   * @see \Drupal\Core\StringTranslation\StringTranslationTrait::t()
-   */
-  protected function pageTitle(array $args = []): TranslatableMarkup {
-    return $this->t('Delete @name @developer_app', $args);
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * TODO Investigate and fix why the title of the page is not what we
-   * set here. This override of the default confirm form title should be
-   * coming from the EdgeEntityDeleteForm base class.
-   */
-  public function getPageTitle(RouteMatchInterface $routeMatch): string {
-    return $this->pageTitle([
-      '@name' => Markup::create($routeMatch->getParameter('developer_app')->label()),
-      '@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel(),
     ]);
   }
 

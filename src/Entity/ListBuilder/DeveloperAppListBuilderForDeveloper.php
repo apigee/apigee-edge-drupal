@@ -24,12 +24,11 @@ use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
 use Drupal\Component\Utility\Html;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Render\RendererInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\user\UserInterface;
@@ -40,7 +39,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 /**
  * Lists developer apps of a developer on the UI.
  */
-class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
+class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder implements ContainerInjectionInterface {
 
   use DeveloperStatusCheckTrait;
 
@@ -56,8 +55,6 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
-   *   The entity storage.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\Render\RendererInterface $render
@@ -67,24 +64,32 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack object.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render, AccountInterface $current_user, RequestStack $request_stack) {
-    parent::__construct($entity_type, $storage, $entity_type_manager, $render, $request_stack);
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render, AccountInterface $current_user, RequestStack $request_stack) {
+    parent::__construct($entity_type, $entity_type_manager, $render, $request_stack);
     $this->currentUser = $current_user;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
-    $entity_type = $container->get('entity_type.manager')->getDefinition('developer_app');
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
     return new static(
       $entity_type,
-      $container->get('entity.manager')->getStorage($entity_type->id()),
-      $container->get('entity.manager'),
+      $container->get('entity_type.manager'),
       $container->get('renderer'),
       $container->get('current_user'),
       $container->get('request_stack')
     );
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Because we use the _controller directive in the route we had to implement
+   * the ContainerInjectionInterface interface.
+   */
+  public static function create(ContainerInterface $container) {
+    return static::createInstance($container, $container->get('entity_type.manager')->getDefinition('developer_app'));
   }
 
   /**
@@ -202,19 +207,6 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
     }
 
     return $build;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getPageTitle(RouteMatchInterface $route_match): string {
-    $account = $route_match->getParameter('user');
-    if ($account->id() == $this->currentUser->id()) {
-      return apigee_edge_get_my_developer_apps_title();
-    }
-    else {
-      return apigee_edge_get_my_developer_apps_title($account);
-    }
   }
 
   /**
