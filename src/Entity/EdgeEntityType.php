@@ -20,11 +20,12 @@
 
 namespace Drupal\apigee_edge\Entity;
 
+use Drupal\apigee_edge\Entity\ListBuilder\EdgeEntityListBuilder;
+use Drupal\apigee_edge\Exception\RuntimeException;
 use Drupal\Core\Config\ImmutableConfig;
-use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Entity\EntityType;
 use Drupal\Core\Entity\EntityViewBuilder;
-use Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Provides an implementation of an Apigee Edge entity type and its metadata.
@@ -39,22 +40,32 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
   protected $query_class = 'Drupal\apigee_edge\Entity\Query\Query';
 
   /**
-   * {@inheritdoc}
+   * Name of the config object that contains entity label overrides.
+   *
+   * @var string
+   */
+  protected $config_with_labels;
+
+  /**
+   * EdgeEntityType constructor.
+   *
+   * @param array $definition
+   *   An array of values from the annotation.
+   *
+   * @throws \Drupal\Core\Entity\Exception\EntityTypeIdLengthException
+   *   Thrown when attempting to instantiate an entity type with too long ID.
    */
   public function __construct(array $definition) {
     parent::__construct($definition);
+    $this->group = 'apigee_edge';
+    $this->group_label = $this->t('Apigee Edge');
     // Some default settings for our entity types.
     $this->handlers += [
       'view_builder' => EntityViewBuilder::class,
-      'list_builder' => EntityListBuilder::class,
+      'list_builder' => EdgeEntityListBuilder::class,
       'route_provider' => [
-        'html' => DefaultHtmlRouteProvider::class,
+        'html' => EdgeEntityRouteProvider::class,
       ],
-    ];
-
-    $this->links += [
-      'canonical' => "/{$this->id}/{{$this->id}}",
-      'collection' => "/{$this->id}",
     ];
 
     // Add entity type id to the list cache tags to help easier cache
@@ -66,10 +77,10 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
    * {@inheritdoc}
    */
   public function getLabel() {
-    if ($label = $this->getConfigWithEntityLabels()->get('entity_label_singular')) {
+    if ($label = $this->getEntityLabelFromConfig('entity_label_singular')) {
       return $label;
     }
-    return parent::getLabel();
+    parent::getLabel();
   }
 
   /**
@@ -83,10 +94,23 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
    * {@inheritdoc}
    */
   public function getPluralLabel() {
-    if ($label = $this->getConfigWithEntityLabels()->get('entity_label_plural')) {
+    if ($label = $this->getEntityLabelFromConfig('entity_label_plural')) {
       return $label;
     }
     return parent::getPluralLabel();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCollectionLabel() {
+    // We do not want to display "XY entities" as default collection label
+    // rather "XYs".
+    if (empty($this->label_collection)) {
+      $label = $this->getPluralLabel();
+      $this->label_collection = new TranslatableMarkup('@label', ['@label' => $label], [], $this->getStringTranslation());
+    }
+    return $this->label_collection;
   }
 
   /**
@@ -96,11 +120,57 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
    *   - entity_label_singular
    *   - entity_label_plural.
    *
-   * @return \Drupal\Core\Config\ImmutableConfig
+   * @return \Drupal\Core\Config\ImmutableConfig|null
    *   Config object.
+   *
+   * @throws \Drupal\apigee_edge\Exception\RuntimeException
+   *   If the provided config object does not exists.
    */
-  protected function getConfigWithEntityLabels(): ImmutableConfig {
-    return \Drupal::config("apigee_edge.{$this->id}_settings");
+  private function getConfigWithEntityLabels(): ?ImmutableConfig {
+    if (empty($this->config_with_labels)) {
+      return NULL;
+    }
+
+    $config = \Drupal::config($this->config_with_labels);
+    if ($config->isNew()) {
+      throw new RuntimeException("Config object called {$this->config_with_labels} does not exists.");
+    }
+
+    return $config;
+  }
+
+  /**
+   * Returns entity label from config if exists.
+   *
+   * @param string $key
+   *   The config object key. It starts with "entity_label_".
+   *
+   * @return string|null
+   *   The entity label if the config and config key exists, null otherwise.
+   */
+  protected function getEntityLabelFromConfig(string $key): ?string {
+    $logger = \Drupal::logger('apigee_edge');
+    try {
+      $config = $this->getConfigWithEntityLabels();
+      if ($config) {
+        if ($label = $config->get($key)) {
+          return $label;
+        }
+        else {
+          $logger->warning('@class: The "@key" has not been found in @config config object for "@entity_type" entity.', [
+            '@class' => get_class($this),
+            '@entity_type' => $this->id,
+            '@key' => $key,
+            '@config' => $this->config_with_labels ?? "apigee_edge.{$this->id}_settings",
+          ]);
+        }
+      }
+    }
+    catch (RuntimeException $exception) {
+      $logger->error('@class: @message', ['@class' => get_class($this), '@message' => $exception->getMessage()]);
+    }
+
+    return NULL;
   }
 
   /**
