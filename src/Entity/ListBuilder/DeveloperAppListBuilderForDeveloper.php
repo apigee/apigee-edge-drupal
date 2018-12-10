@@ -178,10 +178,12 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder implem
   /**
    * {@inheritdoc}
    */
-  protected function renderAddAppLink(UserInterface $user = NULL) {
-    $link = parent::renderAddAppLink();
-    if ($user) {
-      $link['#url'] = new Url('entity.developer_app.add_form_for_developer', ['user' => $user->id()], $link['#url']->getOptions());
+  protected function getAddEntityLink(): ?array {
+    $link = parent::getAddEntityLink();
+    if ($link) {
+      if ($user = \Drupal::routeMatch()->getParameter('user')) {
+        $link['#url'] = new Url('entity.developer_app.add_form_for_developer', ['user' => $user->id()], $link['#url']->getOptions());
+      }
     }
     return $link;
   }
@@ -190,15 +192,10 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder implem
    * {@inheritdoc}
    */
   public function render(UserInterface $user = NULL) {
-    $this->checkDeveloperStatus($user->id());
     $build = parent::render();
+    $this->checkDeveloperStatus($user->id());
 
     $build['table']['#empty'] = $this->t('Looks like you do not have any apps. Get started by adding one.');
-    // If current user has access to the Add app form (validated by the parent
-    // class).
-    if (!empty($build['add_app'])) {
-      $build['add_app']['link'] = $this->renderAddAppLink($user);
-    }
 
     foreach ($this->loadByUser($user, $this->buildHeader()) as $entity) {
       if ($row = $this->buildRow($entity)) {
