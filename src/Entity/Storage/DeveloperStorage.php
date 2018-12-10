@@ -134,7 +134,7 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
    * {@inheritdoc}
    */
   protected function doSave($id, EntityInterface $entity) {
-    /** @var \Drupal\apigee_edge\Entity\Developer $entity */
+    /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $entity */
     $developer_status = $entity->getStatus();
     $result = parent::doSave($id, $entity);
 
