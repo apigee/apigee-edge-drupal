@@ -55,6 +55,10 @@ use Drupal\user\UserInterface;
  *       "analytics_for_developer" = "Drupal\apigee_edge\Form\DeveloperAppAnalyticsFormForDeveloper",
  *     },
  *     "list_builder" = "Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder",
+ *     "route_provider" = {
+ *        "html" = "Drupal\apigee_edge\Entity\DeveloperAppRouteProvider",
+ *     },
+ *     "view_builder" = "Drupal\apigee_edge\Entity\DeveloperAppViewBuilder",
  *   },
  *   links = {
  *     "canonical" = "/developer-apps/{developer_app}",
