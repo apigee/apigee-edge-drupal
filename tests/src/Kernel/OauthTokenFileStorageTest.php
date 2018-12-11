@@ -29,9 +29,6 @@ use Drupal\KernelTests\KernelTestBase;
  *
  * @group apigee_edge
  * @group apigee_edge_kernel
- *
- * TODO Test OAuth token storage is only cleared when Apigee Edge authentication
- * is configured and the authentication method is OAuth.
  */
 class OauthTokenFileStorageTest extends KernelTestBase {
 
@@ -205,6 +202,18 @@ class OauthTokenFileStorageTest extends KernelTestBase {
 
     // The token should not be valid anymore.
     $this->assertTrue($storage->hasExpired());
+  }
+
+  /**
+   * Test that the tokens are removed when cache is cleared.
+   */
+  public function testCacheClear() {
+    $storage = $this->tokenStorage();
+    // Save the token.
+    $storage->saveToken($this->testTokenData);
+    $this->assertNotEmpty($storage->getAccessToken());
+    drupal_flush_all_caches();
+    $this->assertEmpty($storage->getAccessToken());
   }
 
   /**
