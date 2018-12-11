@@ -285,8 +285,9 @@ class AuthenticationForm extends ConfigFormBase {
           // Clear existing token data.
           $this->oauthTokenStorage->removeToken();
         }
-        // TODO If email field contains an invalid email request should
-        // not be sent.
+        // TODO If email field contains an invalid email address
+        // (form validation fails) then "Send request" should not send an API
+        // request.
         $this->sdkConnector->testConnection($test_key);
         $this->messenger()->addStatus($this->t('Connection successful.'));
       }
