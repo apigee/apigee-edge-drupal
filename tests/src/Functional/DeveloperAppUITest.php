@@ -150,7 +150,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
     $this->clickLink('Delete');
     $this->submitForm([], 'Delete');
-    $this->assertSession()->pageTextContains('App name does not match app you are attempting to delete');
+    $this->assertSession()->pageTextContains('The name does not match the a you are attempting to delete.');
 
     $this->submitForm([
       'verification_code' => $name,
