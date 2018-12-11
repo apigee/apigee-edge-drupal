@@ -46,7 +46,7 @@ class DeveloperAppByNameRouteAlterSubscriber extends RouteSubscriberBase {
   protected function alterRoutes(RouteCollection $collection) {
     foreach ($collection as $route) {
       if (in_array('user', $route->compile()->getPathVariables()) && in_array('app', $route->compile()->getPathVariables())) {
-        $route->setOption('parameters', ['app' => ['type' => 'developer_app_by_name']]);
+        $route->setOption('parameters', array_merge(['app' => ['type' => 'developer_app_by_name']], ($route->getOption('parameters') ?? [])));
       }
     }
   }

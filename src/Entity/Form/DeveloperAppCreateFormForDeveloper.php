@@ -27,6 +27,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -104,9 +105,9 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
    * @return array
    *   The form structure.
    */
-  public function buildForm(array $form, FormStateInterface $form_state, int $user = NULL) {
-    $this->userId = $user;
-    $this->checkDeveloperStatus($user);
+  public function buildForm(array $form, FormStateInterface $form_state, UserInterface $user = NULL) {
+    $this->userId = $user->id();
+    $this->checkDeveloperStatus($user->id());
 
     $form = parent::buildForm($form, $form_state);
     $form['developerId'] = [

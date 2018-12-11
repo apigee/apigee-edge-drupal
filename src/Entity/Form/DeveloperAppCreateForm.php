@@ -122,7 +122,7 @@ class DeveloperAppCreateForm extends FieldableEdgeEntityForm {
     // (It could happen that a user with bypass permission edits an other
     // user's app.)
     if ($this->routeMatch->getParameter('user') !== NULL) {
-      $currentUser = $this->entityTypeManager->getStorage('user')->load($this->routeMatch->getParameter('user'));
+      $currentUser = $this->routeMatch->getParameter('user');
     }
     /** @var \Drupal\apigee_edge\Entity\ApiProductInterface[] $availableProductsForUser */
     $availableProductsForUser = array_filter(ApiProduct::loadMultiple(), function (ApiProductInterface $product) use ($currentUser) {

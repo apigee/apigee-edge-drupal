@@ -125,6 +125,8 @@ services:
     class: Drupal\apigee_edge\Breadcrumb\CreateAppForDeveloperBreadcrumbBuilder
     tags:
     - { name: breadcrumb_builder, priority: 101 }
+    arguments:
+      ['@request_stack', '@router.route_provider', '@title_resolver']
 
   route_subscriber.apigee_edge.developer_app_by_name:
     class: Drupal\apigee_edge\Routing\DeveloperAppByNameRouteAlterSubscriber

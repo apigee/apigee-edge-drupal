@@ -67,7 +67,10 @@ class DeveloperAppNameConverter implements ParamConverterInterface {
     }
     $entity = NULL;
     /** @var \Drupal\user\UserInterface $user */
-    $user = $this->entityTypeManager->getStorage('user')->load($defaults['user']);
+    // If {user} parameter is before the app name in the route the
+    // entity parameter converter should have already up-casted it to
+    // a user object if not let's load the user here.
+    $user = is_object($defaults['user']) ? $defaults['user'] : $this->entityTypeManager->getStorage('user')->load($defaults['user']);
     if ($user) {
       $developerId = $user->get('apigee_edge_developer_id')->value;
       if ($developerId) {
