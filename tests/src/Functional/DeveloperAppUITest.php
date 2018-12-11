@@ -153,7 +153,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->pageTextContains('App name does not match app you are attempting to delete');
 
     $this->submitForm([
-      'id_verification' => $name,
+      'verification_code' => $name,
     ], 'Delete');
 
     $this->assertSession()->pageTextContains("The {$name} app has been deleted.");

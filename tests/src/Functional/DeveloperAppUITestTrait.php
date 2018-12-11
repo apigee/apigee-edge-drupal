@@ -263,7 +263,7 @@ trait DeveloperAppUITestTrait {
 
     $this->clickLink('Delete');
     $this->submitForm([
-      'id_verification' => $name,
+      'verification_code' => $name,
     ], 'Delete');
 
     $this->drupalGet("/user/{$account->id()}/apps");
