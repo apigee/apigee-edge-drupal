@@ -202,7 +202,7 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
     if ($entity_type->hasLinkTemplate('collection-by-developer')) {
       $route = new Route($entity_type->getLinkTemplate('collection-by-developer'));
       $route->setDefault('_controller', DeveloperAppListBuilderForDeveloper::class . '::render');
-      $route->setDefault('_title_callback', 'apigee_edge_get_my_developer_apps_title');
+      $route->setDefault('_title_callback', DeveloperAppListBuilderForDeveloper::class . '::pageTitle');
       $route->setDefault('entity_type_id', $entity_type->id());
       if (strpos($route->getPath(), '{user}') !== FALSE) {
         $route->setRequirement('user', '\d+');

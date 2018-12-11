@@ -154,7 +154,7 @@ apigee_edge.user.my_apps:
   path: '/user/apps'
   defaults:
     _controller: '\Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilderForDeveloper::myAppsPage'
-    _title_callback: 'apigee_edge_get_my_developer_apps_title'
+    _title_callback: '\Drupal\apigee_edge\Plugin\Menu\MyAppsMenuLink::getTitle'
   requirements:
     _permission: 'view own developer_app'
 

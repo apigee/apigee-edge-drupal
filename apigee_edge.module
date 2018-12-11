@@ -49,7 +49,6 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
-use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Site\Settings;
@@ -1458,32 +1457,6 @@ function _apigee_edge_set_sync_in_progress(?bool $in_progress = NULL): bool {
  */
 function _apigee_edge_is_sync_in_progress(): bool {
   return _apigee_edge_set_sync_in_progress();
-}
-
-/**
- * Gets the title of "My developer apps".
- *
- * @param \Drupal\user\UserInterface|null $user
- *   It can be used if an admin visits another user's
- *   "My developer apps" page.
- *
- * @return \Drupal\Core\StringTranslation\TranslatableMarkup
- *   Title of "My developer apps".
- */
-function apigee_edge_get_my_developer_apps_title(?UserInterface $user = NULL): TranslatableMarkup {
-  $args['@developer_app'] = \Drupal::entityTypeManager()->getDefinition('developer_app')->getPluralLabel();
-  if (isset($user)) {
-    $args['@user'] = Markup::create($user->getDisplayName());
-    $title = t('@developer_app of @user', $args);
-  }
-  else {
-    $title = t('My @developer_app', $args);
-  }
-
-  // Modules and themes can alter the title.
-  \Drupal::moduleHandler()->alter('apigee_edge_my_developer_apps_title', $title, $user);
-
-  return $title;
 }
 
 /**
