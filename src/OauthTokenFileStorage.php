@@ -121,7 +121,7 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
    */
   public function getScope(): string {
     $token_data = $this->getTokenData();
-    return $token_data['scope'] ?? NULL;
+    return $token_data['scope'] ?? '';
   }
 
   /**
@@ -129,7 +129,7 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
    */
   public function getExpires(): int {
     $token_data = $this->getTokenData();
-    return $token_data['expires'] ?? -1;
+    return $token_data['expires'] ?? time() - 1;
   }
 
   /**
@@ -137,7 +137,7 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
    */
   public function hasExpired(): bool {
     $expires = $this->getExpires();
-    if ($expires !== 0 && ($expires - $this->leeway) > time()) {
+    if ($expires - $this->leeway > time()) {
       return FALSE;
     }
 

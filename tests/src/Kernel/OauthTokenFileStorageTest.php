@@ -203,7 +203,7 @@ class OauthTokenFileStorageTest extends KernelTestBase {
     // Expire token.
     $storage->markExpired();
 
-    // The token should still be valid for 5 minutes.
+    // The token should not be valid anymore.
     $this->assertTrue($storage->hasExpired());
   }
 
