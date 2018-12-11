@@ -160,31 +160,33 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
    * {@inheritdoc}
    */
   public function saveToken(array $data): void {
-    // Even if an error occurs here token data can be still served from the
-    // internal cache in this page request.
+    // Calculate the cache expiration.
+    if (isset($data['expires_in'])) {
+      $data['expires'] = $data['expires_in'] + time();
+    }
+    // Do not save the expires_in data to the storage.
+    unset($data['expires_in']);
+
     try {
       $this->checkRequirements();
+      // Write the obfuscated token data to a private file.
+      file_unmanaged_save_data(base64_encode(serialize($data)), $this->tokenFilePath, FILE_EXISTS_REPLACE);
     }
     catch (OauthTokenStorageException $exception) {
       $this->logger->critical('OAuth token file storage: %error.', ['%error' => $exception->getMessage()]);
     }
-    // Calculate the cache expiration.
-    $data['expires'] = isset($data['expires_in']) ? $data['expires_in'] + time() : ($data['expires'] ?? -1);
-    // Remove the expires_in data.
-    unset($data['expires_in']);
-
-    // Write the obfuscated token data to a private file.
-    file_unmanaged_save_data(base64_encode(serialize($data)), $this->tokenFilePath, FILE_EXISTS_REPLACE);
-
-    // Update the cached value.
-    $this->tokenData = $data;
+    finally {
+      // Even if an error occurs here token data can be still served from the
+      // internal cache in this page request.
+      $this->tokenData = $data;
+    }
   }
 
   /**
    * {@inheritdoc}
    */
   public function checkRequirements(): void {
-    if (strpos($this->tokenFilePath, 'private://') === 0 && empty($this->settings->get('file_private_path'))) {
+    if ($this->isTokenFileInPrivateFileSystem() && !$this->isPrivateFileSystemConfigured()) {
       throw new OauthTokenStorageException('Unable to save token data to private filesystem because it has not been configured yet.');
     }
     // Gets the file directory so we can make sure it exists.
@@ -198,7 +200,6 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
    * {@inheritdoc}
    */
   public function removeToken(): void {
-    // Removes the token data from the file without removing the file.
     $this->saveToken([]);
   }
 
@@ -206,10 +207,10 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
    * Removes the file in which the OAuth token data is stored.
    */
   public function removeTokenFile(): void {
-    if (strpos($this->tokenFilePath, 'private://') === 0 && empty($this->settings->get('file_private_path'))) {
+    if (($this->isTokenFileInPrivateFileSystem() && !$this->isPrivateFileSystemConfigured()) || !file_exists($this->tokenFilePath)) {
       // Do not try to delete the file if private filesystem has not been
       // configured because in that cause "private://" scheme is not
-      // registered.
+      // registered. Also do nothing if token file does not exist.
       return;
     }
     file_unmanaged_delete($this->tokenFilePath);
@@ -247,6 +248,27 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
       $data = unserialize(base64_decode($raw_data));
     }
     return is_array($data) ? $data : [];
+  }
+
+  /**
+   * Checks whether the token file's location in the private filesystem.
+   *
+   * @return bool
+   *   True if the token file's location is in the private filesystem, false
+   *   otherwise.
+   */
+  private function isTokenFileInPrivateFileSystem(): bool {
+    return strpos($this->tokenFilePath, 'private://') === 0;
+  }
+
+  /**
+   * Checks whether the private filesystem is configured.
+   *
+   * @return bool
+   *   True if configured, FALSE otherwise.
+   */
+  private function isPrivateFileSystemConfigured(): bool {
+    return !empty($this->settings->get('file_private_path'));
   }
 
 }
