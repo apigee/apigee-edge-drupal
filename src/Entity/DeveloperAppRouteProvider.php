@@ -60,7 +60,7 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
     }
 
     if ($analytics_for_developer = $this->getAnalyticsRouteForDeveloper($entity_type)) {
-      $collection->add("entity.{$entity_type_id}.analytics_for_developer", $delete_form_for_developer);
+      $collection->add("entity.{$entity_type_id}.analytics_for_developer", $analytics_for_developer);
     }
 
     return $collection;
