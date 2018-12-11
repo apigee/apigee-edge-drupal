@@ -98,6 +98,7 @@ class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $active_password = $active_key_type->getPassword($active_key);
     $active_username = $active_key_type->getUsername($active_key);
     $active_org      = $active_key_type->getOrganization($active_key);
+    $active_endpoint = $active_key_type->getEndpoint($active_key);
 
     $this->drupalGet(Url::fromRoute('apigee_edge.settings'));
     $page = $this->getSession()->getPage();
@@ -109,7 +110,7 @@ class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     // Tests the default settings.
     $web_assert->fieldValueEquals('Authentication type', 'basic');
     $web_assert->fieldValueEquals('Password', '');
-    $web_assert->fieldValueEquals('Apigee Edge endpoint', '');
+    $web_assert->fieldValueEquals('Apigee Edge endpoint', $active_endpoint);
 
     // Make sure the oauth fields are hidden.
     $this->assertFalse($this->cssSelect('#edit-key-input-settings-authorization-server')[0]->isVisible());
