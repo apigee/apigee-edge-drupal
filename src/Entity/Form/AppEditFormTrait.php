@@ -126,7 +126,7 @@ trait AppEditFormTrait {
         }
         else {
           if (count($credential_currently_assigned_product_ids) > 1) {
-            $this->messenger->addWarning($this->t('@apps now require selection of a single @api_product; multiple @api_product selection is no longer supported. Confirm your @api_product selection below.', [
+            $this->messenger()->addWarning($this->t('@apps now require selection of a single @api_product; multiple @api_product selection is no longer supported. Confirm your @api_product selection below.', [
               '@apps' => $this->appEntityDefinition()->getPluralLabel(),
               '@api_product' => $api_product_def->getSingularLabel(),
             ]));
