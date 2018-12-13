@@ -109,9 +109,7 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_entity_form', 'developer_app.add_for_developer');
       $route->setDefault('_title_callback', AppTitleProvider::class . '::addTitle');
       $route->setDefault('entity_type_id', $entity_type->id());
-      if (strpos($route->getPath(), '{user}') !== FALSE) {
-        $route->setRequirement('user', '\d+');
-      }
+      $this->ensureUserParameter($route);
       $route->setRequirement('_entity_create_access', $entity_type->id());
       return $route;
     }
@@ -132,9 +130,7 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_entity_form', 'developer_app.edit_for_developer');
       $route->setDefault('_title_callback', AppTitleProvider::class . '::editTitle');
       $route->setDefault('entity_type_id', $entity_type->id());
-      if (strpos($route->getPath(), '{user}') !== FALSE) {
-        $route->setRequirement('user', '\d+');
-      }
+      $this->ensureUserParameter($route);
       $route->setRequirement('_developer_app_access', 'update');
       // We must load the entity from Apigee Edge directly and omit cached
       // version on edit forms.
@@ -158,9 +154,7 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_entity_form', 'developer_app.delete_for_developer');
       $route->setDefault('_title_callback', AppTitleProvider::class . '::deleteTitle');
       $route->setDefault('entity_type_id', $entity_type->id());
-      if (strpos($route->getPath(), '{user}') !== FALSE) {
-        $route->setRequirement('user', '\d+');
-      }
+      $this->ensureUserParameter($route);
       $route->setRequirement('_developer_app_access', 'delete');
       return $route;
     }
@@ -181,9 +175,7 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_controller', DeveloperAppViewControllerForDeveloper::class . '::view');
       $route->setDefault('_title_callback', AppTitleProvider::class . ':title');
       $route->setDefault('entity_type_id', $entity_type->id());
-      if (strpos($route->getPath(), '{user}') !== FALSE) {
-        $route->setRequirement('user', '\d+');
-      }
+      $this->ensureUserParameter($route);
       $route->setRequirement('_developer_app_access', 'view');
       return $route;
     }
@@ -204,9 +196,7 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_controller', DeveloperAppListBuilderForDeveloper::class . '::render');
       $route->setDefault('_title_callback', DeveloperAppListBuilderForDeveloper::class . '::pageTitle');
       $route->setDefault('entity_type_id', $entity_type->id());
-      if (strpos($route->getPath(), '{user}') !== FALSE) {
-        $route->setRequirement('user', '\d+');
-      }
+      $this->ensureUserParameter($route);
       $route->setRequirement('_custom_access', MyAppsAccessCheck::class . '::access');
       return $route;
     }
@@ -227,11 +217,26 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_form', DeveloperAppAnalyticsFormForDeveloper::class);
       $route->setDefault('_title_callback', AppTitleProvider::class . '::analyticsTitle');
       $route->setDefault('entity_type_id', $entity_type->id());
-      if (strpos($route->getPath(), '{user}') !== FALSE) {
-        $route->setRequirement('user', '\d+');
-      }
+      $this->ensureUserParameter($route);
       $route->setRequirement('_developer_app_access', 'analytics');
       return $route;
+    }
+  }
+
+  /**
+   * If route contains the {user} parameter add required changes to the route.
+   *
+   * @param \Symfony\Component\Routing\Route $route
+   *   The route to be checked and altered if needed.
+   */
+  private function ensureUserParameter(Route $route) {
+    if (strpos($route->getPath(), '{user}') !== FALSE) {
+      // Default validation criteria based on Drupal core paths.
+      $route->setRequirement('user', '\d+');
+      // Make sure the parameter gets up-casted.
+      // (This also ensures that we get an "Page not found" page if user with
+      // uid does not exist.)
+      $route->setOption('parameters', ['user' => ['type' => 'entity:user', 'converter' => 'paramconverter.entity']]);
     }
   }
 
