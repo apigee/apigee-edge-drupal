@@ -19,12 +19,11 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
+use Drupal\apigee_edge\Entity\ApiProductInterface;
+use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
-use Drupal\Core\Config\ConfigFactory;
-use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\user\UserInterface;
@@ -33,49 +32,39 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Dedicated form handler that allows a developer to create an developer app.
  */
-class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
+class DeveloperAppCreateFormForDeveloper extends AppForm {
 
   use DeveloperStatusCheckTrait;
+  use AppCreateFormTrait;
+  use DeveloperAppFormTrait;
 
   /**
-   * The developer app entity.
+   * The user from the route.
    *
-   * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface
-   */
-  protected $entity;
-
-  /**
-   * Id of the Drupal user who owns the entity.
+   * Use getUser() instead.
    *
-   * @var null|int
+   * @var \Drupal\user\UserInterface
    */
-  protected $userId;
+  protected $user;
 
   /**
-   * DeveloperCreateDeveloperAppForm constructor.
+   * The app credential controller factory.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface
+   */
+  protected $appCredentialControllerFactory;
+
+  /**
+   * DeveloperAppCreateFormForDeveloper constructor.
    *
    * @param \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory
    *   The app credential controller factory.
-   * @param \Drupal\Core\Config\ConfigFactory $config_factory
-   *   Config factory.
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
-   *   Entity manager.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   Entity type manager.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
-   *   Module handler service.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   *   Entity type manager.   *.
    */
-  public function __construct(DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory, ConfigFactory $config_factory, EntityManagerInterface $entity_manager, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler) {
-    parent::__construct($app_credential_controller_factory, $config_factory, $entity_type_manager);
+  public function __construct(DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory, EntityTypeManagerInterface $entity_type_manager) {
+    parent::__construct($entity_type_manager);
     $this->appCredentialControllerFactory = $app_credential_controller_factory;
-    $this->configFactory = $config_factory;
-    $this->entityManager = $entity_manager;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->moduleHandler = $module_handler;
-    $this->entity = $this->entityTypeManager->getStorage('developer_app')->create();
   }
 
   /**
@@ -84,44 +73,34 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('apigee_edge.controller.developer_app_credential_factory'),
-      $container->get('config.factory'),
-      $container->get('entity.manager'),
-      $container->get('entity_type.manager'),
-      $container->get('module_handler')
+      $container->get('entity_type.manager')
     );
-  }
-
-  /**
-   * Form constructor.
-   *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   * @param int|null $user
-   *   User id, up-casting is not working, because _entity_form is used instead
-   *   of _form in routing.yml.
-   *
-   * @return array
-   *   The form structure.
-   */
-  public function buildForm(array $form, FormStateInterface $form_state, UserInterface $user = NULL) {
-    $this->userId = $user->id();
-    $this->checkDeveloperStatus($user->id());
-
-    $form = parent::buildForm($form, $form_state);
-    $form['developerId'] = [
-      '#type' => 'value',
-      '#value' => $this->entity->getDeveloperId(),
-    ];
-    return $form;
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function prepareEntity() {
-    $this->entity->setOwnerId($this->userId);
+  public function buildForm(array $form, FormStateInterface $form_state, UserInterface $user = NULL) {
+    // This is the only place where we can grab additional route parameters.
+    // See implementation in parent.
+    $this->user = $user;
+    return parent::buildForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function form(array $form, FormStateInterface $form_state) {
+    $form = parent::form($form, $form_state);
+    $this->checkDeveloperStatus($this->getUser()->id());
+
+    // The user from the route is the owner.
+    $form['owner'] = [
+      '#type' => 'value',
+      '#value' => $this->getUser()->get('apigee_edge_developer_id')->value,
+    ];
+
+    return $form;
   }
 
   /**
@@ -130,6 +109,35 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateForm {
   protected function getRedirectUrl(): Url {
     $entity = $this->getEntity();
     return $entity->toUrl('collection-by-developer');
+  }
+
+  /**
+   * The user from the route or the current user if it is not available.
+   *
+   * @return \Drupal\user\UserInterface
+   *   User object.
+   */
+  protected function getUser(): UserInterface {
+    return $this->user ?? $this->entityTypeManager->getStorage('user')->load(\Drupal::currentUser()->id());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function apiProductList(): array {
+    $api_products = parent::apiProductList();
+    array_filter($api_products, function (ApiProductInterface $product) {
+      return $product->access('assign', $this->getUser());
+    });
+
+    return $api_products;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function appCredentialController(string $owner, string $app_name): AppCredentialControllerInterface {
+    return $this->appCredentialControllerFactory->developerAppCredentialController($owner, $app_name);
   }
 
 }

@@ -19,26 +19,23 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
-use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
-use Drupal\apigee_edge\Element\StatusPropertyElement;
-use Drupal\apigee_edge\Entity\ApiProductInterface;
+use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
-use Drupal\Component\Utility\Xss;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * General form handler for the developer app edit forms.
+ * General form handler for the developer app edit.
  */
-class DeveloperAppEditForm extends DeveloperAppCreateForm {
+class DeveloperAppEditForm extends AppForm {
 
   use DeveloperStatusCheckTrait;
+  use AppEditFormTrait;
+  use DeveloperAppFormTrait;
 
   /**
    * The renderer service.
@@ -47,38 +44,28 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
    */
   protected $renderer;
 
-  /**
-   * The developer app entity.
-   *
-   * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface
-   */
-  protected $entity;
 
   /**
-   * The messenger service.
+   * The app credential controller factory.
    *
-   * @var \Drupal\Core\Messenger\MessengerInterface
+   * @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface
    */
-  protected $messenger;
+  protected $appCredentialControllerFactory;
 
   /**
    * Constructs DeveloperAppEditForm.
    *
    * @param \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory
    *   The developer app credential controller factory.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   A config factory for retrieving required config objects.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
-   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
-   *   The messenger service.
    */
-  public function __construct(DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, MessengerInterface $messenger) {
-    parent::__construct($app_credential_controller_factory, $config_factory, $entity_type_manager);
+  public function __construct(DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer) {
+    parent::__construct($entity_type_manager);
     $this->renderer = $renderer;
-    $this->messenger = $messenger;
+    $this->appCredentialControllerFactory = $app_credential_controller_factory;
   }
 
   /**
@@ -87,10 +74,8 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('apigee_edge.controller.developer_app_credential_factory'),
-      $container->get('config.factory'),
       $container->get('entity_type.manager'),
-      $container->get('renderer'),
-      $container->get('messenger')
+      $container->get('renderer')
     );
   }
 
@@ -99,190 +84,11 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
    */
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
-    $this->checkDeveloperStatus($this->entity->getOwnerId());
-    $config = $this->configFactory->get('apigee_edge.common_app_settings');
-    $multiple = $config->get('multiple_products');
-
-    $form['#tree'] = TRUE;
-
-    // Do not allow to change the (machine) name of the app.
-    $form['name'] = [
-      '#type' => 'value',
-      '#value' => $this->entity->getName(),
-    ];
-
-    // If app's display name is empty fallback to app name as default
-    // value just like Apigee Edge Management UI does.
-    if ($form['displayName']['widget'][0]['value']['#default_value'] === NULL) {
-      $form['displayName']['widget'][0]['value']['#default_value'] = $this->getEntity()->getName();
-    }
-
-    // If app's callback URL field is visible on the form then set the property
-    // value as default value because the field value can be empty if the
-    // original value is not a valid URL.
-    // See: \Drupal\apigee_edge\Entity\DeveloperApp::set()
-    if (isset($form['callbackUrl'])) {
-      $form['callbackUrl']['widget'][0]['value']['#default_value'] = $this->getEntity()->getCallbackUrl();
-    }
-
-    $form['developerId']['#access'] = FALSE;
-    $form['api_products']['#access'] = !isset($form['api_products']) ?: FALSE;
-
-    if ($config->get('user_select')) {
-      $form['credential'] = [
-        '#type' => 'container',
-        '#weight' => 100,
-      ];
-
-      foreach ($this->entity->getCredentials() as $credential) {
-        $credential_status_element = [
-          '#type' => 'status_property',
-          '#value' => Xss::filter($credential->getStatus()),
-          '#indicator_status' => $credential->getStatus() === AppCredentialInterface::STATUS_APPROVED ? StatusPropertyElement::INDICATOR_STATUS_OK : StatusPropertyElement::INDICATOR_STATUS_ERROR,
-        ];
-        $rendered_credential_status = $this->renderer->render($credential_status_element);
-
-        $form['credential'][$credential->getConsumerKey()] = [
-          '#type' => 'fieldset',
-          '#title' => $rendered_credential_status . $this->t('Credential'),
-          '#collapsible' => FALSE,
-        ];
-
-        $current_product_ids = [];
-        foreach ($credential->getApiProducts() as $product) {
-          $current_product_ids[] = $product->getApiproduct();
-        }
-        // Parent form has already ensured that only those API products
-        // are visible in this list in which the (current) user has access.
-        $product_list = $form['api_products']['#options'];
-        // But we have to add this app's currently assigned API products to the
-        // list as well.
-        $product_list += array_map(function (ApiProductInterface $product) {
-          return $product->label();
-        }, $this->entityTypeManager->getStorage('api_product')->loadMultiple($current_product_ids));
-
-        $form['credential'][$credential->getConsumerKey()]['api_products'] = [
-          '#title' => $this->entityTypeManager->getDefinition('api_product')->getPluralLabel(),
-          '#required' => TRUE,
-          '#options' => $product_list,
-        ];
-
-        if ($multiple) {
-          $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = $current_product_ids;
-        }
-        else {
-          if (count($current_product_ids) > 1) {
-            $dev_app_def = $this->entityTypeManager->getDefinition('developer_app');
-            $api_product_def = $this->entityTypeManager->getDefinition('api_product');
-            $this->messenger->addWarning($this->t('@developer_apps status now require selection of a single @api_product; multiple @api_product selection is no longer supported. Confirm your @api_product selection below.', [
-              '@developer_apps' => $dev_app_def->getPluralLabel(),
-              '@api_product' => $api_product_def->getSingularLabel(),
-            ]));
-          }
-          $form['credential'][$credential->getConsumerKey()]['api_products']['#default_value'] = reset($current_product_ids) ?: NULL;
-        }
-
-        if ($config->get('display_as_select')) {
-          $form['credential'][$credential->getConsumerKey()]['api_products']['#type'] = 'select';
-          $form['credential'][$credential->getConsumerKey()]['api_products']['#multiple'] = $multiple;
-          $form['credential'][$credential->getConsumerKey()]['api_products']['#empty_value'] = '';
-        }
-        else {
-          if ($multiple) {
-            $form['credential'][$credential->getConsumerKey()]['api_products']['#type'] = 'checkboxes';
-            $form['credential'][$credential->getConsumerKey()]['api_products']['#options'] = $product_list;
-          }
-          else {
-            $form['credential'][$credential->getConsumerKey()]['api_products']['#type'] = 'radios';
-            $form['credential'][$credential->getConsumerKey()]['api_products']['#options'] = $product_list;
-          }
-        }
-      }
-    }
+    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $app */
+    $app = $this->entity;
+    $this->checkDeveloperStatus($app->getOwnerId());
 
     return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function actions(array $form, FormStateInterface $form_state) {
-    $actions = parent::actions($form, $form_state);
-    $actions['submit']['#value'] = $this->t('Save');
-    return $actions;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function save(array $form, FormStateInterface $form_state) {
-    $config = $this->configFactory->get('apigee_edge.common_app_settings');
-    $redirect_user = FALSE;
-
-    if ($config->get('user_select')) {
-      $dacc = $this->getDeveloperAppCredentialController($this->entity);
-
-      // $this->entity->getCredentials() always returns the already stored
-      // credentials on Apigee Edge.
-      // @see \Drupal\apigee_edge\Entity\DeveloperApp::getCredentials()
-      foreach ($form_state->getValue('credential', []) as $new_credential => $new_credentail_data) {
-        foreach ($this->entity->getCredentials() as $original_credential) {
-          if ($new_credential === $original_credential->getConsumerKey()) {
-            try {
-              $original_api_product_names = [];
-              // Cast it to array to be able handle the same way the single- and
-              // multi-select configuration.
-              $new_api_product_names = array_filter((array) $new_credentail_data['api_products']);
-              foreach ($original_credential->getApiProducts() as $original_api_product) {
-                $original_api_product_names[] = $original_api_product->getApiproduct();
-              }
-
-              $product_list_changed = FALSE;
-              if (array_diff($original_api_product_names, $new_api_product_names)) {
-                foreach (array_diff($original_api_product_names, $new_api_product_names) as $api_product_to_remove) {
-                  $dacc->deleteApiProduct($new_credential, $api_product_to_remove);
-                }
-                $product_list_changed = TRUE;
-                $redirect_user = TRUE;
-              }
-              if (array_diff($new_api_product_names, $original_api_product_names)) {
-                $dacc->addProducts($new_credential, array_values(array_diff($new_api_product_names, $original_api_product_names)));
-                $product_list_changed = TRUE;
-                $redirect_user = TRUE;
-              }
-
-              if ($product_list_changed) {
-                $this->messenger->addStatus($this->t("Credential's product list has been successfully updated."));
-              }
-              break;
-
-            }
-            catch (\Exception $exception) {
-              $this->messenger->addError(t("Could not update credential's product list.",
-                ['@consumer_key' => $new_credential]));
-              watchdog_exception('apigee_edge', $exception);
-              $redirect_user = FALSE;
-            }
-          }
-        }
-      }
-    }
-
-    try {
-      $this->entity->save();
-      $this->messenger->addStatus($this->t('@developer_app details have been successfully updated.',
-        ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getSingularLabel()]));
-      $redirect_user = TRUE;
-    }
-    catch (\Exception $exception) {
-      $this->messenger->addError($this->t('Could not update @developer_app details.',
-        ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getLowercaseLabel()]));
-      watchdog_exception('apigee_edge', $exception);
-    }
-
-    if ($redirect_user) {
-      $form_state->setRedirectUrl($this->getRedirectUrl());
-    }
   }
 
   /**
@@ -296,6 +102,13 @@ class DeveloperAppEditForm extends DeveloperAppCreateForm {
       $entity = parent::getEntityFromRouteMatch($route_match, $entity_type_id);
     }
     return $entity;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function appCredentialController(string $owner, string $app_name): AppCredentialControllerInterface {
+    return $this->appCredentialControllerFactory->developerAppCredentialController($owner, $app_name);
   }
 
 }
