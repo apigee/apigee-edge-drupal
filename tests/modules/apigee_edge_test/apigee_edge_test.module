@@ -28,21 +28,6 @@ use Drupal\apigee_edge_test\Entity\OverriddenDeveloper;
 use Drupal\apigee_edge_test\Entity\OverriddenDeveloperApp;
 use Drupal\apigee_edge_test\Entity\Storage\DeveloperAppStorage;
 use Drupal\apigee_edge_test\Plugin\KeyProvider\TestEnvironmentVariablesKeyProvider;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\user\UserInterface;
-
-/**
- * Implements hook_apigee_edge_my_developer_apps_title_alter().
- *
- * Tests "My developer apps" title alter hook.
- *
- * @see \Drupal\Tests\apigee_edge\Functional\DeveloperAppUITest
- */
-function apigee_edge_test_apigee_edge_my_developer_apps_title_alter(TranslatableMarkup &$title, ?UserInterface $user = NULL) {
-  $title = new TranslatableMarkup('Foo @original', [
-    '@original' => $title,
-  ]);
-}
 
 /**
  * Implements hook_entity_type_alter().

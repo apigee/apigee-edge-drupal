@@ -150,7 +150,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
     $this->clickLink('Delete');
     $this->submitForm([], 'Delete');
-    $this->assertSession()->pageTextContains('The name does not match the a you are attempting to delete.');
+    $this->assertSession()->pageTextContains('The name does not match the app you are attempting to delete.');
 
     $this->submitForm([
       'verification_code' => $name,
@@ -583,8 +583,6 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->assertEquals('/', $breadcrumb_links[0]->getAttribute('href'));
     $this->assertEquals(Url::fromRoute('entity.user.canonical', ['user' => $this->account->id()])->toString(), $breadcrumb_links[1]->getAttribute('href'));
     $this->assertEquals(Url::fromRoute('entity.developer_app.collection_by_developer', ['user' => $this->account->id()])->toString(), $breadcrumb_links[2]->getAttribute('href'));
-    // Ensure that hook_my_developer_apps_title_alter() works properly.
-    $this->assertStringStartsWith('Foo', $breadcrumb_links[2]->getText());
 
     // Check UID 3 my apps page.
     $this->drupalGet(Url::fromRoute('entity.developer_app.collection_by_developer', ['user' => $user->id()]));
