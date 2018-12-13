@@ -21,6 +21,7 @@ namespace Drupal\apigee_edge\EventSubscriber;
 
 use Apigee\Edge\Exception\ApiException;
 use Drupal\Core\EventSubscriber\DefaultExceptionHtmlSubscriber;
+use Drupal\Core\Utility\Error;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 
@@ -47,7 +48,8 @@ class EdgeExceptionSubscriber extends DefaultExceptionHtmlSubscriber {
    */
   public function onException(GetResponseForExceptionEvent $event) {
     if ($event->getException() instanceof ApiException || $event->getException()->getPrevious() instanceof ApiException) {
-      watchdog_exception('apigee_edge', $event->getException());
+      $context = Error::decodeException($event->getException());
+      $this->logger->critical('@message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
       $this->makeSubrequest($event, '/api-communication-error', Response::HTTP_SERVICE_UNAVAILABLE);
     }
   }

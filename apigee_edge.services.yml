@@ -97,7 +97,7 @@ services:
     class: Drupal\apigee_edge\EventSubscriber\EdgeExceptionSubscriber
     arguments:
       - '@http_kernel'
-      - '@logger.channel.php'
+      - '@logger.channel.apigee_edge'
       - '@redirect.destination'
       - '@router.no_access_checks'
     tags:
