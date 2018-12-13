@@ -225,8 +225,15 @@ class DeveloperApp extends App implements DeveloperAppInterface {
   /**
    * {@inheritdoc}
    */
-  protected function getAppOwner(): string {
+  public function getAppOwner(): ?string {
     return $this->getDeveloperId();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setAppOwner(string $owner): void {
+    $this->decorated->setDeveloperId($owner);
   }
 
   /**
