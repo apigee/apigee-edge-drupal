@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
+use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -69,13 +70,13 @@ class DeveloperAppCreateForm extends AppForm {
    */
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
-    /** @var \Drupal\apigee_edge\Entity\AppInterface $app */
+    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $app */
     $app = $this->entity;
 
-    $developers = [];
+    $developer_options = [];
     /** @var \Drupal\apigee_edge\Entity\Developer $developer */
     foreach ($this->entityTypeManager->getStorage('developer')->loadMultiple() as $developer) {
-      $developers[$developer->uuid()] = "{$developer->getFirstName()} {$developer->getLastName()}";
+      $developer_options[$developer->uuid()] = $developer->label();
     }
 
     // Override the owner field to be a select list with all developers from
@@ -85,16 +86,18 @@ class DeveloperAppCreateForm extends AppForm {
       '#type' => 'select',
       '#weight' => $form['owner']['#weight'],
       '#default_value' => $app->getDeveloperId(),
-      '#options' => $developers,
+      '#options' => $developer_options,
       '#required' => TRUE,
     ];
 
     // If "Let user select the product(s)" is enabled.
+    // Add this feature later if it gets requested, this is a "secret" admin
+    // form at this moment.
     if ($form['api_products']['#access']) {
       $form['warning_message'] = [
         '#theme' => 'status_messages',
         '#message_list' => [
-          'warning' => [$this->t('The list of @api_products above does not limited to the selected owner by the API product access control settings in this form.', [
+          'warning' => [$this->t('The list of @api_products above is not limited to the selected owner by the API product access control settings here, but only <strong>public</strong> API products are visible in this list.', [
             '@api_products' => $this->entityTypeManager->getDefinition('api_product')->getPluralLabel(),
           ]),
           ],
@@ -104,6 +107,18 @@ class DeveloperAppCreateForm extends AppForm {
     }
 
     return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function apiProductList(): array {
+    // For backward-compatibility and security reasons only display public
+    // API products here.
+    return array_filter($this->entityTypeManager->getStorage('api_product')->loadMultiple(), function (ApiProductInterface $api_product) {
+      // Attribute may not exists but in that case it means public.
+      return ($api_product->getAttributeValue('access') ?? 'public') === 'public';
+    });
   }
 
   /**

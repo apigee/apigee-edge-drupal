@@ -19,13 +19,10 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
+use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface;
-use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\RendererInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -33,17 +30,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class DeveloperAppEditForm extends AppForm {
 
-  use DeveloperStatusCheckTrait;
   use AppEditFormTrait;
   use DeveloperAppFormTrait;
-
-  /**
-   * The renderer service.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
 
   /**
    * The app credential controller factory.
@@ -59,12 +47,9 @@ class DeveloperAppEditForm extends AppForm {
    *   The developer app credential controller factory.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Drupal\Core\Render\RendererInterface $renderer
-   *   The renderer service.
    */
-  public function __construct(DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer) {
+  public function __construct(DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($entity_type_manager);
-    $this->renderer = $renderer;
     $this->appCredentialControllerFactory = $app_credential_controller_factory;
   }
 
@@ -74,34 +59,8 @@ class DeveloperAppEditForm extends AppForm {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('apigee_edge.controller.developer_app_credential_factory'),
-      $container->get('entity_type.manager'),
-      $container->get('renderer')
+      $container->get('entity_type.manager')
     );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function form(array $form, FormStateInterface $form_state) {
-    $form = parent::form($form, $form_state);
-    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $app */
-    $app = $this->entity;
-    $this->checkDeveloperStatus($app->getOwnerId());
-
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getEntityFromRouteMatch(RouteMatchInterface $route_match, $entity_type_id) {
-    if ($route_match->getRawParameter('app') !== NULL) {
-      $entity = $route_match->getParameter('app');
-    }
-    else {
-      $entity = parent::getEntityFromRouteMatch($route_match, $entity_type_id);
-    }
-    return $entity;
   }
 
   /**
@@ -109,6 +68,34 @@ class DeveloperAppEditForm extends AppForm {
    */
   protected function appCredentialController(string $owner, string $app_name): AppCredentialControllerInterface {
     return $this->appCredentialControllerFactory->developerAppCredentialController($owner, $app_name);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function apiProductList(): array {
+    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $app */
+    $app = $this->entity;
+
+    // Sanity check, it could happen that the app owner developer does not have
+    // a Drupal user.
+    if ($app->getOwner() === NULL) {
+      $context = [
+        '%developer_id' => $app->getDeveloperId(),
+      ];
+      $this->messenger()->addError($this->t('Unable to apply API product access because the owner of the app (%developer_id) does not have a user in system.', $context));
+      $this->logger('apigee_edge')->critical('Unable to apply API product access because the owner of the app (%developer_id) does not have a user in system.', $context);
+      return [];
+    }
+
+    $api_products = parent::apiProductList();
+    // Here because we know the owner (developer) of the app and it can not
+    // be changed we can limit the visible API products.
+    array_filter($api_products, function (ApiProductInterface $product) use ($app) {
+      return $product->access('assign', $app->getOwner());
+    });
+
+    return $api_products;
   }
 
 }
