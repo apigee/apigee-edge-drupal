@@ -38,4 +38,25 @@ class AppTitleProvider extends EdgeEntityTitleProvider {
     return parent::editTitle($route_match, $_entity);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function doGetEntity(RouteMatchInterface $route_match, EntityInterface $_entity = NULL) {
+    if ($_entity) {
+      $entity = $_entity;
+    }
+    else {
+      // Let's look up in the route object for apps only.
+      foreach ($route_match->getParameters() as $parameter) {
+        if ($parameter instanceof AppInterface) {
+          $entity = $parameter;
+          break;
+        }
+      }
+    }
+    if (isset($entity)) {
+      return $this->entityRepository->getTranslationFromContext($entity);
+    }
+  }
+
 }
