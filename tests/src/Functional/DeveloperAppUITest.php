@@ -442,7 +442,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    */
   public function testWarningMessagesIfMultipleProductsDisabled() {
     $admin_warning_message = 'Access to multiple API products will be retained until an app is edited and the developer is prompted to confirm a single API Product selection.';
-    $end_user_warning_message = 'Foos status now require selection of a single Bar; multiple Bar selection is no longer supported. Confirm your Bar selection below.';
+    $end_user_warning_message = 'Foos now require selection of a single Bar; multiple Bar selection is no longer supported. Confirm your Bar selection below.';
     $app_settings_url = Url::fromRoute('apigee_edge.settings.app');
 
     // Ensure default configuration.
@@ -599,8 +599,6 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->assertEquals('/', $breadcrumb_links[0]->getAttribute('href'));
     $this->assertEquals(Url::fromRoute('entity.user.canonical', ['user' => $user->id()])->toString(), $breadcrumb_links[1]->getAttribute('href'));
     $this->assertEquals(Url::fromRoute('entity.developer_app.collection_by_developer', ['user' => $user->id()])->toString(), $breadcrumb_links[2]->getAttribute('href'));
-    // Ensure that hook_my_developer_apps_title_alter() works properly.
-    $this->assertStringStartsWith('Foo', $breadcrumb_links[2]->getText());
   }
 
 }
