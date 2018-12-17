@@ -19,15 +19,20 @@
 
 namespace Drupal\apigee_edge;
 
-use Apigee\Edge\HttpClient\Plugin\Authentication\OauthTokenStorageInterface;
-use Drupal\apigee_edge\Form\AuthenticationForm;
+use Drupal\apigee_edge\Exception\OauthTokenStorageException;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Logger\LoggerChannelInterface;
+use Drupal\Core\Site\Settings;
 
 /**
- * Storing and returning OAuth access token data.
- *
- * @internal The implementation may change before the first stable release.
+ * Stores OAuth token data in a file.
  */
 final class OauthTokenFileStorage implements OauthTokenStorageInterface {
+
+  /**
+   * Default directory of the oauth.dat file.
+   */
+  public const DEFAULT_DIRECTORY = 'private://.apigee_edge';
 
   /**
    * Ensures that token gets refreshed earlier than it expires.
@@ -40,13 +45,52 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
   protected $leeway = 30;
 
   /**
-   * An internally cached token data store.
-   *
-   * TODO This does not have to be static.
+   * Internal cache for token data.
    *
    * @var array
+   *
+   * @see getTokenData()
    */
-  private static $token_data;
+  private $tokenData = [];
+
+  /**
+   * Path of the token file.
+   *
+   * @var string
+   */
+  private $tokenFilePath;
+
+  /**
+   * The logger service.
+   *
+   * @var \Drupal\Core\Logger\LoggerChannelInterface
+   */
+  private $logger;
+
+  /**
+   * The settings service.
+   *
+   * @var \Drupal\Core\Site\Settings
+   */
+  private $settings;
+
+  /**
+   * OauthTokenFileStorage constructor.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config
+   *   The config factory service.
+   * @param \Drupal\Core\Site\Settings $settings
+   *   The settings service.
+   * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
+   *   The logger service.
+   */
+  public function __construct(ConfigFactoryInterface $config, Settings $settings, LoggerChannelInterface $logger) {
+    $custom_path = $config->get('apigee_edge.auth')->get('oauth_token_storage_location');
+    $this->tokenFilePath = empty($custom_path) ? static::DEFAULT_DIRECTORY : rtrim(trim($custom_path), " \\/");
+    $this->tokenFilePath .= '/oauth.dat';
+    $this->logger = $logger;
+    $this->settings = $settings;
+  }
 
   /**
    * {@inheritdoc}
@@ -77,7 +121,7 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
    */
   public function getScope(): string {
     $token_data = $this->getTokenData();
-    return $token_data['scope'] ?? NULL;
+    return $token_data['scope'] ?? '';
   }
 
   /**
@@ -85,7 +129,7 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
    */
   public function getExpires(): int {
     $token_data = $this->getTokenData();
-    return $token_data['expires'] ?? -1;
+    return $token_data['expires'] ?? time() - 1;
   }
 
   /**
@@ -93,7 +137,7 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
    */
   public function hasExpired(): bool {
     $expires = $this->getExpires();
-    if ($expires !== 0 && ($expires - $this->leeway) > time()) {
+    if ($expires - $this->leeway > time()) {
       return FALSE;
     }
 
@@ -117,84 +161,114 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
    */
   public function saveToken(array $data): void {
     // Calculate the cache expiration.
-    $data['expires'] = isset($data['expires_in']) ? $data['expires_in'] + time() : ($data['expires'] ?? -1);
-    // Remove the expires_in data.
+    if (isset($data['expires_in'])) {
+      $data['expires'] = $data['expires_in'] + time();
+    }
+    // Do not save the expires_in data to the storage.
     unset($data['expires_in']);
 
+    try {
+      $this->checkRequirements();
+      // Write the obfuscated token data to a private file.
+      file_unmanaged_save_data(base64_encode(serialize($data)), $this->tokenFilePath, FILE_EXISTS_REPLACE);
+    }
+    catch (OauthTokenStorageException $exception) {
+      $this->logger->critical('OAuth token file storage: %error.', ['%error' => $exception->getMessage()]);
+    }
+    finally {
+      // Even if an error occurs here token data can be still served from the
+      // internal cache in this page request.
+      $this->tokenData = $data;
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function checkRequirements(): void {
+    if ($this->isTokenFileInPrivateFileSystem() && !$this->isPrivateFileSystemConfigured()) {
+      throw new OauthTokenStorageException('Unable to save token data to private filesystem because it has not been configured yet.');
+    }
     // Gets the file directory so we can make sure it exists.
-    $file_path = dirname(static::oauthTokenPath());
-    file_prepare_directory($file_path, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-
-    // Write the obfuscated token data to a private file.
-    file_unmanaged_save_data(base64_encode(serialize($data)), static::oauthTokenPath(), FILE_EXISTS_REPLACE);
-
-    // Update the cached value.
-    static::$token_data = $data;
+    $token_directory = dirname($this->tokenFilePath);
+    if (!file_prepare_directory($token_directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
+      throw new OauthTokenStorageException("Unable to set up {$token_directory} directory for token file.");
+    }
   }
 
   /**
    * {@inheritdoc}
    */
   public function removeToken(): void {
-    // Remove the token data from storage.
     $this->saveToken([]);
   }
 
   /**
-   * Gets the storage location for OAuth token data.
-   *
-   * TODO DI the config factory, save the location (directory only) to a
-   * class property. Only append the file name to the path in saveToken().
+   * Removes the file in which the OAuth token data is stored.
    */
-  public static function oauthTokenPath() {
-    static $token_path;
-
-    if (!isset($token_path)) {
-      // Get the file location from config.
-      $location = \Drupal::config(AuthenticationForm::CONFIG_NAME)->get('oauth_token_storage_location');
-
-      $token_path = (!empty($location) ? rtrim($location, " \t\n\r\0\x0B\\/") : 'private://.apigee_edge') . '/oauth.dat';
+  public function removeTokenFile(): void {
+    if (($this->isTokenFileInPrivateFileSystem() && !$this->isPrivateFileSystemConfigured()) || !file_exists($this->tokenFilePath)) {
+      // Do not try to delete the file if private filesystem has not been
+      // configured because in that cause "private://" scheme is not
+      // registered. Also do nothing if token file does not exist.
+      return;
     }
-
-    return $token_path;
+    file_unmanaged_delete($this->tokenFilePath);
   }
 
   /**
-   * Gets all token data from storage.
+   * Gets the token data from the cache or the file.
    *
    * @param bool $reset
    *   Whether or not to reload the token data.
    *
    * @return array
-   *   The token data.
+   *   The token data from the internal cache or the token file. Returned array
+   *   could be empty!
    */
-  protected function getTokenData($reset = FALSE): array {
+  private function getTokenData(bool $reset = FALSE): array {
     // Load from storage if the cached value is empty.
-    if ($reset || empty(static::$token_data)) {
-      static::$token_data = $this->getFromStorage();
+    if ($reset || empty($this->tokenData)) {
+      $this->tokenData = $this->getFromStorage();
     }
 
-    return static::$token_data;
+    return $this->tokenData;
   }
 
   /**
-   * Gets the token data from storage.
+   * Reads the token data from the file.
    *
    * @return array
-   *   The token data or an empty array.
+   *   The token data from the file or an empty array if file does not exist.
    */
-  protected function getFromStorage(): array {
+  private function getFromStorage(): array {
+    $data = [];
     // Get the token data from the file store.
-    if ($raw_data = file_get_contents(static::oauthTokenPath())) {
+    if (file_exists($this->tokenFilePath) && ($raw_data = file_get_contents($this->tokenFilePath))) {
       $data = unserialize(base64_decode($raw_data));
     }
-    return $data ?: [
-      'access_token' => NULL,
-      'token_type' => NULL,
-      'expires' => NULL,
-      'refresh_token' => NULL,
-      'scope' => '',
-    ];
+    return is_array($data) ? $data : [];
+  }
+
+  /**
+   * Checks whether the token file's location in the private filesystem.
+   *
+   * @return bool
+   *   True if the token file's location is in the private filesystem, false
+   *   otherwise.
+   */
+  private function isTokenFileInPrivateFileSystem(): bool {
+    return strpos($this->tokenFilePath, 'private://') === 0;
+  }
+
+  /**
+   * Checks whether the private filesystem is configured.
+   *
+   * @return bool
+   *   True if configured, FALSE otherwise.
+   */
+  private function isPrivateFileSystemConfigured(): bool {
+    return !empty($this->settings->get('file_private_path'));
   }
 
 }

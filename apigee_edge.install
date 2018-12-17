@@ -25,6 +25,7 @@
 
 use Drupal\apigee_edge\Exception\AuthenticationKeyNotFoundException;
 use Drupal\apigee_edge\Exception\AuthenticationKeyValueMalformedException;
+use Drupal\apigee_edge\OauthTokenFileStorage;
 use Drupal\Core\Url;
 use Drupal\user\RoleInterface;
 
@@ -35,16 +36,19 @@ function apigee_edge_requirements($phase) {
   $requirements = [];
 
   if ($phase === 'install') {
-    $missing_mails = \Drupal::entityQuery('user')
-      ->notExists('mail')
-      ->condition('uid', '0', '<>')
-      ->execute();
-    if (!empty($missing_mails)) {
-      $requirements['apigee_edge_missing_mail'] = [
-        'title' => t('Apigee Edge'),
-        'description' => t('The module can be installed only if all users have emails in Drupal, because email is a required attribute on Apigee Edge.'),
-        'severity' => REQUIREMENT_ERROR,
-      ];
+    // This should be checked only if Drupal is installed.
+    if (!drupal_installation_attempted()) {
+      $missing_mails = \Drupal::entityQuery('user')
+        ->notExists('mail')
+        ->condition('uid', '0', '<>')
+        ->execute();
+      if (!empty($missing_mails)) {
+        $requirements['apigee_edge_missing_mail'] = [
+          'title' => t('Apigee Edge'),
+          'description' => t('The module can be installed only if all users have emails in Drupal, because email is a required attribute on Apigee Edge.'),
+          'severity' => REQUIREMENT_ERROR,
+        ];
+      }
     }
   }
   elseif ($phase === 'runtime') {
@@ -87,6 +91,19 @@ function apigee_edge_install() {
       'analytics own developer_app',
     ];
     user_role_grant_permissions(RoleInterface::AUTHENTICATED_ID, $authenticated_user_permissions);
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function apigee_edge_uninstall() {
+  // Remove OAuth token data file.
+  // We do not check whether OAuth was the authentication method in use
+  // because this function does not trigger an error if it was not.
+  $storage = \Drupal::service('apigee_edge.authentication.oauth_token_storage');
+  if ($storage instanceof OauthTokenFileStorage) {
+    $storage->removeTokenFile();
   }
 }
 
