@@ -30,6 +30,7 @@ use Apigee\Edge\Exception\ClientErrorException;
 use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Element\StatusPropertyElement;
 use Drupal\apigee_edge\Entity\ApiProduct;
+use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Exception\UserDeveloperConversionNoStorageFormatterFoundException;
 use Drupal\apigee_edge\Exception\UserDeveloperConversionUserFieldDoesNotExistException;
@@ -48,7 +49,6 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Site\Settings;
@@ -80,9 +80,6 @@ function apigee_edge_module_implements_alter(&$implementations, $hook) {
  */
 function apigee_edge_theme() {
   return [
-    'developer_app' => [
-      'render element' => 'elements',
-    ],
     'app_credential' => [
       'render element' => 'elements',
     ],
@@ -190,14 +187,18 @@ function apigee_edge_entity_base_field_info_alter(&$fields, EntityTypeInterface 
  */
 function apigee_edge_entity_extra_field_info() {
   $extra = [];
-  $entityType = \Drupal::entityTypeManager()->getDefinition('developer_app');
-  $extra['developer_app']['developer_app']['display']['credentials'] = [
-    'label' => new TranslatableMarkup('Credentials'),
-    'description' => new TranslatableMarkup('Displays credentials provided by a @label', ['@label' => $entityType->getSingularLabel()]),
-    // By default it should be displayed in the end of the view.
-    'weight' => 100,
-    'visible' => TRUE,
-  ];
+  foreach (\Drupal::entityTypeManager()->getDefinitions() as $definition) {
+    if (in_array(AppInterface::class, class_implements($definition->getOriginalClass()))) {
+      // Bundles are not supported therefore both keys are the same.
+      $extra[$definition->id()][$definition->id()]['display']['credentials'] = [
+        'label' => new TranslatableMarkup('Credentials'),
+        'description' => new TranslatableMarkup('Displays credentials provided by a @label', ['@label' => $definition->getSingularLabel()]),
+        // By default it should be displayed in the end of the view.
+        'weight' => 100,
+        'visible' => TRUE,
+      ];
+    }
+  }
   return $extra;
 }
 
@@ -214,26 +215,34 @@ function apigee_edge_field_formatter_info_alter(array &$info) {
 /**
  * Implements hook_entity_view().
  */
-function apigee_edge_developer_app_view(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
-  /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
-  if ($display->getComponent('credentials')) {
-    $defaults = [
-      '#cache' => [
-        'contexts' => $entity->getCacheContexts(),
-        'tags' => $entity->getCacheTags(),
-      ],
-    ];
-    $build['credentials'] = [
-      '#type' => 'container',
-    ];
-    foreach ($entity->getCredentials() as $credential) {
-      $build['credentials'][] = [
-        '#type' => 'app_credential',
-        '#credential' => $credential,
-        '#attributes' => [
-          'class' => 'items--inline',
+function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
+  if ($entity instanceof AppInterface) {
+    if ($build['#view_mode'] === 'full') {
+      // Add some required assets to an app's full entity view mode.
+      $build['#attached']['library'][] = 'apigee_edge/apigee_edge.components';
+      $build['#attached']['library'][] = 'apigee_edge/apigee_edge.view';
+    }
+
+    if ($display->getComponent('credentials')) {
+      /** @var \Drupal\apigee_edge\Entity\AppInterface $entity */
+      $defaults = [
+        '#cache' => [
+          'contexts' => $entity->getCacheContexts(),
+          'tags' => $entity->getCacheTags(),
         ],
-      ] + $defaults;
+      ];
+      $build['credentials'] = [
+        '#type' => 'container',
+      ];
+      foreach ($entity->getCredentials() as $credential) {
+        $build['credentials'][] = [
+            '#type' => 'app_credential',
+            '#credential' => $credential,
+            '#attributes' => [
+              'class' => 'items--inline',
+            ],
+          ] + $defaults;
+      }
     }
   }
 }
@@ -785,26 +794,6 @@ function apigee_edge_existing_developer_registration_hash_validate(UserInterface
     return TRUE;
   }
   return FALSE;
-}
-
-/**
- * Prepares variables for developer app templates.
- *
- * Default template: developer_app.html.twig.
- *
- * @param array $variables
- *   An associative array containing the elements.
- */
-function template_preprocess_developer_app(array &$variables) {
-  $variables['#attached']['library'][] = 'apigee_edge/apigee_edge.components';
-  $variables['#attached']['library'][] = 'apigee_edge/apigee_edge.view';
-  $variables['developer_app'] = $variables['elements']['#developer_app'];
-
-  // Helpful $content variable for templates.
-  $variables += ['content' => []];
-  foreach (Element::children($variables['elements']) as $key) {
-    $variables['content'][$key] = $variables['elements'][$key];
-  }
 }
 
 /**
