@@ -26,7 +26,7 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Base form for those Apigee Edge entities that supports aliasing.
  */
-abstract class EdgeEntityAliasFormBase extends ConfigFormBase {
+abstract class EdgeEntityAliasConfigFormBase extends ConfigFormBase {
 
   /**
    * {@inheritdoc}

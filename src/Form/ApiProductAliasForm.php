@@ -22,7 +22,7 @@ namespace Drupal\apigee_edge\Form;
 /**
  * Provides a form for changing API Product entity labels.
  */
-class ApiProductAliasForm extends EdgeEntityAliasFormBase {
+class ApiProductAliasForm extends EdgeEntityAliasConfigFormBase {
 
   /**
    * {@inheritdoc}

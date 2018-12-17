@@ -22,7 +22,7 @@ namespace Drupal\apigee_edge\Form;
 /**
  * Provides a form for changing Developer App aliases.
  */
-class DeveloperAppAliasForm extends EdgeEntityAliasFormBase {
+class DeveloperAppAliasForm extends EdgeEntityAliasConfigFormBase {
 
   /**
    * {@inheritdoc}
