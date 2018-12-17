@@ -73,7 +73,7 @@ apigee_edge.settings.developer.cache:
 apigee_edge.settings.product.alias:
   path: '/admin/config/apigee-edge/product-settings/alias'
   defaults:
-    _form: '\Drupal\apigee_edge\Form\ProductAliasForm'
+    _form: '\Drupal\apigee_edge\Form\ApiProductAliasForm'
     _title: 'API product settings'
   requirements:
     _permission: 'administer apigee edge'

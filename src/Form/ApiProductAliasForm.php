@@ -20,15 +20,15 @@
 namespace Drupal\apigee_edge\Form;
 
 /**
- * Provides a form for changing Developer App aliases.
+ * Provides a form for changing API Product entity labels.
  */
-class DeveloperAppAliasForm extends EdgeEntityAliasFormBase {
+class ApiProductAliasForm extends EdgeEntityAliasFormBase {
 
   /**
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'apigee_edge_app_alias_form';
+    return 'apigee_edge_api_product_alias_form';
   }
 
   /**
@@ -36,7 +36,7 @@ class DeveloperAppAliasForm extends EdgeEntityAliasFormBase {
    */
   protected function getEditableConfigNames() {
     return [
-      'apigee_edge.developer_app_settings',
+      'apigee_edge.api_product_settings',
     ];
   }
 
@@ -44,21 +44,21 @@ class DeveloperAppAliasForm extends EdgeEntityAliasFormBase {
    * {@inheritdoc}
    */
   protected function entityTypeName(): string {
-    return $this->t('Developer App');
+    return $this->t('API Product');
   }
 
   /**
    * {@inheritdoc}
    */
   protected function originalSingularLabel(): string {
-    return $this->t('App');
+    return $this->t('API');
   }
 
   /**
    * {@inheritdoc}
    */
   protected function originalPluralLabel(): string {
-    return $this->t('Apps');
+    return $this->t('APIs');
   }
 
 }
