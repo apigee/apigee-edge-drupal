@@ -307,10 +307,8 @@ function apigee_edge_api_product_access(EntityInterface $entity, $operation, Acc
  * Implements hook_form_alter().
  */
 function apigee_edge_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  switch ($form_id) {
-    case 'entity_form_display_edit_form':
-      $form['#validate'][] = '_apigee_edge_entity_form_display_edit_form_validate';
-      break;
+  if ($form_id == 'entity_form_display_edit_form' && $form['#entity_type'] === 'developer_app') {
+    $form['#validate'][] = '_apigee_edge_developer_app_entity_form_display_edit_form_validate';
   }
 }
 
@@ -324,7 +322,7 @@ function apigee_edge_form_alter(&$form, FormStateInterface $form_state, $form_id
  * @param Drupal\Core\Form\FormStateInterface $form_state
  *   Form state.
  */
-function _apigee_edge_entity_form_display_edit_form_validate(array &$form, FormStateInterface $form_state) {
+function _apigee_edge_developer_app_entity_form_display_edit_form_validate(array &$form, FormStateInterface $form_state) {
   $required = \Drupal::config('apigee_edge.developer_app_settings')->get('required_base_fields');
 
   foreach ($form_state->getValue('fields') as $field_name => $data) {
