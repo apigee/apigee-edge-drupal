@@ -48,13 +48,13 @@ apigee_edge.status_property:
     theme:
       css/apigee_edge.status_property.css: {}
 
-apigee_edge.view:
+apigee_edge.app_view:
   version: 1.0
   css:
     theme:
-      css/apigee_edge.view.css: {}
+      css/apigee_edge.app_view.css: {}
   js:
-    js/apigee_edge.view.js: {}
+    js/apigee_edge.app_view.js: {}
 
 apiproduct_access_admin:
   version: 1.0

@@ -220,7 +220,7 @@ function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityV
     if ($build['#view_mode'] === 'full') {
       // Add some required assets to an app's full entity view mode.
       $build['#attached']['library'][] = 'apigee_edge/apigee_edge.components';
-      $build['#attached']['library'][] = 'apigee_edge/apigee_edge.view';
+      $build['#attached']['library'][] = 'apigee_edge/apigee_edge.app_view';
     }
 
     if ($display->getComponent('credentials')) {
