@@ -22,10 +22,9 @@ namespace Drupal\apigee_edge\Form;
 use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
-use Apigee\Edge\HttpClient\Plugin\Authentication\OauthTokenStorageInterface;
 use Drupal\apigee_edge\Exception\AuthenticationKeyValueMalformedException;
+use Drupal\apigee_edge\OauthTokenStorageInterface;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
-use Drupal\apigee_edge\Plugin\KeyType\OauthKeyType;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Render\MarkupInterface;
 use Drupal\Component\Serialization\Json;
@@ -82,9 +81,9 @@ class AuthenticationForm extends ConfigFormBase {
   protected $activeKey;
 
   /**
-   * The oauth token storage.
+   * The OAuth token storage service.
    *
-   * @var \Apigee\Edge\HttpClient\Plugin\Authentication\OauthTokenStorageInterface
+   * @var \Drupal\apigee_edge\OauthTokenStorageInterface
    */
   protected $oauthTokenStorage;
 
@@ -99,8 +98,8 @@ class AuthenticationForm extends ConfigFormBase {
    *   SDK connector service.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   Module handler service.
-   * @param \Apigee\Edge\HttpClient\Plugin\Authentication\OauthTokenStorageInterface $oauth_token_storage
-   *   The oauth token storage.
+   * @param \Drupal\apigee_edge\OauthTokenStorageInterface $oauth_token_storage
+   *   The OAuth token storage service.
    */
   public function __construct(ConfigFactoryInterface $config_factory, KeyRepositoryInterface $key_repository, SDKConnectorInterface $sdk_connector, ModuleHandlerInterface $module_handler, OauthTokenStorageInterface $oauth_token_storage) {
     parent::__construct($config_factory);
@@ -279,11 +278,16 @@ class AuthenticationForm extends ConfigFormBase {
     if (!empty($test_key->getKeyValue())) {
       /** @var \Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType $test_key_type */
       $test_auth_type = $test_key->getKeyType()->getAuthenticationType($test_key);
-      if ($test_auth_type === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
-        // Clear existing token data.
-        $this->oauthTokenStorage->removeToken();
-      }
       try {
+        if ($test_auth_type === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
+          // Check the requirements first.
+          $this->oauthTokenStorage->checkRequirements();
+          // Clear existing token data.
+          $this->oauthTokenStorage->removeToken();
+        }
+        // TODO If email field contains an invalid email address
+        // (form validation fails) then "Send request" should not send an API
+        // request.
         $this->sdkConnector->testConnection($test_key);
         $this->messenger()->addStatus($this->t('Connection successful.'));
       }
@@ -302,7 +306,7 @@ class AuthenticationForm extends ConfigFormBase {
       finally {
         if ($test_auth_type === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
           // Clear keys that may have been saved during testing.
-          $this->oauthTokenStorage->saveToken([]);
+          $this->oauthTokenStorage->removeToken();
         }
       }
     }
@@ -345,12 +349,16 @@ class AuthenticationForm extends ConfigFormBase {
    *   The suggestion text to be displayed.
    */
   protected function createSuggestion(\Exception $exception, KeyInterface $key): MarkupInterface {
+    $fail_text = $this->t('Failed to connect to Apigee Edge.');
+    // General error message.
+    $suggestion = $this->t('@fail_text', [
+      '@fail_text' => $fail_text,
+    ]);
     /** @var \Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType $key_type */
     $key_type = $key->getKeyType();
 
     // Failed to connect to the Oauth authorization server.
     if ($exception instanceof OauthAuthenticationException) {
-      /** @var \Drupal\apigee_edge\Plugin\KeyType\OauthKeyType $key_type */
       $fail_text = $this->t('Failed to connect to the OAuth authorization server.');
       // General error message.
       $suggestion = $this->t('@fail_text Check the debug information below for more details.', [
@@ -400,11 +408,6 @@ class AuthenticationForm extends ConfigFormBase {
     // Failed to connect to Apigee Edge (basic authentication or bearer
     // authentication).
     else {
-      $fail_text = $this->t('Failed to connect to Apigee Edge.');
-      // General error message.
-      $suggestion = $this->t('@fail_text Check the debug information below for more details.', [
-        '@fail_text' => $fail_text,
-      ]);
       // Invalid credentials.
       if ($exception->getCode() === 401) {
         $suggestion = $this->t('@fail_text The given username (%username) or password is incorrect.', [
@@ -480,6 +483,10 @@ class AuthenticationForm extends ConfigFormBase {
       'key_provider' => get_class($key->getKeyProvider()),
     ];
 
+    // TODO
+    // * Remove deprecated code.
+    // * Fix implementation of this method.
+    // * Provide debug message for OauthTokenStorageException.
     if ($key_type instanceof OauthKeyType) {
       /** @var \Drupal\apigee_edge\Plugin\KeyType\OauthKeyType $key_type */
       $credentials['authorization_server'] = $key_type->getAuthorizationServer($key);

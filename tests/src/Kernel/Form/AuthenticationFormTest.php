@@ -74,7 +74,7 @@ class AuthenticationFormTest extends KernelTestBase {
     // Make sure the directory exists.
     file_prepare_directory($private_directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
 
-    static::assertDirectoryExists($private_directory);
+    $this->assertDirectoryExists($private_directory);
   }
 
   /**
@@ -86,23 +86,23 @@ class AuthenticationFormTest extends KernelTestBase {
   public function testGenerateNewAuthKey() {
     $form_state = new FormState();
     $form = \Drupal::formBuilder()->buildForm(AuthenticationForm::class, $form_state);
-    static::assertInstanceOf(AuthenticationForm::class, $form_state->getFormObject());
+    $this->assertInstanceOf(AuthenticationForm::class, $form_state->getFormObject());
 
     // The form should have created a new key and saved some empty values to it.
     $active_key = Key::load($this->config(AuthenticationForm::CONFIG_NAME)->get('active_key'));
-    static::assertSame($active_key->id(), $form_state->getFormObject()->getEntity()->id());
+    $this->assertSame($active_key->id(), $form_state->getFormObject()->getEntity()->id());
 
     $key_value = $active_key->getKeyValue();
     $decoded = Json::decode($key_value);
 
     // Get the key contents directly from the file (location test).
-    static::assertSame($key_value, file_get_contents("private://.apigee_edge/{$active_key->id()}.json"));
+    $this->assertSame($key_value, file_get_contents("private://.apigee_edge/{$active_key->id()}.json"));
 
-    static::assertSame(EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC, $form['connection_settings']['auth_type']['#value']);
-    static::assertEmpty($form['connection_settings']['organization']['#value']);
-    static::assertEmpty($form['connection_settings']['username']['#value']);
-    static::assertEmpty($form['connection_settings']['password']['#value']);
-    static::assertSame(EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC, $decoded['auth_type']);
+    $this->assertSame(EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC, $form['connection_settings']['auth_type']['#value']);
+    $this->assertEmpty($form['connection_settings']['organization']['#value']);
+    $this->assertEmpty($form['connection_settings']['username']['#value']);
+    $this->assertEmpty($form['connection_settings']['password']['#value']);
+    $this->assertSame(EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC, $decoded['auth_type']);
   }
 
   /**

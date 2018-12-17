@@ -1463,6 +1463,6 @@ function apigee_edge_get_my_developer_apps_title(?UserInterface $user = NULL): T
  * Implements hook_cache_flush().
  */
 function apigee_edge_cache_flush() {
-  // Clear token data.
+  // If OAuth token file does not exist this does not do anything.
   \Drupal::service('apigee_edge.authentication.oauth_token_storage')->removeToken();
 }
