@@ -236,12 +236,12 @@ function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityV
       ];
       foreach ($entity->getCredentials() as $credential) {
         $build['credentials'][] = [
-            '#type' => 'app_credential',
-            '#credential' => $credential,
-            '#attributes' => [
-              'class' => 'items--inline',
-            ],
-          ] + $defaults;
+          '#type' => 'app_credential',
+          '#credential' => $credential,
+          '#attributes' => [
+            'class' => 'items--inline',
+          ],
+        ] + $defaults;
       }
     }
   }
@@ -304,16 +304,16 @@ function apigee_edge_api_product_access(EntityInterface $entity, $operation, Acc
 }
 
 /**
- * Implements hook_form_alter().
+ * Implements hook_form_FORM_ID_alter().
  */
-function apigee_edge_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  if ($form_id == 'entity_form_display_edit_form' && $form['#entity_type'] === 'developer_app') {
+function apigee_edge_form_entity_form_display_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  if ($form['#entity_type'] === 'developer_app') {
     $form['#validate'][] = '_apigee_edge_developer_app_entity_form_display_edit_form_validate';
   }
 }
 
 /**
- * Extra validation for the entity_form_display.edit form.
+ * Extra validation for the entity_form_display.edit form of developer apps.
  *
  * This makes sure that fields marked as 'required' can't be disabled.
  *
