@@ -21,25 +21,19 @@
 namespace Drupal\apigee_edge\Form;
 
 use Drupal\Core\Cache\Cache;
+use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Adds cache configuration for Apigee Edge entity configuration forms.
+ * Base cache expiration config form for Apigee Edge entities.
  */
-trait CachedEntityConfigurationFormAwareTrait {
+abstract class EdgeEntityCacheConfigFormBase extends ConfigFormBase {
 
   /**
-   * Adds caching related form elements to a form.
-   *
-   * @param array $form
-   *   Form array.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   Form state object.
-   *
-   * @return array
-   *   The extended form render array.
+   * {@inheritdoc}
    */
-  public function addCacheConfigElements(array $form, FormStateInterface $form_state): array {
+  public function buildForm(array $form, FormStateInterface $form_state) {
+    $config = $this->config($this->getConfigNameWithCacheSettings());
     $form['cache'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Caching'),
@@ -49,7 +43,7 @@ trait CachedEntityConfigurationFormAwareTrait {
       '#type' => 'number',
       '#title' => $this->t('Expires'),
       '#description' => $this->t('Number of <strong>seconds</strong> until a cached item expires. Use <em>-1</em> to cache items until they have been updated on the Developer Portal (ignore changes made on the Apigee Edge Management UI or in an external application). Use <em>0</em> to completely disable caching.'),
-      '#default_value' => $this->configFactory->get($this->getConfigNameWithCacheSettings())->get('cache_expiration'),
+      '#default_value' => $config->get('cache_expiration'),
       '#min' => -1,
       '#required' => TRUE,
     ];
@@ -62,25 +56,21 @@ trait CachedEntityConfigurationFormAwareTrait {
       '#limit_validation_errors' => [],
       '#submit' => ['::invalidateCache'],
     ];
-    return $form;
+    return parent::buildForm($form, $form_state);
   }
 
   /**
-   * Saves cache configuration changes.
-   *
-   * @param array $form
-   *   Form array.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   Form state object.
+   * {@inheritdoc}
    */
-  public function saveCacheConfiguration(array &$form, FormStateInterface $form_state) {
-    $this->configFactory->getEditable($this->getConfigNameWithCacheSettings())
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    $this->config($this->getConfigNameWithCacheSettings())
       ->set('cache_expiration', $form_state->getValue('cache_expiration'))
       ->save();
+    parent::submitForm($form, $form_state);
   }
 
   /**
-   * Submit handler that invalidates stored cache items from a kind.
+   * Submit handler that invalidates stored cache items from of an entity type.
    *
    * @param array $form
    *   Form array.
@@ -97,14 +87,17 @@ trait CachedEntityConfigurationFormAwareTrait {
    * @return string
    *   The if of a configuration object.
    */
-  abstract public function getConfigNameWithCacheSettings(): string;
+  protected function getConfigNameWithCacheSettings(): string {
+    $configs = $this->getEditableConfigNames();
+    return reset($configs);
+  }
 
   /**
-   * Returns the name of the entity type that is being cached.
+   * Name of the entity type that cache expiration is controlled here.
    *
    * @return string
    *   The id of an entity type.
    */
-  abstract public function getEntityType(): string;
+  abstract protected function getEntityType(): string;
 
 }

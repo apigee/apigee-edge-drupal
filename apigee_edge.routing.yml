@@ -81,7 +81,7 @@ apigee_edge.settings.product.alias:
 apigee_edge.settings.product.caching:
   path: '/admin/config/apigee-edge/product-settings/caching'
   defaults:
-    _form: '\Drupal\apigee_edge\Form\ProductCachingForm'
+    _form: '\Drupal\apigee_edge\Form\ApiProductCachingForm'
     _title: 'API product caching'
   requirements:
     _permission: 'administer apigee edge'
