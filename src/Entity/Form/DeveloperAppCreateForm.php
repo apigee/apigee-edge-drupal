@@ -20,7 +20,6 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
-use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -107,18 +106,6 @@ class DeveloperAppCreateForm extends AppForm {
     }
 
     return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function apiProductList(): array {
-    // For backward-compatibility and security reasons only display public
-    // API products here.
-    return array_filter($this->entityTypeManager->getStorage('api_product')->loadMultiple(), function (ApiProductInterface $api_product) {
-      // Attribute may not exists but in that case it means public.
-      return ($api_product->getAttributeValue('access') ?? 'public') === 'public';
-    });
   }
 
   /**

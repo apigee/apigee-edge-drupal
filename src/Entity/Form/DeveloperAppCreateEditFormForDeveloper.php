@@ -29,9 +29,9 @@ use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Base class for developer app/edit forms.
+ * Base class for developer app create/edit forms.
  */
-abstract class DeveloperAppFormForDeveloper extends AppForm {
+abstract class DeveloperAppCreateEditFormForDeveloper extends AppForm {
 
   /**
    * The user from the route.

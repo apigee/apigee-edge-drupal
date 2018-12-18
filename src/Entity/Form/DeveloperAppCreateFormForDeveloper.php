@@ -26,7 +26,7 @@ use Drupal\Core\Url;
 /**
  * Dedicated form handler that allows a developer to create an developer app.
  */
-class DeveloperAppCreateFormForDeveloper extends DeveloperAppFormForDeveloper {
+class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateEditFormForDeveloper {
 
   use DeveloperStatusCheckTrait;
   use AppCreateFormTrait;
