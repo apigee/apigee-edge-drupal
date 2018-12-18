@@ -31,7 +31,7 @@ use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
  * Redirects the user to the Edge error page if an uncaught
  * SDK-level ApiException event appears in the HttpKernel component.
  */
-class EdgeExceptionSubscriber extends DefaultExceptionHtmlSubscriber {
+final class EdgeExceptionSubscriber extends DefaultExceptionHtmlSubscriber {
 
   /**
    * {@inheritdoc}

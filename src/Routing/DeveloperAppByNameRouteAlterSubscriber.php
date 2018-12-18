@@ -30,7 +30,7 @@ use Symfony\Component\Routing\RouteCollection;
  * EntityResolvedManager, but in that case the value of in the path is the app
  * id and not the name of the app.
  */
-class DeveloperAppByNameRouteAlterSubscriber extends RouteSubscriberBase {
+final class DeveloperAppByNameRouteAlterSubscriber extends RouteSubscriberBase {
 
   /**
    * {@inheritdoc}
