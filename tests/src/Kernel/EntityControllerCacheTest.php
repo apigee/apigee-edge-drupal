@@ -46,7 +46,7 @@ class EntityControllerCacheTest extends KernelTestBase {
   /**
    * Tests developer entity controller cache.
    */
-  public function testDeveloperEntityMemoryCache() {
+  public function testDeveloperEntityControllerCache() {
     $developer_cache = $this->container->get('apigee_edge.controller.cache.developer');
     $developer_id_cache = $this->container->get('apigee_edge.controller.cache.developer_ids');
 
@@ -60,7 +60,7 @@ class EntityControllerCacheTest extends KernelTestBase {
       ]);
     }
 
-    $this->assertFullCaches($developers, $developer_cache, $developer_id_cache);
+    $this->saveAllEntitiesAndValidate($developers, $developer_cache, $developer_id_cache);
 
     /** @var \Apigee\Edge\Api\Management\Entity\DeveloperInterface $developer */
     foreach ($developers as $developer) {
@@ -69,7 +69,8 @@ class EntityControllerCacheTest extends KernelTestBase {
       $this->assertSame($developer, $developer_cache->getEntity($developer->getDeveloperId()));
       $this->assertContains($developer->getEmail(), $developer_id_cache->getIds());
 
-      // Remove developer from cache.
+      // Remove developer from cache. Use an invalid id to test whether the
+      // removeEntities() function properly removes the invalid entity IDs.
       $developer_cache->removeEntities([$developer->getDeveloperId(), $this->getRandomGenerator()->string()]);
       $this->assertNull($developer_cache->getEntity($developer->getEmail()));
       $this->assertNull($developer_cache->getEntity($developer->getDeveloperId()));
@@ -82,7 +83,7 @@ class EntityControllerCacheTest extends KernelTestBase {
   /**
    * Tests app entity controller cache.
    */
-  public function testAppEntityMemoryCache() {
+  public function testAppEntityControllerCache() {
     $app_cache = $this->container->get('apigee_edge.controller.cache.apps');
     $app_id_cache = $this->container->get('apigee_edge.controller.cache.app_ids');
 
@@ -93,7 +94,7 @@ class EntityControllerCacheTest extends KernelTestBase {
       $id = $this->getRandomUniqueId();
       $developer_apps[$id] = new DeveloperApp([
         'appId' => $id,
-        'name' => $this->getRandomUniqueId(),
+        'name' => $this->getRandomGenerator()->name(),
         'developerId' => $parent_id,
       ]);
     }
@@ -105,18 +106,18 @@ class EntityControllerCacheTest extends KernelTestBase {
       $id = $this->getRandomUniqueId();
       $company_apps[$id] = new CompanyApp([
         'appId' => $id,
-        'name' => $this->getRandomUniqueId(),
+        'name' => $this->getRandomGenerator()->name(),
         'companyName' => $parent_id,
       ]);
     }
 
     $apps = $developer_apps + $company_apps;
 
-    $this->assertFullCaches($apps, $app_cache, $app_id_cache);
+    $this->saveAllEntitiesAndValidate($apps, $app_cache, $app_id_cache);
 
     /** @var \Apigee\Edge\Api\Management\Entity\AppInterface $app */
     foreach ($apps as $app) {
-      // Load app by id and by owner.
+      // Load app by id and by owner (developer uuid or company name).
       $this->assertSame($app, $app_cache->getEntity($app->getAppId()));
       $this->assertContains($app, $app_cache->getAppsByOwner($app_cache->getAppOwner($app)));
       $this->assertContains($app->getAppId(), $app_id_cache->getIds());
@@ -138,10 +139,12 @@ class EntityControllerCacheTest extends KernelTestBase {
   /**
    * Tests developer app entity controller cache.
    */
-  public function testDeveloperAppEntityMemoryCache() {
+  public function testDeveloperAppEntityControllerCache() {
     $developer_app_cache_factory = $this->container->get('apigee_edge.entity.controller.cache.developer_app_cache_factory');
 
-    // Owner of the developer apps.
+    // Owner of the developer apps. It should be saved into the developer cache
+    // because developer app cache tries to load the owner email from the
+    // developer cache to reduce API calls.
     $developer = new Developer([
       'developerId' => $this->getRandomUniqueId(),
       'email' => strtolower($this->randomMachineName()) . '@example.com',
@@ -149,23 +152,16 @@ class EntityControllerCacheTest extends KernelTestBase {
     $developer_cache = $this->container->get('apigee_edge.controller.cache.developer');
     $developer_cache->saveEntities([$developer]);
 
-    // Generate developer app entities with random data.
     $developer_apps = [];
-    $id = $this->getRandomUniqueId();
-    $developer_apps[$id] = new DeveloperApp([
-      'appId' => $id,
-      'name' => $this->getRandomUniqueId(),
-      'developerId' => $developer->getDeveloperId(),
-    ]);
-    $developer_app_1 = $developer_apps[$id];
-
-    $id = $this->getRandomUniqueId();
-    $developer_apps[$id] = new DeveloperApp([
-      'appId' => $id,
-      'name' => $this->getRandomUniqueId(),
-      'developerId' => $developer->getDeveloperId(),
-    ]);
-    $developer_app_2 = $developer_apps[$id];
+    for ($i = 0; $i < 2; $i++) {
+      $id = $this->getRandomUniqueId();
+      $developer_apps[$id] = new DeveloperApp([
+        'appId' => $id,
+        'name' => $this->getRandomGenerator()->name(),
+        'developerId' => $developer->getDeveloperId(),
+      ]);
+    }
+    list($developer_app_1, $developer_app_2) = array_values($developer_apps);
 
     $cache_by_email = $developer_app_cache_factory->getAppCache($developer->getEmail());
     $cache_by_id = $developer_app_cache_factory->getAppCache($developer->getDeveloperId());
@@ -204,7 +200,7 @@ class EntityControllerCacheTest extends KernelTestBase {
   }
 
   /**
-   * Saves entities into the memory cache and checks the result.
+   * Saves entities into the entity cache and checks the result.
    *
    * @param \Apigee\Edge\Entity\EntityInterface[] $entities
    *   Apigee Edge entities to save into the cache.
@@ -213,8 +209,8 @@ class EntityControllerCacheTest extends KernelTestBase {
    * @param \Drupal\apigee_edge\Entity\Controller\Cache\EntityIdCacheInterface $entity_id_cache
    *   The entity id cache implementation.
    */
-  protected function assertFullCaches(array $entities, EntityCacheInterface $entity_cache, EntityIdCacheInterface $entity_id_cache) {
-    // Save the generated entities into the memory cache.
+  protected function saveAllEntitiesAndValidate(array $entities, EntityCacheInterface $entity_cache, EntityIdCacheInterface $entity_id_cache) {
+    // Save the generated entities into the controller cache.
     $entity_cache->saveEntities($entities);
     $this->assertSame($entities, $entity_cache->getEntities());
 
