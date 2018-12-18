@@ -18,29 +18,30 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Controller;
-
-use Drupal\Core\Entity\Controller\EntityViewController;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
+namespace Drupal\apigee_edge\Entity\Form;
 
 /**
- * Default entity view controller for Apigee Edge entities.
+ * General form handler for developer/team (company) app delete forms.
  */
-class EdgeEntityViewController extends EntityViewController {
-
-  use StringTranslationTrait;
+class AppDeleteForm extends EdgeEntityDeleteForm {
 
   /**
    * {@inheritdoc}
    */
-  public function buildTitle(array $page) {
-    $page = parent::buildTitle($page);
-    // Adds entity type to the page title.
-    $page['#title'] = $this->t('@label @entity_type', [
-      '@label' => $this->entityManager->getTranslationFromContext($page["#{$page['#entity_type']}"])->label(),
-      '@entity_type' => $this->entityManager->getDefinition($page['#entity_type'])->getSingularLabel(),
+  protected function verificationCodeErrorMessage() {
+    return $this->t('The name does not match the @app you are attempting to delete.', [
+      '@app' => $this->entityTypeManager->getDefinition($this->getEntity()->getEntityTypeId())->getLowercaseLabel(),
     ]);
-    return $page;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function verificationCode() {
+    /** @var \Drupal\apigee_edge\Entity\AppInterface $app */
+    $app = $this->getEntity();
+    // Request the name of the app instead of the app id (UUID).
+    return $app->getName();
   }
 
 }
