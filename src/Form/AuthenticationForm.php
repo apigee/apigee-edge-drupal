@@ -29,10 +29,14 @@ use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Render\MarkupInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\Random;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element\StatusMessages;
+use Drupal\Core\Render\RendererInterface;
 use Drupal\key\Entity\Key;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
@@ -88,6 +92,13 @@ class AuthenticationForm extends ConfigFormBase {
   protected $oauthTokenStorage;
 
   /**
+   * The renderer is used for better control in the ajax callback.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
+   */
+  protected $renderer;
+
+  /**
    * Constructs a new AuthenticationForm.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -100,13 +111,16 @@ class AuthenticationForm extends ConfigFormBase {
    *   Module handler service.
    * @param \Drupal\apigee_edge\OauthTokenStorageInterface $oauth_token_storage
    *   The OAuth token storage service.
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The `renderer` service.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, KeyRepositoryInterface $key_repository, SDKConnectorInterface $sdk_connector, ModuleHandlerInterface $module_handler, OauthTokenStorageInterface $oauth_token_storage) {
+  public function __construct(ConfigFactoryInterface $config_factory, KeyRepositoryInterface $key_repository, SDKConnectorInterface $sdk_connector, ModuleHandlerInterface $module_handler, OauthTokenStorageInterface $oauth_token_storage, RendererInterface $renderer) {
     parent::__construct($config_factory);
     $this->keyRepository = $key_repository;
     $this->sdkConnector = $sdk_connector;
     $this->moduleHandler = $module_handler;
     $this->oauthTokenStorage = $oauth_token_storage;
+    $this->renderer = $renderer;
   }
 
   /**
@@ -118,7 +132,8 @@ class AuthenticationForm extends ConfigFormBase {
       $container->get('key.repository'),
       $container->get('apigee_edge.sdk_connector'),
       $container->get('module_handler'),
-      $container->get('apigee_edge.authentication.oauth_token_storage')
+      $container->get('apigee_edge.authentication.oauth_token_storage'),
+      $container->get('renderer')
     );
   }
 
@@ -145,12 +160,15 @@ class AuthenticationForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildForm($form, $form_state);
 
-    $form['#prefix'] = '<div id="apigee-edge-auth-form">';
-    $form['#suffix'] = '</div>';
     $form['#attached']['library'][] = 'apigee_edge/apigee_edge.admin';
 
     // Save the key for later use.
     $this->activeKey = $active_key = $this->getActiveKey();
+
+    // Placeholder for messages.
+    $form['messages'] = [
+      '#markup' => '<div id="apigee-edge-auth-form-messages"></div>',
+    ];
 
     $form['connection_settings'] = [
       '#type' => 'details',
@@ -186,6 +204,10 @@ class AuthenticationForm extends ConfigFormBase {
         ':input[name="key_input_settings[username]"]' => ['filled' => TRUE],
       ],
     ];
+    // Placeholder for debug.
+    $form['debug_placeholder'] = [
+      '#markup' => '<div id="apigee-edge-auth-form-debug-info"></div>',
+    ];
     $form['debug'] = [
       '#type' => 'details',
       '#title' => $this->t('Debug information'),
@@ -199,6 +221,8 @@ class AuthenticationForm extends ConfigFormBase {
     ];
 
     $form['test_connection'] = [
+      '#prefix' => '<div id="apigee-edge-connection-info">',
+      '#suffix' => '</div>',
       '#type' => 'details',
       '#title' => $this->t('Test connection'),
       '#description' => 'Send request using the selected authentication key.',
@@ -210,7 +234,7 @@ class AuthenticationForm extends ConfigFormBase {
       '#value' => $this->t('Send request'),
       '#ajax' => [
         'callback' => '::ajaxCallback',
-        'wrapper' => 'apigee-edge-auth-form',
+        'wrapper' => 'apigee-edge-connection-info',
         'progress' => [
           'type' => 'throbber',
           'message' => $this->t('Waiting for response...'),
@@ -219,7 +243,6 @@ class AuthenticationForm extends ConfigFormBase {
       '#states' => [
         'enabled' => $submittable_state,
       ],
-      '#submit' => ['::ajaxCallback'],
     ];
 
     $form['actions']['submit']['#states'] = ['enabled' => $submittable_state];
@@ -517,16 +540,39 @@ class AuthenticationForm extends ConfigFormBase {
   /**
    * Pass form array to the AJAX callback.
    *
-   * @param array $form
+   * @param array &$form
    *   An associative array containing the structure of the form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   Form state object.
    *
-   * @return array
+   * @return \Drupal\Core\Ajax\AjaxResponse
    *   The AJAX response.
+   *
+   * @throws \Exception
    */
-  public function ajaxCallback(array $form, FormStateInterface $form_state): array {
-    return $form;
+  public function ajaxCallback(array &$form, FormStateInterface $form_state): AjaxResponse {
+    $response = new AjaxResponse();
+    // Get any status messages so they can be rendered in the placeholder.
+    $status_messages = $this->renderer->render(StatusMessages::renderMessages());
+    // Clear any existing messages from the initial page load.
+    $response->addCommand(new ReplaceCommand('div.messages', ''));
+    $response->addCommand(new ReplaceCommand('#apigee-edge-auth-form-messages', "<div id=\"apigee-edge-auth-form-messages\">{$status_messages}</div>"));
+
+    // Only render the debug element if it's been enabled by validation.
+    if ($form['debug']['#access']) {
+      // Add a prefix to the debug section to replace the wrapper.
+      $form['debug'] = $form['debug'] + [
+        '#prefix' => '<div id="apigee-edge-auth-form-debug-info">',
+        '#suffix' => '</div>',
+      ];
+      $response->addCommand(new ReplaceCommand('#apigee-edge-auth-form-debug-info', $this->renderer->render($form['debug'])));
+    }
+    else {
+      // There may still be an outdated debug message so clear it.
+      $response->addCommand(new ReplaceCommand('#apigee-edge-auth-form-debug-info', '<div id="apigee-edge-auth-form-debug-info"></div>'));
+    }
+
+    return $response;
   }
 
   /**
