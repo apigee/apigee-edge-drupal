@@ -24,12 +24,11 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryBase;
 use Drupal\Core\Entity\Query\QueryException;
 use Drupal\Core\Entity\Query\QueryFactoryInterface;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Factory for creating entity query objects for the Apigee Edge backend.
  */
-class QueryFactory implements QueryFactoryInterface, EventSubscriberInterface {
+class QueryFactory implements QueryFactoryInterface {
 
   /**
    * The namespace of this class, the parent class etc.
@@ -44,15 +43,6 @@ class QueryFactory implements QueryFactoryInterface, EventSubscriberInterface {
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
-
-  /**
-   * Stores mapping between entity types and entity query classes.
-   *
-   * @var string[]
-   *   An associative array where keys are the FQCN-s of entity types and values
-   *   are the FQCN-s of the entity query classes.
-   */
-  private static $queryClassmap = [];
 
   /**
    * Constructs a QueryFactory object.
@@ -79,13 +69,6 @@ class QueryFactory implements QueryFactoryInterface, EventSubscriberInterface {
    */
   public function getAggregate(EntityTypeInterface $entity_type, $conjunction) {
     throw new QueryException('Aggregation over Apigee Edge entities is not supported.');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents() {
-    return [];
   }
 
 }
