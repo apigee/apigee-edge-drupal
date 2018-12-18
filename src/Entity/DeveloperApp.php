@@ -79,7 +79,6 @@ use Drupal\user\UserInterface;
  *     "id" = "appId",
  *   },
  *   query_class = "Drupal\apigee_edge\Entity\Query\DeveloperAppQuery",
- *   permission_granularity = "entity_type",
  *   admin_permission = "administer developer_app",
  *   field_ui_base_route = "apigee_edge.settings.app",
  * )
