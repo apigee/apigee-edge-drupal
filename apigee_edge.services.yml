@@ -103,8 +103,8 @@ services:
     tags:
       - { name: event_subscriber }
 
-  apigee_edge.edge_entity_config_translation_change_subscriber:
-    class: Drupal\apigee_edge\EventSubscriber\EdgeEntityConfigTranslationChangeSubscriber
+  apigee_edge.event_subscriber.edge_config_translation_change_subscriber:
+    class: Drupal\apigee_edge\EventSubscriber\EdgeConfigTranslationChangeSubscriber
     tags:
       - { name: event_subscriber }
 
