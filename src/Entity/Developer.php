@@ -468,4 +468,14 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
     return $this->originalEmail;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    // This class does not implement DisplayNamePropertyInterface.
+    // It make sense to return this as a default label for a developer entity.
+    // (Both fields are mandatory.)
+    return "{$this->getFirstName()} {$this->getLastName()}";
+  }
+
 }
