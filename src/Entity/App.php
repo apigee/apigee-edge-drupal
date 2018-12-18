@@ -335,10 +335,7 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
       'appId',
       'appFamily',
       'createdAt',
-      'createdBy',
-      'developerId',
       'lastModifiedAt',
-      'lastModifiedBy',
       'name',
       'scopes',
       'status',
@@ -348,6 +345,33 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
     }
 
     return $definitions;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static function propertyToBaseFieldTypeMap(): array {
+    return parent::propertyToBaseFieldBlackList() + [
+      // UUIDs (developerId, appId) managed on Apigee Edge so we do not
+      // want to expose them as UUID fields. Same applies for createdAt and
+      // lastModifiedAt. We do not want that Drupal apply default values
+      // on them if they are empty therefore their field type is a simple
+      // "timestamp" instead of "created" or "changed".
+      'createdAt' => 'timestamp',
+      'lastModifiedAt' => 'timestamp',
+      'scopes' => 'list_string',
+      'status' => 'string',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static function propertyToBaseFieldBlackList(): array {
+    return array_merge(parent::propertyToBaseFieldBlackList(), [
+      // We expose credentials as a pseudo field.
+      'credentials',
+    ]);
   }
 
   /**
@@ -396,6 +420,25 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
       }
     }
     return parent::set($field_name, $value, $notify);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    $label = parent::label();
+    // Return app name instead of app id if display name is missing.
+    if ($label === $this->id()) {
+      $label = $this->getName();
+    }
+    return $label;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function uniqueIdProperties(): array {
+    return array_merge(parent::uniqueIdProperties(), ['appId']);
   }
 
 }
