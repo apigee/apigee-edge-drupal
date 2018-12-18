@@ -19,11 +19,11 @@
 
 namespace Drupal\apigee_edge\Form;
 
-use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\RendererInterface;
@@ -32,13 +32,15 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides configuration form builder for changing app settings.
- *
- * If we would like to call company apps and developer apps in the same name
- * then this form should take care of the update of both configurations.
- * In general, it is better that we are allowing to call them differently
- * thanks to their dedicated entity label configurations.
  */
 class AppSettingsForm extends ConfigFormBase {
+
+  /**
+   * The entity type manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  private $entityTypeManager;
 
   /**
    * The renderer.
@@ -52,11 +54,14 @@ class AppSettingsForm extends ConfigFormBase {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager service.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, RendererInterface $renderer) {
+  public function __construct(ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer) {
     parent::__construct($config_factory);
+    $this->entityTypeManager = $entity_type_manager;
     $this->renderer = $renderer;
   }
 
@@ -66,6 +71,7 @@ class AppSettingsForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
+      $container->get('entity_type.manager'),
       $container->get('renderer')
     );
   }
@@ -90,22 +96,20 @@ class AppSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $form = parent::buildForm($form, $form_state);
-    $generalConfig = $this->config('apigee_edge.common_app_settings');
+    $common_app_settings = $this->config('apigee_edge.common_app_settings');
 
     // Someone has overridden the default setting.
-    if (!$generalConfig->get('multiple_products')) {
+    if (!$common_app_settings->get('multiple_products')) {
       $this->messenger()->addWarning($this->t('Access to multiple API products will be retained until an app is edited and the developer is prompted to confirm a single API product selection.'));
     }
 
     /** @var string[] $default_products */
-    $default_products = $generalConfig->get('default_products') ?: [];
+    $default_products = $common_app_settings->get('default_products') ?: [];
     $product_list = [];
 
     try {
-      /** @var \Drupal\apigee_edge\Entity\ApiProduct[] $products */
-      $products = ApiProduct::loadMultiple();
-      foreach ($products as $product) {
+      /** @var \Drupal\apigee_edge\Entity\ApiProduct $product */
+      foreach ($this->entityTypeManager->getStorage('api_product')->loadMultiple() as $product) {
         $product_list[$product->id()] = $product->label();
       }
     }
@@ -129,13 +133,13 @@ class AppSettingsForm extends ConfigFormBase {
     $form['api_product']['display_as_select'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Display the API Product widget as a select box (instead of checkboxes/radios)'),
-      '#default_value' => $generalConfig->get('display_as_select'),
+      '#default_value' => $common_app_settings->get('display_as_select'),
     ];
 
     $form['api_product']['user_select'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Let user select the product(s)'),
-      '#default_value' => $generalConfig->get('user_select'),
+      '#default_value' => $common_app_settings->get('user_select'),
       '#ajax' => [
         'callback' => '::apiProductListCallback',
         'wrapper' => 'default-api-product-multiple',
@@ -159,10 +163,10 @@ class AppSettingsForm extends ConfigFormBase {
       '#title' => $this->t('Default API Product'),
       '#options' => $product_list,
       '#default_value' => $default_products,
-      '#required' => $form_state->getValue('user_select') === NULL ? !(bool) $generalConfig->get('user_select') : !(bool) $form_state->getValue('user_select'),
+      '#required' => $form_state->getValue('user_select') === NULL ? !(bool) $common_app_settings->get('user_select') : !(bool) $form_state->getValue('user_select'),
     ];
 
-    return $form;
+    return parent::buildForm($form, $form_state);
   }
 
   /**
