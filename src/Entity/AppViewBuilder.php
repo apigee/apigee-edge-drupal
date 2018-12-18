@@ -34,22 +34,22 @@ class AppViewBuilder extends EntityViewBuilder {
   public function buildMultiple(array $build_list) {
     $results = parent::buildMultiple($build_list);
     foreach ($results as $id => $result) {
-      /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app */
-      $developer_app = $result["#{$this->entityTypeId}"];
+      /** @var \Drupal\apigee_edge\Entity\AppInterface $app */
+      $app = $result["#{$this->entityTypeId}"];
       // The callback field is visible.
       if (array_key_exists('callbackUrl', $result)) {
         // Display an error message if the callback url field value does not
         // contain a valid URI.
-        if (!empty($developer_app->getCallbackUrl()) && $developer_app->getCallbackUrl() !== $developer_app->get('callbackUrl')->value) {
+        if (!empty($app->getCallbackUrl()) && $app->getCallbackUrl() !== $app->get('callbackUrl')->value) {
           try {
-            Url::fromUri($developer_app->getCallbackUrl());
+            Url::fromUri($app->getCallbackUrl());
           }
           catch (\Exception $exception) {
             $results[$id]['callback_url_error'] = [
               '#theme' => 'status_messages',
               '#message_list' => [
                 'warning' => [$this->t('The @field value should be fixed. @message', [
-                  '@field' => $developer_app->getFieldDefinition('callbackUrl')->getLabel(),
+                  '@field' => $app->getFieldDefinition('callbackUrl')->getLabel(),
                   '@message' => $exception->getMessage(),
                 ]),
                 ],
