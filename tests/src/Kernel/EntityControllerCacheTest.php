@@ -22,29 +22,17 @@ namespace Drupal\Tests\apigee_edge\Kernel;
 use Apigee\Edge\Api\Management\Entity\CompanyApp;
 use Apigee\Edge\Api\Management\Entity\Developer;
 use Apigee\Edge\Api\Management\Entity\DeveloperApp;
+use Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface;
+use Drupal\apigee_edge\Entity\Controller\Cache\EntityIdCacheInterface;
 use Drupal\KernelTests\KernelTestBase;
 
 /**
- * Apigee Edge entity memory cache tests.
+ * Apigee Edge entity controller cache tests.
  *
  * @group apigee_edge
  * @group apigee_edge_kernel
  */
-class EntityMemoryCacheTest extends KernelTestBase {
-
-  /**
-   * The entity cache implementation to test.
-   *
-   * @var \Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface
-   */
-  protected $entityCache;
-
-  /**
-   * The entity id cache implementation to test.
-   *
-   * @var \Drupal\apigee_edge\Entity\Controller\Cache\EntityIdCacheInterface
-   */
-  protected $entityIdCache;
+class EntityControllerCacheTest extends KernelTestBase {
 
   /**
    * {@inheritdoc}
@@ -56,11 +44,11 @@ class EntityMemoryCacheTest extends KernelTestBase {
   ];
 
   /**
-   * Tests developer entity memory cache.
+   * Tests developer entity controller cache.
    */
   public function testDeveloperEntityMemoryCache() {
-    $this->entityCache = $this->container->get('apigee_edge.controller.cache.developer');
-    $this->entityIdCache = $this->container->get('apigee_edge.controller.cache.developer_ids');
+    $developer_cache = $this->container->get('apigee_edge.controller.cache.developer');
+    $developer_id_cache = $this->container->get('apigee_edge.controller.cache.developer_ids');
 
     // Generate developer entities with random data.
     $developers = [];
@@ -72,31 +60,31 @@ class EntityMemoryCacheTest extends KernelTestBase {
       ]);
     }
 
-    $this->assertFullCaches($developers);
+    $this->assertFullCaches($developers, $developer_cache, $developer_id_cache);
 
     /** @var \Apigee\Edge\Api\Management\Entity\DeveloperInterface $developer */
     foreach ($developers as $developer) {
       // Load developer by email and by id.
-      $this->assertSame($developer, $this->entityCache->getEntity($developer->getEmail()));
-      $this->assertSame($developer, $this->entityCache->getEntity($developer->getDeveloperId()));
-      $this->assertContains($developer->getEmail(), $this->entityIdCache->getIds());
+      $this->assertSame($developer, $developer_cache->getEntity($developer->getEmail()));
+      $this->assertSame($developer, $developer_cache->getEntity($developer->getDeveloperId()));
+      $this->assertContains($developer->getEmail(), $developer_id_cache->getIds());
 
       // Remove developer from cache.
-      $this->entityCache->removeEntities([$developer->getDeveloperId(), $this->getRandomGenerator()->string()]);
-      $this->assertNull($this->entityCache->getEntity($developer->getEmail()));
-      $this->assertNull($this->entityCache->getEntity($developer->getDeveloperId()));
-      $this->assertNotContains($developer->getEmail(), $this->entityIdCache->getIds());
+      $developer_cache->removeEntities([$developer->getDeveloperId(), $this->getRandomGenerator()->string()]);
+      $this->assertNull($developer_cache->getEntity($developer->getEmail()));
+      $this->assertNull($developer_cache->getEntity($developer->getDeveloperId()));
+      $this->assertNotContains($developer->getEmail(), $developer_id_cache->getIds());
     }
 
-    $this->assertEmptyCaches();
+    $this->assertEmptyCaches($developer_cache, $developer_id_cache);
   }
 
   /**
-   * Tests app entity memory cache.
+   * Tests app entity controller cache.
    */
   public function testAppEntityMemoryCache() {
-    $this->entityCache = $this->container->get('apigee_edge.controller.cache.apps');
-    $this->entityIdCache = $this->container->get('apigee_edge.controller.cache.app_ids');
+    $app_cache = $this->container->get('apigee_edge.controller.cache.apps');
+    $app_id_cache = $this->container->get('apigee_edge.controller.cache.app_ids');
 
     // Generate developer app entities with random data.
     $developer_apps = [];
@@ -124,31 +112,31 @@ class EntityMemoryCacheTest extends KernelTestBase {
 
     $apps = $developer_apps + $company_apps;
 
-    $this->assertFullCaches($apps);
+    $this->assertFullCaches($apps, $app_cache, $app_id_cache);
 
     /** @var \Apigee\Edge\Api\Management\Entity\AppInterface $app */
     foreach ($apps as $app) {
       // Load app by id and by owner.
-      $this->assertSame($app, $this->entityCache->getEntity($app->getAppId()));
-      $this->assertContains($app, $this->entityCache->getAppsByOwner($this->entityCache->getAppOwner($app)));
-      $this->assertContains($app->getAppId(), $this->entityIdCache->getIds());
+      $this->assertSame($app, $app_cache->getEntity($app->getAppId()));
+      $this->assertContains($app, $app_cache->getAppsByOwner($app_cache->getAppOwner($app)));
+      $this->assertContains($app->getAppId(), $app_id_cache->getIds());
     }
 
     // Remove apps from cache by owner.
-    $this->entityCache->removeAppsByOwner(reset($developer_apps)->getDeveloperId());
-    $this->entityCache->removeAppsByOwner(reset($company_apps)->getCompanyName());
+    $app_cache->removeAppsByOwner(reset($developer_apps)->getDeveloperId());
+    $app_cache->removeAppsByOwner(reset($company_apps)->getCompanyName());
 
     foreach ($apps as $app) {
-      $this->assertNull($this->entityCache->getEntity($app->getAppId()));
-      $this->assertNull($this->entityCache->getAppsByOwner($this->entityCache->getAppOwner($app)));
-      $this->assertNotContains($app->getAppId(), $this->entityIdCache->getIds());
+      $this->assertNull($app_cache->getEntity($app->getAppId()));
+      $this->assertNull($app_cache->getAppsByOwner($app_cache->getAppOwner($app)));
+      $this->assertNotContains($app->getAppId(), $app_id_cache->getIds());
     }
 
-    $this->assertEmptyCaches();
+    $this->assertEmptyCaches($app_cache, $app_id_cache);
   }
 
   /**
-   * Tests developer app entity memory cache.
+   * Tests developer app entity controller cache.
    */
   public function testDeveloperAppEntityMemoryCache() {
     $developer_app_cache_factory = $this->container->get('apigee_edge.entity.controller.cache.developer_app_cache_factory');
@@ -220,26 +208,35 @@ class EntityMemoryCacheTest extends KernelTestBase {
    *
    * @param \Apigee\Edge\Entity\EntityInterface[] $entities
    *   Apigee Edge entities to save into the cache.
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface $entity_cache
+   *   The entity cache implementation.
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\EntityIdCacheInterface $entity_id_cache
+   *   The entity id cache implementation.
    */
-  protected function assertFullCaches(array $entities) {
+  protected function assertFullCaches(array $entities, EntityCacheInterface $entity_cache, EntityIdCacheInterface $entity_id_cache) {
     // Save the generated entities into the memory cache.
-    $this->entityCache->saveEntities($entities);
-    $this->assertSame($entities, $this->entityCache->getEntities());
+    $entity_cache->saveEntities($entities);
+    $this->assertSame($entities, $entity_cache->getEntities());
 
     // Set cache states to TRUE.
-    $this->entityCache->allEntitiesInCache(TRUE);
-    $this->assertTrue($this->entityCache->isAllEntitiesInCache());
-    $this->assertTrue($this->entityIdCache->isAllIdsInCache());
+    $entity_cache->allEntitiesInCache(TRUE);
+    $this->assertTrue($entity_cache->isAllEntitiesInCache());
+    $this->assertTrue($entity_id_cache->isAllIdsInCache());
   }
 
   /**
    * Checks whether the cache is properly cleared.
+   *
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface $entity_cache
+   *   The entity cache implementation.
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\EntityIdCacheInterface $entity_id_cache
+   *   The entity id cache implementation.
    */
-  protected function assertEmptyCaches() {
-    $this->assertEmpty($this->entityCache->getEntities());
-    $this->assertEmpty($this->entityIdCache->getIds());
-    $this->assertFalse($this->entityCache->isAllEntitiesInCache());
-    $this->assertFalse($this->entityIdCache->isAllIdsInCache());
+  protected function assertEmptyCaches(EntityCacheInterface $entity_cache, EntityIdCacheInterface $entity_id_cache) {
+    $this->assertEmpty($entity_cache->getEntities());
+    $this->assertEmpty($entity_id_cache->getIds());
+    $this->assertFalse($entity_cache->isAllEntitiesInCache());
+    $this->assertFalse($entity_id_cache->isAllIdsInCache());
   }
 
 }
