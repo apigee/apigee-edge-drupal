@@ -42,13 +42,13 @@ class EdgeEntityType extends EntityType {
   /**
    * {@inheritdoc}
    */
-  public $group = 'edge';
+  public $group = 'apigee_edge';
 
   /**
    * {@inheritdoc}
    */
   public function get() {
-    $this->definition['group_label'] = new TranslatableMarkup('Edge', [], ['context' => 'Entity type group']);
+    $this->definition['group_label'] = new TranslatableMarkup('Apigee Edge', [], ['context' => 'Entity type group']);
 
     return parent::get();
   }

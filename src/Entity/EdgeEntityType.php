@@ -57,8 +57,6 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
    */
   public function __construct(array $definition) {
     parent::__construct($definition);
-    $this->group = 'apigee_edge';
-    $this->group_label = $this->t('Apigee Edge');
     // Some default settings for our entity types.
     $this->handlers += [
       'view_builder' => EntityViewBuilder::class,
@@ -77,10 +75,8 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
    * {@inheritdoc}
    */
   public function getLabel() {
-    if ($label = $this->getEntityLabelFromConfig('entity_label_singular')) {
-      return $label;
-    }
-    parent::getLabel();
+    $label = $this->getEntityLabelFromConfig('entity_label_singular');
+    return empty($label) ? parent::getLabel() : $label;
   }
 
   /**
@@ -94,10 +90,8 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
    * {@inheritdoc}
    */
   public function getPluralLabel() {
-    if ($label = $this->getEntityLabelFromConfig('entity_label_plural')) {
-      return $label;
-    }
-    return parent::getPluralLabel();
+    $label = $this->getEntityLabelFromConfig('entity_label_plural');
+    return empty($label) ? parent::getPluralLabel() : $label;
   }
 
   /**
@@ -153,10 +147,8 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
     try {
       $config = $this->getConfigWithEntityLabels();
       if ($config) {
-        if ($label = $config->get($key)) {
-          return $label;
-        }
-        else {
+        $label = $config->get($key);
+        if ($label === NULL) {
           $logger->warning('@class: The "@key" has not been found in @config config object for "@entity_type" entity.', [
             '@class' => get_class($this),
             '@entity_type' => $this->id,
@@ -164,10 +156,13 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
             '@config' => $this->config_with_labels ?? "apigee_edge.{$this->id}_settings",
           ]);
         }
+
+        return $label;
       }
     }
     catch (RuntimeException $exception) {
-      $logger->error('@class: @message', ['@class' => get_class($this), '@message' => $exception->getMessage()]);
+      // Just catch it, do not log it, because this could generate invalid
+      // log entries when the module is uninstalled.
     }
 
     return NULL;
