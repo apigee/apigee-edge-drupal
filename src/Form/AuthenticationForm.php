@@ -585,7 +585,8 @@ class AuthenticationForm extends ConfigFormBase {
    * @throws \Drupal\key\Exception\KeyValueNotSetException
    */
   protected function getActiveKey(): KeyInterface {
-    $config = $this->config(static::CONFIG_NAME);
+    // If we use `$this->config()`, config overrides won't be considered.
+    $config = $this->configFactory()->get(static::CONFIG_NAME);
 
     // Gets the active key.
     if (!($active_key_id = $config->get('active_key')) || !($active_key = Key::load($active_key_id))) {

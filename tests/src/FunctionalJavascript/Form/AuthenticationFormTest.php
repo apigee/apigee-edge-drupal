@@ -21,6 +21,7 @@ namespace Drupal\Tests\apigee_edge\FunctionalJavascript\Form;
 
 use Apigee\Edge\ClientInterface;
 use Drupal\apigee_edge\Form\AuthenticationForm;
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Url;
 use Drupal\key\Entity\Key;
 use Drupal\Tests\apigee_edge\FunctionalJavascript\ApigeeEdgeFunctionalJavascriptTestBase;
@@ -143,7 +144,7 @@ class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
     // Test the connection with basic auth.
     $this->assertSendRequestMessage('.messages--status', 'Connection successful.');
-    $this->assertEmpty($this->cssSelect('details[data-drupal-selector="edit-debug"]'));
+    $web_assert->elementNotExists('css', 'details[data-drupal-selector="edit-debug"]');
 
     // Switch back to basic auth.
     $this->cssSelect('select[data-drupal-selector="edit-key-input-settings-auth-type"]')[0]->setValue('basic');
@@ -201,6 +202,68 @@ class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $page->fillField('Client ID', $client_id);
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to the OAuth authorization server. The given username ({$active_username}) or password or client ID ({$client_id}) or client secret is incorrect. Error message: {\"error\":\"unauthorized\",\"error_description\":\"Bad credentials\"}");
     $page->fillField('Client ID', '');
+  }
+
+  /**
+   * Test the auth form with an overridden key without an input form.
+   *
+   * @throws \Exception
+   */
+  public function testAuthenticationFormWithNonEditableProvider() {
+    $web_assert = $this->assertSession();
+    $config = $this->config(AuthenticationForm::CONFIG_NAME);
+    $active_key = Key::load($config->get('active_key'));
+    $original_key_data = $active_key->getKeyProvider()->getKeyValue($active_key);
+    $file_location = 'public://test_key.json';
+    file_unmanaged_save_data($original_key_data, $file_location);
+    $file_key = Key::create([
+      'id' => $this->getRandomGenerator()->word(15),
+      'label' => 'File Key',
+      'key_type' => 'apigee_auth',
+      'key_input' => 'none',
+      'key_provider' => 'file',
+      'key_provider_settings' => [
+        'strip_line_breaks' => FALSE,
+        'file_location' => $file_location,
+      ],
+    ]);
+    $file_key->save();
+
+    // Switch to the file key via the `settings.php`.
+    $this->writeSettings([
+      'config' => [
+        'apigee_edge.auth' => [
+          'active_key' => (object) [
+            'value' => $file_key->id(),
+            'required' => TRUE,
+          ],
+        ],
+      ],
+    ]);
+
+    $this->drupalGet(Url::fromRoute('apigee_edge.settings'));
+
+    $web_assert->elementNotExists('css', '#edit-key-input-settings-auth-type');
+    $web_assert->elementNotExists('css', '#edit-key-input-settings-organization');
+    $web_assert->elementNotExists('css', '#edit-key-input-settings-username');
+    $web_assert->elementNotExists('css', '#edit-key-input-settings-password');
+    $web_assert->elementNotExists('css', '#edit-key-input-settings-endpoint');
+    $web_assert->elementNotExists('css', '#edit-key-input-settings-authorization-server');
+    $web_assert->elementNotExists('css', '#edit-key-input-settings-client-id');
+    $web_assert->elementNotExists('css', '#edit-key-input-settings-client-secret');
+
+    // Test the connection.
+    $this->assertSendRequestMessage('.messages--status', 'Connection successful.');
+    $web_assert->elementNotExists('css', 'details[data-drupal-selector="edit-debug"]');
+
+    $key_decoded = Json::decode($original_key_data);
+    $key_decoded['password'] = $this->randomMachineName(16);
+    file_unmanaged_save_data(Json::encode($key_decoded), $file_location, FILE_EXISTS_REPLACE);
+
+    // Test the connection with an invalid password.
+    $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given username ({$key_decoded['username']}) or password is incorrect. Error message: Unauthorized");
+    // Make sure the debug details have appeared.
+    $web_assert->elementExists('css', 'details[data-drupal-selector="edit-debug"]');
   }
 
   /**
