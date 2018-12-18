@@ -491,7 +491,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   public function testCallbackUrlValidationServerSide() {
     // Override default configuration.
     $description = 'This is a Callback URL field.';
-    $this->config('apigee_edge.developer_app_settings')
+    $this->config('apigee_edge.common_app_settings')
       ->set('callback_url_pattern', '^https:\/\/example.com')
       ->set('callback_url_description', $description)
       ->save();
