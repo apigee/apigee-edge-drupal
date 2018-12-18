@@ -118,6 +118,14 @@ apigee_edge.settings.app.credentials:
   requirements:
     _permission: 'administer apigee edge'
 
+apigee_edge.settings.app.callback_url_validation:
+  path: '/admin/config/apigee-edge/app-settings/callback-url-validation'
+  defaults:
+    _form: '\Drupal\apigee_edge\Form\AppCallbackUrlSettingsForm'
+    _title: 'Callback URL validation'
+  requirements:
+    _permission: 'administer apigee edge'
+
 apigee_edge.settings.app.analytics:
   path: '/admin/config/apigee-edge/app-settings/analytics'
   defaults:
