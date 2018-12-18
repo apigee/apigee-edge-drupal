@@ -184,6 +184,8 @@ class EntityMemoryCacheTest extends KernelTestBase {
 
     $cache_by_email->saveEntities([$developer_app_1]);
     $cache_by_id->saveEntities([$developer_app_2]);
+    $this->assertSame($developer_apps, $cache_by_email->getEntities());
+    $this->assertSame($developer_apps, $cache_by_id->getEntities());
 
     /** @var \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface $developer_app */
     foreach ($developer_apps as $developer_app) {
