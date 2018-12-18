@@ -189,18 +189,6 @@ key.type.apigee_auth:
 key.input.apigee_auth_input:
   type: sequence
 
-key.type.apigee_edge_basic_auth:
-  type: sequence
-
-key.type.apigee_edge_oauth:
-  type: sequence
-
-key.input.apigee_edge_basic_auth_input:
-  type: sequence
-
-key.input.apigee_edge_oauth_input:
-  type: sequence
-
 key.provider.apigee_edge_environment_variables:
   type: sequence
 
