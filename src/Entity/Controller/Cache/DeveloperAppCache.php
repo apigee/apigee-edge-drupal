@@ -120,35 +120,37 @@ final class DeveloperAppCache implements AppCacheByAppOwnerInterface {
    * {@inheritdoc}
    */
   public function removeEntities(array $ids): void {
-    $this->defaultAppCacheByOwner->removeEntities($ids);
+    $apps_by_owner_cache_by_developer_id = $this->getAppsByOwnerCacheByDeveloperId();
+    // If $this->owner contains a developer email and we could not load its
+    // apps by owner cache by developer id (UUID) above, let's try to load it
+    // by using the developer id from a cached developer app.
+    if ($apps_by_owner_cache_by_developer_id === NULL) {
+      $entities = $this->getEntities();
+      if (empty($entities)) {
+        // If there were no apps in the cache then there is nothing to do.
+        // No matter what is the content of $ids, apps with those ids
+        // (app names) could not exist in cache.
+        return;
+      }
+      /** @var \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface $app */
+      $app = reset($entities);
+      $apps_by_owner_cache_by_developer_id = $this->appCacheByOwnerFactory->getAppCache($app->getDeveloperId());
+    }
+
+    $apps_by_owner_cache_by_developer_id->removeEntities($ids);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getEntities(array $ids = []): array {
+    // If this method returns an empty array the developer app controller
+    // loads the app(s) from Apigee Edge.
     $entities = [];
-    // If the owner is a developer email do not even try to load the related
-    // apps from the default app by owner cache because that won't be able to
-    // load apps from an AppCacheInterface implementation by passing an
-    // email address to the getAppsByOwner() method.
-    if ($this->emailValidator->isValid($this->owner)) {
-      // If we can find the developer in the developer cache by its email
-      // address in the developer cache then we are lucky. Otherwise, we do not
-      // try to load the developer by email from Apigee Edge here because
-      // that could increase the amount of API calls and what we try to do
-      // here is decreasing them.
-      // If this method returns an empty array the developer app controller
-      // loads the app(s) from Apigee Edge.
-      /** @var \Apigee\Edge\Api\Management\Entity\DeveloperInterface|null $developer */
-      $developer = $this->developerCache->getEntity($this->owner);
-      if ($developer) {
-        $app_by_owner_cache_by_developer_id = $this->appCacheByOwnerFactory->getAppCache($developer->getDeveloperId());
-        $entities = $app_by_owner_cache_by_developer_id->getEntities($ids);
-      }
-    }
-    else {
-      $entities = $this->defaultAppCacheByOwner->getEntities($ids);
+
+    $apps_by_owner_cache_by_developer_id = $this->getAppsByOwnerCacheByDeveloperId();
+    if ($apps_by_owner_cache_by_developer_id) {
+      $entities = $apps_by_owner_cache_by_developer_id->getEntities($ids);
     }
 
     return $entities;
@@ -191,6 +193,36 @@ final class DeveloperAppCache implements AppCacheByAppOwnerInterface {
       $entity = reset($entities);
       $app_by_owner_cache_by_developer_id = $this->appCacheByOwnerFactory->getAppCache($entity->getDeveloperId());
       $app_by_owner_cache_by_developer_id->saveEntities([$entity]);
+    }
+  }
+
+  /**
+   * Returns the apps by owner cache that belongs to the a developer by UUID.
+   *
+   * If $this->owner is an email, this method tries to return the app by owner
+   * cache that belongs to the same developer by its UUID. For this, it tries
+   * to load the developer entity from the developer cache by email. If the
+   * developer could not be found by email then it does not load the developer
+   * from Apigee Edge because that could increase the amount of API calls and
+   * what we try to achieve here is its opposite.
+   *
+   * @return \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByAppOwnerInterface|null
+   *   The app cache by owner instance that belongs to the developer by its
+   *   developer id (UUID), or null if developer's UUID could not be determined
+   *   without loading the developer from Apigee Edge by email.
+   */
+  private function getAppsByOwnerCacheByDeveloperId(): ?AppCacheByAppOwnerInterface {
+    if ($this->emailValidator->isValid($this->owner)) {
+      /** @var \Apigee\Edge\Api\Management\Entity\DeveloperInterface|null $developer */
+      $developer = $this->developerCache->getEntity($this->owner);
+      if ($developer) {
+        return $this->appCacheByOwnerFactory->getAppCache($developer->getDeveloperId());
+      }
+
+      return NULL;
+    }
+    else {
+      return $this->defaultAppCacheByOwner;
     }
   }
 
