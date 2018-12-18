@@ -18,13 +18,29 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Entity\Storage;
-
-use Drupal\Core\Entity\EntityStorageInterface;
+namespace Drupal\apigee_edge\Entity\Controller\Cache;
 
 /**
- * Base interface for Apigee Edge entity storage implementations.
+ * Base definition of the app name cache service by app owner.
  */
-interface EdgeEntityStorageInterface extends EntityStorageInterface {
+final class AppNameCacheByOwnerFactory implements AppNameCacheByOwnerFactoryInterface {
+
+  /**
+   * Internal cache for created instances.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\EntityIdCacheInterface[]
+   */
+  private $instances = [];
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getAppNameCache(string $owner): EntityIdCacheInterface {
+    if (!isset($this->instances[$owner])) {
+      $this->instances[$owner] = new EntityIdCache();
+    }
+
+    return $this->instances[$owner];
+  }
 
 }

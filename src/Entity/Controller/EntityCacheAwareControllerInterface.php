@@ -18,13 +18,21 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Entity\Storage;
+namespace Drupal\apigee_edge\Entity\Controller;
 
-use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface;
 
 /**
- * Base interface for Apigee Edge entity storage implementations.
+ * Base interface for those controllers that uses an entity cache.
  */
-interface EdgeEntityStorageInterface extends EntityStorageInterface {
+interface EntityCacheAwareControllerInterface {
+
+  /**
+   * Returns the entity cache used by the controller.
+   *
+   * @return \Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface
+   *   The entity cache.
+   */
+  public function entityCache(): EntityCacheInterface;
 
 }

@@ -18,13 +18,13 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Entity\Storage;
-
-use Drupal\Core\Entity\EntityStorageInterface;
+namespace Drupal\apigee_edge\Entity\Controller\Cache;
 
 /**
- * Base interface for Apigee Edge entity storage implementations.
+ * Generates an app cache for apps of a company or a developer.
+ *
+ * @see \Drupal\apigee_edge\Entity\Controller\Cache\GeneralAppCacheByAppOwnerInterface
  */
-interface EdgeEntityStorageInterface extends EntityStorageInterface {
+interface GeneralAppCacheByAppOwnerFactoryInterface extends AppCacheByOwnerFactoryInterface {
 
 }

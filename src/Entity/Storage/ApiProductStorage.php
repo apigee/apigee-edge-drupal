@@ -20,7 +20,9 @@
 namespace Drupal\apigee_edge\Entity\Storage;
 
 use Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\CachedManagementApiEdgeEntityControllerProxy;
 use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\ManagementApiEdgeEntityControllerProxy;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
@@ -80,7 +82,10 @@ class ApiProductStorage extends EdgeEntityStorageBase implements ApiProductStora
   /**
    * {@inheritdoc}
    */
-  public function entityController(): EdgeEntityControllerInterface {
+  protected function entityController(): EdgeEntityControllerInterface {
+    if ($this->apiProductController instanceof EntityCacheAwareControllerInterface) {
+      return new CachedManagementApiEdgeEntityControllerProxy($this->apiProductController);
+    }
     return new ManagementApiEdgeEntityControllerProxy($this->apiProductController);
   }
 

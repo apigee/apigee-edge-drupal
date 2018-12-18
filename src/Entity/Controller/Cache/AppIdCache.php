@@ -18,13 +18,28 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Entity\Storage;
+namespace Drupal\apigee_edge\Entity\Controller\Cache;
 
-use Drupal\Core\Entity\EntityStorageInterface;
+use Apigee\Edge\Entity\EntityInterface;
 
 /**
- * Base interface for Apigee Edge entity storage implementations.
+ * Default app id cache implementation for app controller.
+ *
+ * This cache stores app ids (UUIDs), app names must not be saved to this
+ * cache.
+ *
+ * AppControllerInterface::getEntityIds() returns app ids (UUIDs).
+ *
+ * @see \Apigee\Edge\Api\Management\Controller\AppControllerInterface
  */
-interface EdgeEntityStorageInterface extends EntityStorageInterface {
+final class AppIdCache extends EntityIdCache implements EntityIdCacheInterface {
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getEntityId(EntityInterface $entity): string {
+    /** @var \Apigee\Edge\Api\Management\Entity\AppInterface $entity */
+    return $entity->getAppId();
+  }
 
 }

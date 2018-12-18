@@ -20,7 +20,7 @@
 
 namespace Drupal\apigee_edge\Entity\Controller;
 
-use Drupal\apigee_edge\Entity\Controller\Cache\DeveloperAppCacheFactoryInterface;
+use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -44,11 +44,11 @@ final class DeveloperAppCredentialControllerFactory implements DeveloperAppCrede
   private $connector;
 
   /**
-   * The developer app cache factory service.
+   * The app cache by owner factory service.
    *
-   * @var \Drupal\apigee_edge\Entity\Controller\Cache\DeveloperAppCacheFactoryInterface
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface
    */
-  private $appCacheFactory;
+  private $appCacheByOwnerFactory;
 
   /**
    * The event dispatcher service.
@@ -62,15 +62,15 @@ final class DeveloperAppCredentialControllerFactory implements DeveloperAppCrede
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
    *   The SDK connector service.
-   * @param \Drupal\apigee_edge\Entity\Controller\Cache\DeveloperAppCacheFactoryInterface $app_cache_factory
-   *   The developer app cache factory service.
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface $app_cache_by_owner_factory
+   *   The app cache by owner factory service.
    * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
    *   The event dispatcher service.
    */
-  public function __construct(SDKConnectorInterface $connector, DeveloperAppCacheFactoryInterface $app_cache_factory, EventDispatcherInterface $event_dispatcher) {
+  public function __construct(SDKConnectorInterface $connector, AppCacheByOwnerFactoryInterface $app_cache_by_owner_factory, EventDispatcherInterface $event_dispatcher) {
     $this->connector = $connector;
     $this->eventDispatcher = $event_dispatcher;
-    $this->appCacheFactory = $app_cache_factory;
+    $this->appCacheByOwnerFactory = $app_cache_by_owner_factory;
   }
 
   /**
@@ -78,7 +78,7 @@ final class DeveloperAppCredentialControllerFactory implements DeveloperAppCrede
    */
   public function developerAppCredentialController(string $owner, string $appName): DeveloperAppCredentialControllerInterface {
     if (!isset($this->instances[$owner][$appName])) {
-      $this->instances[$owner][$appName] = new DeveloperAppCredentialController($owner, $appName, $this->connector, $this->appCacheFactory->developerAppCache($owner), $this->eventDispatcher);
+      $this->instances[$owner][$appName] = new DeveloperAppCredentialController($owner, $appName, $this->connector, $this->appCacheByOwnerFactory, $this->eventDispatcher);
     }
 
     return $this->instances[$owner][$appName];

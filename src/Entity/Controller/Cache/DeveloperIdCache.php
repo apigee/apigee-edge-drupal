@@ -18,13 +18,26 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Entity\Storage;
+namespace Drupal\apigee_edge\Entity\Controller\Cache;
 
-use Drupal\Core\Entity\EntityStorageInterface;
+use Apigee\Edge\Entity\EntityInterface;
 
 /**
- * Base interface for Apigee Edge entity storage implementations.
+ * Default developer id cache implementation.
+ *
+ * It stores developer email addresses, developer ids (UUIDs) should not
+ * be saved to this cache.
+ *
+ * DeveloperControllerInterface::getEntityIds() returns email addresses.
  */
-interface EdgeEntityStorageInterface extends EntityStorageInterface {
+class DeveloperIdCache extends EntityIdCache implements EntityIdCacheInterface {
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getEntityId(EntityInterface $entity): string {
+    /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $entity */
+    return $entity->getEmail();
+  }
 
 }

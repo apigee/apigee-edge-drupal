@@ -21,7 +21,9 @@ namespace Drupal\apigee_edge\Entity\Storage;
 
 use Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface;
 use Apigee\Edge\Exception\ApiException;
+use Drupal\apigee_edge\Entity\Controller\CachedManagementApiEdgeEntityControllerProxy;
 use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\ManagementApiEdgeEntityControllerProxy;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\Cache;
@@ -84,7 +86,10 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
   /**
    * {@inheritdoc}
    */
-  public function entityController(): EdgeEntityControllerInterface {
+  protected function entityController(): EdgeEntityControllerInterface {
+    if ($this->developerController instanceof EntityCacheAwareControllerInterface) {
+      return new CachedManagementApiEdgeEntityControllerProxy($this->developerController);
+    }
     return new ManagementApiEdgeEntityControllerProxy($this->developerController);
   }
 

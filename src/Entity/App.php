@@ -128,7 +128,7 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
     // Get app credentials from the shared app cache if available.
     /** @var \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface $app_cache */
     $app_cache = \Drupal::service('apigee_edge.controller.cache.apps');
-    $app = $app_cache->getAppFromCacheByAppId($this->getAppId());
+    $app = $app_cache->getEntity($this->getAppId());
     if ($app === NULL) {
       // App has not found in cache, we have to load it from Apigee Edge.
       /** @var \Drupal\apigee_edge\Entity\Controller\AppControllerInterface $app_controller */

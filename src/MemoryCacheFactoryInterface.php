@@ -18,13 +18,24 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Entity\Storage;
+namespace Drupal\apigee_edge;
 
-use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
 
 /**
- * Base interface for Apigee Edge entity storage implementations.
+ * Base definition of the memory cache factory service.
  */
-interface EdgeEntityStorageInterface extends EntityStorageInterface {
+interface MemoryCacheFactoryInterface {
+
+  /**
+   * Gets a memory cache backend class for a given cache bin.
+   *
+   * @param string $bin
+   *   The cache bin for which a cache backend object should be returned.
+   *
+   * @return \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface
+   *   The memory cache backend object associated with the specified bin.
+   */
+  public function get($bin): MemoryCacheInterface;
 
 }

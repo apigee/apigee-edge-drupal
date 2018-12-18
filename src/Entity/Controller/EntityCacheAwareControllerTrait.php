@@ -18,22 +18,26 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Entity\Controller\Cache;
+namespace Drupal\apigee_edge\Entity\Controller;
+
+use Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface;
 
 /**
- * Base definition of developer app cache factory.
+ * Trait for those entity controllers that supports entity caches.
+ *
+ * This is the trait version of the EntityCacheAwareControllerInterface. This
+ * helps to depend on the entityCache() method in traits.
+ *
+ * @see \Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface
  */
-interface DeveloperAppCacheFactoryInterface {
+trait EntityCacheAwareControllerTrait {
 
   /**
-   * Returns a preconfigured developer app cache.
+   * Returns the entity cache used by the controller.
    *
-   * @param string $owner
-   *   Email address or developer id (uuid) of a developer.
-   *
-   * @return \Drupal\apigee_edge\Entity\Controller\Cache\DeveloperAppCacheInterface
-   *   The developer app cache of the owner.
+   * @return \Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface
+   *   The entity cache.
    */
-  public function developerAppCache(string $owner) : DeveloperAppCacheInterface;
+  abstract public function entityCache(): EntityCacheInterface;
 
 }
