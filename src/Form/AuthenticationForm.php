@@ -298,7 +298,7 @@ class AuthenticationForm extends ConfigFormBase {
     }
 
     // Test the connection.
-    if (!empty($test_key->getKeyValue())) {
+    if (empty($form_state->getErrors()) && !empty($test_key->getKeyValue())) {
       /** @var \Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType $test_key_type */
       $test_auth_type = $test_key->getKeyType()->getAuthenticationType($test_key);
       try {
@@ -308,9 +308,7 @@ class AuthenticationForm extends ConfigFormBase {
           // Clear existing token data.
           $this->oauthTokenStorage->removeToken();
         }
-        // TODO If email field contains an invalid email address
-        // (form validation fails) then "Send request" should not send an API
-        // request.
+        // Test the connection.
         $this->sdkConnector->testConnection($test_key);
         $this->messenger()->addStatus($this->t('Connection successful.'));
       }
