@@ -22,7 +22,6 @@ namespace Drupal\apigee_edge\Form;
 use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
-use Drupal\apigee_edge\Exception\AuthenticationKeyValueMalformedException;
 use Drupal\apigee_edge\OauthTokenStorageInterface;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
@@ -322,7 +321,7 @@ class AuthenticationForm extends ConfigFormBase {
 
         // Display debug information.
         $form['debug']['#access'] = $form['debug']['debug_text']['#access'] = TRUE;
-        $form['debug']['debug_text']['#value'] = $this->createDebugText($exception, $test_key, NULL);
+        $form['debug']['debug_text']['#value'] = $this->createDebugText($exception, $test_key);
       }
       finally {
         if ($test_auth_type === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
@@ -491,62 +490,47 @@ class AuthenticationForm extends ConfigFormBase {
    *   The thrown exception during form validation.
    * @param \Drupal\key\KeyInterface $key
    *   The used key during form validation.
-   * @param \Drupal\key\KeyInterface|null $key_token
-   *   The user token key during form validation.
    *
    * @return string
    *   The debug text to be displayed.
    */
-  protected function createDebugText(\Exception $exception, KeyInterface $key, ?KeyInterface $key_token): string {
-    /** @var \Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType $key_type */
+  protected function createDebugText(\Exception $exception, KeyInterface $key): string {
     $key_type = $key->getKeyType();
 
-    $credentials = [];
-
-    try {
-      $credentials['endpoint'] = $key_type->getEndpoint($key);
-      $credentials['organization'] = $key_type->getOrganization($key);
-      $credentials['username'] = $key_type->getUsername($key);
-    }
-    catch (AuthenticationKeyValueMalformedException $exception) {
-      // Could not read the credentials because the key value storage is
-      // malformed.
-    }
+    $credentials = !($key_type instanceof EdgeKeyTypeInterface) ? [] : [
+      'endpoint' => $key_type->getEndpoint($key),
+      'organization' => $key_type->getOrganization($key),
+      'username' => $key_type->getUsername($key),
+    ];
 
     $keys = [
-      'key_type' => get_class($key_type),
+      'auth_type' => ($key_type instanceof EdgeKeyTypeInterface) ? $key_type->getAuthenticationType($key) : 'invalid credentials',
       'key_provider' => get_class($key->getKeyProvider()),
     ];
 
-    // TODO
-    // * Remove deprecated code.
-    // * Fix implementation of this method.
-    // * Provide debug message for OauthTokenStorageException.
-    if ($key_type instanceof OauthKeyType) {
-      /** @var \Drupal\apigee_edge\Plugin\KeyType\OauthKeyType $key_type */
+    if (!empty($credentials) && $keys['auth_type'] === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
       $credentials['authorization_server'] = $key_type->getAuthorizationServer($key);
       $credentials['client_id'] = $key_type->getClientId($key);
       $credentials['client_secret'] = $key_type->getClientSecret($key) === Oauth::DEFAULT_CLIENT_SECRET ? Oauth::DEFAULT_CLIENT_SECRET : '***client-secret***';
-
-      $keys['key_token_type'] = get_class($key_token->getKeyType());
-      $keys['key_token_provider'] = get_class($key_token->getKeyProvider());
     }
 
-    $exception_text = (string) $exception;
-    $exception_text = preg_replace('/(.*refresh_token=)([^\&\r\n]+)(.*)/', '$1***refresh-token***$3', $exception_text);
-    $exception_text = preg_replace('/(.*mfa_token=)([^\&\r\n]+)(.*)/', '$1***mfa-token***$3', $exception_text);
-    $exception_text = preg_replace('/(.*password=)([^\&\r\n]+)(.*)/', '$1***password***$3', $exception_text);
-    $exception_text = preg_replace('/(Authorization: (Basic|Bearer) ).*/', '$1***credentials***', $exception_text);
+    // Sanitize exception text.
+    $exception_text = preg_replace([
+      '/(.*refresh_token=)([^\&\r\n]+)(.*)/',
+      '/(.*mfa_token=)([^\&\r\n]+)(.*)/',
+      '/(.*password=)([^\&\r\n]+)(.*)/',
+      '/(Authorization: (Basic|Bearer) ).*/',
+    ], [
+      '$1***refresh-token***$3',
+      '$1***mfa-token***$3',
+      '$1***password***$3',
+      '$1***credentials***',
+    ], (string) $exception);
 
-    $text = json_encode($credentials, JSON_PRETTY_PRINT) .
-      PHP_EOL .
-      json_encode($keys, JSON_PRETTY_PRINT) .
-      PHP_EOL .
-      json_encode($this->config('apigee_edge.client')->get(), JSON_PRETTY_PRINT) .
-      PHP_EOL .
+    return json_encode($credentials, JSON_PRETTY_PRINT) . PHP_EOL .
+      json_encode($keys, JSON_PRETTY_PRINT) . PHP_EOL .
+      json_encode($this->config('apigee_edge.client')->get(), JSON_PRETTY_PRINT) . PHP_EOL .
       $exception_text;
-
-    return $text;
   }
 
   /**
