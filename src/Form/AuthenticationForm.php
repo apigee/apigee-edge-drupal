@@ -347,12 +347,26 @@ class AuthenticationForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // Get the processed value from the form state.
     $processed_submitted = $form_state->get('processed_submitted');
+    $active_key = $this->activeKey;
 
-    if (!empty($processed_submitted) && $this->keyIsWritable($this->activeKey)) {
+    if (!empty($processed_submitted) && $this->keyIsWritable($active_key)) {
       // Set the active key's value.
-      $this->activeKey
+      $active_key
         ->getKeyProvider()
-        ->setKeyValue($this->activeKey, $processed_submitted);
+        ->setKeyValue($active_key, $processed_submitted);
+    }
+
+    // The only time `submitForm` gets called is when the key provider is
+    // writable so submitted values should be available here. The only time the
+    // values wouldn't be available is if the token input type was changed.
+    $auth_type = $form_state->getUserInput()['key_input_settings']['auth_type'] ?? FALSE;
+    if ($auth_type === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
+      // Make sure we don't try to re-use old tokens.
+      $this->oauthTokenStorage->removeToken();
+    }
+    else {
+      // Since OAUTH isn't being used clean up by removing the storage file.
+      $this->oauthTokenStorage->removeTokenFile();
     }
 
     parent::submitForm($form, $form_state);

@@ -200,7 +200,14 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
    * {@inheritdoc}
    */
   public function removeToken(): void {
-    $this->saveToken([]);
+    // Prevents a token file from being created if it doesn't already exist.
+    if (file_exists($this->tokenFilePath)) {
+      $this->saveToken([]);
+    }
+    else {
+      // Removes cached token data.
+      unset($this->tokenData);
+    }
   }
 
   /**

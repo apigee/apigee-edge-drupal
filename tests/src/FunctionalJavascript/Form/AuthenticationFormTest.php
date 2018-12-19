@@ -21,6 +21,7 @@ namespace Drupal\Tests\apigee_edge\FunctionalJavascript\Form;
 
 use Apigee\Edge\ClientInterface;
 use Drupal\apigee_edge\Form\AuthenticationForm;
+use Drupal\apigee_edge\OauthTokenFileStorage;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Url;
 use Drupal\key\Entity\Key;
@@ -155,6 +156,11 @@ class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     // Test the connection with basic auth.
     $this->assertSendRequestMessage('.messages--status', 'Connection successful.');
     $this->assertEmpty($this->cssSelect('details[data-drupal-selector="edit-debug"]'));
+    // Make sure the token file is removed when switching to basic auth.
+    $token_file_path = \Drupal::service('file_system')->realpath(OauthTokenFileStorage::DEFAULT_DIRECTORY . '/oauth.dat');
+    $this->assertTrue(file_exists($token_file_path));
+    $page->pressButton('Save configuration');
+    $this->assertFalse(file_exists($token_file_path));
 
     /* TEST INVALID PASSWORD */
     // Change the password.
