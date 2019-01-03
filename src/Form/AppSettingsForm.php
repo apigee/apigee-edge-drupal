@@ -31,7 +31,7 @@ use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides configuration form builder for changing app settings.
+ * Configuration form builder for general app settings.
  */
 class AppSettingsForm extends ConfigFormBase {
 
@@ -126,7 +126,7 @@ class AppSettingsForm extends ConfigFormBase {
     $form['api_product'] = [
       '#id' => 'api_product',
       '#type' => 'details',
-      '#title' => $this->t('API Product'),
+      '#title' => $this->t('API product association settings'),
       '#open' => TRUE,
     ];
 
@@ -160,7 +160,7 @@ class AppSettingsForm extends ConfigFormBase {
 
     $form['api_product']['default_api_product_multiple_container']['default_api_product_multiple'] = [
       '#type' => 'checkboxes',
-      '#title' => $this->t('Default API Product'),
+      '#title' => $common_app_settings->get('multiple_products') ? $this->t('Default API products') : $this->t('Default API product'),
       '#options' => $product_list,
       '#default_value' => $default_products,
       '#required' => $form_state->getValue('user_select') === NULL ? !(bool) $common_app_settings->get('user_select') : !(bool) $form_state->getValue('user_select'),

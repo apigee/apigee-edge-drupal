@@ -52,7 +52,7 @@ class AppCallbackUrlSettingsForm extends ConfigFormBase {
 
     $form['callback_url'] = [
       '#type' => 'details',
-      '#title' => $this->t('Callback URL settings'),
+      '#title' => $this->t('Callback URL validation settings'),
       '#open' => TRUE,
       '#tree' => TRUE,
     ];
