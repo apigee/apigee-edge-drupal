@@ -56,4 +56,12 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateEditFormForDe
     return $entity->toUrl('collection-by-developer');
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function apiProductList(): array {
+    // Call apiProductList() from parent instead of AppCreateFormTrait.
+    return parent::apiProductList();
+  }
+
 }

@@ -31,7 +31,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class DeveloperAppCreateForm extends AppForm {
 
-  use AppCreateFormTrait;
+  use AppCreateFormTrait {
+    apiProductList as private privateApiProductList;
+  }
   use DeveloperAppFormTrait;
 
   /**
@@ -96,7 +98,7 @@ class DeveloperAppCreateForm extends AppForm {
       $form['warning_message'] = [
         '#theme' => 'status_messages',
         '#message_list' => [
-          'warning' => [$this->t('The list of @api_products above is not limited to the selected owner by the API product access control settings here, but only <strong>public</strong> API products are visible in this list.', [
+          'warning' => [$this->t('The list of @api_products above is not limited to the selected owner by the API product access control settings here. <strong>All @api_products are visible here from Apigee Edge.</strong>', [
             '@api_products' => $this->entityTypeManager->getDefinition('api_product')->getPluralLabel(),
           ]),
           ],
@@ -113,6 +115,17 @@ class DeveloperAppCreateForm extends AppForm {
    */
   protected function appCredentialController(string $owner, string $app_name): AppCredentialControllerInterface {
     return $this->appCredentialControllerFactory->developerAppCredentialController($owner, $app_name);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function apiProductList(): array {
+    if ($this->currentUser()->hasPermission('bypass api product access control')) {
+      return \Drupal::entityTypeManager()->getStorage('api_product')->loadMultiple();
+    }
+
+    return $this->privateApiProductList();
   }
 
 }

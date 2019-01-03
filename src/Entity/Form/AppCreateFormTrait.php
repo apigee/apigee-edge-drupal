@@ -127,7 +127,7 @@ trait AppCreateFormTrait {
    */
   protected function apiProductList(): array {
     // For backward-compatibility and security reasons only return public
-    // API products here.
+    // API products by default.
     return array_filter(\Drupal::entityTypeManager()->getStorage('api_product')->loadMultiple(), function (ApiProductInterface $api_product) {
       // Attribute may not exists but in that case it means public.
       return ($api_product->getAttributeValue('access') ?? 'public') === 'public';
