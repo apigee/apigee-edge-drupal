@@ -207,6 +207,20 @@ key.provider.apigee_edge_environment_variables:
 key.provider.apigee_edge_private_file:
   type: sequence
 
+field.formatter.settings.status_property:
+  type: mapping
+  label: 'Status property settings'
+  mapping:
+    indicator_status_ok:
+      type: string
+      label: 'Indicator status: OK'
+    indicator_status_warning:
+      type: string
+      label: 'Indicator status: Warning'
+    indicator_status_error:
+      type: string
+      label: 'Indicator status: Error'
+
 # Dangerous settings. Enabling these might lead to data corruption.
 #
 # Mostly used for testing, or in specific scenarios.

@@ -60,7 +60,10 @@ content:
     type: status_property
     weight: 1
     region: content
-    settings: {  }
+    settings:
+      indicator_status_ok: approved
+      indicator_status_warning: ''
+      indicator_status_error: revoked
     third_party_settings: {  }
 hidden:
   appFamily: true

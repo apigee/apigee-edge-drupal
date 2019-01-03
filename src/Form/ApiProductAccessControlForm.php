@@ -29,7 +29,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides a form for configuring visible API products in Drupal.
  */
-class ProductAccessControlForm extends ConfigFormBase {
+class ApiProductAccessControlForm extends ConfigFormBase {
 
   /**
    * The entity type manager.

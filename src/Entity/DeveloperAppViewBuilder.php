@@ -20,29 +20,28 @@
 
 namespace Drupal\apigee_edge\Entity;
 
-use Apigee\Edge\Api\Management\Entity\AppInterface as EdgeAppInterface;
-
 /**
- * Defines an interface for App entity objects.
+ * Developer app entity specific view builder.
  */
-interface AppInterface extends EdgeAppInterface, AttributesAwareFieldableEdgeEntityBaseInterface {
+class DeveloperAppViewBuilder extends AppViewBuilder {
+
+  use DeveloperStatusCheckTrait;
 
   /**
-   * Returns the id of the app owner from the app entity.
-   *
-   * Return value could be either the developer id or the company name.
-   *
-   * @return string
-   *   Id of the app owner, or null if the app is new.
+   * {@inheritdoc}
    */
-  public function getAppOwner(): ?string;
-
-  /**
-   * Sets the app owner's property value on an app.
-   *
-   * @param string $owner
-   *   The owner of the app. Developer id (uuid) or team (company) name.
-   */
-  public function setAppOwner(string $owner): void;
+  public function build(array $build) {
+    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app */
+    $developer_app = $build["#{$this->entityTypeId}"];
+    // Display an error message on the top of the page if current developer is
+    // not active.
+    // TODO Should we add this error message to the render array instead
+    // and with that allow end-users the reposition it on the page?
+    // (Just like the callback url warning.)
+    if ($build['#view_mode'] === 'full') {
+      $this->checkDeveloperStatus($developer_app->getOwnerId());
+    }
+    return parent::build($build);
+  }
 
 }

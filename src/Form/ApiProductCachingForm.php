@@ -19,15 +19,10 @@
 
 namespace Drupal\apigee_edge\Form;
 
-use Drupal\Core\Form\ConfigFormBase;
-use Drupal\Core\Form\FormStateInterface;
-
 /**
  * Provides a form for changing API Product caching related settings.
  */
-class ProductCachingForm extends ConfigFormBase {
-
-  use CachedEntityConfigurationFormAwareTrait;
+class ApiProductCachingForm extends EdgeEntityCacheConfigFormBase {
 
   /**
    * {@inheritdoc}
@@ -43,31 +38,6 @@ class ProductCachingForm extends ConfigFormBase {
    */
   public function getFormId() {
     return 'apigee_edge_api_product_caching_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $form += $this->addCacheConfigElements($form, $form_state);
-
-    return parent::buildForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->saveCacheConfiguration($form, $form_state);
-
-    parent::submitForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getConfigNameWithCacheSettings(): string {
-    return 'apigee_edge.api_product_settings';
   }
 
   /**

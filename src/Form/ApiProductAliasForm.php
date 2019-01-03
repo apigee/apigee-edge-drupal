@@ -20,31 +20,45 @@
 namespace Drupal\apigee_edge\Form;
 
 /**
- * Provides a form for changing Developer App caching related settings.
+ * Provides a form for changing API Product entity labels.
  */
-class DeveloperAppCachingForm extends EdgeEntityCacheConfigFormBase {
+class ApiProductAliasForm extends EdgeEntityAliasConfigFormBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getFormId() {
+    return 'apigee_edge_api_product_alias_form';
+  }
 
   /**
    * {@inheritdoc}
    */
   protected function getEditableConfigNames() {
     return [
-      'apigee_edge.developer_app_settings',
+      'apigee_edge.api_product_settings',
     ];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
-    return 'apigee_edge_app_caching_form';
+  protected function entityTypeName(): string {
+    return $this->t('API Product');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getEntityType(): string {
-    return 'developer_app';
+  protected function originalSingularLabel(): string {
+    return $this->t('API');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function originalPluralLabel(): string {
+    return $this->t('APIs');
   }
 
 }

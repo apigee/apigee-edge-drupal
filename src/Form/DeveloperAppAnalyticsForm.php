@@ -23,7 +23,6 @@ use Apigee\Edge\Api\Management\Controller\StatsController;
 use Apigee\Edge\Api\Management\Query\StatsQuery;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
-use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Utility\Crypt;
@@ -31,8 +30,6 @@ use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\Markup;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\TempStore\PrivateTempStoreFactory;
 use Drupal\Core\Url;
 use League\Period\Period;
@@ -42,7 +39,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Displays the analytics page of a developer app on the UI.
  */
-class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitleInterface {
+class DeveloperAppAnalyticsForm extends FormBase {
 
   use DeveloperStatusCheckTrait;
 
@@ -437,15 +434,6 @@ class DeveloperAppAnalyticsForm extends FormBase implements DeveloperAppPageTitl
       ],
     ]);
     $form_state->setRedirectUrl(Url::fromUri('internal:' . $url));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getPageTitle(RouteMatchInterface $route_match): string {
-    return $this->t('Analytics of @name', [
-      '@name' => Markup::create($route_match->getParameter('developer_app')->label()),
-    ]);
   }
 
 }

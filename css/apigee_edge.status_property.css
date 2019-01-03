@@ -23,18 +23,17 @@
   display: inline-block;
   vertical-align: top;
   color: white;
+  background-color: #555;
 }
 
-.wrapper--status.approved,
-.wrapper--status.enabled {
+.wrapper--status.indicator-status-ok {
   background-color: green;
 }
 
-.wrapper--status.revoked,
-.wrapper--status.disabled {
-  background-color: red;
+.wrapper--status.indicator-status-warning {
+  background-color: orange;
 }
 
-.wrapper--status.pending {
-  background-color: orange;
+.wrapper--status.indicator-status-error {
+  background-color: red;
 }

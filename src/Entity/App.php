@@ -157,16 +157,6 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
   }
 
   /**
-   * Returns the id of the app owner from the app entity.
-   *
-   * Return value could be either the developer id or the company name.
-   *
-   * @return string
-   *   Id of the app owner.
-   */
-  abstract protected function getAppOwner(): string;
-
-  /**
    * {@inheritdoc}
    */
   public function getDescription(): ?string {

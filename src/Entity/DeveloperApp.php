@@ -39,6 +39,7 @@ use Drupal\user\UserInterface;
  *     singular = "@count Developer App",
  *     plural = "@count Developer Apps",
  *   ),
+ *   config_with_labels = "apigee_edge.developer_app_settings",
  *   handlers = {
  *     "storage" = "Drupal\apigee_edge\Entity\Storage\DeveloperAppStorage",
  *     "access" = "Drupal\apigee_edge\Entity\EdgeEntityAccessControlHandler",
@@ -55,6 +56,10 @@ use Drupal\user\UserInterface;
  *       "analytics_for_developer" = "Drupal\apigee_edge\Form\DeveloperAppAnalyticsFormForDeveloper",
  *     },
  *     "list_builder" = "Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder",
+ *     "route_provider" = {
+ *        "html" = "Drupal\apigee_edge\Entity\DeveloperAppRouteProvider",
+ *     },
+ *     "view_builder" = "Drupal\apigee_edge\Entity\DeveloperAppViewBuilder",
  *   },
  *   links = {
  *     "canonical" = "/developer-apps/{developer_app}",
@@ -220,8 +225,15 @@ class DeveloperApp extends App implements DeveloperAppInterface {
   /**
    * {@inheritdoc}
    */
-  protected function getAppOwner(): string {
+  public function getAppOwner(): ?string {
     return $this->getDeveloperId();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setAppOwner(string $owner): void {
+    $this->decorated->setDeveloperId($owner);
   }
 
   /**

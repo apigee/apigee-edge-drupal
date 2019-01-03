@@ -150,10 +150,10 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
     $this->clickLink('Delete');
     $this->submitForm([], 'Delete');
-    $this->assertSession()->pageTextContains('App name does not match app you are attempting to delete');
+    $this->assertSession()->pageTextContains('The name does not match the app you are attempting to delete.');
 
     $this->submitForm([
-      'id_verification' => $name,
+      'verification_code' => $name,
     ], 'Delete');
 
     $this->assertSession()->pageTextContains("The {$name} app has been deleted.");
@@ -442,7 +442,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    */
   public function testWarningMessagesIfMultipleProductsDisabled() {
     $admin_warning_message = 'Access to multiple API products will be retained until an app is edited and the developer is prompted to confirm a single API Product selection.';
-    $end_user_warning_message = 'Foos status now require selection of a single Bar; multiple Bar selection is no longer supported. Confirm your Bar selection below.';
+    $end_user_warning_message = 'Foos now require selection of a single Bar; multiple Bar selection is no longer supported. Confirm your Bar selection below.';
     $app_settings_url = Url::fromRoute('apigee_edge.settings.app');
 
     // Ensure default configuration.
@@ -513,7 +513,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalPostForm($app_edit_url, ['callbackUrl[0][value]' => 'http://example.com'], 'Save');
     $this->assertSession()->pageTextContains("Callback URL field is not in the right format.");
     $this->drupalPostForm($app_edit_url, ['callbackUrl[0][value]' => 'https://example.com'], 'Save');
-    $this->assertSession()->pageTextContains('App details have been successfully updated.');
+    $this->assertSession()->pageTextContains('App has been successfully updated.');
     $this->assertSession()->pageTextContains('https://example.com');
   }
 
@@ -583,8 +583,6 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->assertEquals('/', $breadcrumb_links[0]->getAttribute('href'));
     $this->assertEquals(Url::fromRoute('entity.user.canonical', ['user' => $this->account->id()])->toString(), $breadcrumb_links[1]->getAttribute('href'));
     $this->assertEquals(Url::fromRoute('entity.developer_app.collection_by_developer', ['user' => $this->account->id()])->toString(), $breadcrumb_links[2]->getAttribute('href'));
-    // Ensure that hook_my_developer_apps_title_alter() works properly.
-    $this->assertStringStartsWith('Foo', $breadcrumb_links[2]->getText());
 
     // Check UID 3 my apps page.
     $this->drupalGet(Url::fromRoute('entity.developer_app.collection_by_developer', ['user' => $user->id()]));
@@ -601,8 +599,6 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->assertEquals('/', $breadcrumb_links[0]->getAttribute('href'));
     $this->assertEquals(Url::fromRoute('entity.user.canonical', ['user' => $user->id()])->toString(), $breadcrumb_links[1]->getAttribute('href'));
     $this->assertEquals(Url::fromRoute('entity.developer_app.collection_by_developer', ['user' => $user->id()])->toString(), $breadcrumb_links[2]->getAttribute('href'));
-    // Ensure that hook_my_developer_apps_title_alter() works properly.
-    $this->assertStringStartsWith('Foo', $breadcrumb_links[2]->getText());
   }
 
 }
