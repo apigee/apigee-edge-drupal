@@ -298,7 +298,10 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
       ->setDisplayConfigurable('view', TRUE)
       ->setLabel(t('Callback URL'));
 
-    $definitions['description']
+    // Do not limit the length of the description because the API does not
+    // limit that either.
+    $definitions['description'] = static::getBaseFieldDefinition('description', 'string_long')
+      ->setSetting('case_sensitive', TRUE)
       ->setDisplayOptions('form', [
         'weight' => 2,
       ])
