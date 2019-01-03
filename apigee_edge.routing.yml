@@ -97,45 +97,53 @@ apigee_edge.settings.product.access_control:
 apigee_edge.settings.app:
   path: '/admin/config/apigee-edge/app-settings'
   defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Apps'
+  requirements:
+    _permission: 'administer apigee edge'
+
+apigee_edge.settings.general_app:
+  path: '/admin/config/apigee-edge/app-settings/general'
+  defaults:
     _form: '\Drupal\apigee_edge\Form\AppSettingsForm'
-    _title: 'App settings'
+    _title: 'General app settings'
   requirements:
     _permission: 'administer apigee edge'
 
-apigee_edge.settings.app.alias:
-  path: '/admin/config/apigee-edge/app-settings/alias'
-  defaults:
-    _form: '\Drupal\apigee_edge\Form\DeveloperAppAliasForm'
-    _title: 'Alias'
-  requirements:
-    _permission: 'administer apigee edge'
-
-apigee_edge.settings.app.credentials:
-  path: '/admin/config/apigee-edge/app-settings/credentials'
-  defaults:
-    _form: '\Drupal\apigee_edge\Form\DeveloperAppCredentialsForm'
-    _title: 'Credentials'
-  requirements:
-    _permission: 'administer apigee edge'
-
-apigee_edge.settings.app.callback_url_validation:
-  path: '/admin/config/apigee-edge/app-settings/callback-url-validation'
+apigee_edge.settings.general_app.callback_url_validation:
+  path: '/admin/config/apigee-edge/app-settings/general/callback-url-validation'
   defaults:
     _form: '\Drupal\apigee_edge\Form\AppCallbackUrlSettingsForm'
     _title: 'Callback URL validation'
   requirements:
     _permission: 'administer apigee edge'
 
-apigee_edge.settings.app.analytics:
-  path: '/admin/config/apigee-edge/app-settings/analytics'
+apigee_edge.settings.general_app.analytics:
+  path: '/admin/config/apigee-edge/app-settings/general/analytics'
   defaults:
-    _form: '\Drupal\apigee_edge\Form\DeveloperAppAnalyticsSettingsForm'
+    _form: '\Drupal\apigee_edge\Form\AppAnalyticsSettingsForm'
     _title: 'Analytics'
   requirements:
     _permission: 'administer apigee edge'
 
-apigee_edge.settings.app.caching:
-  path: '/admin/config/apigee-edge/app-settings/caching'
+apigee_edge.settings.developer_app:
+  path: '/admin/config/apigee-edge/app-settings/developer-apps'
+  defaults:
+    _form: '\Drupal\apigee_edge\Form\DeveloperAppAliasForm'
+    _title: 'Developer App settings'
+  requirements:
+    _permission: 'administer apigee edge'
+
+apigee_edge.settings.developer_app.credentials:
+  path: '/admin/config/apigee-edge/app-settings/developer-apps/credentials'
+  defaults:
+    _form: '\Drupal\apigee_edge\Form\DeveloperAppCredentialsForm'
+    _title: 'Credentials'
+  requirements:
+    _permission: 'administer apigee edge'
+
+apigee_edge.settings.developer_app.caching:
+  path: '/admin/config/apigee-edge/app-settings/developer-apps/caching'
   defaults:
     _form: '\Drupal\apigee_edge\Form\DeveloperAppCachingForm'
     _title: 'Caching'

@@ -113,7 +113,7 @@ trait AppCreateFormTrait {
         ]));
         \Drupal::logger('apigee_edge')
           ->critical('Invalid configuration detected! "Let user select the product(s)" is disabled but the submitted app creation form did contain at least one invalid API product. App creation process has been aborted. Please verify the configuration.<br>API product ids in input: <pre>@input</pre> API Product ids on Apigee Edge: <pre>@existing</pre>', [
-            'link' => Link::fromTextAndUrl($this->t('configuration'), Url::fromRoute('apigee_edge.settings.app'))->toString(),
+            'link' => Link::fromTextAndUrl($this->t('configuration'), Url::fromRoute('apigee_edge.settings.general_app'))->toString(),
             '@input' => print_r($selected_products, TRUE),
             '@existing' => print_r($existing_products, TRUE),
           ]);

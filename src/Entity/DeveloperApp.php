@@ -80,7 +80,7 @@ use Drupal\user\UserInterface;
  *   },
  *   query_class = "Drupal\apigee_edge\Entity\Query\DeveloperAppQuery",
  *   admin_permission = "administer developer_app",
- *   field_ui_base_route = "apigee_edge.settings.app",
+ *   field_ui_base_route = "apigee_edge.settings.developer_app",
  * )
  */
 class DeveloperApp extends App implements DeveloperAppInterface {

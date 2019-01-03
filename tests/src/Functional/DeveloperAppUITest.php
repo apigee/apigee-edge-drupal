@@ -443,7 +443,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   public function testWarningMessagesIfMultipleProductsDisabled() {
     $admin_warning_message = 'Access to multiple API products will be retained until an app is edited and the developer is prompted to confirm a single API Product selection.';
     $end_user_warning_message = 'Foos now require selection of a single Bar; multiple Bar selection is no longer supported. Confirm your Bar selection below.';
-    $app_settings_url = Url::fromRoute('apigee_edge.settings.app');
+    $app_settings_url = Url::fromRoute('apigee_edge.settings.general_app');
 
     // Ensure default configuration.
     $this->config('apigee_edge.common_app_settings')

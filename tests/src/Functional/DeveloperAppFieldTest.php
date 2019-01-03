@@ -253,7 +253,7 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
     ];
 
     // Add fields to developer app.
-    $add_field_path = Url::fromRoute('apigee_edge.settings.app')->toString();
+    $add_field_path = Url::fromRoute('apigee_edge.settings.developer_app')->toString();
     foreach ($fields as $name => $data) {
       $this->fieldUIAddNewField(
         $add_field_path,
