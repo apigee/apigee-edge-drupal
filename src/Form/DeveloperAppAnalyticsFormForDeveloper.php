@@ -19,7 +19,7 @@
 
 namespace Drupal\apigee_edge\Form;
 
-use Drupal\apigee_edge\Entity\DeveloperAppInterface;
+use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
@@ -35,7 +35,8 @@ class DeveloperAppAnalyticsFormForDeveloper extends DeveloperAppAnalyticsForm {
    * different. This way, Drupal's routing system can correctly identify it and
    * pass the parameter from the URL.
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?DeveloperAppInterface $app = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?AppInterface $app = NULL) {
+    // Pass the "app" (!= developer_app) from the route to the parent.
     return parent::buildForm($form, $form_state, $app);
   }
   // @codingStandardsIgnoreEnd
