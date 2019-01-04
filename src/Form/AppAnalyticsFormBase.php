@@ -106,6 +106,7 @@ abstract class AppAnalyticsFormBase extends FormBase {
 
     $form_state->disableRedirect();
     $form['#attached']['library'][] = 'apigee_edge/apigee_edge.analytics';
+    $form['#attributes']['class'][] = 'apigee-edge-app-analytics';
 
     $form['controls'] = [
       '#type' => 'container',

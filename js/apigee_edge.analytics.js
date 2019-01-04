@@ -17,14 +17,14 @@
 
 /**
  * @file
- * Javascript functions related to the Analytics page of developer app entities.
+ * Javascript functions related to the Analytics page of app entities.
  */
 (function ($, Drupal, drupalSettings) {
 
   'use strict';
 
   /**
-   * Draws the developer app analytics chart on the page.
+   * Draws the app analytics chart on the page.
    *
    * Use drupalSettings to pass analytics data, library and visualization options.
    *
@@ -57,7 +57,7 @@
         // Display an error message if the Google Loader API cannot be loaded
         // and stop drawing.
         if (typeof google === 'undefined') {
-          $('.apigee-edge-developer-app-analytics').prepend('<div class="developer-app-analytics--error-message">'+ Drupal.t('Failed to load Google Loader API (https://www.gstatic.com/charts/loader.js).') + '</div>');
+          $('.apigee-edge-app-analytics').prepend('<div class="app-analytics--error-message">'+ Drupal.t('Failed to load Google Loader API (https://www.gstatic.com/charts/loader.js).') + '</div>');
           return;
         }
 
