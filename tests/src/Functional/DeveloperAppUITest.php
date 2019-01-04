@@ -89,7 +89,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function testDeveloperAppLabel() {
-    $this->drupalPostForm('/admin/config/apigee-edge/app-settings/alias', [
+    $this->drupalPostForm(Url::fromRoute('apigee_edge.settings.developer_app'), [
       'entity_label_singular' => 'API',
       'entity_label_plural' => 'APIs',
     ], 'Save configuration');
@@ -224,8 +224,9 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    * @throws \Behat\Mink\Exception\ResponseTextException
    */
   public function testCreateAppWithModifiedCredentialLifetime() {
+    $url = Url::fromRoute('apigee_edge.settings.developer_app.credentials');
     // Change credential lifetime to 10 days from 0.
-    $this->drupalPostForm('/admin/config/apigee-edge/app-settings/credentials', [
+    $this->drupalPostForm($url, [
       'credential_lifetime' => 10,
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('The configuration options have been saved.');
@@ -243,7 +244,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->pageTextMatches('/1 week (2|3) days hence/');
 
     // Change credential lifetime to 0 (Never) days from 10.
-    $this->drupalPostForm('/admin/config/apigee-edge/app-settings/credentials', [
+    $this->drupalPostForm($url, [
       'credential_lifetime' => 0,
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('The configuration options have been saved.');
@@ -552,8 +553,8 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalGet($app_edit_form_for_developer_url);
     $this->assertSession()->fieldValueEquals('callbackUrl[0][value]', $callback_url);
 
-    $this->drupalPostForm('/admin/config/apigee-edge/app-settings/display', ['fields[callbackUrl][region]' => 'hidden'], 'Save');
-    $this->drupalPostForm('/admin/config/apigee-edge/app-settings/form-display', ['fields[callbackUrl][region]' => 'hidden'], 'Save');
+    $this->drupalPostForm(Url::fromRoute('entity.entity_view_display.developer_app.default'), ['fields[callbackUrl][region]' => 'hidden'], 'Save');
+    $this->drupalPostForm(Url::fromRoute('entity.entity_form_display.developer_app.default'), ['fields[callbackUrl][region]' => 'hidden'], 'Save');
 
     $this->drupalGet($app_view_url);
     $this->assertSession()->pageTextNotContains($callback_url_warning_msg);
