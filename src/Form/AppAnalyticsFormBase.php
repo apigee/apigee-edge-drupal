@@ -95,7 +95,7 @@ abstract class AppAnalyticsFormBase extends FormBase {
     // Little sanity check, child classes must set this parameter from route
     // before they call parent.
     if ($app === NULL) {
-      $this->messenger->addError($this->t('Something went wrong.'));
+      $this->messenger()->addError($this->t('Something went wrong.'));
       $this->logger('apigee_edge')
         ->critical('App parameter was missing when the app analytics form got built.');
       return $form;
