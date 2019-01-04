@@ -69,7 +69,8 @@ class EntityControllerCacheTest extends KernelTestBase {
       $this->assertSame($developer, $developer_cache->getEntity($developer->getDeveloperId()));
       $this->assertContains($developer->getEmail(), $developer_id_cache->getIds());
 
-      // Pass an invalid entity id to ensure it does not cause any trouble anymore.
+      // Pass an invalid entity id to ensure it does not cause any trouble
+      // anymore.
       // @see \Drupal\apigee_edge\Entity\Controller\Cache\EntityCache::removeEntities()
       // @see https://www.drupal.org/project/drupal/issues/3017753
       $developer_cache->removeEntities([$developer->getDeveloperId(), $this->getRandomGenerator()->string()]);

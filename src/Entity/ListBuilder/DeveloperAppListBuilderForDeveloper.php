@@ -245,12 +245,12 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder implem
   public function pageTitle(): TranslatableMarkup {
     $account = $this->routeMatch->getParameter('user');
     $args['@developer_app'] = $this->entityTypeManager->getDefinition('developer_app')->getPluralLabel();
-    if ($account && $account->id() != \Drupal::currentUser()->id()) {
+    if ($account && $account->id() != $this->currentUser->id()) {
       $args['@user'] = Markup::create($account->getDisplayName());
-      $title = t('@developer_app of @user', $args);
+      $title = $this->t('@developer_app of @user', $args);
     }
     else {
-      $title = t('My @developer_app', $args);
+      $title = $this->t('My @developer_app', $args);
     }
 
     return $title;
