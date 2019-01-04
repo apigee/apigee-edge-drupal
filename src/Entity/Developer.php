@@ -25,6 +25,7 @@ use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Structure\AttributesProperty;
 use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Utility\Error;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
@@ -56,7 +57,7 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
   /**
    * The decorated SDK entity.
    *
-   * @var \Apigee\Edge\Api\Management\Entity\DeveloperInterface
+   * @var \Apigee\Edge\Api\Management\Entity\Developer
    */
   protected $decorated;
 
@@ -476,6 +477,20 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
     // It make sense to return this as a default label for a developer entity.
     // (Both fields are mandatory.)
     return "{$this->getFirstName()} {$this->getLastName()}";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+    parent::postDelete($storage, $entities);
+    // Ensure that even if $storage:delete() got called with developer email
+    // addresses, all cache entries that refers to the same developer by
+    // its developers id (UUID) also gets invalidated.
+    $developer_ids = array_map(function (Developer $entity) {
+      return $entity->getDeveloperId();
+    }, $entities);
+    $storage->resetCache($developer_ids);
   }
 
 }

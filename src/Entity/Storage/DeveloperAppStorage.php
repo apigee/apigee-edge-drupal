@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge\Entity\Storage;
 
+use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Entity\Controller\AppControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerFactoryInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppEdgeEntityControllerProxy;
@@ -28,7 +29,6 @@ use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Egulias\EmailValidator\EmailValidatorInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -130,18 +130,24 @@ class DeveloperAppStorage extends AppStorage implements DeveloperAppStorageInter
   /**
    * {@inheritdoc}
    */
-  protected function getPersistentCacheTags(EntityInterface $entity) {
-    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $entity */
-    $cacheTags = parent::getPersistentCacheTags($entity);
-    // Add Drupal user id to ensure that when the owner of the app (Drupal user)
-    // is deleted then the cached developer app data is also purged.
-    // (This also invalidates cached app data when a user is updated which
-    // might be even good for us. Create a custom solution if this default
-    // behavior becomes a bottleneck.)
-    if ($entity->getOwnerId()) {
-      $cacheTags[] = "user:{$entity->getOwnerId()}";
+  protected function getCacheTagsByOwner(AppInterface $app): array {
+    // Add developer's UUID to ensure when the owner of the app (developer)
+    // gets deleted then _all_ its cached developer app data gets purged along
+    // with it.
+    $cache_tags = ["developer:{$app->getAppOwner()}"];
+    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $app */
+    // Add the owner of the app (Drupal user id) to ensure when the Drupal user
+    // gets deleted then _all_ its cached developer app data gets purged along
+    // with it. (The additional cache tag by developer id should be enough
+    // though.)
+    // Note: This also invalidates cached app data when a user gets updated
+    // which might be even beneficial for us. Create a custom solution if this
+    // default behavior becomes a bottleneck.
+    if ($app->getOwnerId()) {
+      $cache_tags[] = "user:{$app->getOwnerId()}";
     }
-    return $cacheTags;
+
+    return $cache_tags;
   }
 
 }

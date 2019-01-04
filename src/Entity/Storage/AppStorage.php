@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge\Entity\Storage;
 
+use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Entity\Controller\AppControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
 use Drupal\apigee_edge\Entity\FieldableEdgeEntityInterface;
@@ -111,6 +112,15 @@ abstract class AppStorage extends AttributesAwareFieldableEdgeEntityStorageBase 
   }
 
   /**
+   * {@inheritdoc}
+   */
+  final protected function getPersistentCacheTags(EntityInterface $entity) {
+    /** @var \Drupal\apigee_edge\Entity\AppInterface $entity */
+    $cacheTags = parent::getPersistentCacheTags($entity);
+    return array_merge($cacheTags, $this->getCacheTagsByOwner($entity));
+  }
+
+  /**
    * Generates cache tags for an app.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
@@ -119,17 +129,35 @@ abstract class AppStorage extends AttributesAwareFieldableEdgeEntityStorageBase 
    * @return array
    *   Array of cache tags.
    */
-  protected function getPersistentCacheTagsForAppName(EntityInterface $entity) {
+  private function getPersistentCacheTagsForAppName(EntityInterface $entity) {
     /** @var \Drupal\apigee_edge\Entity\AppInterface $entity */
-    $cacheTags = [
+    $cacheTags = array_merge([
       "{$this->entityTypeId}",
       "{$this->entityTypeId}:app_names",
       "{$this->entityTypeId}:{$entity->id()}",
       "{$this->entityTypeId}:{$entity->id()}:app_name",
-    ];
+    ], $this->getCacheTagsByOwner($entity));
 
     return $cacheTags;
   }
+
+  /**
+   * Returns app owner related cache tags for an app.
+   *
+   * These cache tags gets added to the generated app cache entry which ensures
+   * when app's owner gets deleted the related app cache entries gets
+   * invalidated as well.
+   *
+   * @param \Drupal\apigee_edge\Entity\AppInterface $app
+   *   The app entity.
+   *
+   * @return array
+   *   Array of app owner related cache entries.
+   *
+   * @see getPersistentCacheTags()
+   * @see getPersistentCacheTagsForAppName()
+   */
+  abstract protected function getCacheTagsByOwner(AppInterface $app): array;
 
   /**
    * {@inheritdoc}

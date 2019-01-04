@@ -112,18 +112,20 @@ class CacheTest extends ApigeeEdgeFunctionalTestBase {
     $this->userUpdatedTest();
     $this->warmCaches();
     $this->userDeletedTest();
+    $this->developerDeletedTest();
   }
 
   /**
    * Tests that credentials are not cached, but still available if needed.
    */
   protected function credentialsTest() {
-    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $loadedApp */
-    $loadedApp = DeveloperApp::load($this->developerApp->id());
-    $this->assertNotEmpty($loadedApp, 'Developer App loaded');
-
     /** @var \Drupal\apigee_edge_test\Entity\Storage\DeveloperAppStorage $storage */
     $storage = $this->container->get('entity_type.manager')->getStorage('developer_app');
+
+    /** @var \Drupal\apigee_edge\Entity\DeveloperApp $loadedApp */
+    $loadedApp = $storage->load($this->developerApp->id());
+    $this->assertNotEmpty($loadedApp, 'Developer App loaded');
+
     $cached_apps = $storage->getFromCache([$loadedApp->id()]);
     /** @var \Drupal\apigee_edge\Entity\AppInterface $cached_app */
     $cached_app = reset($cached_apps);
@@ -179,7 +181,7 @@ class CacheTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
-   * Tests developer cache invalidation after deleting user.
+   * Tests developer and developer app cache invalidation after user removal.
    */
   protected function userDeletedTest() {
     $this->assertCacheInvalidation([
@@ -190,6 +192,58 @@ class CacheTest extends ApigeeEdgeFunctionalTestBase {
       $this->drupalLogout();
       $this->account->delete();
       $this->account = NULL;
+    });
+  }
+
+  /**
+   * Tests developer & developer app cache invalidation after developer removal.
+   *
+   * Developer apps of a developer must be removed from cache even when a
+   * developer _entity_ gets deleted _programmatically_ (and not the related
+   * Drupal user).
+   */
+  public function developerDeletedTest() {
+    $data = [
+      'firstName' => $this->randomString(),
+      'lastName' => $this->randomString(),
+      'userName' => $this->randomMachineName(),
+    ];
+    $data['email'] = $this->randomMachineName() . ".{$data['userName']}@example.com";
+    /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
+    $developer = Developer::create($data);
+    $developer->save();
+    // Warm up cache.
+    $developer = Developer::load($developer->id());
+    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $developerApp */
+    $developerApp = DeveloperApp::create([
+      'name' => $this->randomMachineName(),
+      'status' => DeveloperApp::STATUS_APPROVED,
+      'developerId' => $developer->uuid(),
+    ]);
+    try {
+      $developerApp->save();
+    }
+    catch (\Exception $e) {
+      $developer->delete();
+      throw $e;
+    }
+    // Warm up cache.
+    $developerApp = DeveloperApp::load($developerApp->id());
+    $this->assertCacheInvalidation([
+      "values:developer:{$developer->id()}",
+      "values:developer:{$developer->uuid()}",
+      // The two above should be the same, so this is just a sanity check.
+      "values:developer_app:{$developerApp->id()}",
+      "values:developer_app:{$developerApp->uuid()}",
+      "app_names:developer_app:{$developer->uuid()}:{$developerApp->getName()}",
+    ], function () use ($developer) {
+      try {
+        // If this fails, it would fail in the teardown as well.
+        $developer->delete();
+      }
+      catch (\Exception $exception) {
+        $this->logException($exception);
+      }
     });
   }
 
@@ -224,17 +278,17 @@ class CacheTest extends ApigeeEdgeFunctionalTestBase {
    *
    * @param array $keys
    *   Cache keys to check.
-   * @param bool $exists
+   * @param bool $should_exist
    *   TRUE if the cache keys should exist.
    */
-  protected function assertKeys(array $keys, bool $exists) {
+  protected function assertKeys(array $keys, bool $should_exist) {
     foreach ($keys as $key) {
       $value = $this->cacheBackend->get($key);
-      if ($exists) {
-        $this->assertNotFalse($value, "Key found: {$key}");
+      if ($should_exist) {
+        $this->assertNotFalse($value, "Key has not been found when it should: {$key}");
       }
       else {
-        $this->assertFalse($value, "Key not found: {$key}");
+        $this->assertFalse($value, "Key found when it should not: {$key}");
       }
     }
   }
