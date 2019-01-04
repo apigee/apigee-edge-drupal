@@ -440,6 +440,14 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
   /**
    * {@inheritdoc}
    */
+  public function uuid() {
+    // Or $this->id().
+    return $this->decorated->getAppId();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function uniqueIdProperties(): array {
     return array_merge(parent::uniqueIdProperties(), ['appId']);
   }
