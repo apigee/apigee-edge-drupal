@@ -285,10 +285,10 @@ class CacheTest extends ApigeeEdgeFunctionalTestBase {
     foreach ($keys as $key) {
       $value = $this->cacheBackend->get($key);
       if ($should_exist) {
-        $this->assertNotFalse($value, "Key has not been found when it should: {$key}");
+        $this->assertNotFalse($value, "Cache key has not found when it should: {$key}");
       }
       else {
-        $this->assertFalse($value, "Key found when it should not: {$key}");
+        $this->assertFalse($value, "Cache key found when it should not: {$key}");
       }
     }
   }

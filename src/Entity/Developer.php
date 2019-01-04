@@ -486,7 +486,7 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
     parent::postDelete($storage, $entities);
     // Ensure that even if $storage:delete() got called with developer email
     // addresses, all cache entries that refers to the same developer by
-    // its developers id (UUID) also gets invalidated.
+    // its developer id (UUID) also gets invalidated.
     $developer_ids = array_map(function (Developer $entity) {
       return $entity->getDeveloperId();
     }, $entities);
