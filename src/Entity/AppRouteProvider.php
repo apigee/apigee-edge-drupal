@@ -53,10 +53,10 @@ class AppRouteProvider extends EdgeEntityRouteProvider {
    *   The generated route, if available.
    */
   protected function getAnalyticsRoute(EntityTypeInterface $entity_type) {
-    if ($entity_type->hasLinkTemplate('analytics')) {
+    if ($entity_type->hasLinkTemplate('analytics') && $entity_type->hasHandlerClass('form', 'analytics')) {
       $entity_type_id = $entity_type->id();
       $route = new Route($entity_type->getLinkTemplate('analytics'));
-      $route->setDefault('_form', DeveloperAppAnalyticsForm::class);
+      $route->setDefault('_form', $entity_type->getFormClass('analytics'));
       $route->setDefault('_title_callback', AppTitleProvider::class . '::analyticsTitle');
       $route->setDefault('entity_type_id', $entity_type_id);
       $route->setRequirement('_entity_access', "{$entity_type_id}.analytics");
