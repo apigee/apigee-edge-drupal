@@ -95,6 +95,10 @@ class EdgeEntityListBuilder extends EntityListBuilder {
   /**
    * Returns a render array with a link to the entity type specific add form.
    *
+   * TODO Should we replace this method with a dynamic local tasks?
+   * Ex.: Bootstrap can transform local tasks links to buttons automatically.
+   * \Drupal\bootstrap\Plugin\Preprocess\MenuLocalAction().
+   *
    * @return array|null
    *   A render array with the add entity link if the user has access to that,
    *   null otherwise.
@@ -107,7 +111,7 @@ class EdgeEntityListBuilder extends EntityListBuilder {
     // Is there a better way for this?
     if ($router->getRouteCollection()->get($route)) {
       $url = Url::fromRoute($route);
-      $url->setOptions(['attributes' => ['class' => 'btn btn-primary']]);
+      $url->setOptions(['attributes' => ['class' => 'button button-action btn btn-primary']]);
       if ($url->access()) {
         $link = Link::fromTextAndUrl(
           $this->t('Add @entity_type', ['@entity_type' => $definition->getLowercaseLabel()]),
