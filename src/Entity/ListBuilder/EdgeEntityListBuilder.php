@@ -23,6 +23,7 @@ namespace Drupal\apigee_edge\Entity\ListBuilder;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -37,7 +38,7 @@ class EdgeEntityListBuilder extends EntityListBuilder {
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  private $entityTypeManager;
+  protected $entityTypeManager;
 
   /**
    * EdgeEntityListBuilder constructor.
@@ -62,6 +63,33 @@ class EdgeEntityListBuilder extends EntityListBuilder {
       $entity_type,
       $container->get('entity.manager')
     );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  final protected function getEntityIds() {
+    $query = $this->buildEntityIdQuery();
+    return $query->execute();
+  }
+
+  /**
+   * Builds an entity query used by entity listing.
+   *
+   * @return \Drupal\Core\Entity\Query\QueryInterface
+   *   The entity query.
+   */
+  protected function buildEntityIdQuery(): QueryInterface {
+    $headers = $this->buildHeader();
+    $query = $this->getStorage()->getQuery()
+      // Provide support for table sorting by default.
+      ->tableSort($headers);
+
+    // Only add the pager if a limit is specified.
+    if ($this->limit) {
+      $query->pager($this->limit);
+    }
+    return $query;
   }
 
   /**
