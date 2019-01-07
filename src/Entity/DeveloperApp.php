@@ -55,7 +55,7 @@ use Drupal\user\UserInterface;
  *       "analytics" = "Drupal\apigee_edge\Form\DeveloperAppAnalyticsForm",
  *       "analytics_for_developer" = "Drupal\apigee_edge\Form\DeveloperAppAnalyticsFormForDeveloper",
  *     },
- *     "list_builder" = "Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder",
+ *     "list_builder" = "Drupal\apigee_edge\Entity\ListBuilder\AppListBuilder",
  *     "view_builder" = "Drupal\apigee_edge\Entity\DeveloperAppViewBuilder",
  *     "route_provider" = {
  *        "html" = "Drupal\apigee_edge\Entity\DeveloperAppRouteProvider",

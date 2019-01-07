@@ -20,7 +20,7 @@
 
 namespace Drupal\apigee_edge\Entity\ListBuilder;
 
-use Drupal\apigee_edge\Entity\DeveloperAppInterface;
+use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
 use Drupal\Component\Utility\Html;
@@ -28,13 +28,13 @@ use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
-use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -42,7 +42,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 /**
  * Lists developer apps of a developer on the UI.
  */
-class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder implements ContainerInjectionInterface {
+class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements ContainerInjectionInterface {
 
   use DeveloperStatusCheckTrait;
 
@@ -61,6 +61,13 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder implem
   private $routeMatch;
 
   /**
+   * Associative array that contains generated CSS entity ids for apps by name.
+   *
+   * @var array
+   */
+  private $appNameCssIdCache = [];
+
+  /**
    * DeveloperAppListBuilderForDeveloper constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -69,14 +76,14 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder implem
    *   The entity type manager.
    * @param \Drupal\Core\Render\RendererInterface $render
    *   The render.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
-   *   Currently logged-in user.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack object.
+   * @param \Drupal\Core\Session\AccountInterface $current_user
+   *   Currently logged-in user.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The route match object.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render, AccountInterface $current_user, RequestStack $request_stack, RouteMatchInterface $route_match) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render, RequestStack $request_stack, AccountInterface $current_user, RouteMatchInterface $route_match) {
     parent::__construct($entity_type, $entity_type_manager, $render, $request_stack);
     $this->currentUser = $current_user;
     $this->routeMatch = $route_match;
@@ -90,8 +97,8 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder implem
       $entity_type,
       $container->get('entity_type.manager'),
       $container->get('renderer'),
-      $container->get('current_user'),
       $container->get('request_stack'),
+      $container->get('current_user'),
       $container->get('current_route_match')
     );
   }
@@ -109,42 +116,18 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder implem
   /**
    * {@inheritdoc}
    */
-  protected function getEntityIds(array $headers = [], UserInterface $user = NULL) {
+  protected function buildEntityIdQuery(): QueryInterface {
+    $query = parent::buildEntityIdQuery();
+    $user = $this->routeMatch->getParameter('user');
     $developerId = $user->get('apigee_edge_developer_id')->value;
     // If developer id can not be retrieved for a Drupal user it means that
     // either there is connection error or the site is out of sync with
     // Apigee Edge.
     if ($developerId === NULL) {
-      throw new DeveloperDoesNotExistException($user->getEmail());
+      throw new DeveloperDoesNotExistException($this->user->getEmail());
     }
-
-    $query = $this->storage->getQuery()
-      ->condition('developerId', $developerId);
-    $query->tableSort($headers);
-    return $query->execute();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function load(array $headers = []) {
-    return [];
-  }
-
-  /**
-   * Load developer apps of a Drupal user.
-   *
-   * @param \Drupal\user\UserInterface $user
-   *   User object.
-   * @param array $headers
-   *   Table headers.
-   *
-   * @return \Drupal\Core\Entity\EntityInterface[]
-   *   Developer apps or an empty array.
-   */
-  protected function loadByUser(UserInterface $user, array $headers = []): array {
-    $entity_ids = $this->getEntityIds($headers, $user);
-    return $this->storage->loadMultiple($entity_ids);
+    $query->condition('developerId', $developerId);
+    return $query;
   }
 
   /**
@@ -167,26 +150,14 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder implem
   /**
    * {@inheritdoc}
    */
-  protected function getAppDetailsLink(DeveloperAppInterface $app) {
-    return $app->toLink(NULL, 'canonical-by-developer');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getUniqueCssIdForAppInfoRow(DeveloperAppInterface $developer_app): string {
+  protected function generateCssIdForApp(AppInterface $app): string {
     // If we are listing the apps of a developer then developer app name is also
-    // unique.
-    return Html::cleanCssIdentifier("{$developer_app->getName()}-info");
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getUniqueCssIdForAppWarningRow(DeveloperAppInterface $developer_app): string {
-    // If we are listing the apps of a developer then developer app name is also
-    // unique.
-    return Html::cleanCssIdentifier("{$developer_app->getName()}-warning");
+    // unique. But this method must return the same CSS id for an app within
+    // the same page request.
+    if (!array_key_exists($app->getName(), $this->appNameCssIdCache)) {
+      $this->appNameCssIdCache[$app->getName()] = Html::getUniqueId($app->getName());
+    }
+    return $this->appNameCssIdCache[$app->getName()];
   }
 
   /**
@@ -205,18 +176,11 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder implem
   /**
    * {@inheritdoc}
    */
-  public function render(UserInterface $user = NULL) {
+  public function render() {
     $build = parent::render();
+    $user = $this->routeMatch->getParameter('user');
     $this->checkDeveloperStatus($user->id());
-
     $build['table']['#empty'] = $this->t('Looks like you do not have any apps. Get started by adding one.');
-
-    foreach ($this->loadByUser($user, $this->buildHeader()) as $entity) {
-      if ($row = $this->buildRow($entity)) {
-        $build['table']['#rows'] += $this->buildRow($entity);
-      }
-    }
-
     return $build;
   }
 
@@ -232,7 +196,7 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder implem
    */
   public function myAppsPage(): RedirectResponse {
     $options['absolute'] = TRUE;
-    $url = Url::fromRoute('entity.developer_app.collection_by_developer', ['user' => \Drupal::currentUser()->id()], $options);
+    $url = Url::fromRoute('entity.developer_app.collection_by_developer', ['user' => $this->currentUser->id()], $options);
     return new RedirectResponse($url->toString(), 302);
   }
 
