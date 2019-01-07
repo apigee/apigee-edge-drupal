@@ -96,15 +96,6 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $user_settings->set('register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL)->save(TRUE);
     $this->developerStorage = $this->container->get('entity_type.manager')->getStorage('developer');
     $this->sdkConnector = $this->container->get('apigee_edge.sdk_connector');
-
-    $name = strtolower($this->randomMachineName());
-    $this->developer = Developer::create([
-      'email' => $name . '@example.com',
-      'userName' => $name,
-      'firstName' => $this->getRandomGenerator()->word(8),
-      'lastName' => $this->getRandomGenerator()->word(8),
-    ]);
-    $this->developer->save();
   }
 
   /**
@@ -112,14 +103,18 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
    */
   protected function tearDown() {
     try {
-      $this->developer->delete();
+      if ($this->developer !== NULL) {
+        $this->developer->delete();
+      }
     }
     catch (\Exception $exception) {
       $this->logException($exception);
     }
     try {
-      $company_controller = new CompanyController($this->sdkConnector->getOrganization(), $this->sdkConnector->getClient());
-      $company_controller->delete($this->company->id());
+      if ($this->company !== NULL) {
+        $company_controller = new CompanyController($this->sdkConnector->getOrganization(), $this->sdkConnector->getClient());
+        $company_controller->delete($this->company->id());
+      }
     }
     catch (\Exception $exception) {
       $this->logException($exception);
@@ -357,8 +352,19 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
    * @see \Drupal\apigee_edge\Entity\Developer::getCompanies()
    */
   public function developerGetCompanyListTest() {
-    // Result of getCompanies() function cannot be null.
+    // Create a new developer.
+    $name = strtolower($this->randomMachineName());
+    $this->developer = $this->developerStorage->create([
+      'email' => $name . '@example.com',
+      'userName' => $name,
+      'firstName' => $this->getRandomGenerator()->word(8),
+      'lastName' => $this->getRandomGenerator()->word(8),
+    ]);
+    $this->developer->save();
+
+    // Result of getCompanies() function should be an empty array.
     $this->assertNotNull($this->developer->getCompanies());
+    $this->assertEmpty($this->developer->getCompanies());
 
     // Create a new company and add developer as a member to it.
     $this->company = new Company([
@@ -371,21 +377,22 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $company_membership = new CompanyMembership([$this->developer->getEmail() => NULL]);
     $company_membership_controller->setMembers($company_membership);
 
-    // Ensure that the developer is loaded from Apigee Edge so remove the
+    // Ensure that the developer is reloaded from Apigee Edge so remove the
     // developer entity from the cache.
     $developer_cache = $this->container->get('apigee_edge.controller.cache.developer');
     $developer_cache->removeEntities([$this->developer->getDeveloperId()]);
 
-    // Check the companies array if the developer is loaded by loadMultiple().
+    // Check the companies array if the developer is reloaded.
     /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
-    $developer = Developer::loadMultiple()[$this->developer->getEmail()];
+    $developer = $this->developerStorage->loadMultiple()[$this->developer->getEmail()];
     $this->assertContains($this->company->getName(), $developer->getCompanies());
 
+    // Check the companies array if the developer is removed from the member
+    // list.
+    $company_membership_controller->removeMember($this->developer->getEmail());
     $developer_cache->removeEntities([$this->developer->getDeveloperId()]);
-
-    // Check the companies array if the developer is loaded by load().
-    $developer = Developer::load($this->developer->getEmail());
-    $this->assertContains($this->company->getName(), $developer->getCompanies());
+    $developer = $this->developerStorage->loadUnchanged($this->developer->getEmail());
+    $this->assertNotContains($this->company->getName(), $developer->getCompanies());
   }
 
 }
