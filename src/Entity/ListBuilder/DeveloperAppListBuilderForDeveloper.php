@@ -124,7 +124,7 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
     // either there is connection error or the site is out of sync with
     // Apigee Edge.
     if ($developerId === NULL) {
-      throw new DeveloperDoesNotExistException($this->user->getEmail());
+      throw new DeveloperDoesNotExistException($user->getEmail());
     }
     $query->condition('developerId', $developerId);
     return $query;
