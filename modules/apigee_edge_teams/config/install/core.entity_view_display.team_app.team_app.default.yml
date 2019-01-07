@@ -1,0 +1,75 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - apigee_edge
+    - apigee_edge_teams
+id: team_app.team_app.default
+targetEntityType: team_app
+bundle: team_app
+mode: default
+content:
+  callbackUrl:
+    label: inline
+    weight: 3
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+    type: uri_link
+  createdAt:
+    type: timestamp_ago
+    label: inline
+    weight: 2
+    region: content
+    settings:
+      future_format: '@interval hence'
+      past_format: '@interval ago'
+      granularity: 2
+    third_party_settings: {  }
+  credentials:
+    weight: 100
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  description:
+    label: inline
+    weight: 4
+    region: content
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    type: string
+  displayName:
+    label: inline
+    weight: 0
+    region: content
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    type: string
+  lastModifiedAt:
+    type: timestamp_ago
+    label: inline
+    weight: 5
+    region: content
+    settings:
+      future_format: '@interval hence'
+      past_format: '@interval ago'
+      granularity: 2
+    third_party_settings: {  }
+  status:
+    label: inline
+    type: status_property
+    weight: 1
+    region: content
+    settings:
+      indicator_status_ok: approved
+      indicator_status_warning: ''
+      indicator_status_error: revoked
+    third_party_settings: {  }
+hidden:
+  appFamily: true
+  appId: true
+  companyName: true
+  name: true
+  scopes: true

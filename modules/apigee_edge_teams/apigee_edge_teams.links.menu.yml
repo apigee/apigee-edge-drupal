@@ -1,0 +1,17 @@
+apigee_edge_teams.settings.team:
+  title: 'Teams'
+  description: 'Team settings.'
+  parent: system.admin_config_edge
+  route_name: apigee_edge_teams.settings.team
+
+apigee_edge_teams.settings.team_app:
+  title: 'Team Apps'
+  description: 'Team Apps related settings.'
+  parent: apigee_edge.app
+  route_name: apigee_edge_teams.settings.team_app
+
+apigee_edge_teams.teams:
+  class: Drupal\apigee_edge_teams\Plugin\Menu\TeamsListMenuLink
+  route_name: entity.team.collection
+  menu_name: account
+  weight: -50
