@@ -122,7 +122,7 @@ class DeveloperAppCreateForm extends AppForm {
    */
   protected function apiProductList(): array {
     if ($this->currentUser()->hasPermission('bypass api product access control')) {
-      return \Drupal::entityTypeManager()->getStorage('api_product')->loadMultiple();
+      return $this->entityTypeManager->getStorage('api_product')->loadMultiple();
     }
 
     return $this->privateApiProductList();
