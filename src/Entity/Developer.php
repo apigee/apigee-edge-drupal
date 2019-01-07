@@ -407,7 +407,7 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
   public function getOwnerId() {
     if ($this->drupalUserId === NULL) {
       if ($this->getEmail()) {
-        /** @var \Drupal\user\Entity\UserInterface $account */
+        /** @var \Drupal\user\UserInterface $account */
         $account = user_load_by_mail($this->getEmail());
         if ($account) {
           $this->drupalUserId = $account->id();
