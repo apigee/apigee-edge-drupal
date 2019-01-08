@@ -162,6 +162,10 @@ class CacheTest extends ApigeeEdgeFunctionalTestBase {
       'app' => $developer_app->getName(),
     ]));
     $this->assertSession()->fieldValueEquals('displayName[0][value]', $name);
+    // Update the label of the "cached" developer app entity so the next
+    // warmCaches() method call could find the related link to that on the
+    // My apps page.
+    $this->developerApp->setDisplayName($developer_app->getDisplayName());
   }
 
   /**
