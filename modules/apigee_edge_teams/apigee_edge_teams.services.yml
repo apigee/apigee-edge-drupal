@@ -44,3 +44,14 @@ services:
     arguments: ['@form_builder']
     tags:
       - { name: event_subscriber }
+
+  route.subscriber.apigee_edge_teams.team_app_by_name:
+    class: Drupal\apigee_edge_teams\Routing\TeamAppByNameRouteAlterSubscriber
+    tags:
+      - { name: event_subscriber }
+
+  paramconverter.team_app_name:
+    class: Drupal\apigee_edge_teams\ParamConverter\TeamAppNameConverter
+    arguments: ['@entity_type.manager', '@logger.channel.apigee_edge_teams']
+    tags:
+      - { name: paramconverter }
