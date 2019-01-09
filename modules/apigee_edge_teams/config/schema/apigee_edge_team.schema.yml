@@ -10,23 +10,11 @@ apigee_edge_teams.team_settings:
       label: 'How to refer to a Team on the UI (plural)'
     cache_expiration:
       type: integer
-    owner_attribute_name:
-      type: string
-    add_owner_as_admin:
-      type: boolean
 
 apigee_edge_teams.team_app_settings:
   type: config_object
   label: 'Team App settings'
   mapping:
-    required_base_fields:
-      type: sequence
-      seqence:
-        type: string
-    locked_base_fields:
-      type: seqeuce
-      seqence:
-        type: string
     entity_label_singular:
       type: label
       label: 'How to refer to a Team App on the UI (singular)'
@@ -35,5 +23,13 @@ apigee_edge_teams.team_app_settings:
       label: 'How to refer to a Team App on the UI (plural)'
     cache_expiration:
       type: integer
-    owner_attribute_name:
-      type: string
+    required_base_fields:
+      type: sequence
+      sequence:
+        type: string
+    locked_base_fields:
+      type: sequence
+      sequence:
+        type: string
+    credential_lifetime:
+      type: integer
