@@ -23,7 +23,6 @@ namespace Drupal\apigee_edge\Entity\Form;
 use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 
 /**
@@ -63,19 +62,6 @@ class DeveloperAppEditFormForDeveloper extends DeveloperAppCreateEditFormForDeve
     $actions['delete']['#url'] = $this->getEntity()->toUrl('delete-form-for-developer');
 
     return $actions;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getEntityFromRouteMatch(RouteMatchInterface $route_match, $entity_type_id) {
-    if ($route_match->getRawParameter('app') !== NULL) {
-      $entity = $route_match->getParameter('app');
-    }
-    else {
-      $entity = parent::getEntityFromRouteMatch($route_match, $entity_type_id);
-    }
-    return $entity;
   }
 
   /**
