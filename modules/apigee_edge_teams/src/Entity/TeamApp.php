@@ -64,13 +64,13 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   entity_keys = {
  *     "id" = "appId",
  *   },
+ *   query_class = "Drupal\apigee_edge_teams\Entity\Query\TeamAppQuery",
  *   admin_permission = "administer team",
  *   field_ui_base_route = "apigee_edge_teams.settings.team_app",
  * )
  *
  * TODO:
  * - Admin permission may needs to be changed.
- * - Add dedicated query class.
  * - Add dedicated permission provider and access handler based on the perm.
  *   matrix.
  */
