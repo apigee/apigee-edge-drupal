@@ -24,36 +24,38 @@ use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * General form handler for the team app create.
+ * Team app create form for a team.
  */
-class TeamAppCreateForm extends TeamAppCreateFormBase {
+class TeamAppCreateFormForTeam extends TeamAppCreateFormBase {
+
+  /**
+   * The team from the route.
+   *
+   * @var \Drupal\apigee_edge_teams\Entity\TeamInterface
+   */
+  protected $team;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm(array $form, FormStateInterface $form_state, TeamInterface $team = NULL) {
+    // This is the only place where we can grab additional route parameters.
+    // See implementation in parent.
+    $this->team = $team;
+    return parent::buildForm($form, $form_state);
+  }
 
   /**
    * {@inheritdoc}
    */
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
-    /** @var \Drupal\apigee_edge_teams\Entity\TeamAppInterface $app */
-    $app = $this->entity;
 
-    $team_options = array_map(function (TeamInterface $team) {
-      return $team->label();
-    }, $this->entityTypeManager->getStorage('team')->loadMultiple());
-
-    // Override the owner field to be a select list with all teams from
-    // Apigee Edge.
+    // The user from the route is the owner.
     $form['owner'] = [
-      '#title' => $this->t('Owner'),
-      '#type' => 'select',
-      '#weight' => $form['owner']['#weight'],
-      '#default_value' => $app->getCompanyName(),
-      '#options' => $team_options,
-      '#required' => TRUE,
+      '#type' => 'value',
+      '#value' => $this->team->id(),
     ];
-
-    // We do not know yet how existing API product access is going to be
-    // applied on team (company) apps so we do not display a warning here.
-    // @see \Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm::form()
 
     return $form;
   }

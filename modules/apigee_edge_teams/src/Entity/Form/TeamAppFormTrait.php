@@ -42,7 +42,7 @@ trait TeamAppFormTrait {
 
     // We use the team app controller factory here instead of entity
     // query to reduce the number API calls. (Entity query may load all
-    // developers to return whether the given developer has an app with
+    // developers to return whether the given team has an app with
     // the provided name already.)
     /** @var \Drupal\apigee_edge_teams\Entity\Controller\TeamAppControllerFactoryInterface $factory */
     $factory = \Drupal::service('apigee_edge_teams.controller.team_app_controller_factory');

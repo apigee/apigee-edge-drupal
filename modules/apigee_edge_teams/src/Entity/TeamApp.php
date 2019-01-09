@@ -41,13 +41,14 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   handlers = {
  *     "storage" = "Drupal\apigee_edge_teams\Entity\Storage\TeamAppStorage",
  *     "form" = {
- *       "default" = "\Drupal\apigee_edge_teams\Entity\Form\TeamAppCreateForm",
- *       "add" = "\Drupal\apigee_edge_teams\Entity\Form\TeamAppCreateForm",
- *       "edit" = "\Drupal\apigee_edge_teams\Entity\Form\TeamAppEditForm",
- *       "delete" = "\Drupal\apigee_edge\Entity\Form\AppDeleteForm",
- *       "analytics" = "\Drupal\apigee_edge_teams\Form\TeamAppAnalyticsForm",
+ *       "default" = "Drupal\apigee_edge_teams\Entity\Form\TeamAppCreateForm",
+ *       "add" = "Drupal\apigee_edge_teams\Entity\Form\TeamAppCreateForm",
+ *       "add_for_team" = "Drupal\apigee_edge_teams\Entity\Form\TeamAppCreateFormForTeam",
+ *       "edit" = "Drupal\apigee_edge_teams\Entity\Form\TeamAppEditForm",
+ *       "delete" = "Drupal\apigee_edge\Entity\Form\AppDeleteForm",
+ *       "analytics" = "Drupal\apigee_edge_teams\Form\TeamAppAnalyticsForm",
  *     },
- *     "list_builder" = "Drupal\apigee_edge\Entity\ListBuilder\AppListBuilder",
+ *     "list_builder" = "Drupal\apigee_edge_teams\Entity\ListBuilder\TeamAppListBuilder",
  *     "view_builder" = "Drupal\apigee_edge_teams\Entity\TeamAppViewBuilder",
  *     "route_provider" = {
  *        "html" = "Drupal\apigee_edge_teams\Entity\TeamAppRouteProvider",
@@ -55,11 +56,13 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   },
  *   links = {
  *     "collection" = "/team-apps",
- *     "canonical" = "/team-apps/{team_app}",
+ *     "collection-by-team" = "/teams/{team}/apps",
+ *     "canonical" = "/teams/{team}/apps/{app}",
  *     "add-form" = "/team-apps/add",
- *     "edit-form" = "/team-apps/{team_app}/edit",
- *     "delete-form" = "/team-apps/{team_app}/delete",
- *     "analytics"  = "/team-apps/{team_app}/analytics",
+ *     "add-form-for-team" = "/teams/{team}/add",
+ *     "edit-form" = "/teams/{team}/apps/{app}/edit",
+ *     "delete-form" = "/teams/{team}/apps/{app}/delete",
+ *     "analytics"  = "/teams/{team}/apps/{app}/analytics",
  *   },
  *   entity_keys = {
  *     "id" = "appId",
@@ -168,6 +171,27 @@ class TeamApp extends App implements TeamAppInterface {
     $definitions['companyName']->setDisplayConfigurable('form', FALSE);
 
     return $definitions;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function urlRouteParameters($rel) {
+    $params = parent::urlRouteParameters($rel);
+    $link_templates = $this->linkTemplates();
+    if (isset($link_templates[$rel])) {
+      if (strpos($link_templates[$rel], '{team}') !== FALSE) {
+        $params['team'] = $this->getCompanyName();
+      }
+      if (strpos($link_templates[$rel], '{app}') !== FALSE) {
+        $params['app'] = $this->getName();
+      }
+      if (strpos($link_templates[$rel], '{team_app}') === FALSE) {
+        unset($params['team_app']);
+      }
+    }
+
+    return $params;
   }
 
 }

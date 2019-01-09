@@ -36,4 +36,22 @@ class TeamDeleteForm extends EdgeEntityDeleteForm {
     ]);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function getRedirectUrl() {
+    $entity = $this->getEntity();
+    if ($entity->hasLinkTemplate('collection-by-team')) {
+      return $entity->toUrl('collection-by-team');
+    }
+    return parent::getRedirectUrl();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCancelUrl() {
+    return $this->getRedirectUrl();
+  }
+
 }

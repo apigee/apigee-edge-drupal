@@ -20,9 +20,8 @@
 
 namespace Drupal\apigee_edge_teams\Entity\Form;
 
-use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
-use Drupal\apigee_edge\Entity\Form\AppEditFormTrait;
+use Drupal\apigee_edge\Entity\Form\AppCreateFormTrait;
 use Drupal\apigee_edge\Entity\Form\AppForm;
 use Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -30,11 +29,15 @@ use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * General form handler for the team app edit.
+ * Base form for team app create forms.
+ *
+ * @internal
  */
-class TeamAppEditForm extends AppForm {
+abstract class TeamAppCreateFormBase extends AppForm {
 
-  use AppEditFormTrait;
+  use AppCreateFormTrait {
+    apiProductList as private privateApiProductList;
+  }
   use TeamAppFormTrait;
 
   /**
@@ -45,7 +48,7 @@ class TeamAppEditForm extends AppForm {
   protected $appCredentialControllerFactory;
 
   /**
-   * Constructs TeamAppEditForm.
+   * Constructs TeamAppCreateFormBase.
    *
    * @param \Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface $app_credential_controller_factory
    *   The team app credential controller factory.
@@ -95,11 +98,7 @@ class TeamAppEditForm extends AppForm {
       return $this->entityTypeManager->getStorage('api_product')->loadMultiple();
     }
 
-    // For security reasons only return public API products by default.
-    return array_filter(\Drupal::entityTypeManager()->getStorage('api_product')->loadMultiple(), function (ApiProductInterface $api_product) {
-      // Attribute may not exists but in that case it means public.
-      return ($api_product->getAttributeValue('access') ?? 'public') === 'public';
-    });
+    return $this->privateApiProductList();
   }
 
 }
