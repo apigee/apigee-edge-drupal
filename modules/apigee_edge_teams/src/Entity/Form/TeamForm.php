@@ -106,7 +106,7 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
         'exists' => [$this, 'exists'],
       ],
       '#disabled' => !$team->isNew(),
-      '#default_value' => $team->getName(),
+      '#default_value' => $team->id(),
     ];
 
     return $form;
@@ -188,7 +188,7 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
 
     if ($was_new) {
       try {
-        $this->teamMembershipManager->addMembers($team->getName(), [$this->currentUser->getEmail()]);
+        $this->teamMembershipManager->addMembers($team->id(), [$this->currentUser->getEmail()]);
       }
       catch (ApiException $exception) {
         $this->messenger()->addError($this->t('Failed to register team membership in %team_name @team.', [

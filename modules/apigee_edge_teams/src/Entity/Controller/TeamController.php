@@ -177,7 +177,7 @@ final class TeamController implements TeamControllerInterface {
     /** @var \Apigee\Edge\Api\Management\Entity\CompanyInterface $entity */
     $entity = $this->traitDelete($entityId);
     // Invalidate app caches that belongs to this company.
-    $app_cache = $this->appCacheByOwnerFactory->getAppCache($entity->getName());
+    $app_cache = $this->appCacheByOwnerFactory->getAppCache($entity->id());
     $app_ids = [];
     /** @var \Apigee\Edge\Api\Management\Entity\CompanyAppInterface $app */
     foreach ($app_cache->getEntities() as $app) {
@@ -187,7 +187,7 @@ final class TeamController implements TeamControllerInterface {
     // App cache has cleared all app names that it knows about
     // but it could happen that there are some remaining app names in the
     // app name cache that has not be created by app cache.
-    $app_name_cache = $this->appNameCacheByOwnerFactory->getAppNameCache($entity->getName());
+    $app_name_cache = $this->appNameCacheByOwnerFactory->getAppNameCache($entity->id());
     $app_name_cache->removeIds($app_name_cache->getIds());
     return $entity;
   }
