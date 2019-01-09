@@ -103,8 +103,8 @@ services:
     tags:
       - { name: event_subscriber }
 
-  apigee_edge.edge_entity_config_translation_change_subscriber:
-    class: Drupal\apigee_edge\EventSubscriber\EdgeEntityConfigTranslationChangeSubscriber
+  apigee_edge.event_subscriber.edge_config_translation_change_subscriber:
+    class: Drupal\apigee_edge\EventSubscriber\EdgeConfigTranslationChangeSubscriber
     tags:
       - { name: event_subscriber }
 
@@ -118,8 +118,6 @@ services:
     class: Drupal\apigee_edge\Entity\Query\QueryFactory
     arguments:
       - '@entity_type.manager'
-    tags:
-      - { name: event_subscriber }
 
   apigee_edge.breadcrumb.create_app:
     class: Drupal\apigee_edge\Breadcrumb\CreateAppForDeveloperBreadcrumbBuilder
@@ -133,8 +131,15 @@ services:
     tags:
       - { name: event_subscriber }
 
-  route_subscriber.apigee_edge.developer_app_field_ui:
-    class: Drupal\apigee_edge\Routing\DeveloperAppFieldUIRouteSubscriber
+  route_subscriber.apigee_edge.entity_field_config_list:
+    class: Drupal\apigee_edge\Routing\EdgeEntityFieldConfigListRouteSubscriber
+    arguments: ['@entity_type.manager']
+    tags:
+      - { name: event_subscriber }
+
+  apigee_edge.event_subscriber.developer_app_field_config_list_alter_event_subscriber:
+    class: Drupal\apigee_edge\EventSubscriber\DeveloperAppFieldConfigListAlterEventSubscriber
+    arguments: ['@form_builder']
     tags:
       - { name: event_subscriber }
 

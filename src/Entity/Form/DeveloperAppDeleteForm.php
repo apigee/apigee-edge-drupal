@@ -25,7 +25,7 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * General form handler for the developer app delete forms.
  */
-class DeveloperAppDeleteForm extends EdgeEntityDeleteForm {
+class DeveloperAppDeleteForm extends AppDeleteForm {
 
   use DeveloperStatusCheckTrait;
 
@@ -37,25 +37,6 @@ class DeveloperAppDeleteForm extends EdgeEntityDeleteForm {
     $developer_app = $this->entity;
     $this->checkDeveloperStatus($developer_app->getOwnerId());
     return parent::buildForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function verificationCode() {
-    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app */
-    $developer_app = $this->getEntity();
-    // Request the name of the app instead of the app id (UUID).
-    return $developer_app->getName();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function verificationCodeErrorMessage() {
-    return $this->t('The name does not match the @developer_app you are attempting to delete.', [
-      '@developer_app' => $this->entityTypeManager->getDefinition($this->getEntity()->getEntityTypeId())->getLowercaseLabel(),
-    ]);
   }
 
 }

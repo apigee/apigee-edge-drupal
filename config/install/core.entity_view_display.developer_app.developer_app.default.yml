@@ -2,7 +2,7 @@ langcode: en
 status: true
 dependencies:
   module:
-  - apigee_edge
+    - apigee_edge
 id: developer_app.developer_app.default
 targetEntityType: developer_app
 bundle: developer_app

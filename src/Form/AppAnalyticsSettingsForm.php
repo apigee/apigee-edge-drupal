@@ -27,9 +27,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides a form for Developer App Analytics related configuration.
+ * Provides a form for app analytics related configuration.
  */
-class DeveloperAppAnalyticsSettingsForm extends ConfigFormBase {
+class AppAnalyticsSettingsForm extends ConfigFormBase {
 
   /**
    * Environment controller object.

@@ -89,7 +89,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function testDeveloperAppLabel() {
-    $this->drupalPostForm('/admin/config/apigee-edge/app-settings/alias', [
+    $this->drupalPostForm(Url::fromRoute('apigee_edge.settings.developer_app'), [
       'entity_label_singular' => 'API',
       'entity_label_plural' => 'APIs',
     ], 'Save configuration');
@@ -224,8 +224,9 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    * @throws \Behat\Mink\Exception\ResponseTextException
    */
   public function testCreateAppWithModifiedCredentialLifetime() {
+    $url = Url::fromRoute('apigee_edge.settings.developer_app.credentials');
     // Change credential lifetime to 10 days from 0.
-    $this->drupalPostForm('/admin/config/apigee-edge/app-settings/credentials', [
+    $this->drupalPostForm($url, [
       'credential_lifetime' => 10,
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('The configuration options have been saved.');
@@ -243,7 +244,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->pageTextMatches('/1 week (2|3) days hence/');
 
     // Change credential lifetime to 0 (Never) days from 10.
-    $this->drupalPostForm('/admin/config/apigee-edge/app-settings/credentials', [
+    $this->drupalPostForm($url, [
       'credential_lifetime' => 0,
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('The configuration options have been saved.');
@@ -443,7 +444,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   public function testWarningMessagesIfMultipleProductsDisabled() {
     $admin_warning_message = 'Access to multiple API products will be retained until an app is edited and the developer is prompted to confirm a single API Product selection.';
     $end_user_warning_message = 'Foos now require selection of a single Bar; multiple Bar selection is no longer supported. Confirm your Bar selection below.';
-    $app_settings_url = Url::fromRoute('apigee_edge.settings.app');
+    $app_settings_url = Url::fromRoute('apigee_edge.settings.general_app');
 
     // Ensure default configuration.
     $this->config('apigee_edge.common_app_settings')
@@ -491,7 +492,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   public function testCallbackUrlValidationServerSide() {
     // Override default configuration.
     $description = 'This is a Callback URL field.';
-    $this->config('apigee_edge.developer_app_settings')
+    $this->config('apigee_edge.common_app_settings')
       ->set('callback_url_pattern', '^https:\/\/example.com')
       ->set('callback_url_description', $description)
       ->save();
@@ -552,8 +553,8 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalGet($app_edit_form_for_developer_url);
     $this->assertSession()->fieldValueEquals('callbackUrl[0][value]', $callback_url);
 
-    $this->drupalPostForm('/admin/config/apigee-edge/app-settings/display', ['fields[callbackUrl][region]' => 'hidden'], 'Save');
-    $this->drupalPostForm('/admin/config/apigee-edge/app-settings/form-display', ['fields[callbackUrl][region]' => 'hidden'], 'Save');
+    $this->drupalPostForm(Url::fromRoute('entity.entity_view_display.developer_app.default'), ['fields[callbackUrl][region]' => 'hidden'], 'Save');
+    $this->drupalPostForm(Url::fromRoute('entity.entity_form_display.developer_app.default'), ['fields[callbackUrl][region]' => 'hidden'], 'Save');
 
     $this->drupalGet($app_view_url);
     $this->assertSession()->pageTextNotContains($callback_url_warning_msg);

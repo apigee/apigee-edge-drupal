@@ -25,9 +25,12 @@ use Drupal\language\Config\LanguageConfigOverrideEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
- * Clears caches when an Edge entity type's config translation gets updated.
+ * Clears caches when an Apigee Edge related config translation gets updated.
+ *
+ * The primary purpose of this subscriber is to clear all caches when Apigee
+ * Edge custom entity labels gets translated via config objects.
  */
-class EdgeEntityConfigTranslationChangeSubscriber implements EventSubscriberInterface {
+final class EdgeConfigTranslationChangeSubscriber implements EventSubscriberInterface {
 
   /**
    * {@inheritdoc}
@@ -51,13 +54,10 @@ class EdgeEntityConfigTranslationChangeSubscriber implements EventSubscriberInte
   public function clearCache(LanguageConfigOverrideCrudEvent $event) {
     /** @var \Drupal\language\Config\LanguageConfigOverride $override */
     $override = $event->getLanguageConfigOverride();
-    $matches = [];
-    if (preg_match('/apigee_edge.([a-z_]+)_settings$/', $override->getName(), $matches)) {
-      if (\Drupal::entityTypeManager()->hasDefinition($matches[1])) {
-        // It is easier to do that rather than just trying to figure our all
-        // cache bins and tags that requires invalidation. We tried that.
-        drupal_flush_all_caches();
-      }
+    if (preg_match('/^apigee_edge/', $override->getName())) {
+      // It is easier to do that rather than just trying to figure our all
+      // cache bins and tags that requires invalidation. We tried that.
+      drupal_flush_all_caches();
     }
   }
 

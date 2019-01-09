@@ -13,31 +13,37 @@ apigee_edge.settings.error_page:
   title: 'Error handling'
   base_route: apigee_edge.settings
 
-apigee_edge.settings.app:
-  route_name: apigee_edge.settings.app
+apigee_edge.settings.general_app:
+  route_name: apigee_edge.settings.general_app
   title: 'API product associations'
-  base_route: apigee_edge.settings.app
+  base_route: apigee_edge.settings.general_app
   weight: -10
 
-apigee_edge.settings.app.alias:
-  route_name: apigee_edge.settings.app.alias
-  title: 'Alias'
-  base_route: apigee_edge.settings.app
+apigee_edge.settings.general_app.callback_url_validation:
+  route_name: apigee_edge.settings.general_app.callback_url_validation
+  title: 'Callback URL validation'
+  base_route: apigee_edge.settings.general_app
 
-apigee_edge.settings.app.credentials:
-  route_name: apigee_edge.settings.app.credentials
-  title: 'Credentials'
-  base_route: apigee_edge.settings.app
-
-apigee_edge.settings.app.analytics:
-  route_name: apigee_edge.settings.app.analytics
+apigee_edge.settings.general_app.analytics:
+  route_name: apigee_edge.settings.general_app.analytics
   title: 'Analytics'
-  base_route: apigee_edge.settings.app
+  base_route: apigee_edge.settings.general_app
 
-apigee_edge.settings.app.caching:
-  route_name: apigee_edge.settings.app.caching
+apigee_edge.settings.developer_app.alias:
+  route_name: apigee_edge.settings.developer_app
+  title: 'Alias'
+  base_route: apigee_edge.settings.developer_app
+  weight: -10
+
+apigee_edge.settings.developer_app.credentials:
+  route_name: apigee_edge.settings.developer_app.credentials
+  title: 'Credentials'
+  base_route: apigee_edge.settings.developer_app
+
+apigee_edge.settings.developer_app.caching:
+  route_name: apigee_edge.settings.developer_app.caching
   title: 'Caching'
-  base_route: apigee_edge.settings.app
+  base_route: apigee_edge.settings.developer_app
   weight: 10
 
 apigee_edge.settings.product.alias:

@@ -114,9 +114,7 @@ abstract class AppForm extends FieldableEdgeEntityForm {
    * @return \Drupal\apigee_edge\Entity\ApiProductInterface[]
    *   Array of API product entities.
    */
-  protected function apiProductList(): array {
-    return \Drupal::entityTypeManager()->getStorage('api_product')->loadMultiple();
-  }
+  abstract protected function apiProductList(): array;
 
   /**
    * Returns the label of the Save button on the form.

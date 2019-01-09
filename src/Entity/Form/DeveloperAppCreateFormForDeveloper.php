@@ -26,7 +26,7 @@ use Drupal\Core\Url;
 /**
  * Dedicated form handler that allows a developer to create an developer app.
  */
-class DeveloperAppCreateFormForDeveloper extends DeveloperAppFormForDeveloper {
+class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateEditFormForDeveloper {
 
   use DeveloperStatusCheckTrait;
   use AppCreateFormTrait;
@@ -54,6 +54,14 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppFormForDeveloper {
   protected function getRedirectUrl(): Url {
     $entity = $this->getEntity();
     return $entity->toUrl('collection-by-developer');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function apiProductList(): array {
+    // Call apiProductList() from parent instead of AppCreateFormTrait.
+    return parent::apiProductList();
   }
 
 }

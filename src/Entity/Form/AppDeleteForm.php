@@ -18,26 +18,30 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Controller;
-
-use Drupal\apigee_edge\Form\DeveloperAppBaseFieldConfigForm;
-use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\field_ui\Controller\FieldConfigListController;
+namespace Drupal\apigee_edge\Entity\Form;
 
 /**
- * Defines a controller to list Developer App field instances.
+ * General form handler for developer/team (company) app delete forms.
  */
-class DeveloperAppFieldConfigListController extends FieldConfigListController {
+class AppDeleteForm extends EdgeEntityDeleteForm {
 
   /**
    * {@inheritdoc}
    */
-  public function listing($entity_type_id = NULL, $bundle = NULL, RouteMatchInterface $route_match = NULL) {
-    $page = parent::listing($entity_type_id, $bundle, $route_match);
+  protected function verificationCodeErrorMessage() {
+    return $this->t('The name does not match the @app you are attempting to delete.', [
+      '@app' => $this->entityTypeManager->getDefinition($this->getEntity()->getEntityTypeId())->getLowercaseLabel(),
+    ]);
+  }
 
-    $page['base_field_config'] = $this->formBuilder()->getForm(DeveloperAppBaseFieldConfigForm::class);
-
-    return $page;
+  /**
+   * {@inheritdoc}
+   */
+  protected function verificationCode() {
+    /** @var \Drupal\apigee_edge\Entity\AppInterface $app */
+    $app = $this->getEntity();
+    // Request the name of the app instead of the app id (UUID).
+    return $app->getName();
   }
 
 }

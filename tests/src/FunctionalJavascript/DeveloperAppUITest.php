@@ -81,7 +81,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
     // Override default configuration.
     $pattern_error_message = 'It must be https://example.com';
-    $this->config('apigee_edge.developer_app_settings')
+    $this->config('apigee_edge.common_app_settings')
       ->set('callback_url_pattern', '^https:\/\/example.com')
       ->set('callback_url_pattern_error_message', $pattern_error_message)
       ->save();

@@ -29,7 +29,7 @@ use Drupal\Core\Url;
 /**
  * Dedicated form handler that allows a developer to edit its developer app.
  */
-class DeveloperAppEditFormForDeveloper extends DeveloperAppFormForDeveloper {
+class DeveloperAppEditFormForDeveloper extends DeveloperAppCreateEditFormForDeveloper {
 
   use DeveloperStatusCheckTrait;
   use AppEditFormTrait;

@@ -88,14 +88,11 @@ class DeveloperAppEditForm extends AppForm {
       return [];
     }
 
-    $api_products = parent::apiProductList();
     // Here because we know the owner (developer) of the app and it can not
     // be changed we can limit the visible API products.
-    array_filter($api_products, function (ApiProductInterface $product) use ($app) {
+    return array_filter($this->entityTypeManager->getStorage('api_product')->loadMultiple(), function (ApiProductInterface $product) use ($app) {
       return $product->access('assign', $app->getOwner());
     });
-
-    return $api_products;
   }
 
 }

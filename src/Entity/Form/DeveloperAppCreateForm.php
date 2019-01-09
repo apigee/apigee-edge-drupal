@@ -20,7 +20,6 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
-use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -32,7 +31,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class DeveloperAppCreateForm extends AppForm {
 
-  use AppCreateFormTrait;
+  use AppCreateFormTrait {
+    apiProductList as private privateApiProductList;
+  }
   use DeveloperAppFormTrait;
 
   /**
@@ -97,7 +98,7 @@ class DeveloperAppCreateForm extends AppForm {
       $form['warning_message'] = [
         '#theme' => 'status_messages',
         '#message_list' => [
-          'warning' => [$this->t('The list of @api_products above is not limited to the selected owner by the API product access control settings here, but only <strong>public</strong> API products are visible in this list.', [
+          'warning' => [$this->t('The list of @api_products above is not limited to the selected owner by the API product access control settings here. <strong>All @api_products are visible here from Apigee Edge.</strong>', [
             '@api_products' => $this->entityTypeManager->getDefinition('api_product')->getPluralLabel(),
           ]),
           ],
@@ -112,20 +113,19 @@ class DeveloperAppCreateForm extends AppForm {
   /**
    * {@inheritdoc}
    */
-  protected function apiProductList(): array {
-    // For backward-compatibility and security reasons only display public
-    // API products here.
-    return array_filter($this->entityTypeManager->getStorage('api_product')->loadMultiple(), function (ApiProductInterface $api_product) {
-      // Attribute may not exists but in that case it means public.
-      return ($api_product->getAttributeValue('access') ?? 'public') === 'public';
-    });
+  protected function appCredentialController(string $owner, string $app_name): AppCredentialControllerInterface {
+    return $this->appCredentialControllerFactory->developerAppCredentialController($owner, $app_name);
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function appCredentialController(string $owner, string $app_name): AppCredentialControllerInterface {
-    return $this->appCredentialControllerFactory->developerAppCredentialController($owner, $app_name);
+  protected function apiProductList(): array {
+    if ($this->currentUser()->hasPermission('bypass api product access control')) {
+      return $this->entityTypeManager->getStorage('api_product')->loadMultiple();
+    }
+
+    return $this->privateApiProductList();
   }
 
 }
