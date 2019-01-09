@@ -126,6 +126,11 @@ services:
     arguments:
       ['@request_stack', '@router.route_provider', '@title_resolver']
 
+  route_enhancer.entity.app:
+    class: Drupal\apigee_edge\Entity\Enhancer\AppRouteEnhancer
+    tags:
+      - { name: route_enhancer}
+
   route_subscriber.apigee_edge.developer_app_by_name:
     class: Drupal\apigee_edge\Routing\DeveloperAppByNameRouteAlterSubscriber
     tags:
