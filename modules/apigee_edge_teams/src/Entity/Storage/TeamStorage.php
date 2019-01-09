@@ -99,19 +99,19 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
    */
   protected function doSave($id, EntityInterface $entity) {
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $entity */
-    $developer_status = $entity->getStatus();
+    $team_status = $entity->getStatus();
     $result = parent::doSave($id, $entity);
 
     // Change the status of the team (company) in Apigee Edge.
     // TODO Only change it if it has changed.
     try {
-      $this->teamController->setStatus($entity->id(), $developer_status);
+      $this->teamController->setStatus($entity->id(), $team_status);
     }
     catch (ApiException $exception) {
       throw new EntityStorageException($exception->getMessage(), $exception->getCode(), $exception);
     }
     // Apply status change in the entity object as well.
-    $entity->setStatus($developer_status);
+    $entity->setStatus($team_status);
 
     return $result;
   }

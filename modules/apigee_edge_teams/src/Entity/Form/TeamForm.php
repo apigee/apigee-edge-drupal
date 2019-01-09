@@ -138,25 +138,6 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-    parent::validateForm($form, $form_state);
-
-    // To be able to add the creator of the team as a member to the created
-    // team in save() it must have a developer account on Apigee Edge.
-    if ($this->entity->isNew() && !$this->entityTypeManager->getStorage('developer')->load($this->currentUser->getEmail())) {
-      $user = $this->entityTypeManager->getStorage('user')->load($this->currentUser->id());
-      // Let's say something that can actually solve the problem.
-      $form_state->setError($form, $this->t('Unable to create @team because your user profile information is incomplete. Please visit your <a href="@user_profile_form_url">user profile form</a> and save it again.', [
-        '@team' => $this->entityTypeManager->getDefinition('team')->getSingularLabel(),
-        '@user_profile_form_url' => $user->toUrl('edit-form')->toString(),
-      ]));
-      $this->logger->error('Unable to create team because user with %email email address does not have a developer account on Apigee Edge.', ['%email' => $this->currentUser->getEmail(), 'link' => $user->toLink($this->t('View'))->toString()]);
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   protected function actions(array $form, FormStateInterface $form_state) {
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
     $team = $this->entity;

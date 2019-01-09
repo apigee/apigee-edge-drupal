@@ -130,7 +130,7 @@ final class TeamController implements TeamControllerInterface {
    * Returns the decorated company controller from the SDK.
    *
    * @return \Apigee\Edge\Api\Management\Controller\CompanyControllerInterface
-   *   The initialized developer controller.
+   *   The initialized company controller.
    */
   private function decorated(): EdgeCompanyControllerInterface {
     if ($this->instance === NULL) {
