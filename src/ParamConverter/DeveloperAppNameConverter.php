@@ -27,9 +27,12 @@ use Drupal\Core\ParamConverter\ParamConverterInterface;
 use Symfony\Component\Routing\Route;
 
 /**
- * Resolves "developer_app_by_name" type parameters in path.
+ * Resolves "developer_app_by_name" type parameters in routes.
+ *
+ * @see \Drupal\apigee_edge\Entity\DeveloperApp::urlRouteParameters()
+ * @see \Drupal\apigee_edge\Routing\DeveloperAppByNameRouteAlterSubscriber
  */
-class DeveloperAppNameConverter implements ParamConverterInterface {
+final class DeveloperAppNameConverter implements ParamConverterInterface {
 
   /**
    * The entity type manager.
@@ -67,28 +70,27 @@ class DeveloperAppNameConverter implements ParamConverterInterface {
     }
     $entity = NULL;
     /** @var \Drupal\user\UserInterface $user */
-    // If {user} parameter is before the app name in the route the
+    // If {user} parameter is before the {app} in the route then
     // entity parameter converter should have already up-casted it to
-    // a user object if not let's load the user here.
+    // a user object if not then let's try to up-cast it here.
     $user = is_object($defaults['user']) ? $defaults['user'] : $this->entityTypeManager->getStorage('user')->load($defaults['user']);
     if ($user) {
-      $developerId = $user->get('apigee_edge_developer_id')->value;
-      if ($developerId) {
-        $ids = $this->entityTypeManager->getStorage('developer_app')->getQuery()
-          ->condition('developerId', $developerId)
+      $developer_id = $user->get('apigee_edge_developer_id')->value;
+      if ($developer_id) {
+        $app_storage = $this->entityTypeManager->getStorage('developer_app');
+        $app_ids = $app_storage->getQuery()
+          ->condition('developerId', $developer_id)
           ->condition('name', $value)
           ->execute();
-        if (!empty($ids)) {
-          $id = reset($ids);
+        if (!empty($app_ids)) {
+          $app_id = reset($app_ids);
           // Load the entity directly from Apigee Edge if needed.
           // @see \Drupal\apigee_edge\ParamConverter\ApigeeEdgeLoadUnchangedEntity
           if (!empty($defaults['_route_object']->getOption('apigee_edge_load_unchanged_entity'))) {
-            $entity = $this->entityTypeManager->getStorage('developer_app')
-              ->loadUnchanged($id);
+            $entity = $app_storage->loadUnchanged($app_id);
           }
           else {
-            $entity = $this->entityTypeManager->getStorage('developer_app')
-              ->load($id);
+            $entity = $app_storage->load($app_id);
           }
         }
 

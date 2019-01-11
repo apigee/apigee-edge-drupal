@@ -265,28 +265,17 @@ class DeveloperApp extends App implements DeveloperAppInterface {
    */
   protected function urlRouteParameters($rel) {
     $params = parent::urlRouteParameters($rel);
-
-    $for_developer_routes = [
-      'canonical-by-developer',
-      'edit-form-for-developer',
-      'delete-form-for-developer',
-      'analytics-for-developer',
-    ];
-    if ($rel === 'add-form-for-developer') {
-      $params['user'] = $this->getOwnerId();
-      unset($params['developer_app']);
-    }
-    elseif ($rel === 'collection-by-developer') {
-      $params['user'] = $this->getOwnerId();
-      unset($params['developer_app']);
-    }
-    elseif (in_array($rel, $for_developer_routes)) {
-      $params['user'] = $this->getOwnerId();
-      $params['app'] = $this->getName();
-      unset($params['developer_app']);
-    }
-    elseif ($rel === 'add-form') {
-      unset($params['developerId']);
+    $link_templates = $this->linkTemplates();
+    if (isset($link_templates[$rel])) {
+      if (strpos($link_templates[$rel], '{user}') !== FALSE) {
+        $params['user'] = $this->getOwnerId();
+      }
+      if (strpos($link_templates[$rel], '{app}') !== FALSE) {
+        $params['app'] = $this->getName();
+      }
+      if (strpos($link_templates[$rel], '{developer_app}') === FALSE) {
+        unset($params['developer_app']);
+      }
     }
 
     return $params;

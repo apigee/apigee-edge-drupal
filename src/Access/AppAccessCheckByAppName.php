@@ -27,9 +27,11 @@ use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\Routing\Route;
 
 /**
- * Provides a generic access checker for developer app entities.
+ * Check access on app routes that contains {app} (app name) instead of app id.
+ *
+ * @see \Drupal\apigee_edge\Routing\DeveloperAppByNameRouteAlterSubscriber
  */
-class DeveloperAppAccessCheck implements AccessInterface {
+final class AppAccessCheckByAppName implements AccessInterface {
 
   /**
    * The entity type manager.
@@ -39,7 +41,7 @@ class DeveloperAppAccessCheck implements AccessInterface {
   private $entityTypeManager;
 
   /**
-   * DeveloperAppAccessCheck constructor.
+   * AppAccessCheckByAppName constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   Entity type manager.
@@ -49,15 +51,12 @@ class DeveloperAppAccessCheck implements AccessInterface {
   }
 
   /**
-   * Checks access to the developer app entity operation on the given route.
+   * Checks access to an app entity operation on the given route.
+   *
+   * EntityAccessCheck only works if the route contains a parameter that
+   * matches the name of the entity type. Ex.: {developer_app} and not {app}.
    *
    * @code
-   * pattern: '/developer-apps/{developer_app}/edit'
-   * requirements:
-   *   _developer_app_access: 'edit'
-   *
-   * or
-   *
    * pattern: '/user/{user}/{app}'
    * requirements:
    *   _developer_app_access: 'view'
@@ -72,15 +71,16 @@ class DeveloperAppAccessCheck implements AccessInterface {
    *
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access result.
+   *
+   * @see \Drupal\Core\Entity\EntityAccessCheck
    */
   public function access(Route $route, RouteMatchInterface $route_match, AccountInterface $account) {
-    $operation = $route->getRequirement('_developer_app_access');
+    $operation = $route->getRequirement('_app_access_check_by_app_name');
     // If $entity_type parameter is a valid entity, call its own access check.
     $parameters = $route_match->getParameters();
-    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface|null $entity */
-    $entity = $parameters->get('developer_app');
-    if ($entity === NULL && $parameters->has('app')) {
-      $entity = $parameters->get('app');
+    /** @var \Drupal\apigee_edge\Entity\AppInterface $entity */
+    $entity = $parameters->get('app');
+    if ($entity) {
       return $entity->access($operation, $account, TRUE);
     }
     // No opinion, so other access checks should decide if access should be

@@ -25,6 +25,7 @@ use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Element\StatusPropertyElement;
 use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\Component\Utility\Html;
+use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -158,7 +159,13 @@ class AppListBuilder extends EdgeEntityListBuilder {
     $row['data']['status']['data'] = $this->renderAppStatus($app);
 
     $row['data'] += parent::buildRow($app);
-    $rows[$css_id] = $row;
+    // Allow child classes to add items to the beginning of a row.
+    if (array_key_exists($css_id, $rows)) {
+      $rows[$css_id] = NestedArray::mergeDeep($rows[$css_id], $row);
+    }
+    else {
+      $rows[$css_id] = $row;
+    }
   }
 
   /**
@@ -237,7 +244,7 @@ class AppListBuilder extends EdgeEntityListBuilder {
       $build['warning-toggle'] = $link->toRenderable();
       $rows[$info_row_css_id]['data']['status']['data'] = $this->renderer->render($build);
       $row['data']['info'] = [
-        'colspan' => 3,
+        'colspan' => count($this->buildHeader()),
       ];
 
       if ($warnings['revokedCred']) {
