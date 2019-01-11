@@ -9,7 +9,7 @@
         "cweagans/composer-patches": "^1.6.5",
         "drupal/core": "^8.6.3",
         "drupal/entity": "^1.0",
-        "drupal/key": "^1.7",
+        "drupal/key": "^1.8",
         "php-http/httplug": "^1.1",
         "php-http/guzzle6-adapter": "^1.1.1"
     },
@@ -29,11 +29,6 @@
         "drush": {
             "services": {
                 "drush.services.yml": "^9"
-            }
-        },
-        "patches": {
-            "drupal/key": {
-                "Fix implementation of NoneKeyInput": "https://www.drupal.org/files/issues/2018-06-27/key-fix-implementation-of-nonekeyinput-2982124-2.patch"
             }
         }
     }
