@@ -20,6 +20,8 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
+use Drupal\Core\Routing\RouteMatchInterface;
+
 /**
  * General form handler for developer/team (company) app delete forms.
  */
@@ -42,6 +44,21 @@ class AppDeleteForm extends EdgeEntityDeleteForm {
     $app = $this->getEntity();
     // Request the name of the app instead of the app id (UUID).
     return $app->getName();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEntityFromRouteMatch(RouteMatchInterface $route_match, $entity_type_id) {
+    // Always expect that the parameter in the route is not the entity type
+    // (ex: {developer_app}) in case of apps rather just {app}.
+    if ($route_match->getRawParameter('app') !== NULL) {
+      $entity = $route_match->getParameter('app');
+    }
+    else {
+      $entity = parent::getEntityFromRouteMatch($route_match, $entity_type_id);
+    }
+    return $entity;
   }
 
 }

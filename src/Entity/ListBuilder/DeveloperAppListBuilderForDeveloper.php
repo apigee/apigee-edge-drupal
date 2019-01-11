@@ -58,7 +58,7 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
    *
    * @var \Drupal\Core\Routing\RouteMatchInterface
    */
-  private $routeMatch;
+  protected $routeMatch;
 
   /**
    * Associative array that contains generated CSS entity ids for apps by name.
@@ -217,10 +217,11 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
    *   The title of the page.
    */
   public function pageTitle(): TranslatableMarkup {
+    /** @var \Drupal\user\UserInterface $account */
     $account = $this->routeMatch->getParameter('user');
-    $args['@developer_app'] = $this->entityTypeManager->getDefinition('developer_app')->getPluralLabel();
+    $args['@developer_app'] = $this->entityType->getPluralLabel();
     if ($account && $account->id() != $this->currentUser->id()) {
-      $args['@user'] = Markup::create($account->getDisplayName());
+      $args['@user'] = Markup::create($account->label());
       $title = $this->t('@developer_app of @user', $args);
     }
     else {

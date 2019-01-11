@@ -20,7 +20,6 @@
 namespace Drupal\apigee_edge\Entity\Form;
 
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
  * Dedicated form handler that allows a developer to delete its own app.
@@ -48,19 +47,6 @@ class DeveloperAppDeleteFormForDeveloper extends DeveloperAppDeleteForm {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
     $form_state->setRedirectUrl($this->getRedirectUrl());
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getEntityFromRouteMatch(RouteMatchInterface $route_match, $entity_type_id) {
-    if ($route_match->getRawParameter('app') !== NULL) {
-      $entity = $route_match->getParameter('app');
-    }
-    else {
-      $entity = parent::getEntityFromRouteMatch($route_match, $entity_type_id);
-    }
-    return $entity;
   }
 
 }

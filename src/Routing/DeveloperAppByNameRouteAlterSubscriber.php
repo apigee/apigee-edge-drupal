@@ -19,16 +19,20 @@
 
 namespace Drupal\apigee_edge\Routing;
 
+use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Routing\RouteSubscriberBase;
 use Drupal\Core\Routing\RoutingEvents;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
- * Registers the 'type' of the 'app' route parameter if 'user' is also in path.
+ * Registers the 'type' of the 'app' route parameter if 'user' is available.
  *
- * The 'developer_app' parameter has already automatically resolved by
- * EntityResolvedManager, but in that case the value of in the path is the app
- * id and not the name of the app.
+ * The {developer_app} parameter can be automatically resolved by
+ * EntityResolverManager, but in that case the value of in the path is the app
+ * id (UUID) and not the name of an app.
+ *
+ * @see \Drupal\apigee_edge\Entity\DeveloperApp::urlRouteParameters()
+ * @see \Drupal\apigee_edge\ParamConverter\DeveloperAppNameConverter
  */
 final class DeveloperAppByNameRouteAlterSubscriber extends RouteSubscriberBase {
 
@@ -46,7 +50,9 @@ final class DeveloperAppByNameRouteAlterSubscriber extends RouteSubscriberBase {
   protected function alterRoutes(RouteCollection $collection) {
     foreach ($collection as $route) {
       if (in_array('user', $route->compile()->getPathVariables()) && in_array('app', $route->compile()->getPathVariables())) {
-        $route->setOption('parameters', array_merge(['app' => ['type' => 'developer_app_by_name']], ($route->getOption('parameters') ?? [])));
+        $params = $route->getOption('parameters') ?? [];
+        NestedArray::setValue($params, ['app', 'type'], 'developer_app_by_name');
+        $route->setOption('parameters', $params);
       }
     }
   }

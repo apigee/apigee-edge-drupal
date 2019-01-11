@@ -131,7 +131,7 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_title_callback', AppTitleProvider::class . '::editTitle');
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureUserParameter($route);
-      $route->setRequirement('_developer_app_access', 'update');
+      $route->setRequirement('_app_access_check_by_app_name', 'update');
       // We must load the entity from Apigee Edge directly and omit cached
       // version on edit forms.
       $route->setOption('apigee_edge_load_unchanged_entity', 'true');
@@ -155,7 +155,7 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_title_callback', AppTitleProvider::class . '::deleteTitle');
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureUserParameter($route);
-      $route->setRequirement('_developer_app_access', 'delete');
+      $route->setRequirement('_app_access_check_by_app_name', 'delete');
       return $route;
     }
   }
@@ -176,7 +176,7 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_title_callback', AppTitleProvider::class . ':title');
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureUserParameter($route);
-      $route->setRequirement('_developer_app_access', 'view');
+      $route->setRequirement('_app_access_check_by_app_name', 'view');
       return $route;
     }
   }
@@ -218,7 +218,7 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_title_callback', AppTitleProvider::class . '::analyticsTitle');
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureUserParameter($route);
-      $route->setRequirement('_developer_app_access', 'analytics');
+      $route->setRequirement('_app_access_check_by_app_name', 'analytics');
       return $route;
     }
   }

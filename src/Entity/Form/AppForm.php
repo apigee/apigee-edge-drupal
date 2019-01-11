@@ -27,6 +27,7 @@ use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\Core\Utility\Error;
@@ -304,5 +305,20 @@ abstract class AppForm extends FieldableEdgeEntityForm {
    *   The app owner entity definition.
    */
   abstract protected function appOwnerEntityDefinition(): EntityTypeInterface;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEntityFromRouteMatch(RouteMatchInterface $route_match, $entity_type_id) {
+    // Always expect that the parameter in the route is not the entity type
+    // (ex: {developer_app}) in case of apps rather just {app}.
+    if ($route_match->getRawParameter('app') !== NULL) {
+      $entity = $route_match->getParameter('app');
+    }
+    else {
+      $entity = parent::getEntityFromRouteMatch($route_match, $entity_type_id);
+    }
+    return $entity;
+  }
 
 }
