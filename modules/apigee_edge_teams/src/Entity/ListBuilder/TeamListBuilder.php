@@ -56,6 +56,19 @@ class TeamListBuilder extends EdgeEntityListBuilder {
   /**
    * {@inheritdoc}
    */
+  public function load() {
+    // Compared with a usual etity collection page this listing page is also
+    // available to _all_ logged in users so it must be ensured that users
+    // can see only those teams in this list that they have view access.
+    // @see \Drupal\apigee_edge_teams\Entity\TeamAccessHandler
+    return array_filter(parent::load(), function (TeamInterface $entity) {
+      return $entity->access('view');
+    });
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function buildRow(EntityInterface $entity) {
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $entity */
     $row['name']['data'] = $entity->toLink()->toRenderable();

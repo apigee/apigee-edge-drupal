@@ -41,6 +41,8 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   config_with_labels = "apigee_edge_teams.team_settings",
  *   handlers = {
  *     "storage" = "Drupal\apigee_edge_teams\Entity\Storage\TeamStorage",
+ *     "permission_provider" = "Drupal\apigee_edge_teams\Entity\TeamPermissionProvider",
+ *     "access" = "Drupal\apigee_edge_teams\Entity\TeamAccessHandler",
  *     "list_builder" = "Drupal\apigee_edge_teams\Entity\ListBuilder\TeamListBuilder",
  *     "form" = {
  *        "default" = "Drupal\apigee_edge_teams\Entity\Form\TeamForm",
@@ -64,10 +66,6 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   admin_permission = "administer team",
  *   field_ui_base_route = "apigee_edge_teams.settings.team",
  * )
- *
- * TODO:
- * - Add dedicated permission provider and access handler based on the perm.
- *   matrix.
  */
 class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterface {
 

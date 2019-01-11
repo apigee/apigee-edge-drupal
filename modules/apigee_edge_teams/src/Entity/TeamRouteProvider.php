@@ -37,6 +37,12 @@ class TeamRouteProvider extends EdgeEntityRouteProvider {
       // Allows to easily display something else than the entity's plural
       // label on the team listing page, ex.: "Manage teams".
       $route->setDefault('_title_callback', 'apigee_edge_teams_team_listing_page_title');
+      $requirements = $route->getRequirements();
+      // We handle access to teams in the team list builder so "administer team"
+      // default permission based restriction can be also removed.
+      unset($requirements['_permission']);
+      $requirements['_user_is_logged_in'] = 'TRUE';
+      $route->setRequirements($requirements);
     }
 
     return $route;
