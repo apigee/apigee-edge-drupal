@@ -48,6 +48,13 @@ apigee_edge_teams.team.delete:
   base_route: entity.team.canonical
   weight: -2
 
+apigee_edge_teams.team.apps:
+  route_name: entity.team_app.collection_by_team
+  title: 'Apps'
+  class: Drupal\apigee_edge_teams\Plugin\Menu\TeamAppsLocalTask
+  base_route: entity.team.canonical
+  weight: -1
+
 apigee_edge_teams.team_app.view:
   route_name: entity.team_app.canonical
   title: 'View'
