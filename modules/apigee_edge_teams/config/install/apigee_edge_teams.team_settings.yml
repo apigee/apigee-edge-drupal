@@ -2,4 +2,7 @@ langcode: en
 entity_label_singular: ''
 entity_label_plural: ''
 cache_expiration: 900
-
+members_can_access_app_create: true
+members_can_access_app_update: true
+members_can_access_app_delete: true
+members_can_access_app_analytics: true

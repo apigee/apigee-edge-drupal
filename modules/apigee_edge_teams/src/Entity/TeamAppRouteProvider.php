@@ -55,6 +55,27 @@ class TeamAppRouteProvider extends AppRouteProvider {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  protected function getCollectionRoute(EntityTypeInterface $entity_type) {
+    $route = parent::getCollectionRoute($entity_type);
+    if ($route) {
+      $requirements = $route->getRequirements();
+      // Users with "Manage Team Apps" permission should also have access.
+      $permission = TeamAppPermissionProvider::MANAGE_TEAM_APPS_PERMISSION;
+      if (isset($requirements['_permission'])) {
+        $requirements['_permission'] .= "+{$permission}";
+      }
+      else {
+        $requirements['_permission'] = $permission;
+      }
+      $route->setRequirements($requirements);
+    }
+
+    return $route;
+  }
+
+  /**
    * Gets the add-form route for team.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type

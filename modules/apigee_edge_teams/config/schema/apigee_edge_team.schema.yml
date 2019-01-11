@@ -10,6 +10,14 @@ apigee_edge_teams.team_settings:
       label: 'How to refer to a Team on the UI (plural)'
     cache_expiration:
       type: integer
+    members_can_access_app_create:
+      type: boolean
+    members_can_access_app_update:
+      type: boolean
+    members_can_access_app_delete:
+      type: boolean
+    members_can_access_app_analytics:
+      type: boolean
 
 apigee_edge_teams.team_app_settings:
   type: config_object

@@ -40,6 +40,8 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   config_with_labels = "apigee_edge_teams.team_app_settings",
  *   handlers = {
  *     "storage" = "Drupal\apigee_edge_teams\Entity\Storage\TeamAppStorage",
+ *     "permission_provider" = "Drupal\apigee_edge_teams\Entity\TeamAppPermissionProvider",
+ *     "access" = "Drupal\apigee_edge_teams\Entity\TeamAppAccessHandler",
  *     "form" = {
  *       "default" = "Drupal\apigee_edge_teams\Entity\Form\TeamAppCreateForm",
  *       "add" = "Drupal\apigee_edge_teams\Entity\Form\TeamAppCreateForm",
@@ -59,7 +61,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "collection-by-team" = "/teams/{team}/apps",
  *     "canonical" = "/teams/{team}/apps/{app}",
  *     "add-form" = "/team-apps/add",
- *     "add-form-for-team" = "/teams/{team}/add",
+ *     "add-form-for-team" = "/teams/{team}/create-app",
  *     "edit-form" = "/teams/{team}/apps/{app}/edit",
  *     "delete-form" = "/teams/{team}/apps/{app}/delete",
  *     "analytics"  = "/teams/{team}/apps/{app}/analytics",
@@ -71,11 +73,6 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   admin_permission = "administer team",
  *   field_ui_base_route = "apigee_edge_teams.settings.team_app",
  * )
- *
- * TODO:
- * - Admin permission may needs to be changed.
- * - Add dedicated permission provider and access handler based on the perm.
- *   matrix.
  */
 class TeamApp extends App implements TeamAppInterface {
 
