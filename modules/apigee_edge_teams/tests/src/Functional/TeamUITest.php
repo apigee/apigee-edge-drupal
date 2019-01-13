@@ -20,6 +20,7 @@
 namespace Drupal\Tests\apigee_edge_teams\Functional;
 
 use Drupal\Core\Url;
+use Drupal\Tests\apigee_edge\Traits\EntityUtilsTrait;
 
 /**
  * Team entity UI tests.
@@ -28,6 +29,8 @@ use Drupal\Core\Url;
  * @group apigee_edge_teams
  */
 class TeamUITest extends ApigeeEdgeTeamsFunctionalTestBase {
+
+  use EntityUtilsTrait;
 
   /**
    * The team entity storage.
@@ -140,6 +143,14 @@ class TeamUITest extends ApigeeEdgeTeamsFunctionalTestBase {
 
     // The team listing page is empty.
     $this->assertSession()->pageTextContains('There are no Teams yet.');
+  }
+
+  /**
+   * Tests the team entity label modifications.
+   */
+  public function testTeamLabel() {
+    $this->drupalLogin($this->rootUser);
+    $this->changeEntityAliasesAndValidate('team', 'apigee_edge_teams.settings.team');
   }
 
 }
