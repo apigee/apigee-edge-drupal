@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\apigee_edge\Functional;
+namespace Drupal\Tests\apigee_edge\Traits;
 
 use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController as EdgeDeveloperAppCredentialController;
 use Drupal\apigee_edge\Entity\ApiProduct;
