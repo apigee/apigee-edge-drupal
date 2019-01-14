@@ -24,6 +24,7 @@ use Apigee\Edge\Api\Management\Structure\CompanyMembership;
 use Drupal\apigee_edge\Entity\Controller\DeveloperControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
 use Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface;
+use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
@@ -116,6 +117,9 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
   public function getTeams(string $developer): array {
     /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $entity */
     $entity = $this->developerStorage->load($developer);
+    if ($entity === NULL) {
+      throw new DeveloperDoesNotExistException($developer);
+    }
     // Developer entity's getCompanies() method should return the list of
     // companies where the developer is member.
     // @see \Drupal\apigee_edge\Entity\Developer::getCompanies()
