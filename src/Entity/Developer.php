@@ -78,16 +78,16 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
   protected $originalEmail;
 
   /**
-   * Local, in memory cache for companies that the developer belongs.
+   * Caches company names.
    *
    * This does not get saved to the persistent entity cache because it gets
    * calculated only when it is necessary, when getCompanies() gets called.
    *
-   * @var null|array
+   * @var \Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface
    *
    * @see getCompanies()
    */
-  protected $companies;
+  protected $companiesCache;
 
   /**
    * Developer constructor.
@@ -113,10 +113,11 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
     // @see static::idProperties()
     // @see static::drupalEntityId()
     $this->originalEmail = $this->originalEmail ?? $this->decorated->getEmail();
-    // If we could read a non-empty company list from the API response then
-    // cache it.
+    $this->companiesCache = \Drupal::service('apigee_edge.controller.cache.developer_companies');
+    // If we got a non-empty companies list from the API response then
+    // cache it otherwise ignore it. See more details in getCompanies().
     if ($this->decorated->getCompanies()) {
-      $this->companies = $this->decorated->getCompanies();
+      $this->companiesCache->saveCompanies([$this->decorated]);
     }
   }
 
@@ -257,7 +258,7 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
     // by calling the list developers API endpoint that does not return the
     // companies.
     // @see https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/developers
-    if ($this->companies === NULL) {
+    if ($this->companiesCache->getCompanies($this->getDeveloperId()) === NULL) {
       /** @var \Drupal\apigee_edge\Entity\Controller\DeveloperControllerInterface $controller */
       $controller = \Drupal::service('apigee_edge.controller.developer');
       // If controller has an internal cache let's check whether this
@@ -268,8 +269,8 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
         if ($cached_developer && !empty($cached_developer->getCompanies())) {
           // Save it to the local cache so we can serve it from there
           // next time.
-          $this->companies = $cached_developer->getCompanies();
-          return $this->companies;
+          $this->companiesCache->saveCompanies([$cached_developer]);
+          return $this->companiesCache->getCompanies($cached_developer->id());
         }
         else {
           // Let's remove the developer from the cache otherwise we get it back
@@ -285,7 +286,7 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
         // Save the list of companies (even if it is actually empty) to this
         // local cache property so we can return this information without
         // calling Apigee Edge next time.
-        $this->companies = $developer->getCompanies();
+        $this->companiesCache->saveCompanies([$developer]);
       }
       catch (ApiException $exception) {
         $message = 'Unable to load companies of %developer developer from Apigee Edge. @message %function (line %line of %file). <pre>@backtrace_string</pre>';
@@ -302,7 +303,7 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
       }
     }
 
-    return $this->companies;
+    return $this->companiesCache->getCompanies($this->getDeveloperId());
   }
 
   /**
@@ -484,13 +485,17 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
    */
   public static function postDelete(EntityStorageInterface $storage, array $entities) {
     parent::postDelete($storage, $entities);
+    /** @var \Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface $cache */
+    $cache = \Drupal::service('apigee_edge.controller.cache.developer_companies');
+    $developer_mail_id_map = array_map(function (Developer $entity) {
+      return $entity->getDeveloperId();
+    }, $entities);
+    // Remove developer->company membership info from the memory cache.
+    $cache->remove($developer_mail_id_map);
     // Ensure that even if $storage:delete() got called with developer email
     // addresses, all cache entries that refers to the same developer by
     // its developer id (UUID) also gets invalidated.
-    $developer_ids = array_map(function (Developer $entity) {
-      return $entity->getDeveloperId();
-    }, $entities);
-    $storage->resetCache($developer_ids);
+    $storage->resetCache($developer_mail_id_map);
   }
 
 }

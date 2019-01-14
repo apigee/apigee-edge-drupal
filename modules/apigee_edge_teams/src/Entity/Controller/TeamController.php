@@ -32,13 +32,10 @@ use Drupal\apigee_edge\Entity\Controller\CachedEntityCrudOperationsControllerTra
 use Drupal\apigee_edge\Entity\Controller\CachedPaginatedControllerHelperTrait;
 use Drupal\apigee_edge\Entity\Controller\CachedPaginatedEntityIdListingControllerTrait;
 use Drupal\apigee_edge\Entity\Controller\CachedPaginatedEntityListingControllerTrait;
-use Drupal\apigee_edge\Entity\Controller\DeveloperControllerInterface;
-use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
+use Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\apigee_edge_teams\CompanyMembershipObjectCacheInterface;
-use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
  * Definition of the Team controller service.
@@ -107,32 +104,18 @@ final class TeamController implements TeamControllerInterface {
   private $appNameCacheByOwnerFactory;
 
   /**
-   * The team membership manager service.
-   *
-   * @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface
-   */
-  private $teamMembershipManager;
-
-  /**
-   * The developer controller service.
-   *
-   * @var \Drupal\apigee_edge\Entity\Controller\DeveloperControllerInterface
-   */
-  private $developerController;
-
-  /**
-   * The developer entity storage.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  private $developerStorage;
-
-  /**
    * The company membership object cache.
    *
    * @var \Drupal\apigee_edge_teams\CompanyMembershipObjectCacheInterface
    */
   private $companyMembershipObjectCache;
+
+  /**
+   * The developer companies cache.
+   *
+   * @var \Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface
+   */
+  private $developerCompaniesCache;
 
   /**
    * CompanyController constructor.
@@ -149,26 +132,20 @@ final class TeamController implements TeamControllerInterface {
    *   The app cache by owner factory service.
    * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactoryInterface $app_name_cache_by_owner
    *   The app name cache by owner factory service.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager service.
-   * @param \Drupal\apigee_edge\Entity\Controller\DeveloperControllerInterface $developer_controller
-   *   The developer controller service.
-   * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
-   *   The team membership manager service.
    * @param \Drupal\apigee_edge_teams\CompanyMembershipObjectCacheInterface $company_membership_object_cache
    *   The company membership object cache.
+   * @param \Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface $developer_companies_cache
+   *   The developer companies cache.
    */
-  public function __construct(SDKConnectorInterface $connector, OrganizationControllerInterface $org_controller, EntityCacheInterface $entity_cache, EntityIdCacheInterface $entity_id_cache, AppCacheByOwnerFactoryInterface $app_cache_by_owner_factory, AppNameCacheByOwnerFactoryInterface $app_name_cache_by_owner, EntityTypeManagerInterface $entity_type_manager, DeveloperControllerInterface $developer_controller, TeamMembershipManagerInterface $team_membership_manager, CompanyMembershipObjectCacheInterface $company_membership_object_cache) {
+  public function __construct(SDKConnectorInterface $connector, OrganizationControllerInterface $org_controller, EntityCacheInterface $entity_cache, EntityIdCacheInterface $entity_id_cache, AppCacheByOwnerFactoryInterface $app_cache_by_owner_factory, AppNameCacheByOwnerFactoryInterface $app_name_cache_by_owner, CompanyMembershipObjectCacheInterface $company_membership_object_cache, DeveloperCompaniesCacheInterface $developer_companies_cache) {
     $this->connector = $connector;
     $this->orgController = $org_controller;
     $this->entityCache = $entity_cache;
     $this->entityIdCache = $entity_id_cache;
     $this->appCacheByOwnerFactory = $app_cache_by_owner_factory;
     $this->appNameCacheByOwnerFactory = $app_name_cache_by_owner;
-    $this->developerStorage = $entity_type_manager->getStorage('developer');
-    $this->developerController = $developer_controller;
-    $this->teamMembershipManager = $team_membership_manager;
     $this->companyMembershipObjectCache = $company_membership_object_cache;
+    $this->developerCompaniesCache = $developer_companies_cache;
   }
 
   /**
@@ -219,32 +196,15 @@ final class TeamController implements TeamControllerInterface {
    * {@inheritdoc}
    */
   public function delete(string $entityId): EntityInterface {
-    // Before we could delete this team let's collect all team members for
-    // invalidating some related caches.
-    $members = $this->teamMembershipManager->getMembers($entityId);
-
     /** @var \Apigee\Edge\Api\Management\Entity\CompanyInterface $entity */
     $entity = $this->traitDelete($entityId);
 
-    if (!empty($members)) {
-      // Invalidate developer storage's static cache to force reload
-      // in \Drupal\apigee_edge\Entity\Developer::getCompanies().
-      // (resetCache() does not invalidate the underlying controller's
-      // static cache, see reasoning in method's body.)
-      $this->developerStorage->resetCache($members);
-      // Invalidate developer controller's cache to force reload in
-      // \Drupal\apigee_edge\Entity\Developer::getCompanies().
-      // If we would only invalidate the developer storage caches that would
-      // not be enough within the same page request because developer storage
-      // calls the developer controller that also has a static cache.
-      if ($this->developerController instanceof EntityCacheAwareControllerInterface) {
-        $this->developerController->entityCache()->removeEntities($members);
-      }
-    }
+    // Invalidate developer companies cache to force reload
+    // in \Drupal\apigee_edge\Entity\Developer::getCompanies().
+    $this->developerCompaniesCache->invalidate(["company:{$entityId}"]);
 
     // And of course, the company membership object cache has to be cleared as
-    // well because we have warmed that up in the beginning of this method
-    // by loading all members of this team.
+    // well.
     $this->companyMembershipObjectCache->removeMembership($entityId);
 
     // Invalidate app caches that belongs to this company.
