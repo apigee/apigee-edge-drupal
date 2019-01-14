@@ -74,7 +74,7 @@ class TeamMembershipManagerTest extends ApigeeEdgeTeamsFunctionalTestBase {
         'lastName' => $this->getRandomGenerator()->word(8),
       ]);
       $developer->save();
-      $this->developers[$developer->getEmail()] = $developer;
+      $this->developers[$i] = $developer;
     }
 
     $this->team = $this->teamStorage->create([
@@ -126,7 +126,7 @@ class TeamMembershipManagerTest extends ApigeeEdgeTeamsFunctionalTestBase {
 
     // Add developers to the team and check whether the related membership
     // service functions work properly.
-    $team_membership_manager->addMembers($this->team->getName(), array_keys($this->developers));
+    $team_membership_manager->addMembers($this->team->getName(), [$this->developers[0]->getEmail(), $this->developers[1]->getEmail()]);
     foreach ($this->developers as $developer) {
       $this->assertContains($this->team->getName(), $team_membership_manager->getTeams($developer->getEmail()));
       $this->assertContains($developer->getEmail(), $team_membership_manager->getMembers($this->team->getName()));
@@ -148,6 +148,19 @@ class TeamMembershipManagerTest extends ApigeeEdgeTeamsFunctionalTestBase {
 
     // Ensure that team membership cache is empty.
     $this->assertEmpty($team_membership_cache->getMembership($this->team->getName())->getMembers());
+
+    // Add developer to company then delete developer and check whether the
+    // developer is no longer member of the team.
+    $team_membership_manager->addMembers($this->team->getName(), [$this->developers[0]->getEmail()]);
+    $this->developerStorage->delete([$this->developers[0]]);
+    $this->assertNotContains($this->developers[0]->getEmail(), $team_membership_manager->getMembers($this->team->getName()));
+    // Check whether the team membership is correctly cached.
+    $this->assertArrayNotHasKey($this->developers[0]->getEmail(), $team_membership_cache->getMembership($this->team->getName())->getMembers());
+
+    // Delete the team and endure that the team is removed from the team
+    // membership cache.
+    $this->teamStorage->delete([$this->team]);
+    $this->assertNull($team_membership_cache->getMembership($this->team->getName()));
   }
 
 }
