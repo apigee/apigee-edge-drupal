@@ -122,14 +122,14 @@ class TeamUITest extends ApigeeEdgeTeamsFunctionalTestBase {
     // Update the display name and whether the updated name is visible on the
     // listing and canonical pages.
     $this->clickLink('Edit');
-    $modified_name = $this->randomMachineName();
+    $modified_display_name = $this->randomMachineName();
     $this->submitForm([
-      'displayName[0][value]' => $modified_name,
+      'displayName[0][value]' => $modified_display_name,
     ], 'Save team');
 
-    $this->assertSession()->pageTextContains($modified_name);
-    $this->clickLink($modified_name);
-    $this->assertSession()->pageTextContains($modified_name);
+    $this->assertSession()->pageTextContains($modified_display_name);
+    $this->clickLink($modified_display_name);
+    $this->assertSession()->pageTextContains($modified_display_name);
 
     // Try to delete the team without verification code.
     $this->clickLink('Delete');
