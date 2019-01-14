@@ -1,0 +1,11 @@
+apigee_edge_teams.team_settings:
+  title: 'Apigee Edge Teams: Team settings'
+  base_route_name: apigee_edge_teams.settings.team
+  names:
+    - apigee_edge_teams.team_settings
+
+apigee_edge_teams.team_app_settings:
+  title: 'Apigee Edge Teams: Team App settings'
+  base_route_name: apigee_edge_teams.settings.team_app
+  names:
+    - apigee_edge_teams.team_app_settings

@@ -1,0 +1,82 @@
+<?php
+
+/**
+ * @file
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+
+/**
+ * Gets the title of team listing page.
+ *
+ * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+ *   The title of the page.
+ */
+function apigee_edge_teams_team_listing_page_title(): TranslatableMarkup {
+  $args['@teams'] = \Drupal::entityTypeManager()->getDefinition('team')->getPluralLabel();
+  $title = t('@teams', $args);
+  // Modules and themes can alter the title.
+  \Drupal::moduleHandler()->alter('apigee_edge_teams_team_listing_page_title', $title);
+
+  return $title;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function apigee_edge_teams_form_entity_form_display_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  if ($form['#entity_type'] === 'team_app') {
+    $form['#validate'][] = '_apigee_edge_teams_team_app_entity_form_display_edit_form_validate';
+  }
+}
+
+/**
+ * Extra validation for the entity_form_display.edit form of team apps.
+ *
+ * This makes sure that fields marked as 'required' can't be disabled.
+ *
+ * @param array $form
+ *   Form array.
+ * @param Drupal\Core\Form\FormStateInterface $form_state
+ *   Form state.
+ */
+function _apigee_edge_teams_team_app_entity_form_display_edit_form_validate(array &$form, FormStateInterface $form_state) {
+  $required = \Drupal::config('apigee_edge_teams.team_app_settings')->get('required_base_fields');
+
+  foreach ($form_state->getValue('fields') as $field_name => $data) {
+    if (in_array($field_name, $required) && $data['region'] === 'hidden') {
+      $form_state->setError($form['fields'][$field_name], t('%field-name is required.', [
+        '%field-name' => $form['fields'][$field_name]['human_name']['#plain_text'],
+      ]));
+    }
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete().
+ */
+function apigee_edge_teams_developer_delete(EntityInterface $entity) {
+  /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $entity */
+  /** @var \Drupal\apigee_edge_teams\CompanyMembershipObjectCacheInterface $cache */
+  $cache = \Drupal::service('apigee_edge_teams.cache.company_membership_object');
+  // Remove all company membership object cache entries that contained the
+  // removed developer.
+  $cache->invalidateMemberships(["developer:{$entity->getEmail()}"]);
+}

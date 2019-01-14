@@ -1,0 +1,80 @@
+apigee_edge_teams.settings.team:
+  route_name: apigee_edge_teams.settings.team
+  title: 'Alias'
+  base_route: apigee_edge_teams.settings.team
+  weight: -10
+
+apigee_edge_teams.settings.team.member_permissions:
+  route_name: apigee_edge_teams.settings.team.member_permissions
+  title: 'Permissions'
+  base_route: apigee_edge_teams.settings.team
+
+apigee_edge_teams.settings.team.cache:
+  route_name: apigee_edge_teams.settings.team.cache
+  title: 'Caching'
+  base_route: apigee_edge_teams.settings.team
+
+apigee_edge_teams.settings.team_app.alias:
+  route_name: apigee_edge_teams.settings.team_app
+  title: 'Alias'
+  base_route: apigee_edge_teams.settings.team_app
+
+apigee_edge_teams.settings.team_app.credentials:
+  route_name: apigee_edge_teams.settings.team_app.credentials
+  title: 'Credentials'
+  base_route: apigee_edge_teams.settings.team_app
+
+apigee_edge_teams.settings.team_app.cache:
+  route_name: apigee_edge_teams.settings.team_app.cache
+  title: 'Caching'
+  base_route: apigee_edge_teams.settings.team_app
+  weight: 10
+
+apigee_edge_teams.team.view:
+  route_name: entity.team.canonical
+  title: 'View'
+  base_route: entity.team.canonical
+  weight: -4
+
+apigee_edge_teams.team.edit:
+  route_name: entity.team.edit_form
+  title: 'Edit'
+  base_route: entity.team.canonical
+  weight: -3
+
+apigee_edge_teams.team.delete:
+  route_name: entity.team.delete_form
+  title: 'Delete'
+  base_route: entity.team.canonical
+  weight: -2
+
+apigee_edge_teams.team.apps:
+  route_name: entity.team_app.collection_by_team
+  title: 'Apps'
+  class: Drupal\apigee_edge_teams\Plugin\Menu\TeamAppsLocalTask
+  base_route: entity.team.canonical
+  weight: -1
+
+apigee_edge_teams.team_app.view:
+  route_name: entity.team_app.canonical
+  title: 'View'
+  base_route: entity.team_app.canonical
+  weight: -4
+
+apigee_edge_teams.team_app.edit:
+  route_name: entity.team_app.edit_form
+  title: 'Edit'
+  base_route: entity.team_app.canonical
+  weight: -3
+
+apigee_edge_teams.team_app.delete:
+  route_name: entity.team_app.delete_form
+  title: 'Delete'
+  base_route: entity.team_app.canonical
+  weight: -2
+
+apigee_edge_teams.team_app.analytics:
+  route_name: entity.team_app.analytics
+  title: 'Analytics'
+  base_route: entity.team_app.canonical
+  weight: -1
