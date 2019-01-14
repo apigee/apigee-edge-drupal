@@ -46,7 +46,7 @@ services:
 
   apigee_edge_teams.team_membership_manager:
     class: Drupal\apigee_edge_teams\TeamMembershipManager
-    arguments: ['@entity_type.manager', '@apigee_edge_teams.company_members_controller_factory', '@apigee_edge.controller.cache.developer_companies']
+    arguments: ['@entity_type.manager', '@apigee_edge_teams.company_members_controller_factory', '@apigee_edge.controller.developer', '@apigee_edge.controller.cache.developer_companies']
 
   apigee_edge_teams.event_subscriber.team_app_field_config_list_alter_event_subscriber:
     class: Drupal\apigee_edge_teams\EventSubscriber\TeamAppFieldConfigListAlterEventSubscriber
