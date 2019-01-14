@@ -46,6 +46,14 @@ interface CompanyMembershipObjectCacheInterface {
   public function removeMembership(string $company): void;
 
   /**
+   * Invalidate membership objects by tags.
+   *
+   * @param array $tags
+   *   Array of cache tags.
+   */
+  public function invalidateMemberships(array $tags): void;
+
+  /**
    * Returns membership object from the cache.
    *
    * @param string $company

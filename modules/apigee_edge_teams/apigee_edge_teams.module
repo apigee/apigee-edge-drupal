@@ -19,6 +19,7 @@
  * MA 02110-1301, USA.
  */
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
@@ -66,4 +67,16 @@ function _apigee_edge_teams_team_app_entity_form_display_edit_form_validate(arra
       ]));
     }
   }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete().
+ */
+function apigee_edge_teams_developer_delete(EntityInterface $entity) {
+  /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $entity */
+  /** @var \Drupal\apigee_edge_teams\CompanyMembershipObjectCacheInterface $cache */
+  $cache = \Drupal::service('apigee_edge_teams.cache.company_membership_object');
+  // Remove all company membership object cache entries that contained the
+  // removed developer.
+  $cache->invalidateMemberships(["developer:{$entity->getEmail()}"]);
 }

@@ -25,6 +25,7 @@ use Drupal\apigee_edge\MemoryCacheFactoryInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Cache\CacheFactoryInterface;
+use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 
 /**
@@ -95,12 +96,18 @@ final class CompanyMembershipObjectCache implements CompanyMembershipObjectCache
    * {@inheritdoc}
    */
   public function saveMembership(string $company, CompanyMembership $membership): void {
-    $this->memoryCache->set($company, $membership);
+    // Tag company membership cache entries with members' (developers') email
+    // addresses for easier cache invalidation when a developer gets removed.
+    $tags = [];
+    foreach (array_keys($membership->getMembers()) as $developer_email) {
+      $tags[] = "developer:{$developer_email}";
+    }
+    $this->memoryCache->set($company, $membership, CacheBackendInterface::CACHE_PERMANENT, $tags);
     $expiration = $this->persistentCacheExpiration;
     if ($expiration !== CacheBackendInterface::CACHE_PERMANENT) {
       $expiration = $this->systemTime->getCurrentTime() + $expiration;
     }
-    $this->persistentCacheBackend->set($company, $membership, $expiration);
+    $this->persistentCacheBackend->set($company, $membership, $expiration, $tags);
   }
 
   /**
@@ -114,13 +121,23 @@ final class CompanyMembershipObjectCache implements CompanyMembershipObjectCache
   /**
    * {@inheritdoc}
    */
+  public function invalidateMemberships(array $tags): void {
+    $this->memoryCache->invalidateTags($tags);
+    if ($this->persistentCacheBackend instanceof CacheTagsInvalidatorInterface) {
+      $this->persistentCacheBackend->invalidateTags($tags);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getMembership(string $company): ?CompanyMembership {
     if ($data = $this->memoryCache->get($company)) {
       return $data->data;
     }
 
     if ($data = $this->persistentCacheBackend->get($company)) {
-      // Next time returns this from the memory cache.
+      // Next time return this from the memory cache.
       $this->memoryCache->set($company, $data->data);
       return $data->data;
     }
