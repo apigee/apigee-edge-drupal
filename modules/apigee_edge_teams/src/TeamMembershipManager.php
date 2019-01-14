@@ -21,6 +21,7 @@
 namespace Drupal\apigee_edge_teams;
 
 use Apigee\Edge\Api\Management\Structure\CompanyMembership;
+use Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
@@ -43,16 +44,26 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
   private $companyMembersControllerFactory;
 
   /**
+   * The developer companies cache.
+   *
+   * @var \Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface
+   */
+  private $developerCompaniesCache;
+
+  /**
    * TeamMembershipManager constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
    * @param \Drupal\apigee_edge_teams\CompanyMembersControllerFactoryInterface $company_members_controller_factory
    *   The company members controller factory service.
+   * @param \Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface $developer_companies_cache
+   *   The developer companies cache.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, CompanyMembersControllerFactoryInterface $company_members_controller_factory) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, CompanyMembersControllerFactoryInterface $company_members_controller_factory, DeveloperCompaniesCacheInterface $developer_companies_cache) {
     $this->developerStorage = $entity_type_manager->getStorage('developer');
     $this->companyMembersControllerFactory = $company_members_controller_factory;
+    $this->developerCompaniesCache = $developer_companies_cache;
   }
 
   /**
@@ -73,6 +84,12 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
     }, array_flip($developers)));
     $controller = $this->companyMembersControllerFactory->companyMembersController($team);
     $controller->setMembers($membership);
+    // Developer::getCompanies() must return the updated membership information.
+    // @see \Drupal\apigee_edge\Entity\Developer::getCompanies()
+    $developer_companies_cache_tags = array_map(function (string $developer) {
+      return "developer:{$developer}";
+    }, $developers);
+    $this->developerCompaniesCache->invalidate($developer_companies_cache_tags);
   }
 
   /**
@@ -83,6 +100,12 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
     foreach ($developers as $developer) {
       $controller->removeMember($developer);
     }
+    // Developer::getCompanies() must return the updated membership information.
+    // @see \Drupal\apigee_edge\Entitky\Developer::getCompanies()
+    $developer_companies_cache_tags = array_map(function (string $developer) {
+      return "developer:{$developer}";
+    }, $developers);
+    $this->developerCompaniesCache->invalidate($developer_companies_cache_tags);
   }
 
   /**
