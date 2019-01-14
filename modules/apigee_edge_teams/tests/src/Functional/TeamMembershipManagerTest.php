@@ -157,7 +157,7 @@ class TeamMembershipManagerTest extends ApigeeEdgeTeamsFunctionalTestBase {
     // Check whether the team membership is correctly cached.
     $this->assertArrayNotHasKey($this->developers[0]->getEmail(), $team_membership_cache->getMembership($this->team->getName())->getMembers());
 
-    // Delete the team and endure that the team is removed from the team
+    // Delete the team and ensure that the team is removed from the team
     // membership cache.
     $this->teamStorage->delete([$this->team]);
     $this->assertNull($team_membership_cache->getMembership($this->team->getName()));
