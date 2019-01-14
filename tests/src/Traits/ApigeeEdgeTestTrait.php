@@ -345,4 +345,11 @@ trait ApigeeEdgeTestTrait {
     watchdog_exception("{$ro->getShortName()}{$suffix}", $exception);
   }
 
+  /**
+   * Gets a random unique ID.
+   */
+  protected function getRandomUniqueId(): string {
+    return $this->container->get('uuid')->generate();
+  }
+
 }

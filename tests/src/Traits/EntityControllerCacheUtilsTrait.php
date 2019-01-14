@@ -28,13 +28,6 @@ use Drupal\apigee_edge\Entity\Controller\Cache\EntityIdCacheInterface;
 trait EntityControllerCacheUtilsTrait {
 
   /**
-   * Gets a random unique ID.
-   */
-  protected function getRandomUniqueId(): string {
-    return uniqid('', TRUE);
-  }
-
-  /**
    * Saves entities into the entity cache and checks the result.
    *
    * @param \Apigee\Edge\Entity\EntityInterface[] $entities
