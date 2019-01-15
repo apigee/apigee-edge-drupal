@@ -17,16 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\apigee_edge\Functional;
+namespace Drupal\Tests\apigee_edge_teams\Functional;
 
-use Drupal\Tests\apigee_edge\Traits\ApigeeEdgeTestTrait;
-use Drupal\Tests\BrowserTestBase;
+use Drupal\Tests\apigee_edge\Functional\ApigeeEdgeFunctionalTestBase;
 
 /**
- * Base class for functional tests.
+ * Base class for Apigee Edge Teams functional tests.
  */
-abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
+abstract class ApigeeEdgeTeamsFunctionalTestBase extends ApigeeEdgeFunctionalTestBase {
 
-  use ApigeeEdgeTestTrait;
+  /**
+   * {@inheritdoc}
+   */
+  public static $modules = [
+    'apigee_edge_teams',
+  ];
 
 }
