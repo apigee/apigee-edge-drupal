@@ -32,15 +32,15 @@
   margin-right: 5px;
 }
 
-.apigee-edge-developer-app-analytics > div {
+.apigee-edge-app-analytics > div {
   margin-bottom: 5px;
 }
 
-.apigee-edge-developer-app-analytics > div > div {
+.apigee-edge-app-analytics > div > div {
   display: inline-block;
 }
 
-.apigee-edge-developer-app-analytics .form-item {
+.apigee-edge-app-analytics .form-item {
   display: inline-block;
 }
 

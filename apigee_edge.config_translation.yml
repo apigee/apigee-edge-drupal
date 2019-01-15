@@ -10,11 +10,16 @@ apigee_edge.developer_settings:
   names:
     - apigee_edge.developer_settings
 
-apigee_edge.app_settings:
-  title: 'Apigee Edge: App settings'
-  base_route_name: apigee_edge.settings.app.alias
+apigee_edge.general_app_settings:
+  title: 'Apigee Edge: General app settings'
+  base_route_name: apigee_edge.settings.general_app
   names:
     - apigee_edge.common_app_settings
+
+apigee_edge.developer_app_settings:
+  title: 'Apigee Edge: Developer App settings'
+  base_route_name: apigee_edge.settings.developer_app
+  names:
     - apigee_edge.developer_app_settings
 
 apigee_edge.api_product_settings:

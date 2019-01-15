@@ -22,9 +22,8 @@ namespace Drupal\apigee_edge\Entity\Controller;
 
 use Apigee\Edge\Api\Management\Controller\ApiProductController as EdgeApiProductController;
 use Apigee\Edge\Api\Management\Controller\ApiProductControllerInterface as EdgeApiProductControllerInterface;
-use Apigee\Edge\Entity\EntityInterface;
-use Apigee\Edge\Structure\AttributesProperty;
-use Apigee\Edge\Structure\PagerInterface;
+use Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface;
+use Drupal\apigee_edge\Entity\Controller\Cache\EntityIdCacheInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 
 /**
@@ -33,7 +32,13 @@ use Drupal\apigee_edge\SDKConnectorInterface;
  * This integrates the Management API's API product controller from the
  * SDK's with Drupal.
  */
-final class ApiProductController implements ApiProductControllerInterface {
+final class ApiProductController implements ApiProductControllerInterface, EntityCacheAwareControllerInterface {
+
+  use CachedEntityCrudOperationsControllerTrait;
+  use CachedPaginatedEntityIdListingControllerTrait;
+  use CachedPaginatedEntityListingControllerTrait;
+  use CachedPaginatedControllerHelperTrait;
+  use CachedAttributesAwareEntityControllerTrait;
 
   /**
    * Local cache for the decorated API product controller from the SDK.
@@ -52,13 +57,43 @@ final class ApiProductController implements ApiProductControllerInterface {
   private $connector;
 
   /**
+   * The entity cache.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface
+   */
+  private $entityCache;
+
+  /**
+   * The entity id cache.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\EntityIdCacheInterface
+   */
+  private $entityIdCache;
+
+  /**
+   * The organization controller service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface
+   */
+  private $orgController;
+
+  /**
    * ApiProductController constructor.
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
    *   The SDK connector service.
+   * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
+   *   The organization controller service.
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface $entity_cache
+   *   The entity cache used by this controller.
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\EntityIdCacheInterface $entity_id_cache
+   *   The entity id cache used by this controller.
    */
-  public function __construct(SDKConnectorInterface $connector) {
+  public function __construct(SDKConnectorInterface $connector, OrganizationControllerInterface $org_controller, EntityCacheInterface $entity_cache, EntityIdCacheInterface $entity_id_cache) {
     $this->connector = $connector;
+    $this->orgController = $org_controller;
+    $this->entityCache = $entity_cache;
+    $this->entityIdCache = $entity_id_cache;
   }
 
   /**
@@ -67,9 +102,9 @@ final class ApiProductController implements ApiProductControllerInterface {
    * @return \Apigee\Edge\Api\Management\Controller\ApiProductControllerInterface
    *   The initialized API product controller.
    */
-  private function decorated(): EdgeApiProductControllerInterface {
+  protected function decorated(): EdgeApiProductControllerInterface {
     if ($this->instance === NULL) {
-      $this->instance = new EdgeApiProductController($this->connector->getOrganization(), $this->connector->getClient());
+      $this->instance = new EdgeApiProductController($this->connector->getOrganization(), $this->connector->getClient(), NULL, $this->orgController);
     }
 
     return $this->instance;
@@ -85,69 +120,6 @@ final class ApiProductController implements ApiProductControllerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getAttributes(string $entityId): AttributesProperty {
-    return $this->decorated()->getAttributes($entityId);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getAttribute(string $entityId, string $name): string {
-    return $this->decorated()->getAttribute($entityId, $name);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function updateAttributes(string $entityId, AttributesProperty $attributes): AttributesProperty {
-    return $this->decorated()->updateAttributes($entityId, $attributes);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function updateAttribute(string $entityId, string $name, string $value): string {
-    return $this->decorated()->updateAttribute($entityId, $name, $value);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function deleteAttribute(string $entityId, string $name): void {
-    $this->decorated()->deleteAttribute($entityId, $name);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function create(EntityInterface $entity): void {
-    $this->decorated()->create($entity);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function delete(string $entityId): EntityInterface {
-    return $this->decorated()->delete($entityId);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function load(string $entityId): EntityInterface {
-    return $this->decorated()->load($entityId);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function update(EntityInterface $entity): void {
-    $this->decorated()->update($entity);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function getOrganisationName(): string {
     return $this->decorated()->getOrganisationName();
   }
@@ -155,22 +127,15 @@ final class ApiProductController implements ApiProductControllerInterface {
   /**
    * {@inheritdoc}
    */
-  public function createPager(int $limit = 0, ?string $startKey = NULL): PagerInterface {
-    return $this->decorated()->createPager($limit, $startKey);
+  public function entityCache(): EntityCacheInterface {
+    return $this->entityCache;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getEntityIds(PagerInterface $pager = NULL): array {
-    return $this->decorated()->getEntityIds($pager);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getEntities(PagerInterface $pager = NULL, string $key_provider = 'id'): array {
-    return $this->decorated()->getEntities($pager, $key_provider);
+  protected function entityIdCache(): EntityIdCacheInterface {
+    return $this->entityIdCache;
   }
 
 }

@@ -128,7 +128,7 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
     // Get app credentials from the shared app cache if available.
     /** @var \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface $app_cache */
     $app_cache = \Drupal::service('apigee_edge.controller.cache.apps');
-    $app = $app_cache->getAppFromCacheByAppId($this->getAppId());
+    $app = $app_cache->getEntity($this->getAppId());
     if ($app === NULL) {
       // App has not found in cache, we have to load it from Apigee Edge.
       /** @var \Drupal\apigee_edge\Entity\Controller\AppControllerInterface $app_controller */
@@ -155,16 +155,6 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
    */
   public function setCredentials(): void {
   }
-
-  /**
-   * Returns the id of the app owner from the app entity.
-   *
-   * Return value could be either the developer id or the company name.
-   *
-   * @return string
-   *   Id of the app owner.
-   */
-  abstract protected function getAppOwner(): string;
 
   /**
    * {@inheritdoc}
@@ -308,7 +298,10 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
       ->setDisplayConfigurable('view', TRUE)
       ->setLabel(t('Callback URL'));
 
-    $definitions['description']
+    // Do not limit the length of the description because the API does not
+    // limit that either.
+    $definitions['description'] = static::getBaseFieldDefinition('description', 'string_long')
+      ->setSetting('case_sensitive', TRUE)
       ->setDisplayOptions('form', [
         'weight' => 2,
       ])
@@ -345,10 +338,7 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
       'appId',
       'appFamily',
       'createdAt',
-      'createdBy',
-      'developerId',
       'lastModifiedAt',
-      'lastModifiedBy',
       'name',
       'scopes',
       'status',
@@ -358,6 +348,33 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
     }
 
     return $definitions;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static function propertyToBaseFieldTypeMap(): array {
+    return parent::propertyToBaseFieldBlackList() + [
+      // UUIDs (developerId, appId) managed on Apigee Edge so we do not
+      // want to expose them as UUID fields. Same applies for createdAt and
+      // lastModifiedAt. We do not want that Drupal apply default values
+      // on them if they are empty therefore their field type is a simple
+      // "timestamp" instead of "created" or "changed".
+      'createdAt' => 'timestamp',
+      'lastModifiedAt' => 'timestamp',
+      'scopes' => 'list_string',
+      'status' => 'string',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static function propertyToBaseFieldBlackList(): array {
+    return array_merge(parent::propertyToBaseFieldBlackList(), [
+      // We expose credentials as a pseudo field.
+      'credentials',
+    ]);
   }
 
   /**
@@ -406,6 +423,33 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
       }
     }
     return parent::set($field_name, $value, $notify);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    $label = parent::label();
+    // Return app name instead of app id if display name is missing.
+    if ($label === $this->id()) {
+      $label = $this->getName();
+    }
+    return $label;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function uuid() {
+    // Or $this->id().
+    return $this->decorated->getAppId();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function uniqueIdProperties(): array {
+    return array_merge(parent::uniqueIdProperties(), ['appId']);
   }
 
 }

@@ -20,19 +20,21 @@
 
 namespace Drupal\apigee_edge\Entity\ListBuilder;
 
-use Drupal\apigee_edge\Entity\DeveloperAppInterface;
+use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
 use Drupal\Component\Utility\Html;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\Query\QueryInterface;
+use Drupal\Core\Render\Markup;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
-use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -40,7 +42,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 /**
  * Lists developer apps of a developer on the UI.
  */
-class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
+class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements ContainerInjectionInterface {
 
   use DeveloperStatusCheckTrait;
 
@@ -52,45 +54,71 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
   protected $currentUser;
 
   /**
+   * Route match object.
+   *
+   * @var \Drupal\Core\Routing\RouteMatchInterface
+   */
+  protected $routeMatch;
+
+  /**
+   * Associative array that contains generated CSS entity ids for apps by name.
+   *
+   * @var array
+   */
+  private $appNameCssIdCache = [];
+
+  /**
    * DeveloperAppListBuilderForDeveloper constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
-   *   The entity storage.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\Render\RendererInterface $render
    *   The render.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
-   *   Currently logged-in user.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack object.
+   * @param \Drupal\Core\Session\AccountInterface $current_user
+   *   Currently logged-in user.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The route match object.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render, AccountInterface $current_user, RequestStack $request_stack) {
-    parent::__construct($entity_type, $storage, $entity_type_manager, $render, $request_stack);
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render, RequestStack $request_stack, AccountInterface $current_user, RouteMatchInterface $route_match) {
+    parent::__construct($entity_type, $entity_type_manager, $render, $request_stack);
     $this->currentUser = $current_user;
+    $this->routeMatch = $route_match;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
-    $entity_type = $container->get('entity_type.manager')->getDefinition('developer_app');
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
     return new static(
       $entity_type,
-      $container->get('entity.manager')->getStorage($entity_type->id()),
-      $container->get('entity.manager'),
+      $container->get('entity_type.manager'),
       $container->get('renderer'),
+      $container->get('request_stack'),
       $container->get('current_user'),
-      $container->get('request_stack')
+      $container->get('current_route_match')
     );
   }
 
   /**
    * {@inheritdoc}
+   *
+   * Because we use the _controller directive in the route we had to implement
+   * the ContainerInjectionInterface interface.
    */
-  protected function getEntityIds(array $headers = [], UserInterface $user = NULL) {
+  public static function create(ContainerInterface $container) {
+    return static::createInstance($container, $container->get('entity_type.manager')->getDefinition('developer_app'));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function buildEntityIdQuery(): QueryInterface {
+    $query = parent::buildEntityIdQuery();
+    $user = $this->routeMatch->getParameter('user');
     $developerId = $user->get('apigee_edge_developer_id')->value;
     // If developer id can not be retrieved for a Drupal user it means that
     // either there is connection error or the site is out of sync with
@@ -98,34 +126,8 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
     if ($developerId === NULL) {
       throw new DeveloperDoesNotExistException($user->getEmail());
     }
-
-    $query = $this->storage->getQuery()
-      ->condition('developerId', $developerId);
-    $query->tableSort($headers);
-    return $query->execute();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function load(array $headers = []) {
-    return [];
-  }
-
-  /**
-   * Load developer apps of a Drupal user.
-   *
-   * @param \Drupal\user\UserInterface $user
-   *   User object.
-   * @param array $headers
-   *   Table headers.
-   *
-   * @return \Drupal\Core\Entity\EntityInterface[]
-   *   Developer apps or an empty array.
-   */
-  protected function loadByUser(UserInterface $user, array $headers = []): array {
-    $entity_ids = $this->getEntityIds($headers, $user);
-    return $this->storage->loadMultiple($entity_ids);
+    $query->condition('developerId', $developerId);
+    return $query;
   }
 
   /**
@@ -148,35 +150,25 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
   /**
    * {@inheritdoc}
    */
-  protected function getAppDetailsLink(DeveloperAppInterface $app) {
-    return $app->toLink(NULL, 'canonical-by-developer');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getUniqueCssIdForAppInfoRow(DeveloperAppInterface $developer_app): string {
+  protected function generateCssIdForApp(AppInterface $app): string {
     // If we are listing the apps of a developer then developer app name is also
-    // unique.
-    return Html::cleanCssIdentifier("{$developer_app->getName()}-info");
+    // unique. But this method must return the same CSS id for an app within
+    // the same page request.
+    if (!array_key_exists($app->getName(), $this->appNameCssIdCache)) {
+      $this->appNameCssIdCache[$app->getName()] = Html::getUniqueId($app->getName());
+    }
+    return $this->appNameCssIdCache[$app->getName()];
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getUniqueCssIdForAppWarningRow(DeveloperAppInterface $developer_app): string {
-    // If we are listing the apps of a developer then developer app name is also
-    // unique.
-    return Html::cleanCssIdentifier("{$developer_app->getName()}-warning");
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function renderAddAppLink(UserInterface $user = NULL) {
-    $link = parent::renderAddAppLink();
-    if ($user) {
-      $link['#url'] = new Url('entity.developer_app.add_form_for_developer', ['user' => $user->id()], $link['#url']->getOptions());
+  protected function getAddEntityLink(): ?array {
+    $link = parent::getAddEntityLink();
+    if ($link) {
+      if ($user = $this->routeMatch->getParameter('user')) {
+        $link['#url'] = new Url('entity.developer_app.add_form_for_developer', ['user' => $user->id()], $link['#url']->getOptions());
+      }
     }
     return $link;
   }
@@ -184,37 +176,22 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function render(UserInterface $user = NULL) {
-    $this->checkDeveloperStatus($user->id());
-    $build = parent::render();
-
-    $build['table']['#empty'] = $this->t('Looks like you do not have any apps. Get started by adding one.');
-    // If current user has access to the Add app form (validated by the parent
-    // class).
-    if (!empty($build['add_app'])) {
-      $build['add_app']['link'] = $this->renderAddAppLink($user);
+  protected function renderAppName(AppInterface $app): array {
+    if ($app->access('view')) {
+      return $app->toLink(NULL, 'canonical-by-developer')->toRenderable();
     }
-
-    foreach ($this->loadByUser($user, $this->buildHeader()) as $entity) {
-      if ($row = $this->buildRow($entity)) {
-        $build['table']['#rows'] += $this->buildRow($entity);
-      }
-    }
-
-    return $build;
+    return parent::renderAppName($app);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getPageTitle(RouteMatchInterface $route_match): string {
-    $account = $route_match->getParameter('user');
-    if ($account->id() == $this->currentUser->id()) {
-      return apigee_edge_get_my_developer_apps_title();
-    }
-    else {
-      return apigee_edge_get_my_developer_apps_title($account);
-    }
+  public function render() {
+    $build = parent::render();
+    $user = $this->routeMatch->getParameter('user');
+    $this->checkDeveloperStatus($user->id());
+    $build['table']['#empty'] = $this->t('Looks like you do not have any apps. Get started by adding one.');
+    return $build;
   }
 
   /**
@@ -229,8 +206,29 @@ class DeveloperAppListBuilderForDeveloper extends DeveloperAppListBuilder {
    */
   public function myAppsPage(): RedirectResponse {
     $options['absolute'] = TRUE;
-    $url = Url::fromRoute('entity.developer_app.collection_by_developer', ['user' => \Drupal::currentUser()->id()], $options);
+    $url = Url::fromRoute('entity.developer_app.collection_by_developer', ['user' => $this->currentUser->id()], $options);
     return new RedirectResponse($url->toString(), 302);
+  }
+
+  /**
+   * Returns the title of the "developer app list by user" page.
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *   The title of the page.
+   */
+  public function pageTitle(): TranslatableMarkup {
+    /** @var \Drupal\user\UserInterface $account */
+    $account = $this->routeMatch->getParameter('user');
+    $args['@developer_app'] = $this->entityType->getPluralLabel();
+    if ($account && $account->id() != $this->currentUser->id()) {
+      $args['@user'] = Markup::create($account->label());
+      $title = $this->t('@developer_app of @user', $args);
+    }
+    else {
+      $title = $this->t('My @developer_app', $args);
+    }
+
+    return $title;
   }
 
 }

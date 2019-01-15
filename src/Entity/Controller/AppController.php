@@ -25,6 +25,8 @@ use Apigee\Edge\Api\Management\Controller\AppControllerInterface as EdgeAppContr
 use Apigee\Edge\Api\Management\Entity\AppInterface;
 use Apigee\Edge\Structure\PagerInterface;
 use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface;
+use Drupal\apigee_edge\Entity\Controller\Cache\AppIdCache;
+use Drupal\apigee_edge\Entity\Controller\Cache\GeneralAppCacheByAppOwnerFactoryInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 
 /**
@@ -33,10 +35,10 @@ use Drupal\apigee_edge\SDKConnectorInterface;
  * This integrates the Management API's App controller from the SDK's with
  * Drupal. It uses a shared (not internal) app cache to reduce the number of
  * API calls that we send to Apigee Edge.
- *
- * TODO Leverage cache in those methods that works with app ids not app object.
  */
 final class AppController extends AppControllerBase implements AppControllerInterface {
+
+  use CachedPaginatedControllerHelperTrait;
 
   /**
    * Local cache for the decorated app controller from the SDK.
@@ -48,6 +50,20 @@ final class AppController extends AppControllerBase implements AppControllerInte
   private $instance;
 
   /**
+   * The (general) app by owner cache factory service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface
+   */
+  private $appByOwnerAppCacheFactory;
+
+  /**
+   * The app id cache service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactoryInterface
+   */
+  private $appIdCache;
+
+  /**
    * AppController constructor.
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
@@ -55,10 +71,16 @@ final class AppController extends AppControllerBase implements AppControllerInte
    * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
    *   The organization controller service.
    * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface $app_cache
-   *   The app cache.
+   *   The app cache that stores apps by their ids (UUIDs).
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppIdCache $app_id_cache
+   *   The app id cache that stores app UUIDs.
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\GeneralAppCacheByAppOwnerFactoryInterface $app_cache_by_owner_factory
+   *   The (general) app cache by owner factory service.
    */
-  public function __construct(SDKConnectorInterface $connector, OrganizationControllerInterface $org_controller, AppCacheInterface $app_cache) {
+  public function __construct(SDKConnectorInterface $connector, OrganizationControllerInterface $org_controller, AppCacheInterface $app_cache, AppIdCache $app_id_cache, GeneralAppCacheByAppOwnerFactoryInterface $app_cache_by_owner_factory) {
     parent::__construct($connector, $org_controller, $app_cache);
+    $this->appByOwnerAppCacheFactory = $app_cache_by_owner_factory;
+    $this->appIdCache = $app_id_cache;
   }
 
   /**
@@ -67,7 +89,7 @@ final class AppController extends AppControllerBase implements AppControllerInte
    * @return \Apigee\Edge\Api\Management\Controller\AppControllerInterface
    *   The initialized app controller.
    */
-  private function decorated(): EdgeAppControllerInterface {
+  protected function decorated(): EdgeAppControllerInterface {
     if ($this->instance === NULL) {
       $this->instance = new EdgeAppController($this->connector->getOrganization(), $this->connector->getClient(), NULL, $this->organizationController);
     }
@@ -78,10 +100,10 @@ final class AppController extends AppControllerBase implements AppControllerInte
    * {@inheritdoc}
    */
   public function loadApp(string $appId): AppInterface {
-    $app = $this->appCache->getAppFromCacheByAppId($appId);
+    $app = $this->appCache->getEntity($appId);
     if ($app === NULL) {
       $app = $this->decorated()->loadApp($appId);
-      $this->appCache->saveAppsToCache([$app]);
+      $this->appCache->saveEntities([$app]);
     }
     return $app;
   }
@@ -90,37 +112,81 @@ final class AppController extends AppControllerBase implements AppControllerInte
    * {@inheritdoc}
    */
   public function listAppIds(PagerInterface $pager = NULL): array {
-    return $this->decorated()->listAppIds($pager);
+    if ($this->appIdCache->isAllIdsInCache()) {
+      if ($pager === NULL) {
+        return $this->appIdCache->getIds();
+      }
+      else {
+        return $this->extractSubsetOfAssociativeArray($this->appIdCache->getIds(), $pager->getLimit(), $pager->getStartKey());
+      }
+    }
+
+    $ids = $this->decorated()->listAppIds($pager);
+    $this->appIdCache->saveIds($ids);
+    $this->appIdCache->allIdsInCache(TRUE);
+    return $ids;
   }
 
   /**
    * {@inheritdoc}
    */
   public function listApps(bool $includeCredentials = FALSE, PagerInterface $pager = NULL): array {
-    $apps = $this->decorated()->listApps($includeCredentials, $pager);
-    // We only cache "complete" apps, we do not cache incomplete apps.
-    if ($includeCredentials) {
-      $this->appCache->saveAppsToCache($apps);
-      // Null pager means the PHP API client has loaded all apps from
-      // Apigee Edge.
+    // If all entities in the cache and apps with credentials should be
+    // returned.
+    if ($this->appCache->isAllEntitiesInCache() && $includeCredentials === TRUE) {
       if ($pager === NULL) {
-        $owners = [];
-        foreach ($apps as $app) {
-          $owners[] = $this->appCache->getAppOwner($app);
-        }
-        foreach (array_unique($owners) as $owner) {
-          $this->appCache->allAppsLoadedForOwner($owner);
-        }
+        return $this->appCache->getEntities();
+      }
+      else {
+        return $this->extractSubsetOfAssociativeArray($this->appCache->getEntities(), $pager->getLimit(), $pager->getStartKey());
       }
     }
 
-    return $apps;
+    $result = $this->decorated()->listApps($includeCredentials, $pager);
+    // We only cache "complete" apps, we do not cache apps without credentials.
+    if ($includeCredentials) {
+      $this->appCache->saveEntities($result);
+      // Null pager means the PHP API client has loaded all apps from
+      // Apigee Edge.
+      if ($pager === NULL) {
+        $this->appCache->allEntitiesInCache(TRUE);
+        $apps_by_owner = [];
+        foreach ($result as $app) {
+          $apps_by_owner[$this->appCache->getAppOwner($app)][$app->getAppId()] = $app;
+        }
+        foreach ($apps_by_owner as $owner => $apps) {
+          $apps_by_owner_cache = $this->appByOwnerAppCacheFactory->getAppCache($owner);
+          $apps_by_owner_cache->saveEntities($apps);
+          $apps_by_owner_cache->allEntitiesInCache(TRUE);
+        }
+      }
+    }
+    else {
+      // Little trick here, even if we have not loaded complete app objects
+      // we can still cache their ids.
+      $this->appIdCache->saveEntities($result);
+      // Moreover we can mark the app id cache as completed if pager is null.
+      if ($pager === NULL) {
+        $this->appIdCache->allIdsInCache(TRUE);
+      }
+    }
+
+    return $result;
   }
 
   /**
    * {@inheritdoc}
    */
   public function listAppIdsByStatus(string $status, PagerInterface $pager = NULL): array {
+    $apps_from_cache = $this->getAppsFromCacheByStatus($status, $pager);
+    if ($apps_from_cache !== NULL) {
+      $app_ids = array_map(function (AppInterface $app) {
+        return $app->id();
+      }, $apps_from_cache);
+
+      return $app_ids;
+    }
+
     return $this->decorated()->listAppIdsByStatus($status, $pager);
   }
 
@@ -128,12 +194,47 @@ final class AppController extends AppControllerBase implements AppControllerInte
    * {@inheritdoc}
    */
   public function listAppsByStatus(string $status, bool $includeCredentials = TRUE, PagerInterface $pager = NULL): array {
+    $apps_from_cache = $this->getAppsFromCacheByStatus($status, $pager);
+    if ($apps_from_cache !== NULL) {
+      return $apps_from_cache;
+    }
+
     $apps = $this->decorated()->listAppsByStatus($status, $includeCredentials, $pager);
     // Nice to have, after we have added cache support for methods that return
-    // app ids then we can compare the list of apps cached here
-    // and the already cached app ids per owner to call allAppsLoadedForOwner()
+    // app ids then we can compare the list of returned apps here
+    // and the already cached app ids per owner to call saveEntities()
     // if we have cached all apps of a developer/company here.
-    $this->appCache->saveAppsToCache($apps);
+    $this->appCache->saveEntities($apps);
+
+    return $apps;
+  }
+
+  /**
+   * Returns apps from the cache by status.
+   *
+   * @param string $status
+   *   App status.
+   * @param \Apigee\Edge\Structure\PagerInterface|null $pager
+   *   Pager.
+   *
+   * @return array|null
+   *   If not all apps in the cache it returns null, otherwise it returns the
+   *   required amount of apps from the cache.
+   */
+  private function getAppsFromCacheByStatus(string $status, PagerInterface $pager = NULL): ?array {
+    $apps = NULL;
+    if ($this->appCache->isAllEntitiesInCache()) {
+      if ($pager === NULL) {
+        $apps = $this->appCache->getEntities();
+      }
+      else {
+        $apps = $this->extractSubsetOfAssociativeArray($this->appCache->getEntities(), $pager->getLimit(), $pager->getStartKey());
+      }
+
+      $apps = array_filter($apps, function (AppInterface $app) use ($status) {
+        return $app->getStatus() === $status;
+      });
+    }
 
     return $apps;
   }
@@ -157,13 +258,6 @@ final class AppController extends AppControllerBase implements AppControllerInte
    */
   public function getOrganisationName(): string {
     return $this->decorated()->getOrganisationName();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function createPager(int $limit = 0, ?string $startKey = NULL): PagerInterface {
-    return $this->decorated()->createPager($limit, $startKey);
   }
 
 }

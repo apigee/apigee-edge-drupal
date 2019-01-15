@@ -20,20 +20,11 @@
 
 namespace Drupal\apigee_edge\Entity\Storage;
 
-use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 
 /**
- * Base interface for fieldable Apigee Edge entities.
+ * Base interface for Apigee Edge entity storage implementations.
  */
 interface EdgeEntityStorageInterface extends EntityStorageInterface {
-
-  /**
-   * Returns the configured entity controller used by this storage.
-   *
-   * @return \Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface
-   *   The entity controller interface with CRUDL capabilities.
-   */
-  public function entityController(): EdgeEntityControllerInterface;
 
 }

@@ -28,7 +28,7 @@ interface DeveloperAppStorageInterface extends AttributesAwareFieldableEdgeEntit
    * Loads developer apps by developer.
    *
    * @param string $developer_id
-   *   Developer id (uuid) or email address of a developer.
+   *   Developer id (UUID) or email address of a developer.
    *
    * @return \Drupal\apigee_edge\Entity\DeveloperApp[]
    *   The array of the developer apps of the given developer.

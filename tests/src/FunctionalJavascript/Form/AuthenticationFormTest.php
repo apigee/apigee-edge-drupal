@@ -98,6 +98,7 @@ class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $active_password = $active_key_type->getPassword($active_key);
     $active_username = $active_key_type->getUsername($active_key);
     $active_org      = $active_key_type->getOrganization($active_key);
+    $active_endpoint = $active_key_type->getEndpoint($active_key);
 
     $this->drupalGet(Url::fromRoute('apigee_edge.settings'));
     $page = $this->getSession()->getPage();
@@ -109,52 +110,52 @@ class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     // Tests the default settings.
     $web_assert->fieldValueEquals('Authentication type', 'basic');
     $web_assert->fieldValueEquals('Password', '');
-    $web_assert->fieldValueEquals('Apigee Edge endpoint', '');
+    $web_assert->fieldValueEquals('Apigee Edge endpoint', $active_endpoint);
 
     // Make sure the oauth fields are hidden.
-    static::assertFalse($this->cssSelect('#edit-key-input-settings-authorization-server')[0]->isVisible());
-    static::assertFalse($this->cssSelect('#edit-key-input-settings-client-id')[0]->isVisible());
-    static::assertFalse($this->cssSelect('#edit-key-input-settings-client-secret')[0]->isVisible());
+    $this->assertFalse($this->cssSelect('#edit-key-input-settings-authorization-server')[0]->isVisible());
+    $this->assertFalse($this->cssSelect('#edit-key-input-settings-client-id')[0]->isVisible());
+    $this->assertFalse($this->cssSelect('#edit-key-input-settings-client-secret')[0]->isVisible());
 
     // Switch to oauth.
     $this->cssSelect('#edit-key-input-settings-auth-type')[0]->setValue('oauth');
     // Make sure the oauth fields are visible.
-    static::assertTrue($this->cssSelect('#edit-key-input-settings-authorization-server')[0]->isVisible());
-    static::assertTrue($this->cssSelect('#edit-key-input-settings-client-id')[0]->isVisible());
-    static::assertTrue($this->cssSelect('#edit-key-input-settings-client-secret')[0]->isVisible());
+    $this->assertTrue($this->cssSelect('#edit-key-input-settings-authorization-server')[0]->isVisible());
+    $this->assertTrue($this->cssSelect('#edit-key-input-settings-client-id')[0]->isVisible());
+    $this->assertTrue($this->cssSelect('#edit-key-input-settings-client-secret')[0]->isVisible());
 
     // Test the form is disabled without a password.
-    static::assertTrue($this->cssSelect('input[data-drupal-selector="edit-test-connection-submit"]')[0]->hasAttribute('disabled'));
-    static::assertTrue($this->cssSelect('input[data-drupal-selector="edit-submit"]')[0]->hasAttribute('disabled'));
+    $this->assertTrue($this->cssSelect('input[data-drupal-selector="edit-test-connection-submit"]')[0]->hasAttribute('disabled'));
+    $this->assertTrue($this->cssSelect('input[data-drupal-selector="edit-submit"]')[0]->hasAttribute('disabled'));
 
     // Set the password.
     $page->fillField('Password', $active_password);
 
     // Make sure the form is now enabled.
-    static::assertFalse($this->cssSelect('input[data-drupal-selector="edit-test-connection-submit"]')[0]->hasAttribute('disabled'));
-    static::assertFalse($this->cssSelect('input[data-drupal-selector="edit-submit"]')[0]->hasAttribute('disabled'));
+    $this->assertFalse($this->cssSelect('input[data-drupal-selector="edit-test-connection-submit"]')[0]->hasAttribute('disabled'));
+    $this->assertFalse($this->cssSelect('input[data-drupal-selector="edit-submit"]')[0]->hasAttribute('disabled'));
 
     // Test the connection with basic auth.
     $this->assertSendRequestMessage('.messages--status', 'Connection successful.');
-    static::assertEmpty($this->cssSelect('details[data-drupal-selector="edit-debug"]'));
+    $this->assertEmpty($this->cssSelect('details[data-drupal-selector="edit-debug"]'));
 
     // Switch back to basic auth.
     $this->cssSelect('select[data-drupal-selector="edit-key-input-settings-auth-type"]')[0]->setValue('basic');
     $page->fillField('Password', $active_password);
     // Make sure the form is still enabled.
-    static::assertFalse($this->cssSelect('input[data-drupal-selector="edit-test-connection-submit"]')[0]->hasAttribute('disabled'));
-    static::assertFalse($this->cssSelect('input[data-drupal-selector="edit-submit"]')[0]->hasAttribute('disabled'));
+    $this->assertFalse($this->cssSelect('input[data-drupal-selector="edit-test-connection-submit"]')[0]->hasAttribute('disabled'));
+    $this->assertFalse($this->cssSelect('input[data-drupal-selector="edit-submit"]')[0]->hasAttribute('disabled'));
 
     // Test the connection with basic auth.
     $this->assertSendRequestMessage('.messages--status', 'Connection successful.');
-    static::assertEmpty($this->cssSelect('details[data-drupal-selector="edit-debug"]'));
+    $this->assertEmpty($this->cssSelect('details[data-drupal-selector="edit-debug"]'));
 
     /* TEST INVALID PASSWORD */
     // Change the password.
     $page->fillField('Password', $this->randomString());
     $username = $active_key_type->getUsername($active_key);
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given username ({$username}) or password is incorrect. Error message: Unauthorized");
-    static::assertTrue($this->cssSelect('details[data-drupal-selector="edit-debug"]')[0]->isVisible());
+    $this->assertTrue($this->cssSelect('details[data-drupal-selector="edit-debug"]')[0]->isVisible());
 
     /* TEST INVALID ORG */
     $page->fillField('Password', $active_password);
@@ -162,14 +163,14 @@ class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $page->fillField('Organization', $random_org);
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given organization name ({$random_org}) is incorrect. Error message: Forbidden");
     $page->fillField('Organization', $active_org);
-    static::assertTrue($this->cssSelect('details[data-drupal-selector="edit-debug"]')[0]->isVisible());
+    $this->assertTrue($this->cssSelect('details[data-drupal-selector="edit-debug"]')[0]->isVisible());
 
     /* TEST INVALID ENDPOINT */
     $page->fillField('Password', $active_password);
     $invalid_domain = "{$this->randomGenerator->word(16)}.example.com";
     $page->fillField('Apigee Edge endpoint', "http://{$invalid_domain}/");
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given endpoint (http://{$invalid_domain}/) is incorrect or something is wrong with the connection. Error message: cURL error 6: Could not resolve host: {$invalid_domain} (see http://curl.haxx.se/libcurl/c/libcurl-errors.html)");
-    static::assertTrue($this->cssSelect('details[data-drupal-selector="edit-debug"]')[0]->isVisible());
+    $this->assertTrue($this->cssSelect('details[data-drupal-selector="edit-debug"]')[0]->isVisible());
     // Clear the endpoint field.
     $page->fillField('Apigee Edge endpoint', '');
 

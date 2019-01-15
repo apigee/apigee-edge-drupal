@@ -73,7 +73,7 @@ apigee_edge.settings.developer.cache:
 apigee_edge.settings.product.alias:
   path: '/admin/config/apigee-edge/product-settings/alias'
   defaults:
-    _form: '\Drupal\apigee_edge\Form\ProductAliasForm'
+    _form: '\Drupal\apigee_edge\Form\ApiProductAliasForm'
     _title: 'API product settings'
   requirements:
     _permission: 'administer apigee edge'
@@ -81,7 +81,7 @@ apigee_edge.settings.product.alias:
 apigee_edge.settings.product.caching:
   path: '/admin/config/apigee-edge/product-settings/caching'
   defaults:
-    _form: '\Drupal\apigee_edge\Form\ProductCachingForm'
+    _form: '\Drupal\apigee_edge\Form\ApiProductCachingForm'
     _title: 'API product caching'
   requirements:
     _permission: 'administer apigee edge'
@@ -89,7 +89,7 @@ apigee_edge.settings.product.caching:
 apigee_edge.settings.product.access_control:
   path: '/admin/config/apigee-edge/product-settings/access-control'
   defaults:
-    _form: '\Drupal\apigee_edge\Form\ProductAccessControlForm'
+    _form: '\Drupal\apigee_edge\Form\ApiProductAccessControlForm'
     _title: 'API product access control'
   requirements:
     _permission: 'administer apigee edge'
@@ -97,37 +97,53 @@ apigee_edge.settings.product.access_control:
 apigee_edge.settings.app:
   path: '/admin/config/apigee-edge/app-settings'
   defaults:
-    _form: '\Drupal\apigee_edge\Form\AppSettingsForm'
-    _title: 'App settings'
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Apps'
   requirements:
     _permission: 'administer apigee edge'
 
-apigee_edge.settings.app.alias:
-  path: '/admin/config/apigee-edge/app-settings/alias'
+apigee_edge.settings.general_app:
+  path: '/admin/config/apigee-edge/app-settings/general'
+  defaults:
+    _form: '\Drupal\apigee_edge\Form\AppSettingsForm'
+    _title: 'General app settings'
+  requirements:
+    _permission: 'administer apigee edge'
+
+apigee_edge.settings.general_app.callback_url_validation:
+  path: '/admin/config/apigee-edge/app-settings/general/callback-url-validation'
+  defaults:
+    _form: '\Drupal\apigee_edge\Form\AppCallbackUrlSettingsForm'
+    _title: 'Callback URL validation'
+  requirements:
+    _permission: 'administer apigee edge'
+
+apigee_edge.settings.general_app.analytics:
+  path: '/admin/config/apigee-edge/app-settings/general/analytics'
+  defaults:
+    _form: '\Drupal\apigee_edge\Form\AppAnalyticsSettingsForm'
+    _title: 'Analytics'
+  requirements:
+    _permission: 'administer apigee edge'
+
+apigee_edge.settings.developer_app:
+  path: '/admin/config/apigee-edge/app-settings/developer-apps'
   defaults:
     _form: '\Drupal\apigee_edge\Form\DeveloperAppAliasForm'
-    _title: 'Alias'
+    _title: 'Developer App settings'
   requirements:
     _permission: 'administer apigee edge'
 
-apigee_edge.settings.app.credentials:
-  path: '/admin/config/apigee-edge/app-settings/credentials'
+apigee_edge.settings.developer_app.credentials:
+  path: '/admin/config/apigee-edge/app-settings/developer-apps/credentials'
   defaults:
     _form: '\Drupal\apigee_edge\Form\DeveloperAppCredentialsForm'
     _title: 'Credentials'
   requirements:
     _permission: 'administer apigee edge'
 
-apigee_edge.settings.app.analytics:
-  path: '/admin/config/apigee-edge/app-settings/analytics'
-  defaults:
-    _form: '\Drupal\apigee_edge\Form\DeveloperAppAnalyticsSettingsForm'
-    _title: 'Analytics'
-  requirements:
-    _permission: 'administer apigee edge'
-
-apigee_edge.settings.app.caching:
-  path: '/admin/config/apigee-edge/app-settings/caching'
+apigee_edge.settings.developer_app.caching:
+  path: '/admin/config/apigee-edge/app-settings/developer-apps/caching'
   defaults:
     _form: '\Drupal\apigee_edge\Form\DeveloperAppCachingForm'
     _title: 'Caching'
@@ -154,125 +170,9 @@ apigee_edge.user.my_apps:
   path: '/user/apps'
   defaults:
     _controller: '\Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilderForDeveloper::myAppsPage'
-    _title_callback: 'apigee_edge_developer_app_entity_operation_title'
+    _title_callback: '\Drupal\apigee_edge\Plugin\Menu\MyAppsMenuLink::getTitle'
   requirements:
     _permission: 'view own developer_app'
-
-entity.developer_app.canonical:
-  path: '/developer-apps/{developer_app}'
-  defaults:
-    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppViewController::view'
-    _title_callback: '\Drupal\apigee_edge\Controller\DeveloperAppViewController::getPageTitle'
-  requirements:
-    _entity_access: 'developer_app.view'
-
-entity.developer_app.collection:
-  path: '/developer-apps'
-  defaults:
-    _entity_list: 'developer_app'
-    _title_callback: '\Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder::getPageTitle'
-  requirements:
-    _permission: 'access developer_app overview+administer developer_app'
-
-entity.developer_app.add_form:
-  path: '/developer-apps/add'
-  defaults:
-    _entity_form: 'developer_app.add'
-    _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm::getPageTitle'
-  requirements:
-     # We did not want to expose this UI to regular users this the reason why route is only available to admins for now.
-    _permission: 'administer developer_app'
-
-entity.developer_app.edit_form:
-  path: '/developer-apps/{developer_app}/edit'
-  defaults:
-    _entity_form: 'developer_app.edit'
-    _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppEditForm::getPageTitle'
-  requirements:
-    _entity_access: 'developer_app.update'
-  options:
-    # We must load the entity from Apigee Edge directly and omit cached
-    # version on edit forms.
-    apigee_edge_load_unchanged_entity: 'true'
-
-entity.developer_app.delete_form:
-  path: '/developer-apps/{developer_app}/delete'
-  defaults:
-    _entity_form: 'developer_app.delete'
-    _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppDeleteForm::getPageTitle'
-  requirements:
-    _entity_access: 'developer_app.delete'
-
-entity.developer_app.analytics:
-  path: '/developer-apps/{developer_app}/analytics'
-  defaults:
-    _form: '\Drupal\apigee_edge\Form\DeveloperAppAnalyticsForm'
-    _title_callback: '\Drupal\apigee_edge\Form\DeveloperAppAnalyticsForm::getPageTitle'
-  requirements:
-    _entity_access: 'developer_app.analytics'
-  options:
-    parameters:
-      developer_app:
-        # This is required because we are not using _entity_form.
-        type: entity:developer_app
-
-entity.developer_app.canonical_by_developer:
-  path: '/user/{user}/apps/{app}'
-  defaults:
-    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppViewControllerForDeveloper::view'
-    _title_callback: '\Drupal\apigee_edge\Controller\DeveloperAppViewControllerForDeveloper::getPageTitle'
-  requirements:
-    user: '\d+'
-    _developer_app_access: 'view'
-
-entity.developer_app.collection_by_developer:
-  path: '/user/{user}/apps'
-  defaults:
-    _controller: '\Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilderForDeveloper::render'
-    _title_callback: '\Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilderForDeveloper::getPageTitle'
-  requirements:
-     user: '\d+'
-     _custom_access: '\Drupal\apigee_edge\Access\MyAppsAccessCheck::access'
-
-entity.developer_app.add_form_for_developer:
-  path: '/user/{user}/create-app'
-  defaults:
-    _entity_form: 'developer_app.add_for_developer'
-    _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppCreateFormForDeveloper::getPageTitle'
-  requirements:
-     user: '\d+'
-     _entity_create_access: 'developer_app'
-
-entity.developer_app.edit_form_for_developer:
-  path: '/user/{user}/apps/{app}/edit'
-  defaults:
-    _entity_form: 'developer_app.edit_for_developer'
-    _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppEditForm::getPageTitle'
-  requirements:
-     user: '\d+'
-     _developer_app_access: 'update'
-  options:
-    # We must load the entity from Apigee Edge directly and omit cached
-    # version on edit forms.
-    apigee_edge_load_unchanged_entity: 'true'
-
-entity.developer_app.delete_form_for_developer:
-  path: '/user/{user}/apps/{app}/delete'
-  defaults:
-    _entity_form: 'developer_app.delete_for_developer'
-    _title_callback: '\Drupal\apigee_edge\Entity\Form\DeveloperAppDeleteFormForDeveloper::getPageTitle'
-  requirements:
-     user: '\d+'
-     _developer_app_access: 'delete'
-
-entity.developer_app.analytics_for_developer:
-  path: '/user/{user}/apps/{app}/analytics'
-  defaults:
-    _form: '\Drupal\apigee_edge\Form\DeveloperAppAnalyticsFormForDeveloper'
-    _title_callback: '\Drupal\apigee_edge\Form\DeveloperAppAnalyticsFormForDeveloper::getPageTitle'
-  requirements:
-    user: '\d+'
-    _developer_app_access: 'analytics'
 
 apigee_edge.export_analytics.csv:
   path: '/analytics/export/{data_id}/csv'

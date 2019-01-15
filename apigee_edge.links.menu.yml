@@ -19,10 +19,23 @@ apigee_edge.developer:
 
 apigee_edge.app:
   title: 'Apps'
-  description: 'Developer app settings.'
+  description: 'App settings.'
   parent: system.admin_config_edge
   route_name: apigee_edge.settings.app
   weight: -8
+
+apigee_edge.general_app:
+  title: 'General'
+  description: 'Common settings for Developer- and Team Apps.'
+  parent: apigee_edge.app
+  route_name: apigee_edge.settings.general_app
+  weight: -50
+
+apigee_edge.developer_app:
+  title: 'Developer Apps'
+  description: 'Developer Apps related settings.'
+  parent: apigee_edge.app
+  route_name: apigee_edge.settings.developer_app
 
 apigee_edge.product:
   title: 'API products'

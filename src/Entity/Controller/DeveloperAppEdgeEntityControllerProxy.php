@@ -92,7 +92,7 @@ final class DeveloperAppEdgeEntityControllerProxy implements EdgeEntityControlle
    * {@inheritdoc}
    */
   public function delete(string $id): void {
-    // Try to be smart here and try to load the app from the developer app
+    // Try to be smart here and load the app from the developer app
     // entity cache (app controller's cache is probably empty unless there were
     // a load() or getEntities() call before).
     $entity = \Drupal::entityTypeManager()->getStorage('developer_app')->load($id);

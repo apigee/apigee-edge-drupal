@@ -22,9 +22,6 @@ namespace Drupal\apigee_edge\Entity\Controller;
 
 use Apigee\Edge\Api\Management\Controller\AppByOwnerControllerInterface as EdgeAppByOwnerControllerInterface;
 use Apigee\Edge\Api\Management\Controller\DeveloperAppController as EdgeDeveloperAppController;
-use Drupal\apigee_edge\Entity\Controller\Cache\DeveloperAppCacheInterface;
-use Drupal\apigee_edge\SDKConnectorInterface;
-use Egulias\EmailValidator\EmailValidatorInterface;
 
 /**
  * Definition of the developer app controller service.
@@ -32,36 +29,8 @@ use Egulias\EmailValidator\EmailValidatorInterface;
  * This integrates the Management API's developer app controller from the
  * SDK's with Drupal. It uses a shared (not internal) app cache to reduce the
  * number of API calls that we send to Apigee Edge.
- *
- * TODO Leverage cache in those methods that works with app ids not app object.
  */
 final class DeveloperAppController extends AppByOwnerController implements DeveloperAppControllerInterface {
-
-  /**
-   * The email validator service.
-   *
-   * @var \Egulias\EmailValidator\EmailValidatorInterface
-   */
-  private $emailValidator;
-
-  /**
-   * DeveloperAppController constructor.
-   *
-   * @param string $owner
-   *   Developer's email address or id (uuid).
-   * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
-   *   The SDK connector service.
-   * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
-   *   The organization controller service.
-   * @param \Drupal\apigee_edge\Entity\Controller\Cache\DeveloperAppCacheInterface $app_cache
-   *   The app cache.
-   * @param \Egulias\EmailValidator\EmailValidatorInterface $email_validator
-   *   The email validator service.
-   */
-  public function __construct(string $owner, SDKConnectorInterface $connector, OrganizationControllerInterface $org_controller, DeveloperAppCacheInterface $app_cache, EmailValidatorInterface $email_validator) {
-    parent::__construct($owner, $connector, $org_controller, $app_cache);
-    $this->emailValidator = $email_validator;
-  }
 
   /**
    * {@inheritdoc}
@@ -71,21 +40,6 @@ final class DeveloperAppController extends AppByOwnerController implements Devel
       $this->instances[$this->owner] = new EdgeDeveloperAppController($this->connector->getOrganization(), $this->owner, $this->connector->getClient(), NULL, $this->organizationController);
     }
     return $this->instances[$this->owner];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getEntities(): array {
-    /** @var \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface[] $entities */
-    $entities = parent::getEntities();
-    // If owner contains the email address of the developer then also add a
-    // mark by app list by its developer id (uuid).
-    if (!empty($entities) && $this->emailValidator->isValid($this->owner)) {
-      $entity = reset($entities);
-      $this->appCache->allAppsLoadedForOwner($entity->getDeveloperId());
-    }
-    return $entities;
   }
 
 }

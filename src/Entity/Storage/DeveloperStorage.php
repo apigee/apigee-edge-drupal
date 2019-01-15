@@ -21,7 +21,9 @@ namespace Drupal\apigee_edge\Entity\Storage;
 
 use Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface;
 use Apigee\Edge\Exception\ApiException;
+use Drupal\apigee_edge\Entity\Controller\CachedManagementApiEdgeEntityControllerProxy;
 use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\ManagementApiEdgeEntityControllerProxy;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\Cache;
@@ -84,7 +86,10 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
   /**
    * {@inheritdoc}
    */
-  public function entityController(): EdgeEntityControllerInterface {
+  protected function entityController(): EdgeEntityControllerInterface {
+    if ($this->developerController instanceof EntityCacheAwareControllerInterface) {
+      return new CachedManagementApiEdgeEntityControllerProxy($this->developerController);
+    }
     return new ManagementApiEdgeEntityControllerProxy($this->developerController);
   }
 
@@ -129,7 +134,7 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
    * {@inheritdoc}
    */
   protected function doSave($id, EntityInterface $entity) {
-    /** @var \Drupal\apigee_edge\Entity\Developer $entity */
+    /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $entity */
     $developer_status = $entity->getStatus();
     $result = parent::doSave($id, $entity);
 
@@ -158,19 +163,55 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
   protected function getPersistentCacheTags(EntityInterface $entity) {
     /** @var \Drupal\apigee_edge\Entity\Developer $entity */
     $cacheTags = parent::getPersistentCacheTags($entity);
-    $cacheTags = array_map(function ($cid) use ($entity) {
-      // Sanitize accented characters in developer's email addresses.
-      return str_replace($entity->id(), filter_var($entity->id(), FILTER_SANITIZE_ENCODED), $cid);
-    }, $cacheTags);
-    // Add developerId (besides email address) as a cache tag too.
+    $cacheTags = $this->sanitizeCacheTags($entity->id(), $cacheTags);
+    // Create tags by developerId (besides email address).
     $cacheTags[] = "{$this->entityTypeId}:{$entity->uuid()}";
     $cacheTags[] = "{$this->entityTypeId}:{$entity->uuid()}:values";
-    // Also add Drupal user id to ensure that cached developer data is
-    // invalidated when the related Drupal user has changed or deleted.
+    // Also add a tag by developer's Drupal user id to ensure that cached
+    // developer data is invalidated when the related Drupal user gets changed
+    // or deleted.
     if ($entity->getOwnerId()) {
       $cacheTags[] = "user:{$entity->getOwnerId()}";
     }
     return $cacheTags;
+  }
+
+  /**
+   * Sanitizes accented characters from a generated cache tag.
+   *
+   * If $id is an email address (which the default entity id of a developer
+   * entity in Drupal) and it contains accented characters it must be sanitized
+   * before they could be saved to the database backend.
+   *
+   * @param string $id
+   *   Developer UUID or email address.
+   * @param string $tag
+   *   Generated cache tag that may or may not contains the id.
+   *
+   * @return string
+   *   The sanitized cache tags.
+   */
+  private function sanitizeCacheTag(string $id, string $tag) : string {
+    return str_replace($id, filter_var($id, FILTER_SANITIZE_ENCODED), $tag);
+  }
+
+  /**
+   * Sanitizes accented characters from generated cache tags.
+   *
+   * @param string $id
+   *   Developer UUID or email address.
+   * @param array $cache_tags
+   *   Array of generated cache tags.
+   *
+   * @return array
+   *   Array of sanitized cache tags.
+   *
+   * @see sanitizeCacheTag()
+   */
+  private function sanitizeCacheTags(string $id, array $cache_tags): array {
+    return array_map(function ($tag) use ($id) {
+      return $this->sanitizeCacheTag($id, $tag);
+    }, $cache_tags);
   }
 
   /**
@@ -202,11 +243,12 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
     // entries that refers to the same entities by developer id and vice-versa.
     // See getPersistentCacheTags() for more insight.
     if ($ids && $this->entityType->isPersistentlyCacheable()) {
-      $cids = [];
+      $tags = [];
       foreach ($ids as $id) {
-        $cids[] = "{$this->entityTypeId}:{$id}:values";
+        $tags[] = $this->sanitizeCacheTag($id, "{$this->entityTypeId}:{$id}");
+        $tags[] = $this->sanitizeCacheTag($id, "{$this->entityTypeId}:{$id}:values");
       }
-      Cache::invalidateTags([$this->entityTypeId . ':values']);
+      Cache::invalidateTags($tags);
     }
   }
 

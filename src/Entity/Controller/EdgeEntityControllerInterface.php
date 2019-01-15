@@ -50,7 +50,7 @@ interface EdgeEntityControllerInterface {
    *
    * @param string $id
    *   One of an entity's unique ids. (Some entities has more than one unique
-   *   id at a moment, ex.: developer's email address and id (uuid).)
+   *   id at a moment, ex.: developer's email address and id (UUID).)
    *
    * @return \Apigee\Edge\Entity\EntityInterface
    *   The load entity from Apigee Edge.
@@ -75,7 +75,7 @@ interface EdgeEntityControllerInterface {
    *
    * @param string $id
    *   One of an entity's unique ids. (Some entities has more than one unique
-   *   id at a moment, ex.: developer's email address and id (uuid).)
+   *   id at a moment, ex.: developer's email address and id (UUID).)
    */
   public function delete(string $id): void;
 

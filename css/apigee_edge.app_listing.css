@@ -1,0 +1,75 @@
+/*
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
+
+/* App listing components */
+.circle {
+  border-radius: 50%;
+  color: white;
+  width: 14px;
+  height: 14px;
+  background: orange;
+  display: table-cell;
+  text-align: center;
+  font-size: 85%;
+  margin: 4px 0 0 1rem;
+  float: left;
+}
+
+.wrapper--status {
+  float: left;
+}
+
+.row--warning {
+  display: none;
+}
+
+/* Temporary zebra healing. */
+.table--app-list .odd,
+.table--app-list .even {
+  /* background-color: transparent; */
+}
+
+/* Collapsible functionality. */
+.toggle--warning {
+  display: inline-block;
+  overflow: hidden;
+  border-bottom: none;
+  text-decoration: none;
+  position: relative;
+  top: 4px;
+  font-size: 85%;
+}
+
+.toggle--warning:hover,
+.toggle--warning:active,
+.toggle--warning:visited,
+.toggle--warning:focus {
+  border-bottom: none;
+}
+
+.toggle--warning::after {
+
+}
+
+.toggle--warning.closed::after {
+
+}
+
+.toggle--warning.open span {
+  background-position: -65px -16px;
+}

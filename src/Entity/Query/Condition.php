@@ -119,6 +119,11 @@ class Condition extends ConditionBase implements ConditionInterface {
     return function ($item) use ($condition) : bool {
       $value = static::getProperty($item, $condition['field']);
 
+      // Ignore object property values.
+      if (is_object($value)) {
+        return FALSE;
+      }
+
       // Exit early in case of IS NULL or IS NOT NULL, because they can also
       // deal with array values.
       if (in_array($condition['operator'], ['IS NULL', 'IS NOT NULL'], TRUE)) {

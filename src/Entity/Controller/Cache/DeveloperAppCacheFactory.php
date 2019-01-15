@@ -20,20 +20,40 @@
 
 namespace Drupal\apigee_edge\Entity\Controller\Cache;
 
-use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
 use Egulias\EmailValidator\EmailValidatorInterface;
 
 /**
- * Developer app cache factory.
+ * Developer specific app cache by app owner factory service.
  */
-final class DeveloperAppCacheFactory implements DeveloperAppCacheFactoryInterface {
+final class DeveloperAppCacheFactory implements AppCacheByOwnerFactoryInterface {
 
   /**
    * Internal cache for created instances.
    *
-   * @var \Drupal\apigee_edge\Entity\Controller\Cache\DeveloperAppCacheInterface
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\DeveloperAppCache[]
    */
   private $instances = [];
+
+  /**
+   * The app cache service that stores app by their app id (UUID).
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface
+   */
+  private $appCache;
+
+  /**
+   * The (general) app cache by owner factory.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\GeneralAppCacheByAppOwnerFactoryInterface
+   */
+  private $appCacheByOwnerFactory;
+
+  /**
+   * The developer cache service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\DeveloperCache
+   */
+  private $developerCache;
 
   /**
    * The email validator service.
@@ -43,31 +63,36 @@ final class DeveloperAppCacheFactory implements DeveloperAppCacheFactoryInterfac
   private $emailValidator;
 
   /**
-   * The memory cache backend.
-   *
-   * @var \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface
-   */
-  private $cacheBackend;
-
-  /**
    * DeveloperAppCacheFactory constructor.
    *
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface $app_cache
+   *   The app cache service that stores app by their app id (UUID).
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\GeneralAppCacheByAppOwnerFactoryInterface $app_cache_by_owner_factory
+   *   The (general) app cache by owner factory.
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\DeveloperCache $developer_cache
+   *   The developer app cache service.
    * @param \Egulias\EmailValidator\EmailValidatorInterface $email_validator
    *   The email validator service.
-   * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface $cache
-   *   The memory cache backend used by the app cache.
    */
-  public function __construct(EmailValidatorInterface $email_validator, MemoryCacheInterface $cache) {
+  public function __construct(AppCacheInterface $app_cache, GeneralAppCacheByAppOwnerFactoryInterface $app_cache_by_owner_factory, DeveloperCache $developer_cache, EmailValidatorInterface $email_validator) {
+    $this->appCache = $app_cache;
+    $this->appCacheByOwnerFactory = $app_cache_by_owner_factory;
+    $this->developerCache = $developer_cache;
     $this->emailValidator = $email_validator;
-    $this->cacheBackend = $cache;
   }
 
   /**
-   * {@inheritdoc}
+   * Returns the same app cache instance for an owner.
+   *
+   * @param string $owner
+   *   Developer id (UUID) or email.
+   *
+   * @return \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByAppOwnerInterface
+   *   The developer app cache that belongs to this owner.
    */
-  public function developerAppCache(string $owner): DeveloperAppCacheInterface {
+  public function getAppCache(string $owner): AppCacheByAppOwnerInterface {
     if (!isset($this->instances[$owner])) {
-      $this->instances[$owner] = new DeveloperAppCache($owner, $this->emailValidator, $this->cacheBackend);
+      $this->instances[$owner] = new DeveloperAppCache($owner, $this->appCache, $this->appCacheByOwnerFactory, $this->developerCache, $this->emailValidator);
     }
 
     return $this->instances[$owner];

@@ -39,6 +39,7 @@ use Drupal\user\UserInterface;
  *     singular = "@count Developer App",
  *     plural = "@count Developer Apps",
  *   ),
+ *   config_with_labels = "apigee_edge.developer_app_settings",
  *   handlers = {
  *     "storage" = "Drupal\apigee_edge\Entity\Storage\DeveloperAppStorage",
  *     "access" = "Drupal\apigee_edge\Entity\EdgeEntityAccessControlHandler",
@@ -54,7 +55,11 @@ use Drupal\user\UserInterface;
  *       "analytics" = "Drupal\apigee_edge\Form\DeveloperAppAnalyticsForm",
  *       "analytics_for_developer" = "Drupal\apigee_edge\Form\DeveloperAppAnalyticsFormForDeveloper",
  *     },
- *     "list_builder" = "Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilder",
+ *     "list_builder" = "Drupal\apigee_edge\Entity\ListBuilder\AppListBuilder",
+ *     "view_builder" = "Drupal\apigee_edge\Entity\DeveloperAppViewBuilder",
+ *     "route_provider" = {
+ *        "html" = "Drupal\apigee_edge\Entity\DeveloperAppRouteProvider",
+ *     },
  *   },
  *   links = {
  *     "canonical" = "/developer-apps/{developer_app}",
@@ -74,9 +79,8 @@ use Drupal\user\UserInterface;
  *     "id" = "appId",
  *   },
  *   query_class = "Drupal\apigee_edge\Entity\Query\DeveloperAppQuery",
- *   permission_granularity = "entity_type",
  *   admin_permission = "administer developer_app",
- *   field_ui_base_route = "apigee_edge.settings.app",
+ *   field_ui_base_route = "apigee_edge.settings.developer_app",
  * )
  */
 class DeveloperApp extends App implements DeveloperAppInterface {
@@ -155,7 +159,7 @@ class DeveloperApp extends App implements DeveloperAppInterface {
       if ($this->getDeveloperId()) {
         $developer = Developer::load($this->getDeveloperId());
         if ($developer) {
-          /** @var \Drupal\user\Entity\UserInterface $account */
+          /** @var \Drupal\user\UserInterface $account */
           $account = user_load_by_mail($developer->getEmail());
           if ($account) {
             $this->drupalUserId = $account->id();
@@ -213,15 +217,15 @@ class DeveloperApp extends App implements DeveloperAppInterface {
   /**
    * {@inheritdoc}
    */
-  public static function uniqueIdProperties(): array {
-    return array_merge(parent::uniqueIdProperties(), ['appId']);
+  public function getAppOwner(): ?string {
+    return $this->getDeveloperId();
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getAppOwner(): string {
-    return $this->getDeveloperId();
+  public function setAppOwner(string $owner): void {
+    $this->decorated->setDeveloperId($owner);
   }
 
   /**
@@ -229,43 +233,6 @@ class DeveloperApp extends App implements DeveloperAppInterface {
    */
   public function getDeveloperId(): ?string {
     return $this->decorated->getDeveloperId();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static function propertyToBaseFieldTypeMap(): array {
-    return [
-      // UUIDs (developerId, appId) managed on Apigee Edge so we do not
-      // want to expose them as UUID fields. Same applies for createdAt and
-      // lastModifiedAt. We do not want that Drupal apply default values
-      // on them if they are empty therefore their field type is a simple
-      // "timestamp" instead of "created" or "changed".
-      'apiResources' => 'list_string',
-      'apps' => 'list_string',
-      'companies' => 'list_string',
-      'createdAt' => 'timestamp',
-      'description' => 'string_long',
-      'environments' => 'list_string',
-      'expiresAt' => 'timestamp',
-      'issuedAt' => 'timestamp',
-      'lastModifiedAt' => 'timestamp',
-      'proxies' => 'list_string',
-      'scopes' => 'list_string',
-      'status' => 'string',
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static function propertyToBaseFieldBlackList(): array {
-    return array_merge(parent::propertyToBaseFieldBlackList(), [
-      // We expose each attribute as a field.
-      'attributes',
-      // We expose credentials as a pseudo field.
-      'credentials',
-    ]);
   }
 
   /**
@@ -287,19 +254,10 @@ class DeveloperApp extends App implements DeveloperAppInterface {
       $definitions[$required]->setRequired(TRUE);
     }
 
-    return $definitions;
-  }
+    // Hide readonly properties from Manage form display list.
+    $definitions['developerId']->setDisplayConfigurable('form', FALSE);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    $label = parent::label();
-    // Return app name instead of app id if display name is missing.
-    if ($label === $this->id()) {
-      $label = $this->getName();
-    }
-    return $label;
+    return $definitions;
   }
 
   /**
@@ -307,28 +265,17 @@ class DeveloperApp extends App implements DeveloperAppInterface {
    */
   protected function urlRouteParameters($rel) {
     $params = parent::urlRouteParameters($rel);
-
-    $for_developer_routes = [
-      'canonical-by-developer',
-      'edit-form-for-developer',
-      'delete-form-for-developer',
-      'analytics-for-developer',
-    ];
-    if ($rel === 'add-form-for-developer') {
-      $params['user'] = $this->getOwnerId();
-      unset($params['developer_app']);
-    }
-    elseif ($rel === 'collection-by-developer') {
-      $params['user'] = $this->getOwnerId();
-      unset($params['developer_app']);
-    }
-    elseif (in_array($rel, $for_developer_routes)) {
-      $params['user'] = $this->getOwnerId();
-      $params['app'] = $this->getName();
-      unset($params['developer_app']);
-    }
-    elseif ($rel === 'add-form') {
-      unset($params['developerId']);
+    $link_templates = $this->linkTemplates();
+    if (isset($link_templates[$rel])) {
+      if (strpos($link_templates[$rel], '{user}') !== FALSE) {
+        $params['user'] = $this->getOwnerId();
+      }
+      if (strpos($link_templates[$rel], '{app}') !== FALSE) {
+        $params['app'] = $this->getName();
+      }
+      if (strpos($link_templates[$rel], '{developer_app}') === FALSE) {
+        unset($params['developer_app']);
+      }
     }
 
     return $params;

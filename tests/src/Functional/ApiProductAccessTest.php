@@ -116,7 +116,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
       /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $api_product */
       $api_product = ApiProduct::create([
         'name' => $this->randomMachineName(),
-        'displayName' => $this->randomMachineName(),
+        'displayName' => $this->randomMachineName() . " ({$visibility})",
         'approvalType' => ApiProduct::APPROVAL_TYPE_AUTO,
       ]);
       $api_product->setAttribute('access', $visibility);
@@ -227,31 +227,31 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
     $onlyPublicProductVisible = function () {
       $this->checkProductVisibility(
         [
-          $this->apiProducts[self::PUBLIC_VISIBILITY]->label(),
+          self::PUBLIC_VISIBILITY,
         ],
         [
-          $this->apiProducts[self::PRIVATE_VISIBILITY]->label(),
-          $this->apiProducts[self::INTERNAL_VISIBILITY]->label(),
+          self::PRIVATE_VISIBILITY,
+          self::INTERNAL_VISIBILITY,
         ]
       );
     };
     $allProductsVisible = function () {
       $this->checkProductVisibility(
         [
-          $this->apiProducts[self::PUBLIC_VISIBILITY]->label(),
-          $this->apiProducts[self::PRIVATE_VISIBILITY]->label(),
-          $this->apiProducts[self::INTERNAL_VISIBILITY]->label(),
+          self::PUBLIC_VISIBILITY,
+          self::PRIVATE_VISIBILITY,
+          self::INTERNAL_VISIBILITY,
         ]
       );
     };
     $justPublicAndPrivateVisible = function () {
       $this->checkProductVisibility(
         [
-          $this->apiProducts[self::PUBLIC_VISIBILITY]->label(),
-          $this->apiProducts[self::PRIVATE_VISIBILITY]->label(),
+          self::PUBLIC_VISIBILITY,
+          self::PRIVATE_VISIBILITY,
         ],
         [
-          $this->apiProducts[self::INTERNAL_VISIBILITY]->label(),
+          self::INTERNAL_VISIBILITY,
         ]
       );
     };
@@ -328,6 +328,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
       'user' => $this->users[self::USER_WITH_BYPASS_PERM]->id(),
       'app' => $bypass_user_app->getName(),
     ]));
+    $allProductsVisible();
     $this->drupalLogout();
 
     // Remove extra role from the user.
@@ -494,17 +495,17 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
    * Validates visible and hidden API products on a page.
    *
    * @param array $visible
-   *   Array of API product display names that should be on the page.
+   *   Array of API product visbilities that should be on the page.
    * @param array $hidden
-   *   Array of API product display names that should not be on the page.
+   *   Array of API product visbilities that should not be on the page.
    */
   protected function checkProductVisibility(array $visible = [], array $hidden = []) {
-    foreach ($visible as $productDisplayName) {
-      $this->assertSession()->pageTextContains($productDisplayName);
+    foreach ($visible as $visibility) {
+      $this->assertSession()->pageTextContains($this->apiProducts[$visibility]->label());
     }
 
-    foreach ($hidden as $productDisplayName) {
-      $this->assertSession()->pageTextNotContains($productDisplayName);
+    foreach ($hidden as $visibility) {
+      $this->assertSession()->pageTextNotContains($this->apiProducts[$visibility]->label());
     }
   }
 

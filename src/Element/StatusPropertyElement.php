@@ -28,6 +28,12 @@ use Drupal\Core\Render\Element\RenderElement;
  */
 class StatusPropertyElement extends RenderElement {
 
+  public const INDICATOR_STATUS_OK = 'indicator_status_ok';
+
+  public const INDICATOR_STATUS_WARNING = 'indicator_status_warning';
+
+  public const INDICATOR_STATUS_ERROR = 'indicator_status_error';
+
   /**
    * {@inheritdoc}
    */
@@ -36,6 +42,7 @@ class StatusPropertyElement extends RenderElement {
     return [
       '#theme' => 'status_property',
       '#value' => '',
+      '#indicator_status' => '',
       '#pre_render' => [
         [$class, 'preRenderStatusProperty'],
       ],
@@ -53,10 +60,6 @@ class StatusPropertyElement extends RenderElement {
    */
   public static function preRenderStatusProperty(array $element): array {
     $element['#attached']['library'][] = 'apigee_edge/apigee_edge.status_property';
-    $element['value'] = [
-      '#markup' => $element['#value'],
-    ];
-
     return $element;
   }
 

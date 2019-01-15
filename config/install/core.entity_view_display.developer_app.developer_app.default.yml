@@ -2,7 +2,7 @@ langcode: en
 status: true
 dependencies:
   module:
-  - apigee_edge
+    - apigee_edge
 id: developer_app.developer_app.default
 targetEntityType: developer_app
 bundle: developer_app
@@ -60,7 +60,10 @@ content:
     type: status_property
     weight: 1
     region: content
-    settings: {  }
+    settings:
+      indicator_status_ok: approved
+      indicator_status_warning: ''
+      indicator_status_error: revoked
     third_party_settings: {  }
 hidden:
   appFamily: true
