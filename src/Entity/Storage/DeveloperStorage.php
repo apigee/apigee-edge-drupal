@@ -25,6 +25,7 @@ use Drupal\apigee_edge\Entity\Controller\CachedManagementApiEdgeEntityController
 use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\ManagementApiEdgeEntityControllerProxy;
+use Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
@@ -48,6 +49,13 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
   private $developerController;
 
   /**
+   * Developer company membership cache.
+   *
+   * @var \Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface
+   */
+  private $developerCompanies;
+
+  /**
    * Constructs an DeveloperStorage instance.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -62,11 +70,14 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
    *   The developer controller service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config
    *   Configuration factory.
+   * @param \Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface $developer_companies_cache
+   *   Developer company membership cache.
    */
-  public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, DeveloperControllerInterface $developer_controller, ConfigFactoryInterface $config) {
+  public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, DeveloperControllerInterface $developer_controller, ConfigFactoryInterface $config, DeveloperCompaniesCacheInterface $developer_companies_cache) {
     parent::__construct($entity_type, $cache_backend, $memory_cache, $system_time);
     $this->cacheExpiration = $config->get('apigee_edge.developer_settings')->get('cache_expiration');
     $this->developerController = $developer_controller;
+    $this->developerCompanies = $developer_companies_cache;
   }
 
   /**
@@ -79,7 +90,8 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
       $container->get('entity.memory_cache'),
       $container->get('datetime.time'),
       $container->get('apigee_edge.controller.developer'),
-      $container->get('config.factory')
+      $container->get('config.factory'),
+      $container->get('apigee_edge.controller.cache.developer_companies')
     );
   }
 
@@ -250,6 +262,13 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
       }
       Cache::invalidateTags($tags);
     }
+
+    // Remove related entries in the developer company membership cache.
+    // We can not be sure whether ids are developer ids (UUIDs) or email
+    // addresses so we invalidate entries by tags.
+    $this->developerCompanies->invalidate(array_map(function ($id) {
+      return "developer:{$id}";
+    }, $ids));
   }
 
 }

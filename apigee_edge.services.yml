@@ -62,6 +62,10 @@ services:
     parent: apigee_edge.controller.cache.entity_cache
     arguments: ['@apigee_edge.controller.cache.developer_ids', developer]
 
+  apigee_edge.controller.cache.developer_companies:
+    class: Drupal\apigee_edge\Entity\DeveloperCompaniesCache
+    arguments: ['@apigee_edge.cache.memory_cache_factory']
+
   apigee_edge.controller.cache.developer_ids:
     class: Drupal\apigee_edge\Entity\Controller\Cache\DeveloperIdCache
     parent: apigee_edge.controller.cache.entity_id_cache
