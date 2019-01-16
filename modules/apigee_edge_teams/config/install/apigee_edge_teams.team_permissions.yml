@@ -1,0 +1,8 @@
+# If team-level roles gets introduced the value of
+# these objects is going to change to a list, list
+# of roles.
+team_manage_members: false
+app_create: true
+app_update: false
+app_delete: false
+app_analytics: true

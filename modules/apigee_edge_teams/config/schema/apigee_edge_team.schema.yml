@@ -10,13 +10,20 @@ apigee_edge_teams.team_settings:
       label: 'How to refer to a Team on the UI (plural)'
     cache_expiration:
       type: integer
-    members_can_access_app_create:
+
+apigee_edge_teams.team_permissions:
+  type: config_object
+  label: 'Team members default permissions'
+  mapping:
+    team_manage_members:
       type: boolean
-    members_can_access_app_update:
+    app_create:
       type: boolean
-    members_can_access_app_delete:
+    app_update:
       type: boolean
-    members_can_access_app_analytics:
+    app_delete:
+      type: boolean
+    app_analytics:
       type: boolean
 
 apigee_edge_teams.team_app_settings:
@@ -41,3 +48,29 @@ apigee_edge_teams.team_app_settings:
         type: string
     credential_lifetime:
       type: integer
+
+# Schema for the entity reference 'apigee_edge_teams:team_members' selection
+# handler settings.
+entity_reference_selection.apigee_edge_teams:team_members:
+  type: entity_reference_selection.default
+  label: 'Team member selection handler settings'
+  mapping:
+    filter:
+      type: mapping
+      label: 'Filter settings'
+      mapping:
+        type:
+          type: string
+          label: 'Filter by'
+        role:
+          type: sequence
+          label: 'Restrict to the selected roles'
+          sequence:
+            type: string
+            label: 'Role'
+        team:
+          label: 'Exclude team members of this team'
+          type: integer
+    include_anonymous:
+      type: boolean
+      label: 'Include the anonymous user in the matched entities.'

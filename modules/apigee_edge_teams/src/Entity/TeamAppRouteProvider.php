@@ -31,6 +31,8 @@ use Symfony\Component\Routing\Route;
  */
 class TeamAppRouteProvider extends AppRouteProvider {
 
+  use TeamRoutingHelperTrait;
+
   /**
    * {@inheritdoc}
    */
@@ -113,21 +115,6 @@ class TeamAppRouteProvider extends AppRouteProvider {
       $this->ensureTeamParameter($route);
       $route->setRequirement('_entity_access', 'team.view');
       return $route;
-    }
-  }
-
-  /**
-   * If route contains the {team} parameter add required changes to the route.
-   *
-   * @param \Symfony\Component\Routing\Route $route
-   *   The route to be checked and altered if needed.
-   */
-  private function ensureTeamParameter(Route $route) {
-    if (strpos($route->getPath(), '{team}') !== FALSE) {
-      // Make sure the parameter gets up-casted.
-      // (This also ensures that we get an "Page not found" page if user with
-      // uid does not exist.)
-      $route->setOption('parameters', ['team' => ['type' => 'entity:team', 'converter' => 'paramconverter.entity']]);
     }
   }
 

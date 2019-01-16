@@ -4,6 +4,18 @@ services:
     parent: logger.channel_base
     arguments: ['apigee_edge_teams']
 
+  apigee_edge_teams.access_checker.manage_team_members_access:
+    class: Drupal\apigee_edge_teams\Access\ManageTeamMembersAccess
+    arguments: ['@apigee_edge_teams.team_membership_manager', '@config.factory']
+    tags:
+      - { name: access_check, applies_to: _apigee_edge_teams_manage_team_access }
+
+  apigee_edge_teams.access_checker.remove_team_member_access:
+    class: Drupal\apigee_edge_teams\Access\RemoveTeamMemberAccess
+    arguments: ['@apigee_edge_teams.team_membership_manager', '@config.factory']
+    tags:
+      - { name: access_check, applies_to: _apigee_edge_teams_remove_team_member_access }
+
   apigee_edge_teams.cache.memory_cache_factory:
     parent: apigee_edge.cache.memory_cache_factory
     arguments: [apigee_edge_teams]
