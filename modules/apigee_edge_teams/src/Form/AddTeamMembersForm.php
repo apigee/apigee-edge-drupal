@@ -22,7 +22,6 @@ namespace Drupal\apigee_edge_teams\Form;
 
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
-use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -64,27 +63,17 @@ class AddTeamMembersForm extends FormBase {
   protected $teamEntityType;
 
   /**
-   * The cache tag invalidator service.
-   *
-   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface
-   */
-  private $cacheTagInvalidator;
-
-  /**
    * AddTeamMemberForms constructor.
    *
    * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
    *   The team membership manager service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cache_tag_invalidator
-   *   The cache tag invalidator service.
    */
-  public function __construct(TeamMembershipManagerInterface $team_membership_manager, EntityTypeManagerInterface $entity_type_manager, CacheTagsInvalidatorInterface $cache_tag_invalidator) {
+  public function __construct(TeamMembershipManagerInterface $team_membership_manager, EntityTypeManagerInterface $entity_type_manager) {
     $this->teamMembershipManager = $team_membership_manager;
     $this->userStorage = $entity_type_manager->getStorage('user');
     $this->teamEntityType = $entity_type_manager->getDefinition('team');
-    $this->cacheTagInvalidator = $cache_tag_invalidator;
   }
 
   /**
@@ -93,8 +82,7 @@ class AddTeamMembersForm extends FormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('apigee_edge_teams.team_membership_manager'),
-      $container->get('entity_type.manager'),
-      $container->get('cache_tags.invalidator')
+      $container->get('entity_type.manager')
     );
   }
 
@@ -184,8 +172,6 @@ class AddTeamMembersForm extends FormBase {
         $this->t('Developer successfully added to the @team.', $context),
         $this->t('Developers successfully added to the @team.', $context
         )));
-      // Invalidate render cache on the member listing page of the team.
-      $this->cacheTagInvalidator->invalidateTags(["team:{$this->team->id()}:members"]);
       $form_state->setRedirectUrl($this->team->toUrl('members'));
     }
   }

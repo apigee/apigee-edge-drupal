@@ -97,7 +97,7 @@ class TeamMembersList extends ControllerBase {
       '#empty' => $this->t('There are no members yet.'),
       '#cache' => [
         'contexts' => $team->getCacheContexts(),
-        'tags' => array_merge($team->getCacheTags(), ["team:{$team->id()}:members"]),
+        'tags' => $team->getCacheTags(),
       ],
     ];
 

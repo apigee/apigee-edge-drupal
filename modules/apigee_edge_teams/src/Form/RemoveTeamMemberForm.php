@@ -23,7 +23,6 @@ namespace Drupal\apigee_edge_teams\Form;
 use Drupal\apigee_edge\Entity\DeveloperInterface;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
-use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -64,13 +63,6 @@ class RemoveTeamMemberForm extends ConfirmFormBase {
   protected $teamMembershipManager;
 
   /**
-   * The cache tags invalidator service.
-   *
-   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface
-   */
-  protected $cacheTagsInvalidator;
-
-  /**
    * The user storage.
    *
    * @var \Drupal\user\UserStorageInterface
@@ -84,14 +76,11 @@ class RemoveTeamMemberForm extends ConfirmFormBase {
    *   The entity type manager service.
    * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
    *   The team membership manager service.
-   * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cache_tags_invalidator
-   *   The cache tags invalidator service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager, CacheTagsInvalidatorInterface $cache_tags_invalidator) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager) {
     $this->teamEntityType = $entity_type_manager->getDefinition('team');
     $this->userStorage = $entity_type_manager->getStorage('user');
     $this->teamMembershipManager = $team_membership_manager;
-    $this->cacheTagsInvalidator = $cache_tags_invalidator;
   }
 
   /**
@@ -100,8 +89,7 @@ class RemoveTeamMemberForm extends ConfirmFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('entity_type.manager'),
-      $container->get('apigee_edge_teams.team_membership_manager'),
-      $container->get('cache_tags.invalidator')
+      $container->get('apigee_edge_teams.team_membership_manager')
     );
   }
 
@@ -177,9 +165,7 @@ class RemoveTeamMemberForm extends ConfirmFormBase {
     }
 
     if ($success) {
-      // Invalidate render cache on the member listing page of the team.
-      $this->cacheTagsInvalidator->invalidateTags(["team:{$this->team->id()}:members"]);
-      $this->messenger()->addStatus($this->t('%developer successfully removed from the @team.'));
+      $this->messenger()->addStatus($this->t('%developer successfully removed from the @team.', $context));
     }
   }
 
