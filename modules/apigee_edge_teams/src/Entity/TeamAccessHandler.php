@@ -81,19 +81,15 @@ final class TeamAccessHandler extends EntityAccessControlHandler implements Enti
       $result = AccessResult::allowedIfHasPermissions($account, $permissions, 'OR');
 
       if ($result->isNeutral() && $operation === 'view') {
-        $result = AccessResult::allowedIfHasPermission($account, 'manage all team_app');
-
-        if (!$result->isAllowed()) {
-          // Grant access to the user if it is a member of the Team.
-          /** @var \Drupal\apigee_edge\Entity\DeveloperInterface|null $developer */
-          $developer = $this->developerStorage->load($account->getEmail());
-          if ($developer && in_array($entity->id(), $developer->getCompanies())) {
-            $result = AccessResult::allowed();
-            // Ensure that access is evaluated again when the team or the
-            // developer entity changes.
-            $result->addCacheableDependency($entity);
-            $result->addCacheableDependency($developer);
-          }
+        // Grant access to the user if it is a member of the Team.
+        /** @var \Drupal\apigee_edge\Entity\DeveloperInterface|null $developer */
+        $developer = $this->developerStorage->load($account->getEmail());
+        if ($developer && in_array($entity->id(), $developer->getCompanies())) {
+          $result = AccessResult::allowed();
+          // Ensure that access is evaluated again when the team or the
+          // developer entity changes.
+          $result->addCacheableDependency($entity);
+          $result->addCacheableDependency($developer);
         }
       }
     }

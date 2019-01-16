@@ -20,17 +20,14 @@
 
 namespace Drupal\apigee_edge_teams\Entity;
 
-use Drupal\Core\Entity\EntityHandlerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\entity\EntityPermissionProviderInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Permission provider for Team App entities.
  */
-final class TeamAppPermissionProvider implements EntityPermissionProviderInterface, EntityHandlerInterface {
+final class TeamAppPermissionProvider implements EntityPermissionProviderInterface {
 
   use StringTranslationTrait;
 
@@ -40,59 +37,19 @@ final class TeamAppPermissionProvider implements EntityPermissionProviderInterfa
   public const MANAGE_TEAM_APPS_PERMISSION = 'manage team apps';
 
   /**
-   * The entity type.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeInterface
-   */
-  private $entityType;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  private $entityTypeManager;
-
-  /**
-   * TeamAppPermissionProvider constructor.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager) {
-    $this->entityType = $entity_type;
-    $this->entityTypeManager = $entity_type_manager;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
-    return new static(
-      $entity_type,
-      $container->get('entity_type.manager')
-    );
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function buildPermissions(EntityTypeInterface $entity_type) {
     $permissions = [];
 
-    $team_plural_label = $this->entityTypeManager->getDefinition('team')->getPluralLabel();
     $team_app_plural_label = $entity_type->getPluralLabel();
 
     $permissions[static::MANAGE_TEAM_APPS_PERMISSION] = [
       'title' => $this->t('Manage @type', [
         '@type' => $team_app_plural_label,
-        '@teams' => $team_plural_label,
       ]),
-      'description' => $this->t("Allows to manage all @team_apps in the system. <strong>This permission also gives access to <i>View any @teams</i> if a user would not have that permission already!</strong>", [
+      'description' => $this->t('Allows to manage all @team_apps in the system.', [
         '@team_apps' => $team_app_plural_label,
-        '@teams' => $team_plural_label,
       ]),
       'restrict access' => TRUE,
     ];
