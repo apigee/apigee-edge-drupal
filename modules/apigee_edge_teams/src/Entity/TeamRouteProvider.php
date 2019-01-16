@@ -45,8 +45,8 @@ class TeamRouteProvider extends EdgeEntityRouteProvider {
       $collection->add("entity.{$entity_type_id}.members", $list_team_members);
     }
 
-    if ($add_team_member = $this->getAddTeamMemberRoute($entity_type)) {
-      $collection->add("entity.{$entity_type_id}.members.add", $add_team_member);
+    if ($add_team_members = $this->getAddTeamMembersRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.members.add", $add_team_members);
     }
 
     if ($remove_team_member = $this->getRemoveTeamMemberRoute($entity_type)) {
@@ -108,9 +108,9 @@ class TeamRouteProvider extends EdgeEntityRouteProvider {
    * @return \Symfony\Component\Routing\Route|null
    *   The generated route, if available.
    */
-  protected function getAddTeamMemberRoute(EntityTypeInterface $entity_type) {
-    if ($entity_type->hasLinkTemplate('add-member')) {
-      $route = new Route($entity_type->getLinkTemplate('add-member'));
+  protected function getAddTeamMembersRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('add-members')) {
+      $route = new Route($entity_type->getLinkTemplate('add-members'));
       $route->setDefault('_form', AddTeamMembersForm::class);
       $route->setDefault('_title', 'Add members');
       $route->setDefault('entity_type_id', $entity_type->id());
