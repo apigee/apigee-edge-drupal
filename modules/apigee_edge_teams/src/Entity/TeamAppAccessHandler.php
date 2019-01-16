@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge_teams\Entity;
 
+use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -40,7 +41,7 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
   /**
    * Name of the config object that contains the member permissions.
    */
-  public const MEMBER_PERMISSIONS_CONFIG_NAME = 'apigee_edge_teams.team_settings';
+  public const MEMBER_PERMISSIONS_CONFIG_NAME = 'apigee_edge_teams.team_permissions';
 
   /**
    * The config factory.
@@ -57,11 +58,11 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
   private $entityTypeManager;
 
   /**
-   * The developer storage.
+   * The team membership manager service.
    *
-   * @var \Drupal\apigee_edge\Entity\Storage\DeveloperStorageInterface
+   * @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface
    */
-  private $developerStorage;
+  private $teamMembershipManager;
 
   /**
    * The current route match.
@@ -79,14 +80,16 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
    *   The config factory.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
+   *   The team membership manager service.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
    */
-  public function __construct(EntityTypeInterface $entity_type, ConfigFactoryInterface $config, EntityTypeManagerInterface $entity_type_manager, RouteMatchInterface $route_match) {
+  public function __construct(EntityTypeInterface $entity_type, ConfigFactoryInterface $config, EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager, RouteMatchInterface $route_match) {
     parent::__construct($entity_type);
     $this->config = $config;
     $this->entityTypeManager = $entity_type_manager;
-    $this->developerStorage = $entity_type_manager->getStorage('developer');
+    $this->teamMembershipManager = $team_membership_manager;
     $this->routeMatch = $route_match;
   }
 
@@ -98,6 +101,7 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
       $entity_type,
       $container->get('config.factory'),
       $container->get('entity_type.manager'),
+      $container->get('apigee_edge_teams.team_membership_manager'),
       $container->get('current_route_match')
     );
   }
@@ -195,7 +199,7 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
       return AccessResult::neutral("Team membership based access check does not support {$operation} operation on apps.");
     }
 
-    if ($this->config->get(static::MEMBER_PERMISSIONS_CONFIG_NAME)->get("members_can_access_app_{$operation}")) {
+    if ($this->config->get(static::MEMBER_PERMISSIONS_CONFIG_NAME)->get("app_{$operation}")) {
       $result = $this->accessResultByTeamMembership($team, $account);
     }
     else {
@@ -244,7 +248,7 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
     // Ensure that access is re-evaluated when developer entity or config
     // changes.
     $result->addCacheTags(['config:' . static::MEMBER_PERMISSIONS_CONFIG_NAME]);
-    $developer = $this->developerStorage->load($account->getEmail());
+    $developer = $this->entityTypeManager->getStorage('developer')->load($account->getEmail());
     if ($developer) {
       $result->addCacheableDependency($developer);
     }
@@ -262,9 +266,18 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
    *   TRUE if the user is member of the team, FALSE otherwise.
    */
   private function isMember(TeamInterface $entity, AccountInterface $account): bool {
-    /** @var \Drupal\apigee_edge\Entity\DeveloperInterface|null $developer */
-    $developer = $this->developerStorage->load($account->getEmail());
-    return $developer && in_array($entity->id(), $developer->getCompanies());
+    // A non-logged in user can not be member of a team.
+    if ($account->isAnonymous()) {
+      return FALSE;
+    }
+
+    try {
+      $teams = $this->teamMembershipManager->getTeams($account->getEmail());
+    }
+    catch (\Exception $e) {
+      $teams = [];
+    }
+    return in_array($entity->id(), $teams);
   }
 
 }

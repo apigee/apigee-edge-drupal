@@ -36,7 +36,7 @@ class TeamMemberPermissionsSettingsForm extends ConfigFormBase {
    */
   protected function getEditableConfigNames() {
     return [
-      'apigee_edge_teams.team_settings',
+      'apigee_edge_teams.team_permissions',
     ];
   }
 
@@ -54,31 +54,60 @@ class TeamMemberPermissionsSettingsForm extends ConfigFormBase {
     $form['#tree'] = TRUE;
     $config = $this->config($this->getConfigName());
     $operations = [
-      'create' => $this->t('Create Team Apps'),
-      'update' => $this->t('Edit any Team Apps'),
-      'delete' => $this->t('Delete any Team Apps'),
-      'analytics' => $this->t('View analytics of any Team Apps'),
+      'team' => [
+        'label' => $this->t('Team'),
+        'permissions' => [
+          'manage_members' => [
+            'label' => $this->t('Manage team members'),
+            'description' => $this->t('Manage team members.'),
+          ],
+        ],
+      ],
+      'app' => [
+        'label' => $this->t('Team apps'),
+        'permissions' => [
+          'create' => $this->t('Create Team Apps'),
+          'update' => $this->t('Edit any Team Apps'),
+          'delete' => $this->t('Delete any Team Apps'),
+          'analytics' => $this->t('View analytics of any Team Apps'),
+        ],
+      ],
     ];
 
     $form['permissions'] = [
-      '#type' => 'fieldset',
-      '#title' => $this->t("Configure team members' permissions"),
-      '#collapsible' => FALSE,
+      '#type' => 'container',
+    ];
+    $form['permissions']['info'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'div',
+      '#value' => $this->t('Configure permissions of team members.'),
+      '#attributes' => ['class' => ['description']],
     ];
 
-    foreach ($operations as $operation => $label) {
-      $default_value = $config->get($this->getConfigObjectName($operation));
-      if ($default_value === NULL) {
-        $this->logger('apigee_edge')->debug('Missing config object for %operation team app operation.', [
-          '%operation' => $operation,
-        ]);
-        continue;
-      }
-      $form['permissions'][$this->getConfigObjectName($operation)] = [
-        '#type' => 'checkbox',
-        '#title' => $label,
-        '#default_value' => $default_value,
+    foreach ($operations as $group => $group_def) {
+      $form['permissions'][$group] = [
+        '#type' => 'details',
+        '#title' => $group_def['label'],
+        '#open' => TRUE,
       ];
+      foreach ($group_def['permissions'] as $operation => $label) {
+        $config_key = "{$group}_{$operation}";
+        $default_value = $config->get($config_key);
+        if ($default_value === NULL) {
+          $this->logger('apigee_edge')->debug('Missing config object for %operation permission.', [
+            '%operation' => $operation,
+          ]);
+          continue;
+        }
+        $form['permissions'][$group][$operation] = [
+          '#type' => 'checkbox',
+          '#title' => is_array($label) ? $label['label'] : $label,
+          '#default_value' => $default_value,
+        ];
+        if (is_array($label) && isset($label['description'])) {
+          $form['permissions'][$group][$operation]['#description'] = $label['description'];
+        }
+      }
     }
 
     return parent::buildForm($form, $form_state);
@@ -90,8 +119,11 @@ class TeamMemberPermissionsSettingsForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $config = $this->config($this->getConfigName());
 
-    foreach ($form_state->getValue(['permissions'], []) as $permission => $value) {
-      $config->set($permission, $value);
+    foreach ($form_state->getValue(['permissions'], []) as $group => $permissions) {
+      foreach ($permissions as $permission => $value) {
+        $config_key = "{$group}_{$permission}";
+        $config->set($config_key, $value);
+      }
     }
     $config->save();
 
@@ -107,19 +139,6 @@ class TeamMemberPermissionsSettingsForm extends ConfigFormBase {
   protected function getConfigName(): string {
     $configs = $this->getEditableConfigNames();
     return reset($configs);
-  }
-
-  /**
-   * Returns the name of the config object for an operation.
-   *
-   * @param string $operation
-   *   The entity operation.
-   *
-   * @return string
-   *   The name of the config object.
-   */
-  private function getConfigObjectName(string $operation) : string {
-    return "members_can_access_app_{$operation}";
   }
 
 }

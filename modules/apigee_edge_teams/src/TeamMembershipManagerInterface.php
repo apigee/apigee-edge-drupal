@@ -68,6 +68,9 @@ interface TeamMembershipManagerInterface {
    *
    * @return string[]
    *   Array of team names.
+   *
+   * @throws \Drupal\apigee_edge\Exception\DeveloperDoesNotExistException
+   *   If developer not found with id.
    */
   public function getTeams(string $developer): array;
 

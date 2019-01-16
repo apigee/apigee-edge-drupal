@@ -21,12 +21,40 @@
 namespace Drupal\apigee_edge_teams\Entity;
 
 use Drupal\apigee_edge\Entity\EdgeEntityRouteProvider;
+use Drupal\apigee_edge_teams\Controller\TeamMembersList;
+use Drupal\apigee_edge_teams\Form\AddTeamMembersForm;
+use Drupal\apigee_edge_teams\Form\RemoveTeamMemberForm;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Symfony\Component\Routing\Route;
 
 /**
  * Team specific dynamic entity route provider.
  */
 class TeamRouteProvider extends EdgeEntityRouteProvider {
+
+  use TeamRoutingHelperTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRoutes(EntityTypeInterface $entity_type) {
+    $collection = parent::getRoutes($entity_type);
+    $entity_type_id = $entity_type->id();
+
+    if ($list_team_members = $this->getListTeamMembersRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.members", $list_team_members);
+    }
+
+    if ($add_team_members = $this->getAddTeamMembersRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.members.add", $add_team_members);
+    }
+
+    if ($remove_team_member = $this->getRemoveTeamMemberRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.members.remove", $remove_team_member);
+    }
+
+    return $collection;
+  }
 
   /**
    * {@inheritdoc}
@@ -45,6 +73,86 @@ class TeamRouteProvider extends EdgeEntityRouteProvider {
       $route->setRequirements($requirements);
     }
 
+    return $route;
+  }
+
+  /**
+   * Gets the list team members route.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   *
+   * @return \Symfony\Component\Routing\Route|null
+   *   The generated route, if available.
+   */
+  protected function getListTeamMembersRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('members')) {
+      $route = new Route($entity_type->getLinkTemplate('members'));
+      $route->setDefault('_controller', TeamMembersList::class . '::overview');
+      $route->setDefault('_title_callback', TeamTitleProvider::class . '::teamMembersList');
+      $route->setDefault('entity_type_id', $entity_type->id());
+      $this->ensureTeamParameter($route);
+      $route->setRequirement('_apigee_edge_teams_manage_team_access', 'TRUE');
+      return $route;
+    }
+
+    return NULL;
+  }
+
+  /**
+   * Gets the add team member route.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   *
+   * @return \Symfony\Component\Routing\Route|null
+   *   The generated route, if available.
+   */
+  protected function getAddTeamMembersRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('add-members')) {
+      $route = new Route($entity_type->getLinkTemplate('add-members'));
+      $route->setDefault('_form', AddTeamMembersForm::class);
+      $route->setDefault('_title', 'Add members');
+      $route->setDefault('entity_type_id', $entity_type->id());
+      $this->ensureTeamParameter($route);
+      $route->setRequirement('_apigee_edge_teams_manage_team_access', 'TRUE');
+      return $route;
+    }
+
+    return NULL;
+  }
+
+  /**
+   * Gets the remove team member route.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   *
+   * @return \Symfony\Component\Routing\Route|null
+   *   The generated route, if available.
+   */
+  protected function getRemoveTeamMemberRoute(EntityTypeInterface $entity_type) {
+    // Because this path depends on the {developer} route parameter that
+    // can not be resolved in Team::urlRouteParameters() therefore this path
+    // can not come from the link templates defined on the Team entity.
+    $route = new Route('/teams/{team}/members/{developer}/remove');
+    $route->setDefault('_form', RemoveTeamMemberForm::class);
+    $route->setDefault('_title', 'Remove member');
+    $route->setDefault('entity_type_id', $entity_type->id());
+    $route->setRequirement('_apigee_edge_teams_remove_team_member_access', 'TRUE');
+    // Make sure parameters gets up-casted.
+    // (This also ensures that we get an "Page not found" page if user with
+    // uid does not exist.)
+    $route->setOption('parameters', [
+      'team' => [
+        'type' => 'entity:team',
+        'converter' => 'paramconverter.entity',
+      ],
+      'developer' => [
+        'type' => 'entity:developer',
+        'converter' => 'paramconverter.entity',
+      ],
+    ]);
     return $route;
   }
 

@@ -1,0 +1,5 @@
+apigee_edge_teams.teams.members.add:
+  route_name: entity.team.members.add
+  title: 'Add members'
+  appears_on:
+    - 'entity.team.members'

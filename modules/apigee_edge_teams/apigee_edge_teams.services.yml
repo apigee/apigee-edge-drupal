@@ -4,6 +4,18 @@ services:
     parent: logger.channel_base
     arguments: ['apigee_edge_teams']
 
+  apigee_edge_teams.access_checker.manage_team_members_access:
+    class: Drupal\apigee_edge_teams\Access\ManageTeamMembersAccess
+    arguments: ['@apigee_edge_teams.team_membership_manager', '@config.factory']
+    tags:
+      - { name: access_check, applies_to: _apigee_edge_teams_manage_team_access }
+
+  apigee_edge_teams.access_checker.remove_team_member_access:
+    class: Drupal\apigee_edge_teams\Access\RemoveTeamMemberAccess
+    arguments: ['@apigee_edge_teams.team_membership_manager', '@config.factory']
+    tags:
+      - { name: access_check, applies_to: _apigee_edge_teams_remove_team_member_access }
+
   apigee_edge_teams.cache.memory_cache_factory:
     parent: apigee_edge.cache.memory_cache_factory
     arguments: [apigee_edge_teams]
@@ -46,7 +58,13 @@ services:
 
   apigee_edge_teams.team_membership_manager:
     class: Drupal\apigee_edge_teams\TeamMembershipManager
-    arguments: ['@entity_type.manager', '@apigee_edge_teams.company_members_controller_factory', '@apigee_edge.controller.developer', '@apigee_edge.controller.cache.developer_companies']
+    arguments: [
+      '@entity_type.manager',
+      '@apigee_edge_teams.company_members_controller_factory',
+      '@apigee_edge.controller.developer',
+      '@apigee_edge.controller.cache.developer_companies',
+      '@cache_tags.invalidator',
+    ]
 
   apigee_edge_teams.event_subscriber.team_app_field_config_list_alter_event_subscriber:
     class: Drupal\apigee_edge_teams\EventSubscriber\TeamAppFieldConfigListAlterEventSubscriber

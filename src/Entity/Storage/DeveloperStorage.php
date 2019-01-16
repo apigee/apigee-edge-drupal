@@ -264,11 +264,16 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
     }
 
     // Remove related entries in the developer company membership cache.
-    // We can not be sure whether ids are developer ids (UUIDs) or email
-    // addresses so we invalidate entries by tags.
-    $this->developerCompanies->invalidate(array_map(function ($id) {
-      return "developer:{$id}";
-    }, $ids));
+    if (empty($ids)) {
+      $this->developerCompanies->remove();
+    }
+    else {
+      // We can not be sure whether ids are developer ids (UUIDs) or email
+      // addresses so we invalidate entries by tags.
+      $this->developerCompanies->invalidate(array_map(function ($id) {
+        return "developer:{$id}";
+      }, $ids));
+    }
   }
 
 }

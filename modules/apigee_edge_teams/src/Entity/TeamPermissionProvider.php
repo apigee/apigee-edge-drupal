@@ -42,6 +42,12 @@ final class TeamPermissionProvider implements EntityPermissionProviderInterface 
 
     $permissions["administer {$entity_type_id}"] = [
       'title' => $this->t('Administer @type', ['@type' => $plural_label]),
+      'description' => $this->t('Administer module configure and manage any team and team apps.'),
+      'restrict access' => TRUE,
+    ];
+
+    $permissions["manage {$entity_type_id} members"] = [
+      'title' => $this->t('Manage @type members', ['@type' => $singular_label]),
       'restrict access' => TRUE,
     ];
 

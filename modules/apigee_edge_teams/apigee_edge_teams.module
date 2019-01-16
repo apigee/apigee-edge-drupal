@@ -19,8 +19,10 @@
  * MA 02110-1301, USA.
  */
 
+use Drupal\Core\Breadcrumb\Breadcrumb;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
@@ -79,4 +81,16 @@ function apigee_edge_teams_developer_delete(EntityInterface $entity) {
   // Remove all company membership object cache entries that contained the
   // removed developer.
   $cache->invalidateMemberships(["developer:{$entity->getEmail()}"]);
+}
+
+/**
+ * Implements hook_system_breadcrumb_alter().
+ */
+function apigee_edge_teams_system_breadcrumb_alter(Breadcrumb &$breadcrumb, RouteMatchInterface $route_match, array $context) {
+  // Add members list as a parent of the Add team members form.
+  if ($route_match->getRouteName() === 'entity.team.members.add') {
+    /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
+    $team = $route_match->getParameter('team');
+    $breadcrumb->addLink($team->toLink(t('Members'), 'members'));
+  }
 }

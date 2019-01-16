@@ -1,0 +1,76 @@
+apigee_edge_teams.team_settings:
+  type: config_object
+  label: 'Team settings'
+  mapping:
+    entity_label_singular:
+      type: label
+      label: 'How to refer to a Team on the UI (singular)'
+    entity_label_plural:
+      type: label
+      label: 'How to refer to a Team on the UI (plural)'
+    cache_expiration:
+      type: integer
+
+apigee_edge_teams.team_permissions:
+  type: config_object
+  label: 'Team members default permissions'
+  mapping:
+    team_manage_members:
+      type: boolean
+    app_create:
+      type: boolean
+    app_update:
+      type: boolean
+    app_delete:
+      type: boolean
+    app_analytics:
+      type: boolean
+
+apigee_edge_teams.team_app_settings:
+  type: config_object
+  label: 'Team App settings'
+  mapping:
+    entity_label_singular:
+      type: label
+      label: 'How to refer to a Team App on the UI (singular)'
+    entity_label_plural:
+      type: label
+      label: 'How to refer to a Team App on the UI (plural)'
+    cache_expiration:
+      type: integer
+    required_base_fields:
+      type: sequence
+      sequence:
+        type: string
+    locked_base_fields:
+      type: sequence
+      sequence:
+        type: string
+    credential_lifetime:
+      type: integer
+
+# Schema for the entity reference 'apigee_edge_teams:team_members' selection
+# handler settings.
+entity_reference_selection.apigee_edge_teams:team_members:
+  type: entity_reference_selection.default
+  label: 'Team member selection handler settings'
+  mapping:
+    filter:
+      type: mapping
+      label: 'Filter settings'
+      mapping:
+        type:
+          type: string
+          label: 'Filter by'
+        role:
+          type: sequence
+          label: 'Restrict to the selected roles'
+          sequence:
+            type: string
+            label: 'Role'
+        team:
+          label: 'Exclude team members of this team'
+          type: integer
+    include_anonymous:
+      type: boolean
+      label: 'Include the anonymous user in the matched entities.'
