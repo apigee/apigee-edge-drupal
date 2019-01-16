@@ -163,19 +163,6 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
   /**
    * {@inheritdoc}
    */
-  protected function getAddEntityLink(): ?array {
-    $link = parent::getAddEntityLink();
-    if ($link) {
-      if ($user = $this->routeMatch->getParameter('user')) {
-        $link['#url'] = new Url('entity.developer_app.add_form_for_developer', ['user' => $user->id()], $link['#url']->getOptions());
-      }
-    }
-    return $link;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   protected function renderAppName(AppInterface $app): array {
     if ($app->access('view')) {
       return $app->toLink(NULL, 'canonical-by-developer')->toRenderable();

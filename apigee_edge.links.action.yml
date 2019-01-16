@@ -1,0 +1,9 @@
+apigee_edge.add_entity_local_actions:
+  deriver: Drupal\apigee_edge\Plugin\Derivative\DynamicAddEntityLocalActions
+
+apigee_edge.developer_app.add_form_for_developer:
+  route_name: entity.developer_app.add_form_for_developer
+  title: 'Add app'
+  class: Drupal\apigee_edge\Plugin\Menu\AddAppForDeveloperLocalAction
+  appears_on:
+    - 'entity.developer_app.collection_by_developer'

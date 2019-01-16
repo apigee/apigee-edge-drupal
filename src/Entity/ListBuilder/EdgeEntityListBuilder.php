@@ -24,8 +24,6 @@ use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
-use Drupal\Core\Link;
-use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -90,55 +88,6 @@ class EdgeEntityListBuilder extends EntityListBuilder {
       $query->pager($this->limit);
     }
     return $query;
-  }
-
-  /**
-   * Returns a render array with a link to the entity type specific add form.
-   *
-   * TODO Should we replace this method with a dynamic local tasks?
-   * Ex.: Bootstrap can transform local tasks links to buttons automatically.
-   * \Drupal\bootstrap\Plugin\Preprocess\MenuLocalAction().
-   *
-   * @return array|null
-   *   A render array with the add entity link if the user has access to that,
-   *   null otherwise.
-   */
-  protected function getAddEntityLink(): ?array {
-    /** @var \Symfony\Component\Routing\RouterInterface $router */
-    $router = \Drupal::service('router');
-    $definition = $this->entityTypeManager->getDefinition($this->entityTypeId);
-    $route = "entity.{$this->entityTypeId}.add_form";
-    // Is there a better way for this?
-    if ($router->getRouteCollection()->get($route)) {
-      $url = Url::fromRoute($route);
-      $url->setOptions(['attributes' => ['class' => 'button button-action btn btn-primary']]);
-      if ($url->access()) {
-        $link = Link::fromTextAndUrl(
-          $this->t('Add @entity_type', ['@entity_type' => $definition->getLowercaseLabel()]),
-          $url
-        );
-        $link_array = $link->toRenderable();
-        // Make sure it is in the top of the page by default.
-        $link_array['#weight'] = -100;
-        return $link_array;
-      }
-    }
-
-    return NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render() {
-    $build = parent::render();
-
-    $add_entity_link = $this->getAddEntityLink();
-    if ($add_entity_link) {
-      $build['add_entity'] = $add_entity_link;
-    }
-
-    return $build;
   }
 
 }
