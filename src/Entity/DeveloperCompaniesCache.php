@@ -72,8 +72,13 @@ final class DeveloperCompaniesCache implements DeveloperCompaniesCacheInterface 
   /**
    * {@inheritdoc}
    */
-  public function remove(array $ids): void {
-    $this->backend->invalidateMultiple($ids);
+  public function remove(array $ids = []): void {
+    if (empty($ids)) {
+      $this->backend->invalidateAll();
+    }
+    else {
+      $this->backend->invalidateMultiple($ids);
+    }
   }
 
   /**

@@ -53,9 +53,9 @@ interface DeveloperCompaniesCacheInterface {
    * Removes cached company information of a developer.
    *
    * @param array $ids
-   *   Array of developer ids.
+   *   Array of developer ids, if the array is empty all entries gets removed.
    */
-  public function remove(array $ids): void;
+  public function remove(array $ids = []): void;
 
   /**
    * Invalidates cache entries by tag.
