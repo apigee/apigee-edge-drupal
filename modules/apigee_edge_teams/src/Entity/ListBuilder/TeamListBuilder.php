@@ -24,6 +24,7 @@ use Drupal\apigee_edge\Element\StatusPropertyElement;
 use Drupal\apigee_edge\Entity\ListBuilder\EdgeEntityListBuilder;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Url;
 
 /**
  * General entity listing builder for teams.
@@ -56,8 +57,37 @@ class TeamListBuilder extends EdgeEntityListBuilder {
   /**
    * {@inheritdoc}
    */
+  protected function getDefaultOperations(EntityInterface $entity) {
+    $operations = parent::getDefaultOperations($entity);
+
+    $team_app_list_url = Url::fromRoute('entity.team_app.collection_by_team', ['team' => $entity->id()]);
+    if ($team_app_list_url->access()) {
+      $team_app_entity_def = $this->entityTypeManager->getDefinition('team_app');
+      $operations['apps'] = [
+        'title' => $team_app_entity_def->getPluralLabel(),
+        'url' => $team_app_list_url,
+        'weight' => -10,
+      ];
+    }
+
+    if ($entity->hasLinkTemplate('members')) {
+      $members_url = $entity->toUrl('members');
+      if ($members_url->access()) {
+        $operations['members'] = [
+          'title' => $this->t('Members'),
+          'url' => $members_url,
+        ];
+      }
+    }
+
+    return $operations;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function load() {
-    // Compared with a usual etity collection page this listing page is also
+    // Compared with a usual entity collection page this listing page is also
     // available to _all_ logged in users so it must be ensured that users
     // can see only those teams in this list that they have view access.
     // @see \Drupal\apigee_edge_teams\Entity\TeamAccessHandler
