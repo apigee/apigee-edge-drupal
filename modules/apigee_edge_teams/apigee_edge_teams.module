@@ -22,6 +22,7 @@
 use Drupal\Core\Breadcrumb\Breadcrumb;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
@@ -87,10 +88,19 @@ function apigee_edge_teams_developer_delete(EntityInterface $entity) {
  * Implements hook_system_breadcrumb_alter().
  */
 function apigee_edge_teams_system_breadcrumb_alter(Breadcrumb &$breadcrumb, RouteMatchInterface $route_match, array $context) {
-  // Add members list as a parent of the Add team members form.
-  if ($route_match->getRouteName() === 'entity.team.members.add') {
+  if ($route_match->getRouteName() === 'entity.team.add_form') {
+    $team_entity_def = \Drupal::entityTypeManager()->getDefinition('team');
+    $breadcrumb->addLink(Link::createFromRoute($team_entity_def->getPluralLabel(), 'entity.team.collection'));
+  }
+  elseif ($route_match->getRouteName() === 'entity.team.members.add') {
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
     $team = $route_match->getParameter('team');
     $breadcrumb->addLink($team->toLink(t('Members'), 'members'));
+  }
+  elseif ($route_match->getRouteName() === 'entity.team_app.add_form_for_team') {
+    $team_app_entity_def = \Drupal::entityTypeManager()->getDefinition('team_app');
+    /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
+    $team = $route_match->getParameter('team');
+    $breadcrumb->addLink(Link::createFromRoute($team_app_entity_def->getPluralLabel(), 'entity.team_app.collection_by_team', ['team' => $team->id()]));
   }
 }
