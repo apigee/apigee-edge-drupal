@@ -28,7 +28,6 @@ use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -93,19 +92,6 @@ class TeamAppListByTeam extends AppListBuilder implements ContainerInjectionInte
     $query->condition('companyName', $team->id());
 
     return $query;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getAddEntityLink(): ?array {
-    $link = parent::getAddEntityLink();
-    if ($link) {
-      if ($team = $this->routeMatch->getParameter('team')) {
-        $link['#url'] = new Url('entity.team_app.add_form_for_team', ['team' => $team->id()], $link['#url']->getOptions());
-      }
-    }
-    return $link;
   }
 
   /**

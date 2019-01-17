@@ -123,13 +123,6 @@ services:
     arguments:
       - '@entity_type.manager'
 
-  apigee_edge.breadcrumb.create_app:
-    class: Drupal\apigee_edge\Breadcrumb\CreateAppForDeveloperBreadcrumbBuilder
-    tags:
-    - { name: breadcrumb_builder, priority: 101 }
-    arguments:
-      ['@request_stack', '@router.route_provider', '@title_resolver']
-
   route_enhancer.entity.app:
     class: Drupal\apigee_edge\Entity\Enhancer\AppRouteEnhancer
     tags:
