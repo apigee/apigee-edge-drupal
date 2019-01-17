@@ -34,7 +34,6 @@ use Drupal\Tests\apigee_edge\Traits\EntityControllerCacheUtilsTrait;
  */
 class EntityControllerCacheTest extends KernelTestBase {
 
-  use ApigeeEdgeTestTrait;
   use EntityControllerCacheUtilsTrait;
 
   /**
@@ -195,6 +194,13 @@ class EntityControllerCacheTest extends KernelTestBase {
 
     $this->assertEmpty($cache_by_email->getEntities());
     $this->assertEmpty($cache_by_id->getEntities());
+  }
+
+  /**
+   * Gets a random unique ID.
+   */
+  private function getRandomUniqueId() {
+    return $this->container->get('uuid')->generate();
   }
 
 }

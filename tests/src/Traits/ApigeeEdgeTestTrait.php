@@ -30,6 +30,11 @@ use Drupal\user\UserInterface;
 
 /**
  * Provides common functionality for the Apigee Edge test classes.
+ *
+ * TODO Consider renaming this trait to ApigeeEdgeFunctionalTestTrait because
+ * its setup() method is clearly works only in functional tests. Re-usable
+ * methods in kernel/functional tests can be remain in this trait, ex.:
+ * getRandomUniqueId(), logException(), etc.
  */
 trait ApigeeEdgeTestTrait {
 
