@@ -379,19 +379,22 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
 
     // Ensure that the developer is reloaded from Apigee Edge so remove the
     // developer entity from the cache.
+    $this->developerStorage->resetCache([$this->developer->id()]);
+    // resetCache() does not clear controller's cache by default.
+    // @see \Drupal\apigee_edge\Entity\Storage\EdgeEntityStorageBase::resetCache()
     $developer_cache = $this->container->get('apigee_edge.controller.cache.developer');
-    $developer_cache->removeEntities([$this->developer->getDeveloperId()]);
+    $developer_cache->removeEntities([$this->developer->id()]);
 
     // Check the companies array if the developer is reloaded.
     /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
-    $developer = $this->developerStorage->loadMultiple()[$this->developer->getEmail()];
+    $developer = $this->developerStorage->loadMultiple()[$this->developer->id()];
     $this->assertContains($this->company->getName(), $developer->getCompanies());
 
     // Check the companies array if the developer is removed from the member
     // list.
     $company_membership_controller->removeMember($this->developer->getEmail());
-    $developer_cache->removeEntities([$this->developer->getDeveloperId()]);
-    $developer = $this->developerStorage->loadUnchanged($this->developer->getEmail());
+    $developer_cache->removeEntities([$this->developer->id()]);
+    $developer = $this->developerStorage->loadUnchanged($this->developer->id());
     $this->assertNotContains($this->company->getName(), $developer->getCompanies());
   }
 
