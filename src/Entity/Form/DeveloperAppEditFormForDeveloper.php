@@ -21,7 +21,6 @@
 namespace Drupal\apigee_edge\Entity\Form;
 
 use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
-use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 
@@ -30,21 +29,8 @@ use Drupal\Core\Url;
  */
 class DeveloperAppEditFormForDeveloper extends DeveloperAppCreateEditFormForDeveloper {
 
-  use DeveloperStatusCheckTrait;
   use AppEditFormTrait;
   use DeveloperAppFormTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function form(array $form, FormStateInterface $form_state) {
-    $form = parent::form($form, $form_state);
-    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $app */
-    $app = $this->entity;
-    $this->checkDeveloperStatus($app->getOwnerId());
-
-    return $form;
-  }
 
   /**
    * {@inheritdoc}

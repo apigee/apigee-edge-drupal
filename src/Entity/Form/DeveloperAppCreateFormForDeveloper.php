@@ -19,7 +19,6 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
-use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 
@@ -28,7 +27,6 @@ use Drupal\Core\Url;
  */
 class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateEditFormForDeveloper {
 
-  use DeveloperStatusCheckTrait;
   use AppCreateFormTrait;
   use DeveloperAppFormTrait;
 
@@ -37,7 +35,6 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateEditFormForDe
    */
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
-    $this->checkDeveloperStatus($this->getUser()->id());
 
     // The user from the route is the owner.
     $form['owner'] = [

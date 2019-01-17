@@ -20,15 +20,12 @@
 namespace Drupal\apigee_edge\Form;
 
 use Drupal\apigee_edge\Entity\AppInterface;
-use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Displays the analytics page of a developer app on the UI.
  */
 class DeveloperAppAnalyticsForm extends AppAnalyticsFormBase {
-
-  use DeveloperStatusCheckTrait;
 
   /**
    * {@inheritdoc}
@@ -41,8 +38,6 @@ class DeveloperAppAnalyticsForm extends AppAnalyticsFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, ?AppInterface $developer_app = NULL) {
-    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $developer_app */
-    $this->checkDeveloperStatus($developer_app->getOwnerId());
     // Pass the "developer_app" (!= app) from the route to the parent.
     return parent::buildForm($form, $form_state, $developer_app);
   }
