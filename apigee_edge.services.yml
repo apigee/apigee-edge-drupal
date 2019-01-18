@@ -112,6 +112,12 @@ services:
     tags:
       - { name: event_subscriber }
 
+  apigee_edge.event_subscriber.developer_status_warning:
+    class: Drupal\apigee_edge\EventSubscriber\DeveloperStatusWarningSubscriber
+    arguments: ['@current_user', '@current_route_match', '@entity_type.manager', '@messenger', '@string_translation']
+    tags:
+      - { name: event_subscriber }
+
   access_check.app_by_app_name:
     class: Drupal\apigee_edge\Access\AppAccessCheckByAppName
     arguments: ['@entity_type.manager']

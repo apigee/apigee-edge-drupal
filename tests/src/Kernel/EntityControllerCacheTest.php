@@ -23,7 +23,6 @@ use Apigee\Edge\Api\Management\Entity\CompanyApp;
 use Apigee\Edge\Api\Management\Entity\Developer;
 use Apigee\Edge\Api\Management\Entity\DeveloperApp;
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\Tests\apigee_edge\Traits\ApigeeEdgeTestTrait;
 use Drupal\Tests\apigee_edge\Traits\EntityControllerCacheUtilsTrait;
 
 /**

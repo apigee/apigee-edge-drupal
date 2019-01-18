@@ -50,6 +50,8 @@ class ErrorHandlerTest extends ApigeeEdgeFunctionalTestBase {
     parent::setUp();
 
     $this->prefix = $this->randomMachineName();
+    // Disable Apigee Edge connection.
+    $this->invalidateKey();
     // It is not necessary to create a developer here so skip
     // apigee_edge_user_presave().
     $this->disableUserPresave();
@@ -74,6 +76,7 @@ class ErrorHandlerTest extends ApigeeEdgeFunctionalTestBase {
       'user' => $this->drupalUser->id(),
       'app' => 'x',
     ];
+
     $routes = [
       'apigee_edge_test.entity_storage_exception',
       'apigee_edge_test.api_exception',
@@ -85,10 +88,10 @@ class ErrorHandlerTest extends ApigeeEdgeFunctionalTestBase {
       'entity.developer_app.analytics_for_developer',
     ];
 
-    foreach ($routes as $route) {
-      $route = Url::fromRoute($route, $parameters);
+    foreach ($routes as $route_name) {
+      $route = Url::fromRoute($route_name, $parameters);
       $this->drupalGet($route);
-      $this->assertEquals(Response::HTTP_SERVICE_UNAVAILABLE, $this->getSession()->getStatusCode());
+      $this->assertEquals(Response::HTTP_SERVICE_UNAVAILABLE, $this->getSession()->getStatusCode(), $route_name);
       $this->assertSession()->pageTextContains($errorPageTitle);
     }
   }

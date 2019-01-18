@@ -66,6 +66,12 @@ services:
       '@cache_tags.invalidator',
     ]
 
+  apigee_edge_teams.event_subscriber.team_status_warning_subscriber:
+    class: Drupal\apigee_edge_teams\EventSubscriber\TeamStatusWarningSubscriber
+    arguments: ['@current_user', '@current_route_match', '@entity_type.manager', '@apigee_edge_teams.team_membership_manager', '@messenger', '@string_translation']
+    tags:
+      - { name: event_subscriber }
+
   apigee_edge_teams.event_subscriber.team_app_field_config_list_alter_event_subscriber:
     class: Drupal\apigee_edge_teams\EventSubscriber\TeamAppFieldConfigListAlterEventSubscriber
     arguments: ['@form_builder']
@@ -76,6 +82,12 @@ services:
     class: Drupal\apigee_edge_teams\Routing\TeamAppByNameRouteAlterSubscriber
     tags:
       - { name: event_subscriber }
+
+  route_subscriber.apigee_edge_teams.team_app_devel_route_fixer:
+    class: Drupal\apigee_edge_teams\Routing\TeamAppDevelRouteFixerSubscriber
+    arguments: ['@module_handler']
+    tags:
+      - { name: event_subscriber}
 
   paramconverter.team_app_name:
     class: Drupal\apigee_edge_teams\ParamConverter\TeamAppNameConverter

@@ -24,7 +24,7 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Dedicated form handler that allows a developer to delete its own app.
  */
-class DeveloperAppDeleteFormForDeveloper extends DeveloperAppDeleteForm {
+class DeveloperAppDeleteFormForDeveloper extends AppDeleteForm {
 
   /**
    * {@inheritdoc}
