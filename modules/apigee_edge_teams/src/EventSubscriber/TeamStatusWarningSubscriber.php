@@ -131,7 +131,9 @@ class TeamStatusWarningSubscriber implements EventSubscriberInterface {
       if ($team === NULL) {
         /** @var \Drupal\apigee_edge_teams\Entity\TeamAppInterface $app */
         $app = $this->routeMatch->getParameter('team_app') ?? $this->routeMatch->getParameter('app');
-        $team = $this->teamStorage->load($app->getCompanyName());
+        if ($app) {
+          $team = $this->teamStorage->load($app->getCompanyName());
+        }
       }
 
       if ($team && $team->getStatus() === TeamInterface::STATUS_INACTIVE) {
