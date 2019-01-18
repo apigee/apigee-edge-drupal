@@ -61,7 +61,7 @@ class ApiProductStorage extends EdgeEntityStorageBase implements ApiProductStora
    */
   public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, ApiProductControllerInterface $api_product_controller, ConfigFactoryInterface $config) {
     parent::__construct($entity_type, $cache_backend, $memory_cache, $system_time);
-    $this->cacheExpiration = $config->get('apigee_edge.developer_settings')->get('cache_expiration');
+    $this->cacheExpiration = $config->get('apigee_edge.api_product_settings')->get('cache_expiration');
     $this->apiProductController = $api_product_controller;
   }
 
