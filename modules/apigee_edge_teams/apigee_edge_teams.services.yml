@@ -83,6 +83,12 @@ services:
     tags:
       - { name: event_subscriber }
 
+  route_subscriber.apigee_edge_teams.team_app_devel_route_fixer:
+    class: Drupal\apigee_edge_teams\Routing\TeamAppDevelRouteFixerSubscriber
+    arguments: ['@module_handler']
+    tags:
+      - { name: event_subscriber}
+
   paramconverter.team_app_name:
     class: Drupal\apigee_edge_teams\ParamConverter\TeamAppNameConverter
     arguments: ['@entity_type.manager', '@logger.channel.apigee_edge_teams']
