@@ -422,11 +422,11 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $controller->setStatus($this->account->getEmail(), Developer::STATUS_INACTIVE);
 
     $this->drupalGet("/user/{$this->account->id()}/apps");
-    $this->assertSession()->pageTextContains('Your developer account has inactive status so you will not be able to use your credentials until your account is enabled. Please contact support for further assistance.');
+    $this->assertSession()->pageTextContains('Your developer account has inactive status so you will not be able to use your credentials until your account gets activated. Please contact support for further assistance.');
 
     $this->drupalLogin($this->rootUser);
     $this->drupalGet("/user/{$this->account->id()}/apps");
-    $this->assertSession()->pageTextContains("The developer account of {$this->account->getAccountName()} has inactive status so this user has invalid credentials until the account is enabled.");
+    $this->assertSession()->pageTextContains("The developer account of {$this->account->getDisplayName()} has inactive status so this user has invalid credentials until the account gets activated.");
   }
 
   /**
