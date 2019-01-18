@@ -22,7 +22,6 @@ namespace Drupal\apigee_edge_teams\Routing;
 
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Routing\RouteSubscriberBase;
-use Drupal\Core\Routing\RoutingEvents;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
@@ -44,17 +43,9 @@ final class TeamAppByNameRouteAlterSubscriber extends RouteSubscriberBase {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
-    $events[RoutingEvents::ALTER][] = ['onAlterRoutes'];
-    return $events;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   protected function alterRoutes(RouteCollection $collection) {
-    foreach ($collection as $route) {
-      if (in_array('team', $route->compile()->getPathVariables()) && in_array('app', $route->compile()->getPathVariables())) {
+    foreach ($collection as $id => $route) {
+      if (strpos($id, 'entity.team_app') !== FALSE && in_array('team', $route->compile()->getPathVariables()) && in_array('app', $route->compile()->getPathVariables())) {
         $params = $route->getOption('parameters') ?? [];
         NestedArray::setValue($params, ['team', 'type'], 'entity:team');
         NestedArray::setValue($params, ['app', 'type'], 'team_app_by_name');
