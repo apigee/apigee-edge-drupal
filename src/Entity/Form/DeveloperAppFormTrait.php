@@ -45,6 +45,14 @@ trait DeveloperAppFormTrait {
       return FALSE;
     }
 
+    // Return TRUE if developer account has not been found for this Drupal user.
+    // TODO Make sure that DeveloperAppCreateEditFormForDeveloper can be
+    // used only if the Drupal user in the route has a developer account
+    // in Apigee Edge.
+    if ($formState->getValue('owner') === NULL) {
+      return TRUE;
+    }
+
     // We use the developer app controller factory here instead of entity
     // query to reduce the number API calls. (Entity query may load all
     // developers to return whether the given developer has an app with
