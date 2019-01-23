@@ -67,12 +67,12 @@ class AppSettingsFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
     // Visit the app settings form using invalid API credentials.
     $this->invalidateKey();
-    $this->drupalGet(Url::fromRoute('apigee_edge.settings.app'));
+    $this->drupalGet(Url::fromRoute('apigee_edge.settings.general_app'));
     $this->assertSession()->pageTextContains('Unable to retrieve API product list from Apigee Edge. Please ensure that Apigee Edge connection settings are correct.');
 
     // Visit the app settings form using valid API credentials.
     $this->restoreKey();
-    $this->drupalGet(Url::fromRoute('apigee_edge.settings.app'));
+    $this->drupalGet(Url::fromRoute('apigee_edge.settings.general_app'));
     $this->assertSession()->pageTextNotContains('Unable to retrieve API product list from Apigee Edge. Please ensure that Apigee Edge connection settings are correct.');
 
     // Selecting default API product is not required by default.
@@ -88,7 +88,7 @@ class AppSettingsFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $product_list = $this->getSession()->getPage()->find('css', '#default-api-product-multiple fieldset');
     $this->assertTrue($product_list->hasAttribute('required'));
     $this->getSession()->getPage()->pressButton('edit-submit');
-    $this->assertSession()->pageTextContains('Default API Product field is required.');
+    $this->assertSession()->pageTextContains('Default API Products field is required.');
     $this->getSession()->getPage()->checkField("default_api_product_multiple[{$this->defaultApiProduct->getName()}]");
     $this->getSession()->getPage()->pressButton('edit-submit');
     $this->assertSession()->pageTextContains('The configuration options have been saved.');

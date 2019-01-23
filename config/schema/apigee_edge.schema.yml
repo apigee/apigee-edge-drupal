@@ -48,6 +48,17 @@ apigee_edge.common_app_settings:
         type: string
     analytics_environment:
       type: string
+    callback_url_pattern:
+      type: string
+    callback_url_pattern_error_message:
+      type: label
+      label: 'Human readable description of the validation criteria that a Callback URL should match'
+    callback_url_description:
+      type: label
+      label: 'Description of the Callback URL field'
+    callback_url_placeholder:
+      type: label
+      label: 'Placeholder for a Callback URL'
 
 apigee_edge.developer_app_settings:
   type: config_object
@@ -71,17 +82,6 @@ apigee_edge.developer_app_settings:
         type: string
     credential_lifetime:
       type: integer
-    callback_url_pattern:
-      type: string
-    callback_url_pattern_error_message:
-      type: label
-      label: 'Human readable description of the validation criteria that a Callback URL should match'
-    callback_url_description:
-      type: label
-      label: 'Description of the Callback URL field'
-    callback_url_placeholder:
-      type: label
-      label: 'Placeholder for a Callback URL'
 
 field.widget.settings.app_callback_url:
   type: mapping
@@ -194,6 +194,20 @@ key.provider.apigee_edge_environment_variables:
 
 key.provider.apigee_edge_private_file:
   type: sequence
+
+field.formatter.settings.status_property:
+  type: mapping
+  label: 'Status property settings'
+  mapping:
+    indicator_status_ok:
+      type: string
+      label: 'Indicator status: OK'
+    indicator_status_warning:
+      type: string
+      label: 'Indicator status: Warning'
+    indicator_status_error:
+      type: string
+      label: 'Indicator status: Error'
 
 # Dangerous settings. Enabling these might lead to data corruption.
 #

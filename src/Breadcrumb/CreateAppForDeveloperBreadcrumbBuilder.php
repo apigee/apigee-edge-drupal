@@ -21,10 +21,12 @@ namespace Drupal\apigee_edge\Breadcrumb;
 
 use Drupal\Core\Breadcrumb\Breadcrumb;
 use Drupal\Core\Breadcrumb\BreadcrumbBuilderInterface;
+use Drupal\Core\Controller\TitleResolverInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Routing\RouteProviderInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\user\Entity\User;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Provides a breadcrumb builder for create developer app for developer page.
@@ -32,6 +34,43 @@ use Drupal\user\Entity\User;
 class CreateAppForDeveloperBreadcrumbBuilder implements BreadcrumbBuilderInterface {
 
   use StringTranslationTrait;
+
+  /**
+   * The route provider service.
+   *
+   * @var \Drupal\Core\Routing\RouteProviderInterface
+   */
+  private $routeProvider;
+
+  /**
+   * Title resolver service.
+   *
+   * @var \Drupal\Core\Controller\TitleResolverInterface
+   */
+  private $titleResolver;
+
+  /**
+   * Request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  private $requestStack;
+
+  /**
+   * CreateAppForDeveloperBreadcrumbBuilder constructor.
+   *
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+   *   The request stack.
+   * @param \Drupal\Core\Routing\RouteProviderInterface $route_provider
+   *   The route provider service.
+   * @param \Drupal\Core\Controller\TitleResolverInterface $title_resolver
+   *   The title resolver service.
+   */
+  public function __construct(RequestStack $request_stack, RouteProviderInterface $route_provider, TitleResolverInterface $title_resolver) {
+    $this->requestStack = $request_stack;
+    $this->routeProvider = $route_provider;
+    $this->titleResolver = $title_resolver;
+  }
 
   /**
    * {@inheritdoc}
@@ -48,13 +87,13 @@ class CreateAppForDeveloperBreadcrumbBuilder implements BreadcrumbBuilderInterfa
     $user = $route_match->getParameter('user');
 
     $breadcrumb->addLink(Link::createFromRoute($this->t('Home'), '<front>'));
-    $breadcrumb->addLink(Link::createFromRoute(User::load($user)->getUsername(), 'entity.user.canonical', [
-      'user' => $user,
+    $breadcrumb->addLink(Link::createFromRoute($user->getUsername(), 'entity.user.canonical', [
+      'user' => $user->id(),
     ]));
     $breadcrumb->addLink(Link::createFromRoute(
-      \Drupal::currentUser()->id() === $user ? apigee_edge_get_my_developer_apps_title() : apigee_edge_get_my_developer_apps_title(User::load($user)),
+      $this->titleResolver->getTitle($this->requestStack->getCurrentRequest(), $this->routeProvider->getRouteByName('entity.developer_app.collection_by_developer')),
       'entity.developer_app.collection_by_developer',
-      ['user' => $user]
+      ['user' => $user->id()]
     ));
 
     // This breadcrumb builder is based on a route parameter, and hence it

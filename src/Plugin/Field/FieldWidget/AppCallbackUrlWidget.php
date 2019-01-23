@@ -30,8 +30,8 @@ use Drupal\Core\Form\FormStateInterface;
  * The field supposed to be used as a base field on company- and
  * developer app entities only.
  * Because it should be used as a base field we can not store human readable
- * strings in the widget's configuration otherwise they would not be
- * translatable. (Base field definitions and configurations gets cached.)
+ * strings in the widget's configuration otherwise they could not be
+ * translated. (Base field definitions and configurations gets cached.)
  *
  * @see https://www.drupal.org/node/2546212
  *
@@ -82,8 +82,9 @@ class AppCallbackUrlWidget extends UriWidget {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
     $element = parent::formElement($items, $delta, $element, $form, $form_state);
-    // Try to load the (developer/company) app entity specific settings.
-    $app_settings = \Drupal::config("apigee_edge.{$form_state->getBuildInfo()['callback_object']->getEntity()->getEntityTypeId()}_settings");
+    // Fallback to the default configuration if field widget does
+    // not have an override.
+    $app_settings = \Drupal::config("apigee_edge.common_app_settings");
     $element['value']['#pattern'] = $this->getSetting('callback_url_pattern') ?? $app_settings->get('callback_url_pattern');
     $element['value']['#attributes']['title'] = $this->getSetting('callback_url_pattern_error_message') ?? $app_settings->get('callback_url_pattern_error_message');
     $element['value']['#placeholder'] = $this->getSetting('placeholder') ?? $app_settings->get('callback_url_placeholder');

@@ -85,7 +85,8 @@ trait DeveloperAppUITestTrait {
    *   Settings to save.
    */
   protected function submitAdminForm(array $changes = []) {
-    $this->drupalGet('/admin/config/apigee-edge/app-settings');
+    $url = Url::fromRoute('apigee_edge.settings.general_app');
+    $this->drupalGet($url);
     $data = $changes + [
       'display_as_select' => FALSE,
       'user_select' => TRUE,
@@ -96,7 +97,7 @@ trait DeveloperAppUITestTrait {
     $this->config('apigee_edge.common_app_settings')
       ->set('multiple_products', $multiple_products)
       ->save();
-    $this->drupalPostForm('/admin/config/apigee-edge/app-settings', $data, 'Save configuration');
+    $this->drupalPostForm($url, $data, 'Save configuration');
   }
 
   /**
@@ -263,7 +264,7 @@ trait DeveloperAppUITestTrait {
 
     $this->clickLink('Delete');
     $this->submitForm([
-      'id_verification' => $name,
+      'verification_code' => $name,
     ], 'Delete');
 
     $this->drupalGet("/user/{$account->id()}/apps");

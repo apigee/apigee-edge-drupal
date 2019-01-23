@@ -73,7 +73,7 @@ class MyAppsMenuLink extends MenuLinkDefault {
    * {@inheritdoc}
    */
   public function getTitle() {
-    return apigee_edge_get_my_developer_apps_title();
+    return $this->t('My @developer_app', ['@developer_app' => $this->entityTypeManager->getDefinition('developer_app')->getPluralLabel()]);
   }
 
 }

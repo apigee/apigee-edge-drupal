@@ -17,19 +17,19 @@
 
 /**
  * @file
- * Javascript functions related to the Apigee Edge Drupal Module.
+ * Javascript functions related to the app listing.
  */
 (function ($, Drupal) {
 
   'use strict';
 
-  Drupal.behaviors.apigeeEdgeListing = {
+  Drupal.behaviors.apigeeEdgeAppListing = {
     attach: function (context, settings) {
-      Drupal.apigeeEdgeListing.tableToggle(context, settings);
+      Drupal.apigeeEdgeAppListing.tableToggle(context, settings);
     }
   };
 
-  Drupal.apigeeEdgeListing = {
+  Drupal.apigeeEdgeAppListing = {
     tableToggle: function (context, settings) {
       $('.toggle--warning').once('tableToggle').on('click', function (event) {
         event.preventDefault();

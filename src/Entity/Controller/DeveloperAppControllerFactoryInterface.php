@@ -21,7 +21,7 @@
 namespace Drupal\apigee_edge\Entity\Controller;
 
 /**
- * Interface DeveloperAppControllerFactoryInterface.
+ * Base definition of the developer app controller factory service.
  */
 interface DeveloperAppControllerFactoryInterface {
 

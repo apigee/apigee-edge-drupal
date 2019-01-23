@@ -22,10 +22,6 @@ namespace Drupal\apigee_edge\Entity\Controller;
 
 use Apigee\Edge\Api\Management\Controller\AppByOwnerControllerInterface as EdgeAppByOwnerControllerInterface;
 use Apigee\Edge\Api\Management\Controller\DeveloperAppController as EdgeDeveloperAppController;
-use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface;
-use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface;
-use Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactoryInterface;
-use Drupal\apigee_edge\SDKConnectorInterface;
 
 /**
  * Definition of the developer app controller service.
@@ -35,34 +31,6 @@ use Drupal\apigee_edge\SDKConnectorInterface;
  * number of API calls that we send to Apigee Edge.
  */
 final class DeveloperAppController extends AppByOwnerController implements DeveloperAppControllerInterface {
-
-  /**
-   * The app cache by owner factory service.
-   *
-   * @var \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface
-   */
-  private $appCacheByOwnerFactory;
-
-  /**
-   * DeveloperAppController constructor.
-   *
-   * @param string $owner
-   *   A developer's email address, uuid or a company's company name.
-   * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
-   *   The SDK connector service.
-   * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
-   *   The organization controller service.
-   * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface $app_cache
-   *   The app cache that stores apps by their ids (UUIDs).
-   * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface $app_cache_by_owner_factory
-   *   The app cache by owner factory service.
-   * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactoryInterface $app_name_cache_by_owner_factory
-   *   The app name cache by owner factory service.
-   */
-  public function __construct(string $owner, SDKConnectorInterface $connector, OrganizationControllerInterface $org_controller, AppCacheInterface $app_cache, AppCacheByOwnerFactoryInterface $app_cache_by_owner_factory, AppNameCacheByOwnerFactoryInterface $app_name_cache_by_owner_factory) {
-    parent::__construct($owner, $connector, $org_controller, $app_cache, $app_cache_by_owner_factory, $app_name_cache_by_owner_factory);
-    $this->appCacheByOwnerFactory = $app_cache_by_owner_factory;
-  }
 
   /**
    * {@inheritdoc}

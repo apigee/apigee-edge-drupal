@@ -19,44 +19,48 @@
 
 namespace Drupal\apigee_edge\Controller;
 
-use Drupal\apigee_edge\Entity\DeveloperAppPageTitleInterface;
-use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
-use Drupal\Core\Entity\Controller\EntityViewController;
-use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Render\Markup;
-use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\apigee_edge\Entity\DeveloperAppInterface;
+use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Displays the view page of a developer app for a given user on the UI.
  */
-class DeveloperAppViewControllerForDeveloper extends EntityViewController implements DeveloperAppPageTitleInterface {
-
-  use DeveloperStatusCheckTrait;
-  use DeveloperAppCallbackUrlCheckTrait;
+class DeveloperAppViewControllerForDeveloper extends ControllerBase {
 
   /**
-   * {@inheritdoc}
+   * The entity type manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  public function view(EntityInterface $app, $view_mode = 'full') {
-    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $app */
-    $this->checkDeveloperStatus($app->getOwnerId());
-    // Because we use this custom controller class to render the entity the
-    // _entity_view parameter cannot be passed. Create a new route and
-    // controller if another $view_mode should be used.
-    // See \Drupal\Core\Entity\Enhancer\EntityRouteEnhancer.
-    $this->checkCallbackUrl($app, 'default');
-    $build = parent::view($app, $view_mode);
-    return $build;
+  protected $entityTypeManager;
+
+  /**
+   * DeveloperAppViewControllerForDeveloper constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager service.
+   */
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getPageTitle(RouteMatchInterface $routeMatch): string {
-    return t('@name @developer_app', [
-      '@name' => Markup::create($routeMatch->getParameter('app')->label()),
-      '@developer_app' => $this->entityManager->getDefinition('developer_app')->getSingularLabel(),
-    ]);
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity_type.manager')
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function view(DeveloperAppInterface $app) {
+    $build = $this->entityTypeManager->getViewBuilder($app->getEntityTypeId())->view($app);
+    return $build;
   }
 
 }

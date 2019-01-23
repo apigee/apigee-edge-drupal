@@ -19,6 +19,11 @@
 
 namespace Drupal\Tests\apigee_edge\Functional;
 
+use Apigee\Edge\Api\Management\Controller\CompanyController;
+use Apigee\Edge\Api\Management\Controller\CompanyMembersController;
+use Apigee\Edge\Api\Management\Entity\Company;
+use Apigee\Edge\Api\Management\Structure\CompanyMembership;
+use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperInterface;
 use Drupal\Core\Url;
 
@@ -47,6 +52,27 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
   protected $developerStorage;
 
   /**
+   * The SDK connector service.
+   *
+   * @var \Drupal\apigee_edge\SDKConnectorInterface
+   */
+  protected $sdkConnector;
+
+  /**
+   * Developer entity to test.
+   *
+   * @var \Drupal\apigee_edge\Entity\DeveloperInterface
+   */
+  protected $developer;
+
+  /**
+   * Company to test.
+   *
+   * @var \Apigee\Edge\Api\Management\Entity\CompanyInterface
+   */
+  protected $company;
+
+  /**
    * The registered developer entity.
    *
    * @var \Drupal\apigee_edge\Entity\DeveloperInterface
@@ -69,12 +95,30 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $user_settings = $this->config('user.settings');
     $user_settings->set('register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL)->save(TRUE);
     $this->developerStorage = $this->container->get('entity_type.manager')->getStorage('developer');
+    $this->sdkConnector = $this->container->get('apigee_edge.sdk_connector');
   }
 
   /**
    * {@inheritdoc}
    */
   protected function tearDown() {
+    try {
+      if ($this->developer !== NULL) {
+        $this->developer->delete();
+      }
+    }
+    catch (\Exception $exception) {
+      $this->logException($exception);
+    }
+    try {
+      if ($this->company !== NULL) {
+        $company_controller = new CompanyController($this->sdkConnector->getOrganization(), $this->sdkConnector->getClient());
+        $company_controller->delete($this->company->id());
+      }
+    }
+    catch (\Exception $exception) {
+      $this->logException($exception);
+    }
     try {
       if ($this->developerRegistered !== NULL) {
         $this->developerRegistered->delete();
@@ -100,6 +144,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
   public function testDeveloperRegisterAndCreate() {
     $this->developerRegisterTest();
     $this->developerCreateByAdminTest();
+    $this->developerGetCompanyListTest();
   }
 
   /**
@@ -299,6 +344,55 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     // Ensure that entity static cache is also invalidated in this scope
     // too.
     $this->assertFalse($this->developerStorage->loadUnchanged($test_user['email']), 'Developer does not exists anymore.');
+  }
+
+  /**
+   * Tests getCompanies() function of the developer entity.
+   *
+   * @see \Drupal\apigee_edge\Entity\Developer::getCompanies()
+   */
+  public function developerGetCompanyListTest() {
+    // Create a new developer.
+    $name = strtolower($this->randomMachineName());
+    $this->developer = $this->developerStorage->create([
+      'email' => $name . '@example.com',
+      'userName' => $name,
+      'firstName' => $this->getRandomGenerator()->word(8),
+      'lastName' => $this->getRandomGenerator()->word(8),
+    ]);
+    $this->developer->save();
+
+    // Result of getCompanies() function should be an empty array.
+    $this->assertNotNull($this->developer->getCompanies());
+    $this->assertEmpty($this->developer->getCompanies());
+
+    // Create a new company and add developer as a member to it.
+    $this->company = new Company([
+      'name' => $this->getRandomGenerator()->name(),
+    ]);
+    $company_controller = new CompanyController($this->sdkConnector->getOrganization(), $this->sdkConnector->getClient());
+    $company_controller->create($this->company);
+
+    $company_membership_controller = new CompanyMembersController($this->company->getName(), $this->sdkConnector->getOrganization(), $this->sdkConnector->getClient());
+    $company_membership = new CompanyMembership([$this->developer->getEmail() => NULL]);
+    $company_membership_controller->setMembers($company_membership);
+
+    // Ensure that the developer is reloaded from Apigee Edge so remove the
+    // developer entity from the cache.
+    $developer_cache = $this->container->get('apigee_edge.controller.cache.developer');
+    $developer_cache->removeEntities([$this->developer->getDeveloperId()]);
+
+    // Check the companies array if the developer is reloaded.
+    /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
+    $developer = $this->developerStorage->loadMultiple()[$this->developer->getEmail()];
+    $this->assertContains($this->company->getName(), $developer->getCompanies());
+
+    // Check the companies array if the developer is removed from the member
+    // list.
+    $company_membership_controller->removeMember($this->developer->getEmail());
+    $developer_cache->removeEntities([$this->developer->getDeveloperId()]);
+    $developer = $this->developerStorage->loadUnchanged($this->developer->getEmail());
+    $this->assertNotContains($this->company->getName(), $developer->getCompanies());
   }
 
 }

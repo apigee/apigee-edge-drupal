@@ -23,11 +23,14 @@
  * Main module file for Apigee Edge.
  */
 
+use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
 use Apigee\Edge\Api\Management\Serializer\AppCredentialSerializer;
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\ClientErrorException;
 use Apigee\Edge\Structure\CredentialProduct;
+use Drupal\apigee_edge\Element\StatusPropertyElement;
 use Drupal\apigee_edge\Entity\ApiProduct;
+use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Exception\UserDeveloperConversionNoStorageFormatterFoundException;
 use Drupal\apigee_edge\Exception\UserDeveloperConversionUserFieldDoesNotExistException;
@@ -46,12 +49,11 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\Element;
-use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Site\Settings;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Template\Attribute;
 use Drupal\Core\TempStore\TempStoreException;
 use Drupal\Core\Url;
 use Drupal\Core\Utility\Error;
@@ -78,9 +80,6 @@ function apigee_edge_module_implements_alter(&$implementations, $hook) {
  */
 function apigee_edge_theme() {
   return [
-    'developer_app' => [
-      'render element' => 'elements',
-    ],
     'app_credential' => [
       'render element' => 'elements',
     ],
@@ -91,6 +90,24 @@ function apigee_edge_theme() {
       'render element' => 'element',
     ],
   ];
+}
+
+/**
+ * Prepares variables for status_property templates.
+ *
+ * Default template: status_property.html.twig.
+ *
+ * @param array $variables
+ *   An associative array.
+ */
+function template_preprocess_status_property(array &$variables) {
+  $element = &$variables['element'];
+  $element['value'] = $element['#value'];
+  $classes = ['status-value-' . strtolower($element['#value'])];
+  if ($element['#indicator_status'] !== '') {
+    $classes[] = str_replace('_', '-', $element['#indicator_status']);
+  }
+  $element['attributes'] = new Attribute(['class' => $classes]);
 }
 
 /**
@@ -170,14 +187,18 @@ function apigee_edge_entity_base_field_info_alter(&$fields, EntityTypeInterface 
  */
 function apigee_edge_entity_extra_field_info() {
   $extra = [];
-  $entityType = \Drupal::entityTypeManager()->getDefinition('developer_app');
-  $extra['developer_app']['developer_app']['display']['credentials'] = [
-    'label' => new TranslatableMarkup('Credentials'),
-    'description' => new TranslatableMarkup('Displays credentials provided by a @label', ['@label' => $entityType->getSingularLabel()]),
-    // By default it should be displayed in the end of the view.
-    'weight' => 100,
-    'visible' => TRUE,
-  ];
+  foreach (\Drupal::entityTypeManager()->getDefinitions() as $definition) {
+    if (in_array(AppInterface::class, class_implements($definition->getOriginalClass()))) {
+      // Bundles are not supported therefore both keys are the same.
+      $extra[$definition->id()][$definition->id()]['display']['credentials'] = [
+        'label' => new TranslatableMarkup('Credentials'),
+        'description' => new TranslatableMarkup('Displays credentials provided by a @label', ['@label' => $definition->getSingularLabel()]),
+        // By default it should be displayed in the end of the view.
+        'weight' => 100,
+        'visible' => TRUE,
+      ];
+    }
+  }
   return $extra;
 }
 
@@ -194,26 +215,34 @@ function apigee_edge_field_formatter_info_alter(array &$info) {
 /**
  * Implements hook_entity_view().
  */
-function apigee_edge_developer_app_view(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
-  /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
-  if ($display->getComponent('credentials')) {
-    $defaults = [
-      '#cache' => [
-        'contexts' => $entity->getCacheContexts(),
-        'tags' => $entity->getCacheTags(),
-      ],
-    ];
-    $build['credentials'] = [
-      '#type' => 'container',
-    ];
-    foreach ($entity->getCredentials() as $credential) {
-      $build['credentials'][] = [
-        '#type' => 'app_credential',
-        '#credential' => $credential,
-        '#attributes' => [
-          'class' => 'items--inline',
+function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
+  if ($entity instanceof AppInterface) {
+    if ($build['#view_mode'] === 'full') {
+      // Add some required assets to an app's full entity view mode.
+      $build['#attached']['library'][] = 'apigee_edge/apigee_edge.components';
+      $build['#attached']['library'][] = 'apigee_edge/apigee_edge.app_view';
+    }
+
+    if ($display->getComponent('credentials')) {
+      /** @var \Drupal\apigee_edge\Entity\AppInterface $entity */
+      $defaults = [
+        '#cache' => [
+          'contexts' => $entity->getCacheContexts(),
+          'tags' => $entity->getCacheTags(),
         ],
-      ] + $defaults;
+      ];
+      $build['credentials'] = [
+        '#type' => 'container',
+      ];
+      foreach ($entity->getCredentials() as $credential) {
+        $build['credentials'][] = [
+          '#type' => 'app_credential',
+          '#credential' => $credential,
+          '#attributes' => [
+            'class' => 'items--inline',
+          ],
+        ] + $defaults;
+      }
     }
   }
 }
@@ -275,18 +304,16 @@ function apigee_edge_api_product_access(EntityInterface $entity, $operation, Acc
 }
 
 /**
- * Implements hook_form_alter().
+ * Implements hook_form_FORM_ID_alter().
  */
-function apigee_edge_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  switch ($form_id) {
-    case 'entity_form_display_edit_form':
-      $form['#validate'][] = '_apigee_edge_entity_form_display_edit_form_validate';
-      break;
+function apigee_edge_form_entity_form_display_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  if ($form['#entity_type'] === 'developer_app') {
+    $form['#validate'][] = '_apigee_edge_developer_app_entity_form_display_edit_form_validate';
   }
 }
 
 /**
- * Extra validation for the entity_form_display.edit form.
+ * Extra validation for the entity_form_display.edit form of developer apps.
  *
  * This makes sure that fields marked as 'required' can't be disabled.
  *
@@ -295,7 +322,7 @@ function apigee_edge_form_alter(&$form, FormStateInterface $form_state, $form_id
  * @param Drupal\Core\Form\FormStateInterface $form_state
  *   Form state.
  */
-function _apigee_edge_entity_form_display_edit_form_validate(array &$form, FormStateInterface $form_state) {
+function _apigee_edge_developer_app_entity_form_display_edit_form_validate(array &$form, FormStateInterface $form_state) {
   $required = \Drupal::config('apigee_edge.developer_app_settings')->get('required_base_fields');
 
   foreach ($form_state->getValue('fields') as $field_name => $data) {
@@ -768,26 +795,6 @@ function apigee_edge_existing_developer_registration_hash_validate(UserInterface
 }
 
 /**
- * Prepares variables for developer app templates.
- *
- * Default template: developer_app.html.twig.
- *
- * @param array $variables
- *   An associative array containing the elements.
- */
-function template_preprocess_developer_app(array &$variables) {
-  $variables['#attached']['library'][] = 'apigee_edge/apigee_edge.components';
-  $variables['#attached']['library'][] = 'apigee_edge/apigee_edge.view';
-  $variables['developer_app'] = $variables['elements']['#developer_app'];
-
-  // Helpful $content variable for templates.
-  $variables += ['content' => []];
-  foreach (Element::children($variables['elements']) as $key) {
-    $variables['content'][$key] = $variables['elements'][$key];
-  }
-}
-
-/**
  * Prepares variables for app_credential_product_list templates.
  *
  * Default template: app-credential-product-list.html.twig.
@@ -815,17 +822,21 @@ function template_preprocess_app_credential_product_list(array &$variables) {
       continue;
     }
     $value = '';
+    $indicator_status = '';
     switch ($product->getStatus()) {
       case CredentialProduct::STATUS_APPROVED:
         $value = t('enabled');
+        $indicator_status = StatusPropertyElement::INDICATOR_STATUS_OK;
         break;
 
       case CredentialProduct::STATUS_REVOKED:
         $value = t('disabled');
+        $indicator_status = StatusPropertyElement::INDICATOR_STATUS_ERROR;
         break;
 
       case CredentialProduct::STATUS_PENDING:
         $value = t('pending');
+        $indicator_status = StatusPropertyElement::INDICATOR_STATUS_WARNING;
         break;
     }
     $variables['content'][$product->getApiproduct()] = [
@@ -840,6 +851,7 @@ function template_preprocess_app_credential_product_list(array &$variables) {
       'status' => [
         '#type' => 'status_property',
         '#value' => $value,
+        '#indicator_status' => $indicator_status,
       ],
     ];
   }
@@ -953,6 +965,7 @@ function template_preprocess_app_credential(array &$variables) {
       $variables['primary_wrapper'][$property]['value'] = [
         '#type' => 'status_property',
         '#value' => $value,
+        '#indicator_status' => $value === AppCredentialInterface::STATUS_APPROVED ? StatusPropertyElement::INDICATOR_STATUS_OK : StatusPropertyElement::INDICATOR_STATUS_ERROR,
       ];
     }
     else {
@@ -1320,13 +1333,17 @@ function apigee_edge_developer_app_storage_load(array $entities) {
     $dev_id_mail_map[$developer->uuid()] = $developer->getEmail();
   }
 
+  // Sanity check, IN condition below should not be used with an empty array.
+  if (empty($dev_id_mail_map)) {
+    return;
+  }
+
   // We load all users once with related found email addresses because
   // \Drupal\apigee_edge\Entity\DeveloperApp::setOwnerId() would load them
   // anyway but one by one. With this we warm up the user entity cache and
   // User::load() will return all users from cache.
   $userStorage = \Drupal::entityTypeManager()->getStorage('user');
-  $uids = $userStorage->getQuery()->condition('mail', $dev_id_mail_map, 'IN')
-    ->execute();
+  $uids = $userStorage->getQuery()->condition('mail', $dev_id_mail_map, 'IN')->execute();
   $users = $userStorage->loadMultiple($uids);
 
   if ($dev_id_mail_map) {
@@ -1431,32 +1448,6 @@ function _apigee_edge_set_sync_in_progress(?bool $in_progress = NULL): bool {
  */
 function _apigee_edge_is_sync_in_progress(): bool {
   return _apigee_edge_set_sync_in_progress();
-}
-
-/**
- * Gets the title of "My developer apps".
- *
- * @param \Drupal\user\UserInterface|null $user
- *   It can be used if an admin visits another user's
- *   "My developer apps" page.
- *
- * @return \Drupal\Core\StringTranslation\TranslatableMarkup
- *   Title of "My developer apps".
- */
-function apigee_edge_get_my_developer_apps_title(?UserInterface $user = NULL): TranslatableMarkup {
-  $args['@developer_app'] = \Drupal::entityTypeManager()->getDefinition('developer_app')->getPluralLabel();
-  if (isset($user)) {
-    $args['@user'] = Markup::create($user->getDisplayName());
-    $title = t('@developer_app of @user', $args);
-  }
-  else {
-    $title = t('My @developer_app', $args);
-  }
-
-  // Modules and themes can alter the title.
-  \Drupal::moduleHandler()->alter('apigee_edge_my_developer_apps_title', $title, $user);
-
-  return $title;
 }
 
 /**

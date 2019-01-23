@@ -145,7 +145,16 @@ abstract class FieldableEdgeEntityBase extends EdgeEntityBase implements Fieldab
    *   Array with property names.
    */
   protected static function propertyToBaseFieldBlackList(): array {
-    return [];
+    return [
+      // We expose each attribute as a field.
+      'attributes',
+      // Do not expose the organization user (used in Drupal) who created the
+      // entity. (These properties are generally available on Management API
+      // entities this is the reason why we blacklisted them in this base
+      // class).
+      'createdBy',
+      'lastModifiedBy',
+    ];
   }
 
   /**
@@ -169,7 +178,16 @@ abstract class FieldableEdgeEntityBase extends EdgeEntityBase implements Fieldab
    *   destination Drupal field types.
    */
   protected static function propertyToBaseFieldTypeMap(): array {
-    return [];
+    return [
+        // We do not want Drupal to apply default values
+        // on these properties if they are empty therefore their field type is
+        // a simple "timestamp" instead of "created" or "changed".
+        // (These properties are generally available on Management API
+        // entities this is the reason why we defined them in this base
+        // class).
+      'createdAt' => 'timestamp',
+      'lastModifiedAt' => 'timestamp',
+    ];
   }
 
   /**
