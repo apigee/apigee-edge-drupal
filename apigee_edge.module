@@ -1181,12 +1181,12 @@ function apigee_edge_user_cancel_methods_alter(&$methods) {
   $get_extra_info = function (string $key, $replacements): ?array {
     $extra_infos = [
       'user_cancel_block' => [
-        'title' => t("@title Account's credentials will be invalid until this account gets re-activated.", $replacements),
-        'description' => t('@description <strong>All your credentials will be invalid until your account is blocked.</strong>', $replacements),
+        'title' => t("@title Account's API credentials will be invalid until this account gets re-activated.", $replacements),
+        'description' => t('@description <strong>Your API credentials will be invalid until your account is unblocked.</strong>', $replacements),
       ],
       'user_cancel_delete' => [
-        'title' => t("@title <strong>All apps and credentials owned by this account will be deleted from Apigee Edge.</strong>", $replacements),
-        'description' => t('@description <strong>All your apps and credentials will be also deleted permanently.</strong>', $replacements),
+        'title' => t("@title <strong>All API apps and API credentials owned by this account will be deleted from Apigee Edge.</strong>", $replacements),
+        'description' => t('@description <strong>Your API apps and API credentials will be deleted permanently.</strong>', $replacements),
       ],
     ];
 
