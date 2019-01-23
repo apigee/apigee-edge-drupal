@@ -1162,6 +1162,50 @@ function apigee_edge_user_cancel(array $edit, UserInterface $account, $method) {
 }
 
 /**
+ * Implements hook_user_cancel_methods_alter().
+ */
+function apigee_edge_user_cancel_methods_alter(&$methods) {
+  // Transform available keys to replacements that could be passed to t().
+  $get_replacements = function (array $method_info): array {
+    $replacements = [];
+    array_walk($method_info, function ($value, $key) use (&$replacements) {
+      $replacements["@{$key}"] = $value;
+    });
+
+    return $replacements;
+  };
+
+  // Returns extra information for a method that we would like to display.
+  // "title" is what a user with "administer users" permission can see,
+  // "description" is for regular authenticated users by default.
+  $get_extra_info = function (string $key, $replacements): ?array {
+    $extra_infos = [
+      'user_cancel_block' => [
+        'title' => t("@title Account's credentials will be invalid until this account gets re-activated.", $replacements),
+        'description' => t('@description <strong>All your credentials will be invalid until your account is blocked.</strong>', $replacements),
+      ],
+      'user_cancel_delete' => [
+        'title' => t("@title <strong>All apps and credentials owned by this account will be deleted from Apigee Edge.</strong>", $replacements),
+        'description' => t('@description <strong>All your apps and credentials will be also deleted permanently.</strong>', $replacements),
+      ],
+    ];
+
+    // The same warning should be displayed in these cancellation methods.
+    $extra_infos['user_cancel_block_unpublish'] = $extra_infos['user_cancel_block'];
+    $extra_infos['user_cancel_reassign'] = $extra_infos['user_cancel_delete'];
+
+    return $extra_infos[$key] ?? NULL;
+  };
+
+  foreach ($methods as $method => $info) {
+    $extra_info = $get_extra_info($method, $get_replacements($info));
+    if ($extra_info) {
+      $methods[$method] = array_merge($methods[$method], $extra_info);
+    }
+  }
+}
+
+/**
  * Implements hook_user_delete().
  */
 function apigee_edge_user_delete(UserInterface $account) {
