@@ -537,9 +537,14 @@ class AuthenticationForm extends ConfigFormBase {
       '$1***credentials***',
     ], (string) $exception);
 
+    // Filter out any private values from config.
+    $client_config = array_filter($this->config('apigee_edge.client')->get(), function ($key) {
+      return !is_string($key) || $key[0] !== '_';
+    }, ARRAY_FILTER_USE_KEY);
+
     return json_encode($credentials, JSON_PRETTY_PRINT) . PHP_EOL .
       json_encode($keys, JSON_PRETTY_PRINT) . PHP_EOL .
-      json_encode($this->config('apigee_edge.client')->get(), JSON_PRETTY_PRINT) . PHP_EOL .
+      json_encode($client_config, JSON_PRETTY_PRINT) . PHP_EOL .
       $exception_text;
   }
 
