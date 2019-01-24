@@ -224,12 +224,14 @@ class AuthenticationForm extends ConfigFormBase {
     ];
 
     $form['test_connection'] = [
-      '#prefix' => '<div id="apigee-edge-connection-info">',
-      '#suffix' => '</div>',
       '#type' => 'details',
       '#title' => $this->t('Test connection'),
       '#description' => 'Send request using the selected authentication key.',
       '#open' => TRUE,
+      '#theme_wrappers' => [
+        'details' => [],
+        'container' => ['#attributes' => ['id' => 'apigee-edge-connection-info']],
+      ],
     ];
     $form['test_connection']['test_connection_submit'] = [
       '#type' => 'submit',
