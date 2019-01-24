@@ -50,6 +50,18 @@ class TeamDeleteForm extends EdgeEntityDeleteForm {
   /**
    * {@inheritdoc}
    */
+  public function getDescription() {
+    $original = parent::getDescription();
+
+    return $this->t('<strong>All apps, credentials and @team membership information will be deleted.</strong> @original', [
+      '@original' => $original,
+      '@team' => $this->entityTypeManager->getDefinition($this->entity->getEntityTypeId())->getLowercaseLabel(),
+    ]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getCancelUrl() {
     return $this->getRedirectUrl();
   }
