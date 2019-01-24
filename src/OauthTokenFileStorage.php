@@ -206,7 +206,7 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
     }
     else {
       // Removes cached token data.
-      unset($this->tokenData);
+      $this->tokenData = [];
     }
   }
 
