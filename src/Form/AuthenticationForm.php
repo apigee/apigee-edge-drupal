@@ -216,6 +216,10 @@ class AuthenticationForm extends ConfigFormBase {
       '#title' => $this->t('Debug information'),
       '#access' => FALSE,
       '#open' => FALSE,
+      '#theme_wrappers' => [
+        'details' => [],
+        'container' => ['#attributes' => ['id' => 'apigee-edge-auth-form-debug-info']],
+      ],
     ];
     $form['debug']['debug_text'] = [
       '#type' => 'textarea',
@@ -560,19 +564,11 @@ class AuthenticationForm extends ConfigFormBase {
     $response->addCommand(new ReplaceCommand('div.messages', ''));
     $response->addCommand(new ReplaceCommand('#apigee-edge-auth-form-messages', "<div id=\"apigee-edge-auth-form-messages\">{$status_messages}</div>"));
 
-    // Only render the debug element if it's been enabled by validation.
-    if ($form['debug']['#access']) {
-      // Add a prefix to the debug section to replace the wrapper.
-      $form['debug'] = $form['debug'] + [
-        '#prefix' => '<div id="apigee-edge-auth-form-debug-info">',
-        '#suffix' => '</div>',
-      ];
-      $response->addCommand(new ReplaceCommand('#apigee-edge-auth-form-debug-info', $this->renderer->render($form['debug'])));
-    }
-    else {
-      // There may still be an outdated debug message so clear it.
-      $response->addCommand(new ReplaceCommand('#apigee-edge-auth-form-debug-info', '<div id="apigee-edge-auth-form-debug-info"></div>'));
-    }
+    // Replace the debug element (an empty wrapper if validation passes).
+    $response->addCommand(new ReplaceCommand(
+      '#apigee-edge-auth-form-debug-info',
+      $form['debug']['#access'] ? $this->renderer->render($form['debug']) : '<div id="apigee-edge-auth-form-debug-info" data-drupal-selector="edit-debug-placeholder"></div>'
+    ));
 
     return $response;
   }
