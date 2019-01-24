@@ -166,7 +166,9 @@ class AuthenticationForm extends ConfigFormBase {
 
     // Placeholder for messages.
     $form['messages'] = [
-      '#markup' => '<div id="apigee-edge-auth-form-messages"></div>',
+      '#type' => 'html_tag',
+      '#tag' => 'div',
+      '#attributes' => ['id' => 'apigee-edge-auth-form-messages'],
     ];
 
     $form['connection_settings'] = [
@@ -205,7 +207,9 @@ class AuthenticationForm extends ConfigFormBase {
     ];
     // Placeholder for debug.
     $form['debug_placeholder'] = [
-      '#markup' => '<div id="apigee-edge-auth-form-debug-info"></div>',
+      '#type' => 'html_tag',
+      '#tag' => 'div',
+      '#attributes' => ['id' => 'apigee-edge-auth-form-debug-info'],
     ];
     $form['debug'] = [
       '#type' => 'details',
