@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge\Entity\Controller;
 
+use Apigee\Edge\Api\Management\Entity\AppInterface;
 use Apigee\Edge\Api\Management\Entity\DeveloperAppInterface;
 use Apigee\Edge\Entity\EntityInterface;
 use Drupal\apigee_edge\Exception\RuntimeException;
@@ -110,14 +111,9 @@ final class DeveloperAppEdgeEntityControllerProxy implements EdgeEntityControlle
    * {@inheritdoc}
    */
   public function loadAll(): array {
-    $dev_apps = [];
-    foreach ($this->appController->listApps(TRUE) as $app) {
-      // Ignore company apps.
-      if ($app instanceof DeveloperAppInterface) {
-        $dev_apps[$app->id()] = $app;
-      }
-    }
-    return $dev_apps;
+    return array_filter($this->appController->listApps(TRUE), function (AppInterface $app) {
+      return $app instanceof DeveloperAppInterface;
+    });
   }
 
 }
