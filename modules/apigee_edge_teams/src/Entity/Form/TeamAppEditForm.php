@@ -20,21 +20,19 @@
 
 namespace Drupal\apigee_edge_teams\Entity\Form;
 
-use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
-use Drupal\apigee_edge\Entity\Form\AppEditFormTrait;
-use Drupal\apigee_edge\Entity\Form\AppForm;
+use Drupal\apigee_edge\Entity\Form\AppEditForm;
 use Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * General form handler for the team app edit.
  */
-class TeamAppEditForm extends AppForm {
+class TeamAppEditForm extends AppEditForm {
 
-  use AppEditFormTrait;
   use TeamAppFormTrait;
 
   /**
@@ -47,13 +45,15 @@ class TeamAppEditForm extends AppForm {
   /**
    * Constructs TeamAppEditForm.
    *
-   * @param \Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface $app_credential_controller_factory
-   *   The team app credential controller factory.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer service.
+   * @param \Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface $app_credential_controller_factory
+   *   The team app credential controller factory.
    */
-  public function __construct(TeamAppCredentialControllerFactoryInterface $app_credential_controller_factory, EntityTypeManagerInterface $entity_type_manager) {
-    parent::__construct($entity_type_manager);
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, TeamAppCredentialControllerFactoryInterface $app_credential_controller_factory) {
+    parent::__construct($entity_type_manager, $renderer);
     $this->appCredentialControllerFactory = $app_credential_controller_factory;
   }
 
@@ -62,8 +62,9 @@ class TeamAppEditForm extends AppForm {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('apigee_edge_teams.controller.team_app_credential_controller_factory'),
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('renderer'),
+      $container->get('apigee_edge_teams.controller.team_app_credential_controller_factory')
     );
   }
 
@@ -83,23 +84,6 @@ class TeamAppEditForm extends AppForm {
       return $entity->toUrl('collection-by-team');
     }
     return parent::getRedirectUrl();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function apiProductList(): array {
-    // TODO Revisit and define how API product access (by user) should be
-    // applied on team apps.
-    if ($this->currentUser()->hasPermission('bypass api product access control')) {
-      return $this->entityTypeManager->getStorage('api_product')->loadMultiple();
-    }
-
-    // For security reasons only return public API products by default.
-    return array_filter(\Drupal::entityTypeManager()->getStorage('api_product')->loadMultiple(), function (ApiProductInterface $api_product) {
-      // Attribute may not exists but in that case it means public.
-      return ($api_product->getAttributeValue('access') ?? 'public') === 'public';
-    });
   }
 
 }
