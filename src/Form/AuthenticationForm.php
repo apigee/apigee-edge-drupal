@@ -39,6 +39,7 @@ use Drupal\Core\Render\RendererInterface;
 use Drupal\key\Entity\Key;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
+use Drupal\key\Plugin\KeyInput\NoneKeyInput;
 use Drupal\key\Plugin\KeyPluginFormInterface;
 use Drupal\key\Plugin\KeyProviderSettableValueInterface;
 use GuzzleHttp\Exception\ConnectException;
@@ -710,7 +711,7 @@ class AuthenticationForm extends ConfigFormBase {
    *   Whether the file key is writable.
    */
   protected function keyIsWritable(KeyInterface $key) {
-    return ($key->getKeyProvider() instanceof KeyProviderSettableValueInterface);
+    return ($key->getKeyProvider() instanceof KeyProviderSettableValueInterface && !($key->getKeyInput() instanceof NoneKeyInput));
   }
 
   /**
