@@ -10,6 +10,11 @@ apigee_edge_teams.team_settings:
       label: 'How to refer to a Team on the UI (plural)'
     cache_expiration:
       type: integer
+    api_product_access:
+      label: 'Filter displayed API products by access attribute'
+      type: sequence
+      sequence:
+        type: string
 
 apigee_edge_teams.team_permissions:
   type: config_object

@@ -39,5 +39,26 @@ function hook_apigee_edge_teams_team_listing_page_title_alter(\Drupal\Core\Strin
 }
 
 /**
+ * Control API product entity operation access of a team (and its members).
+ *
+ * @param \Drupal\apigee_edge\Entity\ApiProductInterface $api_product
+ *   The API Product entity for which to check access.
+ * @param string $operation
+ *   The entity operation. Usually one of 'view', 'update', 'create',
+ *   'delete' or 'assign".
+ * @param \Drupal\apigee_edge_teams\Entity\TeamInterface $team
+ *   The team for which to check access.
+ *
+ * @return \Drupal\Core\Access\AccessResultInterface
+ *   The access result.
+ *
+ * @see \Drupal\apigee_edge_teams\TeamApiProductAccessManager
+ */
+function hook_apigee_edge_teams_team_api_product_access(\Drupal\apigee_edge\Entity\ApiProductInterface $api_product, string $operation, \Drupal\apigee_edge_teams\Entity\TeamInterface $team) {
+  // Grant access if API product's name is prefixed wit the team's name.
+  return \Drupal\Core\Access\AccessResult::allowedIf(strpos($api_product->id(), $team->id()) === 0);
+}
+
+/**
  * @} End of "addtogroup hooks".
  */

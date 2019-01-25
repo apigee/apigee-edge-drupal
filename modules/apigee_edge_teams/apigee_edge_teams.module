@@ -19,11 +19,13 @@
  * MA 02110-1301, USA.
  */
 
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Breadcrumb\Breadcrumb;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
@@ -138,4 +140,54 @@ function apigee_edge_teams_system_breadcrumb_alter(Breadcrumb &$breadcrumb, Rout
     $team = $route_match->getParameter('team');
     $breadcrumb->addLink(Link::createFromRoute($team_app_entity_def->getPluralLabel(), 'entity.team_app.collection_by_team', ['team' => $team->id()]));
   }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_access().
+ *
+ * Grant "view" and "view label" access to team members based on their
+ * teams' API Product access.
+ */
+function apigee_edge_teams_api_product_access(EntityInterface $entity, $operation, AccountInterface $account) {
+  /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $entity */
+  // The "assign" in not in this list, because it is handled by team API Product
+  // access manager service directly. Team members should not be able to
+  // assign API products to their developer apps just because they have access
+  // to do that when they are creating team app for a team.
+  if (!in_array($operation, ['view', 'view label'])) {
+    return AccessResult::neutral(sprintf('%s is not supported by %s.', $operation, __FUNCTION__));
+  }
+
+  /** @var \Drupal\apigee_edge_teams\TeamApiProductAccessManagerInterface $access_checker */
+  $access_checker = \Drupal::service('apigee_edge_teams.team_api_product_access_manager');
+  /** @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager */
+  $team_membership_manager = \Drupal::service('apigee_edge_teams.team_membership_manager');
+  $team_ids = $team_membership_manager->getTeams($account->getEmail());
+
+  if (empty($team_ids)) {
+    $result = AccessResult::neutral("{$account->getEmail()} is not member of any team.");
+    // If developer's team membership changes access must be re-evaluated.
+    // @see \Drupal\apigee_edge_teams\TeamMembershipManager
+    /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperStorageInterface $developer_storage */
+    $developer_storage = \Drupal::entityTypeManager()->getStorage('developer');
+    $developer = $developer_storage->load($account->getEmail());
+    if ($developer) {
+      $result->addCacheableDependency($developer);
+    }
+  }
+  else {
+    /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamStorageInterface $team_storage */
+    $team_storage = \Drupal::entityTypeManager()->getStorage('team');
+    /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
+    $teams = $team_storage->loadMultiple($team_ids);
+    foreach ($teams as $team) {
+      $result = $access_checker->access($entity, $operation, $team, TRUE);
+      if ($result->isAllowed()) {
+        break;
+      }
+    }
+  }
+
+  // $result is always defined.
+  return $result;
 }
