@@ -452,7 +452,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
    *   Error message.
    */
   protected function messageIfUserShouldHaveAccessByRole(string $operation, UserInterface $user, string $user_rid, array $rids_with_access, ApiProductInterface $product): string {
-    return sprintf('User with "%s" role should have "%s" access to an API Product with "%s" visibility. Roles with access granted: %s.', $user_rid, $operation, ($product->getAttributeValue('access') ?? 'public'), implode(', ', $rids_with_access));
+    return sprintf('User with "%s" role should have "%s" access to an API Product with "%s" visibility. Roles with access granted: %s.', $user_rid, $operation, ($product->getAttributeValue('access') ?? 'public'), empty($rids_with_access) ? 'none' : implode(', ', $rids_with_access));
   }
 
   /**
@@ -488,7 +488,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
    *   Error message.
    */
   protected function messageIfUserShouldNotHaveAccess(string $operation, UserInterface $user, string $user_rid, array $rids_with_access, ApiProductInterface $product): string {
-    return sprintf('"%s" user without "Bypass API Product access control" permission should not have "%s" access to an API Product with "%s" visibility. Roles with access granted: %s.', $user_rid, $operation, ($product->getAttributeValue('access') ?? 'public'), implode(', ', $rids_with_access));
+    return sprintf('"%s" user without "Bypass API Product access control" permission should not have "%s" access to an API Product with "%s" visibility. Roles with access granted: %s.', $user_rid, $operation, ($product->getAttributeValue('access') ?? 'public'), empty($rids_with_access) ? 'none' : implode(', ', $rids_with_access));
   }
 
   /**
