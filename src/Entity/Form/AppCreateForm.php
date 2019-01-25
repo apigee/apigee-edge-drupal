@@ -20,47 +20,110 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\apigee_edge\Entity\ApiProductInterface;
+use Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Url;
 use Apigee\Edge\Exception\ApiException;
-use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\AppInterface;
-use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\Core\Entity\EntityStorageException;
-use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
-use Drupal\Core\Messenger\MessengerTrait;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Utility\Error;
 
 /**
- * Helper trait that contains app create form specific tweaks.
- *
- * @see \Drupal\apigee_edge\Entity\Form\AppForm
- * @see \Drupal\apigee_edge\Entity\Form\DeveloperAppCreateForm
- * @see \Drupal\apigee_edge\Entity\Form\DeveloperAppCreateFormForDeveloper
+ * Base entity form for developer- and team (company) app create forms.
  */
-trait AppCreateFormTrait {
+abstract class AppCreateForm extends AppForm {
 
-  use MessengerTrait;
-  use StringTranslationTrait;
+  /**
+   * The API product controller service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface
+   */
+  protected $apiProductController;
+
+  /**
+   * AppCreateForm constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface $api_product_controller
+   *   The API product controller service.
+   */
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, ApiProductControllerInterface $api_product_controller) {
+    parent::__construct($entity_type_manager);
+    $this->apiProductController = $api_product_controller;
+  }
 
   /**
    * {@inheritdoc}
    */
-  protected function alterForm(array &$form, FormStateInterface $form_state): void {
-    $app_settings = \Drupal::config('apigee_edge.common_app_settings');
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity_type.manager'),
+      $container->get('apigee_edge.controller.api_product')
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  final public function form(array $form, FormStateInterface $form_state) {
+    $form = parent::form($form, $form_state);
+    $this->alterFormBeforeApiProductElement($form, $form_state);
+    $form['api_products'] = $this->apiProductsFormElement($form, $form_state);
+    $this->alterFormWithApiProductElement($form, $form_state);
+    return $form;
+  }
+
+  /**
+   * Allows to alter the form before API products gets added.
+   *
+   * @param array $form
+   *   Form render array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   */
+  protected function alterFormBeforeApiProductElement(array &$form, FormStateInterface $form_state): void {}
+
+  /**
+   * Allows to alter the form after API products form element have been added.
+   *
+   * @param array $form
+   *   Form render array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   */
+  protected function alterFormWithApiProductElement(array &$form, FormStateInterface $form_state): void {}
+
+  /**
+   * Returns the API Products form element element.
+   *
+   * Form and form state is only passed to be able filter API products that
+   * should be displayed.
+   *
+   * @param array $form
+   *   Form render array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   *
+   * @see apiProductList()
+   */
+  final protected function apiProductsFormElement(array $form, FormStateInterface $form_state): array {
+    $app_settings = $this->config('apigee_edge.common_app_settings');
     $user_select = (bool) $app_settings->get('user_select');
 
     $api_products_options = array_map(function (ApiProductInterface $product) {
       return $product->label();
-    }, $this->apiProductList());
+    }, $this->apiProductList($form, $form_state));
 
     $multiple = $app_settings->get('multiple_products');
     $default_products = $app_settings->get('default_products') ?: [];
 
-    $form['api_products'] = [
+    $element = [
       '#title' => $this->entityTypeManager->getDefinition('api_product')->getPluralLabel(),
       '#required' => TRUE,
       '#options' => $api_products_options,
@@ -71,16 +134,18 @@ trait AppCreateFormTrait {
     ];
 
     if ($app_settings->get('display_as_select')) {
-      $form['api_products']['#type'] = 'select';
-      $form['api_products']['#multiple'] = $multiple;
-      $form['api_products']['#empty_value'] = '';
+      $element['#type'] = 'select';
+      $element['#multiple'] = $multiple;
+      $element['#empty_value'] = '';
     }
     else {
-      $form['api_products']['#type'] = $multiple ? 'checkboxes' : 'radios';
+      $element['#type'] = $multiple ? 'checkboxes' : 'radios';
       if (!$multiple) {
-        $form['api_products']['#options'] = ['' => $this->t('N/A')] + $form['api_products']['#options'];
+        $element['#options'] = ['' => $this->t('N/A')] + $form['api_products']['#options'];
       }
     }
+
+    return $element;
   }
 
   /**
@@ -104,14 +169,16 @@ trait AppCreateFormTrait {
     // have access to the form element.
     if (!$element['#access']) {
       $selected_products = array_values(array_filter((array) $form_state->getValue($element['#parents'])));
-      $existing_products = \Drupal::service('apigee_edge.controller.api_product')->getEntityIds();
+      // It is faster to collect existing API product names from Apigee Edge
+      // like this.
+      $existing_products = $this->apiProductController->getEntityIds();
       $sanitized_product_list = array_intersect($selected_products, $existing_products);
       if ($sanitized_product_list != $selected_products) {
         // Something went wrong...
         $form_state->setError($complete_form, $this->t('@app creation is temporarily disabled. Please contact with support.', [
           '@app' => $this->appEntityDefinition()->getSingularLabel(),
         ]));
-        \Drupal::logger('apigee_edge')
+        $this->logger('apigee_edge')
           ->critical('Invalid configuration detected! "Let user select the product(s)" is disabled but the submitted app creation form did contain at least one invalid API product. App creation process has been aborted. Please verify the configuration.<br>API product ids in input: <pre>@input</pre> API Product ids on Apigee Edge: <pre>@existing</pre>', [
             'link' => Link::fromTextAndUrl($this->t('configuration'), Url::fromRoute('apigee_edge.settings.general_app'))->toString(),
             '@input' => print_r($selected_products, TRUE),
@@ -125,24 +192,12 @@ trait AppCreateFormTrait {
   /**
    * {@inheritdoc}
    */
-  protected function apiProductList(): array {
-    // For backward-compatibility and security reasons only return public
-    // API products by default.
-    return array_filter(\Drupal::entityTypeManager()->getStorage('api_product')->loadMultiple(), function (ApiProductInterface $api_product) {
-      // Attribute may not exists but in that case it means public.
-      return ($api_product->getAttributeValue('access') ?? 'public') === 'public';
-    });
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   protected function saveAppCredentials(AppInterface $app, FormStateInterface $form_state): ?bool {
     // On app creation we only support creation of one app credential at this
     // moment.
     $result = FALSE;
     $app_credential_controller = $this->appCredentialController($app->getAppOwner(), $app->getName());
-    $logger = \Drupal::logger('apigee_edge');
+    $logger = $this->logger('apigee_edge');
 
     /** @var \Apigee\Edge\Api\Management\Entity\AppCredential[] $credentials */
     $credentials = $app->getCredentials();
@@ -192,20 +247,5 @@ trait AppCreateFormTrait {
   protected function saveButtonLabel() : TranslatableMarkup {
     return $this->t('Add @app', ['@app' => $this->appEntityDefinition()->getLowercaseLabel()]);
   }
-
-  /**
-   * {@inheritdoc}
-   */
-  abstract protected function appCredentialController(string $owner, string $app_name) : AppCredentialControllerInterface;
-
-  /**
-   * {@inheritdoc}
-   */
-  abstract protected function appCredentialLifeTime(): int;
-
-  /**
-   * {@inheritdoc}
-   */
-  abstract protected function appEntityDefinition(): EntityTypeInterface;
 
 }

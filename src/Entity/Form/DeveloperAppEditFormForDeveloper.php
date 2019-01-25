@@ -20,17 +20,13 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
-use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 
 /**
  * Dedicated form handler that allows a developer to edit its developer app.
  */
-class DeveloperAppEditFormForDeveloper extends DeveloperAppCreateEditFormForDeveloper {
-
-  use AppEditFormTrait;
-  use DeveloperAppFormTrait;
+class DeveloperAppEditFormForDeveloper extends DeveloperAppEditForm {
 
   /**
    * {@inheritdoc}
@@ -48,13 +44,6 @@ class DeveloperAppEditFormForDeveloper extends DeveloperAppCreateEditFormForDeve
     $actions['delete']['#url'] = $this->getEntity()->toUrl('delete-form-for-developer');
 
     return $actions;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function appCredentialController(string $owner, string $app_name): AppCredentialControllerInterface {
-    return $this->appCredentialControllerFactory->developerAppCredentialController($owner, $app_name);
   }
 
 }
