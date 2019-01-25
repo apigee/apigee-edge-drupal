@@ -1,6 +1,6 @@
 name: Apigee Edge Teams
 description: Provides shared app functionality by allowing developers to be organised into teams.
-package: Apigee
+package: Apigee (Experimental)
 
 type: module
 core: 8.x
