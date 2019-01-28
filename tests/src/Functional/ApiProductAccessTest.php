@@ -495,9 +495,9 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
    * Validates visible and hidden API products on a page.
    *
    * @param array $visible
-   *   Array of API product visbilities that should be on the page.
+   *   Array of API product visibilities that should be on the page.
    * @param array $hidden
-   *   Array of API product visbilities that should not be on the page.
+   *   Array of API product visibilities that should not be on the page.
    */
   protected function checkProductVisibility(array $visible = [], array $hidden = []) {
     foreach ($visible as $visibility) {
