@@ -34,7 +34,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
  */
 final class TeamApiProductAccessManager implements TeamApiProductAccessManagerInterface {
 
-  private const CONFIG_OBJECT_NAME = 'apigee_edge_teams.team_settings';
+  private const CONFIG_OBJECT_NAME = 'apigee_edge_teams.team_permissions';
 
   /**
    * The module handler service.
@@ -117,9 +117,10 @@ final class TeamApiProductAccessManager implements TeamApiProductAccessManagerIn
       return AccessResult::neutral(sprintf('%s is not supported by %s.', $operation, __FUNCTION__));
     }
     $product_visibility = $api_product->getAttributeValue('access') ?? 'public';
-    $visible_products = $this->config->get(static::CONFIG_OBJECT_NAME)->get('api_product_access');
+    // If config key does not exist this revokes access to the API product.
+    $access_granted = (bool) $this->config->get(static::CONFIG_OBJECT_NAME)->get("api_product_access_{$product_visibility}");
 
-    return AccessResult::allowedIf(in_array($product_visibility, $visible_products))
+    return AccessResult::allowedIf($access_granted)
       // If team membership changes access must be re-evaluated.
       // @see \Drupal\apigee_edge_teams\TeamMembershipManager
       ->addCacheableDependency($team)

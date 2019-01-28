@@ -59,7 +59,7 @@ class TeamMemberPermissionsSettingsForm extends ConfigFormBase {
         'permissions' => [
           'manage_members' => [
             'label' => $this->t('Manage team members'),
-            'description' => $this->t('Manage team members.'),
+            'description' => $this->t('Add/remove team members.'),
           ],
         ],
       ],
@@ -72,6 +72,14 @@ class TeamMemberPermissionsSettingsForm extends ConfigFormBase {
           'analytics' => $this->t('View analytics of any Team Apps'),
         ],
       ],
+      'api_product' => [
+        'label' => $this->t('API products'),
+        'permissions' => [
+          'access_public' => $this->t('View and assign public API products to team apps'),
+          'access_private' => $this->t('View and assign private API products to team apps'),
+          'access_internal' => $this->t('View and assign internal API products to team apps'),
+        ],
+      ],
     ];
 
     $form['permissions'] = [
@@ -79,8 +87,8 @@ class TeamMemberPermissionsSettingsForm extends ConfigFormBase {
     ];
     $form['permissions']['info'] = [
       '#type' => 'html_tag',
-      '#tag' => 'div',
-      '#value' => $this->t('Configure permissions of team members.'),
+      '#tag' => 'p',
+      '#value' => $this->t('Configure default permissions of a team member in a team.'),
       '#attributes' => ['class' => ['description']],
     ];
 

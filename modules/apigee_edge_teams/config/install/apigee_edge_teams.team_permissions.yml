@@ -6,3 +6,6 @@ app_create: true
 app_update: false
 app_delete: false
 app_analytics: true
+api_product_access_public: true
+api_product_access_private: true
+api_product_access_internal: false
