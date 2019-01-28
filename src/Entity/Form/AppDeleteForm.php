@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
@@ -59,6 +60,21 @@ class AppDeleteForm extends EdgeEntityDeleteForm {
       $entity = parent::getEntityFromRouteMatch($route_match, $entity_type_id);
     }
     return $entity;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCancelUrl() {
+    return $this->getRedirectUrl();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    parent::submitForm($form, $form_state);
+    $form_state->setRedirectUrl($this->getRedirectUrl());
   }
 
 }
