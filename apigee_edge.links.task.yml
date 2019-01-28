@@ -56,11 +56,6 @@ apigee_edge.settings.product.caching:
   title: 'Caching'
   base_route: apigee_edge.settings.product.alias
 
-apigee_edge.settings.product.access_control:
-  route_name: apigee_edge.settings.product.access_control
-  title: 'Access control'
-  base_route: apigee_edge.settings.product.alias
-
 apigee_edge.settings.developer:
   route_name: apigee_edge.settings.developer
   title: 'Registration'
@@ -76,6 +71,12 @@ apigee_edge.settings.developer.cache:
   title: 'Caching'
   base_route: apigee_edge.settings.developer
   weight: 10
+
+apigee_edge.settings.developer.api_product_access:
+  route_name: apigee_edge.settings.developer.api_product_access
+  title: 'API product access'
+  base_route: apigee_edge.settings.developer
+  weight: 20
 
 apigee_edge.settings.developer.sync:
   route_name: apigee_edge.settings.developer.sync
