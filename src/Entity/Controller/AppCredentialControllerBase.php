@@ -26,6 +26,7 @@ use Apigee\Edge\Structure\AttributesProperty;
 use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface;
 use Drupal\apigee_edge\Event\AppCredentialAddApiProductEvent;
 use Drupal\apigee_edge\Event\AppCredentialCreateEvent;
+use Drupal\apigee_edge\Event\AppCredentialDeleteEvent;
 use Drupal\apigee_edge\Event\AppCredentialGenerateEvent;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -115,7 +116,7 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
    */
   public function addProducts(string $consumerKey, array $apiProducts): AppCredentialInterface {
     $credential = $this->decorated()->addProducts($consumerKey, $apiProducts);
-    $this->eventDispatcher->dispatch(AppCredentialAddApiProductEvent::EVENT_NAME, new AppCredentialAddApiProductEvent(AppCredentialCreateEvent::APP_TYPE_DEVELOPER, $this->owner, $this->appName, $credential, $apiProducts));
+    $this->eventDispatcher->dispatch(AppCredentialAddApiProductEvent::EVENT_NAME, new AppCredentialAddApiProductEvent($this->getAppType(), $this->owner, $this->appName, $credential, $apiProducts));
     // By removing app from cache we force reload the credentials as well.
     $this->appCacheByOwner->removeEntities([$this->appName]);
     return $credential;
@@ -126,7 +127,7 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
    */
   public function create(string $consumerKey, string $consumerSecret): AppCredentialInterface {
     $credential = $this->decorated()->create($consumerKey, $consumerSecret);
-    $this->eventDispatcher->dispatch(AppCredentialCreateEvent::EVENT_NAME, new AppCredentialCreateEvent(AppCredentialCreateEvent::APP_TYPE_DEVELOPER, $this->owner, $this->appName, $credential));
+    $this->eventDispatcher->dispatch(AppCredentialCreateEvent::EVENT_NAME, new AppCredentialCreateEvent($this->getAppType(), $this->owner, $this->appName, $credential));
     // By removing app from cache we force reload the credentials as well.
     $this->appCacheByOwner->removeEntities([$this->appName]);
     return $credential;
@@ -145,6 +146,7 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
    */
   public function delete(string $consumerKey): AppCredentialInterface {
     $credential = $this->decorated()->delete($consumerKey);
+    $this->eventDispatcher->dispatch(AppCredentialDeleteEvent::EVENT_NAME, new AppCredentialDeleteEvent($this->getAppType(), $this->owner, $this->appName, $credential));
     // By removing app from cache we force reload the credentials as well.
     $this->appCacheByOwner->removeEntities([$this->appName]);
     return $credential;
@@ -174,7 +176,7 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
    */
   public function generate(array $apiProducts, AttributesProperty $appAttributes, string $callbackUrl, array $scopes = [], string $keyExpiresIn = '-1'): AppCredentialInterface {
     $credential = $this->decorated()->generate($apiProducts, $appAttributes, $callbackUrl, $scopes, $keyExpiresIn);
-    $this->eventDispatcher->dispatch(AppCredentialGenerateEvent::EVENT_NAME, new AppCredentialGenerateEvent(AppCredentialCreateEvent::APP_TYPE_DEVELOPER, $this->owner, $this->appName, $credential));
+    $this->eventDispatcher->dispatch(AppCredentialGenerateEvent::EVENT_NAME, new AppCredentialGenerateEvent($this->getAppType(), $this->owner, $this->appName, $credential));
     // By removing app from cache we force reload the credentials as well.
     $this->appCacheByOwner->removeEntities([$this->appName]);
     return $credential;
@@ -258,5 +260,15 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
     $this->appCacheByOwner->removeEntities([$this->appName]);
     return $attributes;
   }
+
+  /**
+   * Returns either "developer" or "team".
+   *
+   * @return string
+   *   Type of the apps that a credential controller supports.
+   *
+   * @see \Drupal\apigee_edge\Event\AbstractAppCredentialEvent
+   */
+  abstract protected function getAppType(): string;
 
 }
