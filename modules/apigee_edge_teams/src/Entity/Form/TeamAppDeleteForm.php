@@ -17,19 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Entity\Form;
+namespace Drupal\apigee_edge_teams\Entity\Form;
+
+use Drupal\apigee_edge\Entity\Form\AppDeleteForm;
 
 /**
- * Dedicated form handler that allows a developer to delete its own app.
+ * Dedicated form handler that allows a developer to delete a team app.
  */
-class DeveloperAppDeleteFormForDeveloper extends AppDeleteForm {
+class TeamAppDeleteForm extends AppDeleteForm {
 
   /**
    * {@inheritdoc}
    */
   protected function getRedirectUrl() {
     $entity = $this->getEntity();
-    return $entity->toUrl('collection-by-developer');
+    return $entity->toUrl('collection-by-team');
   }
 
 }

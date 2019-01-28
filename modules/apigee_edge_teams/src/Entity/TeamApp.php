@@ -47,7 +47,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *       "add" = "Drupal\apigee_edge_teams\Entity\Form\TeamAppCreateForm",
  *       "add_for_team" = "Drupal\apigee_edge_teams\Entity\Form\TeamAppCreateFormForTeam",
  *       "edit" = "Drupal\apigee_edge_teams\Entity\Form\TeamAppEditForm",
- *       "delete" = "Drupal\apigee_edge\Entity\Form\AppDeleteForm",
+ *       "delete" = "Drupal\apigee_edge_teams\Entity\Form\TeamAppDeleteForm",
  *       "analytics" = "Drupal\apigee_edge_teams\Form\TeamAppAnalyticsForm",
  *     },
  *     "list_builder" = "Drupal\apigee_edge_teams\Entity\ListBuilder\TeamAppListBuilder",
