@@ -49,7 +49,7 @@ services:
 
   apigee_edge_teams.team_membership_manager:
     class: Drupal\apigee_edge_teams\TeamMembershipManager
-    arguments: [ '@entity_type.manager', '@apigee_edge_teams.company_members_controller_factory', '@apigee_edge.controller.developer', '@apigee_edge.controller.cache.developer_companies', '@cache_tags.invalidator']
+    arguments: [ '@entity_type.manager', '@apigee_edge_teams.company_members_controller_factory', '@apigee_edge.controller.developer', '@apigee_edge.controller.cache.developer_companies', '@apigee_edge_teams.team_api_product_access_manager', '@cache_tags.invalidator']
 
   apigee_edge_teams.team_api_product_access_manager:
     class: Drupal\apigee_edge_teams\TeamApiProductAccessManager
