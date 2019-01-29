@@ -20,10 +20,11 @@
 
 namespace Drupal\apigee_edge_teams\Entity\Form;
 
+use Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
-use Drupal\apigee_edge\Entity\Form\AppCreateFormTrait;
-use Drupal\apigee_edge\Entity\Form\AppForm;
+use Drupal\apigee_edge\Entity\Form\AppCreateForm;
 use Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface;
+use Drupal\apigee_edge_teams\TeamApiProductAccessManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -33,11 +34,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @internal
  */
-abstract class TeamAppCreateFormBase extends AppForm {
+abstract class TeamAppCreateFormBase extends AppCreateForm {
 
-  use AppCreateFormTrait {
-    apiProductList as private privateApiProductList;
-  }
   use TeamAppFormTrait;
 
   /**
@@ -48,16 +46,28 @@ abstract class TeamAppCreateFormBase extends AppForm {
   protected $appCredentialControllerFactory;
 
   /**
+   * The team API product access manager service.
+   *
+   * @var \Drupal\apigee_edge_teams\TeamApiProductAccessManagerInterface
+   */
+  private $teamApiProductAccessManager;
+
+  /**
    * Constructs TeamAppCreateFormBase.
    *
-   * @param \Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface $app_credential_controller_factory
-   *   The team app credential controller factory.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface $api_product_controller
+   *   The API Product controller service.
+   * @param \Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface $app_credential_controller_factory
+   *   The team app credential controller factory.
+   * @param \Drupal\apigee_edge_teams\TeamApiProductAccessManagerInterface $team_api_product_access
+   *   The team API product access manager service.
    */
-  public function __construct(TeamAppCredentialControllerFactoryInterface $app_credential_controller_factory, EntityTypeManagerInterface $entity_type_manager) {
-    parent::__construct($entity_type_manager);
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, ApiProductControllerInterface $api_product_controller, TeamAppCredentialControllerFactoryInterface $app_credential_controller_factory, TeamApiProductAccessManagerInterface $team_api_product_access) {
+    parent::__construct($entity_type_manager, $api_product_controller);
     $this->appCredentialControllerFactory = $app_credential_controller_factory;
+    $this->teamApiProductAccessManager = $team_api_product_access;
   }
 
   /**
@@ -65,8 +75,10 @@ abstract class TeamAppCreateFormBase extends AppForm {
    */
   public static function create(ContainerInterface $container) {
     return new static(
+      $container->get('entity_type.manager'),
+      $container->get('apigee_edge.controller.api_product'),
       $container->get('apigee_edge_teams.controller.team_app_credential_controller_factory'),
-      $container->get('entity_type.manager')
+      $container->get('apigee_edge_teams.team_api_product_access_manager')
     );
   }
 
@@ -86,19 +98,6 @@ abstract class TeamAppCreateFormBase extends AppForm {
       return $entity->toUrl('collection-by-team');
     }
     return parent::getRedirectUrl();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function apiProductList(): array {
-    // TODO Revisit and define how API product access (by user) should be
-    // applied on team apps.
-    if ($this->currentUser()->hasPermission('bypass api product access control')) {
-      return $this->entityTypeManager->getStorage('api_product')->loadMultiple();
-    }
-
-    return $this->privateApiProductList();
   }
 
 }

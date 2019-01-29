@@ -31,9 +31,9 @@ interface AppCacheByOwnerFactoryInterface {
    * @param string $owner
    *   Developer id (UUID), email address or a company's company name.
    *
-   * @return \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByAppOwnerInterface
+   * @return \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerInterface
    *   The app name cache instance that belongs to the owner.
    */
-  public function getAppCache(string $owner): AppCacheByAppOwnerInterface;
+  public function getAppCache(string $owner): AppCacheByOwnerInterface;
 
 }

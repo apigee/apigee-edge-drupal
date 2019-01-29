@@ -31,6 +31,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
 
+define('APIGEE_EDGE_APIPRODUCT_RBAC_CONFIG_SETTINGS', 'apigee_edge_apiproduct_rbac.settings');
 define('APIGEE_EDGE_APIPRODUCT_RBAC_ATTRIBUTE_VALUE_DELIMITER', ', ');
 
 /**
@@ -39,7 +40,9 @@ define('APIGEE_EDGE_APIPRODUCT_RBAC_ATTRIBUTE_VALUE_DELIMITER', ', ');
 function apigee_edge_apiproduct_rbac_module_implements_alter(&$implementations, $hook) {
   if ($hook == 'api_product_access') {
     // Disable API Product access provided by Apigee Edge module when
-    // this module is enabled.
+    // this module is enabled. API product visibility based access control
+    // and role based access control provided by this module is incompatible
+    // with each other.
     unset($implementations['apigee_edge']);
   }
 }
@@ -48,59 +51,66 @@ function apigee_edge_apiproduct_rbac_module_implements_alter(&$implementations, 
  * Implements hook_ENTITY_TYPE_access().
  *
  * Supported operations: view, view label, assign.
+ *
+ * @see apigee_edge_api_product_access()
  */
 function apigee_edge_apiproduct_rbac_api_product_access(EntityInterface $entity, $operation, AccountInterface $account) {
   /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $entity */
-  // We only control view and assign operations.
   if (!in_array($operation, ['view', 'view label', 'assign'])) {
-    // We have to return allowed, because neutral response still means
-    // denied if there is no other module that would return allowed for the
-    // entity specifically.
-    // @see Drupal\Core\Access\AccessResultInterface::isAllowed()
-    // @see Drupal\Core\Entity\EntityAccessControlHandler::access()
-    return AccessResult::allowed();
+    return AccessResult::neutral(sprintf('%s is not supported by %s.', $operation, __FUNCTION__));
   }
 
-  if ($account->hasPermission('bypass api product access control')) {
-    return AccessResult::allowed();
-  }
+  $result = AccessResult::allowedIfHasPermission($account, 'bypass api product access control');
 
-  $config = \Drupal::config('apigee_edge_apiproduct_rbac.settings');
-  $rbac_attribute_name = $config->get('attribute_name');
+  if ($result->isNeutral()) {
+    $config = \Drupal::config(APIGEE_EDGE_APIPRODUCT_RBAC_CONFIG_SETTINGS);
+    $rbac_attribute_name = $config->get('attribute_name');
 
-  if (empty($entity->getAttributeValue($rbac_attribute_name))) {
-    $result = AccessResult::forbidden("{$rbac_attribute_name} attribute on the API product is missing or empty.");
-    // Attribute is missing from the API product but the user already has an
-    // app with this API product. (Maybe someone assigned this API product
-    // to developer's app on Apigee Edge.) We have to grant view access to the
-    // API product otherwise s/he could not see it an developer app
-    // credentials list for example.
-    if ('assign' === $operation) {
-      $result = $config->get('grant_access_if_attribute_missing') ? AccessResult::allowed() : $result;
-    }
-    elseif ($config->get('grant_access_if_attribute_missing') || _apigee_edge_user_has_an_app_with_product($entity->getName(), $account)) {
-      $result = AccessResult::allowed();
-    }
-  }
-  else {
-    $roles = explode(APIGEE_EDGE_APIPRODUCT_RBAC_ATTRIBUTE_VALUE_DELIMITER, $entity->getAttributeValue($rbac_attribute_name));
-
-    // User may not have access to this API product based on the current
-    // access control attribute value but we should still grant him/her access
-    // if s/he has a developer app in association with this API product.
-    // We should not provide him/her access if operation is "assign"
-    // in general just because s/he has an app with the API product.
-    // Displaying these products should be solved on the form level always.
-    if (!empty(array_intersect($roles, $account->getRoles())) || ($operation === 'assign' && _apigee_edge_user_has_an_app_with_product($entity->getName(), $account))) {
-      $result = AccessResult::allowed();
+    if (empty($entity->getAttributeValue($rbac_attribute_name))) {
+      if ('assign' === $operation) {
+        $result = AccessResult::neutral("{$operation} is not allowed on {$entity->label()} API product.");
+      }
+      elseif ($config->get('grant_access_if_attribute_missing')) {
+        $result = AccessResult::allowed();
+      }
+      // Attribute is missing from the API product but the user already has an
+      // app with this API product. (Maybe someone assigned this API product
+      // to developer's app on Apigee Edge.) We have to grant access to the
+      // API product otherwise s/he could not see it on its developer app's
+      // credentials list for example.
+      else {
+        $result = _apigee_edge_user_has_an_app_with_product($entity->id(), $account, TRUE);
+        if (!$result->isAllowed()) {
+          $result = AccessResult::neutral("{$rbac_attribute_name} attribute on the API product is missing or empty.");
+        }
+      }
     }
     else {
-      $result = AccessResult::forbidden(sprintf('%s user does not have any of these required roles: %s.', $account->getEmail(), rtrim(implode(APIGEE_EDGE_APIPRODUCT_RBAC_ATTRIBUTE_VALUE_DELIMITER, $roles))));
-
+      $roles = explode(APIGEE_EDGE_APIPRODUCT_RBAC_ATTRIBUTE_VALUE_DELIMITER, $entity->getAttributeValue($rbac_attribute_name));
+      // User may not have access to this API product based on the current
+      // access control attribute value but we should still grant him/her access
+      // if s/he has a developer app in association with this API product.
+      // We should not provide him/her access if operation is "assign" just
+      // because s/he has an app with the API product.
+      // Displaying these products should be solved on the form level always.
+      if (empty(array_intersect($roles, $account->getRoles()))) {
+        if ('assign' === $operation) {
+          $result = AccessResult::neutral("{$operation} is not allowed on {$entity->label()} API product.");
+        }
+        else {
+          $result = _apigee_edge_user_has_an_app_with_product($entity->id(), $account, TRUE);
+          if (!$result->isAllowed()) {
+            $result = AccessResult::neutral(sprintf('%s user neither has any of %s roles nor an app with %s API product.', $account->getEmail(), rtrim(implode(APIGEE_EDGE_APIPRODUCT_RBAC_ATTRIBUTE_VALUE_DELIMITER, $roles)), $entity->label()));
+          }
+        }
+      }
+      else {
+        $result = AccessResult::allowed();
+      }
     }
   }
 
-  return $result;
+  return $result->addCacheableDependency($entity)->cachePerUser()->addCacheTags(['config:' . APIGEE_EDGE_APIPRODUCT_RBAC_CONFIG_SETTINGS]);
 }
 
 /**
@@ -109,7 +119,7 @@ function apigee_edge_apiproduct_rbac_api_product_access(EntityInterface $entity,
  * Adds RBAC settings to the API product access control form.
  */
 function apigee_edge_apiproduct_rbac_form_apigee_edge_api_product_access_control_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  $config = \Drupal::config('apigee_edge_apiproduct_rbac.settings');
+  $config = \Drupal::config(APIGEE_EDGE_APIPRODUCT_RBAC_CONFIG_SETTINGS);
   $current_rbac_attr_name = $config->get('attribute_name');
   $api_product_storage = \Drupal::entityTypeManager()->getStorage('api_product');
   // Parent form has already calculated these for us.
@@ -148,7 +158,7 @@ function apigee_edge_apiproduct_rbac_form_apigee_edge_api_product_access_control
   $form['rbac']['grant_access_if_attribute_missing'] = [
     '#type' => 'checkbox',
     '#title' => t('Show API products with missing or empty attribute to everyone'),
-    '#description' => t('If this checkbox is disabled only users with <em>Bypass API product access control</em> permission can see API product with missing or empty attribute.'),
+    '#description' => t('If this checkbox is disabled only users with <em>Bypass API product access control</em> permission can view and assign an API product with missing or empty attribute to a developer app.'),
     '#default_value' => $config->get('grant_access_if_attribute_missing'),
   ];
 
@@ -234,7 +244,7 @@ function apigee_edge_apiproduct_rbac_form_apigee_edge_api_product_access_control
  * @see apigee_edge_apiproduct_rbac_form_apigee_edge_api_product_access_control_form_alter()
  */
 function apigee_edge_apiproduct_rbac_form_apigee_edge_api_product_access_control_form_submit(array $form, FormStateInterface $form_state) {
-  $config = Drupal::configFactory()->getEditable('apigee_edge_apiproduct_rbac.settings');
+  $config = Drupal::configFactory()->getEditable(APIGEE_EDGE_APIPRODUCT_RBAC_CONFIG_SETTINGS);
   $config->set('attribute_name', $form_state->getValue(['rbac', 'attribute_name']))
     ->set('grant_access_if_attribute_missing', (bool) $form_state->getValue([
       'rbac',
@@ -283,7 +293,7 @@ function apigee_edge_apiproduct_rbac_form_apigee_edge_api_product_access_control
  *   If attribute has not changed it can be ommitted.
  */
 function _apigee_edge_apiproduct_rbac_batch(array $product_name_display_name_map, array $product_name_rids_map, string $attr_name = NULL, string $original_attr_name = NULL) {
-  $attr_name = $attr_name ?? \Drupal::config('apigee_edge_apiproduct_rbac.settings')->get('attribute_name');
+  $attr_name = $attr_name ?? \Drupal::config(APIGEE_EDGE_APIPRODUCT_RBAC_CONFIG_SETTINGS)->get('attribute_name');
   $original_attr_name = $original_attr_name ?? $attr_name;
   $batch = [
     'operations' => [

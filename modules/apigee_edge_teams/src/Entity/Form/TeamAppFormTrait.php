@@ -22,7 +22,10 @@ namespace Drupal\apigee_edge_teams\Entity\Form;
 
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\ClientErrorException;
+use Drupal\apigee_edge\Entity\ApiProductInterface;
+use Drupal\apigee_edge_teams\TeamApiProductAccessManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Utility\Error;
 
@@ -73,21 +76,70 @@ trait TeamAppFormTrait {
    * {@inheritdoc}
    */
   protected function appEntityDefinition(): EntityTypeInterface {
-    return \Drupal::entityTypeManager()->getDefinition('team_app');
+    return $this->getEntityTypeManager()->getDefinition('team_app');
   }
 
   /**
    * {@inheritdoc}
    */
   protected function appOwnerEntityDefinition(): EntityTypeInterface {
-    return \Drupal::entityTypeManager()->getDefinition('team');
+    return $this->getEntityTypeManager()->getDefinition('team');
   }
 
   /**
    * {@inheritdoc}
    */
   protected function appCredentialLifeTime(): int {
-    return \Drupal::config('apigee_edge_teams.team_app_settings')->get('credential_lifetime');
+    $config_name = 'apigee_edge_teams.team_app_settings';
+    $config = method_exists($this, 'config') ? $this->config($config_name) : \Drupal::config($config_name);
+    return $config->get('credential_lifetime');
+  }
+
+  /**
+   * Allows to access to the injected entity type manager.
+   *
+   * @return \Drupal\Core\Entity\EntityTypeManagerInterface
+   *   The entity type manager.
+   */
+  private function getEntityTypeManager(): EntityTypeManagerInterface {
+    if (property_exists($this, 'entityTypeManager') && $this->entityTypeManager instanceof EntityTypeManagerInterface) {
+      return $this->entityTypeManager;
+    }
+
+    return \Drupal::entityTypeManager();
+  }
+
+  /**
+   * Allows to access to the injected team API product access manager service.
+   *
+   * @return \Drupal\apigee_edge_teams\TeamApiProductAccessManagerInterface
+   *   The Team API product access manager service.
+   */
+  private function getTeamApiProductAccessManager(): TeamApiProductAccessManagerInterface {
+    if (property_exists($this, 'teamApiProductAccessManager') && $this->teamApiProductAccessManager instanceof TeamApiProductAccessManagerInterface) {
+      return $this->teamApiProductAccessManager;
+    }
+
+    return \Drupal::service('apigee_edge_teams.team_api_product_access_manager');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function apiProductList(array &$form, FormStateInterface $form_state): array {
+    $team_name = $form_state->getValue('owner') ?? $form['owner']['#value'] ?? $form['owner']['#default_value'];
+    /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface|null $team */
+    $team = $this->getEntityTypeManager()->getStorage('team')->load($team_name);
+    // Sanity check, team should always exists with team name in this context.
+    if ($team === NULL) {
+      return [];
+    }
+
+    $products = array_filter($this->getEntityTypeManager()->getStorage('api_product')->loadMultiple(), function (ApiProductInterface $api_product) use ($team) {
+      return $this->getTeamApiProductAccessManager()->access($api_product, 'assign', $team);
+    });
+
+    return $products;
   }
 
 }

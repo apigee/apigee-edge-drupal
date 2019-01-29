@@ -23,21 +23,21 @@ namespace Drupal\apigee_edge\Event;
 use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
 
 /**
- * Triggered when new API products have been added to an app credential.
+ * Triggered after an API product have been removed from an app credential.
  */
-class AppCredentialAddApiProductEvent extends AbstractAppCredentialEvent {
+class AppCredentialDeleteApiProductEvent extends AbstractAppCredentialEvent {
 
-  const EVENT_NAME = 'apigee_edge.app_credential.add_api_product';
+  const EVENT_NAME = 'apigee_edge.app_credential.delete_api_product';
 
   /**
-   * Array of recently added API product names.
+   * Name of the API product that has been removed.
    *
-   * @var string[]
+   * @var string
    */
-  private $newProducts;
+  private $apiProduct;
 
   /**
-   * AppCredentialAddApiProductEvent constructor.
+   * AppCredentialDeleteApiProductEvent constructor.
    *
    * @param string $app_type
    *   Either company or developer.
@@ -47,22 +47,22 @@ class AppCredentialAddApiProductEvent extends AbstractAppCredentialEvent {
    *   Name of the app.
    * @param \Apigee\Edge\Api\Management\Entity\AppCredentialInterface $credential
    *   The app credential that has been created.
-   * @param array $new_products
-   *   Array of API product names that has just been added to the key.
+   * @param string $api_product
+   *   Name of the API product that has been removed.
    */
-  public function __construct(string $app_type, string $owner_id, string $app_name, AppCredentialInterface $credential, array $new_products) {
+  public function __construct(string $app_type, string $owner_id, string $app_name, AppCredentialInterface $credential, string $api_product) {
     parent::__construct($app_type, $owner_id, $app_name, $credential);
-    $this->newProducts = $new_products;
+    $this->apiProduct = $api_product;
   }
 
   /**
-   * Returns new API products added to the credential.
+   * Returns name of the API product that has been removed.
    *
-   * @return string[]
-   *   Array of API product names.
+   * @return string
+   *   Name of the API product.
    */
-  public function getNewProducts(): array {
-    return $this->newProducts;
+  public function getApiProduct(): string {
+    return $this->apiProduct;
   }
 
 }

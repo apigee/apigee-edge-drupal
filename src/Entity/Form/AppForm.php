@@ -33,7 +33,7 @@ use Drupal\Core\Url;
 use Drupal\Core\Utility\Error;
 
 /**
- * Base entity form for developer- and team (company) forms.
+ * Base entity form for developer- and team (company) app create/edit forms.
  */
 abstract class AppForm extends FieldableEdgeEntityForm {
 
@@ -85,20 +85,8 @@ abstract class AppForm extends FieldableEdgeEntityForm {
     $form['#attached']['library'][] = 'apigee_edge/apigee_edge.components';
     $form['#attributes']['class'][] = 'apigee-edge--form';
 
-    $this->alterForm($form, $form_state);
-
     return $form;
   }
-
-  /**
-   * Allows child classes to alter the form before it gets returned.
-   *
-   * @param array $form
-   *   Form render array.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state object.
-   */
-  protected function alterForm(array &$form, FormStateInterface $form_state): void {}
 
   /**
    * {@inheritdoc}
@@ -115,7 +103,7 @@ abstract class AppForm extends FieldableEdgeEntityForm {
    * @return \Drupal\apigee_edge\Entity\ApiProductInterface[]
    *   Array of API product entities.
    */
-  abstract protected function apiProductList(): array;
+  abstract protected function apiProductList(array &$form, FormStateInterface $form_state): array;
 
   /**
    * Returns the label of the Save button on the form.

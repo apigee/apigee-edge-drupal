@@ -42,7 +42,16 @@ class EntityControllerCacheTest extends KernelTestBase {
     'system',
     'apigee_edge',
     'key',
+    'user',
   ];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+    $this->installEntitySchema('user');
+  }
 
   /**
    * Tests developer entity controller cache.

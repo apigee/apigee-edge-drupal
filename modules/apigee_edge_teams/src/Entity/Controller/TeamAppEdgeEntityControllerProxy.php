@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge_teams\Entity\Controller;
 
+use Apigee\Edge\Api\Management\Entity\AppInterface;
 use Apigee\Edge\Api\Management\Entity\CompanyAppInterface;
 use Apigee\Edge\Entity\EntityInterface;
 use Drupal\apigee_edge\Entity\Controller\AppControllerInterface;
@@ -112,14 +113,9 @@ final class TeamAppEdgeEntityControllerProxy implements EdgeEntityControllerInte
    * {@inheritdoc}
    */
   public function loadAll(): array {
-    $company_apps = [];
-    foreach ($this->appController->listApps(TRUE) as $app) {
-      // Ignore developer apps.
-      if ($app instanceof CompanyAppInterface) {
-        $company_apps[$app->id()] = $app;
-      }
-    }
-    return $company_apps;
+    return array_filter($this->appController->listApps(TRUE), function (AppInterface $app) {
+      return $app instanceof CompanyAppInterface;
+    });
   }
 
 }

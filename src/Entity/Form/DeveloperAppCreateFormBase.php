@@ -18,42 +18,40 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge_teams\Entity\Form;
+namespace Drupal\apigee_edge\Entity\Form;
 
+use Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
-use Drupal\apigee_edge\Entity\Form\AppEditForm;
-use Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface;
+use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Render\RendererInterface;
-use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * General form handler for the team app edit.
+ * Base entity form for developer app create forms.
  */
-class TeamAppEditForm extends AppEditForm {
+abstract class DeveloperAppCreateFormBase extends AppCreateForm {
 
-  use TeamAppFormTrait;
+  use DeveloperAppFormTrait;
 
   /**
    * The app credential controller factory.
    *
-   * @var \Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface
+   * @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface
    */
   protected $appCredentialControllerFactory;
 
   /**
-   * Constructs TeamAppEditForm.
+   * DeveloperAppCreateFormBase constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Drupal\Core\Render\RendererInterface $renderer
-   *   The renderer service.
-   * @param \Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface $app_credential_controller_factory
-   *   The team app credential controller factory.
+   * @param \Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface $api_product_controller
+   *   The API product controller service.
+   * @param \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory
+   *   The developer app credential controller factory.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, TeamAppCredentialControllerFactoryInterface $app_credential_controller_factory) {
-    parent::__construct($entity_type_manager, $renderer);
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, ApiProductControllerInterface $api_product_controller, DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory) {
+    parent::__construct($entity_type_manager, $api_product_controller);
     $this->appCredentialControllerFactory = $app_credential_controller_factory;
   }
 
@@ -63,8 +61,8 @@ class TeamAppEditForm extends AppEditForm {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('entity_type.manager'),
-      $container->get('renderer'),
-      $container->get('apigee_edge_teams.controller.team_app_credential_controller_factory')
+      $container->get('apigee_edge.controller.api_product'),
+      $container->get('apigee_edge.controller.developer_app_credential_factory')
     );
   }
 
@@ -72,18 +70,7 @@ class TeamAppEditForm extends AppEditForm {
    * {@inheritdoc}
    */
   protected function appCredentialController(string $owner, string $app_name): AppCredentialControllerInterface {
-    return $this->appCredentialControllerFactory->teamAppCredentialController($owner, $app_name);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getRedirectUrl(): Url {
-    $entity = $this->getEntity();
-    if ($entity->hasLinkTemplate('collection-by-team')) {
-      return $entity->toUrl('collection-by-team');
-    }
-    return parent::getRedirectUrl();
+    return $this->appCredentialControllerFactory->developerAppCredentialController($owner, $app_name);
   }
 
 }

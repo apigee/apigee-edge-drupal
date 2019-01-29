@@ -36,13 +36,6 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 final class TeamMembershipManager implements TeamMembershipManagerInterface {
 
   /**
-   * The developer entity storage.
-   *
-   * @var \Drupal\apigee_edge\Entity\Storage\DeveloperStorageInterface
-   */
-  private $developerStorage;
-
-  /**
    * The company members controller factory service.
    *
    * @var \Drupal\apigee_edge_teams\CompanyMembersControllerFactoryInterface
@@ -64,25 +57,25 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
   private $developerController;
 
   /**
-   * The team entity storage.
-   *
-   * @var \Drupal\apigee_edge_teams\Entity\Storage\TeamStorageInterface
-   */
-  private $teamStorage;
-
-  /**
-   * The team entity type definition.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeInterface
-   */
-  private $teamEntityType;
-
-  /**
    * The cache tags invalidator service.
    *
    * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface
    */
   private $cacheTagsInvalidator;
+
+  /**
+   * The entity type manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  private $entityTypeManager;
+
+  /**
+   * Team API Product access manager service.
+   *
+   * @var \Drupal\apigee_edge_teams\TeamApiProductAccessManagerInterface
+   */
+  private $teamApiProductAccessManager;
 
   /**
    * TeamMembershipManager constructor.
@@ -95,17 +88,18 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
    *   The developer controller service.
    * @param \Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface $developer_companies_cache
    *   The developer companies cache.
+   * @param \Drupal\apigee_edge_teams\TeamApiProductAccessManagerInterface $team_api_product_access_manager
+   *   The team API product access manager service.
    * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cache_tags_invalidator
    *   The cache tags invalidator service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, CompanyMembersControllerFactoryInterface $company_members_controller_factory, DeveloperControllerInterface $developer_controller, DeveloperCompaniesCacheInterface $developer_companies_cache, CacheTagsInvalidatorInterface $cache_tags_invalidator) {
-    $this->developerStorage = $entity_type_manager->getStorage('developer');
-    $this->teamStorage = $entity_type_manager->getStorage('team');
-    $this->teamEntityType = $entity_type_manager->getDefinition('team');
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, CompanyMembersControllerFactoryInterface $company_members_controller_factory, DeveloperControllerInterface $developer_controller, DeveloperCompaniesCacheInterface $developer_companies_cache, TeamApiProductAccessManagerInterface $team_api_product_access_manager, CacheTagsInvalidatorInterface $cache_tags_invalidator) {
+    $this->entityTypeManager = $entity_type_manager;
     $this->companyMembersControllerFactory = $company_members_controller_factory;
     $this->developerController = $developer_controller;
     $this->developerCompaniesCache = $developer_companies_cache;
     $this->cacheTagsInvalidator = $cache_tags_invalidator;
+    $this->teamApiProductAccessManager = $team_api_product_access_manager;
   }
 
   /**
@@ -145,7 +139,7 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
    */
   public function getTeams(string $developer): array {
     /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $entity */
-    $entity = $this->developerStorage->load($developer);
+    $entity = $this->entityTypeManager->getStorage('developer')->load($developer);
     if ($entity === NULL) {
       throw new DeveloperDoesNotExistException($developer);
     }
@@ -166,7 +160,7 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
   private function invalidateCaches(string $team, array $developers): void {
     // At this point we can assume that team entity exists because earlier
     // API calls have not fail.
-    $team_entity = $this->teamStorage->load($team);
+    $team_entity = $this->entityTypeManager->getStorage('team')->load($team);
     // This invalidates every occupancies where $team has appeared.
     $tags = $team_entity->getCacheTags();
     // This invalidates cache on team listing page(s) because the list
@@ -174,7 +168,7 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
     // (If we find this too much, later we can tag team listing pages with a
     // "team_list:{$developer_email}" tag and only invalidate those developers'
     // team listing pages whose membership state has changed.)
-    $tags = array_merge($tags, $this->teamEntityType->getListCacheTags());
+    $tags = array_merge($tags, $this->entityTypeManager->getDefinition('team')->getListCacheTags());
     $this->cacheTagsInvalidator->invalidateTags($tags);
 
     // Developer::getCompanies() must return the updated membership information.
@@ -189,6 +183,9 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
     if ($this->developerController instanceof EntityCacheAwareControllerInterface) {
       $this->developerController->entityCache()->removeEntities($developers);
     }
+    // Enforce re-evaluation of API product entity access.
+    $this->entityTypeManager->getAccessControlHandler('api_product')->resetCache();
+    $this->teamApiProductAccessManager->resetCache();
   }
 
 }

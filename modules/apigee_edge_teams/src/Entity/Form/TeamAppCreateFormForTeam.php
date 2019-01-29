@@ -48,16 +48,13 @@ class TeamAppCreateFormForTeam extends TeamAppCreateFormBase {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
-    $form = parent::form($form, $form_state);
-
+  protected function alterFormBeforeApiProductElement(array &$form, FormStateInterface $form_state): void {
     // The user from the route is the owner.
     $form['owner'] = [
       '#type' => 'value',
       '#value' => $this->team->id(),
     ];
 
-    return $form;
   }
 
 }

@@ -36,7 +36,7 @@ use Apigee\Edge\Entity\EntityInterface;
  * @internal Do not create an instance from this directly. Always use the
  * factory.
  */
-final class GeneralAppCacheByAppOwner implements GeneralAppCacheByAppOwnerInterface {
+final class AppCacheByOwner implements AppCacheByOwnerInterface {
 
   /**
    * Indicates whether all entities in the cache or not.
@@ -70,7 +70,7 @@ final class GeneralAppCacheByAppOwner implements GeneralAppCacheByAppOwnerInterf
   private $owner;
 
   /**
-   * GeneralAppCacheByAppOwner constructor.
+   * AppCacheByAppOwner constructor.
    *
    * @param string $owner
    *   Developer id (UUID), email address or a company's company name.
@@ -99,8 +99,12 @@ final class GeneralAppCacheByAppOwner implements GeneralAppCacheByAppOwnerInterf
    */
   public function removeEntities(array $ids): void {
     $app_ids = $this->getAppIdsByAppNames($ids);
+    $all_app_entities = $this->getEntities();
     $this->appCache->removeEntities($app_ids);
     $this->appNameCache->removeIds($ids);
+    if (count($app_ids) === count($all_app_entities)) {
+      $this->allEntitiesInCache(FALSE);
+    }
   }
 
   /**

@@ -20,40 +20,54 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
-use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface;
+use Drupal\apigee_edge\Entity\Controller\DeveloperControllerInterface;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\RendererInterface;
+use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * General form handler for the developer app create.
  */
-class DeveloperAppCreateForm extends AppForm {
-
-  use AppCreateFormTrait {
-    apiProductList as private privateApiProductList;
-  }
-  use DeveloperAppFormTrait;
+class DeveloperAppCreateForm extends DeveloperAppCreateFormBase {
 
   /**
-   * The app credential controller factory.
+   * The developer controller service.
    *
-   * @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface
+   * @var \Drupal\apigee_edge\Entity\Controller\DeveloperControllerInterface
    */
-  protected $appCredentialControllerFactory;
+  protected $developerController;
+
+  /**
+   * The renderer service.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
+   */
+  protected $renderer;
 
   /**
    * Constructs DeveloperAppCreateForm.
    *
-   * @param \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory
-   *   The developer app credential controller factory.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface $api_product_controller
+   *   The API product controller service.
+   * @param \Drupal\apigee_edge\Entity\Controller\DeveloperControllerInterface $developer_controller
+   *   The developer controller service.
+   * @param \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory
+   *   The developer app credential controller factory.
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer service.
    */
-  public function __construct(DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory, EntityTypeManagerInterface $entity_type_manager) {
-    parent::__construct($entity_type_manager);
-    $this->appCredentialControllerFactory = $app_credential_controller_factory;
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, ApiProductControllerInterface $api_product_controller, DeveloperControllerInterface $developer_controller, DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory, RendererInterface $renderer) {
+    parent::__construct($entity_type_manager, $api_product_controller, $app_credential_controller_factory);
+    $this->developerController = $developer_controller;
+    $this->renderer = $renderer;
   }
 
   /**
@@ -61,23 +75,33 @@ class DeveloperAppCreateForm extends AppForm {
    */
   public static function create(ContainerInterface $container) {
     return new static(
+      $container->get('entity_type.manager'),
+      $container->get('apigee_edge.controller.api_product'),
+      $container->get('apigee_edge.controller.developer'),
       $container->get('apigee_edge.controller.developer_app_credential_factory'),
-      $container->get('entity_type.manager')
+      $container->get('renderer')
     );
   }
 
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
-    $form = parent::form($form, $form_state);
-    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $app */
-    $app = $this->entity;
+  protected function alterFormBeforeApiProductElement(array &$form, FormStateInterface $form_state): void {
 
-    $developer_options = [];
-    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
-    foreach ($this->entityTypeManager->getStorage('developer')->loadMultiple() as $developer) {
-      $developer_options[$developer->uuid()] = $developer->label();
+    // Do not reload a developer ids and users when AJAX refreshes the form.
+    $developer_options = $form_state->get('developer_options');
+    if ($developer_options === NULL) {
+      // It is faster to collect existing developer emails like this
+      // from Apigee Edge.
+      $developer_emails = $this->developerController->getEntityIds();
+      $developer_options = array_reduce($this->entityTypeManager->getStorage('user')->loadByProperties(['mail' => $developer_emails]), function ($carry, UserInterface $item) {
+        $carry[$item->getEmail()] = $item->label();
+        return $carry;
+      }, []);
+
+      reset($developer_options);
+
+      $form_state->set('developer_options', $developer_options);
     }
 
     // Override the owner field to be a select list with all developers from
@@ -86,46 +110,38 @@ class DeveloperAppCreateForm extends AppForm {
       '#title' => $this->t('Owner'),
       '#type' => 'select',
       '#weight' => $form['owner']['#weight'],
-      '#default_value' => $app->getDeveloperId(),
+      '#default_value' => $form_state->get('owner') ?? key($developer_options),
       '#options' => $developer_options,
       '#required' => TRUE,
+      '#ajax' => [
+        'callback' => '::updateApiProductList',
+      ],
     ];
-
-    // If "Let user select the product(s)" is enabled.
-    // Add this feature later if it gets requested, this is a "secret" admin
-    // form at this moment.
-    if ($form['api_products']['#access']) {
-      $form['warning_message'] = [
-        '#theme' => 'status_messages',
-        '#message_list' => [
-          'warning' => [$this->t('The list of @api_products above is not limited to the selected owner by the API product access control settings here. <strong>All @api_products are visible here from Apigee Edge.</strong>', [
-            '@api_products' => $this->entityTypeManager->getDefinition('api_product')->getPluralLabel(),
-          ]),
-          ],
-        ],
-        '#weight' => $form['api_products']['#weight'] + 0.0001,
-      ];
-    }
-
-    return $form;
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function appCredentialController(string $owner, string $app_name): AppCredentialControllerInterface {
-    return $this->appCredentialControllerFactory->developerAppCredentialController($owner, $app_name);
+  protected function alterFormWithApiProductElement(array &$form, FormStateInterface $form_state): void {
+    $form['api_products']['#prefix'] = '<div id="api-products-ajax-wrapper">';
+    $form['api_products']['#suffix'] = '</div>';
   }
 
   /**
-   * {@inheritdoc}
+   * Ajax command that refreshes the API product list when owner changes.
+   *
+   * @param array $form
+   *   Form render array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   *
+   * @return \Drupal\Core\Ajax\AjaxResponse
+   *   The AJAX response.
    */
-  protected function apiProductList(): array {
-    if ($this->currentUser()->hasPermission('bypass api product access control')) {
-      return $this->entityTypeManager->getStorage('api_product')->loadMultiple();
-    }
-
-    return $this->privateApiProductList();
+  public function updateApiProductList(array $form, FormStateInterface $form_state) : AjaxResponse {
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('#api-products-ajax-wrapper', $this->renderer->render($form['api_products'])));
+    return $response;
   }
 
 }

@@ -25,34 +25,60 @@ use Apigee\Edge\Exception\ApiException;
 use Drupal\apigee_edge\Element\StatusPropertyElement;
 use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\AppInterface;
-use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\Component\Utility\Xss;
-use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Messenger\MessengerTrait;
+use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Utility\Error;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Helper trait that contains app edit form specific tweaks.
- *
- * @see \Drupal\apigee_edge\Entity\Form\AppForm
- * @see \Drupal\apigee_edge\Entity\Form\DeveloperAppEditForm
- * @see \Drupal\apigee_edge\Entity\Form\DeveloperAppEditFormForDeveloper
+ * Base entity form for developer- and team (company) app edit forms.
  */
-trait AppEditFormTrait {
+abstract class AppEditForm extends AppForm {
 
-  use MessengerTrait;
+  /**
+   * The renderer service.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
+   */
+  protected $render;
+
+  /**
+   * AppEditForm constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\Core\Render\RendererInterface $render
+   *   The renderer service.
+   */
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, RendererInterface $render) {
+    parent::__construct($entity_type_manager);
+    $this->render = $render;
+  }
 
   /**
    * {@inheritdoc}
    */
-  protected function alterForm(array &$form, FormStateInterface $form_state): void {
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity_type.manager'),
+      $container->get('renderer')
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function form(array $form, FormStateInterface $form_state) {
+    $form = parent::form($form, $form_state);
+
     /** @var \Drupal\apigee_edge\Entity\AppInterface $app */
     $app = $this->entity;
 
-    $app_settings = \Drupal::config('apigee_edge.common_app_settings');
+    $app_settings = $this->config('apigee_edge.common_app_settings');
     $is_multiple_selection = $app_settings->get('multiple_products');
-    $api_product_def = \Drupal::entityTypeManager()->getDefinition('api_product');
+    $api_product_def = $this->entityTypeManager->getDefinition('api_product');
 
     // Do not allow to change the (machine) name of the app.
     $form['name'] = [
@@ -80,7 +106,7 @@ trait AppEditFormTrait {
 
     // If "Let user select the product(s)" is enabled.
     if ($app_settings->get('user_select')) {
-      $available_products_by_user = $this->apiProductList();
+      $available_products_by_user = $this->apiProductList($form, $form_state);
 
       $form['credential'] = [
         '#type' => 'container',
@@ -93,7 +119,7 @@ trait AppEditFormTrait {
           '#value' => Xss::filter($credential->getStatus()),
           '#indicator_status' => $credential->getStatus() === AppCredentialInterface::STATUS_APPROVED ? StatusPropertyElement::INDICATOR_STATUS_OK : StatusPropertyElement::INDICATOR_STATUS_ERROR,
         ];
-        $rendered_credential_status = \Drupal::service('renderer')->render($credential_status_element);
+        $rendered_credential_status = $this->render->render($credential_status_element);
 
         $form['credential'][$credential->getConsumerKey()] = [
           '#type' => 'fieldset',
@@ -113,7 +139,7 @@ trait AppEditFormTrait {
         // products to the list as well.
         $credential_product_options = array_map(function (ApiProductInterface $product) {
           return $product->label();
-        }, $available_products_by_user + \Drupal::entityTypeManager()->getStorage('api_product')->loadMultiple($credential_currently_assigned_product_ids));
+        }, $available_products_by_user + $this->entityTypeManager->getStorage('api_product')->loadMultiple($credential_currently_assigned_product_ids));
 
         $form['credential'][$credential->getConsumerKey()]['api_products'] = [
           '#title' => $api_product_def->getPluralLabel(),
@@ -151,6 +177,8 @@ trait AppEditFormTrait {
         }
       }
     }
+
+    return $form;
   }
 
   /**
@@ -164,7 +192,7 @@ trait AppEditFormTrait {
     // of the app credential changes.
     $results = [];
 
-    $config = \Drupal::config('apigee_edge.common_app_settings');
+    $config = $this->config('apigee_edge.common_app_settings');
 
     // If a user can change associated API products on a credential.
     if ($config->get('user_select')) {
@@ -214,7 +242,7 @@ trait AppEditFormTrait {
                 'link' => $app->toLink()->toString(),
               ];
               $context += Error::decodeException($exception);
-              \Drupal::logger('apigee_edge')->error('Unable to update app credentials on app. App name: %app_name. Owner: %owner. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
+              $this->logger('apigee_edge')->error('Unable to update app credentials on app. App name: %app_name. Owner: %owner. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
             }
           }
         }
@@ -223,20 +251,5 @@ trait AppEditFormTrait {
 
     return empty($results) || !in_array(FALSE, $results);
   }
-
-  /**
-   * {@inheritdoc}
-   */
-  abstract protected function appCredentialController(string $owner, string $app_name) : AppCredentialControllerInterface;
-
-  /**
-   * {@inheritdoc}
-   */
-  abstract protected function appCredentialLifeTime(): int;
-
-  /**
-   * {@inheritdoc}
-   */
-  abstract protected function appEntityDefinition(): EntityTypeInterface;
 
 }
