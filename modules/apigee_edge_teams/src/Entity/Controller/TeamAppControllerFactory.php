@@ -22,7 +22,7 @@ namespace Drupal\apigee_edge_teams\Entity\Controller;
 
 use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface;
 use Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactoryInterface;
-use Drupal\apigee_edge\Entity\Controller\Cache\GeneralAppCacheByAppOwnerFactoryInterface;
+use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface;
 use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 
@@ -62,7 +62,7 @@ final class TeamAppControllerFactory implements TeamAppControllerFactoryInterfac
   /**
    * The app cache by owner factory service.
    *
-   * @var \Drupal\apigee_edge\Entity\Controller\Cache\GeneralAppCacheByAppOwnerFactoryInterface
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface
    */
   private $appCacheByOwnerFactory;
 
@@ -82,12 +82,12 @@ final class TeamAppControllerFactory implements TeamAppControllerFactoryInterfac
    *   The organization controller service.
    * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface $app_cache
    *   The app cache that stores apps by their ids (UUIDs).
-   * @param \Drupal\apigee_edge\Entity\Controller\Cache\GeneralAppCacheByAppOwnerFactoryInterface $app_by_owner_app_cache_factory
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface $app_by_owner_app_cache_factory
    *   The app cache by owner factory service.
    * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactoryInterface $app_by_owner_app_id_cache_factory
    *   The app name cache by owner factory service.
    */
-  public function __construct(SDKConnectorInterface $connector, OrganizationControllerInterface $org_controller, AppCacheInterface $app_cache, GeneralAppCacheByAppOwnerFactoryInterface $app_by_owner_app_cache_factory, AppNameCacheByOwnerFactoryInterface $app_by_owner_app_id_cache_factory) {
+  public function __construct(SDKConnectorInterface $connector, OrganizationControllerInterface $org_controller, AppCacheInterface $app_cache, AppCacheByOwnerFactoryInterface $app_by_owner_app_cache_factory, AppNameCacheByOwnerFactoryInterface $app_by_owner_app_id_cache_factory) {
     $this->connector = $connector;
     $this->orgController = $org_controller;
     $this->appCache = $app_cache;

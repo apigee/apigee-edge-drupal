@@ -25,12 +25,12 @@ namespace Drupal\apigee_edge\Entity\Controller\Cache;
  *
  * This generates an app cache for apps of a company or a developer.
  */
-final class GeneralAppCacheByAppOwnerFactory implements GeneralAppCacheByAppOwnerFactoryInterface {
+final class AppCacheByOwnerFactory implements AppCacheByOwnerFactoryInterface {
 
   /**
    * Internal cache for created instances.
    *
-   * @var \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByAppOwnerInterface[]
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerInterface[]
    */
   private $instances = [];
 
@@ -49,7 +49,7 @@ final class GeneralAppCacheByAppOwnerFactory implements GeneralAppCacheByAppOwne
   private $appCache;
 
   /**
-   * AppCacheByOwnerFactory constructor.
+   * AppCacheByAppOwnerFactory constructor.
    *
    * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface $app_cache
    *   The app cache service that stores app by their app id (UUID).
@@ -64,9 +64,9 @@ final class GeneralAppCacheByAppOwnerFactory implements GeneralAppCacheByAppOwne
   /**
    * {@inheritdoc}
    */
-  public function getAppCache(string $owner): AppCacheByAppOwnerInterface {
+  public function getAppCache(string $owner): AppCacheByOwnerInterface {
     if (!isset($this->instances[$owner])) {
-      $this->instances[$owner] = new GeneralAppCacheByAppOwner($owner, $this->appCache, $this->appNameCacheByOwnerFactory);
+      $this->instances[$owner] = new AppCacheByOwner($owner, $this->appCache, $this->appNameCacheByOwnerFactory);
     }
 
     return $this->instances[$owner];
