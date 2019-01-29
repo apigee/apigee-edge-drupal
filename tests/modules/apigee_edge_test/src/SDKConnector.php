@@ -102,8 +102,8 @@ final class SDKConnector extends DecoratedSDKConnector implements SDKConnectorIn
     return $this->innerService->buildClient($authentication, $endpoint, [
       Client::CONFIG_RETRY_PLUGIN_CONFIG => [
         'retries' => 5,
-        'decider' => $decider,
-        'delay' => function (RequestInterface $request, Exception $e, $retries) : int {
+        'exception_decider' => $decider,
+        'exception_delay' => function (RequestInterface $request, Exception $e, $retries) : int {
           return $retries * 15000000;
         },
       ],
