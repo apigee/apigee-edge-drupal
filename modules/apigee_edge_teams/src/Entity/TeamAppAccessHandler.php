@@ -248,9 +248,11 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
     // Ensure that access is re-evaluated when developer entity or config
     // changes.
     $result->addCacheTags(['config:' . static::MEMBER_PERMISSIONS_CONFIG_NAME]);
-    $developer = $this->entityTypeManager->getStorage('developer')->load($account->getEmail());
-    if ($developer) {
-      $result->addCacheableDependency($developer);
+    if ($account->isAuthenticated()) {
+      $developer = $this->entityTypeManager->getStorage('developer')->load($account->getEmail());
+      if ($developer) {
+        $result->addCacheableDependency($developer);
+      }
     }
   }
 

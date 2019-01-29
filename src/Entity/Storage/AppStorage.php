@@ -114,6 +114,28 @@ abstract class AppStorage extends AttributesAwareFieldableEdgeEntityStorageBase 
   /**
    * {@inheritdoc}
    */
+  protected function getFromStorage(array $ids = NULL) {
+    // Try to load entities from the entity controller's static cache.
+    if (!empty($ids)) {
+      // If $ids are developer app ids (UUIDs) let's check whether all (SDK)
+      // entities can be served from the shared app (controller) cache.
+      // When AppQueryBase::getFromStorage() tries to reduce the API calls by
+      // doing something smart it could happen that entity storage's static
+      // cache has not warmed up yet but the shared app cache did.
+      // @see \Drupal\apigee_edge\Entity\Query\AppQueryBase::getFromStorage()
+      if ($this->appController instanceof EntityCacheAwareControllerInterface) {
+        $cached_entities = $this->appController->entityCache()->getEntities($ids);
+        if (count($cached_entities) === count($ids)) {
+          return $this->processLoadedEntities($ids, $cached_entities);
+        }
+      }
+    }
+    return parent::getFromStorage($ids);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   final protected function getPersistentCacheTags(EntityInterface $entity) {
     /** @var \Drupal\apigee_edge\Entity\AppInterface $entity */
     $cacheTags = parent::getPersistentCacheTags($entity);
