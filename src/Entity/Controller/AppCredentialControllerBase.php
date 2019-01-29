@@ -28,6 +28,7 @@ use Drupal\apigee_edge\Event\AppCredentialAddApiProductEvent;
 use Drupal\apigee_edge\Event\AppCredentialCreateEvent;
 use Drupal\apigee_edge\Event\AppCredentialDeleteEvent;
 use Drupal\apigee_edge\Event\AppCredentialGenerateEvent;
+use Drupal\apigee_edge\Event\AppCredentialDeleteApiProductEvent;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -157,6 +158,7 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
    */
   public function deleteApiProduct(string $consumerKey, string $apiProduct): AppCredentialInterface {
     $credential = $this->decorated()->deleteApiProduct($consumerKey, $apiProduct);
+    $this->eventDispatcher->dispatch(AppCredentialDeleteApiProductEvent::EVENT_NAME, new AppCredentialDeleteApiProductEvent($this->getAppType(), $this->owner, $this->appName, $credential, $apiProduct));
     // By removing app from cache we force reload the credentials as well.
     $this->appCacheByOwner->removeEntities([$this->appName]);
     return $credential;
