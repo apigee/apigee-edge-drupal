@@ -51,6 +51,16 @@ services:
     class: Drupal\apigee_edge_teams\TeamMembershipManager
     arguments: [ '@entity_type.manager', '@apigee_edge_teams.company_members_controller_factory', '@apigee_edge.controller.developer', '@apigee_edge.controller.cache.developer_companies', '@cache_tags.invalidator']
 
+  apigee_edge_teams.team_api_product_access_manager:
+    class: Drupal\apigee_edge_teams\TeamApiProductAccessManager
+    arguments: ['@module_handler', '@config.factory']
+
+  apigee_edge_teams.event_subscriber.team_api_product_access_manager_cache_reset:
+    class: Drupal\apigee_edge_teams\EventSubscriber\TeamApiProductAccessManagerCacheReset
+    arguments: ['@apigee_edge_teams.team_api_product_access_manager']
+    tags:
+      - { name: event_subscriber }
+
   apigee_edge_teams.event_subscriber.team_status_warning_subscriber:
     class: Drupal\apigee_edge_teams\EventSubscriber\TeamStatusWarningSubscriber
     arguments: ['@current_user', '@current_route_match', '@entity_type.manager', '@apigee_edge_teams.team_membership_manager', '@messenger', '@string_translation']
@@ -79,7 +89,3 @@ services:
     arguments: ['@entity_type.manager', '@logger.channel.apigee_edge_teams']
     tags:
       - { name: paramconverter }
-
-  apigee_edge_teams.team_api_product_access_manager:
-    class: Drupal\apigee_edge_teams\TeamApiProductAccessManager
-    arguments: ['@module_handler', '@config.factory']
