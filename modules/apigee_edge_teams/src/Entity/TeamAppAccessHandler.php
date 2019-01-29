@@ -178,7 +178,7 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
     if ($this->entityType->getAdminPermission()) {
       $permissions[] = $this->entityType->getAdminPermission();
     }
-    return AccessResult::allowedIfHasPermissions($account, $permissions);
+    return AccessResult::allowedIfHasPermissions($account, $permissions, 'OR');
   }
 
   /**
