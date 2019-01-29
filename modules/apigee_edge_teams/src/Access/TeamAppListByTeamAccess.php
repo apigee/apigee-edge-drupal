@@ -87,9 +87,9 @@ final class TeamAppListByTeamAccess implements AccessInterface {
     $result = AccessResult::allowedIfHasPermission($account, TeamAppPermissionProvider::MANAGE_TEAM_APPS_PERMISSION)->cachePerUser();
 
     if ($result->isNeutral()) {
-      $result = AccessResult::allowedIf(in_array($team->id(), $this->teamMembershipManager->getTeams($account->getEmail())))
-        ->addCacheTags(['config:' . TeamAppAccessHandler::MEMBER_PERMISSIONS_CONFIG_NAME]);
       if ($account->isAuthenticated()) {
+        $result = AccessResult::allowedIf(in_array($team->id(), $this->teamMembershipManager->getTeams($account->getEmail())))
+          ->addCacheTags(['config:' . TeamAppAccessHandler::MEMBER_PERMISSIONS_CONFIG_NAME]);
         $developer = $this->entityTypeManager->getStorage('developer')->load($account->getEmail());
         if ($developer) {
           $result->addCacheableDependency($developer);
