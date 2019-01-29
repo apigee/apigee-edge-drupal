@@ -46,7 +46,7 @@ class TeamRouteProvider extends EdgeEntityRouteProvider {
     }
 
     if ($add_team_members = $this->getAddTeamMembersRoute($entity_type)) {
-      $collection->add("entity.{$entity_type_id}.members.add", $add_team_members);
+      $collection->add("entity.{$entity_type_id}.add_members", $add_team_members);
     }
 
     if ($remove_team_member = $this->getRemoveTeamMemberRoute($entity_type)) {
