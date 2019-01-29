@@ -1,0 +1,13 @@
+# API Doc menu items definition
+entity.apidoc.collection:
+  title: 'API Docs'
+  route_name: entity.apidoc.collection
+  description: 'List API Docs'
+  parent: system.admin_structure
+  weight: 100
+
+apigee_edge_apidocs.settings:
+  title: 'API Docs'
+  description: 'Configure API Doc settings'
+  route_name: apigee_edge_apidocs.settings
+  parent: system.admin_config_edge
