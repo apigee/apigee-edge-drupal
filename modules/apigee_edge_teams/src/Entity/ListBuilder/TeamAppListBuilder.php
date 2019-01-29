@@ -51,7 +51,7 @@ class TeamAppListBuilder extends AppListBuilder {
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface[] $teams */
     $teams = $this->entityTypeManager->getStorage('team')->loadMultiple();
     $css_id = $this->getCssIdForInfoRow($app);
-    $rows[$css_id]['data']['team']['data'] = $teams[$app->getCompanyName()]->toLink()->toRenderable();
+    $rows[$css_id]['data']['team']['data'] = $teams[$app->getCompanyName()]->access('view') ? $teams[$app->getCompanyName()]->toLink()->toRenderable() : $teams[$app->getCompanyName()]->label();
     parent::buildInfoRow($app, $rows);
   }
 
