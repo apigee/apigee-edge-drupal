@@ -141,7 +141,7 @@ abstract class AppCreateForm extends AppForm {
     else {
       $element['#type'] = $multiple ? 'checkboxes' : 'radios';
       if (!$multiple) {
-        $element['#options'] = ['' => $this->t('N/A')] + $form['api_products']['#options'];
+        $element['#options'] = ['' => $this->t('N/A')] + $element['#options'];
       }
     }
 
