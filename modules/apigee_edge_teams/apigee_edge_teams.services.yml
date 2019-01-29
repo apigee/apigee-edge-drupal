@@ -16,6 +16,12 @@ services:
     tags:
       - { name: access_check, applies_to: _apigee_edge_teams_remove_team_member_access }
 
+  apigee_edge_teams.access_checker.team_app_list_by_team_access:
+    class: Drupal\apigee_edge_teams\Access\TeamAppListByTeamAccess
+    arguments: ['@entity_type.manager', '@apigee_edge_teams.team_membership_manager']
+    tags:
+      - { name: access_check, applies_to: _apigee_edge_teams_team_app_list_by_team_access }
+
   apigee_edge_teams.cache.memory_cache_factory:
     parent: apigee_edge.cache.memory_cache_factory
     arguments: [apigee_edge_teams]

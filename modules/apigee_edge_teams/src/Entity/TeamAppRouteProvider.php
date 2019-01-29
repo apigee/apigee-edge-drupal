@@ -113,7 +113,7 @@ class TeamAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_controller', TeamAppListByTeam::class . '::render');
       $route->setDefault('_title_callback', TeamAppListByTeam::class . '::pageTitle');
       $this->ensureTeamParameter($route);
-      $route->setRequirement('_entity_access', 'team.view');
+      $route->setRequirement('_apigee_edge_teams_team_app_list_by_team_access', 'TRUE');
       return $route;
     }
   }
