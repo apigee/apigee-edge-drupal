@@ -63,4 +63,11 @@ trait EntityControllerCacheUtilsTrait {
     $this->assertFalse($entity_id_cache->isAllIdsInCache());
   }
 
+  /**
+   * Gets a random unique ID.
+   */
+  protected function getRandomUniqueId(): string {
+    return $this->container->get('uuid')->generate();
+  }
+
 }
