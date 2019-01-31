@@ -211,7 +211,7 @@ class AuthenticationForm extends ConfigFormBase {
         '#type' => 'html_tag',
         '#tag' => 'div',
         '#value' => $this->t("The Apigee Edge connection settings are not configured and we weren't able to automatically provision connection settings. Make sure the @docs_link is configured and try again.", [
-          '@docs_link' => $this->renderer->render($docs_link),
+          '@docs_link' => $this->renderer->renderRoot($docs_link),
         ]),
       ];
 
