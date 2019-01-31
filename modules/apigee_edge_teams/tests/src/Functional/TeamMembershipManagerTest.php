@@ -96,13 +96,13 @@ class TeamMembershipManagerTest extends ApigeeEdgeTeamsFunctionalTestBase {
       }
     }
 
-    try {
-      if ($this->team !== NULL) {
+    if ($this->team !== NULL) {
+      try {
         $this->teamStorage->delete([$this->team]);
       }
-    }
-    catch (\Exception $exception) {
-      $this->logException($exception);
+      catch (\Exception $exception) {
+        $this->logException($exception);
+      }
     }
 
     parent::tearDown();

@@ -84,7 +84,8 @@ final class TeamAppListByTeamAccess implements AccessInterface {
    * @see \Drupal\apigee_edge_teams\Entity\TeamAppPermissionProvider
    */
   public function access(TeamInterface $team, AccountInterface $account) {
-    $result = AccessResult::allowedIfHasPermission($account, TeamAppPermissionProvider::MANAGE_TEAM_APPS_PERMISSION)->cachePerUser();
+    $team_app_admin_permission = $this->entityTypeManager->getDefinition('team_app')->getAdminPermission();
+    $result = AccessResult::allowedIfHasPermissions($account, [TeamAppPermissionProvider::MANAGE_TEAM_APPS_PERMISSION, $team_app_admin_permission], 'OR')->cachePerUser();
 
     if ($result->isNeutral()) {
       if ($account->isAuthenticated()) {

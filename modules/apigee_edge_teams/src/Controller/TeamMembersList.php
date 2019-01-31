@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge_teams\Controller;
 
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Url;
 use Drupal\user\UserInterface;
@@ -126,9 +127,10 @@ class TeamMembersList extends ControllerBase {
   protected function buildRow(string $member, array $users_by_mail, TeamInterface $team): array {
     $row = [];
     $can_view_user_profiles = $this->currentUser()->hasPermission('access user profiles');
+    $row['id'] = Html::getUniqueId($member);
 
     if (array_key_exists($member, $users_by_mail)) {
-      $row['member'] = $can_view_user_profiles ? $users_by_mail[$member]->toLink() : "{$users_by_mail[$member]->label()} ($member)";
+      $row['data']['member'] = $can_view_user_profiles ? $users_by_mail[$member]->toLink() : "{$users_by_mail[$member]->label()} ($member)";
     }
     else {
       // We only display the email address of the member in this case
@@ -137,10 +139,10 @@ class TeamMembersList extends ControllerBase {
       // (like we loaded only the necessary amount of Drupal users), we can only
       // all developers which could unnecessarily slow down this page if the
       // developer entity cache is cold.
-      $row['member'] = $member;
+      $row['data']['member'] = $member;
     }
 
-    $row['operations']['data'] = $this->buildOperations($member, $team);
+    $row['data']['operations']['data'] = $this->buildOperations($member, $team);
 
     return $row;
   }

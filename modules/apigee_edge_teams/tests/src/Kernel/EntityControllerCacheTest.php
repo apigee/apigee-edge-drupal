@@ -34,7 +34,6 @@ use Drupal\Tests\apigee_edge\Traits\EntityControllerCacheUtilsTrait;
  */
 class EntityControllerCacheTest extends KernelTestBase {
 
-  use ApigeeEdgeTestTrait;
   use EntityControllerCacheUtilsTrait;
 
   /**

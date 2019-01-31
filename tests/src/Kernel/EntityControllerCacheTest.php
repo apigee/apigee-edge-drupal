@@ -204,11 +204,4 @@ class EntityControllerCacheTest extends KernelTestBase {
     $this->assertEmpty($cache_by_id->getEntities());
   }
 
-  /**
-   * Gets a random unique ID.
-   */
-  private function getRandomUniqueId() {
-    return $this->container->get('uuid')->generate();
-  }
-
 }
