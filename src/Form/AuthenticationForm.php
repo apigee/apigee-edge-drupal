@@ -32,10 +32,14 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Render\Element\StatusMessages;
 use Drupal\Core\Render\RendererInterface;
+use Drupal\Core\StreamWrapper\StreamWrapperManagerInterface;
+use Drupal\Core\Url;
 use Drupal\key\Entity\Key;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
@@ -99,6 +103,13 @@ class AuthenticationForm extends ConfigFormBase {
   protected $renderer;
 
   /**
+   * The core `file_system` service.
+   *
+   * @var \Drupal\Core\File\FileSystemInterface
+   */
+  protected $fileSystem;
+
+  /**
    * Constructs a new AuthenticationForm.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -113,14 +124,17 @@ class AuthenticationForm extends ConfigFormBase {
    *   The OAuth token storage service.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The `renderer` service.
+   * @param \Drupal\Core\File\FileSystemInterface $file_system
+   *   The `file_system` service.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, KeyRepositoryInterface $key_repository, SDKConnectorInterface $sdk_connector, ModuleHandlerInterface $module_handler, OauthTokenStorageInterface $oauth_token_storage, RendererInterface $renderer) {
+  public function __construct(ConfigFactoryInterface $config_factory, KeyRepositoryInterface $key_repository, SDKConnectorInterface $sdk_connector, ModuleHandlerInterface $module_handler, OauthTokenStorageInterface $oauth_token_storage, RendererInterface $renderer, FileSystemInterface $file_system) {
     parent::__construct($config_factory);
     $this->keyRepository = $key_repository;
     $this->sdkConnector = $sdk_connector;
     $this->moduleHandler = $module_handler;
     $this->oauthTokenStorage = $oauth_token_storage;
     $this->renderer = $renderer;
+    $this->fileSystem = $file_system;
   }
 
   /**
@@ -133,7 +147,8 @@ class AuthenticationForm extends ConfigFormBase {
       $container->get('apigee_edge.sdk_connector'),
       $container->get('module_handler'),
       $container->get('apigee_edge.authentication.oauth_token_storage'),
-      $container->get('renderer')
+      $container->get('renderer'),
+      $container->get('file_system')
     );
   }
 
@@ -162,9 +177,6 @@ class AuthenticationForm extends ConfigFormBase {
 
     $form['#attached']['library'][] = 'apigee_edge/apigee_edge.admin';
 
-    // Save the key for later use.
-    $this->activeKey = $active_key = $this->getActiveKey();
-
     // Placeholder for messages.
     $form['messages'] = [
       '#type' => 'html_tag',
@@ -180,6 +192,32 @@ class AuthenticationForm extends ConfigFormBase {
       '#parents' => ['key_input_settings'],
       '#tree' => TRUE,
     ];
+
+    // Save the key for later use.
+    if (!($this->activeKey = $active_key = $this->getActiveKey())) {
+      $form['actions']['#disabled'] = TRUE;
+      $form['connection_settings']['unconfigurable'] = [
+        '#type' => 'container',
+        '#attributes' => ['class' => ['form-item']],
+      ];
+      $form['connection_settings']['unconfigurable']['label'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'label',
+        '#value' => $this->t('Unable to initialize configuration.'),
+      ];
+      $docs_link = Link::fromTextAndUrl('file_private_path', Url::fromUri('https://www.drupal.org/docs/8/core/modules/file/overview'))->toRenderable();
+      $docs_link['#attributes']['target'] = '_blank';
+      $form['connection_settings']['unconfigurable']['description'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'div',
+        '#value' => $this->t("The Apigee Edge connection settings are not configured and we weren't able to automatically provision connection settings. Make sure the @docs_link is configured and try again.", [
+          '@docs_link' => $this->renderer->render($docs_link),
+        ]),
+      ];
+
+      return $form;
+    }
+
     if ($active_key->getKeyInput() instanceof KeyPluginFormInterface) {
       // Save the settings in form state.
       $form_state->set('key_value', $this->getKeyValueValues($active_key));
@@ -588,7 +626,7 @@ class AuthenticationForm extends ConfigFormBase {
    * @throws \Drupal\Core\Entity\EntityStorageException
    * @throws \Drupal\key\Exception\KeyValueNotSetException
    */
-  protected function getActiveKey(): KeyInterface {
+  protected function getActiveKey(): ?KeyInterface {
     // If we use `$this->config()`, config overrides won't be considered.
     $config = $this->configFactory()->get(static::CONFIG_NAME);
 
@@ -603,13 +641,16 @@ class AuthenticationForm extends ConfigFormBase {
   /**
    * Creates a new auth key stored in a file.
    *
-   * @return \Drupal\key\KeyInterface
+   * @return \Drupal\key\KeyInterface|null
    *   A new auth key.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    * @throws \Drupal\key\Exception\KeyValueNotSetException
    */
-  protected function generateNewAuthKey(): KeyInterface {
+  protected function generateNewAuthKey(): ?KeyInterface {
+    if (!$this->fileSystem->realpath('private://')) {
+      return NULL;
+    }
     // Create a new key name.
     $new_key_id = 'apigee_edge_connection_default';
     $file_path = "private://.apigee_edge/{$new_key_id}.json";
