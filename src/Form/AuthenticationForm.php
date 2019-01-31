@@ -35,11 +35,8 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Link;
 use Drupal\Core\Render\Element\StatusMessages;
 use Drupal\Core\Render\RendererInterface;
-use Drupal\Core\StreamWrapper\StreamWrapperManagerInterface;
-use Drupal\Core\Url;
 use Drupal\key\Entity\Key;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
@@ -205,13 +202,11 @@ class AuthenticationForm extends ConfigFormBase {
         '#tag' => 'label',
         '#value' => $this->t('Unable to initialize configuration.'),
       ];
-      $docs_link = Link::fromTextAndUrl('file_private_path', Url::fromUri('https://www.drupal.org/docs/8/core/modules/file/overview'))->toRenderable();
-      $docs_link['#attributes']['target'] = '_blank';
       $form['connection_settings']['unconfigurable']['description'] = [
         '#type' => 'html_tag',
         '#tag' => 'div',
-        '#value' => $this->t("The Apigee Edge connection settings are not configured and we weren't able to automatically provision connection settings. Make sure the @docs_link is configured and try again.", [
-          '@docs_link' => $this->renderer->renderRoot($docs_link),
+        '#value' => $this->t("The Apigee Edge connection settings are not configured and we weren't able to automatically provision connection settings. Make sure the <a href=\":file_docs_uri\" target=\"_blank\">file_private_path</a> is configured and try again.", [
+          ':file_docs_uri' => 'https://www.drupal.org/docs/8/core/modules/file/overview',
         ]),
       ];
 
@@ -603,7 +598,8 @@ class AuthenticationForm extends ConfigFormBase {
   public function ajaxCallback(array &$form, FormStateInterface $form_state): AjaxResponse {
     $response = new AjaxResponse();
     // Get any status messages so they can be rendered in the placeholder.
-    $form['messages']['#value'] = $this->renderer->render(StatusMessages::renderMessages());
+    $messages = StatusMessages::renderMessages();
+    $form['messages']['#value'] = $this->renderer->render($messages);
     // Clear any existing messages from the initial page load.
     $response->addCommand(new ReplaceCommand('div.messages', ''));
     $response->addCommand(new ReplaceCommand('#apigee-edge-auth-form-messages', $this->renderer->render($form['messages'])));
