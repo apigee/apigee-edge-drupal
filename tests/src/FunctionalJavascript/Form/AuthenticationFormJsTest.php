@@ -33,7 +33,7 @@ use Drupal\Tests\apigee_edge\FunctionalJavascript\ApigeeEdgeFunctionalJavascript
  * @group apigee_edge
  * @group apigee_edge_javascript
  */
-class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
+class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
   /**
    * Valid credentials.
@@ -157,7 +157,7 @@ class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $this->assertSendRequestMessage('.messages--status', 'Connection successful.');
     $web_assert->elementNotExists('css', 'details[data-drupal-selector="edit-debug"]');
     // Make sure the token file is removed when switching to basic auth.
-    $token_file_path = \Drupal::service('file_system')->realpath(OauthTokenFileStorage::DEFAULT_DIRECTORY . '/oauth.dat');
+    $token_file_path = $this->container->get('file_system')->realpath(OauthTokenFileStorage::DEFAULT_DIRECTORY . '/oauth.dat');
     $this->assertTrue(file_exists($token_file_path));
     $page->pressButton('Save configuration');
     $this->assertFalse(file_exists($token_file_path));
