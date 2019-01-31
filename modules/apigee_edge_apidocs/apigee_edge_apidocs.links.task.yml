@@ -1,0 +1,22 @@
+# API Doc routing definition
+apidoc.settings_tab:
+  route_name: apidoc.settings
+  title: 'Settings'
+  base_route: apidoc.settings
+
+entity.apidoc.canonical:
+  route_name: entity.apidoc.canonical
+  base_route: entity.apidoc.canonical
+  title: 'View'
+
+entity.apidoc.edit_form:
+  route_name: entity.apidoc.edit_form
+  base_route: entity.apidoc.canonical
+  title: 'Edit'
+
+entity.apidoc.delete_form:
+  route_name:  entity.apidoc.delete_form
+  base_route:  entity.apidoc.canonical
+  title: 'Delete'
+  weight: 10
+

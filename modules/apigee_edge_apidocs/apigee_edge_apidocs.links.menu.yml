@@ -1,0 +1,13 @@
+# API Doc menu items definition
+entity.apidoc.collection:
+  title: 'API Docs'
+  route_name: entity.apidoc.collection
+  description: 'List API Docs'
+  parent: system.admin_structure
+  weight: 100
+
+apidoc.admin.structure.settings:
+  title: 'API Doc settings'
+  description: 'Configure API Doc settings'
+  route_name: apidoc.settings
+  parent: system.admin_structure
