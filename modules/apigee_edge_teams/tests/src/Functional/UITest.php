@@ -103,40 +103,39 @@ class UITest extends ApigeeEdgeTeamsFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function tearDown() {
-    try {
-      if ($this->account !== NULL) {
+    if ($this->account !== NULL) {
+      try {
         $this->account->delete();
       }
-    }
-    catch (\Exception $exception) {
-      $this->logException($exception);
+      catch (\Exception $exception) {
+        $this->logException($exception);
+      }
     }
 
-    try {
-      if ($this->otherAccount !== NULL) {
+    if ($this->otherAccount !== NULL) {
+      try {
         $this->otherAccount->delete();
       }
-    }
-    catch (\Exception $exception) {
-      $this->logException($exception);
+      catch (\Exception $exception) {
+        $this->logException($exception);
+      }
     }
 
-    try {
-      if ($this->team !== NULL) {
+    if ($this->team !== NULL) {
+      try {
         $this->teamStorage->delete([$this->team]);
       }
-    }
-    catch (\Exception $exception) {
-      $this->logException($exception);
-    }
-
-    try {
-      if ($this->product !== NULL) {
-        $this->product->delete();
+      catch (\Exception $exception) {
+        $this->logException($exception);
       }
     }
-    catch (\Exception $exception) {
-      $this->logException($exception);
+    if ($this->product !== NULL) {
+      try {
+        $this->product->delete();
+      }
+      catch (\Exception $exception) {
+        $this->logException($exception);
+      }
     }
 
     parent::tearDown();
@@ -153,7 +152,7 @@ class UITest extends ApigeeEdgeTeamsFunctionalTestBase {
     // Create a new team and check whether the link to the team is visible on
     // the listing page.
     $this->clickLink('Add team');
-    $team_name = $team_display_name = $this->getRandomGenerator()->word(10);
+    $team_name = $team_display_name = strtolower($this->getRandomGenerator()->name());
     $this->submitForm([
       'name' => $team_name,
       'displayName[0][value]' => $team_display_name,
@@ -205,7 +204,7 @@ class UITest extends ApigeeEdgeTeamsFunctionalTestBase {
 
     // Login with the other user and ensure that it is member of the team.
     $this->drupalLogin($this->otherAccount);
-    $this->drupalGet(Url::fromRoute('entity.team.collection'));
+    $this->drupalGet($this->team->toUrl('collection'));
     $this->clickLink($team_modified_display_name);
 
     // Add a new team app to the team.
@@ -213,8 +212,7 @@ class UITest extends ApigeeEdgeTeamsFunctionalTestBase {
     $this->assertSession()->pageTextContains('There are no Team Apps yet.');
     $this->clickLink('Add team app');
 
-    $team_app_1_name = $this->getRandomGenerator()->word(10);
-    $team_app_1_display_name = $this->getRandomGenerator()->word(10);
+    $team_app_1_name = $team_app_1_display_name = strtolower($this->getRandomGenerator()->name());
     $this->submitForm([
       'name' => $team_app_1_name,
       'displayName[0][value]' => $team_app_1_display_name,
@@ -254,8 +252,7 @@ class UITest extends ApigeeEdgeTeamsFunctionalTestBase {
 
     // Create a new team app using the team app add form for admins.
     $this->clickLink('Add team app');
-    $team_app_2_name = $this->getRandomGenerator()->word(10);
-    $team_app_2_display_name = $this->getRandomGenerator()->word(10);
+    $team_app_2_name = $team_app_2_display_name = strtolower($this->getRandomGenerator()->name());
     $this->submitForm([
       'owner' => $team_name,
       'name' => $team_app_2_name,
@@ -268,7 +265,7 @@ class UITest extends ApigeeEdgeTeamsFunctionalTestBase {
     // Login with the other user and ensure that both team apps are visible on
     // the team app collection by team page.
     $this->drupalLogin($this->otherAccount);
-    $this->drupalGet(Url::fromRoute('entity.team.collection'));
+    $this->drupalGet($this->team->toUrl('collection'));
     $this->clickLink($team_modified_display_name);
     $this->clickLink('Team Apps');
     $this->assertSession()->linkExists($team_app_1_modified_display_name);
@@ -298,12 +295,12 @@ class UITest extends ApigeeEdgeTeamsFunctionalTestBase {
 
     // The other user's team listing page is empty..
     $this->drupalLogin($this->otherAccount);
-    $this->drupalGet(Url::fromRoute('entity.team.collection'));
+    $this->drupalGet($this->team->toUrl('collection'));
     $this->assertSession()->pageTextContains('There are no Teams yet.');
 
     // Delete the team with the default user.
     $this->drupalLogin($this->account);
-    $this->drupalGet(Url::fromRoute('entity.team.collection'));
+    $this->drupalGet($this->team->toUrl('collection'));
     $this->clickLink($team_modified_display_name);
     // Try to delete the team without verification code.
     $this->clickLink('Delete');
@@ -321,7 +318,7 @@ class UITest extends ApigeeEdgeTeamsFunctionalTestBase {
 
     // The team listing page is empty of the other user.
     $this->drupalLogin($this->otherAccount);
-    $this->drupalGet(Url::fromRoute('entity.team.collection'));
+    $this->drupalGet($this->team->toUrl('collection'));
     $this->assertSession()->pageTextContains('There are no Teams yet.');
   }
 

@@ -172,22 +172,22 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function tearDown() {
-    try {
-      if ($this->team !== NULL) {
+    if ($this->team !== NULL) {
+      try {
         $this->teamStorage->delete([$this->team]);
       }
-    }
-    catch (\Exception $exception) {
-      $this->logException($exception);
-    }
-
-    try {
-      if ($this->account !== NULL) {
-        $this->account->delete();
+      catch (\Exception $exception) {
+        $this->logException($exception);
       }
     }
-    catch (\Exception $exception) {
-      $this->logException($exception);
+
+    if ($this->account !== NULL) {
+      try {
+        $this->account->delete();
+      }
+      catch (\Exception $exception) {
+        $this->logException($exception);
+      }
     }
 
     parent::tearDown();
