@@ -565,10 +565,10 @@ class AuthenticationForm extends ConfigFormBase {
   public function ajaxCallback(array &$form, FormStateInterface $form_state): AjaxResponse {
     $response = new AjaxResponse();
     // Get any status messages so they can be rendered in the placeholder.
-    $status_messages = $this->renderer->render(StatusMessages::renderMessages());
+    $form['messages']['#value'] = $this->renderer->render(StatusMessages::renderMessages());
     // Clear any existing messages from the initial page load.
     $response->addCommand(new ReplaceCommand('div.messages', ''));
-    $response->addCommand(new ReplaceCommand('#apigee-edge-auth-form-messages', "<div id=\"apigee-edge-auth-form-messages\">{$status_messages}</div>"));
+    $response->addCommand(new ReplaceCommand('#apigee-edge-auth-form-messages', $this->renderer->render($form['messages'])));
 
     // Replace the debug element (an empty wrapper if validation passes).
     $response->addCommand(new ReplaceCommand(
