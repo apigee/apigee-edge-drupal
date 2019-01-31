@@ -81,6 +81,10 @@ class CacheTest extends ApigeeEdgeFunctionalTestBase {
     ]);
     $this->developerApp->save();
 
+    // Disable API products field on the developer app form so we can submit
+    // the form without creating products.
+    $this->config('apigee_edge.common_app_settings')->set('user_select', FALSE)->save();
+
     $this->drupalLogin($this->account);
     $this->cacheBackend = $this->container->get('cache.apigee_edge_entity');
   }
@@ -162,6 +166,8 @@ class CacheTest extends ApigeeEdgeFunctionalTestBase {
       'app' => $developer_app->getName(),
     ]));
     $this->assertSession()->fieldValueEquals('displayName[0][value]', $name);
+    // Submit the form to clear render caches.
+    $this->submitForm([], 'Save');
     // Update the label of the "cached" developer app entity so the next
     // warmCaches() method call could find the related link to that on the
     // My apps page.
