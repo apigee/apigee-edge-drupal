@@ -70,4 +70,5 @@ class ApiDocDeleteForm extends ContentEntityConfirmFormBase {
       ]);
     $form_state->setRedirect('entity.apidoc.collection');
   }
+
 }

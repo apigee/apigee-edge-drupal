@@ -20,12 +20,10 @@
 
 namespace Drupal\apigee_edge_apidocs\Entity;
 
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\user\UserInterface;
 
 /**
  * Defines the API Doc entity.
@@ -190,7 +188,6 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
         'hander' => 'default:file',
         'text_processing' => 0,
       ])
-      ->setRequired(TRUE)
       ->setDisplayOptions('form', [
         'label' => 'above',
         'type' => 'file',
@@ -207,7 +204,6 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
       ))
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
-
 
     $fields['status'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Publishing status'))

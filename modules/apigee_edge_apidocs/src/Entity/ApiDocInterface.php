@@ -22,7 +22,6 @@ namespace Drupal\apigee_edge_apidocs\Entity;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
-use Drupal\user\EntityOwnerInterface;
 
 /**
  * Provides an interface for defining API Doc entities.
@@ -30,8 +29,6 @@ use Drupal\user\EntityOwnerInterface;
  * @ingroup apigee_edge_apidocs
  */
 interface ApiDocInterface extends ContentEntityInterface, EntityChangedInterface {
-
-  // Add get/set methods for your configuration properties here.
 
   /**
    * Gets the API Doc name.

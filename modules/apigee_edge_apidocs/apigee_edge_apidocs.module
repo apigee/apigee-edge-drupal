@@ -28,7 +28,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 /**
  * Implements hook_help().
  */
-function apigee_edge_apidocs_help($route_name, RouteMatchInterface $route_match)  {
+function apigee_edge_apidocs_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
     // Main module help for the apigee_edge_apidocs module.
     case 'help.page.apigee_edge_apidocs':

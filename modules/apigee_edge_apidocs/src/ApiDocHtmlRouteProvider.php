@@ -44,6 +44,9 @@ class ApiDocHtmlRouteProvider extends AdminHtmlRouteProvider {
       $collection->add("$entity_type_id.settings", $settings_form_route);
     }
 
+    $apidoc_collection_route = $collection->get('entity.apidoc.collection');
+    $apidoc_collection_route->setDefault('_title', 'API Docs');
+
     return $collection;
   }
 
