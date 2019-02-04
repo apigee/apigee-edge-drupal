@@ -1,0 +1,13 @@
+name: Apigee Edge Teams
+description: Provides shared app functionality by allowing developers to be organised into teams.
+package: Apigee (Experimental)
+
+type: module
+core: 8.x
+
+dependencies:
+- apigee_edge:apigee_edge
+
+configure: apigee_edge.settings
+
+php: "7.1"

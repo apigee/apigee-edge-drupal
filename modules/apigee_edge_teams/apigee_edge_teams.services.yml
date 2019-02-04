@@ -1,0 +1,97 @@
+services:
+
+  logger.channel.apigee_edge_teams:
+    parent: logger.channel_base
+    arguments: ['apigee_edge_teams']
+
+  apigee_edge_teams.access_checker.manage_team_members_access:
+    class: Drupal\apigee_edge_teams\Access\ManageTeamMembersAccess
+    arguments: ['@apigee_edge_teams.team_membership_manager', '@config.factory']
+    tags:
+      - { name: access_check, applies_to: _apigee_edge_teams_manage_team_access }
+
+  apigee_edge_teams.access_checker.remove_team_member_access:
+    class: Drupal\apigee_edge_teams\Access\RemoveTeamMemberAccess
+    arguments: ['@apigee_edge_teams.team_membership_manager', '@config.factory']
+    tags:
+      - { name: access_check, applies_to: _apigee_edge_teams_remove_team_member_access }
+
+  apigee_edge_teams.access_checker.team_app_list_by_team_access:
+    class: Drupal\apigee_edge_teams\Access\TeamAppListByTeamAccess
+    arguments: ['@entity_type.manager', '@apigee_edge_teams.team_membership_manager']
+    tags:
+      - { name: access_check, applies_to: _apigee_edge_teams_team_app_list_by_team_access }
+
+  apigee_edge_teams.cache.memory_cache_factory:
+    parent: apigee_edge.cache.memory_cache_factory
+    arguments: [apigee_edge_teams]
+
+  apigee_edge_teams.cache.company_membership_object:
+    class: Drupal\apigee_edge_teams\CompanyMembershipObjectCache
+    arguments: ['@cache_factory', '@apigee_edge.cache.memory_cache_factory', '@config.factory', '@datetime.time']
+
+  apigee_edge_teams.controller.team:
+    class: Drupal\apigee_edge_teams\Entity\Controller\TeamController
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.controller.organization', '@apigee_edge_teams.controller.cache.team', '@apigee_edge_teams.controller.cache.team_ids', '@apigee_edge.entity.controller.cache.app_cache_by_owner_factory', '@apigee_edge.entity.controller.cache.app_name_cache_by_owner_factory', '@apigee_edge_teams.cache.company_membership_object', '@apigee_edge.controller.cache.developer_companies']
+
+  apigee_edge_teams.controller.team_app_controller_factory:
+    class: Drupal\apigee_edge_teams\Entity\Controller\TeamAppControllerFactory
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.controller.organization', '@apigee_edge.controller.cache.apps', '@apigee_edge.entity.controller.cache.app_cache_by_owner_factory', '@apigee_edge.entity.controller.cache.app_name_cache_by_owner_factory']
+
+  apigee_edge_teams.controller.team_app_credential_controller_factory:
+    class: Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactory
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.entity.controller.cache.app_cache_by_owner_factory', '@event_dispatcher']
+
+  apigee_edge_teams.company_members_controller_factory:
+    class: Drupal\apigee_edge_teams\CompanyMembersControllerFactory
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge_teams.cache.company_membership_object']
+
+  apigee_edge_teams.controller.cache.team:
+    class: Drupal\apigee_edge\Entity\Controller\Cache\EntityCache
+    arguments: ['@apigee_edge_teams.cache.memory_cache_factory', '@apigee_edge_teams.controller.cache.team_ids', team]
+
+  apigee_edge_teams.controller.cache.team_ids:
+    parent: apigee_edge.controller.cache.entity_id_cache
+
+  apigee_edge_teams.team_membership_manager:
+    class: Drupal\apigee_edge_teams\TeamMembershipManager
+    arguments: [ '@entity_type.manager', '@apigee_edge_teams.company_members_controller_factory', '@apigee_edge.controller.developer', '@apigee_edge.controller.cache.developer_companies', '@apigee_edge_teams.team_api_product_access_manager', '@cache_tags.invalidator']
+
+  apigee_edge_teams.team_api_product_access_manager:
+    class: Drupal\apigee_edge_teams\TeamApiProductAccessManager
+    arguments: ['@module_handler', '@config.factory']
+
+  apigee_edge_teams.event_subscriber.team_api_product_access_manager_cache_reset:
+    class: Drupal\apigee_edge_teams\EventSubscriber\TeamApiProductAccessManagerCacheReset
+    arguments: ['@apigee_edge_teams.team_api_product_access_manager']
+    tags:
+      - { name: event_subscriber }
+
+  apigee_edge_teams.event_subscriber.team_status_warning_subscriber:
+    class: Drupal\apigee_edge_teams\EventSubscriber\TeamStatusWarningSubscriber
+    arguments: ['@current_user', '@current_route_match', '@entity_type.manager', '@apigee_edge_teams.team_membership_manager', '@messenger', '@string_translation']
+    tags:
+      - { name: event_subscriber }
+
+  apigee_edge_teams.event_subscriber.team_app_field_config_list_alter_event_subscriber:
+    class: Drupal\apigee_edge_teams\EventSubscriber\TeamAppFieldConfigListAlterEventSubscriber
+    arguments: ['@form_builder']
+    tags:
+      - { name: event_subscriber }
+
+  route.subscriber.apigee_edge_teams.team_app_by_name:
+    class: Drupal\apigee_edge_teams\Routing\TeamAppByNameRouteAlterSubscriber
+    tags:
+      - { name: event_subscriber }
+
+  route_subscriber.apigee_edge_teams.team_app_devel_route_fixer:
+    class: Drupal\apigee_edge_teams\Routing\TeamAppDevelRouteFixerSubscriber
+    arguments: ['@module_handler']
+    tags:
+      - { name: event_subscriber}
+
+  paramconverter.team_app_name:
+    class: Drupal\apigee_edge_teams\ParamConverter\TeamAppNameConverter
+    arguments: ['@entity_type.manager', '@logger.channel.apigee_edge_teams']
+    tags:
+      - { name: paramconverter }

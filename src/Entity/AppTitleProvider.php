@@ -29,13 +29,20 @@ use Drupal\Core\Routing\RouteMatchInterface;
 class AppTitleProvider extends EdgeEntityTitleProvider {
 
   /**
-   * {@inheritdoc}
+   * Provides a title for the app analytics page.
+   *
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The route match.
+   * @param \Drupal\Core\Entity\EntityInterface $_entity
+   *   (optional) An entity, passed in directly from the request attributes.
+   *
+   * @return string|null
+   *   The title for the app analytics page, null if an entity was found.
    */
   public function analyticsTitle(RouteMatchInterface $route_match, EntityInterface $_entity = NULL) {
     if ($entity = $this->doGetEntity($route_match, $_entity)) {
       return $this->t('Analytics of %label @entity_type', ['%label' => $entity->label(), '@entity_type' => $this->entityTypeManager->getDefinition($entity->getEntityTypeId())->getLowercaseLabel()]);
     }
-    return parent::editTitle($route_match, $_entity);
   }
 
   /**

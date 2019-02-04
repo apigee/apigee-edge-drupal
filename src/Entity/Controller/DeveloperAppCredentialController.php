@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge\Entity\Controller;
 
 use Apigee\Edge\Api\Management\Controller\AppCredentialController as EdgeAppCredentialController;
 use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController as EdgeDeveloperAppCredentialController;
+use Drupal\apigee_edge\Event\AbstractAppCredentialEvent;
 
 /**
  * Definition of the developer app credential controller service.
@@ -39,6 +40,13 @@ final class DeveloperAppCredentialController extends AppCredentialControllerBase
       $this->instances[$this->owner][$this->appName] = new EdgeDeveloperAppCredentialController($this->connector->getOrganization(), $this->owner, $this->appName, $this->connector->getClient());
     }
     return $this->instances[$this->owner][$this->appName];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getAppType(): string {
+    return AbstractAppCredentialEvent::APP_TYPE_DEVELOPER;
   }
 
 }

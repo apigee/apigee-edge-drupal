@@ -26,6 +26,7 @@ use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\Core\Url;
+use Drupal\Tests\apigee_edge\Traits\ApigeeEdgeTestTrait;
 use Drupal\user\UserInterface;
 
 /**

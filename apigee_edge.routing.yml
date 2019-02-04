@@ -70,6 +70,14 @@ apigee_edge.settings.developer.cache:
   requirements:
     _permission: 'administer apigee edge'
 
+apigee_edge.settings.developer.api_product_access:
+  path: '/admin/config/apigee-edge/developer-settings/access-control'
+  defaults:
+    _form: '\Drupal\apigee_edge\Form\ApiProductAccessControlForm'
+    _title: 'API product access'
+  requirements:
+    _permission: 'administer apigee edge'
+
 apigee_edge.settings.product.alias:
   path: '/admin/config/apigee-edge/product-settings/alias'
   defaults:
@@ -83,14 +91,6 @@ apigee_edge.settings.product.caching:
   defaults:
     _form: '\Drupal\apigee_edge\Form\ApiProductCachingForm'
     _title: 'API product caching'
-  requirements:
-    _permission: 'administer apigee edge'
-
-apigee_edge.settings.product.access_control:
-  path: '/admin/config/apigee-edge/product-settings/access-control'
-  defaults:
-    _form: '\Drupal\apigee_edge\Form\ApiProductAccessControlForm'
-    _title: 'API product access control'
   requirements:
     _permission: 'administer apigee edge'
 

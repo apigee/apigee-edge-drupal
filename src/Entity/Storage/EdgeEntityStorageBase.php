@@ -259,11 +259,11 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
     }
 
     $this->withController(function (EdgeEntityControllerInterface $controller) use ($ids, &$entities) {
+      $tmp = [];
       // Speed up things by loading only one entity.
       if ($ids !== NULL && count($ids) === 1) {
         // TODO When user's email changes do not ask Apigee Edge 3 times
         // whether a developer exists with the new email address or not.
-        $tmp = [];
         try {
           $entity = $controller->load(reset($ids));
           $tmp[$entity->id()] = $entity;
@@ -277,26 +277,51 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
         // from Apigee Edge.
         $tmp = $controller->loadAll();
       }
-      // Returned entities are SDK entities and not Drupal entities,
-      // what if the id is used in Drupal is different than what
-      // SDK uses? (ex.: developer)
-      foreach ($tmp as $id => $entity) {
-        $drupal_entity = $this->createNewInstance($entity);
-        if ($ids === NULL) {
-          $entities[$drupal_entity->id()] = $drupal_entity;
-        }
-        elseif ($referenced_ids = array_intersect($drupal_entity->uniqueIds(), $ids)) {
-          if (count($referenced_ids) > 1) {
-            // Sanity check, why would someone try to load the same entity
-            // by using more than one of its unique id.
-            throw new EntityStorageException(sprintf('The same entity should be referenced only with one id, got %s.', implode($referenced_ids)));
-          }
-          $entities[reset($referenced_ids)] = $drupal_entity;
-        }
-      }
-      $this->invokeStorageLoadHook($entities);
-      $this->setPersistentCache($entities);
+
+      $entities = $this->processLoadedEntities($ids, $tmp);
     });
+
+    return $entities;
+  }
+
+  /**
+   * Processes loaded (SDK) entities to Drupal entities.
+   *
+   * This method also ensured that storage hooks gets called and entities
+   * gets saved to the persistent cache before they gets returned.
+   *
+   * @param array|null $ids
+   *   Originally request entity ids.
+   * @param array $sdk_entities
+   *   The loaded SDK entities by the entity controller for the requested ids.
+   *
+   * @return array
+   *   Array of Drupal entities.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   *   If Drupal entity ids could not be resolved.
+   */
+  final protected function processLoadedEntities(?array $ids, array $sdk_entities): array {
+    $entities = [];
+    // Returned entities are SDK entities and not Drupal entities,
+    // what if the id is used in Drupal is different than what
+    // SDK uses? (ex.: developer)
+    foreach ($sdk_entities as $id => $entity) {
+      $drupal_entity = $this->createNewInstance($entity);
+      if ($ids === NULL) {
+        $entities[$drupal_entity->id()] = $drupal_entity;
+      }
+      elseif ($referenced_ids = array_intersect($drupal_entity->uniqueIds(), $ids)) {
+        if (count($referenced_ids) > 1) {
+          // Sanity check, why would someone try to load the same entity
+          // by using more than one of its unique id.
+          throw new EntityStorageException(sprintf('The same entity should be referenced only with one id, got %s.', implode($referenced_ids)));
+        }
+        $entities[reset($referenced_ids)] = $drupal_entity;
+      }
+    }
+    $this->invokeStorageLoadHook($entities);
+    $this->setPersistentCache($entities);
 
     return $entities;
   }

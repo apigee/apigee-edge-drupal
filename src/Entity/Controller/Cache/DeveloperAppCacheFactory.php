@@ -20,40 +20,25 @@
 
 namespace Drupal\apigee_edge\Entity\Controller\Cache;
 
+use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Egulias\EmailValidator\EmailValidatorInterface;
 
 /**
  * Developer specific app cache by app owner factory service.
+ *
+ * This service ensures that the same cache instance is being used for
+ * the same developer's developer apps even if the developer is sometimes
+ * referenced by its UUID and sometimes by its email address.
  */
 final class DeveloperAppCacheFactory implements AppCacheByOwnerFactoryInterface {
 
   /**
-   * Internal cache for created instances.
-   *
-   * @var \Drupal\apigee_edge\Entity\Controller\Cache\DeveloperAppCache[]
-   */
-  private $instances = [];
-
-  /**
-   * The app cache service that stores app by their app id (UUID).
-   *
-   * @var \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface
-   */
-  private $appCache;
-
-  /**
    * The (general) app cache by owner factory.
    *
-   * @var \Drupal\apigee_edge\Entity\Controller\Cache\GeneralAppCacheByAppOwnerFactoryInterface
+   * @var \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface
    */
   private $appCacheByOwnerFactory;
-
-  /**
-   * The developer cache service.
-   *
-   * @var \Drupal\apigee_edge\Entity\Controller\Cache\DeveloperCache
-   */
-  private $developerCache;
 
   /**
    * The email validator service.
@@ -63,39 +48,50 @@ final class DeveloperAppCacheFactory implements AppCacheByOwnerFactoryInterface 
   private $emailValidator;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  private $entityTypeManager;
+
+  /**
    * DeveloperAppCacheFactory constructor.
    *
-   * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface $app_cache
-   *   The app cache service that stores app by their app id (UUID).
-   * @param \Drupal\apigee_edge\Entity\Controller\Cache\GeneralAppCacheByAppOwnerFactoryInterface $app_cache_by_owner_factory
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface $app_cache_by_owner_factory
    *   The (general) app cache by owner factory.
-   * @param \Drupal\apigee_edge\Entity\Controller\Cache\DeveloperCache $developer_cache
-   *   The developer app cache service.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    * @param \Egulias\EmailValidator\EmailValidatorInterface $email_validator
    *   The email validator service.
    */
-  public function __construct(AppCacheInterface $app_cache, GeneralAppCacheByAppOwnerFactoryInterface $app_cache_by_owner_factory, DeveloperCache $developer_cache, EmailValidatorInterface $email_validator) {
-    $this->appCache = $app_cache;
+  public function __construct(AppCacheByOwnerFactoryInterface $app_cache_by_owner_factory, EntityTypeManagerInterface $entity_type_manager, EmailValidatorInterface $email_validator) {
     $this->appCacheByOwnerFactory = $app_cache_by_owner_factory;
-    $this->developerCache = $developer_cache;
     $this->emailValidator = $email_validator;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
-   * Returns the same app cache instance for an owner.
+   * Returns the same app cache instance for a developer.
+   *
+   * Even if the owner is sometime a UUID and sometime an email address.
    *
    * @param string $owner
    *   Developer id (UUID) or email.
    *
-   * @return \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByAppOwnerInterface
+   * @return \Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerInterface
    *   The developer app cache that belongs to this owner.
    */
-  public function getAppCache(string $owner): AppCacheByAppOwnerInterface {
-    if (!isset($this->instances[$owner])) {
-      $this->instances[$owner] = new DeveloperAppCache($owner, $this->appCache, $this->appCacheByOwnerFactory, $this->developerCache, $this->emailValidator);
+  public function getAppCache(string $owner): AppCacheByOwnerInterface {
+    if ($this->emailValidator->isValid($owner)) {
+      /** @var \Drupal\apigee_edge\Entity\Developer|null $developer */
+      $developer = $this->entityTypeManager->getStorage('developer')->load($owner);
+      if ($developer === NULL) {
+        throw new DeveloperDoesNotExistException($owner);
+      }
+      $owner = $developer->getDeveloperId();
     }
 
-    return $this->instances[$owner];
+    return $this->appCacheByOwnerFactory->getAppCache($owner);
   }
 
 }

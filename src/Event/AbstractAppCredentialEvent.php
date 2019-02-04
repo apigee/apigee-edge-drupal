@@ -28,7 +28,7 @@ use Symfony\Component\EventDispatcher\Event;
  */
 abstract class AbstractAppCredentialEvent extends Event {
 
-  const APP_TYPE_COMPANY = 'company';
+  const APP_TYPE_TEAM = 'team';
 
   const APP_TYPE_DEVELOPER = 'developer';
 
@@ -63,7 +63,7 @@ abstract class AbstractAppCredentialEvent extends Event {
   /**
    * AppCredentialGenerateEvent constructor.
    *
-   * @param string $add_type
+   * @param string $app_type
    *   Either company or developer.
    * @param string $owner_id
    *   Company name or developer id (UUID by default) depending on the appType.
@@ -72,11 +72,11 @@ abstract class AbstractAppCredentialEvent extends Event {
    * @param \Apigee\Edge\Api\Management\Entity\AppCredentialInterface $credential
    *   The app credential that has been created.
    */
-  public function __construct(string $add_type, string $owner_id, string $app_name, AppCredentialInterface $credential) {
-    if (!in_array($add_type, [self::APP_TYPE_DEVELOPER, self::APP_TYPE_COMPANY])) {
-      throw new \InvalidArgumentException('App type must be either company or developer.');
+  public function __construct(string $app_type, string $owner_id, string $app_name, AppCredentialInterface $credential) {
+    if (!in_array($app_type, [self::APP_TYPE_DEVELOPER, self::APP_TYPE_TEAM])) {
+      throw new \InvalidArgumentException('App type must be either team or developer.');
     }
-    $this->appType = $add_type;
+    $this->appType = $app_type;
     $this->ownerId = $owner_id;
     $this->appName = $app_name;
     $this->credential = $credential;

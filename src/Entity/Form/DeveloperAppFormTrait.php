@@ -22,7 +22,9 @@ namespace Drupal\apigee_edge\Entity\Form;
 
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\ClientErrorException;
+use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Utility\Error;
 
@@ -43,6 +45,14 @@ trait DeveloperAppFormTrait {
     // Do not validate if app name is not set.
     if ($name === '') {
       return FALSE;
+    }
+
+    // Return TRUE if developer account has not been found for this Drupal user.
+    // TODO Make sure that DeveloperAppCreateEditFormForDeveloper can be
+    // used only if the Drupal user in the route has a developer account
+    // in Apigee Edge.
+    if ($formState->getValue('owner') === NULL) {
+      return TRUE;
     }
 
     // We use the developer app controller factory here instead of entity
@@ -78,21 +88,51 @@ trait DeveloperAppFormTrait {
    * {@inheritdoc}
    */
   protected function appEntityDefinition(): EntityTypeInterface {
-    return \Drupal::entityTypeManager()->getDefinition('developer_app');
+    return $this->getEntityTypeManager()->getDefinition('developer_app');
   }
 
   /**
    * {@inheritdoc}
    */
   protected function appOwnerEntityDefinition(): EntityTypeInterface {
-    return \Drupal::entityTypeManager()->getDefinition('developer');
+    return $this->getEntityTypeManager()->getDefinition('developer');
   }
 
   /**
    * {@inheritdoc}
    */
   protected function appCredentialLifeTime(): int {
-    return \Drupal::config('apigee_edge.developer_app_settings')->get('credential_lifetime');
+    $config_name = 'apigee_edge.developer_app_settings';
+    $config = method_exists($this, 'config') ? $this->config($config_name) : \Drupal::config($config_name);
+    return $config->get('credential_lifetime');
+  }
+
+  /**
+   * Allows to access to the injected entity type manager.
+   *
+   * @return \Drupal\Core\Entity\EntityTypeManagerInterface
+   *   The entity type manager.
+   */
+  private function getEntityTypeManager(): EntityTypeManagerInterface {
+    if (property_exists($this, 'entityTypeManager') && $this->entityTypeManager instanceof EntityTypeManagerInterface) {
+      return $this->entityTypeManager;
+    }
+
+    return \Drupal::entityTypeManager();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function apiProductList(array &$form, FormStateInterface $form_state): array {
+    $email = $form_state->getValue('owner') ?? $form['owner']['#value'] ?? $form['owner']['#default_value'];
+    /** @var \Drupal\user\UserInterface|null $account */
+    $account = user_load_by_mail($email);
+    $products = array_filter(\Drupal::entityTypeManager()->getStorage('api_product')->loadMultiple(), function (ApiProductInterface $product) use ($account) {
+      return $product->access('assign', $account);
+    });
+
+    return $products;
   }
 
 }

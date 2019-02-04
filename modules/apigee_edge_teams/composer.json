@@ -1,0 +1,15 @@
+{
+    "name": "drupal/apigee_edge_teams",
+    "description": "Provides shared app functionality by allowing developers to be organised into teams.",
+    "type": "drupal-module",
+    "license": "GPL-2.0+",
+    "require": {
+        "php": ">=7.1",
+        "drupal/apigee_edge": "*"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

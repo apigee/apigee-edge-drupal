@@ -19,6 +19,7 @@
 
 namespace Drupal\Tests\apigee_edge\Functional;
 
+use Drupal\Tests\apigee_edge\Traits\ApigeeEdgeTestTrait;
 use Drupal\Tests\BrowserTestBase;
 
 /**

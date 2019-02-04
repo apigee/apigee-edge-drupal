@@ -21,7 +21,6 @@
 namespace Drupal\apigee_edge\Entity\ListBuilder;
 
 use Drupal\apigee_edge\Entity\AppInterface;
-use Drupal\apigee_edge\Entity\DeveloperStatusCheckTrait;
 use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
@@ -43,8 +42,6 @@ use Symfony\Component\HttpFoundation\RequestStack;
  * Lists developer apps of a developer on the UI.
  */
 class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements ContainerInjectionInterface {
-
-  use DeveloperStatusCheckTrait;
 
   /**
    * The current user.
@@ -163,19 +160,6 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
   /**
    * {@inheritdoc}
    */
-  protected function getAddEntityLink(): ?array {
-    $link = parent::getAddEntityLink();
-    if ($link) {
-      if ($user = $this->routeMatch->getParameter('user')) {
-        $link['#url'] = new Url('entity.developer_app.add_form_for_developer', ['user' => $user->id()], $link['#url']->getOptions());
-      }
-    }
-    return $link;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   protected function renderAppName(AppInterface $app): array {
     if ($app->access('view')) {
       return $app->toLink(NULL, 'canonical-by-developer')->toRenderable();
@@ -188,8 +172,6 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
    */
   public function render() {
     $build = parent::render();
-    $user = $this->routeMatch->getParameter('user');
-    $this->checkDeveloperStatus($user->id());
     $build['table']['#empty'] = $this->t('Looks like you do not have any apps. Get started by adding one.');
     return $build;
   }

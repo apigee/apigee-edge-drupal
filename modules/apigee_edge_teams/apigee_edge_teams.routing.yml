@@ -1,0 +1,47 @@
+apigee_edge_teams.settings.team:
+  path: '/admin/config/apigee-edge/team-settings'
+  defaults:
+    _form: '\Drupal\apigee_edge_teams\Form\TeamAliasForm'
+    _title: 'Team settings'
+  requirements:
+    _permission: 'administer team'
+
+apigee_edge_teams.settings.team.cache:
+  path: '/admin/config/apigee-edge/team-settings/caching'
+  defaults:
+    _form: '\Drupal\apigee_edge_teams\Form\TeamCacheForm'
+    _title: 'Caching'
+  requirements:
+    _permission: 'administer team'
+
+apigee_edge_teams.settings.team.member_permissions:
+  path: '/admin/config/apigee-edge/team-settings/member-permissions'
+  defaults:
+    _form: '\Drupal\apigee_edge_teams\Form\TeamMemberPermissionsSettingsForm'
+    _title: 'Permissions'
+  requirements:
+    _permission: 'administer team'
+
+apigee_edge_teams.settings.team_app:
+  path: '/admin/config/apigee-edge/app-settings/team-apps'
+  defaults:
+    _form: '\Drupal\apigee_edge_teams\Form\TeamAppAliasForm'
+    _title: 'Team app settings'
+  requirements:
+    _permission: 'administer team'
+
+apigee_edge_teams.settings.team_app.credentials:
+  path: '/admin/config/apigee-edge/app-settings/team-apps/credentials'
+  defaults:
+    _form: '\Drupal\apigee_edge_teams\Form\TeamAppCredentialsForm'
+    _title: 'Credentials'
+  requirements:
+    _permission: 'administer team'
+
+apigee_edge_teams.settings.team_app.cache:
+  path: '/admin/config/apigee-edge/app-settings/team-apps/caching'
+  defaults:
+    _form: '\Drupal\apigee_edge_teams\Form\TeamAppCacheForm'
+    _title: 'Caching'
+  requirements:
+    _permission: 'administer team'

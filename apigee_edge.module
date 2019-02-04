@@ -38,7 +38,6 @@ use Drupal\apigee_edge\Form\DeveloperSettingsForm;
 use Drupal\apigee_edge\JobExecutor;
 use Drupal\apigee_edge\Plugin\Field\FieldType\ApigeeEdgeDeveloperIdFieldItem;
 use Drupal\apigee_edge\Plugin\Validation\Constraint\DeveloperEmailUniqueValidator;
-use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Render\PlainTextOutput;
 use Drupal\Component\Utility\Crypt;
 use Drupal\Component\Utility\Xss;
@@ -49,6 +48,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Site\Settings;
@@ -93,6 +93,21 @@ function apigee_edge_theme() {
 }
 
 /**
+ * Implements hook_user_format_name_alter().
+ */
+function apigee_edge_user_format_name_alter(&$name, AccountInterface $account) {
+  // Ignore Anonymous user.
+  if ($account instanceof UserInterface) {
+    $first_name_last_name = trim($account->get('first_name')->value) . ' ' . trim($account->get('last_name')->value);
+    // If both fields were empty this string still could be empty.
+    $first_name_last_name = trim($first_name_last_name);
+    if (!empty($first_name_last_name)) {
+      $name = $first_name_last_name;
+    }
+  }
+}
+
+/**
  * Prepares variables for status_property templates.
  *
  * Default template: status_property.html.twig.
@@ -119,6 +134,18 @@ function apigee_edge_system_breadcrumb_alter(Breadcrumb &$breadcrumb, RouteMatch
   // add developer app for developer page.
   if (preg_match('/^\/user.*/', $route_match->getRouteObject()->getPath())) {
     $breadcrumb->mergeCacheMaxAge(0);
+  }
+  if ($route_match->getRouteName() === 'entity.developer_app.add_form_for_developer') {
+    $collection_route_by_developer_name = 'entity.developer_app.collection_by_developer';
+    /** @var \Drupal\Core\Controller\TitleResolverInterface $title_resolver */
+    $title_resolver = \Drupal::service('title_resolver');
+    /** @var \Drupal\Core\Routing\RouteProviderInterface $route_provider */
+    $route_provider = \Drupal::service('router.route_provider');
+    $breadcrumb->addLink(Link::createFromRoute(
+      $title_resolver->getTitle(\Drupal::requestStack()->getCurrentRequest(), $route_provider->getRouteByName($collection_route_by_developer_name)),
+      $collection_route_by_developer_name,
+      ['user' => $route_match->getParameter('user')->id()]
+    ));
   }
 }
 
@@ -252,6 +279,11 @@ function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityV
  *
  * Supported operations: view, view label, assign.
  *
+ * "assign" is a custom entity on API Products. It is being used on app
+ * create/edit forms. A developer may have view access to an API product but
+ * it can not assign it to an app (it can not obtain an API key for that
+ * API product).
+ *
  * Rules:
  * - The user gets allowed if has "Bypass API Product access control"
  * permission always.
@@ -264,43 +296,41 @@ function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityV
  */
 function apigee_edge_api_product_access(EntityInterface $entity, $operation, AccountInterface $account) {
   /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $entity */
-  // We only control view and assign operations.
   if (!in_array($operation, ['view', 'view label', 'assign'])) {
-    // We have to return allowed, because neutral response still means
-    // denied if there is no other module that would return allowed for the
-    // entity specifically.
-    // @see Drupal\Core\Access\AccessResultInterface::isAllowed()
-    // @see Drupal\Core\Entity\EntityAccessControlHandler::access()
-    return AccessResult::allowed();
+    return AccessResult::neutral(sprintf('%s is not supported by %s.', $operation, __FUNCTION__));
   }
 
-  if ($account->hasPermission('bypass api product access control')) {
-    return AccessResult::allowed();
+  $config_name = 'apigee_edge.api_product_settings';
+
+  $result = AccessResult::allowedIfHasPermission($account, 'bypass api product access control');
+  if ($result->isNeutral()) {
+    // Attribute may not exists but in that case it means public.
+    $product_visibility = $entity->getAttributeValue('access') ?? 'public';
+    $visible_to_roles = \Drupal::config($config_name)->get('access')[$product_visibility] ?? [];
+
+    // User may not have access to this API product based on the current
+    // access setting but we should still grant him/her view access
+    // if s/he has a developer app in association with this API product.
+    if (empty(array_intersect($visible_to_roles, $account->getRoles()))) {
+      // We should not return allowed if the operation is "assign"
+      // just because a user has an app with the API product.
+      // Displaying these API products to a user should be solved on the
+      // form level always.
+      if ($operation === 'assign') {
+        $result = AccessResult::neutral();
+      }
+      else {
+        $result = _apigee_edge_user_has_an_app_with_product($entity->id(), $account, TRUE);
+      }
+    }
+    else {
+      $result = AccessResult::allowed();
+    }
   }
 
-  $config = \Drupal::config('apigee_edge.api_product_settings');
-  // Attribute may not exists but in that case it means public.
-  $productVisibility = $entity->getAttributeValue('access') ?? 'public';
-  $selectedRoles = $config->get('access')[$productVisibility] ?? [];
-
-  // User may not have access to this API product based on the current
-  // access setting but we should still grant him/her view access
-  // if s/he has a developer app in association with this API product.
-  // We should not provide him/her access if operation is "assign"
-  // in general just because s/he has an app with the API product.
-  // Displaying these products should be solved on the form level always.
-  if (!empty(array_intersect($selectedRoles, $account->getRoles())) || ($operation !== 'assign' && _apigee_edge_user_has_an_app_with_product($entity->getName(), $account))) {
-    return AccessResult::allowed();
-  }
-
-  if (empty($selectedRoles)) {
-    $reason = "The \"{$operation}\" operation on this API product with \"{$productVisibility}\" visibility is revoked because currently no Drupal role can access to API products with this visibility.";
-  }
-  else {
-    $reason = sprintf('The "%s" operation on this API product with "%s" visibility is revoked because user does not have any of the following roles: %s.', $operation, $productVisibility, implode(', ', $selectedRoles));
-  }
-
-  return AccessResult::forbidden($reason);
+  // If the API product gets updated it should not have any effect this
+  // access control so we did not add $entity as a dependency to the result.
+  return $result->cachePerUser()->addCacheTags(['config:' . $config_name]);
 }
 
 /**
@@ -1134,6 +1164,50 @@ function apigee_edge_user_cancel(array $edit, UserInterface $account, $method) {
 }
 
 /**
+ * Implements hook_user_cancel_methods_alter().
+ */
+function apigee_edge_user_cancel_methods_alter(&$methods) {
+  // Transform available keys to replacements that could be passed to t().
+  $get_replacements = function (array $method_info): array {
+    $replacements = [];
+    array_walk($method_info, function ($value, $key) use (&$replacements) {
+      $replacements["@{$key}"] = $value;
+    });
+
+    return $replacements;
+  };
+
+  // Returns extra information for a method that we would like to display.
+  // "title" is what a user with "administer users" permission can see,
+  // "description" is for regular authenticated users by default.
+  $get_extra_info = function (string $key, $replacements): ?array {
+    $extra_infos = [
+      'user_cancel_block' => [
+        'title' => t("@title Account's API credentials will be invalid until this account gets re-activated.", $replacements),
+        'description' => t('@description <strong>Your API credentials will be invalid until your account is unblocked.</strong>', $replacements),
+      ],
+      'user_cancel_delete' => [
+        'title' => t("@title <strong>All API apps and API credentials owned by this account will be deleted from Apigee Edge.</strong>", $replacements),
+        'description' => t('@description <strong>Your API apps and API credentials will be deleted permanently.</strong>', $replacements),
+      ],
+    ];
+
+    // The same warning should be displayed in these cancellation methods.
+    $extra_infos['user_cancel_block_unpublish'] = $extra_infos['user_cancel_block'];
+    $extra_infos['user_cancel_reassign'] = $extra_infos['user_cancel_delete'];
+
+    return $extra_infos[$key] ?? NULL;
+  };
+
+  foreach ($methods as $method => $info) {
+    $extra_info = $get_extra_info($method, $get_replacements($info));
+    if ($extra_info) {
+      $methods[$method] = array_merge($methods[$method], $extra_info);
+    }
+  }
+}
+
+/**
  * Implements hook_user_delete().
  */
 function apigee_edge_user_delete(UserInterface $account) {
@@ -1373,7 +1447,7 @@ function apigee_edge_developer_app_storage_load(array $entities) {
 }
 
 /**
- * Checks whether a user has a developer app in association with an API product.
+ * Checks whether a user has a developer app with an API product.
  *
  * We did not add static caching to this function because there could be
  * possible scenarios when a cache invalidation issue could occur and this
@@ -1382,41 +1456,61 @@ function apigee_edge_developer_app_storage_load(array $entities) {
  * @param string $product_name
  *   API Product name.
  * @param \Drupal\Core\Session\AccountInterface|null $account
- *   User object. Default is the current user.
+ *   (optional) The user session for which to check access, or NULL to check
+ *   access for the current user. Defaults to NULL.
+ * @param bool $return_as_object
+ *   (optional) Defaults to FALSE.
  *
- * @return bool
- *   TRUE if user has at least one app with the API Product, FALSE otherwise.
+ * @return \Drupal\Core\Access\AccessResultInterface|bool
+ *   The access result. Returns a boolean if $return_as_object is FALSE (this
+ *   is the default) and otherwise an AccessResultInterface object.
+ *   When a boolean is returned, the result of AccessInterface::isAllowed() is
+ *   returned, i.e. TRUE means access is explicitly allowed, FALSE means
+ *   access is either explicitly forbidden or "no opinion".
+ *
+ * @see \Drupal\Core\Entity\EntityAccessControlHandlerInterface::access()
  */
-function _apigee_edge_user_has_an_app_with_product(string $product_name, AccountInterface $account = NULL): bool {
+function _apigee_edge_user_has_an_app_with_product(string $product_name, AccountInterface $account = NULL, bool $return_as_object = FALSE) {
   if ($account === NULL) {
-    $account = Drupal::currentUser()->getAccount();
+    $account = \Drupal::currentUser();
   }
 
-  // Anonymous users does not have a developer account on Apigee Edge.
   if ($account->isAnonymous()) {
-    return FALSE;
+    $result = AccessResult::neutral('Anonymous user does not have a developer account on Apigee Edge.');
   }
+  else {
+    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface|null $app_with_product */
+    $app_with_product = NULL;
+    /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperAppStorageInterface $developer_app_storage */
+    $developer_app_storage = \Drupal::entityTypeManager()->getStorage('developer_app');
 
-  /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperAppStorageInterface $storage */
-  try {
-    $storage = Drupal::entityTypeManager()->getStorage('developer_app');
-    foreach ($storage->loadByDeveloper($account->getEmail()) as $app) {
+    foreach ($developer_app_storage->loadByDeveloper($account->getEmail()) as $app) {
       /** @var \Apigee\Edge\Api\Management\Entity\AppCredentialInterface $credential */
       foreach ($app->getCredentials() as $credential) {
-        $productNames = array_map(function (CredentialProduct $product) {
+        $product_ids = array_map(function (CredentialProduct $product) {
           return $product->getApiproduct();
         }, $credential->getApiProducts());
-        if (in_array($product_name, $productNames)) {
-          return TRUE;
+        // We return after the first match to speed up the page load.
+        if (in_array($product_name, $product_ids)) {
+          $app_with_product = $app;
+          break 2;
         }
       }
     }
-  }
-  catch (InvalidPluginDefinitionException $e) {
-    // Because it could not happen we just catch this.
+
+    if ($app_with_product) {
+      // Flush cache if this app gets updated. It could happen that
+      // this product gets removed from the app therefore the access
+      // must be re-evaluated.
+      $result = AccessResult::allowed()->cachePerUser()->addCacheTags($app_with_product->getCacheTags());
+    }
+    else {
+      $result = AccessResult::neutral("{$account->getDisplayName()} does not have any developer app in association with {$product_name} API product.");
+    }
+
   }
 
-  return FALSE;
+  return $return_as_object ? $result : $result->isAllowed();
 }
 
 /**

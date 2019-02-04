@@ -5,12 +5,11 @@
     "description": "Apigee Edge for Drupal.",
     "require": {
         "php": ">=7.1",
-        "apigee/apigee-client-php": "^2.0",
+        "apigee/apigee-client-php": "2.x-dev",
         "cweagans/composer-patches": "^1.6.5",
         "drupal/core": "^8.6.3",
         "drupal/entity": "^1.0",
         "drupal/key": "^1.8",
-        "php-http/httplug": "^1.1",
         "php-http/guzzle6-adapter": "^1.1.1"
     },
     "require-dev": {

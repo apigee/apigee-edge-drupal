@@ -23,6 +23,7 @@ use Apigee\Edge\Api\Management\Controller\DeveloperController;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\Core\Url;
+use Drupal\Tests\apigee_edge\Traits\EntityUtilsTrait;
 
 /**
  * Developer app UI tests.
@@ -33,6 +34,7 @@ use Drupal\Core\Url;
 class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
   use DeveloperAppUITestTrait;
+  use EntityUtilsTrait;
 
   protected const DUPLICATE_MACHINE_NAME = 'The machine-readable name is already in use. It must be unique.';
 
@@ -85,20 +87,9 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * Tests the developer app label modification.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function testDeveloperAppLabel() {
-    $this->drupalPostForm(Url::fromRoute('apigee_edge.settings.developer_app'), [
-      'entity_label_singular' => 'API',
-      'entity_label_plural' => 'APIs',
-    ], 'Save configuration');
-
-    \Drupal::entityTypeManager()->clearCachedDefinitions();
-    menu_cache_clear_all();
-    $type = \Drupal::entityTypeManager()->getDefinition('developer_app');
-    $this->assertEquals('API', $type->getSingularLabel());
-    $this->assertEquals('APIs', $type->getPluralLabel());
+    $this->changeEntityAliasesAndValidate('developer_app', 'apigee_edge.settings.developer_app');
   }
 
   /**
@@ -431,11 +422,11 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $controller->setStatus($this->account->getEmail(), Developer::STATUS_INACTIVE);
 
     $this->drupalGet("/user/{$this->account->id()}/apps");
-    $this->assertSession()->pageTextContains('Your developer account has inactive status so you will not be able to use your credentials until your account is enabled. Please contact support for further assistance.');
+    $this->assertSession()->pageTextContains('Your developer account has inactive status so you will not be able to use your credentials until your account gets activated. Please contact support for further assistance.');
 
     $this->drupalLogin($this->rootUser);
     $this->drupalGet("/user/{$this->account->id()}/apps");
-    $this->assertSession()->pageTextContains("The developer account of {$this->account->getAccountName()} has inactive status so this user has invalid credentials until the account is enabled.");
+    $this->assertSession()->pageTextContains("The developer account of {$this->account->getDisplayName()} has inactive status so this user has invalid credentials until the account gets activated.");
   }
 
   /**

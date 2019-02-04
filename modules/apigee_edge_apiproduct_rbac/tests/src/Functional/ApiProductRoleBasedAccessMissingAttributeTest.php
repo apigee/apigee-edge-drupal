@@ -86,10 +86,10 @@ class ApiProductRoleBasedAccessMissingAttributeTest extends ApiProductRoleBasedA
     $this->config('apigee_edge_apiproduct_rbac.settings')->set('grant_access_if_attribute_missing', TRUE)->save();
     $this->accessControlHandler->resetCache();
     // Empty attribute value.
-    $checkRoles($shouldHaveAccess, $shouldHaveAccess, 'attribute value was empty');
+    $checkRoles($shouldHaveAccess, $shouldNotHaveAccess, 'attribute value was empty');
     // No attribute.
     $this->apiProducts[self::PUBLIC_VISIBILITY]->deleteAttribute($this->rbacAttributeName);
-    $checkRoles($shouldHaveAccess, $shouldHaveAccess, 'attribute did not exist');
+    $checkRoles($shouldHaveAccess, $shouldNotHaveAccess, 'attribute did not exist');
     // Revert to the original configuration.
     $this->config('apigee_edge_apiproduct_rbac.settings')->set('grant_access_if_attribute_missing', FALSE)->save();
   }

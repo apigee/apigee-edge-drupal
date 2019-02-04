@@ -39,7 +39,7 @@ class AppCredentialAddApiProductEvent extends AbstractAppCredentialEvent {
   /**
    * AppCredentialAddApiProductEvent constructor.
    *
-   * @param string $add_type
+   * @param string $app_type
    *   Either company or developer.
    * @param string $owner_id
    *   Company name or developer id (email) depending on the appType.
@@ -50,8 +50,8 @@ class AppCredentialAddApiProductEvent extends AbstractAppCredentialEvent {
    * @param array $new_products
    *   Array of API product names that has just been added to the key.
    */
-  public function __construct(string $add_type, string $owner_id, string $app_name, AppCredentialInterface $credential, array $new_products) {
-    parent::__construct($add_type, $owner_id, $app_name, $credential);
+  public function __construct(string $app_type, string $owner_id, string $app_name, AppCredentialInterface $credential, array $new_products) {
+    parent::__construct($app_type, $owner_id, $app_name, $credential);
     $this->newProducts = $new_products;
   }
 

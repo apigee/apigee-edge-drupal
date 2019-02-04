@@ -19,12 +19,10 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
-use Drupal\Core\Form\FormStateInterface;
-
 /**
  * Dedicated form handler that allows a developer to delete its own app.
  */
-class DeveloperAppDeleteFormForDeveloper extends DeveloperAppDeleteForm {
+class DeveloperAppDeleteFormForDeveloper extends AppDeleteForm {
 
   /**
    * {@inheritdoc}
@@ -32,21 +30,6 @@ class DeveloperAppDeleteFormForDeveloper extends DeveloperAppDeleteForm {
   protected function getRedirectUrl() {
     $entity = $this->getEntity();
     return $entity->toUrl('collection-by-developer');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCancelUrl() {
-    return $this->getRedirectUrl();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    parent::submitForm($form, $form_state);
-    $form_state->setRedirectUrl($this->getRedirectUrl());
   }
 
 }

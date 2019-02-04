@@ -22,9 +22,8 @@ namespace Drupal\Tests\apigee_edge\Kernel;
 use Apigee\Edge\Api\Management\Entity\CompanyApp;
 use Apigee\Edge\Api\Management\Entity\Developer;
 use Apigee\Edge\Api\Management\Entity\DeveloperApp;
-use Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface;
-use Drupal\apigee_edge\Entity\Controller\Cache\EntityIdCacheInterface;
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\apigee_edge\Traits\EntityControllerCacheUtilsTrait;
 
 /**
  * Apigee Edge entity controller cache tests.
@@ -34,6 +33,8 @@ use Drupal\KernelTests\KernelTestBase;
  */
 class EntityControllerCacheTest extends KernelTestBase {
 
+  use EntityControllerCacheUtilsTrait;
+
   /**
    * {@inheritdoc}
    */
@@ -41,7 +42,16 @@ class EntityControllerCacheTest extends KernelTestBase {
     'system',
     'apigee_edge',
     'key',
+    'user',
   ];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+    $this->installEntitySchema('user');
+  }
 
   /**
    * Tests developer entity controller cache.
@@ -192,49 +202,6 @@ class EntityControllerCacheTest extends KernelTestBase {
 
     $this->assertEmpty($cache_by_email->getEntities());
     $this->assertEmpty($cache_by_id->getEntities());
-  }
-
-  /**
-   * Gets a random unique ID.
-   */
-  protected function getRandomUniqueId(): string {
-    return uniqid('', TRUE);
-  }
-
-  /**
-   * Saves entities into the entity cache and checks the result.
-   *
-   * @param \Apigee\Edge\Entity\EntityInterface[] $entities
-   *   Apigee Edge entities to save into the cache.
-   * @param \Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface $entity_cache
-   *   The entity cache implementation.
-   * @param \Drupal\apigee_edge\Entity\Controller\Cache\EntityIdCacheInterface $entity_id_cache
-   *   The entity id cache implementation.
-   */
-  protected function saveAllEntitiesAndValidate(array $entities, EntityCacheInterface $entity_cache, EntityIdCacheInterface $entity_id_cache) {
-    // Save the generated entities into the controller cache.
-    $entity_cache->saveEntities($entities);
-    $this->assertSame($entities, $entity_cache->getEntities());
-
-    // Set cache states to TRUE.
-    $entity_cache->allEntitiesInCache(TRUE);
-    $this->assertTrue($entity_cache->isAllEntitiesInCache());
-    $this->assertTrue($entity_id_cache->isAllIdsInCache());
-  }
-
-  /**
-   * Checks whether the cache is properly cleared.
-   *
-   * @param \Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface $entity_cache
-   *   The entity cache implementation.
-   * @param \Drupal\apigee_edge\Entity\Controller\Cache\EntityIdCacheInterface $entity_id_cache
-   *   The entity id cache implementation.
-   */
-  protected function assertEmptyCaches(EntityCacheInterface $entity_cache, EntityIdCacheInterface $entity_id_cache) {
-    $this->assertEmpty($entity_cache->getEntities());
-    $this->assertEmpty($entity_id_cache->getIds());
-    $this->assertFalse($entity_cache->isAllEntitiesInCache());
-    $this->assertFalse($entity_id_cache->isAllIdsInCache());
   }
 
 }
