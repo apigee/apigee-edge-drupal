@@ -22,20 +22,25 @@ namespace Drupal\apigee_edge\Form;
 use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
-use Drupal\apigee_edge\Exception\AuthenticationKeyValueMalformedException;
 use Drupal\apigee_edge\OauthTokenStorageInterface;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Render\MarkupInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\Random;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element\StatusMessages;
+use Drupal\Core\Render\RendererInterface;
 use Drupal\key\Entity\Key;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
+use Drupal\key\Plugin\KeyInput\NoneKeyInput;
 use Drupal\key\Plugin\KeyPluginFormInterface;
 use Drupal\key\Plugin\KeyProviderSettableValueInterface;
 use GuzzleHttp\Exception\ConnectException;
@@ -88,6 +93,20 @@ class AuthenticationForm extends ConfigFormBase {
   protected $oauthTokenStorage;
 
   /**
+   * The renderer is used for better control in the ajax callback.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
+   */
+  protected $renderer;
+
+  /**
+   * The core `file_system` service.
+   *
+   * @var \Drupal\Core\File\FileSystemInterface
+   */
+  protected $fileSystem;
+
+  /**
    * Constructs a new AuthenticationForm.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -100,13 +119,19 @@ class AuthenticationForm extends ConfigFormBase {
    *   Module handler service.
    * @param \Drupal\apigee_edge\OauthTokenStorageInterface $oauth_token_storage
    *   The OAuth token storage service.
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The `renderer` service.
+   * @param \Drupal\Core\File\FileSystemInterface $file_system
+   *   The `file_system` service.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, KeyRepositoryInterface $key_repository, SDKConnectorInterface $sdk_connector, ModuleHandlerInterface $module_handler, OauthTokenStorageInterface $oauth_token_storage) {
+  public function __construct(ConfigFactoryInterface $config_factory, KeyRepositoryInterface $key_repository, SDKConnectorInterface $sdk_connector, ModuleHandlerInterface $module_handler, OauthTokenStorageInterface $oauth_token_storage, RendererInterface $renderer, FileSystemInterface $file_system) {
     parent::__construct($config_factory);
     $this->keyRepository = $key_repository;
     $this->sdkConnector = $sdk_connector;
     $this->moduleHandler = $module_handler;
     $this->oauthTokenStorage = $oauth_token_storage;
+    $this->renderer = $renderer;
+    $this->fileSystem = $file_system;
   }
 
   /**
@@ -118,7 +143,9 @@ class AuthenticationForm extends ConfigFormBase {
       $container->get('key.repository'),
       $container->get('apigee_edge.sdk_connector'),
       $container->get('module_handler'),
-      $container->get('apigee_edge.authentication.oauth_token_storage')
+      $container->get('apigee_edge.authentication.oauth_token_storage'),
+      $container->get('renderer'),
+      $container->get('file_system')
     );
   }
 
@@ -145,12 +172,14 @@ class AuthenticationForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildForm($form, $form_state);
 
-    $form['#prefix'] = '<div id="apigee-edge-auth-form">';
-    $form['#suffix'] = '</div>';
     $form['#attached']['library'][] = 'apigee_edge/apigee_edge.admin';
 
-    // Save the key for later use.
-    $this->activeKey = $active_key = $this->getActiveKey();
+    // Placeholder for messages.
+    $form['messages'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'div',
+      '#attributes' => ['id' => 'apigee-edge-auth-form-messages'],
+    ];
 
     $form['connection_settings'] = [
       '#type' => 'details',
@@ -160,6 +189,30 @@ class AuthenticationForm extends ConfigFormBase {
       '#parents' => ['key_input_settings'],
       '#tree' => TRUE,
     ];
+
+    // Save the key for later use.
+    if (!($this->activeKey = $active_key = $this->getActiveKey())) {
+      $form['actions']['#disabled'] = TRUE;
+      $form['connection_settings']['unconfigurable'] = [
+        '#type' => 'container',
+        '#attributes' => ['class' => ['form-item']],
+      ];
+      $form['connection_settings']['unconfigurable']['label'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'label',
+        '#value' => $this->t('Unable to initialize configuration.'),
+      ];
+      $form['connection_settings']['unconfigurable']['description'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'div',
+        '#value' => $this->t("The Apigee Edge connection settings are not configured and we weren't able to automatically provision connection settings. Make sure the <a href=\":file_docs_uri\" target=\"_blank\">file_private_path</a> is configured and try again.", [
+          ':file_docs_uri' => 'https://www.drupal.org/docs/8/core/modules/file/overview',
+        ]),
+      ];
+
+      return $form;
+    }
+
     if ($active_key->getKeyInput() instanceof KeyPluginFormInterface) {
       // Save the settings in form state.
       $form_state->set('key_value', $this->getKeyValueValues($active_key));
@@ -186,11 +239,21 @@ class AuthenticationForm extends ConfigFormBase {
         ':input[name="key_input_settings[username]"]' => ['filled' => TRUE],
       ],
     ];
+    // Placeholder for debug.
+    $form['debug_placeholder'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'div',
+      '#attributes' => ['id' => 'apigee-edge-auth-form-debug-info'],
+    ];
     $form['debug'] = [
       '#type' => 'details',
       '#title' => $this->t('Debug information'),
       '#access' => FALSE,
       '#open' => FALSE,
+      '#theme_wrappers' => [
+        'details' => [],
+        'container' => ['#attributes' => ['id' => 'apigee-edge-auth-form-debug-info']],
+      ],
     ];
     $form['debug']['debug_text'] = [
       '#type' => 'textarea',
@@ -203,6 +266,10 @@ class AuthenticationForm extends ConfigFormBase {
       '#title' => $this->t('Test connection'),
       '#description' => 'Send request using the selected authentication key.',
       '#open' => TRUE,
+      '#theme_wrappers' => [
+        'details' => [],
+        'container' => ['#attributes' => ['id' => 'apigee-edge-connection-info']],
+      ],
     ];
     $form['test_connection']['test_connection_submit'] = [
       '#type' => 'submit',
@@ -210,7 +277,7 @@ class AuthenticationForm extends ConfigFormBase {
       '#value' => $this->t('Send request'),
       '#ajax' => [
         'callback' => '::ajaxCallback',
-        'wrapper' => 'apigee-edge-auth-form',
+        'wrapper' => 'apigee-edge-connection-info',
         'progress' => [
           'type' => 'throbber',
           'message' => $this->t('Waiting for response...'),
@@ -219,7 +286,6 @@ class AuthenticationForm extends ConfigFormBase {
       '#states' => [
         'enabled' => $submittable_state,
       ],
-      '#submit' => ['::ajaxCallback'],
     ];
 
     $form['actions']['submit']['#states'] = ['enabled' => $submittable_state];
@@ -275,7 +341,7 @@ class AuthenticationForm extends ConfigFormBase {
     }
 
     // Test the connection.
-    if (!empty($test_key->getKeyValue())) {
+    if (empty($form_state->getErrors()) && !empty($test_key->getKeyValue())) {
       /** @var \Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType $test_key_type */
       $test_auth_type = $test_key->getKeyType()->getAuthenticationType($test_key);
       try {
@@ -285,9 +351,7 @@ class AuthenticationForm extends ConfigFormBase {
           // Clear existing token data.
           $this->oauthTokenStorage->removeToken();
         }
-        // TODO If email field contains an invalid email address
-        // (form validation fails) then "Send request" should not send an API
-        // request.
+        // Test the connection.
         $this->sdkConnector->testConnection($test_key);
         $this->messenger()->addStatus($this->t('Connection successful.'));
       }
@@ -301,7 +365,7 @@ class AuthenticationForm extends ConfigFormBase {
 
         // Display debug information.
         $form['debug']['#access'] = $form['debug']['debug_text']['#access'] = TRUE;
-        $form['debug']['debug_text']['#value'] = $this->createDebugText($exception, $test_key, NULL);
+        $form['debug']['debug_text']['#value'] = $this->createDebugText($exception, $test_key);
       }
       finally {
         if ($test_auth_type === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
@@ -326,12 +390,26 @@ class AuthenticationForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // Get the processed value from the form state.
     $processed_submitted = $form_state->get('processed_submitted');
+    $active_key = $this->activeKey;
 
-    if (!empty($processed_submitted) && $this->keyIsWritable($this->activeKey)) {
+    if (!empty($processed_submitted) && $this->keyIsWritable($active_key)) {
       // Set the active key's value.
-      $this->activeKey
+      $active_key
         ->getKeyProvider()
-        ->setKeyValue($this->activeKey, $processed_submitted);
+        ->setKeyValue($active_key, $processed_submitted);
+    }
+
+    // The only time `submitForm` gets called is when the key provider is
+    // writable so submitted values should be available here. The only time the
+    // values wouldn't be available is if the token input type was changed.
+    $auth_type = $form_state->getUserInput()['key_input_settings']['auth_type'] ?? FALSE;
+    if ($auth_type === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
+      // Make sure we don't try to re-use old tokens.
+      $this->oauthTokenStorage->removeToken();
+    }
+    else {
+      // Since OAUTH isn't being used clean up by removing the storage file.
+      $this->oauthTokenStorage->removeTokenFile();
     }
 
     parent::submitForm($form, $form_state);
@@ -456,77 +534,83 @@ class AuthenticationForm extends ConfigFormBase {
    *   The thrown exception during form validation.
    * @param \Drupal\key\KeyInterface $key
    *   The used key during form validation.
-   * @param \Drupal\key\KeyInterface|null $key_token
-   *   The user token key during form validation.
    *
    * @return string
    *   The debug text to be displayed.
    */
-  protected function createDebugText(\Exception $exception, KeyInterface $key, ?KeyInterface $key_token): string {
-    /** @var \Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType $key_type */
+  protected function createDebugText(\Exception $exception, KeyInterface $key): string {
     $key_type = $key->getKeyType();
 
-    $credentials = [];
-
-    try {
-      $credentials['endpoint'] = $key_type->getEndpoint($key);
-      $credentials['organization'] = $key_type->getOrganization($key);
-      $credentials['username'] = $key_type->getUsername($key);
-    }
-    catch (AuthenticationKeyValueMalformedException $exception) {
-      // Could not read the credentials because the key value storage is
-      // malformed.
-    }
+    $credentials = !($key_type instanceof EdgeKeyTypeInterface) ? [] : [
+      'endpoint' => $key_type->getEndpoint($key),
+      'organization' => $key_type->getOrganization($key),
+      'username' => $key_type->getUsername($key),
+    ];
 
     $keys = [
-      'key_type' => get_class($key_type),
+      'auth_type' => ($key_type instanceof EdgeKeyTypeInterface) ? $key_type->getAuthenticationType($key) : 'invalid credentials',
       'key_provider' => get_class($key->getKeyProvider()),
     ];
 
-    // TODO
-    // * Remove deprecated code.
-    // * Fix implementation of this method.
-    // * Provide debug message for OauthTokenStorageException.
-    if ($key_type instanceof OauthKeyType) {
-      /** @var \Drupal\apigee_edge\Plugin\KeyType\OauthKeyType $key_type */
+    if (!empty($credentials) && $keys['auth_type'] === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
       $credentials['authorization_server'] = $key_type->getAuthorizationServer($key);
       $credentials['client_id'] = $key_type->getClientId($key);
       $credentials['client_secret'] = $key_type->getClientSecret($key) === Oauth::DEFAULT_CLIENT_SECRET ? Oauth::DEFAULT_CLIENT_SECRET : '***client-secret***';
-
-      $keys['key_token_type'] = get_class($key_token->getKeyType());
-      $keys['key_token_provider'] = get_class($key_token->getKeyProvider());
     }
 
-    $exception_text = (string) $exception;
-    $exception_text = preg_replace('/(.*refresh_token=)([^\&\r\n]+)(.*)/', '$1***refresh-token***$3', $exception_text);
-    $exception_text = preg_replace('/(.*mfa_token=)([^\&\r\n]+)(.*)/', '$1***mfa-token***$3', $exception_text);
-    $exception_text = preg_replace('/(.*password=)([^\&\r\n]+)(.*)/', '$1***password***$3', $exception_text);
-    $exception_text = preg_replace('/(Authorization: (Basic|Bearer) ).*/', '$1***credentials***', $exception_text);
+    // Sanitize exception text.
+    $exception_text = preg_replace([
+      '/(.*refresh_token=)([^\&\r\n]+)(.*)/',
+      '/(.*mfa_token=)([^\&\r\n]+)(.*)/',
+      '/(.*password=)([^\&\r\n]+)(.*)/',
+      '/(Authorization: (Basic|Bearer) ).*/',
+    ], [
+      '$1***refresh-token***$3',
+      '$1***mfa-token***$3',
+      '$1***password***$3',
+      '$1***credentials***',
+    ], (string) $exception);
 
-    $text = json_encode($credentials, JSON_PRETTY_PRINT) .
-      PHP_EOL .
-      json_encode($keys, JSON_PRETTY_PRINT) .
-      PHP_EOL .
-      json_encode($this->config('apigee_edge.client')->get(), JSON_PRETTY_PRINT) .
-      PHP_EOL .
+    // Filter out any private values from config.
+    $client_config = array_filter($this->config('apigee_edge.client')->get(), function ($key) {
+      return !is_string($key) || $key[0] !== '_';
+    }, ARRAY_FILTER_USE_KEY);
+
+    return json_encode($credentials, JSON_PRETTY_PRINT) . PHP_EOL .
+      json_encode($keys, JSON_PRETTY_PRINT) . PHP_EOL .
+      json_encode($client_config, JSON_PRETTY_PRINT) . PHP_EOL .
       $exception_text;
-
-    return $text;
   }
 
   /**
    * Pass form array to the AJAX callback.
    *
-   * @param array $form
+   * @param array &$form
    *   An associative array containing the structure of the form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   Form state object.
    *
-   * @return array
+   * @return \Drupal\Core\Ajax\AjaxResponse
    *   The AJAX response.
+   *
+   * @throws \Exception
    */
-  public function ajaxCallback(array $form, FormStateInterface $form_state): array {
-    return $form;
+  public function ajaxCallback(array &$form, FormStateInterface $form_state): AjaxResponse {
+    $response = new AjaxResponse();
+    // Get any status messages so they can be rendered in the placeholder.
+    $messages = StatusMessages::renderMessages();
+    $form['messages']['#value'] = $this->renderer->render($messages);
+    // Clear any existing messages from the initial page load.
+    $response->addCommand(new ReplaceCommand('div.messages', ''));
+    $response->addCommand(new ReplaceCommand('#apigee-edge-auth-form-messages', $this->renderer->render($form['messages'])));
+
+    // Replace the debug element (an empty wrapper if validation passes).
+    $response->addCommand(new ReplaceCommand(
+      '#apigee-edge-auth-form-debug-info',
+      $form['debug']['#access'] ? $this->renderer->render($form['debug']) : '<div id="apigee-edge-auth-form-debug-info" data-drupal-selector="edit-debug-placeholder"></div>'
+    ));
+
+    return $response;
   }
 
   /**
@@ -538,8 +622,9 @@ class AuthenticationForm extends ConfigFormBase {
    * @throws \Drupal\Core\Entity\EntityStorageException
    * @throws \Drupal\key\Exception\KeyValueNotSetException
    */
-  protected function getActiveKey(): KeyInterface {
-    $config = $this->config(static::CONFIG_NAME);
+  protected function getActiveKey(): ?KeyInterface {
+    // If we use `$this->config()`, config overrides won't be considered.
+    $config = $this->configFactory()->get(static::CONFIG_NAME);
 
     // Gets the active key.
     if (!($active_key_id = $config->get('active_key')) || !($active_key = Key::load($active_key_id))) {
@@ -552,13 +637,16 @@ class AuthenticationForm extends ConfigFormBase {
   /**
    * Creates a new auth key stored in a file.
    *
-   * @return \Drupal\key\KeyInterface
+   * @return \Drupal\key\KeyInterface|null
    *   A new auth key.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    * @throws \Drupal\key\Exception\KeyValueNotSetException
    */
-  protected function generateNewAuthKey(): KeyInterface {
+  protected function generateNewAuthKey(): ?KeyInterface {
+    if (!$this->fileSystem->realpath('private://')) {
+      return NULL;
+    }
     // Create a new key name.
     $new_key_id = 'apigee_edge_connection_default';
     $file_path = "private://.apigee_edge/{$new_key_id}.json";
@@ -660,7 +748,7 @@ class AuthenticationForm extends ConfigFormBase {
    *   Whether the file key is writable.
    */
   protected function keyIsWritable(KeyInterface $key) {
-    return ($key->getKeyProvider() instanceof KeyProviderSettableValueInterface);
+    return ($key->getKeyProvider() instanceof KeyProviderSettableValueInterface && !($key->getKeyInput() instanceof NoneKeyInput));
   }
 
   /**

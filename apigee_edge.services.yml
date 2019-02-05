@@ -188,4 +188,4 @@ services:
 
   apigee_edge.authentication.oauth_token_storage:
     class: Drupal\apigee_edge\OauthTokenFileStorage
-    arguments: ['@config.factory', '@settings', '@logger.channel.apigee_edge']
+    arguments: ['@config.factory', '@file_system', '@logger.channel.apigee_edge']

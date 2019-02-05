@@ -21,8 +21,8 @@ namespace Drupal\apigee_edge;
 
 use Drupal\apigee_edge\Exception\OauthTokenStorageException;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
-use Drupal\Core\Site\Settings;
 
 /**
  * Stores OAuth token data in a file.
@@ -68,28 +68,28 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
   private $logger;
 
   /**
-   * The settings service.
+   * The file system service.
    *
-   * @var \Drupal\Core\Site\Settings
+   * @var \Drupal\Core\File\FileSystemInterface
    */
-  private $settings;
+  private $fileSystem;
 
   /**
    * OauthTokenFileStorage constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config
    *   The config factory service.
-   * @param \Drupal\Core\Site\Settings $settings
-   *   The settings service.
+   * @param \Drupal\Core\File\FileSystemInterface $file_system
+   *   The file system service.
    * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
    *   The logger service.
    */
-  public function __construct(ConfigFactoryInterface $config, Settings $settings, LoggerChannelInterface $logger) {
+  public function __construct(ConfigFactoryInterface $config, FileSystemInterface $file_system, LoggerChannelInterface $logger) {
     $custom_path = $config->get('apigee_edge.auth')->get('oauth_token_storage_location');
     $this->tokenFilePath = empty($custom_path) ? static::DEFAULT_DIRECTORY : rtrim(trim($custom_path), " \\/");
     $this->tokenFilePath .= '/oauth.dat';
+    $this->fileSystem = $file_system;
     $this->logger = $logger;
-    $this->settings = $settings;
   }
 
   /**
@@ -190,7 +190,7 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
       throw new OauthTokenStorageException('Unable to save token data to private filesystem because it has not been configured yet.');
     }
     // Gets the file directory so we can make sure it exists.
-    $token_directory = dirname($this->tokenFilePath);
+    $token_directory = $this->fileSystem->dirname($this->tokenFilePath);
     if (!file_prepare_directory($token_directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
       throw new OauthTokenStorageException("Unable to set up {$token_directory} directory for token file.");
     }
@@ -200,7 +200,16 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
    * {@inheritdoc}
    */
   public function removeToken(): void {
-    $this->saveToken([]);
+    // Do not try to remove token from the token file if private filesystem
+    // has not been configured yet. Also, do not create the token file
+    // if it has not existed yet.
+    if ($this->isTokenFileInPrivateFileSystem() && (!$this->isPrivateFileSystemConfigured() || ($this->isPrivateFileSystemConfigured() && !file_exists($this->tokenFilePath)))) {
+      $this->tokenData = [];
+      return;
+    }
+    else {
+      $this->saveToken([]);
+    }
   }
 
   /**
@@ -268,7 +277,7 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
    *   True if configured, FALSE otherwise.
    */
   private function isPrivateFileSystemConfigured(): bool {
-    return !empty($this->settings->get('file_private_path'));
+    return (bool) $this->fileSystem->realpath('private://');
   }
 
 }

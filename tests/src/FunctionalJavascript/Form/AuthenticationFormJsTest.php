@@ -19,7 +19,10 @@
 
 namespace Drupal\Tests\apigee_edge\FunctionalJavascript\Form;
 
+use Apigee\Edge\ClientInterface;
 use Drupal\apigee_edge\Form\AuthenticationForm;
+use Drupal\apigee_edge\OauthTokenFileStorage;
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Url;
 use Drupal\key\Entity\Key;
 use Drupal\Tests\apigee_edge\FunctionalJavascript\ApigeeEdgeFunctionalJavascriptTestBase;
@@ -30,7 +33,7 @@ use Drupal\Tests\apigee_edge\FunctionalJavascript\ApigeeEdgeFunctionalJavascript
  * @group apigee_edge
  * @group apigee_edge_javascript
  */
-class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
+class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
   /**
    * Valid credentials.
@@ -110,7 +113,12 @@ class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     // Tests the default settings.
     $web_assert->fieldValueEquals('Authentication type', 'basic');
     $web_assert->fieldValueEquals('Password', '');
-    $web_assert->fieldValueEquals('Apigee Edge endpoint', $active_endpoint);
+    if ($active_endpoint === ClientInterface::DEFAULT_ENDPOINT) {
+      $web_assert->fieldValueEquals('Apigee Edge endpoint', '');
+    }
+    else {
+      $web_assert->fieldValueEquals('Apigee Edge endpoint', $active_endpoint);
+    }
 
     // Make sure the oauth fields are hidden.
     $this->assertFalse($this->cssSelect('#edit-key-input-settings-authorization-server')[0]->isVisible());
@@ -137,25 +145,32 @@ class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
     // Test the connection with basic auth.
     $this->assertSendRequestMessage('.messages--status', 'Connection successful.');
-    $this->assertEmpty($this->cssSelect('details[data-drupal-selector="edit-debug"]'));
+    $web_assert->elementNotExists('css', 'details[data-drupal-selector="edit-debug"]');
 
     // Switch back to basic auth.
     $this->cssSelect('select[data-drupal-selector="edit-key-input-settings-auth-type"]')[0]->setValue('basic');
-    $page->fillField('Password', $active_password);
     // Make sure the form is still enabled.
     $this->assertFalse($this->cssSelect('input[data-drupal-selector="edit-test-connection-submit"]')[0]->hasAttribute('disabled'));
     $this->assertFalse($this->cssSelect('input[data-drupal-selector="edit-submit"]')[0]->hasAttribute('disabled'));
 
     // Test the connection with basic auth.
     $this->assertSendRequestMessage('.messages--status', 'Connection successful.');
-    $this->assertEmpty($this->cssSelect('details[data-drupal-selector="edit-debug"]'));
+    $web_assert->elementNotExists('css', 'details[data-drupal-selector="edit-debug"]');
+    // Make sure the token file is removed when switching to basic auth.
+    $token_file_path = $this->container->get('file_system')->realpath(OauthTokenFileStorage::DEFAULT_DIRECTORY . '/oauth.dat');
+    $this->assertTrue(file_exists($token_file_path));
+    $page->pressButton('Save configuration');
+    $this->assertFalse(file_exists($token_file_path));
 
     /* TEST INVALID PASSWORD */
     // Change the password.
-    $page->fillField('Password', $this->randomString());
+    $random_pass = $this->randomString();
+    $page->fillField('Password', $random_pass);
     $username = $active_key_type->getUsername($active_key);
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given username ({$username}) or password is incorrect. Error message: Unauthorized");
-    $this->assertTrue($this->cssSelect('details[data-drupal-selector="edit-debug"]')[0]->isVisible());
+    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', 'HTTP/1.1 401 Unauthorized');
+    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', '***credentials***');
+    $web_assert->elementNotContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', $random_pass);
 
     /* TEST INVALID ORG */
     $page->fillField('Password', $active_password);
@@ -163,14 +178,15 @@ class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $page->fillField('Organization', $random_org);
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given organization name ({$random_org}) is incorrect. Error message: Forbidden");
     $page->fillField('Organization', $active_org);
-    $this->assertTrue($this->cssSelect('details[data-drupal-selector="edit-debug"]')[0]->isVisible());
+    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', 'HTTP/1.1 403 Forbidden');
+    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"organization\": \"{$random_org}\"");
 
     /* TEST INVALID ENDPOINT */
-    $page->fillField('Password', $active_password);
     $invalid_domain = "{$this->randomGenerator->word(16)}.example.com";
     $page->fillField('Apigee Edge endpoint', "http://{$invalid_domain}/");
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given endpoint (http://{$invalid_domain}/) is incorrect or something is wrong with the connection. Error message: cURL error 6: Could not resolve host: {$invalid_domain} (see http://curl.haxx.se/libcurl/c/libcurl-errors.html)");
-    $this->assertTrue($this->cssSelect('details[data-drupal-selector="edit-debug"]')[0]->isVisible());
+    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"endpoint\": \"http:\/\/{$invalid_domain}\/\"");
+    $web_assert->fieldValueEquals('Apigee Edge endpoint', "http://{$invalid_domain}/");
     // Clear the endpoint field.
     $page->fillField('Apigee Edge endpoint', '');
 
@@ -178,26 +194,99 @@ class AuthenticationFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     // Switch to oauth.
     $this->cssSelect('select[data-drupal-selector="edit-key-input-settings-auth-type"]')[0]->setValue('oauth');
     // Set the correct password.
-    $page->fillField('Password', $active_password);
     $invalid_domain = "{$this->randomGenerator->word(16)}.example.com";
     $page->fillField('Authorization server', "http://{$invalid_domain}/");
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to the OAuth authorization server. The given authorization server (http://{$invalid_domain}/) is incorrect or something is wrong with the connection. Error message: cURL error 6: Could not resolve host: {$invalid_domain} (see http://curl.haxx.se/libcurl/c/libcurl-errors.html)");
-    $page->fillField('Authorization server', "");
+    $web_assert->fieldValueEquals('Authorization server', "http://{$invalid_domain}/");
+    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', '"auth_type": "oauth"');
+    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"authorization_server\": \"http:\/\/{$invalid_domain}\/\"");
+    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', '"client_id": "edgecli"');
+    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', '"client_secret": "edgeclisecret"');
+    // Reset the auth server field.
+    $page->fillField('Authorization server', '');
 
     /* TEST INVALID CLIENT SECRET */
-    $page->fillField('Password', $active_password);
     // Set the client secret to a random value.
-    $page->fillField('Client secret', $this->randomGenerator->word(16));
+    $random_secret = $this->randomGenerator->word(16);
+    $page->fillField('Client secret', $random_secret);
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to the OAuth authorization server. The given username ({$active_username}) or password or client ID (edgecli) or client secret is incorrect. Error message: {\"error\":\"unauthorized\",\"error_description\":\"Bad credentials\"}");
+    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', '"authorization_server": "https:\/\/login.apigee.com\/oauth\/token"');
+    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', '"client_id": "edgecli"');
+    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', '"client_secret": "***client-secret***"');
+    $web_assert->elementNotContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', $random_secret);
     $page->fillField('Client secret', '');
 
     /* TEST INVALID CLIENT ID */
-    $page->fillField('Password', $active_password);
     // Set the client id to a random value.
     $client_id = $this->randomGenerator->word(8);
     $page->fillField('Client ID', $client_id);
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to the OAuth authorization server. The given username ({$active_username}) or password or client ID ({$client_id}) or client secret is incorrect. Error message: {\"error\":\"unauthorized\",\"error_description\":\"Bad credentials\"}");
+    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', '"authorization_server": "https:\/\/login.apigee.com\/oauth\/token"');
+    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"client_id\": \"{$client_id}\"");
+    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', '"client_secret": "edgeclisecret"');
     $page->fillField('Client ID', '');
+  }
+
+  /**
+   * Test the auth form with an overridden key without an input form.
+   *
+   * @throws \Exception
+   */
+  public function testAuthenticationFormWithNonEditableProvider() {
+    $web_assert = $this->assertSession();
+    $config = $this->config(AuthenticationForm::CONFIG_NAME);
+    $active_key = Key::load($config->get('active_key'));
+    $original_key_data = $active_key->getKeyProvider()->getKeyValue($active_key);
+    $file_location = 'public://test_key.json';
+    file_unmanaged_save_data($original_key_data, $file_location);
+    $file_key = Key::create([
+      'id' => $this->getRandomGenerator()->word(15),
+      'label' => 'File Key',
+      'key_type' => 'apigee_auth',
+      'key_input' => 'none',
+      'key_provider' => 'file',
+      'key_provider_settings' => [
+        'strip_line_breaks' => FALSE,
+        'file_location' => $file_location,
+      ],
+    ]);
+    $file_key->save();
+
+    // Switch to the file key via the `settings.php`.
+    $this->writeSettings([
+      'config' => [
+        'apigee_edge.auth' => [
+          'active_key' => (object) [
+            'value' => $file_key->id(),
+            'required' => TRUE,
+          ],
+        ],
+      ],
+    ]);
+
+    $this->drupalGet(Url::fromRoute('apigee_edge.settings'));
+
+    $web_assert->elementNotExists('css', '#edit-key-input-settings-auth-type');
+    $web_assert->elementNotExists('css', '#edit-key-input-settings-organization');
+    $web_assert->elementNotExists('css', '#edit-key-input-settings-username');
+    $web_assert->elementNotExists('css', '#edit-key-input-settings-password');
+    $web_assert->elementNotExists('css', '#edit-key-input-settings-endpoint');
+    $web_assert->elementNotExists('css', '#edit-key-input-settings-authorization-server');
+    $web_assert->elementNotExists('css', '#edit-key-input-settings-client-id');
+    $web_assert->elementNotExists('css', '#edit-key-input-settings-client-secret');
+
+    // Test the connection.
+    $this->assertSendRequestMessage('.messages--status', 'Connection successful.');
+    $web_assert->elementNotExists('css', 'details[data-drupal-selector="edit-debug"]');
+
+    $key_decoded = Json::decode($original_key_data);
+    $key_decoded['password'] = $this->randomMachineName(16);
+    file_unmanaged_save_data(Json::encode($key_decoded), $file_location, FILE_EXISTS_REPLACE);
+
+    // Test the connection with an invalid password.
+    $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given username ({$key_decoded['username']}) or password is incorrect. Error message: Unauthorized");
+    // Make sure the debug details have appeared.
+    $web_assert->elementExists('css', 'details[data-drupal-selector="edit-debug"]');
   }
 
   /**

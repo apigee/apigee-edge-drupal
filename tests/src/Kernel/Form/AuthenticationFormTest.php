@@ -61,29 +61,27 @@ class AuthenticationFormTest extends KernelTestBase {
   protected $token_data;
 
   /**
-   * {@inheritdoc}
-   *
-   * @throws \Exception
-   */
-  public function setUp() {
-    parent::setUp();
-
-    // Add file_private_path setting.
-    $private_directory = DrupalKernel::findSitePath(Request::create('/')) . '/private';
-    $this->setSetting('file_private_path', $private_directory);
-    // Make sure the directory exists.
-    file_prepare_directory($private_directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-
-    $this->assertDirectoryExists($private_directory);
-  }
-
-  /**
    * Test generating a new auth key.
    *
    * @throws \Drupal\Core\Form\EnforcedResponseException
    * @throws \Drupal\Core\Form\FormAjaxException
    */
   public function testGenerateNewAuthKey() {
+    $form_state = new FormState();
+    $form = \Drupal::formBuilder()->buildForm(AuthenticationForm::class, $form_state);
+    $this->assertInstanceOf(AuthenticationForm::class, $form_state->getFormObject());
+    // Make sure the key `unconfigurable` section is rendered.
+    $this->assertNotEmpty($form['connection_settings']['unconfigurable']['description']);
+    $this->assertTrue($form['actions']['#disabled']);
+
+    // Add file_private_path setting.
+    $private_directory = DrupalKernel::findSitePath(Request::create('/')) . '/private';
+    $this->setSetting('file_private_path', $private_directory);
+    // Make sure the directory exists.
+    file_prepare_directory($private_directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+    $this->assertDirectoryExists($private_directory);
+
+    // Rebuild the form.
     $form_state = new FormState();
     $form = \Drupal::formBuilder()->buildForm(AuthenticationForm::class, $form_state);
     $this->assertInstanceOf(AuthenticationForm::class, $form_state->getFormObject());
