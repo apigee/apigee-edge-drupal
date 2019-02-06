@@ -24,7 +24,7 @@ WEB_ROOT_PARENT=${WEB_ROOT_PARENT:-"/var/www/html"}
 TEST_ROOT=${TEST_ROOT:-modules/custom}
 TESTRUNNER=${TESTRUNNER:-"/var/www/html/testrunner"}
 
-COMPOSER_GLOBAL_OPTIONS="--no-interaction -o"
+COMPOSER_GLOBAL_OPTIONS="--no-interaction --no-suggest -o"
 
 # We mounted the cache/files folder from the host so we have to fix permissions
 # on the parent cache folder because it did not exist before.
