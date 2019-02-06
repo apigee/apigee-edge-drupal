@@ -32,8 +32,16 @@ sudo -u root sh -c "chown -R wodby:wodby /home/wodby/.composer/cache"
 
 cd ${MODULE_PATH}/.travis
 
-# Install module with its dependencies (including dev dependencies).
-composer update ${COMPOSER_GLOBAL_OPTIONS} ${DEPENDENCIES} --with-dependencies
+# Install module with the highest dependencies first.
+composer update ${COMPOSER_GLOBAL_OPTIONS}
+
+# Downgrade dependencies if needed.
+# (This fix is necessary since PR#130 had been merged because after that lowest
+# builds started to fail. Probably caused by a merge plugin issue because this
+# problem could be reproduced only in this environment.)
+if [[ -n "$DEPENDENCIES" ]]; then
+  composer update ${COMPOSER_GLOBAL_OPTIONS} ${DEPENDENCIES} --with-dependencies
+fi
 
 # Allow to run tests with a specific Drupal core version (ex.: latest dev).
 if [ -n "${DRUPAL_CORE}" ]; then
