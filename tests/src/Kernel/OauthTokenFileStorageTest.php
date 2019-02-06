@@ -112,7 +112,7 @@ class OauthTokenFileStorageTest extends KernelTestBase {
    * Validates checks in the storage.
    */
   public function testCheckRequirements() {
-    /** @var \Drupal\apigee_edge\OauthTokenFileStorageInterface $storage */
+    /** @var \Drupal\apigee_edge\OauthTokenFileStorage $storage */
     $storage = $this->container->get('apigee_edge.authentication.oauth_token_storage');
     try {
       $storage->checkRequirements();
@@ -120,7 +120,8 @@ class OauthTokenFileStorageTest extends KernelTestBase {
     catch (OauthTokenStorageException $exception) {
       $this->assertEquals('Unable to save token data to private filesystem because it has not been configured yet.', $exception->getMessage());
     }
-    $this->setSetting('file_private_path', static::CUSTOM_TOKEN_DIR);
+    // @see \Drupal\Core\StreamWrapper\LocalStream::getLocalPath()
+    $this->setSetting('file_private_path', 'vfs://private');
     try {
       $storage->checkRequirements();
     }
