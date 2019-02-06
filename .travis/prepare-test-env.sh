@@ -48,6 +48,11 @@ if [[ -n "${DEPENDENCIES}" ]]; then
   composer update ${COMPOSER_GLOBAL_OPTIONS} ${DEPENDENCIES} --with-dependencies
 fi
 
+# Die if environment preparation has failed.
+if [[ ! -d ${MODULE_PATH}/.travis/build ]]; then
+  exit 1;
+fi
+
 # Copying Drupal to the right place.
 # Symlinking is not an option because the webserver container would not be
 # able to access to files.
