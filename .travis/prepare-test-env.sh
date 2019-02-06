@@ -4,13 +4,13 @@ set -e
 
 IS_ENV_VARS_SET=1
 for VAR in APIGEE_EDGE_AUTH_TYPE APIGEE_EDGE_ENDPOINT APIGEE_EDGE_ORGANIZATION APIGEE_EDGE_USERNAME APIGEE_EDGE_PASSWORD; do
-    if [ -z "${!VAR}" ] ; then
+    if [[ -z "${!VAR}" ]] ; then
         IS_ENV_VARS_SET=0
         echo "Incomplete configuration. The variable ${VAR} should exist and not be empty."
     fi
 done
 
-if [ ${IS_ENV_VARS_SET} -eq 0 ]; then
+if [[ ${IS_ENV_VARS_SET} -eq 0 ]]; then
   echo "Exiting"
   exit 1
 fi
@@ -24,7 +24,7 @@ WEB_ROOT_PARENT=${WEB_ROOT_PARENT:-"/var/www/html"}
 TEST_ROOT=${TEST_ROOT:-modules/custom}
 TESTRUNNER=${TESTRUNNER:-"/var/www/html/testrunner"}
 
-COMPOSER_GLOBAL_OPTIONS="--no-interaction -o"
+COMPOSER_GLOBAL_OPTIONS="--no-interaction --no-suggest -o"
 
 # We mounted the cache/files folder from the host so we have to fix permissions
 # on the parent cache folder because it did not exist before.
@@ -32,16 +32,29 @@ sudo -u root sh -c "chown -R wodby:wodby /home/wodby/.composer/cache"
 
 cd ${MODULE_PATH}/.travis
 
-# Install module with its dependencies (including dev dependencies).
-composer update ${COMPOSER_GLOBAL_OPTIONS} ${DEPENDENCIES} --with-dependencies
+# Install module with the highest dependencies first.
+composer update ${COMPOSER_GLOBAL_OPTIONS}
 
 # Allow to run tests with a specific Drupal core version (ex.: latest dev).
-if [ -n "${DRUPAL_CORE}" ]; then
+if [[ -n "${DRUPAL_CORE}" ]]; then
   composer require drupal/core:${DRUPAL_CORE} webflo/drupal-core-require-dev:${DRUPAL_CORE} ${COMPOSER_GLOBAL_OPTIONS};
 fi
 
+# Downgrade dependencies if needed.
+# (This fix is necessary since PR#130 had been merged because after that lowest
+# builds started to fail. Probably caused by a merge plugin issue because this
+# problem could be reproduced only in this environment.)
+if [[ -n "${DEPENDENCIES}" ]]; then
+  composer update ${COMPOSER_GLOBAL_OPTIONS} ${DEPENDENCIES} --with-dependencies
+fi
+
+# Die if environment preparation has failed.
+if [[ ! -d ${MODULE_PATH}/.travis/build ]]; then
+  exit 1;
+fi
+
 # Copying Drupal to the right place.
-# Symlinking is not an option becaue the webserver container would not be
+# Symlinking is not an option because the webserver container would not be
 # able to access to files.
 cp -R ${MODULE_PATH}/.travis/build ${WEB_ROOT_PARENT}
 cp -R ${MODULE_PATH}/.travis/vendor ${WEB_ROOT_PARENT}

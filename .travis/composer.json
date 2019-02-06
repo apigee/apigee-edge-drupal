@@ -5,9 +5,10 @@
     "description": "Builds a test environment for the Apigee Edge module.",
     "require": {
         "php": ">=7.1",
-        "composer/installers": "^1.5",
-        "drupal-composer/drupal-scaffold": "^2.5.2",
-        "wikimedia/composer-merge-plugin": "dev-capture-input-options"
+        "composer/installers": "^1.6",
+        "drupal-composer/drupal-scaffold": "^2.5.4",
+        "wikimedia/composer-merge-plugin": "dev-capture-input-options",
+        "zaporylie/composer-drupal-optimizations": "^1.0"
     },
     "repositories": [
         {
