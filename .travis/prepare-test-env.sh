@@ -35,17 +35,17 @@ cd ${MODULE_PATH}/.travis
 # Install module with the highest dependencies first.
 composer update ${COMPOSER_GLOBAL_OPTIONS}
 
+# Allow to run tests with a specific Drupal core version (ex.: latest dev).
+if [[ -n "${DRUPAL_CORE}" ]]; then
+  composer require drupal/core:${DRUPAL_CORE} webflo/drupal-core-require-dev:${DRUPAL_CORE} ${COMPOSER_GLOBAL_OPTIONS};
+fi
+
 # Downgrade dependencies if needed.
 # (This fix is necessary since PR#130 had been merged because after that lowest
 # builds started to fail. Probably caused by a merge plugin issue because this
 # problem could be reproduced only in this environment.)
 if [[ -n "${DEPENDENCIES}" ]]; then
   composer update ${COMPOSER_GLOBAL_OPTIONS} ${DEPENDENCIES} --with-dependencies
-fi
-
-# Allow to run tests with a specific Drupal core version (ex.: latest dev).
-if [[ -n "${DRUPAL_CORE}" ]]; then
-  composer require drupal/core:${DRUPAL_CORE} webflo/drupal-core-require-dev:${DRUPAL_CORE} ${COMPOSER_GLOBAL_OPTIONS};
 fi
 
 # Copying Drupal to the right place.
