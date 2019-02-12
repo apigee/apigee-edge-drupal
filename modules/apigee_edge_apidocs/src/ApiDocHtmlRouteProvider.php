@@ -45,7 +45,9 @@ class ApiDocHtmlRouteProvider extends AdminHtmlRouteProvider {
     }
 
     $apidoc_collection_route = $collection->get('entity.apidoc.collection');
-    $apidoc_collection_route->setDefault('_title', 'API Docs');
+    if ($apidoc_collection_route) {
+      $apidoc_collection_route->setDefault('_title', 'API Docs');
+    }
 
     return $collection;
   }
@@ -61,7 +63,7 @@ class ApiDocHtmlRouteProvider extends AdminHtmlRouteProvider {
    */
   protected function getSettingsFormRoute(EntityTypeInterface $entity_type) {
     if (!$entity_type->getBundleEntityType()) {
-      $route = new Route("/admin/structure/{$entity_type->id()}/settings");
+      $route = new Route("/admin/config/{$entity_type->id()}/settings");
       $route
         ->setDefaults([
           '_form' => 'Drupal\apigee_edge_apidocs\Form\ApiDocSettingsForm',

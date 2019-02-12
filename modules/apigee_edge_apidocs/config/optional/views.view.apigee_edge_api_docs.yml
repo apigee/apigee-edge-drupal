@@ -6,8 +6,6 @@ dependencies:
   module:
   - apigee_edge_apidocs
   - text
-_core:
-  default_config_hash: CoPeJVeHBDWBWMm0Idt5gN0BMZD6dytv0SM1iT2_msQ
 id: apigee_edge_api_docs
 label: 'Apigee Edge API Docs'
 module: views

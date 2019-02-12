@@ -21,11 +21,10 @@
 namespace Drupal\apigee_edge_apidocs;
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Link;
-use Drupal\Core\Routing\UrlGeneratorInterface;
 use Drupal\Core\Entity\EntityListBuilder;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -36,35 +35,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ApiDocListBuilder extends EntityListBuilder {
 
   /**
-   * The url generator.
-   *
-   * @var \Drupal\Core\Routing\UrlGeneratorInterface
-   */
-  protected $urlGenerator;
-
-  /**
-   * Constructs a new ContactListBuilder object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
-   *   The entity storage class.
-   * @param \Drupal\Core\Routing\UrlGeneratorInterface $url_generator
-   *   The url generator.
-   */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, UrlGeneratorInterface $url_generator) {
-    parent::__construct($entity_type, $storage);
-    $this->urlGenerator = $url_generator;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
     return new static(
       $entity_type,
-      $container->get('entity.manager')->getStorage($entity_type->id()),
-      $container->get('url_generator')
+      $container->get('entity.manager')->getStorage($entity_type->id())
     );
   }
 
@@ -77,8 +53,8 @@ class ApiDocListBuilder extends EntityListBuilder {
    */
   public function render() {
     $build['description'] = [
-      '#markup' => $this->t('Manage your API documentation. You can manage the fields on the <a href="@adminlink">API Docs settings page</a>.', [
-        '@adminlink' => $this->urlGenerator->generateFromRoute('apidoc.settings'),
+      '#markup' => $this->t('Manage your API documentation. You can manage the fields on the <a href=":url">API Docs settings page</a>.', [
+        ':url' => Url::fromRoute('apidoc.settings')->toString(),
       ]),
     ];
     $build['table'] = parent::render();

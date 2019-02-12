@@ -34,7 +34,6 @@ class ApiDocsAdminTest extends BrowserTestBase {
 
   use TestFileCreationTrait;
 
-
   /**
    * Modules to enable.
    *

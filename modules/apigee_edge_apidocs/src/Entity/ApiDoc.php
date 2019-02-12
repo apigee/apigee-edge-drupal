@@ -38,8 +38,8 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\apigee_edge_apidocs\ApiDocListBuilder",
- *     "views_data" = "Drupal\apigee_edge_apidocs\Entity\ApiDocViewsData",
- *     "translation" = "Drupal\apigee_edge_apidocs\ApiDocTranslationHandler",
+ *     "views_data" = "Drupal\views\EntityViewsData",
+ *     "translation" = "Drupal\content_translation\ContentTranslationHandler",
  *
  *     "form" = {
  *       "default" = "Drupal\apigee_edge_apidocs\Form\ApiDocForm",

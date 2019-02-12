@@ -7,7 +7,7 @@ entity.apidoc.collection:
   weight: 100
 
 apidoc.admin.structure.settings:
-  title: 'API Doc settings'
+  title: 'API Docs'
   description: 'Configure API Doc settings'
   route_name: apidoc.settings
-  parent: system.admin_structure
+  parent: system.admin_config

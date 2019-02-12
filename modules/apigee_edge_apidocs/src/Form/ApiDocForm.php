@@ -74,30 +74,23 @@ class ApiDocForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    /* @var $entity \Drupal\apigee_edge_apidocs\Entity\ApiDoc */
-    $form = parent::buildForm($form, $form_state);
-
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function save(array $form, FormStateInterface $form_state) {
     $status = parent::save($form, $form_state);
     $entity = $this->getEntity();
+    $singular_label = $this->entity->getEntityType()->getSingularLabel();
 
     switch ($status) {
       case SAVED_NEW:
-        $this->messenger->addMessage($this->t('Created the %label API Doc.', [
+        $this->messenger->addMessage($this->t('Created the %label @entity_type_label.', [
           '%label' => $entity->label(),
+          '@entity_type_label' => $singular_label,
         ]));
         break;
 
       default:
-        $this->messenger->addMessage($this->t('Saved the $label API Doc.', [
+        $this->messenger->addMessage($this->t('Saved the $label @entity_type_label.', [
           '%label' => $entity->label(),
+          '@entity_type_label' => $singular_label,
         ]));
     }
     $form_state->setRedirect('entity.apidoc.collection');

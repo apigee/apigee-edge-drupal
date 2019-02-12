@@ -40,15 +40,19 @@ class ApiDocAccessControlHandler extends EntityAccessControlHandler {
     switch ($operation) {
       case 'view':
         if (!$entity->isPublished()) {
-          return AccessResult::allowedIfHasPermission($account, 'view unpublished apidoc entities');
+          return AccessResult::allowedIfHasPermission($account, 'view unpublished apidoc entities')
+            ->orIf(AccessResult::allowedIfHasPermission($account, 'administer apidoc entities'));
         }
-        return AccessResult::allowedIfHasPermission($account, 'view published apidoc entities');
+        return AccessResult::allowedIfHasPermission($account, 'view published apidoc entities')
+          ->orIf(AccessResult::allowedIfHasPermission($account, 'administer apidoc entities'));
 
       case 'update':
-        return AccessResult::allowedIfHasPermission($account, 'edit apidoc entities');
+        return AccessResult::allowedIfHasPermission($account, 'edit apidoc entities')
+          ->orIf(AccessResult::allowedIfHasPermission($account, 'administer apidoc entities'));
 
       case 'delete':
-        return AccessResult::allowedIfHasPermission($account, 'delete apidoc entities');
+        return AccessResult::allowedIfHasPermission($account, 'delete apidoc entities')
+          ->orIf(AccessResult::allowedIfHasPermission($account, 'administer apidoc entities'));
     }
 
     // Unknown operation, no opinion.
@@ -59,7 +63,8 @@ class ApiDocAccessControlHandler extends EntityAccessControlHandler {
    * {@inheritdoc}
    */
   protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL) {
-    return AccessResult::allowedIfHasPermission($account, 'add apidoc entities');
+    return AccessResult::allowedIfHasPermission($account, 'add apidoc entities')
+      ->orIf(AccessResult::allowedIfHasPermission($account, 'administer apidoc entities'));
   }
 
 }
