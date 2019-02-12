@@ -41,13 +41,12 @@ class ApiDocsAdminTest extends BrowserTestBase {
    */
   public static $modules = ['apigee_edge_apidocs', 'block', 'field_ui'];
 
-
   /**
    * A user with permission to administer site configuration.
    *
    * @var \Drupal\user\UserInterface
    */
-  protected $admin_user;
+  protected $adminUser;
 
   /**
    * Set up menus and tasks in their regions.
@@ -67,7 +66,7 @@ class ApiDocsAdminTest extends BrowserTestBase {
     // Add the system menu blocks to appropriate regions.
     $this->setupMenus();
 
-    $this->admin_user = $this->drupalCreateUser([
+    $this->adminUser = $this->drupalCreateUser([
       'add apidoc entities',
       'delete apidoc entities',
       'edit apidoc entities',
@@ -80,7 +79,7 @@ class ApiDocsAdminTest extends BrowserTestBase {
       'access administration pages',
       'access content',
     ]);
-    $this->drupalLogin($this->admin_user);
+    $this->drupalLogin($this->adminUser);
   }
 
   /**
@@ -108,7 +107,7 @@ class ApiDocsAdminTest extends BrowserTestBase {
 
     // Create a new spec in site.
     $file = File::create([
-      'uid' => $this->admin_user->id(),
+      'uid' => $this->adminUser->id(),
       'filename' => 'specA.yml',
       'uri' => 'public://specA.yml',
       'filemime' => 'application/octet-stream',
@@ -157,7 +156,6 @@ class ApiDocsAdminTest extends BrowserTestBase {
 
     // Back to list, should not longer have API Doc.
     $assert->pageTextNotContains('API-Doc-A');
-
   }
 
 }

@@ -42,14 +42,14 @@ class ApiDocsAccessTest extends BrowserTestBase {
    *
    * @var \Drupal\apigee_edge_apidocs\Entity\ApiDoc
    */
-  protected $apidoc_published;
+  protected $apidocPublished;
 
   /**
    * An unpublished API Doc.
    *
    * @var \Drupal\apigee_edge_apidocs\Entity\ApiDoc
    */
-  protected $apidoc_unpublished;
+  protected $apidocUnpublished;
 
   /**
    * {@inheritdoc}
@@ -68,7 +68,7 @@ class ApiDocsAccessTest extends BrowserTestBase {
       'status' => 1,
     ]);
     $apidoc_published->save();
-    $this->apidoc_published = $apidoc_published;
+    $this->apidocPublished = $apidoc_published;
 
     // Create unpublished apidoc.
     $apidoc_unpublished = ApiDoc::create([
@@ -78,7 +78,7 @@ class ApiDocsAccessTest extends BrowserTestBase {
       'status' => 0,
     ]);
     $apidoc_unpublished->save();
-    $this->apidoc_unpublished = $apidoc_unpublished;
+    $this->apidocUnpublished = $apidoc_unpublished;
   }
 
   /**
@@ -108,27 +108,27 @@ class ApiDocsAccessTest extends BrowserTestBase {
       'administer apidoc form display',
     ]));
 
-    $this->drupalGet('apidoc/' . $this->apidoc_published->id());
+    $this->drupalGet('apidoc/' . $this->apidocPublished->id());
     $assert_session->statusCodeEquals(200);
-    $this->assertApiDocAccess($this->apidoc_published, 'view', TRUE);
+    $this->assertApiDocAccess($this->apidocPublished, 'view', TRUE);
 
-    $this->drupalGet('apidoc/' . $this->apidoc_unpublished->id());
+    $this->drupalGet('apidoc/' . $this->apidocUnpublished->id());
     $assert_session->statusCodeEquals(200);
-    $this->assertApiDocAccess($this->apidoc_unpublished, 'view', TRUE);
+    $this->assertApiDocAccess($this->apidocUnpublished, 'view', TRUE);
 
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_published->id() . '/edit');
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocPublished->id() . '/edit');
     $assert_session->statusCodeEquals(200);
-    $this->assertApiDocAccess($this->apidoc_published, 'update', TRUE);
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_unpublished->id() . '/edit');
+    $this->assertApiDocAccess($this->apidocPublished, 'update', TRUE);
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocUnpublished->id() . '/edit');
     $assert_session->statusCodeEquals(200);
-    $this->assertApiDocAccess($this->apidoc_unpublished, 'update', TRUE);
+    $this->assertApiDocAccess($this->apidocUnpublished, 'update', TRUE);
 
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_published->id() . '/delete');
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocPublished->id() . '/delete');
     $assert_session->statusCodeEquals(200);
-    $this->assertApiDocAccess($this->apidoc_published, 'delete', TRUE);
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_unpublished->id() . '/delete');
+    $this->assertApiDocAccess($this->apidocPublished, 'delete', TRUE);
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocUnpublished->id() . '/delete');
     $assert_session->statusCodeEquals(200);
-    $this->assertApiDocAccess($this->apidoc_unpublished, 'delete', TRUE);
+    $this->assertApiDocAccess($this->apidocUnpublished, 'delete', TRUE);
 
     $this->drupalGet('admin/structure/apidoc');
     $assert_session->statusCodeEquals(200);
@@ -153,27 +153,27 @@ class ApiDocsAccessTest extends BrowserTestBase {
 
     $this->drupalLogin($this->drupalCreateUser());
 
-    $this->drupalGet('apidoc/' . $this->apidoc_published->id());
+    $this->drupalGet('apidoc/' . $this->apidocPublished->id());
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_published, 'view', FALSE);
+    $this->assertApiDocAccess($this->apidocPublished, 'view', FALSE);
 
-    $this->drupalGet('apidoc/' . $this->apidoc_unpublished->id());
+    $this->drupalGet('apidoc/' . $this->apidocUnpublished->id());
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_unpublished, 'view', FALSE);
+    $this->assertApiDocAccess($this->apidocUnpublished, 'view', FALSE);
 
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_published->id() . '/edit');
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocPublished->id() . '/edit');
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_published, 'update', FALSE);
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_unpublished->id() . '/edit');
+    $this->assertApiDocAccess($this->apidocPublished, 'update', FALSE);
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocUnpublished->id() . '/edit');
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_unpublished, 'update', FALSE);
+    $this->assertApiDocAccess($this->apidocUnpublished, 'update', FALSE);
 
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_published->id() . '/delete');
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocPublished->id() . '/delete');
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_published, 'delete', FALSE);
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_unpublished->id() . '/delete');
+    $this->assertApiDocAccess($this->apidocPublished, 'delete', FALSE);
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocUnpublished->id() . '/delete');
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_unpublished, 'delete', FALSE);
+    $this->assertApiDocAccess($this->apidocUnpublished, 'delete', FALSE);
 
     $this->drupalGet('admin/structure/apidoc');
     $assert_session->statusCodeEquals(403);
@@ -195,27 +195,27 @@ class ApiDocsAccessTest extends BrowserTestBase {
 
     $this->drupalLogin($this->drupalCreateUser(['add apidoc entities']));
 
-    $this->drupalGet('apidoc/' . $this->apidoc_published->id());
+    $this->drupalGet('apidoc/' . $this->apidocPublished->id());
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_published, 'view', FALSE);
+    $this->assertApiDocAccess($this->apidocPublished, 'view', FALSE);
 
-    $this->drupalGet('apidoc/' . $this->apidoc_unpublished->id());
+    $this->drupalGet('apidoc/' . $this->apidocUnpublished->id());
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_unpublished, 'view', FALSE);
+    $this->assertApiDocAccess($this->apidocUnpublished, 'view', FALSE);
 
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_published->id() . '/edit');
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocPublished->id() . '/edit');
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_published, 'update', FALSE);
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_unpublished->id() . '/edit');
+    $this->assertApiDocAccess($this->apidocPublished, 'update', FALSE);
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocUnpublished->id() . '/edit');
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_unpublished, 'update', FALSE);
+    $this->assertApiDocAccess($this->apidocUnpublished, 'update', FALSE);
 
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_published->id() . '/delete');
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocPublished->id() . '/delete');
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_published, 'delete', FALSE);
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_unpublished->id() . '/delete');
+    $this->assertApiDocAccess($this->apidocPublished, 'delete', FALSE);
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocUnpublished->id() . '/delete');
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_unpublished, 'delete', FALSE);
+    $this->assertApiDocAccess($this->apidocUnpublished, 'delete', FALSE);
 
     $this->drupalGet('admin/structure/apidoc');
     $assert_session->statusCodeEquals(403);
@@ -236,27 +236,27 @@ class ApiDocsAccessTest extends BrowserTestBase {
 
     $this->drupalLogin($this->drupalCreateUser(['edit apidoc entities']));
 
-    $this->drupalGet('apidoc/' . $this->apidoc_published->id());
+    $this->drupalGet('apidoc/' . $this->apidocPublished->id());
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_published, 'view', FALSE);
+    $this->assertApiDocAccess($this->apidocPublished, 'view', FALSE);
 
-    $this->drupalGet('apidoc/' . $this->apidoc_unpublished->id());
+    $this->drupalGet('apidoc/' . $this->apidocUnpublished->id());
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_unpublished, 'view', FALSE);
+    $this->assertApiDocAccess($this->apidocUnpublished, 'view', FALSE);
 
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_published->id() . '/edit');
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocPublished->id() . '/edit');
     $assert_session->statusCodeEquals(200);
-    $this->assertApiDocAccess($this->apidoc_published, 'update', TRUE);
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_unpublished->id() . '/edit');
+    $this->assertApiDocAccess($this->apidocPublished, 'update', TRUE);
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocUnpublished->id() . '/edit');
     $assert_session->statusCodeEquals(200);
-    $this->assertApiDocAccess($this->apidoc_unpublished, 'update', TRUE);
+    $this->assertApiDocAccess($this->apidocUnpublished, 'update', TRUE);
 
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_published->id() . '/delete');
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocPublished->id() . '/delete');
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_published, 'delete', FALSE);
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_unpublished->id() . '/delete');
+    $this->assertApiDocAccess($this->apidocPublished, 'delete', FALSE);
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocUnpublished->id() . '/delete');
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_unpublished, 'delete', FALSE);
+    $this->assertApiDocAccess($this->apidocUnpublished, 'delete', FALSE);
 
     $this->drupalGet('admin/structure/apidoc');
     $assert_session->statusCodeEquals(403);
@@ -277,27 +277,27 @@ class ApiDocsAccessTest extends BrowserTestBase {
 
     $this->drupalLogin($this->drupalCreateUser(['delete apidoc entities']));
 
-    $this->drupalGet('apidoc/' . $this->apidoc_published->id());
+    $this->drupalGet('apidoc/' . $this->apidocPublished->id());
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_published, 'view', FALSE);
+    $this->assertApiDocAccess($this->apidocPublished, 'view', FALSE);
 
-    $this->drupalGet('apidoc/' . $this->apidoc_unpublished->id());
+    $this->drupalGet('apidoc/' . $this->apidocUnpublished->id());
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_unpublished, 'view', FALSE);
+    $this->assertApiDocAccess($this->apidocUnpublished, 'view', FALSE);
 
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_published->id() . '/edit');
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocPublished->id() . '/edit');
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_published, 'update', FALSE);
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_unpublished->id() . '/edit');
+    $this->assertApiDocAccess($this->apidocPublished, 'update', FALSE);
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocUnpublished->id() . '/edit');
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_unpublished, 'update', FALSE);
+    $this->assertApiDocAccess($this->apidocUnpublished, 'update', FALSE);
 
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_published->id() . '/delete');
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocPublished->id() . '/delete');
     $assert_session->statusCodeEquals(200);
-    $this->assertApiDocAccess($this->apidoc_published, 'delete', TRUE);
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_unpublished->id() . '/delete');
+    $this->assertApiDocAccess($this->apidocPublished, 'delete', TRUE);
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocUnpublished->id() . '/delete');
     $assert_session->statusCodeEquals(200);
-    $this->assertApiDocAccess($this->apidoc_unpublished, 'delete', TRUE);
+    $this->assertApiDocAccess($this->apidocUnpublished, 'delete', TRUE);
 
     $this->drupalGet('admin/structure/apidoc');
     $assert_session->statusCodeEquals(403);
@@ -319,27 +319,27 @@ class ApiDocsAccessTest extends BrowserTestBase {
     // Test the 'administer apidoc entities' permission.
     $this->drupalLogin($this->drupalCreateUser(['view published apidoc entities']));
 
-    $this->drupalGet('apidoc/' . $this->apidoc_published->id());
+    $this->drupalGet('apidoc/' . $this->apidocPublished->id());
     $assert_session->statusCodeEquals(200);
-    $this->assertApiDocAccess($this->apidoc_published, 'view', TRUE);
+    $this->assertApiDocAccess($this->apidocPublished, 'view', TRUE);
 
-    $this->drupalGet('apidoc/' . $this->apidoc_unpublished->id());
+    $this->drupalGet('apidoc/' . $this->apidocUnpublished->id());
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_unpublished, 'view', FALSE);
+    $this->assertApiDocAccess($this->apidocUnpublished, 'view', FALSE);
 
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_published->id() . '/edit');
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocPublished->id() . '/edit');
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_published, 'update', FALSE);
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_unpublished->id() . '/edit');
+    $this->assertApiDocAccess($this->apidocPublished, 'update', FALSE);
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocUnpublished->id() . '/edit');
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_unpublished, 'update', FALSE);
+    $this->assertApiDocAccess($this->apidocUnpublished, 'update', FALSE);
 
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_published->id() . '/delete');
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocPublished->id() . '/delete');
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_published, 'delete', FALSE);
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_unpublished->id() . '/delete');
+    $this->assertApiDocAccess($this->apidocPublished, 'delete', FALSE);
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocUnpublished->id() . '/delete');
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_unpublished, 'delete', FALSE);
+    $this->assertApiDocAccess($this->apidocUnpublished, 'delete', FALSE);
 
     $this->drupalGet('admin/structure/apidoc');
     $assert_session->statusCodeEquals(403);
@@ -361,27 +361,27 @@ class ApiDocsAccessTest extends BrowserTestBase {
     // Test the 'administer apidoc entities' permission.
     $this->drupalLogin($this->drupalCreateUser(['view unpublished apidoc entities']));
 
-    $this->drupalGet('apidoc/' . $this->apidoc_published->id());
+    $this->drupalGet('apidoc/' . $this->apidocPublished->id());
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_published, 'view', FALSE);
+    $this->assertApiDocAccess($this->apidocPublished, 'view', FALSE);
 
-    $this->drupalGet('apidoc/' . $this->apidoc_unpublished->id());
+    $this->drupalGet('apidoc/' . $this->apidocUnpublished->id());
     $assert_session->statusCodeEquals(200);
-    $this->assertApiDocAccess($this->apidoc_unpublished, 'view', TRUE);
+    $this->assertApiDocAccess($this->apidocUnpublished, 'view', TRUE);
 
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_published->id() . '/edit');
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocPublished->id() . '/edit');
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_published, 'update', FALSE);
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_unpublished->id() . '/edit');
+    $this->assertApiDocAccess($this->apidocPublished, 'update', FALSE);
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocUnpublished->id() . '/edit');
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_unpublished, 'update', FALSE);
+    $this->assertApiDocAccess($this->apidocUnpublished, 'update', FALSE);
 
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_published->id() . '/delete');
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocPublished->id() . '/delete');
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_published, 'delete', FALSE);
-    $this->drupalGet('admin/structure/apidoc/' . $this->apidoc_unpublished->id() . '/delete');
+    $this->assertApiDocAccess($this->apidocPublished, 'delete', FALSE);
+    $this->drupalGet('admin/structure/apidoc/' . $this->apidocUnpublished->id() . '/delete');
     $assert_session->statusCodeEquals(403);
-    $this->assertApiDocAccess($this->apidoc_unpublished, 'delete', FALSE);
+    $this->assertApiDocAccess($this->apidocUnpublished, 'delete', FALSE);
 
     $this->drupalGet('admin/structure/apidoc');
     $assert_session->statusCodeEquals(403);
