@@ -70,7 +70,8 @@ module.**
   the site and may cause other issues with Drupal core functions. If you do not plan to configure the connection between 
   Drupal and Apigee Edge, you should uninstall the Apigee Edge module.
 * When you first install the module, existing users in the Drupal site may not have a developer account in Apigee Edge.
-  You can synchronized
+  You can run [developer synchronization](https://www.drupal.org/docs/8/modules/apigee-edge/synchronize-developers-with-apigee-edge)
+  to make sure Drupal users and Apigee Edge developers are synchronized.
 
 
 ## Requirements
