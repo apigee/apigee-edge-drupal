@@ -1,11 +1,36 @@
-Apigee Edge Drupal module
----
+# Apigee Edge Drupal module
 
-The Apigee Edge module enables you to integrate Drupal 8 with Apigee Edge.
+The Apigee Edge module enables you to integrate Drupal 8 with Apigee Edge.  
+
+* Users that register or are added to the Drupal site will be added as developers in Apigee Edge
+* Click on "My Apps" in user menu to get keys for Apigee Edge APIs
+
+This module includes the following submodules:
+* __API product RBAC:__ enables administrators to configure access permissions to API products.
+* __Debug__: enables administrators to configure and manage Apigee debug logs.
+* __Teams__: (Experimental) enables developers to be organized into teams.
+
+For more details read the [Apigee Edge module documentation](https://www.drupal.org/docs/8/modules/apigee-edge). 
+
+## Module status
+
+The core functionality of this module is complete and we are currently completing final testing and critical
+issue fixes. We encourage you to download and evaluate the module, and to use our 
+[Github issue queue](https://github.com/apigee/apigee-edge-drupal/issues) to give feedback, ask questions, 
+or log issues.
+
+Following the same concept of [Drupal 8 Experimental modules](https://www.drupal.org/core/experimental), 
+some submodules are marked as "Experimental". They are provided for evaluation and testing purposes but are still 
+considered to be in development. Experimental modules are included in the "Apigee (Experimental)" package
+ on the "Extend" page of a Drupal site (/admin/modules).
+
+# Planned features
+* __Team Roles__: Site admins can manage roles and permissions available for in teams submodule.
+* __API Docs__: Submodule to publish documentation to your site using OpenAPI specs
+
+## Installing
 
 **Note**: The Apigee Edge module requires Drupal 8.6.x or higher and PHP 7.1 or higher.
-
-### Installing
 
 > The Apigee Edge module may require Drupal core or contributed module
 patches to be able to work properly. These patches can be applied
@@ -41,21 +66,21 @@ module.**
 
 **Note**: If you do not configure the connection between Drupal and Apigee Edge, you will not be able to register developers on the site and may cause other issues with Drupal core functions. If you do not plan to configure the connection between Drupal and Apigee Edge, you should uninstall the Apigee Edge module.
 
-### Requirements
+## Requirements
 
 * Drupal 8's minimum requirement is phpdocumentor/reflection-docblock:2.0.4 but at least 3.0 is required by this module. If you get the error  "Your requirements could not be resolved to an installable set of packages" it may be because you are running reflection-docblock version 2. You can update `phpdocumentor/reflection-docblock` with the following command: `composer update phpdocumentor/reflection-docblock --with-dependencies`.
 * **Check [composer.json](https://github.com/apigee/apigee-edge-drupal/blob/8.x-1.x/composer.json) for required patches.** Patches prefixed with "(For testing)" are only required for running tests. Those are not necessary for using this module. Patches can be applied with the [cweagans/composer-patches](https://packagist.org/packages/cweagans/composer-patches) the plugin automatically or manually.
 * (For developers) The locked commit from `behat/mink` library is required otherwise tests may fail. This caused by a Drupal core [bug](https://www.drupal.org/project/drupal/issues/2956279). See the related pull request for behat/mink [here](https://github.com/minkphp/Mink/pull/760).
 
-### Troubleshooting
+## Troubleshooting
 
 * **[File entity](https://www.drupal.org/project/file_entity) module.** If you installed the File entity module then you are going to need the latest patch from [this issue](https://www.drupal.org/project/file_entity/issues/2977747) otherwise you can run into some problems.
 * **[Key](https://www.drupal.org/project/key) module.** If you are using OAuth then you are going to need the latest patch from [this issue](https://www.drupal.org/project/key/issues/2982124) otherwise you can run into some problems.
 
-### Development
+## Development
 
 Development is happening in our [GitHub repository](https://github.com/apigee/apigee-edge-drupal). The drupal.org issue queue is disabled, we use the [Github issue queue](https://github.com/apigee/apigee-edge-drupal/issues) to coordinate development.
 
-### Disclaimer
+## Disclaimer
 
 This is not an officially supported Google product.
