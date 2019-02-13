@@ -40,7 +40,7 @@ Drupal installation must fulfill the following requirements:
 1. [cweagans/composer-patches](https://packagist.org/packages/cweagans/composer-patches) >= 1.6.5 has to be installed.
 2. ["Allowing patches to be applied from dependencies
 "](https://github.com/cweagans/composer-patches/tree/1.6.5#allowing-patches-to-be-applied-from-dependencies)
-has to be enabled Drupal's composer.json.
+has to be enabled in Drupal's composer.json.
 3. Proper [patch level](https://github.com/cweagans/composer-patches/pull/101#issue-104810467)
 for drupal/core has to be set in Drupal's composer.json.
 
