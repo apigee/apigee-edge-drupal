@@ -60,7 +60,7 @@ module.**
    composer require drupal/apigee_edge
    ```
 
-    For more information about installing contributed modules using composer, see [the official documentation](https://www.drupal.org/docs/develop/using-composer/using-composer-to-manage-drupal-site-dependencies#managing-contributed)
+    For more information about installing contributed modules using composer, see [the official documentation](https://www.drupal.org/docs/develop/using-composer/using-composer-to-manage-drupal-site-dependencies#managing-contributed).
 2. Click **Extend** in the Drupal administration menu.
 3. Select the **Apigee Edge** module.
 4. Click **Install**.
