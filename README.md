@@ -3,7 +3,7 @@
 The Apigee Edge module enables you to integrate Drupal 8 with Apigee Edge.  
 
 * Users that register or are added to the Drupal site will be added as developers in Apigee Edge
-* Click on "My Apps" in user menu to get keys for Apigee Edge APIs
+* Click on "My Apps" in user menu to get keys for the APIs exposed in Apigee Edge
 
 This module includes the following submodules:
 * __API product RBAC:__ enables administrators to configure access permissions to API products.
@@ -16,7 +16,7 @@ For more details read the [Apigee Edge module documentation](https://www.drupal.
 
 The core functionality of this module is complete and we are currently completing final testing and critical
 issue fixes. We encourage you to download and evaluate the module, and to use our 
-[Github issue queue](https://github.com/apigee/apigee-edge-drupal/issues) to give feedback, ask questions, 
+[GitHub issue queue](https://github.com/apigee/apigee-edge-drupal/issues) to give feedback, ask questions, 
 or log issues.
 
 Following the same concept of [Drupal 8 Experimental modules](https://www.drupal.org/core/experimental), 
@@ -64,7 +64,14 @@ module.**
 1. Select the **Apigee Edge** module.
 1. Click **Install**.
 
-**Note**: If you do not configure the connection between Drupal and Apigee Edge, you will not be able to register developers on the site and may cause other issues with Drupal core functions. If you do not plan to configure the connection between Drupal and Apigee Edge, you should uninstall the Apigee Edge module.
+## Notes
+
+* If you do not configure the connection between Drupal and Apigee Edge, you will not be able to register developers on
+  the site and may cause other issues with Drupal core functions. If you do not plan to configure the connection between 
+  Drupal and Apigee Edge, you should uninstall the Apigee Edge module.
+* When you first install the module, existing users in the Drupal site may not have a developer account in Apigee Edge.
+  You can synchronized
+
 
 ## Requirements
 
@@ -79,7 +86,7 @@ module.**
 
 ## Development
 
-Development is happening in our [GitHub repository](https://github.com/apigee/apigee-edge-drupal). The drupal.org issue queue is disabled, we use the [Github issue queue](https://github.com/apigee/apigee-edge-drupal/issues) to coordinate development.
+Development is happening in our [GitHub repository](https://github.com/apigee/apigee-edge-drupal). The drupal.org issue queue is disabled; we use the [GitHub issue queue](https://github.com/apigee/apigee-edge-drupal/issues) to coordinate development.
 
 ## Disclaimer
 
