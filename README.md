@@ -25,7 +25,7 @@ considered to be in development. Experimental modules are included in the "Apige
  on the "Extend" page of a Drupal site (/admin/modules).
 
 # Planned features
-* __Team Roles__: Site admins can manage roles and permissions available for in teams submodule.
+* __Team Roles__: Site admins can manage roles and permissions available for developers in teams submodule.
 * __API Docs__: Submodule to publish documentation to your site using OpenAPI specs
 
 ## Installing
