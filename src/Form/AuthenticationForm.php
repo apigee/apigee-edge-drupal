@@ -445,10 +445,10 @@ class AuthenticationForm extends ConfigFormBase {
       // Invalid credentials.
       if ($exception->getCode() === 401) {
         // Invalid credentials using defined client_id/client_secret.
-        if ($key_type->getClientId($key) !== Oauth::DEFAULT_CLIENT_ID || $key_type->getClientSecret($key) !== Oauth::DEFAULT_CLIENT_SECRET) {
+        if ($key_type->getClientId($key, TRUE) !== Oauth::DEFAULT_CLIENT_ID || $key_type->getClientSecret($key, TRUE) !== Oauth::DEFAULT_CLIENT_SECRET) {
           $suggestion = $this->t('@fail_text The given username (%username) or password or client ID (%client_id) or client secret is incorrect.', [
             '@fail_text' => $fail_text,
-            '%client_id' => $key_type->getClientId($key),
+            '%client_id' => $key_type->getClientId($key, TRUE),
             '%username' => $key_type->getUsername($key),
           ]);
         }
@@ -477,7 +477,7 @@ class AuthenticationForm extends ConfigFormBase {
           if ($curl_exception->getHandlerContext()['errno'] === CURLE_COULDNT_RESOLVE_HOST) {
             $suggestion = $this->t('@fail_text The given authorization server (%authorization_server) is incorrect or something is wrong with the connection.', [
               '@fail_text' => $fail_text,
-              '%authorization_server' => $key_type->getAuthorizationServer($key),
+              '%authorization_server' => $key_type->getAuthorizationServer($key, TRUE),
             ]);
           }
         }
@@ -517,7 +517,7 @@ class AuthenticationForm extends ConfigFormBase {
           elseif ($curl_exception->getHandlerContext()['errno'] === CURLE_COULDNT_RESOLVE_HOST) {
             $suggestion = $this->t('@fail_text The given endpoint (%endpoint) is incorrect or something is wrong with the connection.', [
               '@fail_text' => $fail_text,
-              '%endpoint' => $key_type->getEndpoint($key),
+              '%endpoint' => $key_type->getEndpoint($key, TRUE),
             ]);
           }
         }
@@ -542,7 +542,7 @@ class AuthenticationForm extends ConfigFormBase {
     $key_type = $key->getKeyType();
 
     $credentials = !($key_type instanceof EdgeKeyTypeInterface) ? [] : [
-      'endpoint' => $key_type->getEndpoint($key),
+      'endpoint' => $key_type->getEndpoint($key, TRUE),
       'organization' => $key_type->getOrganization($key),
       'username' => $key_type->getUsername($key),
     ];
@@ -553,9 +553,9 @@ class AuthenticationForm extends ConfigFormBase {
     ];
 
     if (!empty($credentials) && $keys['auth_type'] === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
-      $credentials['authorization_server'] = $key_type->getAuthorizationServer($key);
-      $credentials['client_id'] = $key_type->getClientId($key);
-      $credentials['client_secret'] = $key_type->getClientSecret($key) === Oauth::DEFAULT_CLIENT_SECRET ? Oauth::DEFAULT_CLIENT_SECRET : '***client-secret***';
+      $credentials['authorization_server'] = $key_type->getAuthorizationServer($key, TRUE);
+      $credentials['client_id'] = $key_type->getClientId($key, TRUE);
+      $credentials['client_secret'] = $key_type->getClientSecret($key, TRUE) === Oauth::DEFAULT_CLIENT_SECRET ? Oauth::DEFAULT_CLIENT_SECRET : '***client-secret***';
     }
 
     // Sanitize exception text.
