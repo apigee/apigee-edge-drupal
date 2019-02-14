@@ -1,14 +1,14 @@
 # Apigee Edge Drupal module
 
-The Apigee Edge module enables you to integrate Drupal 8 with Apigee Edge.  
+The Apigee Edge module enables you to integrate Drupal 8 with Apigee Edge:  
 
-* Users that register or are added to the Drupal site will be added as developers in Apigee Edge
-* Click on "My Apps" in user menu to get keys for the APIs exposed in Apigee Edge
+* Users that register or are added to the Drupal site will be added as developers in Apigee Edge.
+* Click on "My Apps" in user menu to get keys for the APIs exposed in Apigee Edge.
 
 This module includes the following submodules:
 * __API product RBAC:__ enables administrators to configure access permissions to API products.
-* __Debug__: enables administrators to configure and manage Apigee debug logs.
-* __Teams__: (Experimental) enables developers to be organized into teams.
+* __Debug:__ enables administrators to configure and manage Apigee debug logs.
+* __Teams (Experimental):__ enables developers to be organized into teams.
 
 For more details read the [Apigee Edge module documentation](https://www.drupal.org/docs/8/modules/apigee-edge). 
 
@@ -26,27 +26,28 @@ considered to be in development. Experimental modules are included in the "Apige
 
 # Planned features
 * __Team Roles__: Site admins can manage roles and permissions available for developers in teams submodule.
-* __API Docs__: Submodule to publish documentation to your site using OpenAPI specs
+* __API Docs__: Submodule to publish documentation to your site using OpenAPI specs.
 
 ## Installing
 
 **Note**: The Apigee Edge module requires Drupal 8.6.x or higher and PHP 7.1 or higher.
 
-> The Apigee Edge module may require Drupal core or contributed module
+The Apigee Edge module may require Drupal core or contributed module
 patches to be able to work properly. These patches can be applied
 automatically when Apigee Edge module gets installed but for that your
 Drupal installation must fulfill the following requirements:
-> 1. [cweagans/composer-patches](https://packagist.org/packages/cweagans/composer-patches) >= 1.6.5 has to be installed.
-> 1. ["Allowing patches to be applied from dependencies
+
+1. [cweagans/composer-patches](https://packagist.org/packages/cweagans/composer-patches) >= 1.6.5 has to be installed.
+2. ["Allowing patches to be applied from dependencies
 "](https://github.com/cweagans/composer-patches/tree/1.6.5#allowing-patches-to-be-applied-from-dependencies)
-has to be enabled Drupal's composer.json.
-> 1. Proper [patch level](https://github.com/cweagans/composer-patches/pull/101#issue-104810467)
+has to be enabled in Drupal's composer.json.
+3. Proper [patch level](https://github.com/cweagans/composer-patches/pull/101#issue-104810467)
 for drupal/core has to be set in Drupal's composer.json.
->
-> You can find the currently required patches in the Apigee Edge module's [composer.json](https://github.com/apigee/apigee-edge-drupal/blob/8.x-1.x/composer.json)
+
+You can find the currently required patches in the Apigee Edge module's [composer.json](https://github.com/apigee/apigee-edge-drupal/blob/8.x-1.x/composer.json)
 and in the Apigee Edge PHP API Client's [composer.json](https://github.com/apigee/apigee-client-php/blob/2.x/composer.json).
->
-> **If you do not have all required patches applied in your Drupal
+
+**If you do not have all required patches applied in your Drupal
 installation you may experience some problems with the Apigee Edge
 module.**
 
@@ -59,10 +60,10 @@ module.**
    composer require drupal/apigee_edge
    ```
 
-    For more information about installing contributed modules using composer, see [the official documentation](https://www.drupal.org/docs/develop/using-composer/using-composer-to-manage-drupal-site-dependencies#managing-contributed)
-1. Click **Extend** in the Drupal administration menu.
-1. Select the **Apigee Edge** module.
-1. Click **Install**.
+    For more information about installing contributed modules using composer, see [the official documentation](https://www.drupal.org/docs/develop/using-composer/using-composer-to-manage-drupal-site-dependencies#managing-contributed).
+2. Click **Extend** in the Drupal administration menu.
+3. Select the **Apigee Edge** module.
+4. Click **Install**.
 
 ## Notes
 
@@ -77,7 +78,7 @@ module.**
 ## Requirements
 
 * Drupal 8's minimum requirement is phpdocumentor/reflection-docblock:2.0.4 but at least 3.0 is required by this module. If you get the error  "Your requirements could not be resolved to an installable set of packages" it may be because you are running reflection-docblock version 2. You can update `phpdocumentor/reflection-docblock` with the following command: `composer update phpdocumentor/reflection-docblock --with-dependencies`.
-* **Check [composer.json](https://github.com/apigee/apigee-edge-drupal/blob/8.x-1.x/composer.json) for required patches.** Patches prefixed with "(For testing)" are only required for running tests. Those are not necessary for using this module. Patches can be applied with the [cweagans/composer-patches](https://packagist.org/packages/cweagans/composer-patches) the plugin automatically or manually.
+* **Check [composer.json](https://github.com/apigee/apigee-edge-drupal/blob/8.x-1.x/composer.json) for required patches.** Patches prefixed with "(For testing)" are only required for running tests. Those are not necessary for using this module. Patches can be applied with the [cweagans/composer-patches](https://packagist.org/packages/cweagans/composer-patches) plugin automatically or manually.
 * (For developers) The locked commit from `behat/mink` library is required otherwise tests may fail. This caused by a Drupal core [bug](https://www.drupal.org/project/drupal/issues/2956279). See the related pull request for behat/mink [here](https://github.com/minkphp/Mink/pull/760).
 
 ## Troubleshooting
