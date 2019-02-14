@@ -58,8 +58,11 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
   /**
    * {@inheritdoc}
    */
-  public function getEndpoint(KeyInterface $key): string {
-    return $key->getKeyValues()['endpoint'] ?? Client::DEFAULT_ENDPOINT;
+  public function getEndpoint(KeyInterface $key, bool $safeReturn = FALSE): ?string {
+    if ($safeReturn) {
+      return $key->getKeyValues()['endpoint'] ?? Client::DEFAULT_ENDPOINT;
+    }
+    return $key->getKeyValues()['endpoint'] ?? NULL;
   }
 
   /**
@@ -95,22 +98,31 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
   /**
    * {@inheritdoc}
    */
-  public function getAuthorizationServer(KeyInterface $key): string {
-    return $key->getKeyValues()['authorization_server'] ?? Oauth::DEFAULT_AUTHORIZATION_SERVER;
+  public function getAuthorizationServer(KeyInterface $key, bool $safeReturn = FALSE): ?string {
+    if ($safeReturn) {
+      return $key->getKeyValues()['authorization_server'] ?? Oauth::DEFAULT_AUTHORIZATION_SERVER;
+    }
+    return $key->getKeyValues()['authorization_server'] ?? NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getClientId(KeyInterface $key): string {
-    return $key->getKeyValues()['client_id'] ?? Oauth::DEFAULT_CLIENT_ID;
+  public function getClientId(KeyInterface $key, bool $safeReturn = FALSE): ?string {
+    if ($safeReturn) {
+      return $key->getKeyValues()['client_id'] ?? Oauth::DEFAULT_CLIENT_ID;
+    }
+    return $key->getKeyValues()['client_id'] ?? NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getClientSecret(KeyInterface $key): string {
-    return $key->getKeyValues()['client_secret'] ?? Oauth::DEFAULT_CLIENT_SECRET;
+  public function getClientSecret(KeyInterface $key, bool $safeReturn = FALSE): ?string {
+    if ($safeReturn) {
+      return $key->getKeyValues()['client_secret'] ?? Oauth::DEFAULT_CLIENT_SECRET;
+    }
+    return $key->getKeyValues()['client_secret'] ?? NULL;
   }
 
 }

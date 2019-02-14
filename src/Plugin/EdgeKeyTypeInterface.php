@@ -46,11 +46,13 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
    *
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
+   * @param bool $safeReturn
+   *   If TRUE then the fallback value is the default value provided by the SDK.
    *
-   * @return string
+   * @return string|null
    *   The API endpoint.
    */
-  public function getEndpoint(KeyInterface $key): string;
+  public function getEndpoint(KeyInterface $key, bool $safeReturn = FALSE): ?string;
 
   /**
    * Gets the API organization.
@@ -90,32 +92,38 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
    *
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
+   * @param bool $safeReturn
+   *   If TRUE then the fallback value is the default value provided by the SDK.
    *
-   * @return string
+   * @return string|null
    *   The authorization server.
    */
-  public function getAuthorizationServer(KeyInterface $key): string;
+  public function getAuthorizationServer(KeyInterface $key, bool $safeReturn = FALSE): ?string;
 
   /**
    * Gets the client ID.
    *
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
+   * @param bool $safeReturn
+   *   If TRUE then the fallback value is the default value provided by the SDK.
    *
-   * @return string
+   * @return string|null
    *   The client ID.
    */
-  public function getClientId(KeyInterface $key): string;
+  public function getClientId(KeyInterface $key, bool $safeReturn = FALSE): ?string;
 
   /**
    * Gets the client secret.
    *
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
+   * @param bool $safeReturn
+   *   If TRUE then the fallback value is the default value provided by the SDK.
    *
-   * @return string
+   * @return string|null
    *   The client secret.
    */
-  public function getClientSecret(KeyInterface $key): string;
+  public function getClientSecret(KeyInterface $key, bool $safeReturn = FALSE): ?string;
 
 }
