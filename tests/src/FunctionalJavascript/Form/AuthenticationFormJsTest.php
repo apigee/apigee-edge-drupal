@@ -113,11 +113,11 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     // Tests the default settings.
     $web_assert->fieldValueEquals('Authentication type', 'basic');
     $web_assert->fieldValueEquals('Password', '');
-    if ($active_endpoint === ClientInterface::DEFAULT_ENDPOINT) {
-      $web_assert->fieldValueEquals('Apigee Edge endpoint', '');
+    if (isset($active_endpoint)) {
+      $web_assert->fieldValueEquals('Apigee Edge endpoint', $active_endpoint);
     }
     else {
-      $web_assert->fieldValueEquals('Apigee Edge endpoint', $active_endpoint);
+      $web_assert->fieldValueEquals('Apigee Edge endpoint', '');
     }
 
     // Make sure the oauth fields are hidden.
