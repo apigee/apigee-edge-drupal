@@ -131,8 +131,8 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
    */
   public function removeMembers(string $team, array $developers): void {
     $controller = $this->companyMembersControllerFactory->companyMembersController($team);
-    /** @var \Drupal\apigee_edge_teams\Entity\Storage\DeveloperTeamRoleStorageInterface $developer_team_role_storage */
-    $developer_team_role_storage = $this->entityTypeManager->getStorage('developer_team_role');
+    /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorageInterface $team_member_role_storage */
+    $team_member_role_storage = $this->entityTypeManager->getStorage('team_member_role');
     /** @var \Drupal\user\UserInterface[] $users_by_mail */
     $users_by_mail = array_reduce($this->entityTypeManager->getStorage('user')->loadByProperties(['mail' => $developers]), function (array $carry, UserInterface $user) {
       $carry[$user->getEmail()] = $user;
@@ -140,18 +140,18 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
     }, []);
     foreach ($developers as $developer) {
       $controller->removeMember($developer);
-      // Remove developer's team roles from Drupal.
+      // Remove team member's roles from Drupal.
       if (array_key_exists($developer, $users_by_mail)) {
-        /** @var \Drupal\apigee_edge_teams\Entity\DeveloperTeamRoleInterface[] $developer_team_roles_in_teams */
-        $developer_team_roles_in_teams = $developer_team_role_storage->loadByDeveloper($users_by_mail[$developer]);
-        foreach ($developer_team_roles_in_teams as $developer_team_roles_in_team) {
+        /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface[] $team_member_roles_in_teams */
+        $team_member_roles_in_teams = $team_member_role_storage->loadByDeveloper($users_by_mail[$developer]);
+        foreach ($team_member_roles_in_teams as $team_member_roles_in_team) {
           try {
-            $developer_team_roles_in_team->delete();
+            $team_member_roles_in_team->delete();
           }
           catch (EntityStorageException $e) {
-            $this->logger->critical("Failed to remove %developer developer's team roles in %team team with its membership.", [
+            $this->logger->critical("Failed to remove %developer team member's roles in %team team with its membership.", [
               '%developer' => $developer,
-              '%team' => $developer_team_roles_in_team->getTeam()->id(),
+              '%team' => $team_member_roles_in_team->getTeam()->id(),
             ]);
           }
         }

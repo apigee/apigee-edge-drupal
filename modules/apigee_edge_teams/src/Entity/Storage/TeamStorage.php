@@ -147,19 +147,19 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
   protected function doPostSave(EntityInterface $entity, $update) {
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $entity */
     if (!$update) {
-      /** @var \Drupal\apigee_edge_teams\Entity\Storage\DeveloperTeamRoleStorageInterface $developer_team_role_storage */
-      $developer_team_role_storage = $this->entityTypeManager->getStorage('developer_team_role');
-      /** @var \Drupal\apigee_edge_teams\Entity\DeveloperTeamRoleInterface[] $dev_roles_by_team */
-      $dev_roles_by_team = $developer_team_role_storage->loadByTeam($entity);
+      /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorageInterface $team_member_role_storage */
+      $team_member_role_storage = $this->entityTypeManager->getStorage('team_member_role');
+      /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface[] $dev_roles_by_team */
+      $dev_roles_by_team = $team_member_role_storage->loadByTeam($entity);
       if ($dev_roles_by_team) {
         // Teams (Companies) can be deleted outside of Drupal so it could
-        // happen that remnant developer team roles exist in database when
+        // happen that remnant team member roles exist in database when
         // a new team gets created with a previously used team id.
         $context = [
           '%team' => "{$entity->label()} ({$entity->id()})",
           'link' => $entity->toLink($this->t('Members'), 'members')->toString(),
         ];
-        $this->logger->warning('Integrity check: Remnant developer team roles found for new %team team.', $context);
+        $this->logger->warning('Integrity check: Remnant team member roles found for new %team team.', $context);
         $success = TRUE;
         foreach ($dev_roles_by_team as $role) {
           try {
@@ -173,10 +173,10 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
         }
 
         if ($success) {
-          $this->logger->info('Integrity check: Successfully removed all remnant developer team roles in association with the new %team team.', $context);
+          $this->logger->info('Integrity check: Successfully removed all remnant team member roles in association with the new %team team.', $context);
         }
         else {
-          $this->logger->critical('Integrity check: Failed to remove all remnant developer team roles from the database for the new %team team.', $context);
+          $this->logger->critical('Integrity check: Failed to remove all remnant team member roles from the database for the new %team team.', $context);
         }
       }
     }
@@ -188,11 +188,11 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
    */
   protected function doDelete($entities) {
     parent::doDelete($entities);
-    /** @var \Drupal\apigee_edge_teams\Entity\Storage\DeveloperTeamRoleStorageInterface $developer_team_role_storage */
-    $developer_team_role_storage = $this->entityTypeManager->getStorage('developer_team_role');
-    /** @var \Drupal\apigee_edge_teams\Entity\DeveloperTeamRoleInterface[] $dev_roles_by_teams */
-    $dev_roles_by_teams = $developer_team_role_storage->loadByProperties(['team' => array_keys($entities)]);
-    // When a team gets deleted all developer team roles related to the team
+    /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorageInterface $team_member_role_storage */
+    $team_member_role_storage = $this->entityTypeManager->getStorage('team_member_role');
+    /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface[] $dev_roles_by_teams */
+    $dev_roles_by_teams = $team_member_role_storage->loadByProperties(['team' => array_keys($entities)]);
+    // When a team gets deleted all team member roles related to the team
     // should be deleted from the database.
     foreach ($dev_roles_by_teams as $role) {
       try {
@@ -204,7 +204,7 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
           '%developer' => $role->getDeveloper()->getEmail(),
         ];
         $context += Error::decodeException($exception);
-        $this->logger->critical("Integrity check: Failed to remove %developer developer's team role(s) from %team team when team got deleted. @message %function (line %line of %file). <pre>@backtrace_string</pre>", $context);
+        $this->logger->critical("Integrity check: Failed to remove %developer team member's role(s) from %team team when team got deleted. @message %function (line %line of %file). <pre>@backtrace_string</pre>", $context);
       }
     }
   }

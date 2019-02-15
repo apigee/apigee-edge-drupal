@@ -173,9 +173,9 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
         $this->teamMembershipManager->addMembers($team->id(), [$this->currentUser->getEmail()]);
 
         try {
-          /** @var \Drupal\apigee_edge_teams\Entity\Storage\DeveloperTeamRoleStorageInterface $developer_team_role_storage */
-          $developer_team_role_storage = $this->entityTypeManager->getStorage('developer_team_role');
-          $developer_team_role_storage->addTeamRoles($this->currentUser(), $team, [TeamRoleInterface::TEAM_ADMIN_ROLE]);
+          /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorageInterface $team_member_role_storage */
+          $team_member_role_storage = $this->entityTypeManager->getStorage('team_member_role');
+          $team_member_role_storage->addTeamRoles($this->currentUser(), $team, [TeamRoleInterface::TEAM_ADMIN_ROLE]);
         }
         catch (\Exception $exception) {
           $admin_role = $this->entityTypeManager->getStorage('team_role')->load(TeamRoleInterface::TEAM_ADMIN_ROLE);

@@ -56,11 +56,11 @@ class EditTeamMemberForm extends FormBase {
   protected $teamRoleStorage;
 
   /**
-   * Developer team role storage.
+   * Team member role storage.
    *
-   * @var \Drupal\apigee_edge_teams\Entity\Storage\DeveloperTeamRoleStorage
+   * @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorage
    */
-  protected $developerTeamRoleStorage;
+  protected $teamMemberRoleStorage;
 
   /**
    * EditTeamMemberForm constructor.
@@ -70,7 +70,7 @@ class EditTeamMemberForm extends FormBase {
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager) {
     $this->teamRoleStorage = $entity_type_manager->getStorage('team_role');
-    $this->developerTeamRoleStorage = $entity_type_manager->getStorage('developer_team_role');
+    $this->teamMemberRoleStorage = $entity_type_manager->getStorage('team_member_role');
   }
 
   /**
@@ -103,9 +103,9 @@ class EditTeamMemberForm extends FormBase {
       return $carry;
     }, []);
 
-    $developer_team_roles = $this->developerTeamRoleStorage->loadByDeveloperAndTeam($developer->getOwner(), $team);
-    if ($developer_team_roles) {
-      $current_role_options = array_keys($developer_team_roles->getTeamRoles());
+    $team_member_roles = $this->teamMemberRoleStorage->loadByDeveloperAndTeam($developer->getOwner(), $team);
+    if ($team_member_roles) {
+      $current_role_options = array_keys($team_member_roles->getTeamRoles());
     }
     else {
       $current_role_options = [];
@@ -158,10 +158,10 @@ class EditTeamMemberForm extends FormBase {
 
     try {
       if ($new_roles) {
-        $this->developerTeamRoleStorage->addTeamRoles($this->developer->getOwner(), $this->team, $new_roles);
+        $this->teamMemberRoleStorage->addTeamRoles($this->developer->getOwner(), $this->team, $new_roles);
       }
       if ($removed_roles) {
-        $this->developerTeamRoleStorage->removeTeamRoles($this->developer->getOwner(), $this->team, $removed_roles);
+        $this->teamMemberRoleStorage->removeTeamRoles($this->developer->getOwner(), $this->team, $removed_roles);
       }
     }
     catch (\Exception $exception) {

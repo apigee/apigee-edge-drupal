@@ -20,7 +20,7 @@
 
 namespace Drupal\apigee_edge_teams\Controller;
 
-use Drupal\apigee_edge_teams\Entity\DeveloperTeamRoleInterface;
+use Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
@@ -81,7 +81,7 @@ class TeamMembersList extends ControllerBase {
     $entityType = $this->entityTypeManager()->getDefinition('team');
     $members = $this->teamMembershipManager->getMembers($team->id());
     $users_by_mail = [];
-    $developer_roles_by_mail = [];
+    $team_member_roles_by_mail = [];
 
     if (!empty($members)) {
       $user_storage = $this->entityTypeManager()->getStorage('user');
@@ -93,9 +93,9 @@ class TeamMembersList extends ControllerBase {
         $carry[$item->getEmail()] = $item;
         return $carry;
       }, []);
-      /** @var \Drupal\apigee_edge_teams\Entity\Storage\DeveloperTeamRoleStorageInterface $developer_team_roles_storage */
-      $developer_team_roles_storage = $this->entityTypeManager->getStorage('developer_team_role');
-      $developer_roles_by_mail = array_reduce($developer_team_roles_storage->loadByTeam($team), function ($carry, DeveloperTeamRoleInterface $developer_role) {
+      /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorageInterface $team_member_roles_storage */
+      $team_member_roles_storage = $this->entityTypeManager->getStorage('team_member_role');
+      $team_member_roles_by_mail = array_reduce($team_member_roles_storage->loadByTeam($team), function ($carry, TeamMemberRoleInterface $developer_role) {
         $carry[$developer_role->getDeveloper()->getEmail()] = $developer_role;
 
         return $carry;
@@ -120,7 +120,7 @@ class TeamMembersList extends ControllerBase {
 
     // The list is ordered in the same order as the API returns the members.
     foreach ($members as $member) {
-      $build['table']['#rows'][$member] = $this->buildRow($member, $users_by_mail, $developer_roles_by_mail, $team);
+      $build['table']['#rows'][$member] = $this->buildRow($member, $users_by_mail, $team_member_roles_by_mail, $team);
     }
 
     return $build;
@@ -134,7 +134,7 @@ class TeamMembersList extends ControllerBase {
    * @param array $users_by_mail
    *   Associative array of Drupal users keyed by their email addresses. The
    *   list only contains those Drupal users who are member of the team.
-   * @param \Drupal\apigee_edge_teams\Entity\DeveloperTeamRoleInterface[] $developer_roles_by_mail
+   * @param \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface[] $team_member_roles_by_mail
    *   Associative array of team member roles keyed by email addresses.
    * @param \Drupal\apigee_edge_teams\Entity\TeamInterface $team
    *   The team that the member belongs.
@@ -142,7 +142,7 @@ class TeamMembersList extends ControllerBase {
    * @return array
    *   Render array.
    */
-  protected function buildRow(string $member, array $users_by_mail, array $developer_roles_by_mail, TeamInterface $team): array {
+  protected function buildRow(string $member, array $users_by_mail, array $team_member_roles_by_mail, TeamInterface $team): array {
     $row = [];
     $can_view_user_profiles = $this->currentUser()->hasPermission('access user profiles');
     $row['id'] = Html::getUniqueId($member);
@@ -160,8 +160,8 @@ class TeamMembersList extends ControllerBase {
       $row['data']['member'] = $member;
     }
 
-    if (array_key_exists($member, $developer_roles_by_mail)) {
-      $roles = array_reduce($developer_roles_by_mail[$member]->getTeamRoles(), function ($carry, TeamRoleInterface $role) {
+    if (array_key_exists($member, $team_member_roles_by_mail)) {
+      $roles = array_reduce($team_member_roles_by_mail[$member]->getTeamRoles(), function ($carry, TeamRoleInterface $role) {
         $carry[$role->id()] = $role->label();
         return $carry;
       }, []);
@@ -169,8 +169,8 @@ class TeamMembersList extends ControllerBase {
         '#theme' => 'item_list',
         '#items' => $roles,
         '#cache' => [
-          'contexts' => $developer_roles_by_mail[$member]->getCacheContexts(),
-          'tags' => $developer_roles_by_mail[$member]->getCacheTags(),
+          'contexts' => $team_member_roles_by_mail[$member]->getCacheContexts(),
+          'tags' => $team_member_roles_by_mail[$member]->getCacheTags(),
         ],
       ];
     }

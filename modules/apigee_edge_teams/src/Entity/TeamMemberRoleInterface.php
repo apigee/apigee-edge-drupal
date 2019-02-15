@@ -26,9 +26,9 @@ use Drupal\user\EntityOwnerInterface;
 use Drupal\user\UserInterface;
 
 /**
- * Definition of an entity that stores developer's team roles within a team.
+ * Definition of an entity that stores team member's roles within a team.
  */
-interface DeveloperTeamRoleInterface extends FieldableEntityInterface, EntityChangedInterface, EntityOwnerInterface {
+interface TeamMemberRoleInterface extends FieldableEntityInterface, EntityChangedInterface, EntityOwnerInterface {
 
   /**
    * Returns the developer's user entity.

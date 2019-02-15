@@ -99,11 +99,11 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
   private $yamlDiscovery;
 
   /**
-   * The developer team role entity storage.
+   * The team member role entity storage.
    *
-   * @var \Drupal\apigee_edge_teams\Entity\Storage\DeveloperTeamRoleStorageInterface
+   * @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorageInterface
    */
-  private $developerTeamRoleStorage;
+  private $teamMemberRoleStorage;
 
   /**
    * The team membership manager service.
@@ -136,7 +136,7 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
     $this->classResolver = $class_resolver;
     $this->teamMembershipManager = $team_membership_manager;
     $this->teamRoleStorage = $entity_type_manager->getStorage('team_role');
-    $this->developerTeamRoleStorage = $entity_type_manager->getStorage('developer_team_role');
+    $this->teamMemberRoleStorage = $entity_type_manager->getStorage('team_member_role');
   }
 
   /**
@@ -169,8 +169,8 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
       /** @var \Drupal\apigee_edge_teams\Entity\TeamRoleInterface $member_role */
       $member_role = $this->teamRoleStorage->load(TeamRoleInterface::TEAM_MEMBER_ROLE);
       $permissions += $member_role->getPermissions();
-      /** @var \Drupal\apigee_edge_teams\Entity\DeveloperTeamRoleInterface|null $dev_team_role */
-      $dev_team_role = $this->developerTeamRoleStorage->loadByDeveloperAndTeam($account, $team);
+      /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface|null $dev_team_role */
+      $dev_team_role = $this->teamMemberRoleStorage->loadByDeveloperAndTeam($account, $team);
       if ($dev_team_role) {
         foreach ($dev_team_role->getTeamRoles() as $role) {
           $permissions = array_merge($permissions, $role->getPermissions());

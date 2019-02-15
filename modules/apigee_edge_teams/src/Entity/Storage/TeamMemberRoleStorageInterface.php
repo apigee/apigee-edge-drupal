@@ -20,18 +20,18 @@
 
 namespace Drupal\apigee_edge_teams\Entity\Storage;
 
-use Drupal\apigee_edge_teams\Entity\DeveloperTeamRoleInterface;
+use Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\Core\Entity\ContentEntityStorageInterface;
 use Drupal\Core\Session\AccountInterface;
 
 /**
- * Defines an interface for developer team role entity storage classes.
+ * Defines an interface for team member role entity storage classes.
  */
-interface DeveloperTeamRoleStorageInterface extends ContentEntityStorageInterface {
+interface TeamMemberRoleStorageInterface extends ContentEntityStorageInterface {
 
   /**
-   * Load developer team role object by developer and team.
+   * Loads team member role object by developer and team.
    *
    * WARNING: The fact whether the developer is actually member of the team
    * (company) in Apigee Edge is not being verified here. The caller should
@@ -43,11 +43,11 @@ interface DeveloperTeamRoleStorageInterface extends ContentEntityStorageInterfac
    * @param \Drupal\apigee_edge_teams\Entity\TeamInterface $team
    *   Team entity object.
    *
-   * @return \Drupal\apigee_edge_teams\Entity\DeveloperTeamRoleInterface|null
-   *   Developer team role object if the developer has team roles within a team,
+   * @return \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface|null
+   *   Team member role object if the developer has team roles within a team,
    *   null otherwise.
    */
-  public function loadByDeveloperAndTeam(AccountInterface $account, TeamInterface $team): ?DeveloperTeamRoleInterface;
+  public function loadByDeveloperAndTeam(AccountInterface $account, TeamInterface $team): ?TeamMemberRoleInterface;
 
   /**
    * Loads all team roles of a developer within all its teams.
@@ -60,8 +60,8 @@ interface DeveloperTeamRoleStorageInterface extends ContentEntityStorageInterfac
    * @param \Drupal\Core\Session\AccountInterface $account
    *   User entity object of a developer.
    *
-   * @return \Drupal\apigee_edge_teams\Entity\DeveloperTeamRoleInterface[]
-   *   Array of developer team role object.
+   * @return \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface[]
+   *   Array of team member role objects.
    */
   public function loadByDeveloper(AccountInterface $account): array;
 
@@ -76,8 +76,8 @@ interface DeveloperTeamRoleStorageInterface extends ContentEntityStorageInterfac
    * @param \Drupal\apigee_edge_teams\Entity\TeamInterface $team
    *   Team entity object.
    *
-   * @return \Drupal\apigee_edge_teams\Entity\DeveloperTeamRoleInterface[]
-   *   Array of developer team role objects related to a team.
+   * @return \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface[]
+   *   Array of team member role objects related to a team.
    */
   public function loadByTeam(TeamInterface $team): array;
 
@@ -91,13 +91,13 @@ interface DeveloperTeamRoleStorageInterface extends ContentEntityStorageInterfac
    * @param string[] $roles
    *   Array of team role entity ids.
    *
-   * @return \Drupal\apigee_edge_teams\Entity\DeveloperTeamRoleInterface
-   *   The updated developer team role entity.
+   * @return \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface
+   *   The updated team member role entity.
    *
    * @throws \Drupal\apigee_edge_teams\Exception\InvalidArgumentException
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function addTeamRoles(AccountInterface $account, TeamInterface $team, array $roles): DeveloperTeamRoleInterface;
+  public function addTeamRoles(AccountInterface $account, TeamInterface $team, array $roles): TeamMemberRoleInterface;
 
   /**
    * Removes team roles of a developer within a team.
@@ -112,9 +112,9 @@ interface DeveloperTeamRoleStorageInterface extends ContentEntityStorageInterfac
    * @param string[] $roles
    *   Array of team role entity ids.
    *
-   * @return \Drupal\apigee_edge_teams\Entity\DeveloperTeamRoleInterface
-   *   The updated developer team role entity.
+   * @return \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface
+   *   The updated team member role entity.
    */
-  public function removeTeamRoles(AccountInterface $account, TeamInterface $team, array $roles): DeveloperTeamRoleInterface;
+  public function removeTeamRoles(AccountInterface $account, TeamInterface $team, array $roles): TeamMemberRoleInterface;
 
 }

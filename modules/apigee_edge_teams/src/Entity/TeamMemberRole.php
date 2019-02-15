@@ -28,22 +28,22 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\user\UserInterface;
 
 /**
- * Defines the developer team role entity.
+ * Defines the team member role entity.
  *
- * This entity stores a developer's team roles within a team. It does not store
+ * This entity stores a team member's roles within a team. It does not store
  * the "member" role because it is an implied role and whether a developer is a
  * member of a team or not is stored in Apigee Edge.
  *
  * @see
  *
  * @ContentEntityType(
- *   id = "developer_team_role",
- *   label = @Translation("Developer team role"),
- *   base_table = "developer_team_role",
- *   data_table = "developer_team_role_data",
+ *   id = "team_member_role",
+ *   label = @Translation("Team member role"),
+ *   base_table = "team_member_role",
+ *   data_table = "team_member_role_data",
  *   handlers = {
  *     "storage" =
- *   "Drupal\apigee_edge_teams\Entity\Storage\DeveloperTeamRoleStorage",
+ *   "Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorage",
  *   },
  *   entity_keys = {
  *     "id" = "uuid",
@@ -55,7 +55,7 @@ use Drupal\user\UserInterface;
  * in time. See our \Drupal\apigee_edge\Entity\FieldableEdgeEntityBase for
  * Apigee Edge entities.
  */
-final class DeveloperTeamRole extends ContentEntityBase implements DeveloperTeamRoleInterface {
+final class TeamMemberRole extends ContentEntityBase implements TeamMemberRoleInterface {
 
   use EntityChangedTrait;
 
@@ -104,7 +104,7 @@ final class DeveloperTeamRole extends ContentEntityBase implements DeveloperTeam
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
-      ->setDescription(t("The time that developer's team roles were last edited."))
+      ->setDescription(t("The time that team member's roles were last edited."))
       ->setTranslatable(TRUE);
 
     return $fields;
@@ -130,7 +130,7 @@ final class DeveloperTeamRole extends ContentEntityBase implements DeveloperTeam
   public function getTeamRoles(): array {
     $roles = [];
 
-    /** @var \Drupal\apigee_edge_teams\Entity\DeveloperTeamRoleInterface $reference */
+    /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface $reference */
     foreach ($this->get('roles') as $reference) {
       // The team role has been deleted.
       if ($reference->entity === NULL) {

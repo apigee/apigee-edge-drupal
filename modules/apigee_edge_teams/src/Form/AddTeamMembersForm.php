@@ -65,11 +65,11 @@ class AddTeamMembersForm extends FormBase {
   protected $teamRoleStorage;
 
   /**
-   * Developer team role storage.
+   * Team member role storage.
    *
-   * @var \Drupal\apigee_edge_teams\Entity\Storage\DeveloperTeamRoleStorage
+   * @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorage
    */
-  protected $developerTeamRoleStorage;
+  protected $teamMemberRoleStorage;
 
   /**
    * AddTeamMemberForms constructor.
@@ -83,7 +83,7 @@ class AddTeamMembersForm extends FormBase {
     $this->teamMembershipManager = $team_membership_manager;
     $this->userStorage = $entity_type_manager->getStorage('user');
     $this->teamRoleStorage = $entity_type_manager->getStorage('team_role');
-    $this->developerTeamRoleStorage = $entity_type_manager->getStorage('developer_team_role');
+    $this->teamMemberRoleStorage = $entity_type_manager->getStorage('team_member_role');
   }
 
   /**
@@ -212,26 +212,26 @@ class AddTeamMembersForm extends FormBase {
           $unsuccessful_message = $this->t('Selected roles could not be saved for %user developer.', [
             '%user' => $user->label(),
           ]);
-          /** @var \Drupal\apigee_edge_teams\Entity\DeveloperTeamRoleInterface $developer_team_roles */
-          $developer_team_roles = $this->developerTeamRoleStorage->loadByDeveloperAndTeam($user, $this->team);
-          if ($developer_team_roles !== NULL) {
+          /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface $team_member_roles */
+          $team_member_roles = $this->teamMemberRoleStorage->loadByDeveloperAndTeam($user, $this->team);
+          if ($team_member_roles !== NULL) {
             // It could happen the a developer got removed from a team (company)
-            // outside of Drupal therefore its developer team role entity
+            // outside of Drupal therefore its team member role entity
             // has not been deleted.
             // @see \Drupal\apigee_edge_teams\TeamMembershipManager::removeMembers()
             try {
-              $developer_team_roles->delete();
+              $team_member_roles->delete();
             }
             catch (\Exception $exception) {
               $context += [
                 '%developer' => $user->getEmail(),
                 '%roles' => implode(', ', array_map(function (TeamRole $role) {
                   return $role->label();
-                }, $developer_team_roles->getTeamRoles())),
+                }, $team_member_roles->getTeamRoles())),
                 'link' => $this->team->toLink($this->t('Members'), 'members')->toString(),
               ];
               $context += Error::decodeException($exception);
-              $logger->error('Integrity check: %developer developer had a developer team role entity with "%roles" team roles for %team_id team when it was added to the team. These roles could not been deleted automatically. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
+              $logger->error('Integrity check: %developer developer had a team member role entity with "%roles" team roles for %team_id team when it was added to the team. These roles could not been deleted automatically. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
               $this->messenger()->addWarning($unsuccessful_message);
               // Do not add new team roles to a developer existing team roles
               // that could not be deleted. Those must be manually reviewed.
@@ -240,7 +240,7 @@ class AddTeamMembersForm extends FormBase {
           }
 
           try {
-            $this->developerTeamRoleStorage->addTeamRoles($user, $this->team, $selected_roles);
+            $this->teamMemberRoleStorage->addTeamRoles($user, $this->team, $selected_roles);
           }
           catch (\Exception $exception) {
             $this->messenger()->addWarning($unsuccessful_message);
