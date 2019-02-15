@@ -4,8 +4,13 @@ apigee_edge_teams.settings.team:
   base_route: apigee_edge_teams.settings.team
   weight: -10
 
-apigee_edge_teams.settings.team.member_permissions:
-  route_name: apigee_edge_teams.settings.team.member_permissions
+apigee_edge_teams.settings.team.roles:
+  route_name: entity.team_role.collection
+  title: 'Roles'
+  base_route: apigee_edge_teams.settings.team
+
+apigee_edge_teams.settings.team.permissions:
+  route_name: apigee_edge_teams.settings.team.permissions
   title: 'Permissions'
   base_route: apigee_edge_teams.settings.team
 

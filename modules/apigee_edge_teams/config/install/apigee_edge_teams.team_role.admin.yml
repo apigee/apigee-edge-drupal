@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies: {  }
+id: admin
+label: Administrator
+locked: true
+permissions:
+  - team_manage_members
+  - team_app_delete
+  - team_app_update

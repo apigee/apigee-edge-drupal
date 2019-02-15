@@ -63,6 +63,26 @@ apigee_edge_teams.team_app_settings:
     credential_lifetime:
       type: integer
 
+apigee_edge_teams.team_role.*:
+  type: config_entity
+  label: 'Team Role config entity.'
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+    label:
+      type: label
+      label: 'Label'
+    locked:
+      type: boolean
+      label: 'Role is locked, it can not be removed'
+    permissions:
+      type: sequence
+      label: 'Permissions'
+      sequence:
+        type: string
+        label: 'Permission'
+
 # Schema for the entity reference 'apigee_edge_teams:team_members' selection
 # handler settings.
 entity_reference_selection.apigee_edge_teams:team_members:
