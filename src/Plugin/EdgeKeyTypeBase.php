@@ -19,7 +19,7 @@
 
 namespace Drupal\apigee_edge\Plugin;
 
-use Apigee\Edge\Client;
+use Apigee\Edge\ClientInterface;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use Drupal\apigee_edge\Exception\AuthenticationKeyValueMalformedException;
 use Drupal\Component\Serialization\Json;
@@ -58,11 +58,12 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
   /**
    * {@inheritdoc}
    */
-  public function getEndpoint(KeyInterface $key, bool $safeReturn = FALSE): ?string {
-    if ($safeReturn) {
-      return $key->getKeyValues()['endpoint'] ?? Client::DEFAULT_ENDPOINT;
+  public function getEndpoint(KeyInterface $key, bool $return_default = FALSE): ?string {
+    if (isset($key->getKeyValues()['endpoint'])) {
+      return $key->getKeyValues()['endpoint'];
     }
-    return $key->getKeyValues()['endpoint'] ?? NULL;
+
+    return $return_default ? ClientInterface::DEFAULT_ENDPOINT : NULL;
   }
 
   /**
@@ -98,31 +99,34 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
   /**
    * {@inheritdoc}
    */
-  public function getAuthorizationServer(KeyInterface $key, bool $safeReturn = FALSE): ?string {
-    if ($safeReturn) {
-      return $key->getKeyValues()['authorization_server'] ?? Oauth::DEFAULT_AUTHORIZATION_SERVER;
+  public function getAuthorizationServer(KeyInterface $key, bool $return_default = FALSE): ?string {
+    if (isset($key->getKeyValues()['authorization_server'])) {
+      return $key->getKeyValues()['authorization_server'];
     }
-    return $key->getKeyValues()['authorization_server'] ?? NULL;
+
+    return $return_default ? Oauth::DEFAULT_AUTHORIZATION_SERVER : NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getClientId(KeyInterface $key, bool $safeReturn = FALSE): ?string {
-    if ($safeReturn) {
-      return $key->getKeyValues()['client_id'] ?? Oauth::DEFAULT_CLIENT_ID;
+  public function getClientId(KeyInterface $key, bool $return_default = FALSE): ?string {
+    if (isset($key->getKeyValues()['client_id'])) {
+      return $key->getKeyValues()['client_id'];
     }
-    return $key->getKeyValues()['client_id'] ?? NULL;
+
+    return $return_default ? Oauth::DEFAULT_CLIENT_ID : NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getClientSecret(KeyInterface $key, bool $safeReturn = FALSE): ?string {
-    if ($safeReturn) {
-      return $key->getKeyValues()['client_secret'] ?? Oauth::DEFAULT_CLIENT_SECRET;
+  public function getClientSecret(KeyInterface $key, bool $return_default = FALSE): ?string {
+    if (isset($key->getKeyValues()['client_secret'])) {
+      return $key->getKeyValues()['client_secret'];
     }
-    return $key->getKeyValues()['client_secret'] ?? NULL;
+
+    return $return_default ? Oauth::DEFAULT_CLIENT_SECRET : NULL;
   }
 
 }
