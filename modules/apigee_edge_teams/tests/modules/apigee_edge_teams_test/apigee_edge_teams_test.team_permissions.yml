@@ -1,0 +1,9 @@
+team permission test 1:
+  title: 'Team permission test 1'
+  description: 'This is the 1st team test permission.'
+  category: 'Team permission test'
+
+team permission test 2: Team permission test 2
+
+permission_providers:
+  - Drupal\apigee_edge_teams_test\TestTeamPermissions
