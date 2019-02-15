@@ -21,9 +21,10 @@
 namespace Drupal\apigee_edge_teams\Access;
 
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
+use Drupal\apigee_edge_teams\TeamPermissionHandlerInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultAllowed;
-use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Access\AccessResultForbidden;
 use Drupal\Core\Routing\Access\AccessInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -36,18 +37,6 @@ use Drupal\Core\Session\AccountInterface;
 final class ManageTeamMembersAccess implements AccessInterface {
 
   /**
-   * Name of the config that contains the manage team team-level permission.
-   */
-  const CONFIG_NAME = 'apigee_edge_teams.team_permissions';
-
-  /**
-   * The config factory service.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  private $config;
-
-  /**
    * The team membership manager service.
    *
    * @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface
@@ -55,16 +44,23 @@ final class ManageTeamMembersAccess implements AccessInterface {
   private $teamMembershipManager;
 
   /**
+   * The team permission handler.
+   *
+   * @var \Drupal\apigee_edge_teams\TeamPermissionHandlerInterface
+   */
+  private $teamPermissionHandler;
+
+  /**
    * ManageTeamMembersAccess constructor.
    *
    * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
    *   The team membership manager service.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config
-   *   The config factory service.
+   * @param \Drupal\apigee_edge_teams\TeamPermissionHandlerInterface $team_permission_handler
+   *   The team permission handler.
    */
-  public function __construct(TeamMembershipManagerInterface $team_membership_manager, ConfigFactoryInterface $config) {
-    $this->config = $config;
+  public function __construct(TeamMembershipManagerInterface $team_membership_manager, TeamPermissionHandlerInterface $team_permission_handler) {
     $this->teamMembershipManager = $team_membership_manager;
+    $this->teamPermissionHandler = $team_permission_handler;
   }
 
   /**
@@ -84,23 +80,21 @@ final class ManageTeamMembersAccess implements AccessInterface {
     }
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
     $team = $route_match->getParameter('team');
-    if ($team === NULL) {
-      return AccessResult::forbidden('The {team} parameter is missing from route.');
+    /** @var \Drupal\apigee_edge\Entity\DeveloperInterface|null $developer */
+    $developer = $route_match->getParameter('developer');
+
+    // If the developer parameter is available in the route make sure it is
+    // member of the team.
+    if ($developer !== NULL) {
+      if (!in_array($team->id(), $this->teamMembershipManager->getTeams($developer->getEmail()))) {
+        return AccessResultForbidden::forbidden("The {$developer->getEmail()} developer is not member of the {$team->id()} team.");
+      }
     }
+
     $result = AccessResultAllowed::allowedIfHasPermissions($account, ['administer team', 'manage team members'], 'OR')->cachePerPermissions();
 
     if ($result->isNeutral()) {
-      $config = $this->config->get(static::CONFIG_NAME);
-      $result = AccessResultAllowed::allowedIf($config->get('team_manage_members'))->addCacheTags(['config:' . static::CONFIG_NAME]);
-      if ($result->isAllowed()) {
-        try {
-          $teams = $this->teamMembershipManager->getTeams($account->getEmail());
-        }
-        catch (\Exception $e) {
-          $teams = [];
-        }
-        $result = AccessResultAllowed::allowedIf(in_array($team->id(), $teams))->cachePerUser()->addCacheTags(['config:' . static::CONFIG_NAME]);
-      }
+      $result = AccessResultAllowed::allowedIf(in_array('team_manage_members', $this->teamPermissionHandler->getDeveloperPermissionsByTeam($team, $account)))->addCacheableDependency($team)->cachePerUser();
     }
 
     return $result;

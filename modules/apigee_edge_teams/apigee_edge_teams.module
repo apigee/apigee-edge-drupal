@@ -153,7 +153,7 @@ function apigee_edge_teams_system_breadcrumb_alter(Breadcrumb &$breadcrumb, Rout
     $team_entity_def = \Drupal::entityTypeManager()->getDefinition('team');
     $breadcrumb->addLink(Link::createFromRoute($team_entity_def->getPluralLabel(), 'entity.team.collection'));
   }
-  elseif ($route_match->getRouteName() === 'entity.team.members.add') {
+  elseif ($route_match->getRouteName() === 'entity.team.add_members') {
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
     $team = $route_match->getParameter('team');
     $breadcrumb->addLink($team->toLink(t('Members'), 'members'));
@@ -182,11 +182,20 @@ function apigee_edge_teams_api_product_access(EntityInterface $entity, $operatio
     return AccessResult::neutral(sprintf('%s is not supported by %s.', $operation, __FUNCTION__));
   }
 
-  /** @var \Drupal\apigee_edge_teams\TeamApiProductAccessManagerInterface $access_checker */
-  $access_checker = \Drupal::service('apigee_edge_teams.team_api_product_access_manager');
+  if ($account->isAnonymous()) {
+    return AccessResult::neutral('Anonymous user can not be member of a team.');
+  }
+
+  /** @var \Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandlerInterface $access_checker */
+  $access_checker = \Drupal::service('apigee_edge_teams.team_member_api_product_access_handler');
   /** @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager */
   $team_membership_manager = \Drupal::service('apigee_edge_teams.team_membership_manager');
-  $team_ids = $team_membership_manager->getTeams($account->getEmail());
+  try {
+    $team_ids = $team_membership_manager->getTeams($account->getEmail());
+  }
+  catch (Exception $e) {
+    $team_ids = [];
+  }
 
   if (empty($team_ids)) {
     $result = AccessResult::neutral("{$account->getEmail()} is not member of any team.");
@@ -205,7 +214,7 @@ function apigee_edge_teams_api_product_access(EntityInterface $entity, $operatio
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
     $teams = $team_storage->loadMultiple($team_ids);
     foreach ($teams as $team) {
-      $result = $access_checker->access($entity, $operation, $team, TRUE);
+      $result = $access_checker->access($entity, $operation, $team, $account, TRUE);
       if ($result->isAllowed()) {
         break;
       }

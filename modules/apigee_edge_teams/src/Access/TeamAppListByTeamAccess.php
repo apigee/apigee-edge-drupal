@@ -20,7 +20,6 @@
 
 namespace Drupal\apigee_edge_teams\Access;
 
-use Drupal\apigee_edge_teams\Entity\TeamAppAccessHandler;
 use Drupal\apigee_edge_teams\Entity\TeamAppPermissionProvider;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
@@ -89,8 +88,13 @@ final class TeamAppListByTeamAccess implements AccessInterface {
 
     if ($result->isNeutral()) {
       if ($account->isAuthenticated()) {
-        $result = AccessResult::allowedIf(in_array($team->id(), $this->teamMembershipManager->getTeams($account->getEmail())))
-          ->addCacheTags(['config:' . TeamAppAccessHandler::MEMBER_PERMISSIONS_CONFIG_NAME]);
+        try {
+          $team_ids = $this->teamMembershipManager->getTeams($account->getEmail());
+        }
+        catch (\Exception $e) {
+          $team_ids = [];
+        }
+        $result = AccessResult::allowedIf(in_array($team->id(), $team_ids));
         $developer = $this->entityTypeManager->getStorage('developer')->load($account->getEmail());
         if ($developer) {
           $result->addCacheableDependency($developer);

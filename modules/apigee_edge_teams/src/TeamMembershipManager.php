@@ -26,7 +26,10 @@ use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
 use Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface;
 use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\user\UserInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Service that makes easier to work with company (team) memberships.
@@ -71,11 +74,11 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
   private $entityTypeManager;
 
   /**
-   * Team API Product access manager service.
+   * The logger.
    *
-   * @var \Drupal\apigee_edge_teams\TeamApiProductAccessManagerInterface
+   * @var \Psr\Log\LoggerInterface
    */
-  private $teamApiProductAccessManager;
+  private $logger;
 
   /**
    * TeamMembershipManager constructor.
@@ -88,18 +91,18 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
    *   The developer controller service.
    * @param \Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface $developer_companies_cache
    *   The developer companies cache.
-   * @param \Drupal\apigee_edge_teams\TeamApiProductAccessManagerInterface $team_api_product_access_manager
-   *   The team API product access manager service.
    * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cache_tags_invalidator
    *   The cache tags invalidator service.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   The logger.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, CompanyMembersControllerFactoryInterface $company_members_controller_factory, DeveloperControllerInterface $developer_controller, DeveloperCompaniesCacheInterface $developer_companies_cache, TeamApiProductAccessManagerInterface $team_api_product_access_manager, CacheTagsInvalidatorInterface $cache_tags_invalidator) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, CompanyMembersControllerFactoryInterface $company_members_controller_factory, DeveloperControllerInterface $developer_controller, DeveloperCompaniesCacheInterface $developer_companies_cache, CacheTagsInvalidatorInterface $cache_tags_invalidator, LoggerInterface $logger) {
     $this->entityTypeManager = $entity_type_manager;
     $this->companyMembersControllerFactory = $company_members_controller_factory;
     $this->developerController = $developer_controller;
     $this->developerCompaniesCache = $developer_companies_cache;
     $this->cacheTagsInvalidator = $cache_tags_invalidator;
-    $this->teamApiProductAccessManager = $team_api_product_access_manager;
+    $this->logger = $logger;
   }
 
   /**
@@ -128,8 +131,31 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
    */
   public function removeMembers(string $team, array $developers): void {
     $controller = $this->companyMembersControllerFactory->companyMembersController($team);
+    /** @var \Drupal\apigee_edge_teams\Entity\Storage\DeveloperTeamRoleStorageInterface $developer_team_role_storage */
+    $developer_team_role_storage = $this->entityTypeManager->getStorage('developer_team_role');
+    /** @var \Drupal\user\UserInterface[] $users_by_mail */
+    $users_by_mail = array_reduce($this->entityTypeManager->getStorage('user')->loadByProperties(['mail' => $developers]), function (array $carry, UserInterface $user) {
+      $carry[$user->getEmail()] = $user;
+      return $carry;
+    }, []);
     foreach ($developers as $developer) {
       $controller->removeMember($developer);
+      // Remove developer's team roles from Drupal.
+      if (array_key_exists($developer, $users_by_mail)) {
+        /** @var \Drupal\apigee_edge_teams\Entity\DeveloperTeamRoleInterface[] $developer_team_roles_in_teams */
+        $developer_team_roles_in_teams = $developer_team_role_storage->loadByDeveloper($users_by_mail[$developer]);
+        foreach ($developer_team_roles_in_teams as $developer_team_roles_in_team) {
+          try {
+            $developer_team_roles_in_team->delete();
+          }
+          catch (EntityStorageException $e) {
+            $this->logger->critical("Failed to remove %developer developer's team roles in %team team with its membership.", [
+              '%developer' => $developer,
+              '%team' => $developer_team_roles_in_team->getTeam()->id(),
+            ]);
+          }
+        }
+      }
     }
     $this->invalidateCaches($team, $developers);
   }
@@ -185,7 +211,15 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
     }
     // Enforce re-evaluation of API product entity access.
     $this->entityTypeManager->getAccessControlHandler('api_product')->resetCache();
-    $this->teamApiProductAccessManager->resetCache();
+    // Prevents circular reference between the services:
+    // apigee_edge_teams.team_permissions ->
+    // apigee_edge_teams.team_membership_manager ->
+    // apigee_edge_teams.team_member_api_product_access_handler.
+    // This call is just a helper for us to ensure the static cache of the
+    // Team member API Product access handler gets cleared when this method
+    // gets called. This is especially useful in testing. So calling
+    // \Drupal::service() should be fine.
+    \Drupal::service('apigee_edge_teams.team_member_api_product_access_handler')->resetCache();
   }
 
 }

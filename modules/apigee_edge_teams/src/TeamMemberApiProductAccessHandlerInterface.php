@@ -22,15 +22,16 @@ namespace Drupal\apigee_edge_teams;
 
 use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
+use Drupal\Core\Session\AccountInterface;
 
 /**
- * Base definition of the team API product manager service.
+ * Base definition of the team member API product access handler.
  *
- * This service manages API product access on the team level instead of the
- * user level like entity access does. It allows to grant or revoke a team's
- * (and its members) access to an API product.
+ * This handles API product access on the team-level instead of the
+ * user-level like entity access does. It allows to grant or revoke a team
+ * member's access to an API product.
  */
-interface TeamApiProductAccessManagerInterface {
+interface TeamMemberApiProductAccessHandlerInterface {
 
   /**
    * Checks access to an operation on a given API product.
@@ -42,6 +43,9 @@ interface TeamApiProductAccessManagerInterface {
    *   Usually one of "view", "view label", "update", "delete" or "assign".
    * @param \Drupal\apigee_edge_teams\Entity\TeamInterface $team
    *   The team for which to check access.
+   * @param \Drupal\Core\Session\AccountInterface|null $account
+   *   (optional) The user for which to check access, default is the
+   *   current user.
    * @param bool $return_as_object
    *   (optional) Defaults to FALSE.
    *
@@ -52,7 +56,7 @@ interface TeamApiProductAccessManagerInterface {
    *   returned, i.e. TRUE means access is explicitly allowed, FALSE means
    *   access is either explicitly forbidden or "no opinion".
    */
-  public function access(ApiProductInterface $api_product, string $operation, TeamInterface $team, bool $return_as_object = FALSE);
+  public function access(ApiProductInterface $api_product, string $operation, TeamInterface $team, AccountInterface $account = NULL, bool $return_as_object = FALSE);
 
   /**
    * Clears all cached access checks.

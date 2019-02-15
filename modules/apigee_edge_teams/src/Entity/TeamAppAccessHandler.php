@@ -21,9 +21,9 @@
 namespace Drupal\apigee_edge_teams\Entity;
 
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
+use Drupal\apigee_edge_teams\TeamPermissionHandlerInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Entity\EntityHandlerInterface;
 use Drupal\Core\Entity\EntityInterface;
@@ -37,18 +37,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Access handler for Team App entities.
  */
 final class TeamAppAccessHandler extends EntityAccessControlHandler implements EntityHandlerInterface {
-
-  /**
-   * Name of the config object that contains the member permissions.
-   */
-  public const MEMBER_PERMISSIONS_CONFIG_NAME = 'apigee_edge_teams.team_permissions';
-
-  /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  private $config;
 
   /**
    * The entity type manager.
@@ -72,25 +60,32 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
   private $routeMatch;
 
   /**
+   * The team permissions handler.
+   *
+   * @var \Drupal\apigee_edge_teams\TeamPermissionHandlerInterface
+   */
+  private $teamPermissionHandler;
+
+  /**
    * TeamAppAccessHandler constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config
-   *   The config factory.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
    *   The team membership manager service.
+   * @param \Drupal\apigee_edge_teams\TeamPermissionHandlerInterface $teamPermissionHandler
+   *   The team permissions handler.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
    */
-  public function __construct(EntityTypeInterface $entity_type, ConfigFactoryInterface $config, EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager, RouteMatchInterface $route_match) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager, TeamPermissionHandlerInterface $teamPermissionHandler, RouteMatchInterface $route_match) {
     parent::__construct($entity_type);
-    $this->config = $config;
     $this->entityTypeManager = $entity_type_manager;
     $this->teamMembershipManager = $team_membership_manager;
     $this->routeMatch = $route_match;
+    $this->teamPermissionHandler = $teamPermissionHandler;
   }
 
   /**
@@ -99,9 +94,9 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
     return new static(
       $entity_type,
-      $container->get('config.factory'),
       $container->get('entity_type.manager'),
       $container->get('apigee_edge_teams.team_membership_manager'),
+      $container->get('apigee_edge_teams.team_permissions'),
       $container->get('current_route_match')
     );
   }
@@ -119,13 +114,19 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
         /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
         $team = $this->entityTypeManager->getStorage('team')->load($entity->getCompanyName());
         if ($team) {
-          // All members of a team can view team apps owned by the team.
-          if ($operation === 'view') {
-            $result = $this->accessResultByTeamMembership($team, $account);
+          if ($this->isMember($team, $account)) {
+            // All members of a team can view team apps owned by the team.
+            if ($operation === 'view') {
+              $result = AccessResult::allowed();
+            }
+            else {
+              $result = $this->checkAccessByTeamMemberPermissions($team, $operation, $account);
+            }
           }
           else {
-            $result = $this->checkAccessByTeamMembership($team, $operation, $account);
+            $result = AccessResult::neutral("{$account->getDisplayName()} is not member of {$entity->label()} team.");
           }
+          $this->processAccessResult($result, $account);
         }
         else {
           // Probably this could never happen...
@@ -151,7 +152,7 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
         // Applies to "add-form-for-team" link template of Team App entity.
         $team = $this->routeMatch->getParameter('team');
         if ($team) {
-          $result = $this->checkAccessByTeamMembership($team, 'create', $account);
+          $result = $this->checkAccessByTeamMemberPermissions($team, 'create', $account);
         }
         else {
           $result = AccessResult::neutral("Team parameter has not been found in {$this->routeMatch->getRouteObject()->getPath()} path.");
@@ -194,43 +195,20 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access result.
    */
-  private function checkAccessByTeamMembership(TeamInterface $team, string $operation, AccountInterface $account): AccessResultInterface {
+  private function checkAccessByTeamMemberPermissions(TeamInterface $team, string $operation, AccountInterface $account): AccessResultInterface {
     if (!in_array($operation, ['create', 'delete', 'update', 'analytics'])) {
-      return AccessResult::neutral("Team membership based access check does not support {$operation} operation on apps.");
+      return AccessResult::neutral("Team membership based access check does not support {$operation} operation on team apps.");
     }
 
-    if ($this->config->get(static::MEMBER_PERMISSIONS_CONFIG_NAME)->get("app_{$operation}")) {
-      $result = $this->accessResultByTeamMembership($team, $account);
+    if ($account->isAnonymous()) {
+      $result = AccessResult::forbidden('Anonymous user can not be member of a team.');
     }
     else {
-      $result = AccessResult::neutral("Current configuration does not allow team members to perform {$operation} operation on team apps.")
-        ->addCacheTags(['config:' . static::MEMBER_PERMISSIONS_CONFIG_NAME]);
+      $result = AccessResult::allowedIf(in_array("team_app_{$operation}", $this->teamPermissionHandler->getDeveloperPermissionsByTeam($team, $account)));
+      // Ensure that access is re-evaluated when the team entity changes.
+      $result->addCacheableDependency($team);
     }
-    // Ensure that access is re-evaluated when the team or the developer
-    // entity changes.
-    $result->addCacheableDependency($team);
-    return $result;
-  }
 
-  /**
-   * Returns an access result base on whether a user is member of a team or not.
-   *
-   * @param \Drupal\apigee_edge_teams\Entity\TeamInterface $entity
-   *   The team.
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   The user.
-   *
-   * @return \Drupal\Core\Access\AccessResultInterface
-   *   The access result.
-   */
-  private function accessResultByTeamMembership(TeamInterface $entity, AccountInterface $account): AccessResultInterface {
-    if ($this->isMember($entity, $account)) {
-      $result = AccessResult::allowed();
-    }
-    else {
-      $result = AccessResult::neutral("{$account->getDisplayName()} is not member of {$entity->label()} team.");
-    }
-    $this->processAccessResult($result, $account);
     return $result;
   }
 
@@ -245,9 +223,7 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
    *   The user for which to access check has happened.
    */
   private function processAccessResult(AccessResult $result, AccountInterface $account) {
-    // Ensure that access is re-evaluated when developer entity or config
-    // changes.
-    $result->addCacheTags(['config:' . static::MEMBER_PERMISSIONS_CONFIG_NAME]);
+    // Ensure that access is re-evaluated when developer entity changes.
     if ($account->isAuthenticated()) {
       $developer = $this->entityTypeManager->getStorage('developer')->load($account->getEmail());
       if ($developer) {
