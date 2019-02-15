@@ -1,0 +1,267 @@
+<?php
+
+/**
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
+ */
+
+namespace Drupal\apigee_edge_teams\Entity\Storage;
+
+use Drupal\apigee_edge_teams\Entity\DeveloperTeamRoleInterface;
+use Drupal\apigee_edge_teams\Entity\TeamInterface;
+use Drupal\apigee_edge_teams\Exception\InvalidArgumentException;
+use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
+use Drupal\Core\Database\Connection;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
+use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Utility\Error;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+
+/**
+ * Entity storage class for developer team role entities.
+ */
+class DeveloperTeamRoleStorage extends SqlContentEntityStorage implements DeveloperTeamRoleStorageInterface {
+
+  /**
+   * The team membership manager service.
+   *
+   * @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface
+   */
+  protected $teamMembershipManager;
+
+  /**
+   * The logger.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
+  protected $logger;
+
+  /**
+   * DeveloperTeamRoleStorage constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type definition.
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database connection to be used.
+   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
+   *   The entity manager.
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
+   *   The cache backend to be used.
+   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   *   The language manager.
+   * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface|null $memory_cache
+   *   The memory cache backend to be used.
+   * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
+   *   The team membership manager service.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   The logger.
+   */
+  public function __construct(EntityTypeInterface $entity_type, Connection $database, EntityManagerInterface $entity_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, MemoryCacheInterface $memory_cache, TeamMembershipManagerInterface $team_membership_manager, LoggerInterface $logger) {
+    parent::__construct($entity_type, $database, $entity_manager, $cache, $language_manager, $memory_cache);
+    $this->teamMembershipManager = $team_membership_manager;
+    $this->logger = $logger;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+    return new static(
+      $entity_type,
+      $container->get('database'),
+      $container->get('entity.manager'),
+      $container->get('cache.entity'),
+      $container->get('language_manager'),
+      $container->get('entity.memory_cache'),
+      $container->get('apigee_edge_teams.team_membership_manager'),
+      $container->get('logger.channel.apigee_edge_teams')
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function loadByDeveloperAndTeam(AccountInterface $account, TeamInterface $team): ?DeveloperTeamRoleInterface {
+    $result = $this->loadByProperties([
+      'uid' => $account->id(),
+      'team' => $team->id(),
+    ]);
+
+    $result = reset($result);
+
+    return $result ? $result : NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function loadByDeveloper(AccountInterface $account): array {
+    return $this->loadByProperties([
+      'uid' => $account->id(),
+    ]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function loadByTeam(TeamInterface $team): array {
+    return $this->loadByProperties([
+      'team' => $team->id(),
+    ]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function addTeamRoles(AccountInterface $account, TeamInterface $team, array $roles): DeveloperTeamRoleInterface {
+    if ($account->isAnonymous()) {
+      throw new InvalidArgumentException('Anonymous user can not be member of a team.');
+    }
+    try {
+      $developer_teams = $this->teamMembershipManager->getTeams($account->getEmail());
+    }
+    catch (\Exception $e) {
+      $developer_teams = [];
+    }
+    if (!in_array($team->id(), $developer_teams)) {
+      throw new InvalidArgumentException("{$account->getEmail()} is not member of {$team->id()} team.");
+    }
+    // Indicates whether a new developer team role entity had to be created
+    // or not.
+    /** @var \Drupal\apigee_edge_teams\Entity\DeveloperTeamRoleInterface $developer_team_roles */
+    $developer_team_roles = $this->loadByDeveloperAndTeam($account, $team);
+    if ($developer_team_roles === NULL) {
+      $developer_team_roles = $this->create(['uid' => ['target_id' => $account->id()], 'team' => ['target_id' => $team->id()]]);
+    }
+    // Make sure we only store unique values in the field.
+    $existing_roles = array_map(function ($item) {
+      return $item['target_id'];
+    }, $developer_team_roles->roles->getValue());
+    $unique_roles = array_diff(array_unique($roles), $existing_roles);
+
+    foreach ($unique_roles as $role) {
+      $developer_team_roles->roles[] = ['target_id' => $role];
+    }
+
+    try {
+      $developer_team_roles->save();
+    }
+    catch (EntityStorageException $exception) {
+      $context = [
+        '%developer' => $account->getEmail(),
+        '%team_id' => $team->id(),
+        '%roles' => implode(',', $roles),
+        'link' => $team->toLink($this->t('Members'), 'members')->toString(),
+      ];
+      $context += Error::decodeException($exception);
+      $this->logger->warning('%developer developer team roles in %team_id team could not be saved. Roles: %roles. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
+      throw $exception;
+    }
+
+    return $developer_team_roles;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function removeTeamRoles(AccountInterface $account, TeamInterface $team, array $roles): DeveloperTeamRoleInterface {
+    if ($account->isAnonymous()) {
+      throw new InvalidArgumentException('Anonymous user can not be member of a team.');
+    }
+    try {
+      $developer_teams = $this->teamMembershipManager->getTeams($account->getEmail());
+    }
+    catch (\Exception $e) {
+      $developer_teams = [];
+    }
+    if (!in_array($team->id(), $developer_teams)) {
+      throw new InvalidArgumentException("{$account->getEmail()} is not member of {$team->id()} team.");
+    }
+    /** @var \Drupal\apigee_edge_teams\Entity\DeveloperTeamRoleInterface $developer_team_roles */
+    $developer_team_roles = $this->loadByDeveloperAndTeam($account, $team);
+    if ($developer_team_roles === NULL) {
+      throw new InvalidArgumentException("{$account->getEmail()} does not have team roles in {$team->id()} team.");
+    }
+
+    $developer_team_roles->roles = array_filter($developer_team_roles->roles->getValue(), function (array $item) use ($roles) {
+      return !in_array($item['target_id'], $roles);
+    });
+
+    try {
+      // If the developer does not have any roles in the team anymore then
+      // remove its developer team role entity.
+      if (empty($developer_team_roles->roles->getValue())) {
+        $developer_team_roles->delete();
+      }
+      else {
+        $developer_team_roles->save();
+      }
+    }
+    catch (EntityStorageException $exception) {
+      $context = [
+        '%developer' => $account->getEmail(),
+        '%team_id' => $team->id(),
+        '%roles' => implode(',', $roles),
+        'link' => $team->toLink($this->t('Members'), 'members')->toString(),
+      ];
+      $context += Error::decodeException($exception);
+      $this->logger->warning('%developer developer team roles in %team_id team could not be removed. Roles: %roles. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
+      throw $exception;
+    }
+
+    return $developer_team_roles;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function doSave($id, EntityInterface $entity) {
+    /** @var \Drupal\apigee_edge_teams\Entity\DeveloperTeamRoleInterface $entity */
+    $return = parent::doSave($id, $entity);
+
+    if ($return === SAVED_NEW) {
+      // Invalidate team related caches - for example the render cache of
+      // the team members list - if the developer did not have a developer
+      // team role entity before.
+      // @see \Drupal\apigee_edge_teams\Controller\TeamMembersList::buildRow()
+      Cache::invalidateTags($entity->getTeam()->getCacheTags());
+    }
+
+    return $return;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function doDelete($entities) {
+    /** @var \Drupal\apigee_edge_teams\Entity\DeveloperTeamRoleInterface $entity */
+    foreach ($entities as $entity) {
+      // See explanation in doSave().
+      Cache::invalidateTags($entity->getTeam()->getCacheTags());
+    }
+    parent::doDelete($entities);
+  }
+
+}
