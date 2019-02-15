@@ -1,0 +1,12 @@
+permissions:
+  version: VERSION
+  css:
+    theme:
+      css/apigee_edge_teams.team_permissions.css: {}
+  js:
+    js/apigee_edge_teams.team_permissions.js: {}
+  dependencies:
+    - core/jquery
+    - core/jquery.once
+    - core/drupal
+    - core/drupalSettings

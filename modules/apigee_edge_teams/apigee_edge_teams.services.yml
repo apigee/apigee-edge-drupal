@@ -57,9 +57,11 @@ services:
     class: Drupal\apigee_edge_teams\TeamMembershipManager
     arguments: [ '@entity_type.manager', '@apigee_edge_teams.company_members_controller_factory', '@apigee_edge.controller.developer', '@apigee_edge.controller.cache.developer_companies', '@apigee_edge_teams.team_api_product_access_manager', '@cache_tags.invalidator']
 
-  apigee_edge_teams.team_api_product_access_manager:
-    class: Drupal\apigee_edge_teams\TeamApiProductAccessManager
-    arguments: ['@module_handler', '@config.factory']
+  apigee_edge_teams.team_permissions:
+    class: Drupal\apigee_edge_teams\TeamPermissionHandler
+    arguments: ['@module_handler', '@class_resolver', '@apigee_edge_teams.team_membership_manager', '@entity_type.manager']
+    calls:
+      - [setStringTranslation, ['@string_translation']]
 
   apigee_edge_teams.event_subscriber.team_api_product_access_manager_cache_reset:
     class: Drupal\apigee_edge_teams\EventSubscriber\TeamApiProductAccessManagerCacheReset

@@ -11,35 +11,6 @@ apigee_edge_teams.team_settings:
     cache_expiration:
       type: integer
 
-apigee_edge_teams.team_permissions:
-  type: config_object
-  label: 'Default permissions of a team member in a team'
-  mapping:
-    team_manage_members:
-      label: 'Add/remove team members'
-      type: boolean
-    app_create:
-      label: 'Create team apps'
-      type: boolean
-    app_update:
-      label: 'Update any team apps'
-      type: boolean
-    app_delete:
-      label: 'Delete any team apps'
-      type: boolean
-    app_analytics:
-      label: 'View team app analytics'
-      type: boolean
-    api_product_access_public:
-      label: 'View and assign public API products to team apps'
-      type: boolean
-    api_product_access_private:
-      label: 'View and assign private API products to team apps'
-      type: boolean
-    api_product_access_internal:
-      label: 'View and assign private API products to team apps'
-      type: boolean
-
 apigee_edge_teams.team_app_settings:
   type: config_object
   label: 'Team App settings'

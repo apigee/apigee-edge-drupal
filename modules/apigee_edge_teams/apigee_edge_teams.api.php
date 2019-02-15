@@ -60,5 +60,25 @@ function hook_apigee_edge_teams_team_api_product_access(\Drupal\apigee_edge\Enti
 }
 
 /**
+ * Alters a team member's team permissions within a team.
+ *
+ * WARNING: Alter hooks gets called even if the developer is not (yet) member
+ * of a team (company) in Apigee Edge. This allows to grant team-level
+ * permissions to a developer (Drupal user) to a team without adding it as a
+ * member to the team (company) in Apigee Edge. (Ex.: for team management
+ * purposes, etc.)
+ *
+ * @param array $permissions
+ *   Array of team permissions.
+ * @param \Drupal\apigee_edge_teams\Entity\TeamInterface $team
+ *   The team entity.
+ * @param \Drupal\Core\Session\AccountInterface $account
+ *   The Drupal user of the developer.
+ */
+function hook_apigee_edge_teams_developer_permissions_by_team_alter(array &$permissions, \Drupal\apigee_edge_teams\Entity\TeamInterface $team, \Drupal\Core\Session\AccountInterface $account) {
+  // @see apigee_edge_teams_test_apigee_edge_teams_developer_permissions_by_team_alter()
+}
+
+/**
  * @} End of "addtogroup hooks".
  */
