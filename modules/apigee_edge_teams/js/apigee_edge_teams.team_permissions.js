@@ -23,7 +23,7 @@
  * Modified version of Drupal core's user.permissions.js.
  */
 (function ($, Drupal) {
-  Drupal.behaviors.permissions = {
+  Drupal.behaviors.apigee_edge_teams_team_permissions = {
     attach: function attach(context) {
       var self = this;
       $('table#permissions').once('permissions').each(function () {
