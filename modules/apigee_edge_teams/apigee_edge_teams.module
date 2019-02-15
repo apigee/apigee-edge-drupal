@@ -22,6 +22,7 @@
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Breadcrumb\Breadcrumb;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -105,6 +106,29 @@ function _apigee_edge_teams_team_app_entity_form_display_edit_form_validate(arra
       $form_state->setError($form['fields'][$field_name], t('%field-name is required.', [
         '%field-name' => $form['fields'][$field_name]['human_name']['#plain_text'],
       ]));
+    }
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete().
+ */
+function apigee_edge_teams_user_delete(EntityInterface $entity) {
+  /** @var \Drupal\user\UserInterface $entity */
+  /** @var \Drupal\apigee_edge_teams\Entity\Storage\DeveloperTeamRoleStorageInterface $developer_team_role_storage */
+  $developer_team_role_storage = \Drupal::entityTypeManager()->getStorage('developer_team_role');
+  // When a user gets deleted then its developer account also gets deleted
+  // from Apigee Edge which removes its (team) company memberships.
+  // We must delete this user's team roles from Drupal as well.
+  foreach ($developer_team_role_storage->loadByDeveloper($entity) as $developer_team_roles_in_team) {
+    try {
+      $developer_team_roles_in_team->delete();
+    }
+    catch (EntityStorageException $e) {
+      \Drupal::logger('apigee_edge_teams')->critical("Integrity check: Failed to remove %developer developer's team roles in %team team when its Drupal user got deleted.", [
+        '%developer' => $entity->getEmail(),
+        '%team' => $developer_team_roles_in_team->getTeam()->id(),
+      ]);
     }
   }
 }
