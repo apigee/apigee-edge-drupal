@@ -37,6 +37,8 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element\StatusMessages;
 use Drupal\Core\Render\RendererInterface;
+use Drupal\Core\Site\Settings;
+use Drupal\Core\StreamWrapper\PrivateStream;
 use Drupal\key\Entity\Key;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
@@ -107,6 +109,13 @@ class AuthenticationForm extends ConfigFormBase {
   protected $fileSystem;
 
   /**
+   * Site settings.
+   *
+   * @var \Drupal\Core\Site\Settings
+   */
+  protected $settings;
+
+  /**
    * Constructs a new AuthenticationForm.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -123,8 +132,10 @@ class AuthenticationForm extends ConfigFormBase {
    *   The `renderer` service.
    * @param \Drupal\Core\File\FileSystemInterface $file_system
    *   The `file_system` service.
+   * @param \Drupal\Core\Site\Settings $settings
+   *   The `settings` service.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, KeyRepositoryInterface $key_repository, SDKConnectorInterface $sdk_connector, ModuleHandlerInterface $module_handler, OauthTokenStorageInterface $oauth_token_storage, RendererInterface $renderer, FileSystemInterface $file_system) {
+  public function __construct(ConfigFactoryInterface $config_factory, KeyRepositoryInterface $key_repository, SDKConnectorInterface $sdk_connector, ModuleHandlerInterface $module_handler, OauthTokenStorageInterface $oauth_token_storage, RendererInterface $renderer, FileSystemInterface $file_system, Settings $settings) {
     parent::__construct($config_factory);
     $this->keyRepository = $key_repository;
     $this->sdkConnector = $sdk_connector;
@@ -132,6 +143,7 @@ class AuthenticationForm extends ConfigFormBase {
     $this->oauthTokenStorage = $oauth_token_storage;
     $this->renderer = $renderer;
     $this->fileSystem = $file_system;
+    $this->settings = $settings;
   }
 
   /**
@@ -145,7 +157,8 @@ class AuthenticationForm extends ConfigFormBase {
       $container->get('module_handler'),
       $container->get('apigee_edge.authentication.oauth_token_storage'),
       $container->get('renderer'),
-      $container->get('file_system')
+      $container->get('file_system'),
+      $container->get('settings')
     );
   }
 
@@ -190,26 +203,31 @@ class AuthenticationForm extends ConfigFormBase {
       '#tree' => TRUE,
     ];
 
+    // Validate private file path is set.
+    if (!PrivateStream::basePath()) {
+      $this->disableForm($form, $this->t('The Drupal private file setting has not been configured.'));
+      return $form;
+    }
+
+    // Validate private file path is a directory and is writable.
+    $file_private_path = Settings::get('file_private_path');
+    $private_path_is_writable = is_writable($file_private_path);
+    $private_path_is_directory = is_dir($file_private_path);
+
+    if (!$private_path_is_writable || !$private_path_is_directory) {
+      if (!$private_path_is_directory) {
+        $error = t('The private file path %path does not exist', ['%path' => $file_private_path]);
+      }
+      else {
+        $error = t('The private file path %path is not writable', ['%path' => $file_private_path]);
+      }
+      $this->disableForm($form, $error);
+      return $form;
+    }
+
     // Save the key for later use.
     if (!($this->activeKey = $active_key = $this->getActiveKey())) {
-      $form['actions']['#disabled'] = TRUE;
-      $form['connection_settings']['unconfigurable'] = [
-        '#type' => 'container',
-        '#attributes' => ['class' => ['form-item']],
-      ];
-      $form['connection_settings']['unconfigurable']['label'] = [
-        '#type' => 'html_tag',
-        '#tag' => 'label',
-        '#value' => $this->t('Unable to initialize configuration.'),
-      ];
-      $form['connection_settings']['unconfigurable']['description'] = [
-        '#type' => 'html_tag',
-        '#tag' => 'div',
-        '#value' => $this->t("The Apigee Edge connection settings are not configured and we weren't able to automatically provision connection settings. Make sure the <a href=\":file_docs_uri\" target=\"_blank\">file_private_path</a> is configured and try again.", [
-          ':file_docs_uri' => 'https://www.drupal.org/docs/8/core/modules/file/overview',
-        ]),
-      ];
-
+      $this->disableForm($form, $this->t('Unable to initialize configuration.'));
       return $form;
     }
 
@@ -413,6 +431,37 @@ class AuthenticationForm extends ConfigFormBase {
     }
 
     parent::submitForm($form, $form_state);
+  }
+
+  /**
+   * Disable form and show error message.
+   *
+   * If there are issues with the private file path, we want to show an error
+   * to the user instead of the form.
+   *
+   * @param array $form
+   *   The form to disable.
+   * @param string $error
+   *   The error to display.
+   */
+  protected function disableForm(array &$form, string $error) {
+    $form['actions']['#disabled'] = TRUE;
+    $form['connection_settings']['unconfigurable'] = [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['form-item']],
+    ];
+    $form['connection_settings']['unconfigurable']['label'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'label',
+      '#value' => $error,
+    ];
+    $form['connection_settings']['unconfigurable']['description'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'div',
+      '#value' => $this->t('Before you can configure the connection to Apigee Edge, you must configure your private file path in the sites/default/settings.php file and ensure it is writeable by Drupal. <a href=":file_docs_uri" target="_blank">Learn more</a>', [
+        ':file_docs_uri' => 'https://www.drupal.org/docs/8/modules/apigee-edge/configure-the-connection-to-apigee-edge#configure-private-file',
+      ]),
+    ];
   }
 
   /**
@@ -644,9 +693,6 @@ class AuthenticationForm extends ConfigFormBase {
    * @throws \Drupal\key\Exception\KeyValueNotSetException
    */
   protected function generateNewAuthKey(): ?KeyInterface {
-    if (!$this->fileSystem->realpath('private://')) {
-      return NULL;
-    }
     // Create a new key name.
     $new_key_id = 'apigee_edge_connection_default';
     $file_path = "private://.apigee_edge/{$new_key_id}.json";
