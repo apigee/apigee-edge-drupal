@@ -51,14 +51,14 @@ class AuthenticationFormTest extends KernelTestBase {
    *
    * @var \Apigee\Edge\HttpClient\Plugin\Authentication\OauthTokenStorageInterface
    */
-  protected $token_storage;
+  protected $tokenStorage;
 
   /**
    * Test token data.
    *
    * @var array
    */
-  protected $token_data;
+  protected $tokenData;
 
   /**
    * Test generating a new auth key.
@@ -67,12 +67,6 @@ class AuthenticationFormTest extends KernelTestBase {
    * @throws \Drupal\Core\Form\FormAjaxException
    */
   public function testGenerateNewAuthKey() {
-    $form_state = new FormState();
-    $form = \Drupal::formBuilder()->buildForm(AuthenticationForm::class, $form_state);
-    $this->assertInstanceOf(AuthenticationForm::class, $form_state->getFormObject());
-    // Make sure the key `unconfigurable` section is rendered.
-    $this->assertNotEmpty($form['connection_settings']['unconfigurable']['description']);
-    $this->assertTrue($form['actions']['#disabled']);
 
     // Add file_private_path setting.
     $private_directory = DrupalKernel::findSitePath(Request::create('/')) . '/private';
@@ -101,6 +95,65 @@ class AuthenticationFormTest extends KernelTestBase {
     $this->assertEmpty($form['connection_settings']['username']['#value']);
     $this->assertEmpty($form['connection_settings']['password']['#value']);
     $this->assertSame(EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC, $decoded['auth_type']);
+  }
+
+  /**
+   * Test private file path errors.
+   *
+   * @throws \Drupal\Core\Form\EnforcedResponseException
+   * @throws \Drupal\Core\Form\FormAjaxException
+   */
+  public function testPrivateFileSystemPathErrors() {
+    $form_state = new FormState();
+    $form = \Drupal::formBuilder()->buildForm(AuthenticationForm::class, $form_state);
+    $this->assertInstanceOf(AuthenticationForm::class, $form_state->getFormObject());
+
+    // Private file system is not configured.
+    $this->assertNotEmpty($form['connection_settings']['unconfigurable']['description']);
+    $this->assertTrue($form['actions']['#disabled']);
+    $this->assertEquals('The Drupal private file setting has not been configured.', $form['connection_settings']['unconfigurable']['label']['#value']);
+
+    // Add file_private_path setting, but not the private file dir.
+    $private_directory = DrupalKernel::findSitePath(Request::create('/')) . '/private';
+    $this->setSetting('file_private_path', $private_directory);
+
+    // Rebuild the form.
+    $form_state = new FormState();
+    $form = \Drupal::formBuilder()->buildForm(AuthenticationForm::class, $form_state);
+    $this->assertInstanceOf(AuthenticationForm::class, $form_state->getFormObject());
+
+    // The private file path dir does not exist.
+    $this->assertNotEmpty($form['connection_settings']['unconfigurable']['description']);
+    $this->assertTrue($form['actions']['#disabled']);
+    $this->assertStringEndsWith('does not exist.', $form['connection_settings']['unconfigurable']['label']['#value']);
+
+    // Make sure the directory exists.
+    file_prepare_directory($private_directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+    $this->assertDirectoryExists($private_directory);
+    // Make private file path not writable.
+    \Drupal::service('file_system')->chmod($private_directory, 000);
+
+    // Rebuild the form.
+    $form_state = new FormState();
+    $form = \Drupal::formBuilder()->buildForm(AuthenticationForm::class, $form_state);
+    $this->assertInstanceOf(AuthenticationForm::class, $form_state->getFormObject());
+
+    // Make sure error is shown on page, and form is not available.
+    $this->assertNotEmpty($form['connection_settings']['unconfigurable']['description']);
+    $this->assertTrue($form['actions']['#disabled']);
+    $this->assertStringEndsWith('is not writable.', $form['connection_settings']['unconfigurable']['label']['#value']);
+
+    // Make private file path writable.
+    \Drupal::service('file_system')->chmod($private_directory, 755);
+
+    // Rebuild the form.
+    $form_state = new FormState();
+    $form = \Drupal::formBuilder()->buildForm(AuthenticationForm::class, $form_state);
+    $this->assertInstanceOf(AuthenticationForm::class, $form_state->getFormObject());
+
+    // Make sure error is shown on page, and form is not available.
+    $this->assertArrayNotHasKey('unconfigurable', $form['connection_settings']);
+    $this->assertFalse($form['actions']['#disabled']);
   }
 
   /**

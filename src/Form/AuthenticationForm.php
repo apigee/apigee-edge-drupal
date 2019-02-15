@@ -216,10 +216,10 @@ class AuthenticationForm extends ConfigFormBase {
 
     if (!$private_path_is_writable || !$private_path_is_directory) {
       if (!$private_path_is_directory) {
-        $error = t('The private file path %path does not exist', ['%path' => $file_private_path]);
+        $error = t('The private file path %path does not exist.', ['%path' => $file_private_path]);
       }
       else {
-        $error = t('The private file path %path is not writable', ['%path' => $file_private_path]);
+        $error = t('The private file path %path is not writable.', ['%path' => $file_private_path]);
       }
       $this->disableForm($form, $error);
       return $form;

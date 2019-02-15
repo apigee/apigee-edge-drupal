@@ -290,7 +290,7 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
   }
 
   /**
-   * Test an connection settings.
+   * Test connection settings.
    *
    * @param string $message_selector
    *   Either `.messages--error` or `.messages--error`.
