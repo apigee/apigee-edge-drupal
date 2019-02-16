@@ -23,11 +23,10 @@ use Drupal\apigee_edge\Form\AuthenticationForm;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
-use Drupal\Core\DrupalKernel;
 use Drupal\Core\Form\FormState;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\key\Entity\Key;
-use Symfony\Component\HttpFoundation\Request;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Test helpers of the authentication form.
@@ -36,6 +35,8 @@ use Symfony\Component\HttpFoundation\Request;
  * @group apigee_edge_kernel
  */
 class AuthenticationFormTest extends KernelTestBase {
+
+  private const PRIVATE_FILE_DIR = 'private';
 
   /**
    * {@inheritdoc}
@@ -61,6 +62,16 @@ class AuthenticationFormTest extends KernelTestBase {
   protected $tokenData;
 
   /**
+   * Returns the URI of the token directory.
+   *
+   * @return string
+   *   Token directory URI.
+   */
+  private function privateFileDirectoryUri(): string {
+    return $this->vfsRoot->url() . '/' . static::PRIVATE_FILE_DIR;
+  }
+
+  /**
    * Test generating a new auth key.
    *
    * @throws \Drupal\Core\Form\EnforcedResponseException
@@ -69,16 +80,14 @@ class AuthenticationFormTest extends KernelTestBase {
   public function testGenerateNewAuthKey() {
 
     // Add file_private_path setting.
-    $private_directory = DrupalKernel::findSitePath(Request::create('/')) . '/private';
-    $this->setSetting('file_private_path', $private_directory);
+    mkdir($this->privateFileDirectoryUri(), 0775);
+    $this->setSetting('file_private_path', $this->privateFileDirectoryUri());
     // Make sure the directory exists.
-    file_prepare_directory($private_directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-    $this->assertDirectoryExists($private_directory);
+    $this->assertDirectoryExists($this->privateFileDirectoryUri());
 
     // Rebuild the form.
     $form_state = new FormState();
     $form = \Drupal::formBuilder()->buildForm(AuthenticationForm::class, $form_state);
-    $this->assertInstanceOf(AuthenticationForm::class, $form_state->getFormObject());
 
     // The form should have created a new key and saved some empty values to it.
     $active_key = Key::load($this->config(AuthenticationForm::CONFIG_NAME)->get('active_key'));
@@ -114,42 +123,37 @@ class AuthenticationFormTest extends KernelTestBase {
     $this->assertEquals('The Drupal private file setting has not been configured.', $form['connection_settings']['unconfigurable']['label']['#value']);
 
     // Add file_private_path setting, but not the private file dir.
-    $private_directory = DrupalKernel::findSitePath(Request::create('/')) . '/private';
-    $this->setSetting('file_private_path', $private_directory);
+    $this->setSetting('file_private_path', $this->privateFileDirectoryUri());
 
     // Rebuild the form.
     $form_state = new FormState();
     $form = \Drupal::formBuilder()->buildForm(AuthenticationForm::class, $form_state);
-    $this->assertInstanceOf(AuthenticationForm::class, $form_state->getFormObject());
 
     // The private file path dir does not exist.
     $this->assertNotEmpty($form['connection_settings']['unconfigurable']['description']);
     $this->assertTrue($form['actions']['#disabled']);
-    $this->assertStringEndsWith('does not exist.', $form['connection_settings']['unconfigurable']['label']['#value']);
 
-    // Make sure the directory exists.
-    file_prepare_directory($private_directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-    $this->assertDirectoryExists($private_directory);
-    // Make private file path not writable.
-    \Drupal::service('file_system')->chmod($private_directory, 000);
+    $this->assertEquals(new TranslatableMarkup('The private file path %path does not exist.', ['%path' => $this->privateFileDirectoryUri()]), $form['connection_settings']['unconfigurable']['label']['#value']);
+
+    // Make sure the directory exists but not writable.
+    mkdir($this->privateFileDirectoryUri(), 0000);
+    $this->assertDirectoryExists($this->privateFileDirectoryUri());
 
     // Rebuild the form.
     $form_state = new FormState();
     $form = \Drupal::formBuilder()->buildForm(AuthenticationForm::class, $form_state);
-    $this->assertInstanceOf(AuthenticationForm::class, $form_state->getFormObject());
 
     // Make sure error is shown on page, and form is not available.
     $this->assertNotEmpty($form['connection_settings']['unconfigurable']['description']);
     $this->assertTrue($form['actions']['#disabled']);
-    $this->assertStringEndsWith('is not writable.', $form['connection_settings']['unconfigurable']['label']['#value']);
+    $this->assertEquals(new TranslatableMarkup('The private file path %path is not writable.', ['%path' => $this->privateFileDirectoryUri()]), $form['connection_settings']['unconfigurable']['label']['#value']);
 
     // Make private file path writable.
-    \Drupal::service('file_system')->chmod($private_directory, 755);
+    $this->container->get('file_system')->chmod($this->privateFileDirectoryUri(), 755);
 
     // Rebuild the form.
     $form_state = new FormState();
     $form = \Drupal::formBuilder()->buildForm(AuthenticationForm::class, $form_state);
-    $this->assertInstanceOf(AuthenticationForm::class, $form_state->getFormObject());
 
     // Make sure error is shown on page, and form is not available.
     $this->assertArrayNotHasKey('unconfigurable', $form['connection_settings']);
