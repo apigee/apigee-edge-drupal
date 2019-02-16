@@ -39,6 +39,7 @@ use Drupal\Core\Render\Element\StatusMessages;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Site\Settings;
 use Drupal\Core\StreamWrapper\PrivateStream;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\key\Entity\Key;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
@@ -102,13 +103,6 @@ class AuthenticationForm extends ConfigFormBase {
   protected $renderer;
 
   /**
-   * The core `file_system` service.
-   *
-   * @var \Drupal\Core\File\FileSystemInterface
-   */
-  protected $fileSystem;
-
-  /**
    * Site settings.
    *
    * @var \Drupal\Core\Site\Settings
@@ -135,14 +129,13 @@ class AuthenticationForm extends ConfigFormBase {
    * @param \Drupal\Core\Site\Settings $settings
    *   The `settings` service.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, KeyRepositoryInterface $key_repository, SDKConnectorInterface $sdk_connector, ModuleHandlerInterface $module_handler, OauthTokenStorageInterface $oauth_token_storage, RendererInterface $renderer, FileSystemInterface $file_system, Settings $settings) {
+  public function __construct(ConfigFactoryInterface $config_factory, KeyRepositoryInterface $key_repository, SDKConnectorInterface $sdk_connector, ModuleHandlerInterface $module_handler, OauthTokenStorageInterface $oauth_token_storage, RendererInterface $renderer, Settings $settings) {
     parent::__construct($config_factory);
     $this->keyRepository = $key_repository;
     $this->sdkConnector = $sdk_connector;
     $this->moduleHandler = $module_handler;
     $this->oauthTokenStorage = $oauth_token_storage;
     $this->renderer = $renderer;
-    $this->fileSystem = $file_system;
     $this->settings = $settings;
   }
 
@@ -157,7 +150,6 @@ class AuthenticationForm extends ConfigFormBase {
       $container->get('module_handler'),
       $container->get('apigee_edge.authentication.oauth_token_storage'),
       $container->get('renderer'),
-      $container->get('file_system'),
       $container->get('settings')
     );
   }
@@ -204,13 +196,13 @@ class AuthenticationForm extends ConfigFormBase {
     ];
 
     // Validate private file path is set.
-    if (!PrivateStream::basePath()) {
+    $file_private_path = PrivateStream::basePath();
+    if (!$file_private_path) {
       $this->disableForm($form, $this->t('The Drupal private file setting has not been configured.'));
       return $form;
     }
 
     // Validate private file path is a directory and is writable.
-    $file_private_path = Settings::get('file_private_path');
     $private_path_is_writable = is_writable($file_private_path);
     $private_path_is_directory = is_dir($file_private_path);
 
@@ -441,10 +433,10 @@ class AuthenticationForm extends ConfigFormBase {
    *
    * @param array $form
    *   The form to disable.
-   * @param string $error
+   * @param \Drupal\Core\StringTranslation\TranslatableMarkup $error
    *   The error to display.
    */
-  protected function disableForm(array &$form, string $error) {
+  protected function disableForm(array &$form, TranslatableMarkup $error) {
     $form['actions']['#disabled'] = TRUE;
     $form['connection_settings']['unconfigurable'] = [
       '#type' => 'container',
