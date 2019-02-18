@@ -28,9 +28,11 @@ use Drupal\Core\Config\Entity\ConfigEntityStorageInterface;
 interface TeamRoleStorageInterface extends ConfigEntityStorageInterface {
 
   /**
-   * Change permissions for a team role.
+   * Changes permissions of a team role.
    *
-   * This function may be used to grant and revoke multiple permissions at once.
+   * This function can be used to grant and revoke multiple permissions at once.
+   *
+   * Based on user_role_change_permissions().
    *
    * @param string $role_name
    *   The ID of a team role.
@@ -41,8 +43,6 @@ interface TeamRoleStorageInterface extends ConfigEntityStorageInterface {
    *   granted. Any value that evaluates to FALSE will cause the team permission
    *   to be revoked. Existing team permissions are not changed, unless
    *   specified in $permissions.
-   *
-   *   Based on user_role_change_permissions().
    */
   public function changePermissions(string $role_name, array $permissions): void;
 

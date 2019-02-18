@@ -107,13 +107,13 @@ final class TeamMemberApiProductAccessHandler implements TeamMemberApiProductAcc
     }
     else {
       try {
-        $developer_teams = $this->teamMembershipManager->getTeams($account->getEmail());
+        $developer_team_ids = $this->teamMembershipManager->getTeams($account->getEmail());
       }
       catch (\Exception $e) {
-        $developer_teams = [];
+        $developer_team_ids = [];
       }
 
-      if (in_array($team->id(), $developer_teams)) {
+      if (in_array($team->id(), $developer_team_ids)) {
         // We grant access to the entity if both of these conditions are met:
         // - No modules say to deny access.
         // - At least one module says to grant access.

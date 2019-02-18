@@ -139,7 +139,7 @@ class TeamRouteProvider extends EdgeEntityRouteProvider {
   protected function getEditTeamMemberRoute(EntityTypeInterface $entity_type) {
     // Because this path depends on the {developer} route parameter that
     // can not be resolved in Team::urlRouteParameters() therefore this path
-    // can not come from the link templates defined on the Team entity.
+    // can not be defined in the link templates defined on the Team entity.
     $route = new Route('/teams/{team}/members/{developer}/edit');
     $route->setDefault('_form', EditTeamMemberForm::class);
     $route->setDefault('_title', 'Edit member');
@@ -173,7 +173,7 @@ class TeamRouteProvider extends EdgeEntityRouteProvider {
   protected function getRemoveTeamMemberRoute(EntityTypeInterface $entity_type) {
     // Because this path depends on the {developer} route parameter that
     // can not be resolved in Team::urlRouteParameters() therefore this path
-    // can not come from the link templates defined on the Team entity.
+    // can not be defined in the link templates defined on the Team entity.
     $route = new Route('/teams/{team}/members/{developer}/remove');
     $route->setDefault('_form', RemoveTeamMemberForm::class);
     $route->setDefault('_title', 'Remove member');

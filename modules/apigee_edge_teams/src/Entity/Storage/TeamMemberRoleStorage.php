@@ -140,12 +140,12 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
       throw new InvalidArgumentException('Anonymous user can not be member of a team.');
     }
     try {
-      $developer_teams = $this->teamMembershipManager->getTeams($account->getEmail());
+      $developer_team_ids = $this->teamMembershipManager->getTeams($account->getEmail());
     }
     catch (\Exception $e) {
-      $developer_teams = [];
+      $developer_team_ids = [];
     }
-    if (!in_array($team->id(), $developer_teams)) {
+    if (!in_array($team->id(), $developer_team_ids)) {
       throw new InvalidArgumentException("{$account->getEmail()} is not member of {$team->id()} team.");
     }
     // Indicates whether a new team member role entity had to be created
@@ -191,12 +191,12 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
       throw new InvalidArgumentException('Anonymous user can not be member of a team.');
     }
     try {
-      $developer_teams = $this->teamMembershipManager->getTeams($account->getEmail());
+      $developer_team_ids = $this->teamMembershipManager->getTeams($account->getEmail());
     }
     catch (\Exception $e) {
-      $developer_teams = [];
+      $developer_team_ids = [];
     }
-    if (!in_array($team->id(), $developer_teams)) {
+    if (!in_array($team->id(), $developer_team_ids)) {
       throw new InvalidArgumentException("{$account->getEmail()} is not member of {$team->id()} team.");
     }
     /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface $team_member_roles */

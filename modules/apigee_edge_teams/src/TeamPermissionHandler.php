@@ -158,14 +158,14 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
 
     $permissions = [];
     try {
-      $developer_teams = $this->teamMembershipManager->getTeams($account->getEmail());
+      $developer_team_ids = $this->teamMembershipManager->getTeams($account->getEmail());
     }
     catch (\Exception $e) {
-      $developer_teams = [];
+      $developer_team_ids = [];
     }
     // Only add team membership based permissions to the list if the developer
     // is still member of the team in Apigee Edge.
-    if (in_array($team->id(), $developer_teams)) {
+    if (in_array($team->id(), $developer_team_ids)) {
       /** @var \Drupal\apigee_edge_teams\Entity\TeamRoleInterface $member_role */
       $member_role = $this->teamRoleStorage->load(TeamRoleInterface::TEAM_MEMBER_ROLE);
       $permissions += $member_role->getPermissions();

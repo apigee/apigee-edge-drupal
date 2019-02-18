@@ -24,13 +24,13 @@ function apigee_edge_teams_test_apigee_edge_teams_developer_permissions_by_team_
   /** @var \Drupal\apigee_edge_teams\TeamPermissionHandlerInterface $team_permission_handler */
   $team_permission_handler = \Drupal::service('apigee_edge_teams.team_permissions');
   try {
-    $developer_teams = $team_membership_manager->getTeams($account->getEmail());
+    $developer_team_ids = $team_membership_manager->getTeams($account->getEmail());
   }
   catch (Exception $e) {
-    $developer_teams = [];
+    $developer_team_ids = [];
   }
 
-  if (in_array($team->id(), $developer_teams)) {
+  if (in_array($team->id(), $developer_team_ids)) {
     foreach ($team_permission_handler->getPermissions() as $permission) {
       if (strpos($permission->getName(), 'test') === 0) {
         $permissions[] = $permission->getName();

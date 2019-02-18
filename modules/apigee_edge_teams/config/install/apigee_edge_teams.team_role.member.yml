@@ -9,4 +9,3 @@ permissions:
   - api_product_access_public
   - team_app_create
   - team_app_analytics
-

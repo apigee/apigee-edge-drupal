@@ -250,12 +250,12 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
     }
 
     try {
-      $teams = $this->teamMembershipManager->getTeams($account->getEmail());
+      $developer_team_ids = $this->teamMembershipManager->getTeams($account->getEmail());
     }
     catch (\Exception $e) {
-      $teams = [];
+      $developer_team_ids = [];
     }
-    return in_array($entity->id(), $teams);
+    return in_array($entity->id(), $developer_team_ids);
   }
 
 }

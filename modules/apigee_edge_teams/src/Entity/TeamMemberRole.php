@@ -34,16 +34,13 @@ use Drupal\user\UserInterface;
  * the "member" role because it is an implied role and whether a developer is a
  * member of a team or not is stored in Apigee Edge.
  *
- * @see
- *
  * @ContentEntityType(
  *   id = "team_member_role",
  *   label = @Translation("Team member role"),
  *   base_table = "team_member_role",
  *   data_table = "team_member_role_data",
  *   handlers = {
- *     "storage" =
- *   "Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorage",
+ *     "storage" = "Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorage",
  *   },
  *   entity_keys = {
  *     "id" = "uuid",

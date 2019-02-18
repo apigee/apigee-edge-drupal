@@ -93,9 +93,9 @@ class TeamMembersList extends ControllerBase {
         $carry[$item->getEmail()] = $item;
         return $carry;
       }, []);
-      /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorageInterface $team_member_roles_storage */
-      $team_member_roles_storage = $this->entityTypeManager->getStorage('team_member_role');
-      $team_member_roles_by_mail = array_reduce($team_member_roles_storage->loadByTeam($team), function ($carry, TeamMemberRoleInterface $developer_role) {
+      /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorageInterface $team_member_role_storage */
+      $team_member_role_storage = $this->entityTypeManager->getStorage('team_member_role');
+      $team_member_roles_by_mail = array_reduce($team_member_role_storage->loadByTeam($team), function ($carry, TeamMemberRoleInterface $developer_role) {
         $carry[$developer_role->getDeveloper()->getEmail()] = $developer_role;
 
         return $carry;
@@ -144,11 +144,11 @@ class TeamMembersList extends ControllerBase {
    */
   protected function buildRow(string $member, array $users_by_mail, array $team_member_roles_by_mail, TeamInterface $team): array {
     $row = [];
-    $can_view_user_profiles = $this->currentUser()->hasPermission('access user profiles');
     $row['id'] = Html::getUniqueId($member);
 
     if (array_key_exists($member, $users_by_mail)) {
-      $row['data']['member'] = $can_view_user_profiles ? $users_by_mail[$member]->toLink() : "{$users_by_mail[$member]->label()} ($member)";
+      // @see \Drupal\user\UserAccessControlHandler::checkAccess()
+      $row['data']['member'] = $users_by_mail[$member]->access('view') ? $users_by_mail[$member]->toLink() : "{$users_by_mail[$member]->label()} ($member)";
     }
     else {
       // We only display the email address of the member in this case

@@ -191,13 +191,13 @@ function apigee_edge_teams_api_product_access(EntityInterface $entity, $operatio
   /** @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager */
   $team_membership_manager = \Drupal::service('apigee_edge_teams.team_membership_manager');
   try {
-    $team_ids = $team_membership_manager->getTeams($account->getEmail());
+    $developer_team_ids = $team_membership_manager->getTeams($account->getEmail());
   }
   catch (Exception $e) {
-    $team_ids = [];
+    $developer_team_ids = [];
   }
 
-  if (empty($team_ids)) {
+  if (empty($developer_team_ids)) {
     $result = AccessResult::neutral("{$account->getEmail()} is not member of any team.");
     // If developer's team membership changes access must be re-evaluated.
     // @see \Drupal\apigee_edge_teams\TeamMembershipManager
@@ -212,7 +212,7 @@ function apigee_edge_teams_api_product_access(EntityInterface $entity, $operatio
     /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamStorageInterface $team_storage */
     $team_storage = \Drupal::entityTypeManager()->getStorage('team');
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
-    $teams = $team_storage->loadMultiple($team_ids);
+    $teams = $team_storage->loadMultiple($developer_team_ids);
     foreach ($teams as $team) {
       $result = $access_checker->access($entity, $operation, $team, $account, TRUE);
       if ($result->isAllowed()) {

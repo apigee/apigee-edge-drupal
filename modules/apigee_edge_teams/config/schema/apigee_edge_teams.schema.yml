@@ -46,7 +46,7 @@ apigee_edge_teams.team_role.*:
       label: 'Label'
     locked:
       type: boolean
-      label: 'Role is locked, it can not be removed'
+      label: 'If a role is locked, it can not be removed'
     permissions:
       type: sequence
       label: 'Permissions'

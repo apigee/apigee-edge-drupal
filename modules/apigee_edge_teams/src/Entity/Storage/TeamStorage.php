@@ -149,9 +149,9 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
     if (!$update) {
       /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorageInterface $team_member_role_storage */
       $team_member_role_storage = $this->entityTypeManager->getStorage('team_member_role');
-      /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface[] $dev_roles_by_team */
-      $dev_roles_by_team = $team_member_role_storage->loadByTeam($entity);
-      if ($dev_roles_by_team) {
+      /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface[] $team_roles_by_teams */
+      $team_roles_by_teams = $team_member_role_storage->loadByTeam($entity);
+      if ($team_roles_by_teams) {
         // Teams (Companies) can be deleted outside of Drupal so it could
         // happen that remnant team member roles exist in database when
         // a new team gets created with a previously used team id.
@@ -161,9 +161,9 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
         ];
         $this->logger->warning('Integrity check: Remnant team member roles found for new %team team.', $context);
         $success = TRUE;
-        foreach ($dev_roles_by_team as $role) {
+        foreach ($team_roles_by_teams as $team_member_role) {
           try {
-            $role->delete();
+            $team_member_role->delete();
           }
           catch (\Exception $exception) {
             $success = FALSE;
