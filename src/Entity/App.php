@@ -416,7 +416,7 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
         Url::fromUri($value);
       }
       catch (\Exception $exception) {
-        /** @var \self $app */
+        /** @var \Drupal\apigee_edge\Entity\App $app */
         $app = parent::set($field_name, '', $notify);
         $app->setCallbackUrl($value);
         return $app;

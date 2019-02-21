@@ -174,11 +174,10 @@ final class AppCacheByOwner implements AppCacheByOwnerInterface {
     if ($apps_by_owner === NULL) {
       return $apps;
     }
-    $apps = array_filter($apps_by_owner, function (AppInterface $app) use ($names) {
+
+    return array_filter($apps_by_owner, function (AppInterface $app) use ($names) {
       return in_array($app->getName(), $names);
     });
-
-    return $apps;
   }
 
 }

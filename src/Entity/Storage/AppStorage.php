@@ -221,7 +221,7 @@ abstract class AppStorage extends AttributesAwareFieldableEdgeEntityStorageBase 
     }
 
     /** @var \Drupal\apigee_edge\Entity\AppInterface $entity */
-    foreach ($entities as $id => $entity) {
+    foreach ($entities as $entity) {
       // Create an additional cache entry for each app that stores the app id
       // for each developerId or company (team) name + app name combinations.
       // Thanks for this we can run queries faster that tries to an load app

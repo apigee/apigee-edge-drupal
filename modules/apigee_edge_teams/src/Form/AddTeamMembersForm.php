@@ -170,13 +170,14 @@ class AddTeamMembersForm extends FormBase {
     }, $form_state->getValue('developers', []));
 
     // Collect email addresses.
+    /** @var array $developer_emails */
     $developer_emails = array_reduce($this->userStorage->loadMultiple($uids), function ($carry, UserInterface $item) {
       $carry[$item->id()] = $item->getEmail();
       return $carry;
     }, []);
 
     $context = [
-      '@developers' => implode($developer_emails),
+      '@developers' => implode('', $developer_emails),
       '@team' => $this->team->getEntityType()->getLowercaseLabel(),
       '%team_id' => $this->team->id(),
     ];

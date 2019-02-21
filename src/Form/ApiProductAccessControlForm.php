@@ -118,7 +118,7 @@ class ApiProductAccessControlForm extends ConfigFormBase {
       '#sticky' => TRUE,
     ];
 
-    foreach ($roleNames as $rid => $name) {
+    foreach ($roleNames as $name) {
       $form['access']['visibility']['#header'][] = [
         'data' => $name,
         'class' => ['checkbox'],

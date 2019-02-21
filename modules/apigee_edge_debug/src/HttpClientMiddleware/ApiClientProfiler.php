@@ -56,13 +56,6 @@ class ApiClientProfiler {
   private $logFormat;
 
   /**
-   * The debug message formatter plugin manager.
-   *
-   * @var \Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager
-   */
-  private $debugMessageFormatterPlugin;
-
-  /**
    * ApiClientProfiler constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -83,7 +76,6 @@ class ApiClientProfiler {
     }
     $this->logFormat = $config_factory->get('apigee_edge_debug.settings')->get('log_message_format');
     $this->logger = $logger;
-    $this->debugMessageFormatterPlugin = $debug_message_formatter_plugin;
   }
 
   /**

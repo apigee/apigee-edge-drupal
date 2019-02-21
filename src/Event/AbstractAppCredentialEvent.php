@@ -28,8 +28,18 @@ use Symfony\Component\EventDispatcher\Event;
  */
 abstract class AbstractAppCredentialEvent extends Event {
 
+  /**
+   * Team app type.
+   *
+   * @var string
+   */
   const APP_TYPE_TEAM = 'team';
 
+  /**
+   * Developer app type.
+   *
+   * @var string
+   */
   const APP_TYPE_DEVELOPER = 'developer';
 
   /**

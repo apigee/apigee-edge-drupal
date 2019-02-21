@@ -156,10 +156,10 @@ class Condition extends ConditionBase implements ConditionInterface {
             return $value != $condition['value'];
 
           case 'IN':
-            return array_search($value, $condition['value']) !== FALSE;
+            return in_array($value, $condition['value'], TRUE);
 
           case 'NOT IN':
-            return array_search($value, $condition['value']) === FALSE;
+            return !in_array($value, $condition['value'], TRUE);
 
           case 'STARTS_WITH':
             return strpos($value, $condition['value']) === 0;

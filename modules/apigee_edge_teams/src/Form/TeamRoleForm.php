@@ -50,13 +50,11 @@ class TeamRoleForm extends EntityForm {
       '@entity-type' => $team_role->getEntityType()->getLowercaseLabel(),
     ];
 
-    switch ($status) {
-      case SAVED_NEW:
-        $this->messenger()->addStatus($this->t('Created the %label @entity-type.', $context));
-        break;
-
-      default:
-        $this->messenger()->addStatus($this->t('Saved the %label @entity-type.', $context));
+    if ($status == SAVED_NEW) {
+      $this->messenger()->addStatus($this->t('Created the %label @entity-type.', $context));
+    }
+    else {
+      $this->messenger()->addStatus($this->t('Saved the %label @entity-type.', $context));
     }
     $form_state->setRedirectUrl($team_role->toUrl('collection'));
   }

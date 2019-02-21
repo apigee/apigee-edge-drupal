@@ -20,7 +20,6 @@
 namespace Drupal\apigee_edge\Access;
 
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\Access\AccessInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -32,23 +31,6 @@ use Symfony\Component\Routing\Route;
  * @see \Drupal\apigee_edge\Routing\DeveloperAppByNameRouteAlterSubscriber
  */
 final class AppAccessCheckByAppName implements AccessInterface {
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  private $entityTypeManager;
-
-  /**
-   * AppAccessCheckByAppName constructor.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   Entity type manager.
-   */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->entityTypeManager = $entity_type_manager;
-  }
 
   /**
    * Checks access to an app entity operation on the given route.

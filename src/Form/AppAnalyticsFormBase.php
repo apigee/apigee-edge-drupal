@@ -372,12 +372,14 @@ abstract class AppAnalyticsFormBase extends FormBase {
       $form['#attached']['drupalSettings']['analytics']['chart_container'] = $form['chart']['#attributes']['id'];
 
       $viewWindowMin = $viewWindowMax = 0;
-      for ($i = count($analytics['TimeUnit']) - 1; $i > 0; $i--) {
-        if ($analytics['stats']['data'][0]['metric'][0]['values'][$i] !== 0) {
-          $viewWindowMin = $i;
-        }
-        if ($viewWindowMax === 0 && $analytics['stats']['data'][0]['metric'][0]['values'][$i] !== 0) {
-          $viewWindowMax = $i;
+      if (array_key_exists('TimeUnit', $analytics) && is_array($analytics['TimeUnit'])) {
+        for ($i = count($analytics['TimeUnit']) - 1; $i > 0; $i--) {
+          if ($analytics['stats']['data'][0]['metric'][0]['values'][$i] !== 0) {
+            $viewWindowMin = $i;
+          }
+          if ($viewWindowMax === 0 && $analytics['stats']['data'][0]['metric'][0]['values'][$i] !== 0) {
+            $viewWindowMax = $i;
+          }
         }
       }
 
@@ -471,9 +473,7 @@ abstract class AppAnalyticsFormBase extends FormBase {
     $stats_query
       ->setFilter("({$this->getAnalyticsFilterCriteriaByAppOwner($app)} and developer_app eq '{$app->getName()}')")
       ->setTimeUnit('hour');
-
-    $analytics = $stats_controller->getOptimizedMetricsByDimensions(['apps'], $stats_query);
-    return $analytics;
+    return $stats_controller->getOptimizedMetricsByDimensions(['apps'], $stats_query);
   }
 
   /**

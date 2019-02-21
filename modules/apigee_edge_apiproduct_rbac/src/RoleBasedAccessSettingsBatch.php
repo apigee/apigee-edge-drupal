@@ -112,7 +112,9 @@ final class RoleBasedAccessSettingsBatch {
    * @see callback_batch_finished()
    */
   public static function batchFinishedCallback(bool $success, array $results, array $operations) {
+    /** @var array $updated */
     $updated = $results['success'] ?? [];
+    /** @var array $failed */
     $failed = $results['failed'] ?? [];
 
     if ($success && !empty($updated) && empty($failed)) {

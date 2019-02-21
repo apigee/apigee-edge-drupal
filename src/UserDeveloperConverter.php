@@ -167,7 +167,7 @@ class UserDeveloperConverter implements UserDeveloperConverterInterface {
     $user = $users ? reset($users) : FALSE;
 
     /** @var \Drupal\user\UserInterface $user */
-    if ($user === FALSE) {
+    if (!$user) {
       // Initialize new user object with minimum data.
       $user = $userStorage->create([
         'pass' => user_password(),

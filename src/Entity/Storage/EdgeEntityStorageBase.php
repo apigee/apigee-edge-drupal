@@ -45,6 +45,8 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
    *
    * Similar to SAVED_NEW and SAVED_UPDATED. If this is returned then
    * something probably went wrong.
+   *
+   * @var int
    */
   public const SAVED_UNKNOWN = 0;
 
@@ -254,7 +256,7 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
     // If ids is an empty array there is nothing to do.
     // Probably every entities could have been found in the persistent cache.
     // Node::loadMultiple() works the same.
-    if (is_array($ids) && empty($ids)) {
+    if ($ids === []) {
       return $entities;
     }
 
@@ -306,7 +308,7 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
     // Returned entities are SDK entities and not Drupal entities,
     // what if the id is used in Drupal is different than what
     // SDK uses? (ex.: developer)
-    foreach ($sdk_entities as $id => $entity) {
+    foreach ($sdk_entities as $entity) {
       $drupal_entity = $this->createNewInstance($entity);
       if ($ids === NULL) {
         $entities[$drupal_entity->id()] = $drupal_entity;
@@ -315,7 +317,7 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
         if (count($referenced_ids) > 1) {
           // Sanity check, why would someone try to load the same entity
           // by using more than one of its unique id.
-          throw new EntityStorageException(sprintf('The same entity should be referenced only with one id, got %s.', implode($referenced_ids)));
+          throw new EntityStorageException(sprintf('The same entity should be referenced only with one id, got %s.', implode('', $referenced_ids)));
         }
         $entities[reset($referenced_ids)] = $drupal_entity;
       }
@@ -425,13 +427,12 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
    *   Array of cache tags.
    */
   protected function getPersistentCacheTags(EntityInterface $entity) {
-    $cacheTags = [
+    return [
       "{$this->entityTypeId}",
       "{$this->entityTypeId}:values",
       "{$this->entityTypeId}:{$entity->id()}",
       "{$this->entityTypeId}:{$entity->id()}:values",
     ];
-    return $cacheTags;
   }
 
   /**

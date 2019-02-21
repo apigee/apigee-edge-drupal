@@ -33,6 +33,8 @@ final class TeamAppPermissionProvider implements EntityPermissionProviderInterfa
 
   /**
    * The id of the Manage Team Apps permission.
+   *
+   * @var string
    */
   public const MANAGE_TEAM_APPS_PERMISSION = 'manage team apps';
 

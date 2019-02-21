@@ -32,6 +32,8 @@ interface UserDeveloperConverterInterface {
 
   /**
    * Developer-user base field mapping.
+   *
+   * @var string[]
    */
   public const DEVELOPER_PROP_USER_BASE_FIELD_MAP = [
     'userName' => 'name',

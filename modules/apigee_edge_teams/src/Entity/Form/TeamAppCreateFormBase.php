@@ -46,13 +46,6 @@ abstract class TeamAppCreateFormBase extends AppCreateForm {
   protected $appCredentialControllerFactory;
 
   /**
-   * The team API product access handler.
-   *
-   * @var \Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandlerInterface
-   */
-  private $teamMemberApiProductAccessHandler;
-
-  /**
    * Constructs TeamAppCreateFormBase.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -67,7 +60,6 @@ abstract class TeamAppCreateFormBase extends AppCreateForm {
   public function __construct(EntityTypeManagerInterface $entity_type_manager, ApiProductControllerInterface $api_product_controller, TeamAppCredentialControllerFactoryInterface $app_credential_controller_factory, TeamMemberApiProductAccessHandlerInterface $team_member_api_product_access_handler) {
     parent::__construct($entity_type_manager, $api_product_controller);
     $this->appCredentialControllerFactory = $app_credential_controller_factory;
-    $this->teamMemberApiProductAccessHandler = $team_member_api_product_access_handler;
   }
 
   /**

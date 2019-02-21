@@ -163,7 +163,7 @@ class Query extends QueryBase implements QueryInterface {
       // \Drupal\Core\Entity\EntityStorageBase::buildPropertyQuery() always adds
       // conditions with IN this is the reason why the last part of this
       // condition is needed.
-      if (in_array($condition['field'], $this->getEntityIdProperties()) && (in_array($condition['operator'], [NULL, '=']) || ($condition['operator'] === 'IN' && count($condition['value']) === 1))) {
+      if (in_array($condition['field'], $this->getEntityIdProperties()) && (in_array($condition['operator'], [NULL, '=']) || ($condition['operator'] === 'IN' && is_array($condition['value']) && count($condition['value']) === 1))) {
         if (is_array($condition['value'])) {
           $id = reset($condition['value']);
           $id_found = TRUE;

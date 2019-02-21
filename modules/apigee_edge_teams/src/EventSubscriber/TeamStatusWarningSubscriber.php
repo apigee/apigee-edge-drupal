@@ -82,13 +82,6 @@ class TeamStatusWarningSubscriber implements EventSubscriberInterface {
   private $teamAppEntityType;
 
   /**
-   * The team membership manager service.
-   *
-   * @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface
-   */
-  private $teamMembershipManager;
-
-  /**
    * TeamStatusWarningSubscriber constructor.
    *
    * @param \Drupal\Core\Session\AccountInterface $current_user
@@ -110,7 +103,6 @@ class TeamStatusWarningSubscriber implements EventSubscriberInterface {
     $this->teamStorage = $entity_type_manager->getStorage('team');
     $this->teamEntityType = $entity_type_manager->getDefinition('team');
     $this->teamAppEntityType = $entity_type_manager->getDefinition('team_app');
-    $this->teamMembershipManager = $team_membership_manager;
     $this->messenger = $messenger;
     $this->stringTranslation = $string_translation;
   }

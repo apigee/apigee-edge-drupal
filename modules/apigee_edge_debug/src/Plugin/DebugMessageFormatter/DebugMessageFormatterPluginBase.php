@@ -166,11 +166,10 @@ abstract class DebugMessageFormatterPluginBase extends PluginBase implements Con
     $time_stats = array_filter($stats->getHandlerStats(), function ($key) {
       return preg_match('/_time$/', $key);
     }, ARRAY_FILTER_USE_KEY);
-    $time_stats = array_map(function ($stat) use ($precision) {
+
+    return array_map(function ($stat) use ($precision) {
       return round($stat, $precision) . 's';
     }, $time_stats);
-
-    return $time_stats;
   }
 
 }

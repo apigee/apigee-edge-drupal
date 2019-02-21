@@ -312,7 +312,7 @@ abstract class FieldableEdgeEntityBase extends EdgeEntityBase implements Fieldab
    */
   public function getFieldDefinitions() {
     if (!isset($this->fieldDefinitions)) {
-      $this->fieldDefinitions = $this->entityManager()->getFieldDefinitions($this->entityTypeId, $this->bundle());
+      $this->fieldDefinitions = $this->entityTypeManager()->getFieldDefinitions($this->entityTypeId, $this->bundle());
     }
     return $this->fieldDefinitions;
   }
@@ -363,7 +363,7 @@ abstract class FieldableEdgeEntityBase extends EdgeEntityBase implements Fieldab
    * {@inheritdoc}
    */
   public function isValidationRequired() {
-    return (bool) $this->validationRequired;
+    return $this->validationRequired;
   }
 
   /**

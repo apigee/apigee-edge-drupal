@@ -68,13 +68,6 @@ final class DeveloperStatusWarningSubscriber implements EventSubscriberInterface
   private $developerStorage;
 
   /**
-   * The user storage.
-   *
-   * @var \Drupal\user\UserStorageInterface
-   */
-  private $userStorage;
-
-  /**
    * DeveloperStatusWarningSubscriber constructor.
    *
    * @param \Drupal\Core\Session\AccountInterface $current_user
@@ -92,7 +85,6 @@ final class DeveloperStatusWarningSubscriber implements EventSubscriberInterface
     $this->routeMatch = $route_match;
     $this->current_user = $current_user;
     $this->developerStorage = $entity_type_manager->getStorage('developer');
-    $this->userStorage = $entity_type_manager->getStorage('user');
     $this->messenger = $messenger;
     $this->stringTranslation = $string_translation;
   }

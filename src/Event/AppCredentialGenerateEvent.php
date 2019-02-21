@@ -28,6 +28,11 @@ namespace Drupal\apigee_edge\Event;
  */
 class AppCredentialGenerateEvent extends AbstractAppCredentialEvent {
 
+  /**
+   * Event id.
+   *
+   * @var string
+   */
   const EVENT_NAME = 'apigee_edge.app_credential.generate';
 
 }

@@ -195,12 +195,10 @@ class TeamMembersList extends ControllerBase {
    *   Render array.
    */
   protected function buildOperations(string $member, TeamInterface $team): array {
-    $build = [
+    return [
       '#type' => 'operations',
       '#links' => $this->getOperations($member, $team),
     ];
-
-    return $build;
   }
 
   /**

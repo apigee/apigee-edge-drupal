@@ -127,8 +127,7 @@ abstract class EdgeEntityBase extends Entity implements EdgeEntityInterface {
    *   The Drupal entity that decorates the SDK entity.
    */
   public static function createFrom(EntityInterface $entity): EdgeEntityInterface {
-    $instance = new static([], NULL, $entity);
-    return $instance;
+    return new static([], NULL, $entity);
   }
 
   /**

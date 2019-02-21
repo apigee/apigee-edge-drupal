@@ -180,11 +180,9 @@ final class AppController extends AppControllerBase implements AppControllerInte
   public function listAppIdsByStatus(string $status, PagerInterface $pager = NULL): array {
     $apps_from_cache = $this->getAppsFromCacheByStatus($status, $pager);
     if ($apps_from_cache !== NULL) {
-      $app_ids = array_map(function (AppInterface $app) {
+      return array_map(function (AppInterface $app) {
         return $app->id();
       }, $apps_from_cache);
-
-      return $app_ids;
     }
 
     return $this->decorated()->listAppIdsByStatus($status, $pager);

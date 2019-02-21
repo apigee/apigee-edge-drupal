@@ -119,15 +119,9 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
   public function loadMultiple(array $ids = NULL) {
     $entities = parent::loadMultiple($ids);
     if ($ids) {
-      $entitiesByDeveloperId = [];
-      foreach ($entities as $entity) {
-        // It could be an integer if developer UUID has been used as as an id
-        // instead of the email address.
-        if (is_object($entity)) {
-          /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $entity */
-          $entitiesByDeveloperId[$entity->getDeveloperId()] = $entity;
-        }
-      }
+      // It could be an integer if developer UUID has been used as as an id
+      // instead of the email address.
+      $entitiesByDeveloperId = array_filter($entities, 'is_object');
       $entities = array_merge($entities, $entitiesByDeveloperId);
       $requestedEntities = [];
       // Ensure that the returned array is ordered the same as the original
@@ -239,7 +233,7 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
     // Create a separate cache entry that uses developer id in the cache id
     // instead of the email address. This way we can load a developer from
     // cache by using both ids.
-    foreach ($entities as $id => $entity) {
+    foreach ($entities as $entity) {
       /** @var \Drupal\apigee_edge\Entity\Developer $entity */
       $this->cacheBackend->set($this->buildCacheId($entity->getDeveloperId()), $entity, $this->getPersistentCacheExpiration(), $this->getPersistentCacheTags($entity));
     }

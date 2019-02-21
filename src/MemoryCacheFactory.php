@@ -28,6 +28,11 @@ use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
  */
 final class MemoryCacheFactory implements MemoryCacheFactoryInterface {
 
+  /**
+   * The default cache bin prefix.
+   *
+   * @var string
+   */
   private const DEFAULT_CACHE_BIN_PREFIX = 'apigee_edge';
 
   /**

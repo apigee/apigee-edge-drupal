@@ -46,13 +46,6 @@ class DeveloperAppStorage extends AppStorage implements DeveloperAppStorageInter
   private $appEntityController;
 
   /**
-   * The developer app controller service.
-   *
-   * @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerFactoryInterface
-   */
-  private $developerAppControllerFactory;
-
-  /**
    * The email validator service.
    *
    * @var \Egulias\EmailValidator\EmailValidatorInterface
@@ -81,7 +74,6 @@ class DeveloperAppStorage extends AppStorage implements DeveloperAppStorageInter
    */
   public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, DeveloperAppControllerFactoryInterface $developer_app_controller_factory, AppControllerInterface $app_controller, ConfigFactoryInterface $config, EmailValidatorInterface $email_validator) {
     parent::__construct($entity_type, $cache_backend, $memory_cache, $system_time, $app_controller);
-    $this->developerAppControllerFactory = $developer_app_controller_factory;
     $this->appEntityController = new DeveloperAppEdgeEntityControllerProxy($developer_app_controller_factory, $app_controller);
     $this->cacheExpiration = $config->get('apigee_edge.developer_app_settings')->get('cache_expiration');
     $this->emailValidator = $email_validator;

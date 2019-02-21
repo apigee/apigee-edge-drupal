@@ -30,6 +30,11 @@ use Symfony\Component\EventDispatcher\Event;
  */
 class EdgeEntityFieldConfigListAlterEvent extends Event {
 
+  /**
+   * Event id.
+   *
+   * @var string
+   */
   public const EVENT_NAME = 'apigee_edge.field_config_list_alter';
 
   /**
