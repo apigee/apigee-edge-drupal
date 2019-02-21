@@ -37,7 +37,7 @@ class EdgeEntityType extends EntityType {
   /**
    * {@inheritdoc}
    */
-  public $entity_type_class = EntityEdgeEntityType::class;
+  public $entityTypeClass = EntityEdgeEntityType::class;
 
   /**
    * {@inheritdoc}

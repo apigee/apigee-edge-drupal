@@ -178,10 +178,10 @@ final class TeamController implements TeamControllerInterface {
   /**
    * {@inheritdoc}
    */
-  public function setStatus(string $entityId, string $status): void {
-    $this->decorated()->setStatus($entityId, $status);
+  public function setStatus(string $entity_id, string $status): void {
+    $this->decorated()->setStatus($entity_id, $status);
     // Enforce reload of entity from Apigee Edge.
-    $this->entityCache->removeEntities([$entityId]);
+    $this->entityCache->removeEntities([$entity_id]);
     $this->entityCache->allEntitiesInCache(FALSE);
   }
 
@@ -195,17 +195,17 @@ final class TeamController implements TeamControllerInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete(string $entityId): EntityInterface {
+  public function delete(string $entity_id): EntityInterface {
     /** @var \Apigee\Edge\Api\Management\Entity\CompanyInterface $entity */
-    $entity = $this->traitDelete($entityId);
+    $entity = $this->traitDelete($entity_id);
 
     // Invalidate developer companies cache to force reload
     // in \Drupal\apigee_edge\Entity\Developer::getCompanies().
-    $this->developerCompaniesCache->invalidate(["company:{$entityId}"]);
+    $this->developerCompaniesCache->invalidate(["company:{$entity_id}"]);
 
     // And of course, the company membership object cache has to be cleared as
     // well.
-    $this->companyMembershipObjectCache->removeMembership($entityId);
+    $this->companyMembershipObjectCache->removeMembership($entity_id);
 
     // Invalidate app caches that belongs to this company.
     $app_cache = $this->appCacheByOwnerFactory->getAppCache($entity->id());

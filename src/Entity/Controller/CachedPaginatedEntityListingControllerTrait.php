@@ -67,6 +67,6 @@ trait CachedPaginatedEntityListingControllerTrait {
   /**
    * {@inheritdoc}
    */
-  abstract protected function extractSubsetOfAssociativeArray(array $assoc_array, int $limit, ?string $startKey = NULL): array;
+  abstract protected function extractSubsetOfAssociativeArray(array $assoc_array, int $limit, ?string $start_key = NULL): array;
 
 }

@@ -41,7 +41,7 @@ trait DeveloperAppFormTrait {
   /**
    * {@inheritdoc}
    */
-  public static function appExists(string $name, array $element, FormStateInterface $formState): bool {
+  public static function appExists(string $name, array $element, FormStateInterface $form_state): bool {
     // Do not validate if app name is not set.
     if ($name === '') {
       return FALSE;
@@ -51,7 +51,7 @@ trait DeveloperAppFormTrait {
     // TODO Make sure that DeveloperAppCreateEditFormForDeveloper can be
     // used only if the Drupal user in the route has a developer account
     // in Apigee Edge.
-    if ($formState->getValue('owner') === NULL) {
+    if ($form_state->getValue('owner') === NULL) {
       return TRUE;
     }
 
@@ -63,7 +63,7 @@ trait DeveloperAppFormTrait {
     $factory = \Drupal::service('apigee_edge.controller.developer_app_controller_factory');
     $app = TRUE;
     try {
-      $app = $factory->developerAppController($formState->getValue('owner'))->load($name);
+      $app = $factory->developerAppController($form_state->getValue('owner'))->load($name);
     }
     catch (ApiException $exception) {
       if ($exception instanceof ClientErrorException && $exception->getEdgeErrorCode() === 'developer.service.AppDoesNotExist') {
@@ -74,7 +74,7 @@ trait DeveloperAppFormTrait {
         // unexpected response.
         $context = [
           '%app_name' => $name,
-          '%owner' => $formState->getValue('owner'),
+          '%owner' => $form_state->getValue('owner'),
         ];
         $context += Error::decodeException($exception);
         \Drupal::logger('apigee_edge')->error("Unable to properly validate an app name's uniqueness. App name: %app_name. Owner: %owner. @message %function (line %line of %file). <pre>@backtrace_string</pre>", $context);

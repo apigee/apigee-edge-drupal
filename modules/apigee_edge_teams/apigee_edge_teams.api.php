@@ -23,7 +23,6 @@
  * @file
  * Hooks for apigee_edge_teams module.
  */
-
 /**
  * @addtogroup hooks
  * @{

@@ -99,10 +99,10 @@ final class AppController extends AppControllerBase implements AppControllerInte
   /**
    * {@inheritdoc}
    */
-  public function loadApp(string $appId): AppInterface {
-    $app = $this->appCache->getEntity($appId);
+  public function loadApp(string $app_id): AppInterface {
+    $app = $this->appCache->getEntity($app_id);
     if ($app === NULL) {
-      $app = $this->decorated()->loadApp($appId);
+      $app = $this->decorated()->loadApp($app_id);
       $this->appCache->saveEntities([$app]);
     }
     return $app;
@@ -130,10 +130,10 @@ final class AppController extends AppControllerBase implements AppControllerInte
   /**
    * {@inheritdoc}
    */
-  public function listApps(bool $includeCredentials = FALSE, PagerInterface $pager = NULL): array {
+  public function listApps(bool $include_credentials = FALSE, PagerInterface $pager = NULL): array {
     // If all entities in the cache and apps with credentials should be
     // returned.
-    if ($this->appCache->isAllEntitiesInCache() && $includeCredentials === TRUE) {
+    if ($this->appCache->isAllEntitiesInCache() && $include_credentials === TRUE) {
       if ($pager === NULL) {
         return $this->appCache->getEntities();
       }
@@ -142,9 +142,9 @@ final class AppController extends AppControllerBase implements AppControllerInte
       }
     }
 
-    $result = $this->decorated()->listApps($includeCredentials, $pager);
+    $result = $this->decorated()->listApps($include_credentials, $pager);
     // We only cache "complete" apps, we do not cache apps without credentials.
-    if ($includeCredentials) {
+    if ($include_credentials) {
       $this->appCache->saveEntities($result);
       // Null pager means the PHP API client has loaded all apps from
       // Apigee Edge.
@@ -191,13 +191,13 @@ final class AppController extends AppControllerBase implements AppControllerInte
   /**
    * {@inheritdoc}
    */
-  public function listAppsByStatus(string $status, bool $includeCredentials = TRUE, PagerInterface $pager = NULL): array {
+  public function listAppsByStatus(string $status, bool $include_credentials = TRUE, PagerInterface $pager = NULL): array {
     $apps_from_cache = $this->getAppsFromCacheByStatus($status, $pager);
     if ($apps_from_cache !== NULL) {
       return $apps_from_cache;
     }
 
-    $apps = $this->decorated()->listAppsByStatus($status, $includeCredentials, $pager);
+    $apps = $this->decorated()->listAppsByStatus($status, $include_credentials, $pager);
     // Nice to have, after we have added cache support for methods that return
     // app ids then we can compare the list of returned apps here
     // and the already cached app ids per owner to call saveEntities()
@@ -240,15 +240,15 @@ final class AppController extends AppControllerBase implements AppControllerInte
   /**
    * {@inheritdoc}
    */
-  public function listAppIdsByType(string $appType, PagerInterface $pager = NULL): array {
-    return $this->decorated()->listAppIdsByType($appType, $pager);
+  public function listAppIdsByType(string $app_type, PagerInterface $pager = NULL): array {
+    return $this->decorated()->listAppIdsByType($app_type, $pager);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function listAppIdsByFamily(string $appFamily, PagerInterface $pager = NULL): array {
-    return $this->decorated()->listAppIdsByFamily($appFamily, $pager);
+  public function listAppIdsByFamily(string $app_family, PagerInterface $pager = NULL): array {
+    return $this->decorated()->listAppIdsByFamily($app_family, $pager);
   }
 
   /**

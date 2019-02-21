@@ -261,14 +261,14 @@ abstract class AppForm extends FieldableEdgeEntityForm {
    *   The app name.
    * @param array $element
    *   Form element.
-   * @param \Drupal\Core\Form\FormStateInterface $formState
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   Form state.
    *
    * @return bool
    *   TRUE if the owner already has an app with the provided name or in case
    *   if an API communication error, FALSE otherwise.
    */
-  abstract public static function appExists(string $name, array $element, FormStateInterface $formState): bool;
+  abstract public static function appExists(string $name, array $element, FormStateInterface $form_state): bool;
 
   /**
    * Returns the default lifetime of a created app credential.

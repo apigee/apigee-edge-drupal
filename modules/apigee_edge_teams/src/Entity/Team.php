@@ -210,8 +210,8 @@ class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterfa
   /**
    * {@inheritdoc}
    */
-  public function hasApp(string $appName): bool {
-    return $this->decorated->hasApp($appName);
+  public function hasApp(string $app_name): bool {
+    return $this->decorated->hasApp($app_name);
   }
 
   /**
@@ -238,8 +238,8 @@ class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterfa
   /**
    * {@inheritdoc}
    */
-  public function setDisplayName(string $displayName): void {
-    $this->decorated->setDisplayName($displayName);
+  public function setDisplayName(string $display_name): void {
+    $this->decorated->setDisplayName($display_name);
   }
 
   /**

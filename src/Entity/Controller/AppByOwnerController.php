@@ -134,18 +134,18 @@ abstract class AppByOwnerController extends AppControllerBase implements AppByOw
   /**
    * {@inheritdoc}
    */
-  public function load(string $entityId): EntityInterface {
+  public function load(string $entity_id): EntityInterface {
     // Check whether the $entityId is an app name and it can
     // be found in app owner's cache.
-    $entity = $this->appCacheByOwner->getEntity($entityId);
+    $entity = $this->appCacheByOwner->getEntity($entity_id);
     // So is it an app id (UUID) then?
     if ($entity === NULL) {
-      $entity = $this->appCache->getEntity($entityId);
+      $entity = $this->appCache->getEntity($entity_id);
     }
     // The app has not found in caches so we have to load it from Apigee
     // Edge.
     if ($entity === NULL) {
-      $entity = $this->decorated()->load($entityId);
+      $entity = $this->decorated()->load($entity_id);
       // Saving it to app owner's cache ensures that app cache and app id
       // cache gets updated as well.
       $this->appCacheByOwner->saveEntities([$entity]);
@@ -164,13 +164,13 @@ abstract class AppByOwnerController extends AppControllerBase implements AppByOw
   /**
    * {@inheritdoc}
    */
-  public function setStatus(string $entityId, string $status): void {
-    $this->decorated()->setStatus($entityId, $status);
+  public function setStatus(string $entity_id, string $status): void {
+    $this->decorated()->setStatus($entity_id, $status);
     // The status of the app has changed so we have to remove it from the
     // cache and enforce its reload from Apigee Edge.
     // Here entity id can be only the name of the app and not its UUID.
     // @see https://apidocs.apigee.com/management/apis/post/organizations/%7Borg_name%7D/developers/%7Bdeveloper_email_or_id%7D/apps/%7Bapp_name%7D
-    $this->appCacheByOwner->removeEntities([$entityId]);
+    $this->appCacheByOwner->removeEntities([$entity_id]);
   }
 
 }

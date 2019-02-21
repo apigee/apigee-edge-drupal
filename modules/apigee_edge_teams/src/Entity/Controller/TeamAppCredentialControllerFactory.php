@@ -76,12 +76,12 @@ final class TeamAppCredentialControllerFactory implements TeamAppCredentialContr
   /**
    * {@inheritdoc}
    */
-  public function teamAppCredentialController(string $owner, string $appName): TeamAppCredentialControllerInterface {
-    if (!isset($this->instances[$owner][$appName])) {
-      $this->instances[$owner][$appName] = new TeamAppCredentialController($owner, $appName, $this->connector, $this->appCacheByOwnerFactory, $this->eventDispatcher);
+  public function teamAppCredentialController(string $owner, string $app_name): TeamAppCredentialControllerInterface {
+    if (!isset($this->instances[$owner][$app_name])) {
+      $this->instances[$owner][$app_name] = new TeamAppCredentialController($owner, $app_name, $this->connector, $this->appCacheByOwnerFactory, $this->eventDispatcher);
     }
 
-    return $this->instances[$owner][$appName];
+    return $this->instances[$owner][$app_name];
   }
 
 }

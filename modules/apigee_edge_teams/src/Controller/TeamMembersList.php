@@ -78,7 +78,7 @@ class TeamMembersList extends ControllerBase {
    * @see \Drupal\apigee_edge_teams\Entity\TeamRouteProvider::getListTeamMembersRoute()
    */
   public function overview(TeamInterface $team) {
-    $entityType = $this->entityTypeManager()->getDefinition('team');
+    $entity_type = $this->entityTypeManager()->getDefinition('team');
     $members = $this->teamMembershipManager->getMembers($team->id());
     $users_by_mail = [];
     $team_member_roles_by_mail = [];
@@ -109,7 +109,7 @@ class TeamMembersList extends ControllerBase {
         'roles' => $this->t('Roles'),
         'operations' => $this->t('Operations'),
       ],
-      '#title' => $this->t('@team members', ['@team' => $entityType->getSingularLabel()]),
+      '#title' => $this->t('@team members', ['@team' => $entity_type->getSingularLabel()]),
       '#rows' => [],
       '#empty' => $this->t('There are no members yet.'),
       '#cache' => [

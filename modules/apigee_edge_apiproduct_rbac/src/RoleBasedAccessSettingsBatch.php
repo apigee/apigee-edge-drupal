@@ -70,19 +70,19 @@ final class RoleBasedAccessSettingsBatch {
         // always clear its value.
         $attributes->delete($original_attribute_name);
         if ($rids) {
-          $normalizedRids = [];
+          $normalized_rids = [];
           // Do not save redundant (authenticated) roles if "authenticated user"
           // role is present in rids.
-          if (in_array(AccountInterface::AUTHENTICATED_ROLE, $normalizedRids)) {
-            $normalizedRids[] = AccountInterface::AUTHENTICATED_ROLE;
+          if (in_array(AccountInterface::AUTHENTICATED_ROLE, $normalized_rids)) {
+            $normalized_rids[] = AccountInterface::AUTHENTICATED_ROLE;
             if (in_array(AccountInterface::ANONYMOUS_ROLE, $rids)) {
-              $normalizedRids[] = AccountInterface::ANONYMOUS_ROLE;
+              $normalized_rids[] = AccountInterface::ANONYMOUS_ROLE;
             }
           }
           else {
-            $normalizedRids = $rids;
+            $normalized_rids = $rids;
           }
-          $attributes->add($attribute_name, implode(APIGEE_EDGE_APIPRODUCT_RBAC_ATTRIBUTE_VALUE_DELIMITER, $normalizedRids));
+          $attributes->add($attribute_name, implode(APIGEE_EDGE_APIPRODUCT_RBAC_ATTRIBUTE_VALUE_DELIMITER, $normalized_rids));
         }
         $controller->updateAttributes($product_name, $attributes);
         $context['results']['success'][$product_name] = Xss::filter($product_display_name);

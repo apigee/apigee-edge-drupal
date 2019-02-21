@@ -371,14 +371,14 @@ abstract class AppAnalyticsFormBase extends FormBase {
         ->getPreferredLangcode();
       $form['#attached']['drupalSettings']['analytics']['chart_container'] = $form['chart']['#attributes']['id'];
 
-      $viewWindowMin = $viewWindowMax = 0;
+      $view_window_min = $view_window_max = 0;
       if (array_key_exists('TimeUnit', $analytics) && is_array($analytics['TimeUnit'])) {
         for ($i = count($analytics['TimeUnit']) - 1; $i > 0; $i--) {
           if ($analytics['stats']['data'][0]['metric'][0]['values'][$i] !== 0) {
-            $viewWindowMin = $i;
+            $view_window_min = $i;
           }
-          if ($viewWindowMax === 0 && $analytics['stats']['data'][0]['metric'][0]['values'][$i] !== 0) {
-            $viewWindowMax = $i;
+          if ($view_window_max === 0 && $analytics['stats']['data'][0]['metric'][0]['values'][$i] !== 0) {
+            $view_window_max = $i;
           }
         }
       }
@@ -392,8 +392,8 @@ abstract class AppAnalyticsFormBase extends FormBase {
         'interpolateNulls' => 'true',
         'hAxis' => [
           'viewWindow' => [
-            'min' => $analytics['TimeUnit'][$viewWindowMin],
-            'max' => $analytics['TimeUnit'][$viewWindowMax],
+            'min' => $analytics['TimeUnit'][$view_window_min],
+            'max' => $analytics['TimeUnit'][$view_window_max],
           ],
           'gridlines' => [
             'count' => -1,

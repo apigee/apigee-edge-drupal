@@ -248,8 +248,8 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasApp(string $appName): bool {
-    return $this->decorated->hasApp($appName);
+  public function hasApp(string $app_name): bool {
+    return $this->decorated->hasApp($app_name);
   }
 
   /**
@@ -313,8 +313,8 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasCompany(string $companyName): bool {
-    return $this->decorated->hasCompany($companyName);
+  public function hasCompany(string $company_name): bool {
+    return $this->decorated->hasCompany($company_name);
   }
 
   /**
@@ -334,8 +334,8 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
   /**
    * {@inheritdoc}
    */
-  public function setUserName(string $userName): void {
-    $this->decorated->setUserName($userName);
+  public function setUserName(string $user_name): void {
+    $this->decorated->setUserName($user_name);
   }
 
   /**
@@ -365,8 +365,8 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
   /**
    * {@inheritdoc}
    */
-  public function setFirstName(string $firstName): void {
-    $this->decorated->setFirstName($firstName);
+  public function setFirstName(string $first_name): void {
+    $this->decorated->setFirstName($first_name);
   }
 
   /**
@@ -379,8 +379,8 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
   /**
    * {@inheritdoc}
    */
-  public function setLastName(string $lastName): void {
-    $this->decorated->setLastName($lastName);
+  public function setLastName(string $last_name): void {
+    $this->decorated->setLastName($last_name);
   }
 
   /**
@@ -394,8 +394,8 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
    * {@inheritdoc}
    */
   public function getOwner() {
-    $ownerId = $this->getOwnerId();
-    return $ownerId === NULL ? NULL : User::load($ownerId);
+    $owner_id = $this->getOwnerId();
+    return $owner_id === NULL ? NULL : User::load($owner_id);
   }
 
   /**

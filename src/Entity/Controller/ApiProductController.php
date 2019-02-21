@@ -113,8 +113,8 @@ final class ApiProductController implements ApiProductControllerInterface, Entit
   /**
    * {@inheritdoc}
    */
-  public function searchByAttribute(string $attributeName, string $attributeValue): array {
-    return $this->decorated()->searchByAttribute($attributeName, $attributeValue);
+  public function searchByAttribute(string $attribute_name, string $attribute_value): array {
+    return $this->decorated()->searchByAttribute($attribute_name, $attribute_value);
   }
 
   /**

@@ -37,7 +37,7 @@ final class EdgeEntityFieldConfigListRouteSubscriber implements EventSubscriberI
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  private $entity_type_manager;
+  private $entityTypeManager;
 
   /**
    * AppFieldConfigListUiRouteSubscriber constructor.
@@ -46,7 +46,7 @@ final class EdgeEntityFieldConfigListRouteSubscriber implements EventSubscriberI
    *   The entity type manager service.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->entity_type_manager = $entity_type_manager;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -65,7 +65,7 @@ final class EdgeEntityFieldConfigListRouteSubscriber implements EventSubscriberI
    *   The route build event.
    */
   public function alterRoutes(RouteBuildEvent $event) {
-    foreach ($this->entity_type_manager->getDefinitions() as $entity_type) {
+    foreach ($this->entityTypeManager->getDefinitions() as $entity_type) {
       if (in_array(EdgeEntityInterface::class, class_implements($entity_type->getOriginalClass())) && ($route = $event->getRouteCollection()->get("entity.{$entity_type->id()}.field_ui_fields"))) {
         $route->setDefault('_controller', EdgeEntityFieldConfigListController::class . '::listing');
       }

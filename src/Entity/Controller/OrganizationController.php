@@ -101,20 +101,20 @@ final class OrganizationController implements OrganizationControllerInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete(string $entityId): EntityInterface {
-    $entity = $this->decorated()->delete($entityId);
-    unset($this->cache[$entityId]);
+  public function delete(string $entity_id): EntityInterface {
+    $entity = $this->decorated()->delete($entity_id);
+    unset($this->cache[$entity_id]);
     return $entity;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function load(string $entityId): EntityInterface {
-    if (!isset($this->cache[$entityId])) {
-      $this->cache[$entityId] = $this->decorated()->load($entityId);
+  public function load(string $entity_id): EntityInterface {
+    if (!isset($this->cache[$entity_id])) {
+      $this->cache[$entity_id] = $this->decorated()->load($entity_id);
     }
-    return $this->cache[$entityId];
+    return $this->cache[$entity_id];
   }
 
   /**

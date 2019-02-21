@@ -107,7 +107,7 @@ class SDKConnector implements SDKConnectorInterface {
   /**
    * Constructs a new SDKConnector.
    *
-   * @param \Drupal\Core\Http\ClientFactory $clientFactory
+   * @param \Drupal\Core\Http\ClientFactory $client_factory
    *   Http client.
    * @param \Drupal\key\KeyRepositoryInterface $key_repository
    *   The key repository.
@@ -115,18 +115,18 @@ class SDKConnector implements SDKConnectorInterface {
    *   Entity type manager service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   Module handler service.
-   * @param \Drupal\Core\Extension\InfoParserInterface $infoParser
+   * @param \Drupal\Core\Extension\InfoParserInterface $info_parser
    *   Info file parser service.
    */
-  public function __construct(ClientFactory $clientFactory, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $moduleHandler, InfoParserInterface $infoParser) {
-    $this->clientFactory = $clientFactory;
+  public function __construct(ClientFactory $client_factory, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $module_handler, InfoParserInterface $info_parser) {
+    $this->clientFactory = $client_factory;
     $this->entityTypeManager = $entity_type_manager;
     $this->keyRepository = $key_repository;
     $this->configFactory = $config_factory;
-    $this->moduleHandler = $moduleHandler;
-    $this->infoParser = $infoParser;
+    $this->moduleHandler = $module_handler;
+    $this->infoParser = $info_parser;
   }
 
   /**
@@ -245,13 +245,13 @@ class SDKConnector implements SDKConnectorInterface {
    */
   protected function userAgentPrefix(): string {
     if (NULL === self::$userAgentPrefix) {
-      $moduleInfo = $this->infoParser->parse($this->moduleHandler->getModule('apigee_edge')->getPathname());
-      if (!isset($moduleInfo['version'])) {
-        $moduleInfo['version'] = '8.x-1.x-dev';
+      $module_info = $this->infoParser->parse($this->moduleHandler->getModule('apigee_edge')->getPathname());
+      if (!isset($module_info['version'])) {
+        $module_info['version'] = '8.x-1.x-dev';
       }
       // TODO Change "DevPortal" to "Drupal module" later. It has been added for
       // Apigee's convenience this way.
-      self::$userAgentPrefix = $moduleInfo['name'] . ' DevPortal ' . $moduleInfo['version'];
+      self::$userAgentPrefix = $module_info['name'] . ' DevPortal ' . $module_info['version'];
     }
 
     return self::$userAgentPrefix;
@@ -279,8 +279,8 @@ class SDKConnector implements SDKConnectorInterface {
       throw $e;
     }
     finally {
-      if (isset($originalCredentials)) {
-        self::$credentials = $this->setCredentials($originalCredentials);
+      if (isset($original_credentials)) {
+        self::$credentials = $this->setCredentials($original_credentials);
       }
     }
   }

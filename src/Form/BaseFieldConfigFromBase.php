@@ -85,18 +85,18 @@ abstract class BaseFieldConfigFromBase extends FormBase {
       ],
     ];
 
-    foreach ($base_fields as $name => $baseField) {
-      if ($baseField->isDisplayConfigurable('form')) {
+    foreach ($base_fields as $name => $base_field) {
+      if ($base_field->isDisplayConfigurable('form')) {
         $form['table'][$name] = [
           'name' => [
             '#type' => 'item',
-            '#markup' => $baseField->getLabel(),
+            '#markup' => $base_field->getLabel(),
           ],
           'required' => [
             '#type' => 'checkbox',
             '#title' => $this->t('Required'),
             '#title_display' => 'invisible',
-            '#default_value' => $baseField->isRequired(),
+            '#default_value' => $base_field->isRequired(),
           ],
         ];
       }

@@ -76,12 +76,12 @@ final class DeveloperAppCredentialControllerFactory implements DeveloperAppCrede
   /**
    * {@inheritdoc}
    */
-  public function developerAppCredentialController(string $owner, string $appName): DeveloperAppCredentialControllerInterface {
-    if (!isset($this->instances[$owner][$appName])) {
-      $this->instances[$owner][$appName] = new DeveloperAppCredentialController($owner, $appName, $this->connector, $this->appCacheByOwnerFactory, $this->eventDispatcher);
+  public function developerAppCredentialController(string $owner, string $app_name): DeveloperAppCredentialControllerInterface {
+    if (!isset($this->instances[$owner][$app_name])) {
+      $this->instances[$owner][$app_name] = new DeveloperAppCredentialController($owner, $app_name, $this->connector, $this->appCacheByOwnerFactory, $this->eventDispatcher);
     }
 
-    return $this->instances[$owner][$appName];
+    return $this->instances[$owner][$app_name];
   }
 
 }

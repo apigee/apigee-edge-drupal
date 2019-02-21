@@ -121,16 +121,16 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
     if ($ids) {
       // It could be an integer if developer UUID has been used as as an id
       // instead of the email address.
-      $entitiesByDeveloperId = array_filter($entities, 'is_object');
-      $entities = array_merge($entities, $entitiesByDeveloperId);
-      $requestedEntities = [];
+      $entities_by_developer_id = array_filter($entities, 'is_object');
+      $entities = array_merge($entities, $entities_by_developer_id);
+      $requested_entities = [];
       // Ensure that the returned array is ordered the same as the original
       // $ids array if this was passed in and remove any invalid ids.
-      $passedIds = array_flip(array_intersect_key(array_flip($ids), $entities));
-      foreach ($passedIds as $id) {
-        $requestedEntities[$id] = $entities[$id];
+      $passed_ids = array_flip(array_intersect_key(array_flip($ids), $entities));
+      foreach ($passed_ids as $id) {
+        $requested_entities[$id] = $entities[$id];
       }
-      $entities = $requestedEntities;
+      $entities = $requested_entities;
     }
 
     return $entities;
@@ -168,18 +168,18 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
    */
   protected function getPersistentCacheTags(EntityInterface $entity) {
     /** @var \Drupal\apigee_edge\Entity\Developer $entity */
-    $cacheTags = parent::getPersistentCacheTags($entity);
-    $cacheTags = $this->sanitizeCacheTags($entity->id(), $cacheTags);
+    $cache_tags = parent::getPersistentCacheTags($entity);
+    $cache_tags = $this->sanitizeCacheTags($entity->id(), $cache_tags);
     // Create tags by developerId (besides email address).
-    $cacheTags[] = "{$this->entityTypeId}:{$entity->uuid()}";
-    $cacheTags[] = "{$this->entityTypeId}:{$entity->uuid()}:values";
+    $cache_tags[] = "{$this->entityTypeId}:{$entity->uuid()}";
+    $cache_tags[] = "{$this->entityTypeId}:{$entity->uuid()}:values";
     // Also add a tag by developer's Drupal user id to ensure that cached
     // developer data is invalidated when the related Drupal user gets changed
     // or deleted.
     if ($entity->getOwnerId()) {
-      $cacheTags[] = "user:{$entity->getOwnerId()}";
+      $cache_tags[] = "user:{$entity->getOwnerId()}";
     }
-    return $cacheTags;
+    return $cache_tags;
   }
 
   /**

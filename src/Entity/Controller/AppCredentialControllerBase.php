@@ -115,9 +115,9 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
   /**
    * {@inheritdoc}
    */
-  public function addProducts(string $consumerKey, array $apiProducts): AppCredentialInterface {
-    $credential = $this->decorated()->addProducts($consumerKey, $apiProducts);
-    $this->eventDispatcher->dispatch(AppCredentialAddApiProductEvent::EVENT_NAME, new AppCredentialAddApiProductEvent($this->getAppType(), $this->owner, $this->appName, $credential, $apiProducts));
+  public function addProducts(string $consumer_key, array $api_products): AppCredentialInterface {
+    $credential = $this->decorated()->addProducts($consumer_key, $api_products);
+    $this->eventDispatcher->dispatch(AppCredentialAddApiProductEvent::EVENT_NAME, new AppCredentialAddApiProductEvent($this->getAppType(), $this->owner, $this->appName, $credential, $api_products));
     // By removing app from cache we force reload the credentials as well.
     $this->appCacheByOwner->removeEntities([$this->appName]);
     return $credential;
@@ -126,8 +126,8 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
   /**
    * {@inheritdoc}
    */
-  public function create(string $consumerKey, string $consumerSecret): AppCredentialInterface {
-    $credential = $this->decorated()->create($consumerKey, $consumerSecret);
+  public function create(string $consumer_key, string $consumer_secret): AppCredentialInterface {
+    $credential = $this->decorated()->create($consumer_key, $consumer_secret);
     $this->eventDispatcher->dispatch(AppCredentialCreateEvent::EVENT_NAME, new AppCredentialCreateEvent($this->getAppType(), $this->owner, $this->appName, $credential));
     // By removing app from cache we force reload the credentials as well.
     $this->appCacheByOwner->removeEntities([$this->appName]);
@@ -145,8 +145,8 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
   /**
    * {@inheritdoc}
    */
-  public function delete(string $consumerKey): AppCredentialInterface {
-    $credential = $this->decorated()->delete($consumerKey);
+  public function delete(string $consumer_key): AppCredentialInterface {
+    $credential = $this->decorated()->delete($consumer_key);
     $this->eventDispatcher->dispatch(AppCredentialDeleteEvent::EVENT_NAME, new AppCredentialDeleteEvent($this->getAppType(), $this->owner, $this->appName, $credential));
     // By removing app from cache we force reload the credentials as well.
     $this->appCacheByOwner->removeEntities([$this->appName]);
@@ -156,9 +156,9 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
   /**
    * {@inheritdoc}
    */
-  public function deleteApiProduct(string $consumerKey, string $apiProduct): AppCredentialInterface {
-    $credential = $this->decorated()->deleteApiProduct($consumerKey, $apiProduct);
-    $this->eventDispatcher->dispatch(AppCredentialDeleteApiProductEvent::EVENT_NAME, new AppCredentialDeleteApiProductEvent($this->getAppType(), $this->owner, $this->appName, $credential, $apiProduct));
+  public function deleteApiProduct(string $consumer_key, string $api_product): AppCredentialInterface {
+    $credential = $this->decorated()->deleteApiProduct($consumer_key, $api_product);
+    $this->eventDispatcher->dispatch(AppCredentialDeleteApiProductEvent::EVENT_NAME, new AppCredentialDeleteApiProductEvent($this->getAppType(), $this->owner, $this->appName, $credential, $api_product));
     // By removing app from cache we force reload the credentials as well.
     $this->appCacheByOwner->removeEntities([$this->appName]);
     return $credential;
@@ -167,8 +167,8 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
   /**
    * {@inheritdoc}
    */
-  public function deleteAttribute(string $entityId, string $name): void {
-    $this->decorated()->deleteAttribute($entityId, $name);
+  public function deleteAttribute(string $entity_id, string $name): void {
+    $this->decorated()->deleteAttribute($entity_id, $name);
     // By removing app from cache we force reload the credentials as well.
     $this->appCacheByOwner->removeEntities([$this->appName]);
   }
@@ -176,8 +176,8 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
   /**
    * {@inheritdoc}
    */
-  public function generate(array $apiProducts, AttributesProperty $appAttributes, string $callbackUrl, array $scopes = [], string $keyExpiresIn = '-1'): AppCredentialInterface {
-    $credential = $this->decorated()->generate($apiProducts, $appAttributes, $callbackUrl, $scopes, $keyExpiresIn);
+  public function generate(array $api_products, AttributesProperty $app_attributes, string $callback_url, array $scopes = [], string $key_expires_in = '-1'): AppCredentialInterface {
+    $credential = $this->decorated()->generate($api_products, $app_attributes, $callback_url, $scopes, $key_expires_in);
     $this->eventDispatcher->dispatch(AppCredentialGenerateEvent::EVENT_NAME, new AppCredentialGenerateEvent($this->getAppType(), $this->owner, $this->appName, $credential));
     // By removing app from cache we force reload the credentials as well.
     $this->appCacheByOwner->removeEntities([$this->appName]);
@@ -187,17 +187,17 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
   /**
    * {@inheritdoc}
    */
-  public function getAttribute(string $entityId, string $name): string {
+  public function getAttribute(string $entity_id, string $name): string {
     // TODO Get this from cache if available.
-    return $this->decorated()->getAttribute($entityId, $name);
+    return $this->decorated()->getAttribute($entity_id, $name);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getAttributes(string $entityId): AttributesProperty {
+  public function getAttributes(string $entity_id): AttributesProperty {
     // TODO Get this from cache if available.
-    return $this->decorated()->getAttributes($entityId);
+    return $this->decorated()->getAttributes($entity_id);
   }
 
   /**
@@ -210,16 +210,16 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
   /**
    * {@inheritdoc}
    */
-  public function load(string $consumerKey): AppCredentialInterface {
+  public function load(string $consumer_key): AppCredentialInterface {
     // TODO Get this from app cache if available.
-    return $this->decorated()->load($consumerKey);
+    return $this->decorated()->load($consumer_key);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function overrideScopes(string $consumerKey, array $scopes): AppCredentialInterface {
-    $credential = $this->decorated()->overrideScopes($consumerKey, $scopes);
+  public function overrideScopes(string $consumer_key, array $scopes): AppCredentialInterface {
+    $credential = $this->decorated()->overrideScopes($consumer_key, $scopes);
     // By removing app from cache we force reload the credentials as well.
     $this->appCacheByOwner->removeEntities([$this->appName]);
     return $credential;
@@ -228,8 +228,8 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
   /**
    * {@inheritdoc}
    */
-  public function setApiProductStatus(string $consumerKey, string $apiProduct, string $status): void {
-    $this->decorated()->setApiProductStatus($consumerKey, $apiProduct, $status);
+  public function setApiProductStatus(string $consumer_key, string $api_product, string $status): void {
+    $this->decorated()->setApiProductStatus($consumer_key, $api_product, $status);
     // By removing app from cache we force reload the credentials as well.
     $this->appCacheByOwner->removeEntities([$this->appName]);
   }
@@ -237,8 +237,8 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
   /**
    * {@inheritdoc}
    */
-  public function setStatus(string $consumerKey, string $status): void {
-    $this->decorated()->setStatus($consumerKey, $status);
+  public function setStatus(string $consumer_key, string $status): void {
+    $this->decorated()->setStatus($consumer_key, $status);
     // By removing app from cache we force reload the credentials as well.
     $this->appCacheByOwner->removeEntities([$this->appName]);
   }
@@ -246,8 +246,8 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
   /**
    * {@inheritdoc}
    */
-  public function updateAttribute(string $entityId, string $name, string $value): string {
-    $value = $this->decorated()->updateAttribute($entityId, $name, $value);
+  public function updateAttribute(string $entity_id, string $name, string $value): string {
+    $value = $this->decorated()->updateAttribute($entity_id, $name, $value);
     // By removing app from cache we force reload the credentials as well.
     $this->appCacheByOwner->removeEntities([$this->appName]);
     return $value;
@@ -256,8 +256,8 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
   /**
    * {@inheritdoc}
    */
-  public function updateAttributes(string $entityId, AttributesProperty $attributes): AttributesProperty {
-    $attributes = $this->decorated()->updateAttributes($entityId, $attributes);
+  public function updateAttributes(string $entity_id, AttributesProperty $attributes): AttributesProperty {
+    $attributes = $this->decorated()->updateAttributes($entity_id, $attributes);
     // By removing app from cache we force reload the credentials as well.
     $this->appCacheByOwner->removeEntities([$this->appName]);
     return $attributes;
