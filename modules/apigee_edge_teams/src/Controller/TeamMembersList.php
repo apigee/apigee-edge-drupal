@@ -94,7 +94,7 @@ class TeamMembersList extends ControllerBase {
         return $carry;
       }, []);
       /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorageInterface $team_member_role_storage */
-      $team_member_role_storage = $this->entityTypeManager->getStorage('team_member_role');
+      $team_member_role_storage = $this->entityTypeManager()->getStorage('team_member_role');
       $team_member_roles_by_mail = array_reduce($team_member_role_storage->loadByTeam($team), function ($carry, TeamMemberRoleInterface $developer_role) {
         $carry[$developer_role->getDeveloper()->getEmail()] = $developer_role;
 

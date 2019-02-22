@@ -111,7 +111,7 @@ class DeveloperSyncController extends ControllerBase {
     $job->setTag($this->generateTag('background'));
     apigee_edge_get_executor()->cast($job);
 
-    $this->messenger->addStatus($this->t('Developer synchronization is scheduled.'));
+    $this->messenger()->addStatus($this->t('Developer synchronization is scheduled.'));
 
     return new RedirectResponse($destination);
   }

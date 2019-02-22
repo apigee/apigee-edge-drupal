@@ -59,7 +59,7 @@ class DeveloperAppViewControllerForDeveloper extends ControllerBase {
    * {@inheritdoc}
    */
   public function view(DeveloperAppInterface $app) {
-    return $this->entityTypeManager->getViewBuilder($app->getEntityTypeId())->view($app);
+    return $this->entityTypeManager()->getViewBuilder($app->getEntityTypeId())->view($app);
   }
 
 }
