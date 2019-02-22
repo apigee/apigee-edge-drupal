@@ -37,14 +37,14 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
    *
    * @var string
    */
-  protected $queryClass = 'Drupal\apigee_edge\Entity\Query\Query';
+  protected $query_class = 'Drupal\apigee_edge\Entity\Query\Query';
 
   /**
    * Name of the config object that contains entity label overrides.
    *
    * @var string
    */
-  protected $configWithLabels;
+  protected $config_with_labels;
 
   /**
    * EdgeEntityType constructor.
@@ -121,13 +121,13 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
    *   If the provided config object does not exists.
    */
   private function getConfigWithEntityLabels(): ?ImmutableConfig {
-    if (empty($this->configWithLabels)) {
+    if (empty($this->config_with_labels)) {
       return NULL;
     }
 
-    $config = \Drupal::config($this->configWithLabels);
+    $config = \Drupal::config($this->config_with_labels);
     if ($config->isNew()) {
-      throw new RuntimeException("Config object called {$this->configWithLabels} does not exists.");
+      throw new RuntimeException("Config object called {$this->config_with_labels} does not exists.");
     }
 
     return $config;
@@ -153,7 +153,7 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
             '@class' => get_class($this),
             '@entity_type' => $this->id,
             '@key' => $key,
-            '@config' => $this->configWithLabels ?? "apigee_edge.{$this->id}_settings",
+            '@config' => $this->config_with_labels ?? "apigee_edge.{$this->id}_settings",
           ]);
         }
 
@@ -191,7 +191,7 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
    * {@inheritdoc}
    */
   public function getQueryClass(): string {
-    return $this->queryClass;
+    return $this->query_class;
   }
 
 }
