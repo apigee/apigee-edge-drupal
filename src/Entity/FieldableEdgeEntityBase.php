@@ -312,7 +312,7 @@ abstract class FieldableEdgeEntityBase extends EdgeEntityBase implements Fieldab
    */
   public function getFieldDefinitions() {
     if (!isset($this->fieldDefinitions)) {
-      $this->fieldDefinitions = $this->entityTypeManager()->getFieldDefinitions($this->entityTypeId, $this->bundle());
+      $this->fieldDefinitions = \Drupal::service('entity_field.manager')->getFieldDefinitions($this->entityTypeId, $this->bundle());
     }
     return $this->fieldDefinitions;
   }
