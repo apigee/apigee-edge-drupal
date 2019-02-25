@@ -154,8 +154,7 @@ class TeamRouteProvider extends EdgeEntityRouteProvider {
         'converter' => 'paramconverter.entity',
       ],
       'developer' => [
-        'type' => 'entity:developer',
-        'converter' => 'paramconverter.entity',
+        'converter' => 'paramconverter.developer_with_user',
       ],
     ]);
     return $route;
@@ -188,8 +187,7 @@ class TeamRouteProvider extends EdgeEntityRouteProvider {
         'converter' => 'paramconverter.entity',
       ],
       'developer' => [
-        'type' => 'entity:developer',
-        'converter' => 'paramconverter.entity',
+        'converter' => 'paramconverter.developer_with_user',
       ],
     ]);
     return $route;
