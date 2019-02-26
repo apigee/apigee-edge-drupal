@@ -36,27 +36,27 @@ class ApiDocAccessControlHandler extends EntityAccessControlHandler {
    * {@inheritdoc}
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    /** @var \Drupal\apigee_edge_apidocs\Entity\ApiDocInterface $entity */
-    switch ($operation) {
-      case 'view':
-        if (!$entity->isPublished()) {
-          return AccessResult::allowedIfHasPermission($account, 'view unpublished apidoc entities')
-            ->orIf(AccessResult::allowedIfHasPermission($account, 'administer apidoc entities'));
-        }
-        return AccessResult::allowedIfHasPermission($account, 'view published apidoc entities')
-          ->orIf(AccessResult::allowedIfHasPermission($account, 'administer apidoc entities'));
+    $parent_access = parent::checkAccess($entity, $operation, $account);
 
-      case 'update':
-        return AccessResult::allowedIfHasPermission($account, 'edit apidoc entities')
-          ->orIf(AccessResult::allowedIfHasPermission($account, 'administer apidoc entities'));
+    if (!$parent_access->isAllowed()) {
+      /** @var \Drupal\apigee_edge_apidocs\Entity\ApiDocInterface $entity */
+      switch ($operation) {
+        case 'view':
+          if (!$entity->isPublished()) {
+            return $parent_access->orIf(AccessResult::allowedIfHasPermission($account, 'view unpublished apidoc entities'));
+          }
+          return $parent_access->orIf(AccessResult::allowedIfHasPermission($account, 'view published apidoc entities'));
 
-      case 'delete':
-        return AccessResult::allowedIfHasPermission($account, 'delete apidoc entities')
-          ->orIf(AccessResult::allowedIfHasPermission($account, 'administer apidoc entities'));
+        case 'update':
+          return $parent_access->orIf(AccessResult::allowedIfHasPermission($account, 'edit apidoc entities'));
+
+        case 'delete':
+          return $parent_access->orIf(AccessResult::allowedIfHasPermission($account, 'delete apidoc entities'));
+      }
     }
 
     // Unknown operation, no opinion.
-    return AccessResult::neutral();
+    return $parent_access;
   }
 
   /**
