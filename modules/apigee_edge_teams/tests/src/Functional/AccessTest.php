@@ -21,14 +21,13 @@ namespace Drupal\Tests\apigee_edge_teams\Functional;
 
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\Core\Url;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Teams module access test.
  *
  * @group apigee_edge
  * @group apigee_edge_teams
- *
- * TODO Optimize code where it is possible.
  */
 class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
 
@@ -47,18 +46,25 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
   protected $teamAppStorage;
 
   /**
-   * The account switcher service.
-   *
-   * @var \Drupal\Core\Session\AccountSwitcherInterface
-   */
-  protected $accountSwitcher;
-
-  /**
    * Default user.
    *
    * @var \Drupal\user\UserInterface
    */
   protected $account;
+
+  /**
+   * Drupal user who is a member of the team.
+   *
+   * @var \Drupal\user\UserInterface
+   */
+  protected $teamMemberAccount;
+
+  /**
+   * Drupal user who is not a member of the team.
+   *
+   * @var \Drupal\user\UserInterface
+   */
+  protected $nonTeamMemberAccount;
 
   /**
    * The team membership manager service.
@@ -118,11 +124,12 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
     'create team' => ['add_form'],
     'update any team' => ['edit_form'],
     'delete any team' => ['delete_form'],
-    // TODO Add test coverage for 'member.edit', 'member.remove' routes
-    // by using a developer parameter in the route which belongs to a member of
-    // the team and which belongs to a non-member of the team and by using an
-    // email address of a non-existing developer.
-    'manage team members' => ['members', 'add_members'],
+    'manage team members' => [
+      'members',
+      'add_members',
+      'member.edit',
+      'member.remove',
+    ],
   ];
 
   /**
@@ -168,10 +175,16 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
+  public static $modules = [
+    'apigee_edge_teams_test',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp() {
     parent::setUp();
 
-    $this->accountSwitcher = $this->container->get('account_switcher');
     $this->teamStorage = $this->container->get('entity_type.manager')->getStorage('team');
     $this->teamAppStorage = $this->container->get('entity_type.manager')->getStorage('team_app');
     $this->teamRoleStorage = $this->container->get('entity_type.manager')->getStorage('team_role');
@@ -204,6 +217,10 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
     ]);
     $this->teamApp->save();
     $this->account = $this->createAccount();
+
+    $this->nonTeamMemberAccount = $this->createAccount();
+    $this->teamMemberAccount = $this->createAccount();
+    $this->teamMembershipManager->addMembers($this->team->getName(), [$this->teamMemberAccount->getEmail()]);
 
     // Create roles for team permissions.
     foreach (array_keys(static::TEAM_PERMISSION_MATRIX) as $permission) {
@@ -238,13 +255,40 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
       }
     }
 
+    if ($this->teamMemberAccount !== NULL) {
+      try {
+        $this->teamMemberAccount->delete();
+      }
+      catch (\Exception $exception) {
+        $this->logException($exception);
+      }
+    }
+
+    if ($this->nonTeamMemberAccount !== NULL) {
+      try {
+        $this->nonTeamMemberAccount->delete();
+      }
+      catch (\Exception $exception) {
+        $this->logException($exception);
+      }
+    }
+
     parent::tearDown();
+  }
+
+  /**
+   * Tests team, team membership level and admin permissions, team roles.
+   */
+  public function testAccess() {
+    $this->teamAccessTest();
+    $this->teamRoleAccessTest();
+    $this->teamExpansionTest();
   }
 
   /**
    * Tests team, team membership level and admin permissions.
    */
-  public function testAccess() {
+  protected function teamAccessTest() {
     // Anonymous user has no access to team, team app and admin pages.
     $this->validateTeamAccess();
     $this->validateTeamAppAccess();
@@ -273,22 +317,23 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
     // The user is a member of the team but it has no team related permission
     // and every team member operation is disabled.
     $this->setUserPermissions([]);
-    $this->setMemberPermissions([]);
+    $this->setTeamRolePermissions(TeamRoleInterface::TEAM_MEMBER_ROLE, []);
     $this->teamMembershipManager->addMembers($this->team->getName(), [$this->account->getEmail()]);
     $this->validateTeamAccess();
     $this->validateTeamAppAccess();
 
+    $this->teamMembershipManager->addMembers($this->team->getName(), [$this->account->getEmail()]);
     // The user is a member of the team. Check every team member level
     // permission one by one.
     foreach (array_keys(self::TEAM_MEMBER_PERMISSION_MATRIX) as $permission) {
-      $this->setMemberPermissions([$permission]);
+      $this->setTeamRolePermissions(TeamRoleInterface::TEAM_MEMBER_ROLE, [$permission]);
       $this->validateTeamAccess();
       $this->validateTeamAppAccess();
     }
 
     // The user is not a member of the team but every team member operation is
     // enabled. The user has no access to the team and team app related pages.
-    $this->setMemberPermissions(array_keys(self::TEAM_MEMBER_PERMISSION_MATRIX));
+    $this->setTeamRolePermissions(TeamRoleInterface::TEAM_MEMBER_ROLE, array_keys(self::TEAM_MEMBER_PERMISSION_MATRIX));
     $this->teamMembershipManager->removeMembers($this->team->getName(), [$this->account->getEmail()]);
     $this->validateTeamAccess();
     $this->validateTeamAppAccess();
@@ -309,15 +354,90 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
     // With administer teams permission the user has access to team, team app
     // and admin pages.
     $this->setUserPermissions(['administer team']);
-    // Account must be member of the member to be able to access to member.edit
-    // and member.remove routes.
-    // TODO Use a different developer's email address who is member of the
-    // team in these routes for testing.
-    $this->teamMembershipManager->addMembers($this->team->getName(), [$this->account->getEmail()]);
     $this->validateTeamAccess(TRUE);
-    $this->teamMembershipManager->addMembers($this->team->getName(), [$this->account->getEmail()]);
     $this->validateTeamAppAccess(TRUE);
     $this->validateAccessToAdminRoutes(TRUE);
+  }
+
+  /**
+   * Tests team roles related UIs, permissions.
+   */
+  protected function teamRoleAccessTest() {
+    // The user is a member of the team and it has no teams related permission.
+    // The user has the default "member" role in the team, the default member
+    // role has no permissions.
+    $this->setUserPermissions([]);
+    $this->setTeamRolePermissions(TeamRoleInterface::TEAM_MEMBER_ROLE, []);
+    $this->teamMembershipManager->addMembers($this->team->getName(), [$this->account->getEmail()]);
+
+    // Create roles for every team membership level permission.
+    $this->drupalLogin($this->rootUser);
+    foreach (array_keys(self::TEAM_MEMBER_PERMISSION_MATRIX) as $permission) {
+      $this->drupalPostForm(Url::fromRoute('entity.team_role.add_form'), [
+        'label' => $permission,
+        'id' => $permission,
+      ], 'Save');
+      $this->setTeamRolePermissions($permission, [$permission]);
+    }
+
+    // Grant team roles to the team member one by one.
+    foreach (array_keys(self::TEAM_MEMBER_PERMISSION_MATRIX) as $permission) {
+      $this->drupalLogin($this->rootUser);
+      $this->drupalPostForm(Url::fromRoute('entity.team.member.edit', [
+        'team' => $this->team->getName(),
+        'developer' => $this->account->getEmail(),
+      ]), [
+        "team_roles[{$permission}]" => TRUE,
+      ], 'Save');
+      $this->drupalLogin($this->account);
+      $this->validateTeamAccess();
+      $this->validateTeamAppAccess();
+    }
+
+    // Revoke team roles from the team member one by one.
+    foreach (array_keys(self::TEAM_MEMBER_PERMISSION_MATRIX) as $permission) {
+      $this->drupalLogin($this->rootUser);
+      $this->drupalPostForm(Url::fromRoute('entity.team.member.edit', [
+        'team' => $this->team->getName(),
+        'developer' => $this->account->getEmail(),
+      ]), [
+        "team_roles[{$permission}]" => FALSE,
+      ], 'Save');
+      $this->drupalLogin($this->account);
+      $this->validateTeamAccess();
+      $this->validateTeamAppAccess();
+    }
+  }
+
+  /**
+   * Tests apigee_edge_teams_test module.
+   */
+  protected function teamExpansionTest() {
+    // Ensure that the apigee_edge_teams_test module properly extends the team
+    // role permission UI.
+    $this->drupalLogin($this->rootUser);
+    $this->drupalGet(Url::fromRoute('apigee_edge_teams.settings.team.permissions'));
+    // Check whether the permission group labels and the permission labels and
+    // descriptions are visible.
+    $this->assertSession()->pageTextContains('Apigee Edge Teams: Testing');
+    $this->assertSession()->pageTextContains('Team permission test');
+    $this->assertSession()->pageTextContains('Team permission test 1');
+    $this->assertSession()->pageTextContains('This is the 1st team test permission.');
+    $this->assertSession()->pageTextContains('Team permission test 2');
+    $this->assertSession()->pageTextContains('Team permission test 3');
+    $this->assertSession()->pageTextContains('This is the 3rd team test permission.');
+    $this->assertSession()->pageTextContains('Team permission test 4');
+
+    // Change the username to grant every permission to the user in
+    // apigee_edge_teams_test_apigee_edge_teams_developer_permissions_by_team_alter().
+    // It is not necessary to save the developer associated with this user.
+    $this->disableUserPresave();
+    $this->account->setUsername('teams_role_test');
+    $this->account->save();
+    $this->enableUserPresave();
+
+    $this->drupalLogin($this->account);
+    $this->validateTeamAppAccess(TRUE);
   }
 
   /**
@@ -362,23 +482,25 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
       // make sure the url parameter resolver works on the entity.
       if ($this->team->hasLinkTemplate($rel)) {
         $url = $this->team->toUrl($rel);
+        if (in_array($short_route_id, $route_ids_with_access)) {
+          $this->validateAccess($url, Response::HTTP_OK);
+        }
+        else {
+          $this->validateAccess($url, Response::HTTP_FORBIDDEN);
+        }
       }
       else {
         // If the route is not registered as link in entity links - because
         // it contains a route parameter that the entity can not resolve -
-        // fallback to the URL resolver.
+        // fallback to the URL resolver. At this time these are the member.edit
+        // and member.remove routes. Use a developer parameter in the route
+        // which belongs to a member of the team and which belongs to a
+        // non-member of the team and an email address of a non-existing
+        // developer.
         $params = ['team' => $this->team->id()];
-        if (strpos($route->getPath(), '{developer}') !== FALSE) {
-          $params['developer'] = $this->account->getEmail();
-        }
-        $url = Url::fromRoute($route_id, $params);
-      }
-
-      if (in_array($short_route_id, $route_ids_with_access)) {
-        $this->validateAccess($url, TRUE);
-      }
-      else {
-        $this->validateAccess($url, FALSE);
+        $this->validateAccess(Url::fromRoute($route_id, $params + ['developer' => $this->teamMemberAccount->getEmail()]), in_array($short_route_id, $route_ids_with_access) ? Response::HTTP_OK : Response::HTTP_FORBIDDEN);
+        $this->validateAccess(Url::fromRoute($route_id, $params + ['developer' => $this->nonTeamMemberAccount->getEmail()]), Response::HTTP_FORBIDDEN);
+        $this->validateAccess(Url::fromRoute($route_id, $params + ['developer' => $this->randomMachineName() . '@example.com']), Response::HTTP_NOT_FOUND);
       }
     }
   }
@@ -434,10 +556,10 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
       }
 
       if (in_array($short_route_id, $route_ids_with_access)) {
-        $this->validateAccess($url, TRUE);
+        $this->validateAccess($url, Response::HTTP_OK);
       }
       else {
-        $this->validateAccess($url, FALSE);
+        $this->validateAccess($url, Response::HTTP_FORBIDDEN);
       }
     }
   }
@@ -447,20 +569,14 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
    *
    * @param \Drupal\Core\Url $url
    *   The Url object to check.
-   * @param bool $user_has_access
-   *   TRUE if the user has access to the given URL, else FALSE.
+   * @param int $expected_response_status_code
+   *   The expected HTTP response status code.
    */
-  protected function validateAccess(Url $url, bool $user_has_access) {
+  protected function validateAccess(Url $url, int $expected_response_status_code) {
     $this->drupalGet($url->toString());
     $code = $this->getSession()->getStatusCode();
     $current_user_roles = implode(', ', $this->account->getRoles());
-
-    if ($user_has_access) {
-      $this->assertEquals(200, $code, "Has no access to {$url->getInternalPath()}. User roles: {$current_user_roles}");
-    }
-    else {
-      $this->assertEquals(403, $code, "Has access to {$url->getInternalPath()}. User roles: {$current_user_roles}");
-    }
+    $this->assertEquals($expected_response_status_code, $code, "Visited path: {$url->getInternalPath()}. User roles: {$current_user_roles}");
   }
 
   /**
@@ -471,7 +587,7 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
    */
   protected function validateAccessToAdminRoutes(bool $user_has_access) {
     foreach (self::ADMIN_ROUTES as $route_name) {
-      $this->validateAccess(Url::fromRoute($route_name), $user_has_access);
+      $this->validateAccess(Url::fromRoute($route_name), $user_has_access ? Response::HTTP_OK : Response::HTTP_FORBIDDEN);
     }
   }
 
@@ -498,18 +614,30 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
   }
 
   /**
-   * Sets team membership level permissions.
+   * Sets team role permissions.
    *
+   * The team role permission admin UI is tested properly while changing the
+   * permissions.
+   *
+   * @param string $role_name
+   *   The ID of a team role.
    * @param array $permissions
-   *   Team membership level permissions to enable.
+   *   Team role permissions to enable.
    */
-  protected function setMemberPermissions(array $permissions) {
+  protected function setTeamRolePermissions(string $role_name, array $permissions) {
+    $this->drupalLogin($this->rootUser);
     $permission_changes = [];
     foreach (array_keys(self::TEAM_MEMBER_PERMISSION_MATRIX) as $permission) {
-      $permission_changes[$permission] = in_array($permission, $permissions);
+      $permission_changes["{$role_name}[{$permission}]"] = in_array($permission, $permissions);
     }
 
-    $this->teamRoleStorage->changePermissions(TeamRoleInterface::TEAM_MEMBER_ROLE, $permission_changes);
+    $this->drupalPostForm(Url::fromRoute('apigee_edge_teams.settings.team.permissions'), $permission_changes, 'Save permissions');
+    // It is necessary to reset the team role cache (only) in the test because
+    // the role cache is out of date in the test's container even if the cache
+    // is properly cleared in Drupal\apigee_edge_teams\Entity\Storage\TeamRoleStorage::changePermissions().
+    // It's a more effective solution then rebuilding the whole container.
+    $this->teamRoleStorage->resetCache([$role_name]);
+    $this->drupalLogin($this->account);
   }
 
 }
