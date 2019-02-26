@@ -10,4 +10,4 @@ apidoc.admin.structure.settings:
   title: 'API Docs'
   description: 'Configure API Doc settings'
   route_name: apidoc.settings
-  parent: system.admin_config
+  parent: system.admin_config_edge
