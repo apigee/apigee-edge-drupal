@@ -7,3 +7,4 @@ configure: apidocs.settings
 dependencies:
 - drupal:text
 - drupal:file
+- apigee_edge:apigee_edge
