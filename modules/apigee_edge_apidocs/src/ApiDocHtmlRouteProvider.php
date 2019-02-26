@@ -67,7 +67,7 @@ class ApiDocHtmlRouteProvider extends AdminHtmlRouteProvider {
       $route
         ->setDefaults([
           '_form' => 'Drupal\apigee_edge_apidocs\Form\ApiDocSettingsForm',
-          '_title_callback' => [ApiDocSettingsForm::class, 'title'],
+          '_title_callback' => ApiDocSettingsForm::class . '::title',
         ])
         ->setRequirement('_permission', $entity_type->getAdminPermission())
         ->setOption('_admin_route', TRUE);

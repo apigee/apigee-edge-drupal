@@ -69,7 +69,7 @@ class ApiDocSettingsForm extends FormBase {
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup
    *   The translated title.
    */
-  public function titleCallback() {
+  public function title() {
     return $this->t('@label settings', [
       '@label' => $this->entityTypeManager->getDefinition('apidoc')->getLabel(),
     ]);
