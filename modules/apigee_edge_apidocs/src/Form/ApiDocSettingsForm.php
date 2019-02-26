@@ -20,8 +20,10 @@
 
 namespace Drupal\apigee_edge_apidocs\Form;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Class ApiDocSettingsForm.
@@ -31,10 +33,46 @@ use Drupal\Core\Form\FormStateInterface;
 class ApiDocSettingsForm extends FormBase {
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface 
+   */
+  protected $entityTypeManager;
+
+  /**
+   * ApiDocSettingsForm constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   */
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+    $this->entityTypeManager = $entity_type_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static($container->get('entity_type.manager'));
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function getFormId() {
     return 'apidoc_settings';
+  }
+
+  /**
+   * Returns the title of this form.
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *   The translated title.
+   */
+  public function titleCallback() {
+    return $this->t('@label settings', [
+      '@label' => $this->entityTypeManager->getDefinition('apidoc')->getLabel(),
+    ]);
   }
 
   /**

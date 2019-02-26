@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge_apidocs;
 
+use Drupal\apigee_edge_apidocs\Form\ApiDocSettingsForm;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Routing\AdminHtmlRouteProvider;
 use Symfony\Component\Routing\Route;
@@ -66,7 +67,7 @@ class ApiDocHtmlRouteProvider extends AdminHtmlRouteProvider {
       $route
         ->setDefaults([
           '_form' => 'Drupal\apigee_edge_apidocs\Form\ApiDocSettingsForm',
-          '_title' => "{$entity_type->getLabel()} settings",
+          '_title_callback' => [ApiDocSettingsForm::class, 'title'],
         ])
         ->setRequirement('_permission', $entity_type->getAdminPermission())
         ->setOption('_admin_route', TRUE);
