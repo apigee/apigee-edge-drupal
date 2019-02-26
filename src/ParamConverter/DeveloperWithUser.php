@@ -34,11 +34,11 @@ use Symfony\Component\Routing\Route;
 final class DeveloperWithUser implements ParamConverterInterface {
 
   /**
-   * The developer entity storage.
+   * The entity type manager.
    *
-   * @var \Drupal\apigee_edge\Entity\Storage\DeveloperStorageInterface
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  private $developerStorage;
+  private $entityTypeManager;
 
   /**
    * DeveloperWithUser constructor.
@@ -47,7 +47,7 @@ final class DeveloperWithUser implements ParamConverterInterface {
    *   The entity type manager.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->developerStorage = $entity_type_manager->getStorage('developer');
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -55,7 +55,7 @@ final class DeveloperWithUser implements ParamConverterInterface {
    */
   public function convert($value, $definition, $name, array $defaults) {
     /** @var \Drupal\apigee_edge\Entity\DeveloperInterface|null $developer */
-    $developer = $this->developerStorage->load($value);
+    $developer = $this->entityTypeManager->getStorage('developer')->load($value);
 
     if ($developer) {
       return $developer->getOwner() ? $developer : NULL;
