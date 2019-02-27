@@ -23,7 +23,7 @@ namespace Drupal\apigee_edge_teams\Entity\Form;
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\ClientErrorException;
 use Drupal\apigee_edge\Entity\ApiProductInterface;
-use Drupal\apigee_edge_teams\TeamApiProductAccessManagerInterface;
+use Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandlerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -110,17 +110,17 @@ trait TeamAppFormTrait {
   }
 
   /**
-   * Allows to access to the injected team API product access manager service.
+   * Allows to access to the injected team member API product access handler.
    *
-   * @return \Drupal\apigee_edge_teams\TeamApiProductAccessManagerInterface
-   *   The Team API product access manager service.
+   * @return \Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandlerInterface
+   *   The team member API product access handler.
    */
-  private function getTeamApiProductAccessManager(): TeamApiProductAccessManagerInterface {
-    if (property_exists($this, 'teamApiProductAccessManager') && $this->teamApiProductAccessManager instanceof TeamApiProductAccessManagerInterface) {
-      return $this->teamApiProductAccessManager;
+  private function getTeamMemberApiProductAccessHandler(): TeamMemberApiProductAccessHandlerInterface {
+    if (property_exists($this, 'teamMemberApiProductAccessHandler') && $this->teamMemberApiProductAccessHandler instanceof TeamMemberApiProductAccessHandlerInterface) {
+      return $this->teamMemberApiProductAccessHandler;
     }
 
-    return \Drupal::service('apigee_edge_teams.team_api_product_access_manager');
+    return \Drupal::service('apigee_edge_teams.team_member_api_product_access_handler');
   }
 
   /**
@@ -136,7 +136,7 @@ trait TeamAppFormTrait {
     }
 
     $products = array_filter($this->getEntityTypeManager()->getStorage('api_product')->loadMultiple(), function (ApiProductInterface $api_product) use ($team) {
-      return $this->getTeamApiProductAccessManager()->access($api_product, 'assign', $team);
+      return $this->getTeamMemberApiProductAccessHandler()->access($api_product, 'assign', $team);
     });
 
     return $products;

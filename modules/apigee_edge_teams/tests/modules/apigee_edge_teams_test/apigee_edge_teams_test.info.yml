@@ -1,0 +1,8 @@
+name: 'Apigee Edge Teams: Testing'
+type: module
+description: 'Support module for the Apigee Edge Teams tests.'
+core: 8.x
+package: Testing
+
+dependencies:
+  - apigee_edge:apigee_edge_teams

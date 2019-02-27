@@ -19,9 +19,11 @@
  * MA 02110-1301, USA.
  */
 
+use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Breadcrumb\Breadcrumb;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -112,6 +114,29 @@ function _apigee_edge_teams_team_app_entity_form_display_edit_form_validate(arra
 /**
  * Implements hook_ENTITY_TYPE_delete().
  */
+function apigee_edge_teams_user_delete(EntityInterface $entity) {
+  /** @var \Drupal\user\UserInterface $entity */
+  /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorageInterface $team_member_role_storage */
+  $team_member_role_storage = \Drupal::entityTypeManager()->getStorage('team_member_role');
+  // When a user gets deleted then its developer account also gets deleted
+  // from Apigee Edge which removes its (team) company memberships.
+  // We must delete this user's team roles from Drupal as well.
+  foreach ($team_member_role_storage->loadByDeveloper($entity) as $team_member_roles_in_team) {
+    try {
+      $team_member_roles_in_team->delete();
+    }
+    catch (EntityStorageException $e) {
+      \Drupal::logger('apigee_edge_teams')->critical("Integrity check: Failed to remove %developer team member's roles in %team team when its Drupal user got deleted.", [
+        '%developer' => $entity->getEmail(),
+        '%team' => $team_member_roles_in_team->getTeam()->id(),
+      ]);
+    }
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete().
+ */
 function apigee_edge_teams_developer_delete(EntityInterface $entity) {
   /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $entity */
   /** @var \Drupal\apigee_edge_teams\CompanyMembershipObjectCacheInterface $cache */
@@ -129,7 +154,7 @@ function apigee_edge_teams_system_breadcrumb_alter(Breadcrumb &$breadcrumb, Rout
     $team_entity_def = \Drupal::entityTypeManager()->getDefinition('team');
     $breadcrumb->addLink(Link::createFromRoute($team_entity_def->getPluralLabel(), 'entity.team.collection'));
   }
-  elseif ($route_match->getRouteName() === 'entity.team.members.add') {
+  elseif ($route_match->getRouteName() === 'entity.team.add_members') {
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
     $team = $route_match->getParameter('team');
     $breadcrumb->addLink($team->toLink(t('Members'), 'members'));
@@ -158,13 +183,22 @@ function apigee_edge_teams_api_product_access(EntityInterface $entity, $operatio
     return AccessResult::neutral(sprintf('%s is not supported by %s.', $operation, __FUNCTION__));
   }
 
-  /** @var \Drupal\apigee_edge_teams\TeamApiProductAccessManagerInterface $access_checker */
-  $access_checker = \Drupal::service('apigee_edge_teams.team_api_product_access_manager');
+  if ($account->isAnonymous()) {
+    return AccessResult::neutral('Anonymous user can not be member of a team.');
+  }
+
+  /** @var \Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandlerInterface $access_checker */
+  $access_checker = \Drupal::service('apigee_edge_teams.team_member_api_product_access_handler');
   /** @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager */
   $team_membership_manager = \Drupal::service('apigee_edge_teams.team_membership_manager');
-  $team_ids = $team_membership_manager->getTeams($account->getEmail());
+  try {
+    $developer_team_ids = $team_membership_manager->getTeams($account->getEmail());
+  }
+  catch (DeveloperDoesNotExistException $e) {
+    return AccessResult::neutral($e->getMessage());
+  }
 
-  if (empty($team_ids)) {
+  if (empty($developer_team_ids)) {
     $result = AccessResult::neutral("{$account->getEmail()} is not member of any team.");
     // If developer's team membership changes access must be re-evaluated.
     // @see \Drupal\apigee_edge_teams\TeamMembershipManager
@@ -179,9 +213,9 @@ function apigee_edge_teams_api_product_access(EntityInterface $entity, $operatio
     /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamStorageInterface $team_storage */
     $team_storage = \Drupal::entityTypeManager()->getStorage('team');
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
-    $teams = $team_storage->loadMultiple($team_ids);
+    $teams = $team_storage->loadMultiple($developer_team_ids);
     foreach ($teams as $team) {
-      $result = $access_checker->access($entity, $operation, $team, TRUE);
+      $result = $access_checker->access($entity, $operation, $team, $account, TRUE);
       if ($result->isAllowed()) {
         break;
       }

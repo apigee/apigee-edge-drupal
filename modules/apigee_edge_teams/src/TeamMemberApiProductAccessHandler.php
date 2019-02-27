@@ -23,18 +23,17 @@ namespace Drupal\apigee_edge_teams;
 use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultForbidden;
 use Drupal\Core\Access\AccessResultInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Session\AccountInterface;
 
 /**
- * Default team API product access manager implementation.
+ * Default team member API product access handler implementation.
  *
- * Idea and some code borrowed from core's EntityAccessControlHandler.
+ * Some inspiration and code borrowed from core's EntityAccessControlHandler.
  */
-final class TeamApiProductAccessManager implements TeamApiProductAccessManagerInterface {
-
-  private const CONFIG_OBJECT_NAME = 'apigee_edge_teams.team_permissions';
+final class TeamMemberApiProductAccessHandler implements TeamMemberApiProductAccessHandlerInterface {
 
   /**
    * The module handler service.
@@ -44,13 +43,6 @@ final class TeamApiProductAccessManager implements TeamApiProductAccessManagerIn
   private $moduleHandler;
 
   /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  private $config;
-
-  /**
    * Stores calculated access check results.
    *
    * @var array
@@ -58,43 +50,93 @@ final class TeamApiProductAccessManager implements TeamApiProductAccessManagerIn
   private $accessCache = [];
 
   /**
-   * TeamApiProductAccessManager constructor.
+   * The team permission handler.
    *
+   * @var \Drupal\apigee_edge_teams\TeamPermissionHandlerInterface
+   */
+  private $teamPermissionHandler;
+
+  /**
+   * The currently logged-in user.
+   *
+   * @var \Drupal\Core\Session\AccountInterface
+   */
+  private $currentUser;
+
+  /**
+   * The team membership manager service.
+   *
+   * @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface
+   */
+  private $teamMembershipManager;
+
+  /**
+   * TeamApiProductAccessHandler constructor.
+   *
+   * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
+   *   The team membership manager service.
+   * @param \Drupal\apigee_edge_teams\TeamPermissionHandlerInterface $team_permission_handler
+   *   The team permission handler.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler service.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config
-   *   The config factory.
+   * @param \Drupal\Core\Session\AccountInterface $current_user
+   *   The currently logged-in user.
    */
-  public function __construct(ModuleHandlerInterface $module_handler, ConfigFactoryInterface $config) {
+  public function __construct(TeamMembershipManagerInterface $team_membership_manager, TeamPermissionHandlerInterface $team_permission_handler, ModuleHandlerInterface $module_handler, AccountInterface $current_user) {
+    $this->teamMembershipManager = $team_membership_manager;
+    $this->teamPermissionHandler = $team_permission_handler;
     $this->moduleHandler = $module_handler;
-    $this->config = $config;
+    $this->currentUser = $current_user;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function access(ApiProductInterface $api_product, string $operation, TeamInterface $team, bool $return_as_object = FALSE) {
+  public function access(ApiProductInterface $api_product, string $operation, TeamInterface $team, AccountInterface $account = NULL, bool $return_as_object = FALSE) {
+    if ($account === NULL) {
+      $account = $this->currentUser;
+    }
 
-    if (($return = $this->getCache($api_product, $operation, $team)) !== NULL) {
+    if (($return = $this->getCache($api_product, $operation, $team, $account)) !== NULL) {
       // Cache hit, no work necessary.
       return $return_as_object ? $return : $return->isAllowed();
     }
 
-    // We grant access to the entity if both of these conditions are met:
-    // - No modules say to deny access.
-    // - At least one module says to grant access.
-    $access = $this->moduleHandler->invokeAll('apigee_edge_teams_team_api_product_access', [
-      $api_product, $operation, $team,
-    ]);
-
-    $return = $this->processAccessHookResults($access);
-
-    // Also execute the default access check except when the access result is
-    // already forbidden, as in that case, it can not be anything else.
-    if (!$return->isForbidden()) {
-      $return = $return->orIf($this->checkAccess($api_product, $operation, $team));
+    if ($account->isAnonymous()) {
+      $return = AccessResult::forbidden('Anonymous user can not be member of a team.');
     }
-    $this->setCache($return, $api_product, $operation, $team);
+    else {
+      try {
+        $developer_team_ids = $this->teamMembershipManager->getTeams($account->getEmail());
+      }
+      catch (\Exception $e) {
+        $developer_team_ids = [];
+      }
+
+      if (in_array($team->id(), $developer_team_ids)) {
+        // We grant access to the entity if both of these conditions are met:
+        // - No modules say to deny access.
+        // - At least one module says to grant access.
+        $access = $this->moduleHandler->invokeAll(
+          'apigee_edge_teams_team_api_product_access',
+          [$api_product, $operation, $team, $account]
+        );
+
+        $return = $this->processAccessHookResults($access);
+
+        // Also execute the default access check except when the access result
+        // is already forbidden, as in that case, it can not be anything else.
+        if (!$return->isForbidden()) {
+          $return = $return->orIf($this->checkAccess($api_product, $operation, $team, $account));
+        }
+      }
+      else {
+        $return = AccessResultForbidden::forbidden("{$account->getEmail()} is not member of {$team->id()} team.");
+      }
+    }
+
+    $this->setCache($return, $api_product, $operation, $team, $account);
+
     return $return_as_object ? $return : $return->isAllowed();
   }
 
@@ -108,26 +150,25 @@ final class TeamApiProductAccessManager implements TeamApiProductAccessManagerIn
    *   'delete' or 'assign".
    * @param \Drupal\apigee_edge_teams\Entity\TeamInterface $team
    *   The team for which to check access.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The team member for which to check access.
    *
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access result.
    */
-  private function checkAccess(ApiProductInterface $api_product, string $operation, TeamInterface $team): AccessResultInterface {
+  private function checkAccess(ApiProductInterface $api_product, string $operation, TeamInterface $team, AccountInterface $account): AccessResultInterface {
     if (!in_array($operation, ['view', 'view label', 'assign'])) {
       return AccessResult::neutral(sprintf('%s is not supported by %s.', $operation, __FUNCTION__));
     }
     $product_visibility = $api_product->getAttributeValue('access') ?? 'public';
-    // If config key does not exist this revokes access to the API product.
-    $access_granted = (bool) $this->config->get(static::CONFIG_OBJECT_NAME)->get("api_product_access_{$product_visibility}");
 
-    return AccessResult::allowedIf($access_granted)
+    return AccessResult::allowedIf(in_array("api_product_access_{$product_visibility}", $this->teamPermissionHandler->getDeveloperPermissionsByTeam($team, $account)))
       // If team membership changes access must be re-evaluated.
       // @see \Drupal\apigee_edge_teams\TeamMembershipManager
       ->addCacheableDependency($team)
       // If API product visibility changes access must be re-evaluated.
       ->addCacheableDependency($api_product)
-      // If config object changes access must be re-evaluated.
-      ->addCacheTags(['config:' . static::CONFIG_OBJECT_NAME]);
+      ->addCacheableDependency($account);
   }
 
   /**
@@ -170,22 +211,24 @@ final class TeamApiProductAccessManager implements TeamApiProductAccessManagerIn
    *   'delete' or 'assign".
    * @param \Drupal\apigee_edge_teams\Entity\TeamInterface $team
    *   The team for which to check access.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The team member for which to check access.
    *
    * @return \Drupal\Core\Access\AccessResultInterface|null
    *   The cached AccessResult, or NULL if there is no record for the given
-   *   API Product, operation, and team in the cache.
+   *   API Product, operation, and team and account in the cache.
    */
-  protected function getCache(ApiProductInterface $api_product, string $operation, TeamInterface $team): ?AccessResultInterface {
+  protected function getCache(ApiProductInterface $api_product, string $operation, TeamInterface $team, AccountInterface $account): ?AccessResultInterface {
     // Return from cache if a value has been set for it previously.
-    if (isset($this->accessCache[$team->id()][$api_product->id()][$operation])) {
-      return $this->accessCache[$team->id()][$api_product->id()][$operation];
+    if (isset($this->accessCache[$team->id()][$account->id()][$api_product->id()][$operation])) {
+      return $this->accessCache[$team->id()][$account->id()][$api_product->id()][$operation];
     }
 
     return NULL;
   }
 
   /**
-   * Statically caches whether the given team has access.
+   * Statically caches whether the given user has access.
    *
    * @param \Drupal\Core\Access\AccessResultInterface $access
    *   The access result.
@@ -196,10 +239,12 @@ final class TeamApiProductAccessManager implements TeamApiProductAccessManagerIn
    *   'delete' or 'assign".
    * @param \Drupal\apigee_edge_teams\Entity\TeamInterface $team
    *   The team for which to check access.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The team member for which to check access.
    */
-  protected function setCache(AccessResultInterface $access, ApiProductInterface $api_product, string $operation, TeamInterface $team): void {
+  protected function setCache(AccessResultInterface $access, ApiProductInterface $api_product, string $operation, TeamInterface $team, AccountInterface $account): void {
     // Save the given value in the static cache and directly return it.
-    $this->accessCache[$team->id()][$api_product->id()][$operation] = $access;
+    $this->accessCache[$team->id()][$account->id()][$api_product->id()][$operation] = $access;
   }
 
   /**

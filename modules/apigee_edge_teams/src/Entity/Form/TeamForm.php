@@ -23,6 +23,7 @@ namespace Drupal\apigee_edge_teams\Entity\Form;
 use Apigee\Edge\Exception\ApiException;
 use Drupal\apigee_edge\Entity\Form\EdgeEntityFormInterface;
 use Drupal\apigee_edge\Entity\Form\FieldableEdgeEntityForm;
+use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -170,6 +171,25 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
     if ($was_new) {
       try {
         $this->teamMembershipManager->addMembers($team->id(), [$this->currentUser->getEmail()]);
+
+        try {
+          /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorageInterface $team_member_role_storage */
+          $team_member_role_storage = $this->entityTypeManager->getStorage('team_member_role');
+          $team_member_role_storage->addTeamRoles($this->currentUser(), $team, [TeamRoleInterface::TEAM_ADMIN_ROLE]);
+        }
+        catch (\Exception $exception) {
+          $admin_role = $this->entityTypeManager->getStorage('team_role')->load(TeamRoleInterface::TEAM_ADMIN_ROLE);
+          $context = [
+            '%email' => $this->currentUser->getEmail(),
+            '%team_name' => $team->label(),
+            '%admin_role' => $admin_role->label(),
+            '@team' => $this->entityTypeManager->getDefinition('team')->getLowercaseLabel(),
+            'link' => $team->toLink()->toString(),
+          ];
+          $this->messenger()->addError($this->t('Failed to grant %admin_role team role in %team_name @team.', $context));
+          $context += Error::decodeException($exception);
+          $this->logger->error('Failed to add creator of the team (%email) as team administrator to the team. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
+        }
       }
       catch (ApiException $exception) {
         $this->messenger()->addError($this->t('Failed to register team membership in %team_name @team.', [
@@ -183,8 +203,8 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
         $context += Error::decodeException($exception);
         $this->logger->error('Unable to add creator of the team (%email) as member to the team. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
       }
-    }
 
+    }
     $form_state->setRedirectUrl($team->toUrl('collection'));
 
     return $result;

@@ -161,6 +161,12 @@ services:
     tags:
       - { name: event_subscriber }
 
+  paramconverter.developer_with_user:
+    class: Drupal\apigee_edge\ParamConverter\DeveloperWithUser
+    arguments: ['@entity_type.manager']
+    tags:
+      - { name: paramconverter }
+
   paramconverter.developer_app_name:
     class: Drupal\apigee_edge\ParamConverter\DeveloperAppNameConverter
     arguments: ['@entity_type.manager', '@logger.channel.apigee_edge']

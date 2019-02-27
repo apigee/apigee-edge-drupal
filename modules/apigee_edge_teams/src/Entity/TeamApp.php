@@ -51,7 +51,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *       "analytics" = "Drupal\apigee_edge_teams\Form\TeamAppAnalyticsForm",
  *     },
  *     "list_builder" = "Drupal\apigee_edge_teams\Entity\ListBuilder\TeamAppListBuilder",
- *     "view_builder" = "Drupal\apigee_edge_teams\Entity\TeamAppViewBuilder",
+ *     "view_builder" = "Drupal\apigee_edge\Entity\AppViewBuilder",
  *     "route_provider" = {
  *        "html" = "Drupal\apigee_edge_teams\Entity\TeamAppRouteProvider",
  *     },

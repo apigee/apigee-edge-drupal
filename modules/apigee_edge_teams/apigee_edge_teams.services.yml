@@ -6,19 +6,13 @@ services:
 
   apigee_edge_teams.access_checker.manage_team_members_access:
     class: Drupal\apigee_edge_teams\Access\ManageTeamMembersAccess
-    arguments: ['@apigee_edge_teams.team_membership_manager', '@config.factory']
+    arguments: ['@apigee_edge_teams.team_membership_manager', '@apigee_edge_teams.team_permissions']
     tags:
       - { name: access_check, applies_to: _apigee_edge_teams_manage_team_access }
 
-  apigee_edge_teams.access_checker.remove_team_member_access:
-    class: Drupal\apigee_edge_teams\Access\RemoveTeamMemberAccess
-    arguments: ['@apigee_edge_teams.team_membership_manager', '@config.factory']
-    tags:
-      - { name: access_check, applies_to: _apigee_edge_teams_remove_team_member_access }
-
   apigee_edge_teams.access_checker.team_app_list_by_team_access:
     class: Drupal\apigee_edge_teams\Access\TeamAppListByTeamAccess
-    arguments: ['@entity_type.manager', '@apigee_edge_teams.team_membership_manager']
+    arguments: ['@entity_type.manager', '@apigee_edge_teams.team_permissions']
     tags:
       - { name: access_check, applies_to: _apigee_edge_teams_team_app_list_by_team_access }
 
@@ -55,15 +49,21 @@ services:
 
   apigee_edge_teams.team_membership_manager:
     class: Drupal\apigee_edge_teams\TeamMembershipManager
-    arguments: [ '@entity_type.manager', '@apigee_edge_teams.company_members_controller_factory', '@apigee_edge.controller.developer', '@apigee_edge.controller.cache.developer_companies', '@apigee_edge_teams.team_api_product_access_manager', '@cache_tags.invalidator']
+    arguments: [ '@entity_type.manager', '@apigee_edge_teams.company_members_controller_factory', '@apigee_edge.controller.developer', '@apigee_edge.controller.cache.developer_companies', '@cache_tags.invalidator', '@logger.channel.apigee_edge_teams']
 
-  apigee_edge_teams.team_api_product_access_manager:
-    class: Drupal\apigee_edge_teams\TeamApiProductAccessManager
-    arguments: ['@module_handler', '@config.factory']
+  apigee_edge_teams.team_permissions:
+    class: Drupal\apigee_edge_teams\TeamPermissionHandler
+    arguments: ['@module_handler', '@class_resolver', '@apigee_edge_teams.team_membership_manager', '@entity_type.manager']
+    calls:
+      - [setStringTranslation, ['@string_translation']]
 
-  apigee_edge_teams.event_subscriber.team_api_product_access_manager_cache_reset:
-    class: Drupal\apigee_edge_teams\EventSubscriber\TeamApiProductAccessManagerCacheReset
-    arguments: ['@apigee_edge_teams.team_api_product_access_manager']
+  apigee_edge_teams.team_member_api_product_access_handler:
+    class: Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandler
+    arguments: ['@apigee_edge_teams.team_membership_manager', '@apigee_edge_teams.team_permissions', '@module_handler', '@current_user']
+
+  apigee_edge_teams.event_subscriber.team_member_api_product_access_handler_cache_reset:
+    class: Drupal\apigee_edge_teams\EventSubscriber\TeamMemberApiProductAccessHandlerCacheReset
+    arguments: ['@apigee_edge_teams.team_member_api_product_access_handler']
     tags:
       - { name: event_subscriber }
 

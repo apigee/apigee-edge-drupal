@@ -145,6 +145,14 @@ class UITest extends ApigeeEdgeTeamsFunctionalTestBase {
    * Tests the UI of the team and team app entities.
    */
   public function testUi() {
+    $this->teamsWorkflowTest();
+    $this->teamAndTeamAppLabelTest();
+  }
+
+  /**
+   * Tests CRUD UIs of team and team app entities.
+   */
+  protected function teamsWorkflowTest() {
     $this->drupalLogin($this->account);
     // Open team collection page.
     $this->drupalGet(Url::fromRoute('entity.team.collection'));
@@ -194,13 +202,13 @@ class UITest extends ApigeeEdgeTeamsFunctionalTestBase {
     $this->assertSession()->pageTextContains("{$this->otherAccount->get('first_name')->value} {$this->otherAccount->get('last_name')->value}");
 
     // Team members have access to every team app and membership operations.
-    $this->drupalPostForm(Url::fromRoute('apigee_edge_teams.settings.team.member_permissions'), [
-      'permissions[team][manage_members]' => TRUE,
-      'permissions[app][create]' => TRUE,
-      'permissions[app][update]' => TRUE,
-      'permissions[app][delete]' => TRUE,
-      'permissions[app][analytics]' => TRUE,
-    ], 'Save configuration');
+    $this->drupalPostForm(Url::fromRoute('apigee_edge_teams.settings.team.permissions'), [
+      'member[team_manage_members]' => TRUE,
+      'member[team_app_create]' => TRUE,
+      'member[team_app_update]' => TRUE,
+      'member[team_app_delete]' => TRUE,
+      'member[team_app_analytics]' => TRUE,
+    ], 'Save permissions');
 
     // Login with the other user and ensure that it is member of the team.
     $this->drupalLogin($this->otherAccount);
@@ -293,7 +301,7 @@ class UITest extends ApigeeEdgeTeamsFunctionalTestBase {
     $this->getSession()->getPage()->findById((Html::getUniqueId($this->otherAccount->getEmail())))->clickLink('Remove');
     $this->submitForm([], 'Confirm');
 
-    // The other user's team listing page is empty..
+    // The other user's team listing page is empty.
     $this->drupalLogin($this->otherAccount);
     $this->drupalGet($this->team->toUrl('collection'));
     $this->assertSession()->pageTextContains('There are no Teams yet.');
@@ -325,7 +333,7 @@ class UITest extends ApigeeEdgeTeamsFunctionalTestBase {
   /**
    * Tests the team entity label modifications.
    */
-  public function testTeamAndTeamAppLabel() {
+  protected function teamAndTeamAppLabelTest() {
     $this->drupalLogin($this->rootUser);
     $this->changeEntityAliasesAndValidate('team', 'apigee_edge_teams.settings.team');
     $this->changeEntityAliasesAndValidate('team_app', 'apigee_edge_teams.settings.team_app');
@@ -334,7 +342,7 @@ class UITest extends ApigeeEdgeTeamsFunctionalTestBase {
   /**
    * Create custom fields for team and team app.
    */
-  private function addFieldsToEntities() {
+  protected function addFieldsToEntities() {
     $this->drupalLogin($this->rootUser);
     $this->fields = [
       'integer' => [

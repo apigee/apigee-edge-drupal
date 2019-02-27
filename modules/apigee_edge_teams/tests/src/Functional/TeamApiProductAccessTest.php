@@ -22,6 +22,7 @@ namespace Drupal\Tests\apigee_edge_teams\Functional;
 
 use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
+use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 
@@ -71,11 +72,11 @@ class TeamApiProductAccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
   protected $teamMembershipManager;
 
   /**
-   * Team API product access manager service.
+   * Team API product access handler.
    *
-   * @var \Drupal\apigee_edge_teams\TeamApiProductAccessManagerInterface
+   * @var \Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandlerInterface
    */
-  protected $teamApiProductAccessManager;
+  protected $teamApiProductAccessHandler;
 
   /**
    * Associative array of API products where keys are the visibilities.
@@ -106,6 +107,13 @@ class TeamApiProductAccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
   protected $team_member;
 
   /**
+   * The team role storage.
+   *
+   * @var \Drupal\apigee_edge_teams\Entity\Storage\TeamRoleStorageInterface
+   */
+  protected $teamRoleStorage;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp() {
@@ -114,7 +122,8 @@ class TeamApiProductAccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
     $this->apiProductStorage = $this->container->get('entity_type.manager')->getStorage('api_product');
     $this->teamStorage = $this->container->get('entity_type.manager')->getStorage('team');
     $this->teamMembershipManager = $this->container->get('apigee_edge_teams.team_membership_manager');
-    $this->teamApiProductAccessManager = $this->container->get('apigee_edge_teams.team_api_product_access_manager');
+    $this->teamApiProductAccessHandler = $this->container->get('apigee_edge_teams.team_member_api_product_access_handler');
+    $this->teamRoleStorage = $this->container->get('entity_type.manager')->getStorage('team_role');
 
     $this->team = $this->teamStorage->create([
       'name' => $this->getRandomGenerator()->name(),
@@ -306,14 +315,17 @@ class TeamApiProductAccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
    */
   protected function changeTeamApiProductAccess(?bool $public, ?bool $private, ?bool $internal): void {
     $rm = new \ReflectionMethod($this, __FUNCTION__);
-    $config = $this->config('apigee_edge_teams.team_permissions');
+    $permissions = [];
     foreach ($rm->getParameters() as $parameter) {
       $parameter_value = ${$parameter->getName()};
       if ($parameter_value !== NULL) {
-        $config->set("api_product_access_{$parameter->getName()}", $parameter_value);
+        $permissions["api_product_access_{$parameter->getName()}"] = $parameter_value;
       }
     }
-    $config->save();
+
+    if (!empty($permissions)) {
+      $this->teamRoleStorage->changePermissions(TeamRoleInterface::TEAM_MEMBER_ROLE, $permissions);
+    }
   }
 
 }

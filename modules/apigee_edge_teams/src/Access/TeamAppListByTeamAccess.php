@@ -20,10 +20,9 @@
 
 namespace Drupal\apigee_edge_teams\Access;
 
-use Drupal\apigee_edge_teams\Entity\TeamAppAccessHandler;
 use Drupal\apigee_edge_teams\Entity\TeamAppPermissionProvider;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
-use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
+use Drupal\apigee_edge_teams\TeamPermissionHandlerInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\Access\AccessInterface;
@@ -37,13 +36,6 @@ use Drupal\Core\Session\AccountInterface;
 final class TeamAppListByTeamAccess implements AccessInterface {
 
   /**
-   * The team membership manager service.
-   *
-   * @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface
-   */
-  private $teamMembershipManager;
-
-  /**
    * The entity type manager service.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
@@ -51,27 +43,27 @@ final class TeamAppListByTeamAccess implements AccessInterface {
   private $entityTypeManager;
 
   /**
+   * The team permission handler service.
+   *
+   * @var \Drupal\apigee_edge_teams\TeamPermissionHandlerInterface
+   */
+  private $teamPermissionHandler;
+
+  /**
    * TeamAppListByTeamAccess constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
-   * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
-   *   The team membership manager service.
+   * @param \Drupal\apigee_edge_teams\TeamPermissionHandlerInterface $team_permission_handler
+   *   The team permission handler service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager) {
-    $this->teamMembershipManager = $team_membership_manager;
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, TeamPermissionHandlerInterface $team_permission_handler) {
     $this->entityTypeManager = $entity_type_manager;
+    $this->teamPermissionHandler = $team_permission_handler;
   }
 
   /**
    * Grant access to Team app list by team page.
-   *
-   * Only team members and users with "Manage Team Apps" permission should have
-   * access.
-   *
-   * There is a little redundancy with the implementation here and with the
-   * implementation TeamAppAccessHandler. Nice to have, find a way to remove
-   * this redundancy.
    *
    * @param \Drupal\apigee_edge_teams\Entity\TeamInterface $team
    *   The team entity from the route.
@@ -80,8 +72,6 @@ final class TeamAppListByTeamAccess implements AccessInterface {
    *
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access result.
-   *
-   * @see \Drupal\apigee_edge_teams\Entity\TeamAppPermissionProvider
    */
   public function access(TeamInterface $team, AccountInterface $account) {
     $team_app_admin_permission = $this->entityTypeManager->getDefinition('team_app')->getAdminPermission();
@@ -89,12 +79,8 @@ final class TeamAppListByTeamAccess implements AccessInterface {
 
     if ($result->isNeutral()) {
       if ($account->isAuthenticated()) {
-        $result = AccessResult::allowedIf(in_array($team->id(), $this->teamMembershipManager->getTeams($account->getEmail())))
-          ->addCacheTags(['config:' . TeamAppAccessHandler::MEMBER_PERMISSIONS_CONFIG_NAME]);
-        $developer = $this->entityTypeManager->getStorage('developer')->load($account->getEmail());
-        if ($developer) {
-          $result->addCacheableDependency($developer);
-        }
+        $result = AccessResult::allowedIf(in_array('team_app_view', $this->teamPermissionHandler->getDeveloperPermissionsByTeam($team, $account)));
+        $result->addCacheableDependency($account);
       }
     }
 

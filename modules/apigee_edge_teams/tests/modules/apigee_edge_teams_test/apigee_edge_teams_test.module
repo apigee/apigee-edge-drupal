@@ -1,0 +1,67 @@
+<?php
+
+/**
+ * @file
+ * Copyright 2018 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
+ */
+
+/**
+ * @file
+ * Helper module for the Apigee Edge Team module tests.
+ */
+
+use Drupal\apigee_edge_teams\Entity\TeamInterface;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Session\AccountInterface;
+
+const APIGEE_EDGE_TEAMS_TEST_SPECIAL_USERNAME_WITH_ALL_TEAM_PERMISSIONS = 'apigee_edge_teams_test_very_special_username';
+const APIGEE_EDGE_TEAMS_TEST_SPECIAL_USERNAME_CAN_VIEW_ANY_TEAM_STATE_KEY = 'apigee_edge_teams_test_special_user_can_view_any_team';
+
+/**
+ * Implements hook_ENTITY_TYPE_access().
+ */
+function apigee_edge_teams_test_team_access(EntityInterface $entity, $operation, AccountInterface $account) {
+  $result = AccessResult::neutral();
+  if ($operation === 'view') {
+    $result = AccessResult::allowedIf(\Drupal::state()->get(APIGEE_EDGE_TEAMS_TEST_SPECIAL_USERNAME_CAN_VIEW_ANY_TEAM_STATE_KEY, FALSE));
+  }
+
+  return $result;
+}
+
+/**
+ * Implements hook_apigee_edge_teams_developer_permissions_by_team_alter().
+ *
+ * Grant all test permissions to a member of team independently from its current
+ * team roles within the team.
+ */
+function apigee_edge_teams_test_apigee_edge_teams_developer_permissions_by_team_alter(array &$permissions, TeamInterface $team, AccountInterface $account) {
+  if ($account->isAnonymous()) {
+    // Anonymous user can not be member of a team.
+    return;
+  }
+
+  // Grant every permission to the user if it has a special username.
+  if ($account->getAccountName() === APIGEE_EDGE_TEAMS_TEST_SPECIAL_USERNAME_WITH_ALL_TEAM_PERMISSIONS) {
+    /** @var \Drupal\apigee_edge_teams\TeamPermissionHandlerInterface $team_permission_handler */
+    $team_permission_handler = \Drupal::service('apigee_edge_teams.team_permissions');
+    foreach ($team_permission_handler->getPermissions() as $permission) {
+      $permissions[] = $permission->getName();
+    }
+  }
+}

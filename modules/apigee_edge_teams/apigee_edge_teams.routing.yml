@@ -14,10 +14,10 @@ apigee_edge_teams.settings.team.cache:
   requirements:
     _permission: 'administer team'
 
-apigee_edge_teams.settings.team.member_permissions:
-  path: '/admin/config/apigee-edge/team-settings/member-permissions'
+apigee_edge_teams.settings.team.permissions:
+  path: '/admin/config/apigee-edge/team-settings/permissions'
   defaults:
-    _form: '\Drupal\apigee_edge_teams\Form\TeamMemberPermissionsSettingsForm'
+    _form: '\Drupal\apigee_edge_teams\Form\TeamPermissionsForm'
     _title: 'Permissions'
   requirements:
     _permission: 'administer team'

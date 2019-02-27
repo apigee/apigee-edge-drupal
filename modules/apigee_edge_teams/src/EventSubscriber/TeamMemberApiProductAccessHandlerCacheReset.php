@@ -25,30 +25,30 @@ use Drupal\apigee_edge\Event\AppCredentialCreateEvent;
 use Drupal\apigee_edge\Event\AppCredentialDeleteApiProductEvent;
 use Drupal\apigee_edge\Event\AppCredentialDeleteEvent;
 use Drupal\apigee_edge\Event\AppCredentialGenerateEvent;
-use Drupal\apigee_edge_teams\TeamApiProductAccessManagerInterface;
+use Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandlerInterface;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
- * Ensures that Team API product access manager's cache gets cleared.
+ * Ensures team member API product access handler's cache gets cleared.
  */
-final class TeamApiProductAccessManagerCacheReset implements EventSubscriberInterface {
+final class TeamMemberApiProductAccessHandlerCacheReset implements EventSubscriberInterface {
 
   /**
-   * The entity type manager service.
+   * The team member api product access handler.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   * @var \Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandlerInterface
    */
-  private $teamApiProductAccessManager;
+  private $teamMemberApiProductAccessHandler;
 
   /**
    * TeamApiProductAccessCacheReset constructor.
    *
-   * @param \Drupal\apigee_edge_teams\TeamApiProductAccessManagerInterface $team_api_product_access_manager
-   *   The entity type manager service.
+   * @param \Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandlerInterface $team_member_api_product_access_handler
+   *   The team member api product access handler.
    */
-  public function __construct(TeamApiProductAccessManagerInterface $team_api_product_access_manager) {
-    $this->teamApiProductAccessManager = $team_api_product_access_manager;
+  public function __construct(TeamMemberApiProductAccessHandlerInterface $team_member_api_product_access_handler) {
+    $this->teamMemberApiProductAccessHandler = $team_member_api_product_access_handler;
   }
 
   /**
@@ -71,7 +71,7 @@ final class TeamApiProductAccessManagerCacheReset implements EventSubscriberInte
    *   Event that triggered this subscriber.
    */
   public function clearApiProductCache(Event $event): void {
-    $this->teamApiProductAccessManager->resetCache();
+    $this->teamMemberApiProductAccessHandler->resetCache();
   }
 
 }

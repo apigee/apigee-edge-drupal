@@ -1,4 +1,4 @@
-apigee_edge_teams.teams.add_members:
+apigee_edge_teams.team.add_members:
   route_name: entity.team.add_members
   title: 'Add members'
   appears_on:
@@ -10,3 +10,9 @@ apigee_edge_teams.team_app.add_form_for_team:
   class: Drupal\apigee_edge_teams\Plugin\Menu\AddAppForTeamLocalAction
   appears_on:
     - 'entity.team_app.collection_by_team'
+
+entity.team_role.add_form:
+  route_name: entity.team_role.add_form
+  title: 'Add role'
+  appears_on:
+    - 'entity.team_role.collection'

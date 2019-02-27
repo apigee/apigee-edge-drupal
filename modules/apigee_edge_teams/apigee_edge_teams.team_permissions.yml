@@ -1,0 +1,2 @@
+permission_providers:
+  - Drupal\apigee_edge_teams\DefaultTeamPermissionsProvider

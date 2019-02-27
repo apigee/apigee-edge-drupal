@@ -18,22 +18,13 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge_teams\Entity;
-
-use Drupal\apigee_edge\Entity\AppViewBuilder;
+namespace Drupal\apigee_edge_teams\Exception;
 
 /**
- * Team app entity specific view builder.
+ * Module specific base exception interface.
+ *
+ * All exceptions thrown by this module should implement this.
  */
-class TeamAppViewBuilder extends AppViewBuilder {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function build(array $build) {
-    // TODO Check Team's status, just like in case we check developer's status
-    // for developer apps.
-    return parent::build($build);
-  }
+interface ApigeeEdgeTeamsExceptionInterface extends \Throwable {
 
 }
