@@ -625,19 +625,41 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
    *   Team role permissions to enable.
    */
   protected function setTeamRolePermissions(string $role_name, array $permissions) {
-    $this->drupalLogin($this->rootUser);
+    // Save the original logged in user if there is any.
+    // Note: The account switcher service is not working as it is expected this
+    // is the reason why we need this workaround.
+    $oldNotRootLoggedInUser = NULL;
+    if ($this->loggedInUser && $this->loggedInUser->id() != $this->rootUser->id()) {
+      $oldNotRootLoggedInUser = clone $this->loggedInUser;
+    }
+
+    // Save permissions with admin user.
+    if ($oldNotRootLoggedInUser === NULL || $oldNotRootLoggedInUser->id() !== $this->rootUser->id()) {
+      $this->drupalLogin($this->rootUser);
+    }
+
     $permission_changes = [];
     foreach (array_keys(self::TEAM_MEMBER_PERMISSION_MATRIX) as $permission) {
       $permission_changes["{$role_name}[{$permission}]"] = in_array($permission, $permissions);
     }
 
     $this->drupalPostForm(Url::fromRoute('apigee_edge_teams.settings.team.permissions'), $permission_changes, 'Save permissions');
+    // Dump permission configuration to the HTML output.
+    $this->drupalGet(Url::fromRoute('apigee_edge_teams.settings.team.permissions'));
     // It is necessary to reset the team role cache (only) in the test because
     // the role cache is out of date in the test's container even if the cache
     // is properly cleared in Drupal\apigee_edge_teams\Entity\Storage\TeamRoleStorage::changePermissions().
-    // It's a more effective solution then rebuilding the whole container.
+    // It's a more effective solution than rebuilding the whole container.
     $this->teamRoleStorage->resetCache([$role_name]);
-    $this->drupalLogin($this->account);
+    // Log back in with the old, not root user.
+    if ($oldNotRootLoggedInUser) {
+      if ($oldNotRootLoggedInUser->id() === $this->account->id()) {
+        $this->drupalLogin($this->account);
+      }
+      else {
+        throw new \Exception("Unable to switch back to the originally logged user because it was neither the root user nor the simple authenticated user. Its user id: {$oldNotRootLoggedInUser->id()}.");
+      }
+    }
   }
 
 }
