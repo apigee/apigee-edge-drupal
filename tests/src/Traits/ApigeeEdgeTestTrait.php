@@ -42,11 +42,15 @@ trait ApigeeEdgeTestTrait {
    * {@inheritdoc}
    */
   protected function setUp() {
-    self::$modules = [
-      'apigee_edge_test',
-    ];
-
+    // TODO Trait must not call parent.
     parent::setUp();
+
+    // TODO Find a better way to install modules from a trait.
+    // parent::setUp() must be called because it initialized the container.
+    // It will also install modules defined in static::$modules array therefore
+    // those modules gets installed earlier than apigee_edge_test.
+    $this->installExtraModules(['apigee_edge_test']);
+
     $key = Key::create([
       'id' => 'test',
       'label' => 'test',

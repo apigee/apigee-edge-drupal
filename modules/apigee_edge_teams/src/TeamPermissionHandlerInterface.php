@@ -44,7 +44,7 @@ interface TeamPermissionHandlerInterface {
    * Returns team permissions of a developer within a team.
    *
    * @param \Drupal\apigee_edge_teams\Entity\TeamInterface $team
-   *   The team entity.
+   *   The team entity, the developer is not necessarily member of the team.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The user entity.
    *
