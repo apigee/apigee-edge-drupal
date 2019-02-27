@@ -25,7 +25,24 @@
  */
 
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
+
+const APIGEE_EDGE_TEAMS_TEST_SPECIAL_USERNAME_WITH_ALL_TEAM_PERMISSIONS = 'apigee_edge_teams_test_very_special_username';
+const APIGEE_EDGE_TEAMS_TEST_SPECIAL_USERNAME_CAN_VIEW_ANY_TEAM_STATE_KEY = 'apigee_edge_teams_test_special_user_can_view_any_team';
+
+/**
+ * Implements hook_ENTITY_TYPE_access().
+ */
+function apigee_edge_teams_test_team_access(EntityInterface $entity, $operation, AccountInterface $account) {
+  $result = AccessResult::neutral();
+  if ($operation === 'view') {
+    $result = AccessResult::allowedIf(\Drupal::state()->get(APIGEE_EDGE_TEAMS_TEST_SPECIAL_USERNAME_CAN_VIEW_ANY_TEAM_STATE_KEY, FALSE));
+  }
+
+  return $result;
+}
 
 /**
  * Implements hook_apigee_edge_teams_developer_permissions_by_team_alter().
@@ -39,8 +56,8 @@ function apigee_edge_teams_test_apigee_edge_teams_developer_permissions_by_team_
     return;
   }
 
-  // Grant every permission to the user if the user's display name matches.
-  if ($account->getAccountName() === 'teams_role_test') {
+  // Grant every permission to the user if it has a special username.
+  if ($account->getAccountName() === APIGEE_EDGE_TEAMS_TEST_SPECIAL_USERNAME_WITH_ALL_TEAM_PERMISSIONS) {
     /** @var \Drupal\apigee_edge_teams\TeamPermissionHandlerInterface $team_permission_handler */
     $team_permission_handler = \Drupal::service('apigee_edge_teams.team_permissions');
     foreach ($team_permission_handler->getPermissions() as $permission) {
