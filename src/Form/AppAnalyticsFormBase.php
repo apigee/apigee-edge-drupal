@@ -29,6 +29,7 @@ use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\UrlGeneratorInterface;
 use Drupal\Core\TempStore\PrivateTempStoreFactory;
 use Drupal\Core\Url;
 use League\Period\Period;
@@ -62,6 +63,13 @@ abstract class AppAnalyticsFormBase extends FormBase {
   protected $store;
 
   /**
+   * The URL generator.
+   *
+   * @var \Drupal\Core\Routing\UrlGeneratorInterface
+   */
+  protected $urlGenerator;
+
+  /**
    * Constructs a new AppAnalyticsFormBase.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -70,11 +78,14 @@ abstract class AppAnalyticsFormBase extends FormBase {
    *   The SDK connector service.
    * @param \Drupal\Core\TempStore\PrivateTempStoreFactory $tempstore_private
    *   The private temp store factory.
+   * @param \Drupal\Core\Routing\UrlGeneratorInterface $url_generator
+   *   The URL generator.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, SDKConnectorInterface $sdk_connector, PrivateTempStoreFactory $tempstore_private) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, SDKConnectorInterface $sdk_connector, PrivateTempStoreFactory $tempstore_private, UrlGeneratorInterface $url_generator) {
     $this->entityTypeManager = $entity_type_manager;
     $this->connector = $sdk_connector;
     $this->store = $tempstore_private->get('apigee_edge.analytics');
+    $this->urlGenerator = $url_generator;
   }
 
   /**
@@ -84,7 +95,8 @@ abstract class AppAnalyticsFormBase extends FormBase {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('apigee_edge.sdk_connector'),
-      $container->get('tempstore.private')
+      $container->get('tempstore.private'),
+      $container->get('url_generator')
     );
   }
 
@@ -435,7 +447,7 @@ abstract class AppAnalyticsFormBase extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $url = $this->getUrlGenerator()->generateFromRoute('<current>', [], [
+    $url = $this->urlGenerator->generateFromRoute('<current>', [], [
       'query' => [
         'metric' => $form_state->getValue('metrics'),
         'since' => $form_state->getValue('since')->getTimeStamp(),
