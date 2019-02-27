@@ -44,7 +44,7 @@ class TeamStatusWarningSubscriber implements EventSubscriberInterface {
    *
    * @var \Drupal\Core\Session\AccountInterface
    */
-  private $current_user;
+  private $currentUser;
 
   /**
    * The route match service.
@@ -82,13 +82,6 @@ class TeamStatusWarningSubscriber implements EventSubscriberInterface {
   private $teamAppEntityType;
 
   /**
-   * The team membership manager service.
-   *
-   * @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface
-   */
-  private $teamMembershipManager;
-
-  /**
    * TeamStatusWarningSubscriber constructor.
    *
    * @param \Drupal\Core\Session\AccountInterface $current_user
@@ -106,11 +99,10 @@ class TeamStatusWarningSubscriber implements EventSubscriberInterface {
    */
   public function __construct(AccountInterface $current_user, RouteMatchInterface $route_match, EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager, MessengerInterface $messenger, TranslationInterface $string_translation) {
     $this->routeMatch = $route_match;
-    $this->current_user = $current_user;
+    $this->currentUser = $current_user;
     $this->teamStorage = $entity_type_manager->getStorage('team');
     $this->teamEntityType = $entity_type_manager->getDefinition('team');
     $this->teamAppEntityType = $entity_type_manager->getDefinition('team_app');
-    $this->teamMembershipManager = $team_membership_manager;
     $this->messenger = $messenger;
     $this->stringTranslation = $string_translation;
   }
@@ -123,7 +115,7 @@ class TeamStatusWarningSubscriber implements EventSubscriberInterface {
    */
   public function onRespond(FilterResponseEvent $event) {
     // Anonymous user's does not have access to these routes.
-    if ($this->current_user->isAuthenticated() && strpos($this->routeMatch->getRouteName(), 'entity.team_app.') === 0) {
+    if ($this->currentUser->isAuthenticated() && strpos($this->routeMatch->getRouteName(), 'entity.team_app.') === 0) {
       // Team is available in most of the team app routes as a route parameter.
       /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface|NULL $team */
       $team = $this->routeMatch->getParameter('team');

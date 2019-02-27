@@ -25,6 +25,11 @@ namespace Drupal\apigee_edge\Event;
  */
 class AppCredentialDeleteEvent extends AbstractAppCredentialEvent {
 
+  /**
+   * Event id.
+   *
+   * @var string
+   */
   const EVENT_NAME = 'apigee_edge.app_credential.delete';
 
 }

@@ -56,13 +56,6 @@ class ApiClientProfiler {
   private $logFormat;
 
   /**
-   * The debug message formatter plugin manager.
-   *
-   * @var \Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager
-   */
-  private $debugMessageFormatterPlugin;
-
-  /**
    * ApiClientProfiler constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -77,13 +70,12 @@ class ApiClientProfiler {
     // the module's configuration would have been imported to the database.
     // In that case the $formatterPluginId is missing and it causes fatal
     // errors.
-    $formatterPluginId = $config_factory->get('apigee_edge_debug.settings')->get('formatter');
-    if ($formatterPluginId) {
-      $this->formatter = $debug_message_formatter_plugin->createInstance($formatterPluginId);
+    $formatter_plugin_id = $config_factory->get('apigee_edge_debug.settings')->get('formatter');
+    if ($formatter_plugin_id) {
+      $this->formatter = $debug_message_formatter_plugin->createInstance($formatter_plugin_id);
     }
     $this->logFormat = $config_factory->get('apigee_edge_debug.settings')->get('log_message_format');
     $this->logger = $logger;
-    $this->debugMessageFormatterPlugin = $debug_message_formatter_plugin;
   }
 
   /**
@@ -112,9 +104,9 @@ class ApiClientProfiler {
 
         $logger = $this->logger;
         $formatter = $this->formatter;
-        $logFormat = $this->logFormat;
+        $log_format = $this->logFormat;
 
-        $options[RequestOptions::ON_STATS] = function (TransferStats $stats) use ($request, $next, $logger, $formatter, $logFormat) {
+        $options[RequestOptions::ON_STATS] = function (TransferStats $stats) use ($request, $next, $logger, $formatter, $log_format) {
           // Do not modify the original request object in the subsequent calls.
           $request_clone = clone $request;
           $level = LogLevel::DEBUG;
@@ -149,7 +141,7 @@ class ApiClientProfiler {
             }
             $context['error'] = $error;
           }
-          $logger->log($level, $logFormat, $context);
+          $logger->log($level, $log_format, $context);
           $next($stats);
         };
 

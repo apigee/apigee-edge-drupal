@@ -135,7 +135,7 @@ class EnvironmentVariablesKeyProvider extends KeyProviderBase implements KeyPlug
   protected function getEnvironmentVariables(bool $required = FALSE): array {
     $environment_variables = [];
     foreach ($this->keyType->getPluginDefinition()['multivalue']['fields'] as $id => $field) {
-      if ($required && isset($field['required']) && $field['required'] === FALSE) {
+      if ($required && isset($field['required']) && !$field['required']) {
         continue;
       }
       $environment_variables[$id] = 'APIGEE_EDGE_' . strtoupper($id);

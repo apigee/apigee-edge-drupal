@@ -116,14 +116,14 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
   protected function buildEntityIdQuery(): QueryInterface {
     $query = parent::buildEntityIdQuery();
     $user = $this->routeMatch->getParameter('user');
-    $developerId = $user->get('apigee_edge_developer_id')->value;
+    $developer_id = $user->get('apigee_edge_developer_id')->value;
     // If developer id can not be retrieved for a Drupal user it means that
     // either there is connection error or the site is out of sync with
     // Apigee Edge.
-    if ($developerId === NULL) {
+    if ($developer_id === NULL) {
       throw new DeveloperDoesNotExistException($user->getEmail());
     }
-    $query->condition('developerId', $developerId);
+    $query->condition('developerId', $developer_id);
     return $query;
   }
 

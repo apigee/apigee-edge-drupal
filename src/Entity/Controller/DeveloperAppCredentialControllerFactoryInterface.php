@@ -30,13 +30,13 @@ interface DeveloperAppCredentialControllerFactoryInterface {
    *
    * @param string $owner
    *   Email address or id (UUID) of a developer.
-   * @param string $appName
+   * @param string $app_name
    *   Name of an app. (Not an app id, because app credentials endpoints does
    *   not allow to use them.)
    *
    * @return \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerInterface
    *   The developer app credentials controller.
    */
-  public function developerAppCredentialController(string $owner, string $appName): DeveloperAppCredentialControllerInterface;
+  public function developerAppCredentialController(string $owner, string $app_name): DeveloperAppCredentialControllerInterface;
 
 }

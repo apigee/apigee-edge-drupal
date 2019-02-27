@@ -57,17 +57,17 @@ final class DeveloperAppNameCacheFactory implements AppNameCacheByOwnerFactoryIn
   /**
    * DeveloperAppNameCacheFactory constructor.
    *
-   * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactoryInterface $appNameCacheByOwnerFactory
+   * @param \Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactoryInterface $app_name_cache_by_owner_factory
    *   The (general) app name cache by app owner factory service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Egulias\EmailValidator\EmailValidatorInterface $emailValidator
+   * @param \Egulias\EmailValidator\EmailValidatorInterface $email_validator
    *   The email validator service.
    */
-  public function __construct(AppNameCacheByOwnerFactoryInterface $appNameCacheByOwnerFactory, EntityTypeManagerInterface $entity_type_manager, EmailValidatorInterface $emailValidator) {
-    $this->appNameCacheByOwnerFactory = $appNameCacheByOwnerFactory;
+  public function __construct(AppNameCacheByOwnerFactoryInterface $app_name_cache_by_owner_factory, EntityTypeManagerInterface $entity_type_manager, EmailValidatorInterface $email_validator) {
+    $this->appNameCacheByOwnerFactory = $app_name_cache_by_owner_factory;
     $this->entityTypeManager = $entity_type_manager;
-    $this->emailValidator = $emailValidator;
+    $this->emailValidator = $email_validator;
   }
 
   /**

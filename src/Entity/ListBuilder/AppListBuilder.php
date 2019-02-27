@@ -319,17 +319,17 @@ class AppListBuilder extends EdgeEntityListBuilder {
         }
         break;
       }
-      foreach ($credential->getApiProducts() as $credProduct) {
-        if ($credProduct->getStatus() == CredentialProduct::STATUS_REVOKED || $credProduct->getStatus() == CredentialProduct::STATUS_PENDING) {
+      foreach ($credential->getApiProducts() as $cred_product) {
+        if ($cred_product->getStatus() == CredentialProduct::STATUS_REVOKED || $cred_product->getStatus() == CredentialProduct::STATUS_PENDING) {
           $args = [
             '@app' => $this->entityType->getLowercaseLabel(),
             '@api_product' => $this->entityTypeManager->getDefinition('api_product')->getLowercaseLabel(),
-            '@status' => $credProduct->getStatus() == CredentialProduct::STATUS_REVOKED ? $this->t('revoked') : $this->t('pending'),
+            '@status' => $cred_product->getStatus() == CredentialProduct::STATUS_REVOKED ? $this->t('revoked') : $this->t('pending'),
           ];
           if (count($app->getCredentials()) === 1) {
             /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $apiProduct */
-            $apiProduct = $this->entityTypeManager->getStorage('api_product')->load($credProduct->getApiproduct());
-            $args['%name'] = $apiProduct->label();
+            $api_product = $this->entityTypeManager->getStorage('api_product')->load($cred_product->getApiproduct());
+            $args['%name'] = $api_product->label();
             $warnings['revokedOrPendingCredProduct'] = $this->t('%name @api_product associated with this @app is in @status status.', $args);
           }
           else {

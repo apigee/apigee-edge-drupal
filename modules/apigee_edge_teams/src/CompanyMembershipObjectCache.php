@@ -37,6 +37,8 @@ final class CompanyMembershipObjectCache implements CompanyMembershipObjectCache
 
   /**
    * The default persistent cache bin used by this service.
+   *
+   * @var string
    */
   public const DEFAULT_CACHE_BIN = 'apigee_edge_teams_company_membership_object';
 

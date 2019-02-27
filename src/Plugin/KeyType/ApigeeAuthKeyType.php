@@ -101,7 +101,7 @@ class ApigeeAuthKeyType extends EdgeKeyTypeBase {
     }
 
     foreach ($this->getPluginDefinition()['multivalue']['fields'] as $id => $field) {
-      if (isset($field['required']) && $field['required'] === FALSE) {
+      if (isset($field['required']) && !$field['required']) {
         continue;
       }
 

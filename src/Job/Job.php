@@ -26,34 +26,51 @@ abstract class Job {
 
   /**
    * Job is waiting to be picked up by a worker.
+   *
+   * @var int
    */
   public const IDLE = 0;
 
   /**
    * Job failed, waiting to be retried.
+   *
+   * @var int
    */
   public const RESCHEDULED = 1;
 
   /**
    * Job is claimed by a worker, but not running yet.
+   *
+   * @var int
    */
   public const SELECTED = 2;
 
   /**
    * Job is running.
+   *
+   * @var int
    */
   public const RUNNING = 3;
 
   /**
    * Job is failed, and it won't be retried.
+   *
+   * @var int
    */
   public const FAILED = 4;
 
   /**
    * Job is finished successfully.
+   *
+   * @var int
    */
   public const FINISHED = 5;
 
+  /**
+   * Job statuses.
+   *
+   * @var string[]
+   */
   protected const ALL_STATUSES = [
     self::IDLE,
     self::RESCHEDULED,

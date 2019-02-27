@@ -57,13 +57,13 @@ class JobExecutor implements JobExecutorInterface {
    *   Database connection.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   Time interface.
-   * @param \Drupal\Core\Queue\QueueFactory $queueFactory
+   * @param \Drupal\Core\Queue\QueueFactory $queue_factory
    *   Queue factory.
    */
-  public function __construct(Connection $connection, TimeInterface $time, QueueFactory $queueFactory) {
+  public function __construct(Connection $connection, TimeInterface $time, QueueFactory $queue_factory) {
     $this->connection = $connection;
     $this->time = $time;
-    $this->queue = $queueFactory->get('apigee_edge_job');
+    $this->queue = $queue_factory->get('apigee_edge_job');
   }
 
   /**

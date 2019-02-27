@@ -215,8 +215,8 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
   /**
    * {@inheritdoc}
    */
-  public function setAppFamily(string $appFamily): void {
-    $this->decorated->setAppFamily($appFamily);
+  public function setAppFamily(string $app_family): void {
+    $this->decorated->setAppFamily($app_family);
   }
 
   /**
@@ -236,8 +236,8 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
   /**
    * {@inheritdoc}
    */
-  public function setCallbackUrl(string $callbackUrl): void {
-    $this->decorated->setCallbackUrl($callbackUrl);
+  public function setCallbackUrl(string $callback_url): void {
+    $this->decorated->setCallbackUrl($callback_url);
   }
 
   /**
@@ -250,8 +250,8 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
   /**
    * {@inheritdoc}
    */
-  public function setDisplayName(string $displayName): void {
-    $this->decorated->setDisplayName($displayName);
+  public function setDisplayName(string $display_name): void {
+    $this->decorated->setDisplayName($display_name);
   }
 
   /**
@@ -416,7 +416,7 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
         Url::fromUri($value);
       }
       catch (\Exception $exception) {
-        /** @var \self $app */
+        /** @var \Drupal\apigee_edge\Entity\App $app */
         $app = parent::set($field_name, '', $notify);
         $app->setCallbackUrl($value);
         return $app;

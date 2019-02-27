@@ -27,8 +27,18 @@ use Drupal\Core\Form\FormStateInterface;
  */
 class DeveloperSettingsForm extends ConfigFormBase {
 
+  /**
+   * Allow to confirm email address with a verification email.
+   *
+   * @var string
+   */
   public const VERIFICATION_ACTION_VERIFY_EMAIL = 'verify_email';
 
+  /**
+   * Abort registration, display an error.
+   *
+   * @var string
+   */
   public const VERIFICATION_ACTION_DISPLAY_ERROR_ONLY = 'display_error_only';
 
   /**

@@ -28,10 +28,25 @@ use Drupal\Core\Render\Element\RenderElement;
  */
 class StatusPropertyElement extends RenderElement {
 
+  /**
+   * Indicator status configuration id: OK.
+   *
+   * @var string
+   */
   public const INDICATOR_STATUS_OK = 'indicator_status_ok';
 
+  /**
+   * Indicator status configuration id: Warning.
+   *
+   * @var string
+   */
   public const INDICATOR_STATUS_WARNING = 'indicator_status_warning';
 
+  /**
+   * Indicator status configuration id: Error.
+   *
+   * @var string
+   */
   public const INDICATOR_STATUS_ERROR = 'indicator_status_error';
 
   /**

@@ -41,8 +41,8 @@ trait CachedPaginatedControllerHelperTrait {
   /**
    * {@inheritdoc}
    */
-  public function createPager(int $limit = 0, ?string $startKey = NULL): PagerInterface {
-    return $this->decorated()->createPager($limit, $startKey);
+  public function createPager(int $limit = 0, ?string $start_key = NULL): PagerInterface {
+    return $this->decorated()->createPager($limit, $start_key);
   }
 
   /**
@@ -52,18 +52,18 @@ trait CachedPaginatedControllerHelperTrait {
    *   Input array.
    * @param int $limit
    *   Limit.
-   * @param string|null $startKey
+   * @param string|null $start_key
    *   The start key, if it is null than it is first key of the array.
    *
    * @return array
    *   Subset of the array.
    */
-  final protected function extractSubsetOfAssociativeArray(array $assoc_array, int $limit, ?string $startKey = NULL): array {
+  final protected function extractSubsetOfAssociativeArray(array $assoc_array, int $limit, ?string $start_key = NULL): array {
     $array_keys = array_keys($assoc_array);
-    if ($startKey === NULL) {
-      $startKey = reset($array_keys);
+    if ($start_key === NULL) {
+      $start_key = reset($array_keys);
     }
-    $pos = array_search($startKey, $array_keys);
+    $pos = array_search($start_key, $array_keys);
     return array_slice($assoc_array, $pos, $limit);
   }
 

@@ -27,6 +27,11 @@ use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
  */
 class AppCredentialDeleteApiProductEvent extends AbstractAppCredentialEvent {
 
+  /**
+   * Event id.
+   *
+   * @var string
+   */
   const EVENT_NAME = 'apigee_edge.app_credential.delete_api_product';
 
   /**

@@ -152,8 +152,8 @@ final class DeveloperController implements DeveloperControllerInterface, EntityC
   /**
    * {@inheritdoc}
    */
-  public function getDeveloperByApp(string $appName): DeveloperInterface {
-    $developer = $this->decorated()->getDeveloperByApp($appName);
+  public function getDeveloperByApp(string $app_name): DeveloperInterface {
+    $developer = $this->decorated()->getDeveloperByApp($app_name);
     // We do not keep cache entries about developer and app relationships so
     // we could not serve this request from cache but at least we add the
     // loaded developer to the cache here.
@@ -171,19 +171,19 @@ final class DeveloperController implements DeveloperControllerInterface, EntityC
   /**
    * {@inheritdoc}
    */
-  public function setStatus(string $entityId, string $status): void {
-    $this->decorated()->setStatus($entityId, $status);
+  public function setStatus(string $entity_id, string $status): void {
+    $this->decorated()->setStatus($entity_id, $status);
     // Enforce reload of entity from Apigee Edge.
-    $this->entityCache->removeEntities([$entityId]);
+    $this->entityCache->removeEntities([$entity_id]);
     $this->entityCache->allEntitiesInCache(FALSE);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function delete(string $entityId): EntityInterface {
+  public function delete(string $entity_id): EntityInterface {
     /** @var \Apigee\Edge\Api\Management\Entity\DeveloperInterface $entity */
-    $entity = $this->traitDelete($entityId);
+    $entity = $this->traitDelete($entity_id);
     // Invalidate app caches that belongs to this developer.
     // This is implementation probably overcomplicated,
     // we may optimize this later.

@@ -80,8 +80,8 @@ class ApiProductAccessControlForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $role_storage = $this->entityTypeManager->getStorage('user_role');
-    $roleNames = [];
-    $rolesWithBypassPerm = [];
+    $role_names = [];
+    $roles_with_bypass_perm = [];
 
     $form['access'] = [
       '#type' => 'details',
@@ -94,20 +94,20 @@ class ApiProductAccessControlForm extends ConfigFormBase {
     /** @var \Drupal\user\RoleInterface $role */
     foreach ($role_storage->loadMultiple() as $role_name => $role) {
       // Retrieve role names for columns.
-      $roleNames[$role_name] = $role->label();
-      $rolesWithBypassPerm[$role_name] = in_array('bypass api product access control', $role->getPermissions()) || $role->isAdmin();
+      $role_names[$role_name] = $role->label();
+      $roles_with_bypass_perm[$role_name] = in_array('bypass api product access control', $role->getPermissions()) || $role->isAdmin();
     }
 
     // Store $role_names for use when saving the data.
     $form['access']['role_names'] = [
       '#type' => 'value',
-      '#value' => $roleNames,
+      '#value' => $role_names,
     ];
 
     // Store $rolesWithBypassPerm for use when saving the data.
     $form['access']['roles_with_bypass'] = [
       '#type' => 'value',
-      '#value' => $rolesWithBypassPerm,
+      '#value' => $roles_with_bypass_perm,
     ];
 
     $form['access']['visibility'] = [
@@ -118,7 +118,7 @@ class ApiProductAccessControlForm extends ConfigFormBase {
       '#sticky' => TRUE,
     ];
 
-    foreach ($roleNames as $rid => $name) {
+    foreach ($role_names as $name) {
       $form['access']['visibility']['#header'][] = [
         'data' => $name,
         'class' => ['checkbox'],
@@ -138,12 +138,12 @@ class ApiProductAccessControlForm extends ConfigFormBase {
     ];
 
     foreach ($visibilities as $visibility => $label) {
-      $selectedRoles = $this->config('apigee_edge.api_product_settings')->get('access')[$visibility] ?? [];
+      $selected_roles = $this->config('apigee_edge.api_product_settings')->get('access')[$visibility] ?? [];
       $form['access']['visibility'][$visibility]['name'] = [
         '#markup' => $label,
       ];
 
-      foreach ($roleNames as $rid => $name) {
+      foreach ($role_names as $rid => $name) {
         $form['access']['visibility'][$visibility][$rid] = [
           '#title' => $label,
           '#title_display' => 'invisible',
@@ -151,12 +151,12 @@ class ApiProductAccessControlForm extends ConfigFormBase {
             'class' => ['checkbox'],
           ],
           '#type' => 'checkbox',
-          '#default_value' => in_array($rid, $selectedRoles) ? 1 : 0,
+          '#default_value' => in_array($rid, $selected_roles) ? 1 : 0,
           '#attributes' => ['class' => ['rid-' . $rid, 'js-rid-' . $rid]],
           '#parents' => ['access', 'visibility', $rid, $visibility],
         ];
         // Show a column of disabled but checked checkboxes.
-        if ($rolesWithBypassPerm[$rid]) {
+        if ($roles_with_bypass_perm[$rid]) {
           $form['access']['visibility'][$visibility][$rid]['#disabled'] = TRUE;
           $form['access']['visibility'][$visibility][$rid]['#default_value'] = TRUE;
           $form['access']['visibility'][$visibility][$rid]['#attributes']['title'] = $this->t('This checkbox is disabled because this role has "Bypass API product access control" permission.');
@@ -173,12 +173,12 @@ class ApiProductAccessControlForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $ridProductMap = [];
+    $rid_product_map = [];
     foreach ($form_state->getValue(['access', 'role_names'], []) as $rid => $name) {
       // Do not store roles with by pass permission in the attribute
       // unnecessarily.
       if (!$form_state->getValue(['access', 'roles_with_bypass', $rid], FALSE)) {
-        $ridProductMap[$rid] = array_filter($form_state->getValue([
+        $rid_product_map[$rid] = array_filter($form_state->getValue([
           'access',
           'visibility',
           $rid,
@@ -187,19 +187,19 @@ class ApiProductAccessControlForm extends ConfigFormBase {
     }
 
     // Ensure that we always keep these 3 keys in config object.
-    $visibilityRidMap = array_fill_keys(array_keys($form_state->getValue([
+    $visibility_rid_map = array_fill_keys(array_keys($form_state->getValue([
       'access',
       'visibility',
       'options',
     ])), []);
-    foreach ($ridProductMap as $rid => $products) {
+    foreach ($rid_product_map as $rid => $products) {
       foreach (array_keys($products) as $product) {
-        $visibilityRidMap[$product][$rid] = $rid;
+        $visibility_rid_map[$product][$rid] = $rid;
       }
     }
 
     $this->config('apigee_edge.api_product_settings')
-      ->set('access', $visibilityRidMap)
+      ->set('access', $visibility_rid_map)
       ->save();
     parent::submitForm($form, $form_state);
   }

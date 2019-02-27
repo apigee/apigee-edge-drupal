@@ -27,6 +27,11 @@ use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
  */
 class AppCredentialAddApiProductEvent extends AbstractAppCredentialEvent {
 
+  /**
+   * Event id.
+   *
+   * @var string
+   */
   const EVENT_NAME = 'apigee_edge.app_credential.add_api_product';
 
   /**

@@ -148,34 +148,34 @@ class DeveloperSync extends EdgeJob {
       // Update Drupal user because the Apigee Edge developer is the most
       // recent.
       if ($last_modified_delta >= 0) {
-        $updateUserJob = new UserUpdate($user->getEmail());
-        $updateUserJob->setTag($this->getTag());
-        $this->scheduleJob($updateUserJob);
+        $update_user_job = new UserUpdate($user->getEmail());
+        $update_user_job->setTag($this->getTag());
+        $this->scheduleJob($update_user_job);
       }
       // Update Apigee Edge developer because the Drupal user is the most
       // recent.
       elseif ($last_modified_delta < 0) {
-        $updateDeveloperJob = new DeveloperUpdate($developer->getEmail());
-        $updateDeveloperJob->setTag($this->getTag());
-        $this->scheduleJob($updateDeveloperJob);
+        $update_developer_job = new DeveloperUpdate($developer->getEmail());
+        $update_developer_job->setTag($this->getTag());
+        $this->scheduleJob($update_developer_job);
       }
     }
 
     // Create missing Drupal users.
     foreach ($this->edgeDevelopers as $clean_email => $developer) {
       if (empty($this->drupalUsers[$clean_email])) {
-        $createUserJob = new UserCreate($developer->getEmail());
-        $createUserJob->setTag($this->getTag());
-        $this->scheduleJob($createUserJob);
+        $create_user_job = new UserCreate($developer->getEmail());
+        $create_user_job->setTag($this->getTag());
+        $this->scheduleJob($create_user_job);
       }
     }
 
     // Create missing Apigee Edge developers.
     foreach ($this->drupalUsers as $clean_email => $user) {
       if (empty($this->edgeDevelopers[$clean_email])) {
-        $createDeveloperJob = new DeveloperCreate($user->getEmail());
-        $createDeveloperJob->setTag($this->getTag());
-        $this->scheduleJob($createDeveloperJob);
+        $create_developer_job = new DeveloperCreate($user->getEmail());
+        $create_developer_job->setTag($this->getTag());
+        $this->scheduleJob($create_developer_job);
       }
     }
 

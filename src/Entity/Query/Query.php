@@ -152,10 +152,10 @@ class Query extends QueryBase implements QueryInterface {
     $storage = $this->entityTypeManager->getStorage($this->entityTypeId);
     // The worst case: load all entities from Apigee Edge.
     $ids = NULL;
-    $originalConditions = &$this->condition->conditions();
-    $filteredConditions = [];
-    foreach ($originalConditions as $key => $condition) {
-      $filteredConditions[$key] = $condition;
+    $original_conditions = &$this->condition->conditions();
+    $filtered_conditions = [];
+    foreach ($original_conditions as $key => $condition) {
+      $filtered_conditions[$key] = $condition;
       $id = NULL;
       // Indicates whether we found a single entity id in this condition
       // or not.
@@ -163,7 +163,7 @@ class Query extends QueryBase implements QueryInterface {
       // \Drupal\Core\Entity\EntityStorageBase::buildPropertyQuery() always adds
       // conditions with IN this is the reason why the last part of this
       // condition is needed.
-      if (in_array($condition['field'], $this->getEntityIdProperties()) && (in_array($condition['operator'], [NULL, '=']) || ($condition['operator'] === 'IN' && count($condition['value']) === 1))) {
+      if (in_array($condition['field'], $this->getEntityIdProperties()) && (in_array($condition['operator'], [NULL, '=']) || ($condition['operator'] === 'IN' && is_array($condition['value']) && count($condition['value']) === 1))) {
         if (is_array($condition['value'])) {
           $id = reset($condition['value']);
           $id_found = TRUE;
@@ -186,7 +186,7 @@ class Query extends QueryBase implements QueryInterface {
         }
         else {
           $ids = [$id];
-          unset($filteredConditions[$key]);
+          unset($filtered_conditions[$key]);
           // If we found an id field in the query do not look for an another
           // because that would not make any sense to query one entity by
           // both id fields. (Where in theory both id field could refer to a
@@ -199,7 +199,7 @@ class Query extends QueryBase implements QueryInterface {
     // (by calling the proper API with the proper parameters).
     // We do not want to apply the same filters on the result in execute()
     // again.
-    $originalConditions = $filteredConditions;
+    $original_conditions = $filtered_conditions;
 
     return $storage->loadMultiple($ids);
   }

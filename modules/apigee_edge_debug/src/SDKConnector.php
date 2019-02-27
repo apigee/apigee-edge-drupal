@@ -41,6 +41,8 @@ class SDKConnector extends OriginalSDKConnector implements SDKConnectorInterface
    * HTTP client.
    *
    * @see \Drupal\apigee_edge_debug\HttpClientMiddleware\ApiClientProfiler
+   *
+   * @var string
    */
   public const HEADER = 'X-Apigee-Edge-Api-Client-Profiler';
 

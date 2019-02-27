@@ -44,7 +44,7 @@ final class DeveloperStatusWarningSubscriber implements EventSubscriberInterface
    *
    * @var \Drupal\Core\Session\AccountInterface
    */
-  private $current_user;
+  private $currentUser;
 
   /**
    * The route match service.
@@ -68,13 +68,6 @@ final class DeveloperStatusWarningSubscriber implements EventSubscriberInterface
   private $developerStorage;
 
   /**
-   * The user storage.
-   *
-   * @var \Drupal\user\UserStorageInterface
-   */
-  private $userStorage;
-
-  /**
    * DeveloperStatusWarningSubscriber constructor.
    *
    * @param \Drupal\Core\Session\AccountInterface $current_user
@@ -90,9 +83,8 @@ final class DeveloperStatusWarningSubscriber implements EventSubscriberInterface
    */
   public function __construct(AccountInterface $current_user, RouteMatchInterface $route_match, EntityTypeManagerInterface $entity_type_manager, MessengerInterface $messenger, TranslationInterface $string_translation) {
     $this->routeMatch = $route_match;
-    $this->current_user = $current_user;
+    $this->currentUser = $current_user;
     $this->developerStorage = $entity_type_manager->getStorage('developer');
-    $this->userStorage = $entity_type_manager->getStorage('user');
     $this->messenger = $messenger;
     $this->stringTranslation = $string_translation;
   }
@@ -105,7 +97,7 @@ final class DeveloperStatusWarningSubscriber implements EventSubscriberInterface
    */
   public function onRespond(FilterResponseEvent $event) {
     // Anonymous user's does not have access to these routes.
-    if ($this->current_user->isAuthenticated() && strpos($this->routeMatch->getRouteName(), 'entity.developer_app.') === 0) {
+    if ($this->currentUser->isAuthenticated() && strpos($this->routeMatch->getRouteName(), 'entity.developer_app.') === 0) {
       /** @var \Drupal\apigee_edge\Entity\DeveloperInterface|NULL $developer */
       $developer = NULL;
       /** @var \Drupal\Core\Session\AccountInterface|NULL $account */
@@ -127,7 +119,7 @@ final class DeveloperStatusWarningSubscriber implements EventSubscriberInterface
       // If we could figure out the developer from the route and its status
       // is inactive.
       if ($developer && $developer->getStatus() === DeveloperInterface::STATUS_INACTIVE) {
-        if ($this->current_user->getEmail() === $developer->getEmail()) {
+        if ($this->currentUser->getEmail() === $developer->getEmail()) {
           $message = $this->t('Your developer account has inactive status so you will not be able to use your credentials until your account gets activated. Please contact support for further assistance.');
         }
         // Displays different warning if the current user is not the

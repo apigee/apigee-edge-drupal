@@ -138,8 +138,8 @@ abstract class AppStorage extends AttributesAwareFieldableEdgeEntityStorageBase 
    */
   final protected function getPersistentCacheTags(EntityInterface $entity) {
     /** @var \Drupal\apigee_edge\Entity\AppInterface $entity */
-    $cacheTags = parent::getPersistentCacheTags($entity);
-    return array_merge($cacheTags, $this->getCacheTagsByOwner($entity));
+    $cache_tags = parent::getPersistentCacheTags($entity);
+    return array_merge($cache_tags, $this->getCacheTagsByOwner($entity));
   }
 
   /**
@@ -153,14 +153,14 @@ abstract class AppStorage extends AttributesAwareFieldableEdgeEntityStorageBase 
    */
   private function getPersistentCacheTagsForAppName(EntityInterface $entity) {
     /** @var \Drupal\apigee_edge\Entity\AppInterface $entity */
-    $cacheTags = array_merge([
+    $cache_tags = array_merge([
       "{$this->entityTypeId}",
       "{$this->entityTypeId}:app_names",
       "{$this->entityTypeId}:{$entity->id()}",
       "{$this->entityTypeId}:{$entity->id()}:app_name",
     ], $this->getCacheTagsByOwner($entity));
 
-    return $cacheTags;
+    return $cache_tags;
   }
 
   /**
@@ -221,7 +221,7 @@ abstract class AppStorage extends AttributesAwareFieldableEdgeEntityStorageBase 
     }
 
     /** @var \Drupal\apigee_edge\Entity\AppInterface $entity */
-    foreach ($entities as $id => $entity) {
+    foreach ($entities as $entity) {
       // Create an additional cache entry for each app that stores the app id
       // for each developerId or company (team) name + app name combinations.
       // Thanks for this we can run queries faster that tries to an load app

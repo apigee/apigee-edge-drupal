@@ -86,11 +86,13 @@ class ExportAnalyticsController extends ControllerBase {
     $data = [];
 
     // Write out the data.
-    for ($i = 0; $i < count($analytics['TimeUnit']); $i++) {
-      $data[] = [
-        $this->t('Date')->render() => new DrupalDateTime('@' . $analytics['TimeUnit'][$i] / 1000),
-        $analytics['metric']->render() => $analytics['stats']['data'][0]['metric'][0]['values'][$i],
-      ];
+    if (array_key_exists('TimeUnit', $analytics) && is_array($analytics['TimeUnit'])) {
+      for ($i = 0; $i < count($analytics['TimeUnit']); $i++) {
+        $data[] = [
+          $this->t('Date')->render() => new DrupalDateTime('@' . $analytics['TimeUnit'][$i] / 1000),
+          $analytics['metric']->render() => $analytics['stats']['data'][0]['metric'][0]['values'][$i],
+        ];
+      }
     }
 
     $csv_encoder = new CsvEncoder();

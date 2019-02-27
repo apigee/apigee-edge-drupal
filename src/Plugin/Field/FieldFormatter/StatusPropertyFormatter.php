@@ -104,10 +104,7 @@ class StatusPropertyFormatter extends FormatterBase {
     $entity_type_def = \Drupal::entityTypeManager()->getDefinition($entity_type);
     // This field formatter is only applicable on Apigee Edge module's entities
     // and only on their status properties.
-    if ($field_definition->getName() === 'status' && in_array(EdgeEntityInterface::class, class_implements($entity_type_def->getOriginalClass()))) {
-      return TRUE;
-    }
-    return FALSE;
+    return $field_definition->getName() === 'status' && in_array(EdgeEntityInterface::class, class_implements($entity_type_def->getOriginalClass()));
   }
 
   /**

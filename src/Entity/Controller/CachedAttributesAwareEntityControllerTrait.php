@@ -48,36 +48,36 @@ trait CachedAttributesAwareEntityControllerTrait {
   /**
    * {@inheritdoc}
    */
-  public function getAttributes(string $entityId): AttributesProperty {
-    $entity = $this->entityCache()->getEntity($entityId);
+  public function getAttributes(string $entity_id): AttributesProperty {
+    $entity = $this->entityCache()->getEntity($entity_id);
     /** @var \Apigee\Edge\Entity\Property\AttributesPropertyInterface $entity */
     if ($entity) {
       return $entity->getAttributes();
     }
 
-    return $this->decorated()->getAttributes($entityId);
+    return $this->decorated()->getAttributes($entity_id);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getAttribute(string $entityId, string $name): string {
-    $entity = $this->entityCache()->getEntity($entityId);
+  public function getAttribute(string $entity_id, string $name): string {
+    $entity = $this->entityCache()->getEntity($entity_id);
     /** @var \Apigee\Edge\Entity\Property\AttributesPropertyInterface $entity */
     if ($entity) {
       return $entity->getAttributeValue($name);
     }
 
-    return $this->decorated()->getAttribute($entityId, $name);
+    return $this->decorated()->getAttribute($entity_id, $name);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function updateAttributes(string $entityId, AttributesProperty $attributes): AttributesProperty {
-    $attributes = $this->decorated()->updateAttributes($entityId, $attributes);
+  public function updateAttributes(string $entity_id, AttributesProperty $attributes): AttributesProperty {
+    $attributes = $this->decorated()->updateAttributes($entity_id, $attributes);
     // Enforce reload of entity from Apigee Edge.
-    $this->entityCache()->removeEntities([$entityId]);
+    $this->entityCache()->removeEntities([$entity_id]);
     $this->entityCache()->allEntitiesInCache(FALSE);
     return $attributes;
   }
@@ -85,10 +85,10 @@ trait CachedAttributesAwareEntityControllerTrait {
   /**
    * {@inheritdoc}
    */
-  public function updateAttribute(string $entityId, string $name, string $value): string {
-    $value = $this->decorated()->updateAttribute($entityId, $name, $value);
+  public function updateAttribute(string $entity_id, string $name, string $value): string {
+    $value = $this->decorated()->updateAttribute($entity_id, $name, $value);
     // Enforce reload of entity from Apigee Edge.
-    $this->entityCache()->removeEntities([$entityId]);
+    $this->entityCache()->removeEntities([$entity_id]);
     $this->entityCache()->allEntitiesInCache(FALSE);
     return $value;
   }
@@ -96,10 +96,10 @@ trait CachedAttributesAwareEntityControllerTrait {
   /**
    * {@inheritdoc}
    */
-  public function deleteAttribute(string $entityId, string $name): void {
-    $this->decorated()->deleteAttribute($entityId, $name);
+  public function deleteAttribute(string $entity_id, string $name): void {
+    $this->decorated()->deleteAttribute($entity_id, $name);
     // Enforce reload of entity from Apigee Edge.
-    $this->entityCache()->removeEntities([$entityId]);
+    $this->entityCache()->removeEntities([$entity_id]);
     $this->entityCache()->allEntitiesInCache(FALSE);
   }
 

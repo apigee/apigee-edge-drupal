@@ -78,7 +78,7 @@ class TeamMembersList extends ControllerBase {
    * @see \Drupal\apigee_edge_teams\Entity\TeamRouteProvider::getListTeamMembersRoute()
    */
   public function overview(TeamInterface $team) {
-    $entityType = $this->entityTypeManager()->getDefinition('team');
+    $entity_type = $this->entityTypeManager()->getDefinition('team');
     $members = $this->teamMembershipManager->getMembers($team->id());
     $users_by_mail = [];
     $team_member_roles_by_mail = [];
@@ -94,7 +94,7 @@ class TeamMembersList extends ControllerBase {
         return $carry;
       }, []);
       /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorageInterface $team_member_role_storage */
-      $team_member_role_storage = $this->entityTypeManager->getStorage('team_member_role');
+      $team_member_role_storage = $this->entityTypeManager()->getStorage('team_member_role');
       $team_member_roles_by_mail = array_reduce($team_member_role_storage->loadByTeam($team), function ($carry, TeamMemberRoleInterface $developer_role) {
         $carry[$developer_role->getDeveloper()->getEmail()] = $developer_role;
 
@@ -109,7 +109,7 @@ class TeamMembersList extends ControllerBase {
         'roles' => $this->t('Roles'),
         'operations' => $this->t('Operations'),
       ],
-      '#title' => $this->t('@team members', ['@team' => $entityType->getSingularLabel()]),
+      '#title' => $this->t('@team members', ['@team' => $entity_type->getSingularLabel()]),
       '#rows' => [],
       '#empty' => $this->t('There are no members yet.'),
       '#cache' => [
@@ -195,12 +195,10 @@ class TeamMembersList extends ControllerBase {
    *   Render array.
    */
   protected function buildOperations(string $member, TeamInterface $team): array {
-    $build = [
+    return [
       '#type' => 'operations',
       '#links' => $this->getOperations($member, $team),
     ];
-
-    return $build;
   }
 
   /**

@@ -57,13 +57,13 @@ class TeamPermissionsForm extends FormBase {
    *
    * @param \Drupal\apigee_edge_teams\TeamPermissionHandlerInterface $team_permissions
    *   The team permission handler.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    */
-  public function __construct(TeamPermissionHandlerInterface $team_permissions, EntityTypeManagerInterface $entityTypeManager) {
+  public function __construct(TeamPermissionHandlerInterface $team_permissions, EntityTypeManagerInterface $entity_type_manager) {
 
     $this->teamPermissionHandler = $team_permissions;
-    $this->entityTypeManager = $entityTypeManager;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**

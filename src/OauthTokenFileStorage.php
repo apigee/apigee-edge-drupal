@@ -31,6 +31,8 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
 
   /**
    * Default directory of the oauth.dat file.
+   *
+   * @var string
    */
   public const DEFAULT_DIRECTORY = 'private://.apigee_edge';
 
@@ -137,11 +139,7 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
    */
   public function hasExpired(): bool {
     $expires = $this->getExpires();
-    if ($expires - $this->leeway > time()) {
-      return FALSE;
-    }
-
-    return TRUE;
+    return !($expires - $this->leeway > time());
   }
 
   /**

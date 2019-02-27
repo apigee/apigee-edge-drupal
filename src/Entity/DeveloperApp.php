@@ -139,8 +139,8 @@ class DeveloperApp extends App implements DeveloperAppInterface {
    * {@inheritdoc}
    */
   public function getOwner() {
-    $ownerId = $this->getOwnerId();
-    return $ownerId === NULL ? NULL : User::load($ownerId);
+    $owner_id = $this->getOwnerId();
+    return $owner_id === NULL ? NULL : User::load($owner_id);
   }
 
   /**

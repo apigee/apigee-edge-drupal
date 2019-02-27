@@ -166,18 +166,18 @@ abstract class AppQueryBase extends Query {
         // be a lot smaller compared with retrieving all app entity data - maybe
         // unnecessarily if we already have them in cache - and it should be
         // produced and retrieved more quickly.
-        $appNames = $this->appByOwnerController($app_owner_in_conditions)->getEntityIds();
-        $cachedAppIds = array_map(function ($appName) use ($storage, $app_owner_in_conditions) {
-          return $storage->getCachedAppId($app_owner_in_conditions, $appName);
-        }, $appNames);
+        $app_names = $this->appByOwnerController($app_owner_in_conditions)->getEntityIds();
+        $cached_app_ids = array_map(function ($app_name) use ($storage, $app_owner_in_conditions) {
+          return $storage->getCachedAppId($app_owner_in_conditions, $app_name);
+        }, $app_names);
         // Remove those null values that indicates an app name could not be
         // found in cache.
-        $cachedAppIds = array_filter($cachedAppIds);
+        $cached_app_ids = array_filter($cached_app_ids);
 
         // It seems that we might have all apps in cache that this app owner
         // owns at this moment.
-        if (count($appNames) === count($cachedAppIds)) {
-          return $storage->loadMultiple($cachedAppIds);
+        if (count($app_names) === count($cached_app_ids)) {
+          return $storage->loadMultiple($cached_app_ids);
         }
 
         // It seems we do not have cached app ids for all apps that this

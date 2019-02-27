@@ -56,19 +56,19 @@ trait CachedEntityCrudOperationsControllerTrait {
   /**
    * {@inheritdoc}
    */
-  public function delete(string $entityId): EntityInterface {
-    $entity = $this->decorated()->delete($entityId);
-    $this->entityCache()->removeEntities([$entityId]);
+  public function delete(string $entity_id): EntityInterface {
+    $entity = $this->decorated()->delete($entity_id);
+    $this->entityCache()->removeEntities([$entity_id]);
     return $entity;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function load(string $entityId): EntityInterface {
-    $entity = $this->entityCache()->getEntity($entityId);
+  public function load(string $entity_id): EntityInterface {
+    $entity = $this->entityCache()->getEntity($entity_id);
     if ($entity === NULL) {
-      $entity = $this->decorated()->load($entityId);
+      $entity = $this->decorated()->load($entity_id);
       $this->entityCache()->saveEntities([$entity]);
     }
 

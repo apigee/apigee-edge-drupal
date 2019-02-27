@@ -129,8 +129,8 @@ class ApiProduct extends EdgeEntityBase implements ApiProductInterface {
   /**
    * {@inheritdoc}
    */
-  public function setQuotaInterval(string $quotaInterval): void {
-    $this->decorated->setQuotaInterval($quotaInterval);
+  public function setQuotaInterval(string $quota_interval): void {
+    $this->decorated->setQuotaInterval($quota_interval);
   }
 
   /**
@@ -143,8 +143,8 @@ class ApiProduct extends EdgeEntityBase implements ApiProductInterface {
   /**
    * {@inheritdoc}
    */
-  public function setQuotaTimeUnit(string $quotaTimeUnit): void {
-    $this->decorated->setQuotaTimeUnit($quotaTimeUnit);
+  public function setQuotaTimeUnit(string $quota_time_unit): void {
+    $this->decorated->setQuotaTimeUnit($quota_time_unit);
   }
 
   /**
@@ -157,8 +157,8 @@ class ApiProduct extends EdgeEntityBase implements ApiProductInterface {
   /**
    * {@inheritdoc}
    */
-  public function setApprovalType(string $approvalType): void {
-    $this->decorated->setApprovalType($approvalType);
+  public function setApprovalType(string $approval_type): void {
+    $this->decorated->setApprovalType($approval_type);
   }
 
   /**
@@ -171,8 +171,8 @@ class ApiProduct extends EdgeEntityBase implements ApiProductInterface {
   /**
    * {@inheritdoc}
    */
-  public function setApiResources(string ...$apiResources): void {
-    $this->decorated->setApiResources($apiResources);
+  public function setApiResources(string ...$api_resources): void {
+    $this->decorated->setApiResources($api_resources);
   }
 
   /**
@@ -269,8 +269,8 @@ class ApiProduct extends EdgeEntityBase implements ApiProductInterface {
   /**
    * {@inheritdoc}
    */
-  public function setDisplayName(string $displayName): void {
-    $this->decorated->setDisplayName($displayName);
+  public function setDisplayName(string $display_name): void {
+    $this->decorated->setDisplayName($display_name);
   }
 
   /**

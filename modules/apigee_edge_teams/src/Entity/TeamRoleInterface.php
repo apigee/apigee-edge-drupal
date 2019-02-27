@@ -9,8 +9,18 @@ use Drupal\Core\Config\Entity\ConfigEntityInterface;
  */
 interface TeamRoleInterface extends ConfigEntityInterface {
 
+  /**
+   * Team member team role entity id.
+   *
+   * @var string
+   */
   public const TEAM_MEMBER_ROLE = 'member';
 
+  /**
+   * Team admin team role entity id.
+   *
+   * @var string
+   */
   public const TEAM_ADMIN_ROLE = 'admin';
 
   /**

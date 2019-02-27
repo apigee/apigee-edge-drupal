@@ -160,16 +160,16 @@ class UserDeveloperConverter implements UserDeveloperConverterInterface {
   public function convertDeveloper(DeveloperInterface $developer) : DeveloperToUserConversionResult {
     $successful_changes = 0;
     $problems = [];
-    $userStorage = $this->entityTypeManager->getStorage('user');
+    $user_storage = $this->entityTypeManager->getStorage('user');
     // id() always contains the original, unchanged email address of a
     // developer.
-    $users = $userStorage->loadByProperties(['mail' => $developer->id()]);
+    $users = $user_storage->loadByProperties(['mail' => $developer->id()]);
     $user = $users ? reset($users) : FALSE;
 
     /** @var \Drupal\user\UserInterface $user */
-    if ($user === FALSE) {
+    if (!$user) {
       // Initialize new user object with minimum data.
-      $user = $userStorage->create([
+      $user = $user_storage->create([
         'pass' => user_password(),
       ]);
       // Suppress invalid email validation errors.

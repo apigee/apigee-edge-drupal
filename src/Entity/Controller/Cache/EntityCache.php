@@ -139,11 +139,10 @@ class EntityCache implements EntityCacheInterface {
     if (empty($ids)) {
       $ids = $this->cacheIds;
     }
-    $entities = array_map(function ($item) {
+
+    return array_map(function ($item) {
       return $item->data;
     }, $this->cacheBackend->getMultiple($ids));
-
-    return $entities;
   }
 
   /**

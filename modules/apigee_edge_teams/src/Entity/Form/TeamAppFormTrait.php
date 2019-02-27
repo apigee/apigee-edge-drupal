@@ -37,7 +37,7 @@ trait TeamAppFormTrait {
   /**
    * {@inheritdoc}
    */
-  public static function appExists(string $name, array $element, FormStateInterface $formState): bool {
+  public static function appExists(string $name, array $element, FormStateInterface $form_state): bool {
     // Do not validate if app name is not set.
     if ($name === '') {
       return FALSE;
@@ -51,7 +51,7 @@ trait TeamAppFormTrait {
     $factory = \Drupal::service('apigee_edge_teams.controller.team_app_controller_factory');
     $app = TRUE;
     try {
-      $app = $factory->teamAppController($formState->getValue('owner'))->load($name);
+      $app = $factory->teamAppController($form_state->getValue('owner'))->load($name);
     }
     catch (ApiException $exception) {
       if ($exception instanceof ClientErrorException && $exception->getEdgeErrorCode() === 'developer.service.AppDoesNotExist') {
@@ -62,7 +62,7 @@ trait TeamAppFormTrait {
         // unexpected response.
         $context = [
           '%app_name' => $name,
-          '%owner' => $formState->getValue('owner'),
+          '%owner' => $form_state->getValue('owner'),
         ];
         $context += Error::decodeException($exception);
         \Drupal::logger('apigee_edge_teams')->error("Unable to properly validate an app name's uniqueness. App name: %app_name. Owner: %owner. @message %function (line %line of %file). <pre>@backtrace_string</pre>", $context);
@@ -135,11 +135,9 @@ trait TeamAppFormTrait {
       return [];
     }
 
-    $products = array_filter($this->getEntityTypeManager()->getStorage('api_product')->loadMultiple(), function (ApiProductInterface $api_product) use ($team) {
+    return array_filter($this->getEntityTypeManager()->getStorage('api_product')->loadMultiple(), function (ApiProductInterface $api_product) use ($team) {
       return $this->getTeamMemberApiProductAccessHandler()->access($api_product, 'assign', $team);
     });
-
-    return $products;
   }
 
 }
