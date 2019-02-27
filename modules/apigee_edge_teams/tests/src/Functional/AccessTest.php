@@ -339,21 +339,21 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
     // permission and every team permission is also revoked.
     $this->teamMembershipManager->addMembers($this->team->getName(), [$this->account->getEmail()]);
     $this->setUserPermissions([]);
-    $this->setTeamRolePermissions(TeamRoleInterface::TEAM_MEMBER_ROLE, []);
+    $this->setTeamRolePermissionsOnUi(TeamRoleInterface::TEAM_MEMBER_ROLE, []);
     $this->validateTeamAccess();
     $this->validateTeamAppAccess();
 
     // The user is a member of the team. Check every team member level
     // permission one by one.
     foreach (array_keys(self::TEAM_MEMBER_PERMISSION_MATRIX) as $permission) {
-      $this->setTeamRolePermissions(TeamRoleInterface::TEAM_MEMBER_ROLE, [$permission]);
+      $this->setTeamRolePermissionsOnUi(TeamRoleInterface::TEAM_MEMBER_ROLE, [$permission]);
       $this->validateTeamAccess();
       $this->validateTeamAppAccess();
     }
 
     // The user is not a member of the team but every team member operation is
     // enabled. The user has no access to the team and team app related pages.
-    $this->setTeamRolePermissions(TeamRoleInterface::TEAM_MEMBER_ROLE, array_keys(self::TEAM_MEMBER_PERMISSION_MATRIX));
+    $this->setTeamRolePermissionsOnUi(TeamRoleInterface::TEAM_MEMBER_ROLE, array_keys(self::TEAM_MEMBER_PERMISSION_MATRIX));
     $this->teamMembershipManager->removeMembers($this->team->getName(), [$this->account->getEmail()]);
     $this->validateTeamAccess();
     $this->validateTeamAppAccess();
@@ -391,7 +391,7 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
     // The user has the default "member" role in the team, the default member
     // role has no permissions.
     $this->setUserPermissions([]);
-    $this->setTeamRolePermissions(TeamRoleInterface::TEAM_MEMBER_ROLE, []);
+    $this->setTeamRolePermissionsOnUi(TeamRoleInterface::TEAM_MEMBER_ROLE, []);
     $this->teamMembershipManager->addMembers($this->team->getName(), [$this->account->getEmail()]);
 
     // Create roles for every team membership level permission.
@@ -401,18 +401,13 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
         'label' => $permission,
         'id' => $permission,
       ], 'Save');
-      $this->setTeamRolePermissions($permission, [$permission]);
+      $this->setTeamRolePermissionsOnUi($permission, [$permission]);
     }
 
     // Grant team roles to the team member one by one.
     foreach (array_keys(self::TEAM_MEMBER_PERMISSION_MATRIX) as $permission) {
       $this->drupalLogin($this->rootUser);
-      $this->drupalPostForm(Url::fromRoute('entity.team.member.edit', [
-        'team' => $this->team->getName(),
-        'developer' => $this->account->getEmail(),
-      ]), [
-        "team_roles[{$permission}]" => TRUE,
-      ], 'Save');
+      $this->teamMemberRoleStorage->addTeamRoles($this->account, $this->team, [$permission]);
       $this->drupalLogin($this->account);
       $this->validateTeamAccess();
       $this->validateTeamAppAccess();
@@ -422,12 +417,7 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
     // Revoke team roles from the team member one by one.
     foreach (array_keys(self::TEAM_MEMBER_PERMISSION_MATRIX) as $permission) {
       $this->drupalLogin($this->rootUser);
-      $this->drupalPostForm(Url::fromRoute('entity.team.member.edit', [
-        'team' => $this->team->getName(),
-        'developer' => $this->account->getEmail(),
-      ]), [
-        "team_roles[{$permission}]" => FALSE,
-      ], 'Save');
+      $this->teamMemberRoleStorage->addTeamRoles($this->account, $this->team, [$permission]);
       $this->drupalLogin($this->account);
       $this->validateTeamAccess();
       $this->validateTeamAppAccess();
@@ -488,10 +478,6 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
    *   TRUE if the user has access to every team page.
    */
   protected function validateTeamAccess(bool $admin_access = FALSE) {
-    // TODO Investigate why team member role storage static cache does
-    // not get invalidated automatically when form submit calls addTeamRoles()
-    // or removeTeamRoles() even though they call $entity->save().
-    $this->teamMemberRoleStorage->resetCache();
     $route_ids_with_access = [];
 
     if ($admin_access) {
@@ -561,10 +547,6 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   protected function validateTeamAppAccess(bool $admin_access = FALSE) {
-    // TODO Investigate why team member role storage static cache does
-    // not get invalidated automatically when form submit calls addTeamRoles()
-    // or removeTeamRoles() even though they call $entity->save().
-    $this->teamMemberRoleStorage->resetCache();
     $route_ids_with_access = [];
 
     if ($admin_access) {
@@ -669,7 +651,7 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
    * @param array $permissions
    *   Team role permissions to enable.
    */
-  protected function setTeamRolePermissions(string $role_name, array $permissions) {
+  protected function setTeamRolePermissionsOnUi(string $role_name, array $permissions) {
     // Save the original logged in user if there is any.
     // Note: The account switcher service is not working as it is expected this
     // is the reason why we need this workaround.
@@ -691,10 +673,8 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
     $this->drupalPostForm(Url::fromRoute('apigee_edge_teams.settings.team.permissions'), $permission_changes, 'Save permissions');
     // Dump permission configuration to the HTML output.
     $this->drupalGet(Url::fromRoute('apigee_edge_teams.settings.team.permissions'));
-    // It is necessary to reset the team role cache (only) in the test because
-    // the role cache is out of date in the test's container even if the cache
-    // is properly cleared in Drupal\apigee_edge_teams\Entity\Storage\TeamRoleStorage::changePermissions().
-    // It's a more effective solution than rebuilding the whole container.
+    // Because changes made on the UI therefore _this_ instance of the team role
+    // storage must be cleared manually.
     $this->teamRoleStorage->resetCache([$role_name]);
     // Log back in with the old, not root user.
     if ($oldNotRootLoggedInUser) {
