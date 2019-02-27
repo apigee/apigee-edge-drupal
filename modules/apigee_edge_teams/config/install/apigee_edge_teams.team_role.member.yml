@@ -7,5 +7,6 @@ locked: true
 permissions:
   - api_product_access_private
   - api_product_access_public
+  - team_app_view
   - team_app_create
   - team_app_analytics

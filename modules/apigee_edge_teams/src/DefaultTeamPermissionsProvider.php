@@ -69,6 +69,7 @@ final class DefaultTeamPermissionsProvider implements DynamicTeamPermissionProvi
       'team_app' => [
         'label' => $this->t('Team apps'),
         'permissions' => [
+          'view' => $this->t('View Team Apps'),
           'create' => $this->t('Create Team Apps'),
           'update' => $this->t('Edit any Team Apps'),
           'delete' => $this->t('Delete any Team Apps'),
