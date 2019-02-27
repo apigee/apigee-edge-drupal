@@ -65,16 +65,16 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
    *   The entity type.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Drupal\apigee_edge_teams\TeamPermissionHandlerInterface $teamPermissionHandler
+   * @param \Drupal\apigee_edge_teams\TeamPermissionHandlerInterface $team_permission_handler
    *   The team permissions handler.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, TeamPermissionHandlerInterface $teamPermissionHandler, RouteMatchInterface $route_match) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, TeamPermissionHandlerInterface $team_permission_handler, RouteMatchInterface $route_match) {
     parent::__construct($entity_type);
     $this->entityTypeManager = $entity_type_manager;
     $this->routeMatch = $route_match;
-    $this->teamPermissionHandler = $teamPermissionHandler;
+    $this->teamPermissionHandler = $team_permission_handler;
   }
 
   /**
