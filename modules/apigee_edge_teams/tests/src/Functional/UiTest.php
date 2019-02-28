@@ -30,7 +30,7 @@ use Drupal\Tests\field_ui\Traits\FieldUiTestTrait;
  * @group apigee_edge
  * @group apigee_edge_teams
  */
-class UITest extends ApigeeEdgeTeamsFunctionalTestBase {
+class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
 
   use EntityUtilsTrait;
   use FieldUiTestTrait;
