@@ -54,6 +54,7 @@ services:
   apigee_edge_teams.team_permissions:
     class: Drupal\apigee_edge_teams\TeamPermissionHandler
     arguments: ['@module_handler', '@class_resolver', '@apigee_edge_teams.team_membership_manager', '@entity_type.manager']
+    lazy: true
     calls:
       - [setStringTranslation, ['@string_translation']]
 
