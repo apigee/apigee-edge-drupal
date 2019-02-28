@@ -74,6 +74,13 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
   private $entityTypeManager;
 
   /**
+   * The team API product access manager.
+   *
+   * @var \Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandlerInterface
+   */
+  private $teamApiProductAccessManager;
+
+  /**
    * The logger.
    *
    * @var \Psr\Log\LoggerInterface
@@ -89,6 +96,8 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
    *   The company members controller factory service.
    * @param \Drupal\apigee_edge\Entity\Controller\DeveloperControllerInterface $developer_controller
    *   The developer controller service.
+   * @param \Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandlerInterface $team_api_product_access_manager
+   *   The team API product access manager.
    * @param \Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface $developer_companies_cache
    *   The developer companies cache.
    * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cache_tags_invalidator
@@ -96,11 +105,12 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, CompanyMembersControllerFactoryInterface $company_members_controller_factory, DeveloperControllerInterface $developer_controller, DeveloperCompaniesCacheInterface $developer_companies_cache, CacheTagsInvalidatorInterface $cache_tags_invalidator, LoggerInterface $logger) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, CompanyMembersControllerFactoryInterface $company_members_controller_factory, DeveloperControllerInterface $developer_controller, TeamMemberApiProductAccessHandlerInterface $team_api_product_access_manager, DeveloperCompaniesCacheInterface $developer_companies_cache, CacheTagsInvalidatorInterface $cache_tags_invalidator, LoggerInterface $logger) {
     $this->entityTypeManager = $entity_type_manager;
     $this->companyMembersControllerFactory = $company_members_controller_factory;
     $this->developerController = $developer_controller;
     $this->developerCompaniesCache = $developer_companies_cache;
+    $this->teamApiProductAccessManager = $team_api_product_access_manager;
     $this->cacheTagsInvalidator = $cache_tags_invalidator;
     $this->logger = $logger;
   }
@@ -211,15 +221,7 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
     }
     // Enforce re-evaluation of API product entity access.
     $this->entityTypeManager->getAccessControlHandler('api_product')->resetCache();
-    // Prevents circular reference between the services:
-    // apigee_edge_teams.team_permissions ->
-    // apigee_edge_teams.team_membership_manager ->
-    // apigee_edge_teams.team_member_api_product_access_handler.
-    // This call is just a helper for us to ensure the static cache of the
-    // Team member API Product access handler gets cleared when this method
-    // gets called. This is especially useful in testing. So calling
-    // \Drupal::service() should be fine.
-    \Drupal::service('apigee_edge_teams.team_member_api_product_access_handler')->resetCache();
+    $this->teamApiProductAccessManager->resetCache();
   }
 
 }
