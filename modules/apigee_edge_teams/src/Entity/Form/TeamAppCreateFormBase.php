@@ -26,6 +26,7 @@ use Drupal\apigee_edge\Entity\Form\AppCreateForm;
 use Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface;
 use Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandlerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -72,6 +73,14 @@ abstract class TeamAppCreateFormBase extends AppCreateForm {
       $container->get('apigee_edge_teams.controller.team_app_credential_controller_factory'),
       $container->get('apigee_edge_teams.team_member_api_product_access_handler')
     );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function alterFormWithApiProductElement(array &$form, FormStateInterface $form_state): void {
+    parent::alterFormWithApiProductElement($form, $form_state);
+    $form['api_products'] += $this->nonMemberApiProductAccessWarningElement($form, $form_state);
   }
 
   /**

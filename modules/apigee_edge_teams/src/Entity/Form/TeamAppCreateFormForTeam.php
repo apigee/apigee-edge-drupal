@@ -54,7 +54,6 @@ class TeamAppCreateFormForTeam extends TeamAppCreateFormBase {
       '#type' => 'value',
       '#value' => $this->team->id(),
     ];
-
   }
 
 }

@@ -10,6 +10,10 @@ apigee_edge_teams.team_settings:
       label: 'How to refer to a Team on the UI (plural)'
     cache_expiration:
       type: integer
+    manage_team_apps_api_product_access:
+      type: sequence
+      sequence:
+        type: string
 
 apigee_edge_teams.team_app_settings:
   type: config_object
