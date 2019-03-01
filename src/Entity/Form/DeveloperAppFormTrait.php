@@ -124,7 +124,7 @@ trait DeveloperAppFormTrait {
   /**
    * {@inheritdoc}
    */
-  protected function apiProductList(array &$form, FormStateInterface $form_state): array {
+  protected function apiProductList(array $form, FormStateInterface $form_state): array {
     $email = $form_state->getValue('owner') ?? $form['owner']['#value'] ?? $form['owner']['#default_value'];
     /** @var \Drupal\user\UserInterface|null $account */
     $account = user_load_by_mail($email);

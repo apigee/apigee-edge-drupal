@@ -126,8 +126,7 @@ trait TeamAppFormTrait {
   /**
    * {@inheritdoc}
    */
-  protected function apiProductList(array &$form, FormStateInterface $form_state): array {
-    $team_name = $form_state->getValue('owner') ?? $form['owner']['#value'] ?? $form['owner']['#default_value'];
+  protected function apiProductList(array $form, FormStateInterface $form_state): array {
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface|null $team */
     $team = $this->getEntityTypeManager()->getStorage('team')->load($team_name);
     // Sanity check, team should always exists with team name in this context.

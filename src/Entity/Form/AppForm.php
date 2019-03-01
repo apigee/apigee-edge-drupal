@@ -103,7 +103,7 @@ abstract class AppForm extends FieldableEdgeEntityForm {
    * @return \Drupal\apigee_edge\Entity\ApiProductInterface[]
    *   Array of API product entities.
    */
-  abstract protected function apiProductList(array &$form, FormStateInterface $form_state): array;
+  abstract protected function apiProductList(array $form, FormStateInterface $form_state): array;
 
   /**
    * Returns the label of the Save button on the form.
