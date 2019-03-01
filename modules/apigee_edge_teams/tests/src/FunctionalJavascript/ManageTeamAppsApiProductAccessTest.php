@@ -209,11 +209,7 @@ class ManageTeamAppsApiProductAccessTest extends ApigeeEdgeFunctionalJavascriptT
   public function testManageTeamAppsApiProductAccess() {
     $assert_session = $this->assertSession();
     $message = 'You are not member of this team. You may see APIs here that a team member can not see.';
-    $shouldSeeOnAddForm = function (WebDriverWebAssert $assert_session, string $message) {
-      $this->assertNotEmpty(
-        // Wait as much as we can.
-        $assert_session->waitForText($message, 1200000)
-      );
+    $verifyApiProductAccessOnAddForm = function (WebDriverWebAssert $assert_session, string $message) {
       // Based on the default configuration a user with "Manage team apps"
       // permission should see the private API product but not the public
       // or the internal one.
@@ -225,10 +221,14 @@ class ManageTeamAppsApiProductAccessTest extends ApigeeEdgeFunctionalJavascriptT
 
     // Validate team app add forms.
     $this->drupalGet($this->teamApp->toUrl('add-form'));
-    $shouldSeeOnAddForm($assert_session, $message);
+    $verifyApiProductAccessOnAddForm($assert_session, $message);
     $assert_session->selectExists('Owner')->selectOption($this->team->id());
+    $assert_session->assertWaitOnAjaxRequest(1200000);
+    $this->assertSession()->pageTextContains($message);
+
     $this->drupalGet(Url::fromRoute('entity.team_app.add_form_for_team', ['team' => $this->team->id()]));
-    $shouldSeeOnAddForm($assert_session, $message);
+    $verifyApiProductAccessOnAddForm($assert_session, $message);
+    $this->assertSession()->pageTextContains($message);
 
     // Validate team app edit form.
     $this->drupalGet($this->teamApp->toUrl('edit-form'));
