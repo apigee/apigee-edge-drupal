@@ -112,6 +112,12 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
     $this->logger = $logger;
   }
 
+  /**
+   * Set the product access manager.
+   *
+   * @param \Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandlerInterface $teamMemberApiProductAccessHandler
+   *   The product access manager.
+   */
   public function setTeamApiProductAccessManager(TeamMemberApiProductAccessHandlerInterface $teamMemberApiProductAccessHandler) {
     $this->teamApiProductAccessManager = $teamMemberApiProductAccessHandler;
   }
