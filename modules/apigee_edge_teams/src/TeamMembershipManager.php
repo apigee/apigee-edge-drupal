@@ -74,6 +74,13 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
   private $entityTypeManager;
 
   /**
+   * The team API product access manager.
+   *
+   * @var \Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandlerInterface
+   */
+  private $teamApiProductAccessManager;
+
+  /**
    * The logger.
    *
    * @var \Psr\Log\LoggerInterface
@@ -103,6 +110,10 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
     $this->developerCompaniesCache = $developer_companies_cache;
     $this->cacheTagsInvalidator = $cache_tags_invalidator;
     $this->logger = $logger;
+  }
+
+  public function setTeamApiProductAccessManager(TeamMemberApiProductAccessHandlerInterface $teamMemberApiProductAccessHandler) {
+    $this->teamApiProductAccessManager = $teamMemberApiProductAccessHandler;
   }
 
   /**
@@ -211,15 +222,9 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
     }
     // Enforce re-evaluation of API product entity access.
     $this->entityTypeManager->getAccessControlHandler('api_product')->resetCache();
-    // Prevents circular reference between the services:
-    // apigee_edge_teams.team_permissions ->
-    // apigee_edge_teams.team_membership_manager ->
-    // apigee_edge_teams.team_member_api_product_access_handler.
-    // This call is just a helper for us to ensure the static cache of the
-    // Team member API Product access handler gets cleared when this method
-    // gets called. This is especially useful in testing. So calling
-    // \Drupal::service() should be fine.
-    \Drupal::service('apigee_edge_teams.team_member_api_product_access_handler')->resetCache();
+    if ($this->teamApiProductAccessManager) {
+      $this->teamApiProductAccessManager->resetCache();
+    }
   }
 
 }
