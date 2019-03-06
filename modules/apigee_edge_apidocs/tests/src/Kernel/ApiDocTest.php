@@ -42,6 +42,7 @@ class ApiDocTest extends KernelTestBase {
       'name' => 'API 1',
       'description' => 'Test API 1',
       'spec' => NULL,
+      'api_product' => NULL,
     ]);
     $this->assertNotNull($entity);
     $this->assertEquals(SAVED_NEW, $entity->save());
