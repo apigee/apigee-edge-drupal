@@ -37,7 +37,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @Block(
  *   id = "apigee_edge_teams_team_switcher",
- *   admin_label = @Translation("Select a team"),
+ *   admin_label = @Translation("Team switcher"),
  *   category = @Translation("Apigee Edge")
  * )
  */
