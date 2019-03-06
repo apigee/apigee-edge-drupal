@@ -20,6 +20,7 @@
 namespace Drupal\apigee_edge_teams\Form;
 
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -39,13 +40,23 @@ class TeamContextSwitcherForm extends FormBase implements ContainerInjectionInte
   protected $routeMatch;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * TeamContextSwitcherForm constructor.
    *
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct(RouteMatchInterface $route_match) {
+  public function __construct(RouteMatchInterface $route_match, EntityTypeManagerInterface $entity_type_manager) {
     $this->routeMatch = $route_match;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -53,7 +64,8 @@ class TeamContextSwitcherForm extends FormBase implements ContainerInjectionInte
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('current_route_match')
+      $container->get('current_route_match'),
+      $container->get('entity_type.manager')
     );
   }
 
@@ -61,7 +73,7 @@ class TeamContextSwitcherForm extends FormBase implements ContainerInjectionInte
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'team_context_switcher_form';
+    return 'apigee_edge_teams_context_switcher_form';
   }
 
   /**
@@ -69,15 +81,18 @@ class TeamContextSwitcherForm extends FormBase implements ContainerInjectionInte
    */
   public function buildForm(array $form, FormStateInterface $form_state, array $teams = []) {
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
-    $options = ['' => $this->t('Select a team')];
+    $options = [];
     foreach ($teams as $team) {
-      $value = $team->toUrl()->toString();
-      $options[$value] = $team->label();
+      $options[$team->toUrl()->toString()] = $team->label();
     }
 
     // Get the current team from the route to use as default value.
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $current_team */
     $current_team = $this->routeMatch->getParameter('team') ?? NULL;
+
+    $title = (string) $this->t('Select @name', [
+      '@name' => $this->entityTypeManager->getDefinition('team')->getLowercaseLabel(),
+    ]);
 
     $form['wrapper'] = [
       '#type' => 'container',
@@ -89,13 +104,13 @@ class TeamContextSwitcherForm extends FormBase implements ContainerInjectionInte
     ];
 
     $form['wrapper']['context'] = [
-      '#title' => $this->t('Select a team'),
+      '#title' => $title,
       '#title_display' => 'invisible',
       '#type' => 'select',
       '#required' => TRUE,
       '#options' => $options,
-      '#default_value' => $current_team ? $current_team->toUrl()
-        ->toString() : NULL,
+      '#empty_option' => $title,
+      '#default_value' => $current_team ? $current_team->toUrl()->toString() : NULL,
     ];
 
     $form['wrapper']['actions'] = [

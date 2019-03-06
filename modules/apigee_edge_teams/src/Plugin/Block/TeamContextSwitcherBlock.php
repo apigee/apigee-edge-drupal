@@ -36,9 +36,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Provides a block for switching team context.
  *
  * @Block(
- *   id = "apigee_edge_team_switcher",
+ *   id = "apigee_edge_teams_team_switcher",
  *   admin_label = @Translation("Select a team"),
- *   category = @Translation("Apigee")
+ *   category = @Translation("Apigee Edge")
  * )
  */
 class TeamContextSwitcherBlock extends BlockBase implements ContainerFactoryPluginInterface {
