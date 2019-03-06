@@ -80,10 +80,12 @@ class TeamContextSwitcherForm extends FormBase implements ContainerInjectionInte
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, array $teams = []) {
+    $form_state->set('teams', $teams);
+
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
     $options = [];
-    foreach ($teams as $team) {
-      $options[$team->toUrl()->toString()] = $team->label();
+    foreach ($teams as $id => $team) {
+      $options[$id] = $team->label();
     }
 
     // Get the current team from the route to use as default value.
@@ -91,7 +93,8 @@ class TeamContextSwitcherForm extends FormBase implements ContainerInjectionInte
     $current_team = $this->routeMatch->getParameter('team') ?? NULL;
 
     $title = (string) $this->t('Select @name', [
-      '@name' => $this->entityTypeManager->getDefinition('team')->getLowercaseLabel(),
+      '@name' => $this->entityTypeManager->getDefinition('team')
+        ->getLowercaseLabel(),
     ]);
 
     $form['wrapper'] = [
@@ -103,14 +106,14 @@ class TeamContextSwitcherForm extends FormBase implements ContainerInjectionInte
       ],
     ];
 
-    $form['wrapper']['context'] = [
+    $form['wrapper']['team_id'] = [
       '#title' => $title,
       '#title_display' => 'invisible',
       '#type' => 'select',
       '#required' => TRUE,
       '#options' => $options,
       '#empty_option' => $title,
-      '#default_value' => $current_team ? $current_team->toUrl()->toString() : NULL,
+      '#default_value' => $current_team ? $current_team->id() : NULL,
     ];
 
     $form['wrapper']['actions'] = [
@@ -130,8 +133,22 @@ class TeamContextSwitcherForm extends FormBase implements ContainerInjectionInte
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    if ($context = $form_state->getValue('context')) {
-      $form_state->setRedirectUrl(Url::fromUserInput($context));
+    /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
+    if (($team_id = $form_state->getValue('team_id'))
+      && ($teams = $form_state->get('teams'))
+      && (isset($teams[$team_id]))
+      && ($team = $teams[$team_id])) {
+      // Default to the canonical url.
+      $url = $team->toUrl();
+
+      // If there is team parameter in route, redirect to corresponding route.
+      if ($this->routeMatch->getParameter('team')) {
+        $params = $this->routeMatch->getRawParameters();
+        $params->set('team', $team_id);
+        $url = Url::fromRoute($this->routeMatch->getRouteName(), $params->all());
+      }
+
+      $form_state->setRedirectUrl($url);
     }
   }
 
