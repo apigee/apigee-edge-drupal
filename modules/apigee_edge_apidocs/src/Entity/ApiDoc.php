@@ -69,7 +69,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "delete-form" = "/admin/structure/apidoc/{apidoc}/delete",
  *     "collection" = "/admin/structure/apidoc",
  *   },
- *   field_ui_base_route = "apidoc.settings"
+ *   field_ui_base_route = "apigee_edge_apidocs.settings"
  * )
  */
 class ApiDoc extends ContentEntityBase implements ApiDocInterface {

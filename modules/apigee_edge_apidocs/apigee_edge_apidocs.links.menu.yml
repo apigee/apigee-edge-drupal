@@ -6,7 +6,7 @@ entity.apidoc.collection:
   parent: system.admin_structure
   weight: 100
 
-apigee_edge_apidocs.settings
+apigee_edge_apidocs.settings:
   title: 'API Docs'
   description: 'Configure API Doc settings'
   route_name: apigee_edge_apidocs.settings
