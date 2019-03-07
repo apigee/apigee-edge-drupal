@@ -106,10 +106,11 @@ class TeamContextSwitcherForm extends FormBase implements ContainerInjectionInte
   public function buildForm(array $form, FormStateInterface $form_state) {
     // Get the teams for the user.
     if (!($team_ids = $this->teamMembershipManager->getTeams($this->currentUser->getEmail()))) {
-      return NULL;
+      return [];
     }
 
-    $teams = $this->entityTypeManager->getStorage('team')->loadMultiple($team_ids);
+    $teams = $this->entityTypeManager->getStorage('team')
+      ->loadMultiple($team_ids);
     $form_state->set('teams', $teams);
 
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
@@ -163,23 +164,23 @@ class TeamContextSwitcherForm extends FormBase implements ContainerInjectionInte
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    $teams = $form_state->get('teams');
+    $team_id = $form_state->getValue('team_id');
+
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
-    if ($teams = $form_state->get('teams')) {
-      $team_id = $form_state->getValue('team_id');
-      $team = $teams[$team_id];
+    $team = $teams[$team_id];
 
-      // Default to the canonical url.
-      $url = $team->toUrl();
+    // Default to the canonical url.
+    $url = $team->toUrl();
 
-      // If there is team parameter in route, redirect to corresponding route.
-      if ($this->routeMatch->getParameter('team')) {
-        $params = $this->routeMatch->getRawParameters();
-        $params->set('team', $team_id);
-        $url = Url::fromRoute($this->routeMatch->getRouteName(), $params->all());
-      }
-
-      $form_state->setRedirectUrl($url);
+    // If there is team parameter in route, redirect to corresponding route.
+    if ($this->routeMatch->getParameter('team')) {
+      $params = $this->routeMatch->getRawParameters();
+      $params->set('team', $team_id);
+      $url = Url::fromRoute($this->routeMatch->getRouteName(), $params->all());
     }
+
+    $form_state->setRedirectUrl($url);
   }
 
 }
