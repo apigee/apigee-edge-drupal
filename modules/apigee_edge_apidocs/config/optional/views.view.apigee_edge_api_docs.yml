@@ -2,10 +2,10 @@ langcode: en
 status: true
 dependencies:
   config:
-  - system.menu.main
+    - system.menu.main
   module:
-  - apigee_edge_apidocs
-  - text
+    - apigee_edge_apidocs
+    - text
 id: apigee_edge_api_docs
 label: 'Apigee Edge API Docs'
 module: views
@@ -39,7 +39,7 @@ display:
       exposed_form:
         type: basic
         options:
-          submit_button: Apply
+          submit_button: Search
           reset_button: false
           reset_button_label: Reset
           exposed_sorts_label: 'Sort by'
@@ -238,6 +238,47 @@ display:
           entity_type: apidoc
           entity_field: status
           plugin_id: boolean
+        name:
+          id: name
+          table: apidoc_field_data
+          field: name
+          relationship: none
+          group_type: group
+          admin_label: ''
+          operator: allwords
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: name_op
+            label: 'Find API'
+            description: ''
+            use_operator: false
+            operator: name_op
+            identifier: name
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+              anonymous: '0'
+              administrator: '0'
+            placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          entity_type: apidoc
+          entity_field: name
+          plugin_id: string
       sorts: {  }
       title: 'API Documentation'
       header: {  }
@@ -262,8 +303,10 @@ display:
     cache_metadata:
       max-age: -1
       contexts:
-      - 'languages:language_content'
-      - 'languages:language_interface'
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - user.permissions
       tags: {  }
   page_1:
     display_plugin: page
@@ -285,6 +328,8 @@ display:
     cache_metadata:
       max-age: -1
       contexts:
-      - 'languages:language_content'
-      - 'languages:language_interface'
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - user.permissions
       tags: {  }
