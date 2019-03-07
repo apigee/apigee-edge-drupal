@@ -19,11 +19,13 @@
 
 namespace Drupal\apigee_edge_teams\Form;
 
+use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -47,16 +49,36 @@ class TeamContextSwitcherForm extends FormBase implements ContainerInjectionInte
   protected $entityTypeManager;
 
   /**
+   * The current user.
+   *
+   * @var \Drupal\Core\Session\AccountInterface
+   */
+  protected $currentUser;
+
+  /**
+   * The Apigee team membership manager.
+   *
+   * @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface
+   */
+  protected $teamMembershipManager;
+
+  /**
    * TeamContextSwitcherForm constructor.
    *
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\Session\AccountInterface $current_user
+   *   The current user.
+   * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
+   *   The Apigee team membership manager.
    */
-  public function __construct(RouteMatchInterface $route_match, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(RouteMatchInterface $route_match, EntityTypeManagerInterface $entity_type_manager, AccountInterface $current_user, TeamMembershipManagerInterface $team_membership_manager) {
     $this->routeMatch = $route_match;
     $this->entityTypeManager = $entity_type_manager;
+    $this->currentUser = $current_user;
+    $this->teamMembershipManager = $team_membership_manager;
   }
 
   /**
@@ -65,7 +87,9 @@ class TeamContextSwitcherForm extends FormBase implements ContainerInjectionInte
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('current_route_match'),
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('current_user'),
+      $container->get('apigee_edge_teams.team_membership_manager')
     );
   }
 
@@ -79,7 +103,13 @@ class TeamContextSwitcherForm extends FormBase implements ContainerInjectionInte
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, array $teams = []) {
+  public function buildForm(array $form, FormStateInterface $form_state) {
+    // Get the teams for the user.
+    if (!($team_ids = $this->teamMembershipManager->getTeams($this->currentUser->getEmail()))) {
+      return NULL;
+    }
+
+    $teams = $this->entityTypeManager->getStorage('team')->loadMultiple($team_ids);
     $form_state->set('teams', $teams);
 
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
@@ -92,8 +122,8 @@ class TeamContextSwitcherForm extends FormBase implements ContainerInjectionInte
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $current_team */
     $current_team = $this->routeMatch->getParameter('team') ?? NULL;
 
-    $title = (string) $this->t('Select @name', [
-      '@name' => $this->entityTypeManager->getDefinition('team')
+    $title = $this->t('Select @team', [
+      '@team' => $this->entityTypeManager->getDefinition('team')
         ->getLowercaseLabel(),
     ]);
 
@@ -134,10 +164,10 @@ class TeamContextSwitcherForm extends FormBase implements ContainerInjectionInte
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
-    if (($team_id = $form_state->getValue('team_id'))
-      && ($teams = $form_state->get('teams'))
-      && (isset($teams[$team_id]))
-      && ($team = $teams[$team_id])) {
+    if ($teams = $form_state->get('teams')) {
+      $team_id = $form_state->getValue('team_id');
+      $team = $teams[$team_id];
+
       // Default to the canonical url.
       $url = $team->toUrl();
 

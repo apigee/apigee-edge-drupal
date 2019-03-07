@@ -21,12 +21,10 @@
 namespace Drupal\apigee_edge_teams\Plugin\Block;
 
 use Drupal\apigee_edge_teams\Form\TeamContextSwitcherForm;
-use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\Annotation\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Cache\Cache;
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -51,20 +49,6 @@ class TeamContextSwitcherBlock extends BlockBase implements ContainerFactoryPlug
   protected $currentUser;
 
   /**
-   * The team membership manager.
-   *
-   * @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface
-   */
-  protected $teamMembershipManager;
-
-  /**
-   * The team entity storage.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  protected $storage;
-
-  /**
    * The form builder.
    *
    * @var \Drupal\Core\Form\FormBuilderInterface
@@ -82,18 +66,12 @@ class TeamContextSwitcherBlock extends BlockBase implements ContainerFactoryPlug
    *   The plugin implementation definition.
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
-   * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
-   *   The Apigee team membership manager.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
-   *   The team entity storage.
    * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
    *   The form builder.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, AccountInterface $current_user, TeamMembershipManagerInterface $team_membership_manager, EntityStorageInterface $storage, FormBuilderInterface $form_builder) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, AccountInterface $current_user, FormBuilderInterface $form_builder) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->currentUser = $current_user;
-    $this->teamMembershipManager = $team_membership_manager;
-    $this->storage = $storage;
     $this->formBuilder = $form_builder;
   }
 
@@ -106,8 +84,6 @@ class TeamContextSwitcherBlock extends BlockBase implements ContainerFactoryPlug
       $plugin_id,
       $plugin_definition,
       $container->get('current_user'),
-      $container->get('apigee_edge_teams.team_membership_manager'),
-      $container->get('entity_type.manager')->getStorage('team'),
       $container->get('form_builder')
     );
   }
@@ -123,16 +99,7 @@ class TeamContextSwitcherBlock extends BlockBase implements ContainerFactoryPlug
    * {@inheritdoc}
    */
   public function build() {
-    // If the user can administer team, show all teams.
-    if ($this->currentUser->hasPermission('administer team')) {
-      $teams = NULL;
-    }
-    // Otherwise show teams the user belongs to.
-    elseif (!($teams = $this->teamMembershipManager->getTeams($this->currentUser->getEmail()))) {
-      return NULL;
-    }
-
-    return $this->formBuilder->getForm(TeamContextSwitcherForm::class, $this->storage->loadMultiple($teams));
+    return $this->formBuilder->getForm(TeamContextSwitcherForm::class);
   }
 
   /**
@@ -140,6 +107,13 @@ class TeamContextSwitcherBlock extends BlockBase implements ContainerFactoryPlug
    */
   public function getCacheContexts() {
     return Cache::mergeContexts(parent::getCacheContexts(), ['user.permissions', 'url.path']);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheTags() {
+    return Cache::mergeTags(parent::getCacheTags(), ['team_list']);
   }
 
 }
