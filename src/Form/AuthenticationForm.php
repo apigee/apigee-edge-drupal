@@ -22,8 +22,10 @@ namespace Drupal\apigee_edge\Form;
 use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
+use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
 use Drupal\apigee_edge\OauthTokenStorageInterface;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
+use Drupal\apigee_edge\Plugin\KeyProviderRequirementsInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Render\MarkupInterface;
 use Drupal\Component\Serialization\Json;
@@ -31,15 +33,13 @@ use Drupal\Component\Utility\Random;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element\StatusMessages;
 use Drupal\Core\Render\RendererInterface;
+use Drupal\Core\Url;
 use Drupal\key\Entity\Key;
 use Drupal\key\KeyInterface;
-use Drupal\key\KeyRepositoryInterface;
 use Drupal\key\Plugin\KeyInput\NoneKeyInput;
 use Drupal\key\Plugin\KeyPluginFormInterface;
 use Drupal\key\Plugin\KeyProviderSettableValueInterface;
@@ -60,25 +60,11 @@ class AuthenticationForm extends ConfigFormBase {
   const CONFIG_NAME = 'apigee_edge.auth';
 
   /**
-   * The key repository.
-   *
-   * @var \Drupal\key\KeyRepositoryInterface
-   */
-  protected $keyRepository;
-
-  /**
    * The SDK connector service.
    *
    * @var \Drupal\apigee_edge\SDKConnectorInterface
    */
   protected $sdkConnector;
-
-  /**
-   * The module handler service.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
 
   /**
    * The active key.
@@ -102,38 +88,22 @@ class AuthenticationForm extends ConfigFormBase {
   protected $renderer;
 
   /**
-   * The core `file_system` service.
-   *
-   * @var \Drupal\Core\File\FileSystemInterface
-   */
-  protected $fileSystem;
-
-  /**
    * Constructs a new AuthenticationForm.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
-   * @param \Drupal\key\KeyRepositoryInterface $key_repository
-   *   The key repository.
    * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
    *   SDK connector service.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
-   *   Module handler service.
    * @param \Drupal\apigee_edge\OauthTokenStorageInterface $oauth_token_storage
    *   The OAuth token storage service.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The `renderer` service.
-   * @param \Drupal\Core\File\FileSystemInterface $file_system
-   *   The `file_system` service.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, KeyRepositoryInterface $key_repository, SDKConnectorInterface $sdk_connector, ModuleHandlerInterface $module_handler, OauthTokenStorageInterface $oauth_token_storage, RendererInterface $renderer, FileSystemInterface $file_system) {
+  public function __construct(ConfigFactoryInterface $config_factory, SDKConnectorInterface $sdk_connector, OauthTokenStorageInterface $oauth_token_storage, RendererInterface $renderer) {
     parent::__construct($config_factory);
-    $this->keyRepository = $key_repository;
     $this->sdkConnector = $sdk_connector;
-    $this->moduleHandler = $module_handler;
     $this->oauthTokenStorage = $oauth_token_storage;
     $this->renderer = $renderer;
-    $this->fileSystem = $file_system;
   }
 
   /**
@@ -142,12 +112,9 @@ class AuthenticationForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
-      $container->get('key.repository'),
       $container->get('apigee_edge.sdk_connector'),
-      $container->get('module_handler'),
       $container->get('apigee_edge.authentication.oauth_token_storage'),
-      $container->get('renderer'),
-      $container->get('file_system')
+      $container->get('renderer')
     );
   }
 
@@ -167,13 +134,27 @@ class AuthenticationForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
-   * @throws \Drupal\key\Exception\KeyValueNotSetException
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $form = parent::buildForm($form, $form_state);
+    // Save the key for later use.
+    $this->activeKey = $this->getActiveKey();
 
+    /** @var \Drupal\apigee_edge\Plugin\KeyProviderRequirementsInterface $key_provider */
+    if (($key_provider = $this->activeKey->getKeyProvider()) instanceof KeyProviderRequirementsInterface) {
+      try {
+        $key_provider->checkRequirements($this->activeKey);
+      }
+      catch (KeyProviderRequirementsException $exception) {
+        $this->messenger()->addError($this->t("The requirements of the selected key provider (@key_provider) are not fulfilled. Fix the errors described below or <a href=':key_config_uri' target='_blank'>change the active key's provider</a>.", [
+          '@key_provider' => $this->activeKey->getKeyProvider()->getPluginDefinition()['label'],
+          ':key_config_uri' => Url::fromRoute('entity.key.edit_form', ['key' => $this->activeKey->id()])->toString(),
+        ]));
+        $this->messenger()->addError($exception->getTranslatableMarkupMessage());
+        return $form;
+      }
+    }
+
+    $form = parent::buildForm($form, $form_state);
     $form['#attached']['library'][] = 'apigee_edge/apigee_edge.admin';
 
     // Placeholder for messages.
@@ -186,41 +167,17 @@ class AuthenticationForm extends ConfigFormBase {
     $form['connection_settings'] = [
       '#type' => 'details',
       '#title' => $this->t('Apigee Edge connection settings'),
-      '#description' => $this->t('Apigee Edge connection settings.'),
       '#open' => TRUE,
       '#parents' => ['key_input_settings'],
       '#tree' => TRUE,
     ];
 
-    // Save the key for later use.
-    if (!($this->activeKey = $active_key = $this->getActiveKey())) {
-      $form['actions']['#disabled'] = TRUE;
-      $form['connection_settings']['unconfigurable'] = [
-        '#type' => 'container',
-        '#attributes' => ['class' => ['form-item']],
-      ];
-      $form['connection_settings']['unconfigurable']['label'] = [
-        '#type' => 'html_tag',
-        '#tag' => 'label',
-        '#value' => $this->t('Unable to initialize configuration.'),
-      ];
-      $form['connection_settings']['unconfigurable']['description'] = [
-        '#type' => 'html_tag',
-        '#tag' => 'div',
-        '#value' => $this->t("The Apigee Edge connection settings are not configured and we weren't able to automatically provision connection settings. Make sure the <a href=\":file_docs_uri\" target=\"_blank\">file_private_path</a> is configured and try again.", [
-          ':file_docs_uri' => 'https://www.drupal.org/docs/8/core/modules/file/overview',
-        ]),
-      ];
-
-      return $form;
-    }
-
-    if ($active_key->getKeyInput() instanceof KeyPluginFormInterface) {
+    if ($this->activeKey->getKeyInput() instanceof KeyPluginFormInterface) {
       // Save the settings in form state.
-      $form_state->set('key_value', $this->getKeyValueValues($active_key));
+      $form_state->set('key_value', $this->getKeyValueValues($this->activeKey));
       // Create a form state for this sub form.
       $plugin_form_state = $this->createPluginFormState('key_input', $form_state);
-      $plugin_form = $active_key->getKeyInput()->buildConfigurationForm([], $plugin_form_state);
+      $plugin_form = $this->activeKey->getKeyInput()->buildConfigurationForm([], $plugin_form_state);
 
       $form['connection_settings'] += $plugin_form;
       $form_state->setValue('connection_settings', $plugin_form_state->getValues());
@@ -241,6 +198,7 @@ class AuthenticationForm extends ConfigFormBase {
         ':input[name="key_input_settings[username]"]' => ['filled' => TRUE],
       ],
     ];
+
     // Placeholder for debug.
     $form['debug_placeholder'] = [
       '#type' => 'html_tag',
@@ -266,7 +224,9 @@ class AuthenticationForm extends ConfigFormBase {
     $form['test_connection'] = [
       '#type' => 'details',
       '#title' => $this->t('Test connection'),
-      '#description' => 'Send request using the selected authentication key.',
+      '#description' => $this->keyIsWritable($this->activeKey) ? $this->t('Send request using the given API credentials.') : $this->t("Send request using the <a href=':key_config_uri' target='_blank'>active authentication key</a>.", [
+        ':key_config_uri' => Url::fromRoute('entity.key.edit_form', ['key' => $this->activeKey->id()])->toString(),
+      ]),
       '#open' => TRUE,
       '#theme_wrappers' => [
         'details' => [],
@@ -291,7 +251,7 @@ class AuthenticationForm extends ConfigFormBase {
     ];
 
     $form['actions']['submit']['#states'] = ['enabled' => $submittable_state];
-    $form['actions']['#disabled'] = !$this->keyIsWritable($active_key);
+    $form['actions']['#access'] = $this->keyIsWritable($this->activeKey);
 
     return $form;
   }
@@ -302,12 +262,15 @@ class AuthenticationForm extends ConfigFormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     parent::validateForm($form, $form_state);
 
-    $active_key = $this->activeKey;
+    // Throw an error if the key is not writable but the form is submitted.
+    if ($form_state->isSubmitted() && !$this->keyIsWritable($this->activeKey)) {
+      $form_state->setError($form, $this->t('The active authentication key is not writable.'));
+    }
 
     // Check whether or not we know how to write to this key.
-    if ($this->keyIsWritable($active_key)) {
+    if ($this->keyIsWritable($this->activeKey)) {
       // Get the key input plugin.
-      $input_plugin = $active_key->getKeyInput();
+      $input_plugin = $this->activeKey->getKeyInput();
       $plugin_form_state = $this->createPluginFormState('key_input', $form_state);
 
       $processed_values = $input_plugin->processSubmittedKeyValue($plugin_form_state);
@@ -328,8 +291,8 @@ class AuthenticationForm extends ConfigFormBase {
       $random = new Random();
       $test_key = Key::create([
         'id' => strtolower($random->name(16)),
-        'key_type' => $active_key->getKeyType()->getPluginID(),
-        'key_input' => $active_key->getKeyInput()->getPluginID(),
+        'key_type' => $this->activeKey->getKeyType()->getPluginID(),
+        'key_input' => $this->activeKey->getKeyInput()->getPluginID(),
         'key_provider' => 'config',
       ]);
       // Set the key_value value on the test key.
@@ -339,7 +302,7 @@ class AuthenticationForm extends ConfigFormBase {
     else {
       // There will be no input form for the key since it's not writable so just
       // use the active key for testing.
-      $test_key = $active_key;
+      $test_key = $this->activeKey;
     }
 
     // Test the connection.
@@ -379,11 +342,6 @@ class AuthenticationForm extends ConfigFormBase {
     else {
       $form_state->setError($form, $this->t('Connection information is not available in the currently active key.'));
     }
-
-    // Throw an error if the key is not writable.
-    if ($form_state->isSubmitted() && !$this->keyIsWritable($active_key)) {
-      $form_state->setError($form, $this->t('The active authentication key is not writable.'));
-    }
   }
 
   /**
@@ -392,13 +350,12 @@ class AuthenticationForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // Get the processed value from the form state.
     $processed_submitted = $form_state->get('processed_submitted');
-    $active_key = $this->activeKey;
 
-    if (!empty($processed_submitted) && $this->keyIsWritable($active_key)) {
+    if (!empty($processed_submitted) && $this->keyIsWritable($this->activeKey)) {
       // Set the active key's value.
-      $active_key
+      $this->activeKey
         ->getKeyProvider()
-        ->setKeyValue($active_key, $processed_submitted);
+        ->setKeyValue($this->activeKey, $processed_submitted);
     }
 
     // The only time `submitForm` gets called is when the key provider is
@@ -616,15 +573,12 @@ class AuthenticationForm extends ConfigFormBase {
   }
 
   /**
-   * Get's the current active key or a newly generated one.
+   * Gets the current active key or a newly generated one.
    *
    * @return \Drupal\key\KeyInterface
    *   The current active key or a new auth key.
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
-   * @throws \Drupal\key\Exception\KeyValueNotSetException
    */
-  protected function getActiveKey(): ?KeyInterface {
+  protected function getActiveKey(): KeyInterface {
     // If we use `$this->config()`, config overrides won't be considered.
     $config = $this->configFactory()->get(static::CONFIG_NAME);
 
@@ -637,26 +591,19 @@ class AuthenticationForm extends ConfigFormBase {
   }
 
   /**
-   * Creates a new auth key stored in a file.
+   * Creates a new auth key using the Apigee Edge Private File key provider.
    *
-   * @return \Drupal\key\KeyInterface|null
+   * @return \Drupal\key\KeyInterface
    *   A new auth key.
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
-   * @throws \Drupal\key\Exception\KeyValueNotSetException
    */
-  protected function generateNewAuthKey(): ?KeyInterface {
-    if (!$this->fileSystem->realpath('private://')) {
-      return NULL;
-    }
-    // Create a new key name.
+  protected function generateNewAuthKey(): KeyInterface {
     $new_key_id = 'apigee_edge_connection_default';
-    $file_path = "private://.apigee_edge/{$new_key_id}.json";
-
-    // Make sure the key and the associated key file do not exist.
-    for ($i = 1; (Key::load($new_key_id) || file_exists($file_path)); $i++) {
-      $new_key_id = "apigee_edge_connection_default_{$i}";
-      $file_path = "private://.apigee_edge/{$new_key_id}.json";
+    if (Key::load($new_key_id) !== NULL) {
+      // It's and edge case, set the existing key entity as an active key.
+      $this
+        ->config(static::CONFIG_NAME)
+        ->set('active_key', $new_key_id)
+        ->save();
     }
 
     // Create a new key.
@@ -670,15 +617,22 @@ class AuthenticationForm extends ConfigFormBase {
     ]);
     $new_key->save();
 
-    /** @var \Drupal\apigee_edge\Plugin\KeyProvider\PrivateFileKeyProvider $provider */
-    $provider = $new_key->getKeyProvider();
-    // Write out an empty key.
-    $provider->setKeyValue($new_key, Json::encode((object) ['auth_type' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC]));
+    try {
+      /** @var \Drupal\apigee_edge\Plugin\KeyProviderRequirementsInterface $key_provider */
+      if (($key_provider = $new_key->getKeyProvider()) instanceof KeyProviderRequirementsInterface) {
+        $key_provider->checkRequirements($new_key);
+        // Write out an empty key.
+        $key_provider->setKeyValue($new_key, Json::encode((object) ['auth_type' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC]));
+      }
+    }
+    catch (\Exception $exception) {
+      // Do nothing here, displaying error messages is handled in buildForm().
+    }
 
     // Save the active key.
     $this
       ->config(static::CONFIG_NAME)
-      ->set('active_key', $new_key->id())
+      ->set('active_key', $new_key_id)
       ->save();
 
     return $new_key;
@@ -753,7 +707,7 @@ class AuthenticationForm extends ConfigFormBase {
   }
 
   /**
-   * Get `key_value` values for further processing.
+   * Gets `key_value` values for further processing.
    *
    * @param \Drupal\key\KeyInterface $key
    *   An auth key.
@@ -783,7 +737,7 @@ class AuthenticationForm extends ConfigFormBase {
   }
 
   /**
-   * Get the Form entity.
+   * Gets the active key entity.
    *
    * Some of the legacy `key_input` plugins rely on this being an entity form so
    * we need to return the active key as the entity.
