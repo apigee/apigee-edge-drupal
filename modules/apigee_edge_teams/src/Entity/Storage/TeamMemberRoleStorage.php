@@ -258,8 +258,10 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
   protected function doDelete($entities) {
     /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface $entity */
     foreach ($entities as $entity) {
-      // See explanation in doSave().
-      Cache::invalidateTags($entity->getTeam()->getCacheTags());
+      if (($team = $entity->getTeam()) !== NULL) {
+        // See explanation in doSave().
+        Cache::invalidateTags($team->getCacheTags());
+      }
     }
     parent::doDelete($entities);
   }
