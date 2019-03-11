@@ -58,6 +58,7 @@ use Drupal\Core\TempStore\TempStoreException;
 use Drupal\Core\Url;
 use Drupal\Core\Utility\Error;
 use Drupal\user\UserInterface;
+use Drupal\Component\Utility\Html;
 
 define('APIGEE_EDGE_USER_REGISTRATION_SOURCE', 'apigee_edge_user_registration_source');
 
@@ -118,7 +119,7 @@ function apigee_edge_user_format_name_alter(&$name, AccountInterface $account) {
 function template_preprocess_status_property(array &$variables) {
   $element = &$variables['element'];
   $element['value'] = $element['#value'];
-  $classes = ['status-value-' . strtolower($element['#value'])];
+  $classes = ['status-value-' . Html::getClass($element['#value'])];
   if ($element['#indicator_status'] !== '') {
     $classes[] = str_replace('_', '-', $element['#indicator_status']);
   }
