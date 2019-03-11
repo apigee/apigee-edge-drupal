@@ -52,8 +52,8 @@ class ApiDocForm extends ContentEntityForm {
     }
     else {
       $this->messenger()->addMessage($this->t('Saved the %label @entity_type_label.', [
-          '%label' => $entity->label(),
-          '@entity_type_label' => $singular_label,
+        '%label' => $entity->label(),
+        '@entity_type_label' => $singular_label,
       ]));
     }
     $form_state->setRedirect('entity.apidoc.collection');
