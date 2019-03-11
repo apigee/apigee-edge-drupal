@@ -56,7 +56,7 @@ function hook_apigee_edge_teams_team_listing_page_title_alter(\Drupal\Core\Strin
  * @see \Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandler
  */
 function hook_apigee_edge_teams_team_api_product_access(\Drupal\apigee_edge\Entity\ApiProductInterface $api_product, string $operation, \Drupal\apigee_edge_teams\Entity\TeamInterface $team, \Drupal\Core\Session\AccountInterface $account) {
-  // Grant access if API product's name is prefixed wit the team's name.
+  // Grant access if API product's name is prefixed with the team's name.
   return \Drupal\Core\Access\AccessResult::allowedIf(strpos($api_product->id(), $team->id()) === 0);
 }
 
