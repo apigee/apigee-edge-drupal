@@ -124,6 +124,9 @@ class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInt
    * {@inheritdoc}
    */
   public function getKeyValue(KeyInterface $key) {
+    // Throwing an exception would be better than returning NULL but the key
+    // module's design does not allow this.
+    // Related issue: https://www.drupal.org/project/key/issues/3038212
     try {
       $this->checkRequirements($key);
     }
@@ -143,6 +146,9 @@ class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInt
    * {@inheritdoc}
    */
   public function setKeyValue(KeyInterface $key, $key_value) {
+    // Throwing an exception would be better than returning FALSE but the key
+    // module's design does not allow this.
+    // Related issue: https://www.drupal.org/project/key/issues/3038212
     try {
       $this->checkRequirements($key);
     }
@@ -156,10 +162,12 @@ class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInt
     }
 
     $file_uri = $this->getFileUri($key);
-    $file_path = dirname($file_uri);
+    $file_path = $this->fileSystem->dirname($file_uri);
+    // TODO Use $this->fileSystem->prepareDirectory() if Drupal 8.7 is released.
     // Make sure the folder exists.
     file_prepare_directory($file_path, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
     // Save the token data.
+    // TODO Use $this->fileSystem->saveData() if Drupal 8.7 is released.
     return file_unmanaged_save_data($key_value, $file_uri, FILE_EXISTS_REPLACE);
   }
 
@@ -167,6 +175,7 @@ class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInt
    * {@inheritdoc}
    */
   public function deleteKeyValue(KeyInterface $key) {
+    // TODO Use $this->fileSystem->delete() if Drupal 8.7 is released.
     return file_unmanaged_delete($this->getFileUri($key));
   }
 

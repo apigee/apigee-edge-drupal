@@ -47,7 +47,7 @@ class KeyProviderRequirementsException extends RuntimeException {
    * @param \Throwable|null $previous
    *   The previous throwable used for the exception chaining.
    */
-  public function __construct(string $message = '', TranslatableMarkup $translatable_markup_message = NULL, int $code = 0, \Throwable $previous = NULL) {
+  public function __construct(string $message, TranslatableMarkup $translatable_markup_message = NULL, int $code = 0, \Throwable $previous = NULL) {
     $this->translatableMarkupMessage = $translatable_markup_message;
     parent::__construct($message, $code, $previous);
   }
@@ -58,8 +58,8 @@ class KeyProviderRequirementsException extends RuntimeException {
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup
    *   The translatable markup object.
    */
-  public function getTranslatableMarkupMessage(): ?TranslatableMarkup {
-    return $this->translatableMarkupMessage;
+  public function getTranslatableMarkupMessage(): TranslatableMarkup {
+    return $this->translatableMarkupMessage ?? $this->t('Key provider error: @error', ['@error' => $this->message]);
   }
 
 }

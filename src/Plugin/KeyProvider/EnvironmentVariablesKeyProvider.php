@@ -116,6 +116,9 @@ class EnvironmentVariablesKeyProvider extends KeyProviderBase implements KeyPlug
    * {@inheritdoc}
    */
   public function getKeyValue(KeyInterface $key) {
+    // Throwing an exception would be better than returning NULL but the key
+    // module's design does not allow this.
+    // Related issue: https://www.drupal.org/project/key/issues/3038212
     try {
       $this->checkRequirements($key);
     }
@@ -156,8 +159,9 @@ class EnvironmentVariablesKeyProvider extends KeyProviderBase implements KeyPlug
     }
 
     if (!empty($missing_env_variables)) {
-      throw new KeyProviderRequirementsException($this->t('The following environment variables are not set: @missing_env_variables.', [
-        '@missing_env_variables' => implode(', ', $missing_env_variables),
+      $missing_env_variables_to_string = implode(', ', $missing_env_variables);
+      throw new KeyProviderRequirementsException('The following environment variables are not set: ' . $missing_env_variables_to_string, $this->t('The following environment variables are not set: @missing_env_variables.', [
+        '@missing_env_variables' => $missing_env_variables_to_string,
       ]));
     }
   }
