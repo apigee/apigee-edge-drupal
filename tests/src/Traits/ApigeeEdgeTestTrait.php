@@ -65,7 +65,6 @@ trait ApigeeEdgeTestTrait {
       self::fail('Could not create key for testing.');
     }
 
-    $key->getKeyProvider()->setKeyValue($key, $key->getKeyValue());
     $this->restoreKey();
   }
 
