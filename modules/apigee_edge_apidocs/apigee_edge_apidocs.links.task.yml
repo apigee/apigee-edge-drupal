@@ -19,4 +19,3 @@ entity.apidoc.delete_form:
   base_route:  entity.apidoc.canonical
   title: 'Delete'
   weight: 10
-

@@ -29,7 +29,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Generic controller for the apigee_edge_apidocs module.
  */
 class ApiDocController implements ContainerInjectionInterface {
-  
   use StringTranslationTrait;
 
   /**

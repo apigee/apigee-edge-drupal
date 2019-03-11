@@ -37,7 +37,7 @@ class ApiDocDeleteForm extends ContentEntityConfirmFormBase {
   /**
    * The logger.
    *
-   * @var \Psr\Log\LoggerInterface 
+   * @var \Psr\Log\LoggerInterface
    */
   private $logger;
 
@@ -58,7 +58,6 @@ class ApiDocDeleteForm extends ContentEntityConfirmFormBase {
 
     $this->logger = $logger;
   }
-
 
   /**
    * {@inheritdoc}

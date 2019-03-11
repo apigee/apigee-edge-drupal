@@ -77,7 +77,7 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
   /**
    * {@inheritdoc}
    */
-  public function getName() : string{
+  public function getName() : string {
     return $this->get('name')->value;
   }
 
@@ -189,16 +189,16 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
         'label' => 'above',
         'type' => 'file',
         'weight' => -4,
-      ])->setDisplayOptions('view', array(
+      ])->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'file_default',
         'weight' => 0,
-      ))
-      ->setDisplayOptions('form', array(
+      ])
+      ->setDisplayOptions('form', [
         'label' => 'hidden',
         'type' => 'file_generic',
         'weight' => 0,
-      ))
+      ])
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
