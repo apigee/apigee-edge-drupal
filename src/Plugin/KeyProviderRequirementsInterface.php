@@ -36,6 +36,6 @@ interface KeyProviderRequirementsInterface {
    *   Exception thrown when the requirements of the key provider are not
    *   fulfilled.
    */
-  public function checkRequirements(KeyInterface $key);
+  public function checkRequirements(KeyInterface $key): void;
 
 }

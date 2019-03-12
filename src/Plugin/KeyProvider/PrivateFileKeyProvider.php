@@ -135,7 +135,7 @@ class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInt
         '@message' => (string) $exception,
       ];
       $context += Error::decodeException($exception);
-      $this->logger->error('Could not retrieve Apigee Edge authentication key value from the private file storage: @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
+      $this->getLogger()->error('Could not retrieve Apigee Edge authentication key value from the private file storage: @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
       return NULL;
     }
 
@@ -157,12 +157,12 @@ class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInt
         '@message' => (string) $exception,
       ];
       $context += Error::decodeException($exception);
-      $this->logger->error('Could not save Apigee Edge authentication key value in the private file storage: @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
+      $this->getLogger()->error('Could not save Apigee Edge authentication key value in the private file storage: @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
       return FALSE;
     }
 
     $file_uri = $this->getFileUri($key);
-    $file_path = $this->fileSystem->dirname($file_uri);
+    $file_path = $this->getFileSystem()->dirname($file_uri);
     // TODO Use $this->fileSystem->prepareDirectory() if Drupal 8.7 is released.
     // Make sure the folder exists.
     file_prepare_directory($file_path, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
@@ -182,9 +182,9 @@ class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInt
   /**
    * {@inheritdoc}
    */
-  public function checkRequirements(KeyInterface $key) {
+  public function checkRequirements(KeyInterface $key): void {
     // Validate private file path is set.
-    $file_private_path = $this->fileSystem->realpath('private://');
+    $file_private_path = $this->getFileSystem()->realpath('private://');
     if (!(bool) $file_private_path) {
       throw new KeyProviderRequirementsException('Private filesystem has not been configured yet.', $this->t("Private filesystem has not been configured yet. <a href=':file_docs_uri' target='_blank'>Learn more</a>", [
         ':file_docs_uri' => 'https://www.drupal.org/docs/8/modules/apigee-edge/configure-the-connection-to-apigee-edge#configure-private-file',
@@ -211,6 +211,30 @@ class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInt
    */
   protected function getFileUri(KeyInterface $key): string {
     return "private://.apigee_edge/{$key->id()}.json";
+  }
+
+  /**
+   * Gets the file system service.
+   *
+   * @return \Drupal\Core\File\FileSystemInterface
+   *   The file system service.
+   */
+  protected function getFileSystem(): FileSystemInterface {
+    // This fallback is needed when the plugin instance is serialized and the
+    // property is null.
+    return $this->fileSystem ?? \Drupal::service('file_system');
+  }
+
+  /**
+   * Gets the logger service.
+   *
+   * @return \Drupal\Core\Logger\LoggerChannelInterface
+   *   The logger service.
+   */
+  protected function getLogger(): LoggerChannelInterface {
+    // This fallback is needed when the plugin instance is serialized and the
+    // property is null.
+    return $this->logger ?? \Drupal::service('logger.channel.apigee_edge');
   }
 
 }

@@ -127,7 +127,7 @@ class EnvironmentVariablesKeyProvider extends KeyProviderBase implements KeyPlug
         '@message' => (string) $exception,
       ];
       $context += Error::decodeException($exception);
-      $this->logger->error('Could not retrieve Apigee Edge authentication key value from the environment variables: @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
+      $this->getLogger()->error('Could not retrieve Apigee Edge authentication key value from the environment variables: @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
       return NULL;
     }
     $key_value = [];
@@ -150,7 +150,7 @@ class EnvironmentVariablesKeyProvider extends KeyProviderBase implements KeyPlug
   /**
    * {@inheritdoc}
    */
-  public function checkRequirements(KeyInterface $key) {
+  public function checkRequirements(KeyInterface $key): void {
     $missing_env_variables = [];
     foreach ($this->getEnvironmentVariables($key, TRUE) as $variable) {
       if (!getenv($variable)) {
@@ -187,6 +187,18 @@ class EnvironmentVariablesKeyProvider extends KeyProviderBase implements KeyPlug
     }
 
     return $environment_variables;
+  }
+
+  /**
+   * Gets the logger service.
+   *
+   * @return \Drupal\Core\Logger\LoggerChannelInterface
+   *   The logger service.
+   */
+  protected function getLogger(): LoggerChannelInterface {
+    // This fallback is needed when the plugin instance is serialized and the
+    // property is null.
+    return $this->logger ?? \Drupal::service('logger.channel.apigee_edge');
   }
 
 }

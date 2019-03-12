@@ -706,10 +706,10 @@ class AuthenticationForm extends ConfigFormBase {
    *   The key to test.
    *
    * @return bool
-   *   Whether the file key is writable.
+   *   Whether the key is writable.
    */
   protected function keyIsWritable(KeyInterface $key) {
-    return ($key->getKeyProvider() instanceof KeyProviderSettableValueInterface && !($key->getKeyInput() instanceof NoneKeyInput));
+    return $key->getKeyProvider() instanceof KeyProviderSettableValueInterface;
   }
 
   /**
