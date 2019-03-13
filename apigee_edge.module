@@ -993,11 +993,21 @@ function template_preprocess_app_credential(array &$variables) {
       ];
     }
     elseif ($def['value_type'] === 'status') {
-      $variables['primary_wrapper'][$property]['value'] = [
-        '#type' => 'status_property',
-        '#value' => $value,
-        '#indicator_status' => $value === AppCredentialInterface::STATUS_APPROVED ? StatusPropertyElement::INDICATOR_STATUS_OK : StatusPropertyElement::INDICATOR_STATUS_ERROR,
-      ];
+      $expires = $credential->getExpiresAt();
+      if ($expires && $expires->getTimestamp() < \Drupal::time()->getRequestTime()) {
+        $variables['primary_wrapper'][$property]['value'] = [
+          '#type' => 'status_property',
+          '#value' => t('expired'),
+          '#indicator_status' => StatusPropertyElement::INDICATOR_STATUS_ERROR,
+        ];
+      }
+      else {
+        $variables['primary_wrapper'][$property]['value'] = [
+          '#type' => 'status_property',
+          '#value' => $value,
+          '#indicator_status' => $value === AppCredentialInterface::STATUS_APPROVED ? StatusPropertyElement::INDICATOR_STATUS_OK : StatusPropertyElement::INDICATOR_STATUS_ERROR,
+        ];
+      }
     }
     else {
       $variables['primary_wrapper'][$property]['value'] = [
