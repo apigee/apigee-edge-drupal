@@ -110,7 +110,7 @@ abstract class AppCreateForm extends AppForm {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state object.
    *
-   * @return array $elements
+   * @return array
    *   The API product render element
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
