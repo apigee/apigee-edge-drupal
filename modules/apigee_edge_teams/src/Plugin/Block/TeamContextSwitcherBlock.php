@@ -20,15 +20,21 @@
 
 namespace Drupal\apigee_edge_teams\Plugin\Block;
 
-use Drupal\apigee_edge_teams\Form\TeamContextSwitcherForm;
+use Drupal\apigee_edge_teams\Entity\TeamInterface;
+use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\Annotation\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Cache\Cache;
-use Drupal\Core\Form\FormBuilderInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
+use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Routing\Route;
+use Symfony\Component\Routing\RouterInterface;
 
 /**
  * Provides a block for switching team context.
@@ -42,18 +48,32 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class TeamContextSwitcherBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The current user.
+   * The current user account.
    *
    * @var \Drupal\Core\Session\AccountInterface
    */
-  protected $currentUser;
+  protected $account;
 
   /**
-   * The form builder.
+   * The current route match.
    *
-   * @var \Drupal\Core\Form\FormBuilderInterface
+   * @var \Drupal\Core\Routing\RouteMatchInterface
    */
-  protected $formBuilder;
+  protected $routeMatch;
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * The Apigee team membership manager.
+   *
+   * @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface
+   */
+  protected $teamMembershipManager;
 
   /**
    * TeamContextSwitcher constructor.
@@ -64,15 +84,21 @@ class TeamContextSwitcherBlock extends BlockBase implements ContainerFactoryPlug
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
-   *   The current user.
-   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
-   *   The form builder.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The current user account.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The current route match.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
+   *   The Apigee team membership manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, AccountInterface $current_user, FormBuilderInterface $form_builder) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, AccountInterface $account, RouteMatchInterface $route_match, EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->currentUser = $current_user;
-    $this->formBuilder = $form_builder;
+    $this->account = $account;
+    $this->routeMatch = $route_match;
+    $this->entityTypeManager = $entity_type_manager;
+    $this->teamMembershipManager = $team_membership_manager;
   }
 
   /**
@@ -84,7 +110,9 @@ class TeamContextSwitcherBlock extends BlockBase implements ContainerFactoryPlug
       $plugin_id,
       $plugin_definition,
       $container->get('current_user'),
-      $container->get('form_builder')
+      $container->get('current_route_match'),
+      $container->get('entity_type.manager'),
+      $container->get('apigee_edge_teams.team_membership_manager')
     );
   }
 
@@ -99,21 +127,140 @@ class TeamContextSwitcherBlock extends BlockBase implements ContainerFactoryPlug
    * {@inheritdoc}
    */
   public function build() {
-    return $this->formBuilder->getForm(TeamContextSwitcherForm::class);
+    $additional_links = $this->getAdditionalLinks();
+
+    // Do not show a block if we do not have a context.
+    if (!($current_context = $this->getCurrentContext())
+      || (is_string($current_context) && !in_array($current_context, array_keys($additional_links)))
+    ) {
+      return [];
+    }
+
+    // Add a link to the developer account.
+    $current_user = $this->entityTypeManager->getStorage('user')
+      ->load($this->account->id());
+    $links[] = [
+      'title' => $current_user->label(),
+      'url' => $current_user->toUrl(),
+      'is_current' => ($current_context instanceof UserInterface && $current_context->id() === $current_user->id()),
+    ];
+
+    // Add links for teams.
+    if ($team_ids = $this->teamMembershipManager->getTeams($this->account->getEmail())) {
+      $teams = $this->entityTypeManager->getStorage('team')
+        ->loadMultiple($team_ids);
+      /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
+      foreach ($teams as $team) {
+        // Default to the canonical url.
+        $url = $team->toUrl();
+
+        // If we are on a team page, use corresponding route.
+        if ($this->routeMatch->getParameter('team')) {
+          $params = $this->routeMatch->getRawParameters();
+          $params->set('team', $team->id());
+          $url = Url::fromRoute($this->routeMatch->getRouteName(), $params->all());
+        }
+
+        // Check if user can access this route.
+        if ($url->access($this->account)) {
+          $links[] = [
+            'title' => $team->label(),
+            'url' => $url,
+            'is_current' => ($current_context instanceof TeamInterface && $current_context->id() === $team->id()),
+          ];
+        }
+      }
+    }
+
+    // Add additional links.
+    foreach ($additional_links as $route_name => $title) {
+      if (($url = Url::fromRoute($route_name)) && ($url->access($this->account))) {
+        $links[] = [
+          'title' => $title,
+          'url' => $url,
+          'is_current' => (is_string($current_context) && $current_context === $route_name),
+        ];
+      }
+    }
+
+    // Move the current link to the top and render it as a non link.
+    foreach ($links as $index => $link) {
+      if (isset($link['is_current']) && $link['is_current']) {
+        unset($links[$index]);
+        $link['url'] = Url::fromRoute('<nolink>');
+        array_unshift($links, $link);
+        break;
+      }
+      unset($link['is_current']);
+    }
+
+    return count($links) ? [
+      '#type' => 'dropbutton',
+      '#links' => $links,
+      '#attributes' => [
+        'class' => [
+          'team-switcher',
+        ],
+      ],
+      '#attached' => [
+        'library' => [
+          'apigee_edge_teams/switcher',
+        ],
+      ],
+    ] : [];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getCacheContexts() {
-    return Cache::mergeContexts(parent::getCacheContexts(), ['user.permissions', 'url.path']);
+    return Cache::mergeContexts(parent::getCacheContexts(), [
+      'user',
+      'url.path',
+    ]);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getCacheTags() {
-    return Cache::mergeTags(parent::getCacheTags(), ['team_list']);
+    return Cache::mergeTags(parent::getCacheTags(), [
+      'team_list',
+      'user:' . $this->account->id(),
+    ]);
+  }
+
+  /**
+   * Returns an array of additional links for the switcher.
+   *
+   * @return array
+   *   An array of additional links keyed with the route name.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  protected function getAdditionalLinks() {
+    return [
+      'entity.team.collection' => $this->t('Manage @teams', [
+        '@teams' => $this->entityTypeManager->getDefinition('team')
+          ->getPluralLabel(),
+      ]),
+    ];
+  }
+
+  /**
+   * Helper to find the current context from the route.
+   *
+   * @return mixed|string|null
+   *   The current context from the route or the route name. NULL otherwise.
+   */
+  protected function getCurrentContext() {
+    // Get the current context from the team or the user in the route.
+    // Otherwise default to the route object.
+    if (!($current_context = $this->routeMatch->getParameter('team') ?? $this->routeMatch->getParameter('user'))) {
+      $current_context = $this->routeMatch->getRouteName();
+    }
+
+    return $current_context;
   }
 
 }
