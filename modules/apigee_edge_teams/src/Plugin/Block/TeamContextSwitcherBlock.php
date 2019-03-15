@@ -158,7 +158,10 @@ class TeamContextSwitcherBlock extends BlockBase implements ContainerFactoryPlug
         if ($this->routeMatch->getParameter('team')) {
           $params = $this->routeMatch->getRawParameters();
           $params->set('team', $team->id());
-          $url = Url::fromRoute($this->routeMatch->getRouteName(), $params->all());
+          if (($corresponding_url = Url::fromRoute($this->routeMatch->getRouteName(), $params->all()))
+          && ($corresponding_url->access($this->account))) {
+            $url = $corresponding_url;
+          }
         }
 
         // Check if user can access this route.
