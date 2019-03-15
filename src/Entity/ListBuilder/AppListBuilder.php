@@ -284,11 +284,9 @@ class AppListBuilder extends EdgeEntityListBuilder {
    *   Render array with the app status.
    */
   protected function renderAppStatus(AppInterface $app): array {
-    return [
-      '#type' => 'status_property',
-      '#value' => $app->getStatus(),
-      '#indicator_status' => $app->getStatus() === AppInterface::STATUS_APPROVED ? StatusPropertyElement::INDICATOR_STATUS_OK : StatusPropertyElement::INDICATOR_STATUS_ERROR,
-    ];
+    $field = $this->entityTypeManager->getViewBuilder($this->entityTypeId)->viewField($app->get('status'), 'default');
+    $field['#label_display'] = 'hidden';
+    return $field;
   }
 
   /**

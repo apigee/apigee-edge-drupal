@@ -19,10 +19,12 @@
 
 namespace Drupal\apigee_edge\Plugin\KeyProvider;
 
+use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
+use Drupal\apigee_edge\Plugin\KeyProviderRequirementsInterface;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Site\Settings;
-use Drupal\Core\Url;
-use Drupal\key\Exception\KeyValueNotSetException;
+use Drupal\Core\Logger\LoggerChannelInterface;
+use Drupal\Core\Utility\Error;
 use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyPluginFormInterface;
 use Drupal\key\Plugin\KeyProviderBase;
@@ -43,21 +45,40 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   }
  * )
  */
-class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInterface, KeyProviderSettableValueInterface {
+class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInterface, KeyProviderSettableValueInterface, KeyProviderRequirementsInterface {
 
   /**
-   * Site settings.
+   * The logger.
    *
-   * @var \Drupal\Core\Site\Settings
+   * @var \Drupal\Core\Logger\LoggerChannelInterface
    */
-  protected $settings;
+  private $logger;
 
   /**
-   * {@inheritdoc}
+   * The file system service.
+   *
+   * @var \Drupal\Core\File\FileSystemInterface
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, Settings $settings) {
+  private $fileSystem;
+
+  /**
+   * PrivateFileKeyProvider constructor.
+   *
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin_id for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
+   *   The logger service.
+   * @param \Drupal\Core\File\FileSystemInterface $file_system
+   *   The file system service.
+   */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, LoggerChannelInterface $logger, FileSystemInterface $file_system) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->settings = $settings;
+    $this->logger = $logger;
+    $this->fileSystem = $file_system;
   }
 
   /**
@@ -68,7 +89,8 @@ class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInt
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('settings')
+      $container->get('logger.channel.apigee_edge'),
+      $container->get('file_system')
     );
   }
 
@@ -83,11 +105,11 @@ class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInt
    * {@inheritdoc}
    */
   public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
-    if (empty($this->settings->get('file_private_path'))) {
-      $form_state->setError($form, $this->t('The private file system is not configured properly. Visit the <a href=":url">File system</a> settings page to specify the private file system path.', [
-        ':url' => Url::fromRoute('system.file_system_settings', ['destination' => 'admin/config/system/keys/add'])->toString(),
-      ]));
-      return;
+    try {
+      $this->checkRequirements($form_state->getFormObject()->getEntity());
+    }
+    catch (KeyProviderRequirementsException $exception) {
+      $form_state->setError($form, $exception->getTranslatableMarkupMessage());
     }
   }
 
@@ -102,7 +124,18 @@ class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInt
    * {@inheritdoc}
    */
   public function getKeyValue(KeyInterface $key) {
-    if (empty($this->settings->get('file_private_path')) || !is_file($this->getFileUri($key)) || !is_readable($this->getFileUri($key))) {
+    // Throwing an exception would be better than returning NULL but the key
+    // module's design does not allow this.
+    // Related issue: https://www.drupal.org/project/key/issues/3038212
+    try {
+      $this->checkRequirements($key);
+    }
+    catch (KeyProviderRequirementsException $exception) {
+      $context = [
+        '@message' => (string) $exception,
+      ];
+      $context += Error::decodeException($exception);
+      $this->getLogger()->error('Could not retrieve Apigee Edge authentication key value from the private file storage: @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
       return NULL;
     }
 
@@ -111,27 +144,60 @@ class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInt
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\key\Exception\KeyValueNotSetException
-   *   Thrown when the key cannot be saved.
    */
   public function setKeyValue(KeyInterface $key, $key_value) {
+    // Throwing an exception would be better than returning FALSE but the key
+    // module's design does not allow this.
+    // Related issue: https://www.drupal.org/project/key/issues/3038212
+    try {
+      $this->checkRequirements($key);
+    }
+    catch (KeyProviderRequirementsException $exception) {
+      $context = [
+        '@message' => (string) $exception,
+      ];
+      $context += Error::decodeException($exception);
+      $this->getLogger()->error('Could not save Apigee Edge authentication key value in the private file storage: @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
+      return FALSE;
+    }
+
     $file_uri = $this->getFileUri($key);
-    $file_path = dirname($file_uri);
+    $file_path = $this->getFileSystem()->dirname($file_uri);
+    // TODO Use $this->fileSystem->prepareDirectory() if Drupal 8.7 is released.
     // Make sure the folder exists.
     file_prepare_directory($file_path, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
     // Save the token data.
-    if (!file_unmanaged_save_data($key_value, $file_uri, FILE_EXISTS_REPLACE)) {
-      $file_full_path = realpath($file_uri);
-      throw new KeyValueNotSetException("Error saving connection settings to file ({$file_full_path}). Make sure the directory is writable.");
-    }
+    // TODO Use $this->fileSystem->saveData() if Drupal 8.7 is released.
+    return file_unmanaged_save_data($key_value, $file_uri, FILE_EXISTS_REPLACE);
   }
 
   /**
    * {@inheritdoc}
    */
   public function deleteKeyValue(KeyInterface $key) {
+    // TODO Use $this->fileSystem->delete() if Drupal 8.7 is released.
     return file_unmanaged_delete($this->getFileUri($key));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function checkRequirements(KeyInterface $key): void {
+    // Validate private file path is set.
+    $file_private_path = $this->getFileSystem()->realpath('private://');
+    if (!(bool) $file_private_path) {
+      throw new KeyProviderRequirementsException('Private filesystem has not been configured yet.', $this->t("Private filesystem has not been configured yet. <a href=':file_docs_uri' target='_blank'>Learn more</a>", [
+        ':file_docs_uri' => 'https://www.drupal.org/docs/8/modules/apigee-edge/configure-the-connection-to-apigee-edge#configure-private-file',
+      ]));
+    }
+    // Validate private file path is writable.
+    if (!is_writable($file_private_path)) {
+      throw new KeyProviderRequirementsException('The private file path is not writable.', $this->t('The private file path is not writable.'));
+    }
+    // Validate private file path is a directory.
+    if (!is_dir($file_private_path)) {
+      throw new KeyProviderRequirementsException('The private file path does not exist.', $this->t('The private file path does not exist.'));
+    }
   }
 
   /**
@@ -145,6 +211,30 @@ class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInt
    */
   protected function getFileUri(KeyInterface $key): string {
     return "private://.apigee_edge/{$key->id()}.json";
+  }
+
+  /**
+   * Gets the file system service.
+   *
+   * @return \Drupal\Core\File\FileSystemInterface
+   *   The file system service.
+   */
+  protected function getFileSystem(): FileSystemInterface {
+    // This fallback is needed when the plugin instance is serialized and the
+    // property is null.
+    return $this->fileSystem ?? \Drupal::service('file_system');
+  }
+
+  /**
+   * Gets the logger service.
+   *
+   * @return \Drupal\Core\Logger\LoggerChannelInterface
+   *   The logger service.
+   */
+  protected function getLogger(): LoggerChannelInterface {
+    // This fallback is needed when the plugin instance is serialized and the
+    // property is null.
+    return $this->logger ?? \Drupal::service('logger.channel.apigee_edge');
   }
 
 }

@@ -23,8 +23,6 @@
  * Install, update and uninstall functions for Apigee Edge.
  */
 
-use Drupal\apigee_edge\Exception\AuthenticationKeyNotFoundException;
-use Drupal\apigee_edge\Exception\AuthenticationKeyValueMalformedException;
 use Drupal\apigee_edge\OauthTokenFileStorage;
 use Drupal\Core\Url;
 use Drupal\user\RoleInterface;
@@ -66,12 +64,6 @@ function apigee_edge_requirements($phase) {
         ]),
         'severity' => REQUIREMENT_WARNING,
       ];
-
-      if ($exception instanceof AuthenticationKeyValueMalformedException || $exception instanceof AuthenticationKeyNotFoundException) {
-        $requirements['apigee_edge_connection_error']['description'] = t('Cannot connect to Apigee Edge server. Check the settings and the requirements of the active key\'s provider. Visit the <a href=":url">Key Configuration</a> page to get more information.', [
-          ':url' => Url::fromRoute('entity.key.collection', ['destination' => 'admin/reports/status'])->toString(),
-        ]);
-      }
     }
   }
 

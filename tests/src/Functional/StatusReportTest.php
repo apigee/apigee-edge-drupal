@@ -41,8 +41,6 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
 
   const CANNOT_CONNECT_LONG = 'Cannot connect to Apigee Edge server. You have either given wrong credential details or the Apigee Edge server is unreachable. Visit the Apigee Edge general settings page to get more information.';
 
-  const CANNOT_CONNECT_MALFORMED = 'Cannot connect to Apigee Edge server. Check the settings and the requirements of the active key\'s provider. Visit the Key Configuration page to get more information.';
-
   /**
    * Tests invalid credentials.
    */
@@ -64,7 +62,7 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
     $this->setKey('default');
     $this->drupalGet($status_report_path);
     $this->assertSession()->pageTextContains(self::KEY_NOT_FOUND);
-    $this->assertSession()->pageTextContains(self::CANNOT_CONNECT_MALFORMED);
+    $this->assertSession()->pageTextContains(self::CANNOT_CONNECT_LONG);
 
     // Create new Apigee Edge basic auth key with private file provider.
     $key = Key::create([
@@ -147,7 +145,7 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
 
     $this->drupalGet($status_report_path);
     $this->assertSession()->pageTextContains(self::KEY_MALFORMED);
-    $this->assertSession()->pageTextContains(self::CANNOT_CONNECT_MALFORMED);
+    $this->assertSession()->pageTextContains(self::CANNOT_CONNECT_LONG);
   }
 
 }

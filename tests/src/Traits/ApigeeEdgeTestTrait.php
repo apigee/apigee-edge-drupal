@@ -56,7 +56,7 @@ trait ApigeeEdgeTestTrait {
       'label' => 'test',
       'key_type' => 'apigee_auth',
       'key_provider' => 'apigee_edge_environment_variables',
-      'key_input' => 'apigee_auth_input',
+      'key_input' => 'none',
     ]);
     try {
       $key->save();
@@ -65,7 +65,6 @@ trait ApigeeEdgeTestTrait {
       self::fail('Could not create key for testing.');
     }
 
-    $key->getKeyProvider()->setKeyValue($key, $key->getKeyValue());
     $this->restoreKey();
   }
 
