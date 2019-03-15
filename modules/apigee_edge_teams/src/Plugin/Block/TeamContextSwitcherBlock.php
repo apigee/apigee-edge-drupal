@@ -250,17 +250,19 @@ class TeamContextSwitcherBlock extends BlockBase implements ContainerFactoryPlug
   /**
    * Helper to find the current context from the route.
    *
-   * @return mixed|string|null
-   *   The current context from the route or the route name. NULL otherwise.
+   * @return mixed
+   *   The current context from the route or the route name.
    */
   protected function getCurrentContext() {
     // Get the current context from the team or the user in the route.
-    // Otherwise default to the route object.
-    if (!($current_context = $this->routeMatch->getParameter('team') ?? $this->routeMatch->getParameter('user'))) {
-      $current_context = $this->routeMatch->getRouteName();
+    if (($current_context = $this->routeMatch->getParameter('team'))
+      || ($current_context = $this->routeMatch->getParameter('user'))
+    ) {
+      return $current_context;
     }
 
-    return $current_context;
+    // Otherwise default to the route name.
+    return $this->routeMatch->getRouteName();
   }
 
 }
