@@ -85,25 +85,4 @@ interface ApiDocInterface extends ContentEntityInterface, EntityChangedInterface
    */
   public function setCreatedTime(int $timestamp) : self;
 
-  /**
-   * Returns the API Doc published status indicator.
-   *
-   * Unpublished API Doc are only visible to restricted users.
-   *
-   * @return bool
-   *   TRUE if the API Doc is published.
-   */
-  public function isPublished() : bool;
-
-  /**
-   * Sets the published status of a API Doc.
-   *
-   * @param bool $published
-   *   TRUE to set this API Doc to published, FALSE to set it to unpublished.
-   *
-   * @return \Drupal\apigee_edge_apidocs\Entity\ApiDocInterface
-   *   The called API Doc entity.
-   */
-  public function setPublished(bool $published) : self;
-
 }
