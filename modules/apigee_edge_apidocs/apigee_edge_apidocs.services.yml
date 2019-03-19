@@ -1,0 +1,4 @@
+services:
+  logger.channel.apigee_edge_apidocs:
+    parent: logger.channel_base
+    arguments: ['apigee_edge_apidocs']  
