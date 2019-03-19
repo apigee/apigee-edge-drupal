@@ -16,18 +16,6 @@
  * MA 02110-1301, USA.
  */
 
-.team-switcher .dropbutton .dropbutton-action > * {
-  padding: 0.25em 1em;
-}
-
-.team-switcher .dropbutton .dropbutton-action span {
-  display: block;
-}
-
-.team-switcher .dropbutton-wrapper .dropbutton-widget {
-  text-align: left;
-}
-
 /* Disable the hover for the first action dropbutton */
 .team-switcher .dropbutton .dropbutton-action:first-child:hover {
   background-image: -webkit-linear-gradient(top, #f3f3f3, #e8e8e8);
