@@ -38,10 +38,7 @@ final class TeamContextSwitcherRouteAlterSubscriber extends RouteSubscriberBase 
     foreach ($collection as $id => $route) {
       // Add a corresponding team route if the team route defines a corresponding
       // developer route.
-      if (($developer_route_id = $route->getOption(TeamContextManagerInterface::DEVELOPER_ROUTE_OPTION_NAME))
-        && ($developer_route = $collection->get($developer_route_id))
-        && empty($developer_route->getOption(TeamContextManagerInterface::TEAM_ROUTE_OPTION_NAME))
-      ) {
+      if (($developer_route_id = $route->getOption(TeamContextManagerInterface::DEVELOPER_ROUTE_OPTION_NAME)) && ($developer_route = $collection->get($developer_route_id)) && empty($developer_route->getOption(TeamContextManagerInterface::TEAM_ROUTE_OPTION_NAME))) {
         $developer_route->setOption(TeamContextManagerInterface::TEAM_ROUTE_OPTION_NAME, $id);
       }
     }
