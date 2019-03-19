@@ -28,17 +28,8 @@
   text-align: left;
 }
 
-/* Style the dropbutton-no-action as a dropbutton divider. */
-.team-switcher .dropbutton-action > span.dropbutton-no-action {
-  color: #999;
-  display: block;
-  padding-top: .5em;
-  margin: 0;
-  background-image: -webkit-linear-gradient(top, #f3f3f3, #e8e8e8);
-  background-image: linear-gradient(to bottom, #f3f3f3, #e8e8e8);
-}
-.team-switcher .dropbutton .dropbutton-action:first-child:hover,
-.team-switcher .dropbutton-action > span.dropbutton-no-action:hover {
+/* Disable the hover for the first action dropbutton */
+.team-switcher .dropbutton .dropbutton-action:first-child:hover {
   background-image: -webkit-linear-gradient(top, #f3f3f3, #e8e8e8);
   background-image: linear-gradient(to bottom, #f3f3f3, #e8e8e8);
   cursor: default;

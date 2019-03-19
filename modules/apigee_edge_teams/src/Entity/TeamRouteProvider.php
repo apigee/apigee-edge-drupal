@@ -25,6 +25,7 @@ use Drupal\apigee_edge_teams\Controller\TeamMembersList;
 use Drupal\apigee_edge_teams\Form\AddTeamMembersForm;
 use Drupal\apigee_edge_teams\Form\EditTeamMemberForm;
 use Drupal\apigee_edge_teams\Form\RemoveTeamMemberForm;
+use Drupal\apigee_edge_teams\TeamContextManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Symfony\Component\Routing\Route;
 
@@ -59,6 +60,18 @@ class TeamRouteProvider extends EdgeEntityRouteProvider {
     }
 
     return $collection;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getCanonicalRoute(EntityTypeInterface $entity_type) {
+    $route = parent::getCanonicalRoute($entity_type);
+
+    // Set the corresponding developer route.
+    $route->setOption(TeamContextManagerInterface::DEVELOPER_ROUTE_OPTION_NAME, 'entity.user.canonical');
+
+    return $route;
   }
 
   /**
