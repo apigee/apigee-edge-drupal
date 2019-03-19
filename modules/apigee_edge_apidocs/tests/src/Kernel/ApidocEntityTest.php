@@ -29,9 +29,16 @@ use Drupal\KernelTests\KernelTestBase;
  * @group apigee_edge
  * @group apigee_edge_apidocs
  */
-class ApiDocTest extends KernelTestBase {
+class ApidocEntityTest extends KernelTestBase {
 
-  protected static $modules = ['user', 'text', 'file', 'apigee_edge_apidocs'];
+  protected static $modules = [
+    'user',
+    'text',
+    'file',
+    'apigee_edge',
+    'key',
+    'apigee_edge_apidocs',
+  ];
 
   /**
    * Basic CRUD operations on a ApiDoc entity.
