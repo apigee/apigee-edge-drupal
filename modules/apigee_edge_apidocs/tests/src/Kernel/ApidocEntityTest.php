@@ -31,6 +31,13 @@ use Drupal\KernelTests\KernelTestBase;
  */
 class ApidocEntityTest extends KernelTestBase {
 
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
   protected static $modules = [
     'user',
     'text',
@@ -41,10 +48,21 @@ class ApidocEntityTest extends KernelTestBase {
   ];
 
   /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+
+    $this->installEntitySchema('user');
+    $this->installEntitySchema('apidoc');
+
+    $this->entityTypeManager = $this->container->get('entity_type.manager');
+  }
+
+  /**
    * Basic CRUD operations on a ApiDoc entity.
    */
   public function testEntity() {
-    $this->installEntitySchema('apidoc');
     $entity = ApiDoc::create([
       'name' => 'API 1',
       'description' => 'Test API 1',
@@ -58,6 +76,58 @@ class ApidocEntityTest extends KernelTestBase {
     $this->assertNotEmpty($entity_id);
     $entity->delete();
     $this->assertNull(ApiDoc::load($entity_id));
+  }
+
+  /**
+   * Test revisioning functionality on an apidocs entity.
+   */
+  public function testRevisions() {
+    $description_v1 = 'Test API';
+    $entity = ApiDoc::create([
+      'name' => 'API 1',
+      'description' => $description_v1,
+      'spec' => NULL,
+      'api_product' => NULL,
+    ]);
+
+    // Test saving a revision.
+    $entity->setNewRevision();
+    $entity->setRevisionLogMessage('v1');
+    $entity->save();
+    $v1_id = $entity->getRevisionId();
+    $this->assertNotNull($v1_id);
+
+    // Test saving a new revision.
+    $new_log = 'v2';
+    $entity->setDescription('Test API v2');
+    $entity->setNewRevision();
+    $entity->setRevisionLogMessage($new_log);
+    $entity->save();
+    $v2_id = $entity->getRevisionId();
+    $this->assertTrue($v2_id > $v1_id);
+
+    // Test saving without a new revision.
+    $entity->setDescription('Test API v3');
+    $entity->save();
+    $this->assertTrue($v2_id === $entity->getRevisionId());
+
+    // Test that the revision log message wasn't overriden.
+    $this->assertEquals($new_log, $entity->getRevisionLogMessage());
+
+    // Revert to the first revision.
+    $entity_v1 = $this->entityTypeManager->getStorage('apidoc')
+      ->loadRevision($v1_id);
+    $entity_v1->setNewRevision();
+    $entity_v1->isDefaultRevision(TRUE);
+    $entity_v1->setRevisionLogMessage('Copy of revision ' . $v1_id);
+    $entity_v1->save();
+
+    // Load and check reverted values.
+    $this->entityTypeManager->getStorage('apidoc')->resetCache();
+    $reverted = ApiDoc::load($entity->id());
+    $this->assertTrue($reverted->getRevisionId() > $v1_id);
+    $this->assertTrue($reverted->isDefaultRevision());
+    $this->assertEquals($description_v1, $reverted->getDescription());
   }
 
 }
