@@ -13,9 +13,10 @@ Once added, the API name and description for each API Doc will be displayed in t
 The OpenAPI spec by default is shown on the API Doc detail page by default.
 To render the OpenAPI spec using Swagger UI:
 
-1. Download an enable the [Swagger UI Field Formatter](https://www.drupal.org/project/swagger_ui_formatter) module
-2. Go to Structure > API Doc settings > Manage display in the admin menu
-3. Change "spec" field format to use the Swagger UI field formatter
+1. Install an enable the [Swagger UI Field Formatter](https://www.drupal.org/project/swagger_ui_formatter) module.
+2. Install the Swagger UI JS library as documented [on the module page](https://www.drupal.org/project/swagger_ui_formatter).
+3. Go to Structure > API Doc settings > Manage display in the admin menu.
+4. Change "OpenAPI specification" field format to use the Swagger UI field formatter.
 
 The API Doc is an entity, you can configure it at Structure > API Doc settings in the admin
 menu.
