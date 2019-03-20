@@ -18,7 +18,7 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\content_entity_example\Kernel;
+namespace Drupal\Tests\apigee_edge_apidocs\Kernel;
 
 use Drupal\apigee_edge_apidocs\Entity\ApiDoc;
 use Drupal\KernelTests\KernelTestBase;
