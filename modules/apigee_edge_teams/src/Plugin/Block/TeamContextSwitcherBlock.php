@@ -217,7 +217,7 @@ class TeamContextSwitcherBlock extends BlockBase implements ContainerFactoryPlug
    */
   protected function getAdditionalLinks() {
     return [
-      'entity.team.collection' => $this->t('Manage @teams', [
+      'entity.team.collection' => $this->t('My @teams', [
         '@teams' => $this->entityTypeManager->getDefinition('team')
           ->getPluralLabel(),
       ]),
