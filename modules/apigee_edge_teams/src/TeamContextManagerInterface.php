@@ -44,7 +44,7 @@ interface TeamContextManagerInterface {
    * @return \Drupal\Core\Entity\EntityInterface|null
    *   The current entity or NULL.
    */
-  public function getCurrentContext(): ?EntityInterface;
+  public function getCurrentContextEntity(): ?EntityInterface;
 
   /**
    * Returns the destination url for the given entity.

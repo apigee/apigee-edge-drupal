@@ -52,7 +52,7 @@ class TeamContextManager implements TeamContextManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCurrentContext(): ?EntityInterface {
+  public function getCurrentContextEntity(): ?EntityInterface {
     $context = NULL;
     if ($current_route_object = $this->routeMatch->getRouteObject()) {
       // Check for developer/user route.

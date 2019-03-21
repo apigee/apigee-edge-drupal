@@ -136,7 +136,7 @@ class TeamContextSwitcherBlock extends BlockBase implements ContainerFactoryPlug
    */
   public function build() {
     // Do not show a block if we do not have a corresponding route.
-    if (!($current_context = $this->teamContextManager->getCurrentContext())) {
+    if (!($current_context = $this->teamContextManager->getCurrentContextEntity())) {
       return [];
     }
 
