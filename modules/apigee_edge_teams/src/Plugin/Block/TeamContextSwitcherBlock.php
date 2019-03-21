@@ -136,8 +136,8 @@ class TeamContextSwitcherBlock extends BlockBase implements ContainerFactoryPlug
    * {@inheritdoc}
    */
   public function build() {
-    // Do not show a block if we do not have a context.
-    if (!($current_context = $this->getCurrentContext())) {
+    // Do not show a block if we do not have a corresponding route.
+    if (!($current_context = $this->teamContextManager->getCurrentContext())) {
       return [];
     }
 
@@ -153,18 +153,24 @@ class TeamContextSwitcherBlock extends BlockBase implements ContainerFactoryPlug
     }
 
     $links = [];
+
     /** @var \Drupal\Core\Entity\EntityInterface $entity */
     foreach ($entities as $entity) {
-      // If we are on an additional link route, then use the canonical url.
-      // Otherwise the destination url will be NULL and no link is rendered.
-      $url = is_string($current_context) ? $entity->toUrl() : $this->teamContextManager->getDestinationUrlForEntity($entity);
+      // No link if we are on the current context route.
+      if ($current_context instanceof EntityInterface && $current_context->getEntityTypeId() === $entity->getEntityTypeId() && $current_context->id() === $entity->id()) {
+        // Prepend link as the first link.
+        array_unshift($links, [
+          'title' => $entity->label(),
+          'url' => Url::fromRoute('<nolink>'),
+        ]);
+        continue;
+      }
 
-      // Check for access and add link.
-      if ($url && $url->access($this->account)) {
+      // Get destination link for entity.
+      if (($url = $this->teamContextManager->getDestinationUrlForEntity($entity)) && $url->access($this->account)) {
         $links[] = [
           'title' => $entity->label(),
           'url' => $url,
-          'is_current' => ($current_context instanceof EntityInterface && $current_context->getEntityTypeId() === $entity->getEntityTypeId() && $current_context->id() === $entity->id()),
         ];
       }
     }
@@ -175,20 +181,8 @@ class TeamContextSwitcherBlock extends BlockBase implements ContainerFactoryPlug
         $links[] = [
           'title' => $title,
           'url' => $url,
-          'is_current' => (is_string($current_context) && $current_context === $route_name),
         ];
       }
-    }
-
-    // Move the current link to the top and render it as a non link.
-    foreach ($links as $index => $link) {
-      if (isset($link['is_current']) && $link['is_current']) {
-        unset($links[$index]);
-        $link['url'] = Url::fromRoute('<nolink>');
-        array_unshift($links, $link);
-        break;
-      }
-      unset($link['is_current']);
     }
 
     return count($links) ? [
@@ -222,32 +216,6 @@ class TeamContextSwitcherBlock extends BlockBase implements ContainerFactoryPlug
           ->getPluralLabel(),
       ]),
     ];
-  }
-
-  /**
-   * Helper to find the current context from the route.
-   *
-   * @return mixed
-   *   The current context from the route or the route name or null.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  protected function getCurrentContext() {
-    // Get the current context from the team or the user in the route.
-    if (($current_context = $this->routeMatch->getParameter('team'))
-      || ($current_context = $this->routeMatch->getParameter('user'))
-    ) {
-      return $current_context;
-    }
-
-    // Get the current context from additional links.
-    $additional_links = $this->getAdditionalLinks();
-    $route_name = $this->routeMatch->getRouteName();
-    if (isset($additional_links[$route_name])) {
-      return $route_name;
-    }
-
-    return NULL;
   }
 
   /**

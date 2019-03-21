@@ -39,6 +39,14 @@ interface TeamContextManagerInterface {
   const TEAM_ROUTE_OPTION_NAME = '_apigee_team_route';
 
   /**
+   * Determines the current context from the route.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface|null
+   *   The current entity or NULL.
+   */
+  public function getCurrentContext(): ?EntityInterface;
+
+  /**
    * Returns the destination url for the given entity.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity

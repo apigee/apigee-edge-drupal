@@ -17,8 +17,12 @@
  */
 
 /* Disable the hover for the first action dropbutton */
+.team-switcher .dropbutton .dropbutton-action:first-child {
+  color: #888;
+}
 .team-switcher .dropbutton .dropbutton-action:first-child:hover {
   background-image: -webkit-linear-gradient(top, #f3f3f3, #e8e8e8);
   background-image: linear-gradient(to bottom, #f3f3f3, #e8e8e8);
   cursor: default;
+  color: #888;
 }

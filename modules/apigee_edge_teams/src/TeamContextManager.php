@@ -52,6 +52,26 @@ class TeamContextManager implements TeamContextManagerInterface {
   /**
    * {@inheritdoc}
    */
+  public function getCurrentContext(): ?EntityInterface {
+    $context = NULL;
+    if ($current_route_object = $this->routeMatch->getRouteObject()) {
+      // Check for developer/user route.
+      if ($current_route_object->hasOption(static::TEAM_ROUTE_OPTION_NAME)) {
+        $context = $this->routeMatch->getParameter('user');
+      }
+
+      // Check for team route.
+      if ($current_route_object->hasOption(static::DEVELOPER_ROUTE_OPTION_NAME)) {
+        $context = $this->routeMatch->getParameter('team');
+      }
+    }
+
+    return $context instanceof EntityInterface ? $context : NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getDestinationUrlForEntity(EntityInterface $entity): ?Url {
     if ($corresponding_route_name = $this->getCorrespondingRouteNameForEntity($entity)) {
       $parameters = $this->routeMatch->getParameters();
