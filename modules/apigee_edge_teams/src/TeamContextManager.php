@@ -74,11 +74,11 @@ class TeamContextManager implements TeamContextManagerInterface {
    */
   public function getDestinationUrlForEntity(EntityInterface $entity): ?Url {
     if ($corresponding_route_name = $this->getCorrespondingRouteNameForEntity($entity)) {
-      $parameters = $this->routeMatch->getParameters();
-      $parameters->replace([
-        $entity->getEntityTypeId() => $entity->id(),
-      ]);
-      return Url::fromRoute($corresponding_route_name, $parameters->all());
+      // Rebuild parameters for current context.
+      $parameters = array_diff_key($this->routeMatch->getRawParameters()->all(), [$entity->getEntityTypeId() === 'user' ? 'team' : 'user' => NULL]);
+      $parameters[$entity->getEntityTypeId()] = $entity->id();
+
+      return Url::fromRoute($corresponding_route_name, $parameters);
     }
 
     return NULL;
@@ -89,10 +89,8 @@ class TeamContextManager implements TeamContextManagerInterface {
    */
   public function getCorrespondingRouteNameForEntity(EntityInterface $entity): ?string {
     if ($current_route_object = $this->routeMatch->getRouteObject()) {
-      // If the route has only one and the same parameter, return the current
-      // route.
-      $parameters = $this->routeMatch->getRawParameters();
-      if ($parameters->has($entity->getEntityTypeId()) && $parameters->count() === 1) {
+      // If the route has same parameter type as entity, return current route.
+      if ($this->routeMatch->getRawParameters()->has($entity->getEntityTypeId())) {
         return $this->routeMatch->getRouteName();
       }
 
