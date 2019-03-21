@@ -57,6 +57,10 @@ services:
     calls:
       - [setStringTranslation, ['@string_translation']]
 
+  apigee_edge_teams.context_manager:
+    class: Drupal\apigee_edge_teams\TeamContextManager
+    arguments: ['@current_route_match']
+
   apigee_edge_teams.team_member_api_product_access_handler:
     class: Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandler
     arguments: ['@apigee_edge_teams.team_membership_manager', '@apigee_edge_teams.team_permissions', '@module_handler', '@current_user']
@@ -81,6 +85,11 @@ services:
 
   route.subscriber.apigee_edge_teams.team_app_by_name:
     class: Drupal\apigee_edge_teams\Routing\TeamAppByNameRouteAlterSubscriber
+    tags:
+      - { name: event_subscriber }
+
+  route.subscriber.apigee_edge_teams.team_context_switcher:
+    class: Drupal\apigee_edge_teams\Routing\TeamContextSwitcherRouteAlterSubscriber
     tags:
       - { name: event_subscriber }
 
