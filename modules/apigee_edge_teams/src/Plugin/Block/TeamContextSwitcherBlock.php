@@ -23,7 +23,6 @@ namespace Drupal\apigee_edge_teams\Plugin\Block;
 use Drupal\apigee_edge_teams\TeamContextManagerInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Block\Annotation\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityInterface;
