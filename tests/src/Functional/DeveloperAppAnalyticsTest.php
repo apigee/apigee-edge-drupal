@@ -204,8 +204,9 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
    * Asserts the visited analytics page.
    */
   protected function assertAnalyticsPage() {
+    $timezone = drupal_get_user_timezone();
     $this->assertSession()->pageTextContains("Analytics of {$this->developerApp->label()}");
-    $this->assertSession()->pageTextContains("Your timezone: {$this->loggedInUser->getTimeZone()}");
+    $this->assertSession()->pageTextContains("Your timezone: {$timezone}");
     $this->assertSession()->pageTextContains('No performance data is available for the criteria you supplied.');
     $this->assertSession()->pageTextNotContains('Export CSV');
   }
