@@ -29,6 +29,11 @@
             "services": {
                 "drush.services.yml": "^9"
             }
+        },
+        "patches": {
+            "drupal/core": {
+                "EntityViewBuilder::getBuildDefaults doesn't respect the EntityInterface of the $entity parameter": "https://www.drupal.org/files/issues/2019-01-10/2951487_15_no-tests.patch"
+            }
         }
     }
 }
