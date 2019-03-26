@@ -87,16 +87,16 @@ class TeamPermissionsForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['manage_team_apps_api_product_access'] = [
+    $form['non_member_team_apps_visible_api_products'] = [
       '#type' => 'checkboxes',
-      '#title' => $this->t('Visible API products for users with "Manage teams apps" site-wide permission on team app add/edit forms'),
-      '#description' => $this->t("If a user is not member a team but it has \"Manage team apps\" site-wide permission then it can create team apps for the team and edit any team apps owned by the team. This configuration allows to limit the visible API products on team app add/edit forms for users with this site-wide permission.<br>Suggestion: keep this configuration in sync with the team administrator's API product access settings."),
+      '#title' => $this->t('Visible API products on team app add/edit forms for users who are not member of a team'),
+      '#description' => $this->t("This configuration allows to limit the visible API products on team app add/edit forms for users who are not a member of the team but still has access to these forms. For example, if a user is not member a team, but it has \"Manage team apps\" site-wide permission then it can create team apps for the team and edit any team apps owned by the team.<br>Suggestion: keep this configuration in sync with the team administrator's API product access settings."),
       '#options' => [
         'public' => $this->t('Public'),
         'private' => $this->t('Private'),
         'internal' => $this->t('Internal'),
       ],
-      '#default_value' => $this->config('apigee_edge_teams.team_settings')->get('manage_team_apps_api_product_access'),
+      '#default_value' => $this->config('apigee_edge_teams.team_settings')->get('non_member_team_apps_visible_api_products'),
     ];
 
     $role_names = [];
@@ -203,7 +203,7 @@ class TeamPermissionsForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->configFactory()->getEditable('apigee_edge_teams.team_settings')->set('manage_team_apps_api_product_access', array_keys(array_filter($form_state->getValue('manage_team_apps_api_product_access', []))))->save();
+    $this->configFactory()->getEditable('apigee_edge_teams.team_settings')->set('non_member_team_apps_visible_api_products', array_keys(array_filter($form_state->getValue('non_member_team_apps_visible_api_products', []))))->save();
 
     /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamRoleStorageInterface $storage */
     $storage = $this->entityTypeManager->getStorage('team_role');

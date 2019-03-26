@@ -2,6 +2,6 @@ langcode: en
 entity_label_singular: ''
 entity_label_plural: ''
 cache_expiration: 900
-manage_team_apps_api_product_access:
+non_member_team_apps_visible_api_products:
   - public
   - private

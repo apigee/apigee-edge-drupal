@@ -85,7 +85,7 @@ class ManageTeamAppsApiProductAccessTest extends ApigeeEdgeFunctionalJavascriptT
   protected function setUp() {
     parent::setUp();
     // Users with manage team apps permissions can see private API products.
-    $this->config('apigee_edge_teams.team_settings')->set('manage_team_apps_api_product_access', ['private'])->save();
+    $this->config('apigee_edge_teams.team_settings')->set('non_member_team_apps_visible_api_products', ['private'])->save();
 
     $this->account = $this->createAccount([
       'manage team apps',

@@ -208,12 +208,12 @@ trait TeamAppFormTrait {
     // form. (For example because it has "Manage team apps" site-wide
     // permission.) It should see a warning and only those API products should
     // be visible that visibility is matching with the configured
-    // manage_team_apps_api_product_access config key value.
+    // non_member_team_apps_visible_api_products config key value.
     // @see nonMemberApiProductAccessWarningElement()
     if (!in_array($team_name, $this->getTeamMembershipMananger()->getTeams(\Drupal::currentUser()->getEmail()))) {
       $filter = function (ApiProductInterface $api_product) use ($team) {
         $visibility = $api_product->getAttributeValue('access') ?? 'public';
-        return in_array($visibility, $this->getConfigObject('apigee_edge_teams.team_settings')->get('manage_team_apps_api_product_access'));
+        return in_array($visibility, $this->getConfigObject('apigee_edge_teams.team_settings')->get('non_member_team_apps_visible_api_products'));
       };
     }
     else {
