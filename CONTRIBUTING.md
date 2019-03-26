@@ -95,7 +95,7 @@ git checkout -b patch-2 upstream/8.x-1.x
 # Fix code style issues.
 # Apply automatic code style fixes with PHPCBF.
 vendor/bin/phpcbf --standard=web/modules/contrib/apigee_edge/phpcs.xml.dist web/modules/contrib/apigee_edge -s --colors
-# Check remaining code style issues with PHPCS and fix the manually.
+# Check remaining code style issues with PHPCS and fix them manually.
 # Fix all reported violations with "error" severity.
 # (There are some false-positive violations with "warning" severity reported by PHPCS by default.)
 vendor/bin/phpcs --standard=web/modules/contrib/apigee_edge/phpcs.xml.dist web/modules/contrib/apigee_edge -s --colors
