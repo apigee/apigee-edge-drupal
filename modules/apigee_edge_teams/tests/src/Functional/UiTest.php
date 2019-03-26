@@ -30,7 +30,7 @@ use Drupal\Tests\field_ui\Traits\FieldUiTestTrait;
  * @group apigee_edge
  * @group apigee_edge_teams
  */
-class UITest extends ApigeeEdgeTeamsFunctionalTestBase {
+class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
 
   use EntityUtilsTrait;
   use FieldUiTestTrait;
@@ -258,40 +258,12 @@ class UITest extends ApigeeEdgeTeamsFunctionalTestBase {
     $this->assertSession()->linkExists($team_modified_display_name);
     $this->assertSession()->linkExists($team_app_1_modified_display_name);
 
-    // Create a new team app using the team app add form for admins.
-    $this->clickLink('Add team app');
-    $team_app_2_name = $team_app_2_display_name = strtolower($this->getRandomGenerator()->name());
-    $this->submitForm([
-      'owner' => $team_name,
-      'name' => $team_app_2_name,
-      'displayName[0][value]' => $team_app_2_display_name,
-      "api_products[{$this->product->getName()}]" => $this->product->getName(),
-    ], 'Add team app');
-    $this->assertSession()->pageTextContains('Team App has been successfully created.');
-    $this->assertSession()->linkExists($team_app_2_display_name);
-
-    // Login with the other user and ensure that both team apps are visible on
-    // the team app collection by team page.
-    $this->drupalLogin($this->otherAccount);
-    $this->drupalGet($this->team->toUrl('collection'));
-    $this->clickLink($team_modified_display_name);
-    $this->clickLink('Team Apps');
-    $this->assertSession()->linkExists($team_app_1_modified_display_name);
-    $this->assertSession()->linkExists($team_app_2_display_name);
-
     // Try to delete the first team app without verification code then with a
     // correct one.
     $this->clickLink($team_app_1_modified_display_name);
     $this->clickLink('Delete');
     $this->submitForm([], 'Delete');
     $this->assertSession()->pageTextContains('The name does not match the team app you are attempting to delete.');
-
-    $this->submitForm([
-      'verification_code' => $team_app_1_name,
-    ], 'Delete');
-    $this->assertSession()->pageTextContains("The {$team_app_1_modified_display_name} team app has been deleted.");
-    $this->assertSession()->linkNotExists($team_app_1_modified_display_name);
-    $this->assertSession()->linkExists($team_app_2_display_name);
 
     // Remove the other user from the team's member list.
     $this->drupalLogin($this->account);

@@ -24,6 +24,8 @@ use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\apigee_edge\Entity\Form\AppEditForm;
 use Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -73,6 +75,17 @@ class TeamAppEditForm extends AppEditForm {
    */
   protected function appCredentialController(string $owner, string $app_name): AppCredentialControllerInterface {
     return $this->appCredentialControllerFactory->teamAppCredentialController($owner, $app_name);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function form(array $form, FormStateInterface $form_state) {
+    $form = parent::form($form, $form_state);
+    foreach (Element::children($form['credential']) as $credential) {
+      $form['credential'][$credential]['api_products'] += $this->nonMemberApiProductAccessWarningElement($form, $form_state);
+    }
+    return $form;
   }
 
   /**

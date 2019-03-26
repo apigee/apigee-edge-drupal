@@ -20,60 +20,15 @@
 
 namespace Drupal\apigee_edge_teams\Entity\Form;
 
-use Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface;
-use Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
-use Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandlerInterface;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\RendererInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * General form handler for the team app create.
  */
 class TeamAppCreateForm extends TeamAppCreateFormBase {
-
-  /**
-   * The renderer service.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  private $renderer;
-
-  /**
-   * TeamAppCreateForm constructor.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface $api_product_controller
-   *   The API Product controller service.
-   * @param \Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface $app_credential_controller_factory
-   *   The team app credential controller factory.
-   * @param \Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandlerInterface $team_member_api_product_access_handler
-   *   The Team API product access handler.
-   * @param \Drupal\Core\Render\RendererInterface $renderer
-   *   The renderer service.
-   */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, ApiProductControllerInterface $api_product_controller, TeamAppCredentialControllerFactoryInterface $app_credential_controller_factory, TeamMemberApiProductAccessHandlerInterface $team_member_api_product_access_handler, RendererInterface $renderer) {
-    parent::__construct($entity_type_manager, $api_product_controller, $app_credential_controller_factory, $team_member_api_product_access_handler);
-    $this->renderer = $renderer;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('entity_type.manager'),
-      $container->get('apigee_edge.controller.api_product'),
-      $container->get('apigee_edge_teams.controller.team_app_credential_controller_factory'),
-      $container->get('apigee_edge_teams.team_member_api_product_access_handler'),
-      $container->get('renderer')
-    );
-  }
 
   /**
    * {@inheritdoc}
@@ -108,6 +63,7 @@ class TeamAppCreateForm extends TeamAppCreateFormBase {
    * {@inheritdoc}
    */
   protected function alterFormWithApiProductElement(array &$form, FormStateInterface $form_state): void {
+    parent::alterFormWithApiProductElement($form, $form_state);
     $form['api_products']['#prefix'] = '<div id="api-products-ajax-wrapper">';
     $form['api_products']['#suffix'] = '</div>';
   }
@@ -123,9 +79,9 @@ class TeamAppCreateForm extends TeamAppCreateFormBase {
    * @return \Drupal\Core\Ajax\AjaxResponse
    *   The AJAX response.
    */
-  public function updateApiProductList(array $form, FormStateInterface $form_state) : AjaxResponse {
+  public static function updateApiProductList(array $form, FormStateInterface $form_state) : AjaxResponse {
     $response = new AjaxResponse();
-    $response->addCommand(new ReplaceCommand('#api-products-ajax-wrapper', $this->renderer->render($form['api_products'])));
+    $response->addCommand(new ReplaceCommand('#api-products-ajax-wrapper', \Drupal::service('renderer')->render($form['api_products'])));
     return $response;
   }
 
