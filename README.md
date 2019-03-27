@@ -73,7 +73,10 @@ module.**
 * When you first install the module, existing users in the Drupal site may not have a developer account in Apigee Edge.
   You can run [developer synchronization](https://www.drupal.org/docs/8/modules/apigee-edge/synchronize-developers-with-apigee-edge)
   to make sure Drupal users and Apigee Edge developers are synchronized.
-
+* This module does not come with an entity view page for API products at this moment. (See
+  [#72](https://github.com/apigee/apigee-edge-drupal/issues/72).) Unless you have a custom module enabled that provides
+  this functionality, do not use the "Rendered entity" field formatter on API product entity reference fields because
+  that could lead to a White Screen of Death (WSOD) error. (Related [issue](http://dgo.to/2951487) on Drupal.org)
 
 ## Requirements
 
