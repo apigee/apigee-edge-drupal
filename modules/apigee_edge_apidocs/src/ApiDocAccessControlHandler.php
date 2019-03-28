@@ -34,6 +34,8 @@ use Drupal\Core\Access\AccessResult;
 class ApiDocAccessControlHandler extends EntityAccessControlHandler {
 
   /**
+   * The entity type manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
@@ -83,17 +85,20 @@ class ApiDocAccessControlHandler extends EntityAccessControlHandler {
   /**
    * Additional access control for revisions.
    *
-   * @param \Drupal\Core\Entity\EntityInterface   $entity
-   * @param                                       $operation
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity for which to check access.
+   * @param string $operation
+   *   The entity operation.
    * @param \Drupal\Core\Session\AccountInterface $account
+   *   The user for which to check access.
    *
-   * @return bool
+   * @return \Drupal\Core\Access\AccessResultInterface
+   *   The access result.
+   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   protected function checkAccessRevisions(EntityInterface $entity, $operation, AccountInterface $account) {
-    $entity_access = $this->entityTypeManager->getAccessControlHandler($this->entityTypeId);
-
     /** @var \Drupal\Core\Entity\EntityStorageInterface $entity_storage */
     $entity_storage = $this->entityTypeManager->getStorage($this->entityTypeId);
 
