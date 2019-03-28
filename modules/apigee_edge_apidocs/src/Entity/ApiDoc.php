@@ -146,13 +146,6 @@ class ApiDoc extends EditorialContentEntityBase implements ApiDocInterface {
   /**
    * {@inheritdoc}
    */
-  public function save() {
-    return parent::save();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function preSave(EntityStorageInterface $storage) {
     parent::preSave($storage);
 
@@ -176,6 +169,18 @@ class ApiDoc extends EditorialContentEntityBase implements ApiDocInterface {
       // entry with an empty one.
       $record->revision_log_message = $this->original->revision_log_message->value;
     }
+  }
+
+  /**
+   * Gets whether a new revision should be created by default.
+   *
+   * @return bool
+   *   TRUE if a new revision should be created by default.
+   */
+  public static function shouldCreateNewRevision() {
+    $config = \Drupal::config('apigee_edge_apidocs.settings');
+    $default_revision = $config->get('default_revision');
+    return is_null($default_revision) ? TRUE : (bool) $default_revision;
   }
 
   /**

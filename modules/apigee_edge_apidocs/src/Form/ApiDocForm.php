@@ -20,18 +20,25 @@
 
 namespace Drupal\apigee_edge_apidocs\Form;
 
-use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\ContentEntityForm;
-use Drupal\Core\Entity\EntityRepositoryInterface;
-use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Messenger\MessengerInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Form controller for API Doc edit forms.
  */
 class ApiDocForm extends ContentEntityForm {
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getNewRevisionDefault() {
+    /* @var \Drupal\apigee_edge_apidocs\Entity\ApiDoc $entity */
+    $entity = $this->getEntity();
+
+    // Always use the default revision setting.
+    $new_revision_default = $entity::shouldCreateNewRevision();
+    return $new_revision_default;
+  }
 
   /**
    * {@inheritdoc}
