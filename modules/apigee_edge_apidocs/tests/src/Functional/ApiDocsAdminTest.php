@@ -126,7 +126,7 @@ class ApiDocsAdminTest extends BrowserTestBase {
 
     $page = $this->getSession()->getPage();
     $random_name = $this->randomMachineName();
-    $random_description = $this->randomString();
+    $random_description = $this->randomGenerator->sentences(5);
     $page->fillField('name[0][value]', $random_name);
     $page->fillField('description[0][value]', $random_description);
 
