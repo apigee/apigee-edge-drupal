@@ -81,4 +81,29 @@ interface EdgeEntityInterface extends SdkEntityInterface, DrupalEntityInterface 
    */
   public function decorated(): SdkEntityInterface;
 
+  /**
+   * This is a workaround to avoid a fatal error coming from core.
+   *
+   * Although not needed for Edge Entities, this method is used to get
+   * around core bug, because most of Drupal's core code assumes entities are
+   * either content or config.
+   *
+   * @param bool $new_value
+   *   (optional) A Boolean to (re)set the isDefaultRevision flag.
+   *
+   * @return bool
+   *   TRUE if the entity is the default revision, FALSE otherwise. If
+   *   $new_value was passed, the previous value is returned.
+   *
+   * This is a workaround to avoid a fatal error coming from core.
+   *
+   * For Edge Entities this will always return TRUE, and is needed to get
+   * around around a bug because Drupal Core mostly assumes entities are either
+   * content or config.
+   *
+   * @see https://www.drupal.org/project/drupal/issues/2951487
+   * @see https://github.com/apigee/apigee-m10n-drupal/issues/79
+   */
+  public function isDefaultRevision($new_value = NULL);
+
 }

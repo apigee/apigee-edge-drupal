@@ -154,4 +154,24 @@ abstract class EdgeEntityBase extends Entity implements EdgeEntityInterface {
     return $label;
   }
 
+  /**
+   * This is a workaround to avoid a fatal error coming from core.
+   *
+   * Although not needed for Edge Entities, this method is used to get
+   * around core bug, because most of Drupal's core code assumes entities are
+   * either content or config.
+   *
+   * @param bool $new_value
+   *   (optional) This parameter is ignored.
+   *
+   * @return bool
+   *   For Edge Entities this will always return TRUE.
+   *
+   * @see https://www.drupal.org/project/drupal/issues/2951487
+   * @see https://github.com/apigee/apigee-m10n-drupal/issues/79
+   */
+  public function isDefaultRevision($new_value = NULL) {
+    return TRUE;
+  }
+
 }
