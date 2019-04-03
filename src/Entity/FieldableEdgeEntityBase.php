@@ -37,6 +37,12 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
  */
 abstract class FieldableEdgeEntityBase extends EdgeEntityBase implements FieldableEdgeEntityInterface {
 
+  // The majority of Drupal core & contrib assumes that if an entity is
+  // fieldable then it must be a content entity and because it is content entity
+  // it also must support revisioning. This incorrect assumption justifies the
+  // reason why this is here.
+  use RevisioningWorkaroundTrait;
+
   /**
    * Whether entity validation is required before saving the entity.
    *
@@ -528,37 +534,6 @@ abstract class FieldableEdgeEntityBase extends EdgeEntityBase implements Fieldab
    */
   public function getIterator() {
     return new \ArrayIterator($this->getFields());
-  }
-
-  /**
-   * This is a workaround to avoid a fatal error coming from the Editor module.
-   *
-   * The editor module assumes that if an entity implements the
-   * FieldableEntityInterface, then it must be a revisionable, like a content
-   * entity, so it calls the getRevisionId(), and fails with a fatal error.
-   *
-   * @see https://www.drupal.org/project/drupal/issues/2942529
-   */
-  public function getRevisionId() {
-    return NULL;
-  }
-
-  /**
-   * Prevents "Call to undefined method" error.
-   *
-   * The Quickedit core module calls this function in
-   * quickedit_entity_view_alter() because the entity view
-   * controller is an instance of the EntitViewController class.
-   *
-   * @return bool
-   *   FALSE return value Prevents quickedit core module
-   *   from modifying the field structure in quickedit_preprocess_field().
-   *
-   * @see quickedit_entity_view_alter()
-   * @see quickedit_preprocess_field()
-   */
-  public function isLatestRevision() {
-    return FALSE;
   }
 
 }
