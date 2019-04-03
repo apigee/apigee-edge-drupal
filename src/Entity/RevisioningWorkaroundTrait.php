@@ -33,6 +33,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
  *
  * @see \Drupal\Core\Entity\RevisionableInterface
  * @see https://www.drupal.org/project/drupal/issues/2942529
+ * @see https://www.drupal.org/project/drupal/issues/2951487
  * @see https://www.drupal.org/project/drupal/issues/3045384
  *
  * @internal
