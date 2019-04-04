@@ -44,6 +44,12 @@ use Apigee\Edge\Structure\AttributesProperty;
  */
 class ApiProduct extends EdgeEntityBase implements ApiProductInterface {
 
+  // The majority of Drupal core & contrib assumes that an entity to be
+  // displayed is a content entity, and because it is a content entity it also
+  // must support revisioning. This incorrect assumption justifies the
+  // reason why this is here.
+  use RevisioningWorkaroundTrait;
+
   /**
    * ApiProduct constructor.
    *
