@@ -23,9 +23,9 @@ namespace Drupal\apigee_edge\Entity;
 use Drupal\Core\Entity\EntityStorageInterface;
 
 /**
- * Some Drupal core & contrib modules assumes all entity is revisionable.
+ * Some Drupal core & contrib modules assume all entities are revisionable.
  *
- * Because all entity is either a content or a contrib entity. Well, this is
+ * Because all entities are either a content or a contrib entity. Well, this is
  * not true. The Apigee Edge entities are the perfect counterexamples for this.
  *
  * This trait contains some workarounds to make all components happy until
