@@ -19,3 +19,9 @@ entity.apidoc.delete_form:
   base_route:  entity.apidoc.canonical
   title: 'Delete'
   weight: 10
+
+entity.apidoc.version_history:
+  route_name:  entity.apidoc.version_history
+  base_route:  entity.apidoc.canonical
+  title: 'Revisions'
+  weight: 15
