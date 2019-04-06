@@ -22,7 +22,6 @@ namespace Drupal\apigee_edge\Entity\ListBuilder;
 
 use Apigee\Edge\Api\Management\Entity\AppCredential;
 use Apigee\Edge\Structure\CredentialProduct;
-use Drupal\apigee_edge\Element\StatusPropertyElement;
 use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;

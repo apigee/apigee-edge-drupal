@@ -78,7 +78,7 @@ class DeveloperAppEditForm extends AppEditForm {
   /**
    * {@inheritdoc}
    */
-  protected function apiProductList(array &$form, FormStateInterface $form_state): array {
+  protected function apiProductList(array $form, FormStateInterface $form_state): array {
     /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $app */
     $app = $this->entity;
 

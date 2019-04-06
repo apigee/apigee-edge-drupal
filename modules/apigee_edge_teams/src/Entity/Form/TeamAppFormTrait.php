@@ -24,6 +24,9 @@ use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\ClientErrorException;
 use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandlerInterface;
+use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -124,10 +127,76 @@ trait TeamAppFormTrait {
   }
 
   /**
+   * Allows to access to the injected team membership manager.
+   *
+   * @return \Drupal\apigee_edge_teams\TeamMembershipManagerInterface
+   *   The team membership manager.
+   */
+  private function getTeamMembershipMananger(): TeamMembershipManagerInterface {
+    if (property_exists($this, 'teamMembershipManager') && $this->teamMembershipManager instanceof TeamMembershipManagerInterface) {
+      return $this->teamMembershipManager;
+    }
+
+    return \Drupal::service('apigee_edge_teams.team_membership_manager');
+  }
+
+  /**
+   * Returns a config object.
+   *
+   * @param string $config
+   *   Config object name.
+   *
+   * @return \Drupal\Core\Config\ImmutableConfig
+   *   The config object.
+   */
+  private function getConfigObject(string $config): ImmutableConfig {
+    /** @var \Drupal\Core\Config\ConfigFactoryInterface $config_factory */
+    $config_factory = \Drupal::service('config.factory');
+    if (method_exists($this, 'configFactory') && $this->configFactory() instanceof ConfigFactoryInterface) {
+      $config_factory = $this->configFactory();
+    }
+    elseif (property_exists($this, 'configFactory') && $this->configFactory instanceof ConfigFactoryInterface) {
+      $config_factory = $this->configFactory;
+    }
+
+    return $config_factory->get($config);
+  }
+
+  /**
+   * Renders a render element with a warning for non-members.
+   *
+   * @param array $form
+   *   Form render array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state object.
+   *
+   * @return array
+   *   An associative array with a key 'non_member_api_product_access_warning'
+   *   and its value is a status message element which may or may not contain
+   *   a warning message.
+   */
+  protected function nonMemberApiProductAccessWarningElement(array $form, FormStateInterface $form_state): array {
+    $element = [
+      '#theme' => 'status_messages',
+      '#message_list' => [],
+      '#weight' => -100,
+    ];
+
+    if (!in_array($this->getTeamName($form, $form_state), $this->getTeamMembershipMananger()->getTeams(\Drupal::currentUser()->getEmail()))) {
+      $element['#message_list']['warning'][] = t('You are not member of this @team. You may see @api_products here that a @team member can not see.', [
+        '@team' => $this->getEntityTypeManager()->getDefinition('team')->getLowercaseLabel(),
+        '@api_products' => $this->getEntityTypeManager()->getDefinition('api_product')->getPluralLabel(),
+      ]);
+    }
+
+    return ['non_member_api_product_access_warning' => $element];
+  }
+
+  /**
    * {@inheritdoc}
    */
-  protected function apiProductList(array &$form, FormStateInterface $form_state): array {
-    $team_name = $form_state->getValue('owner') ?? $form['owner']['#value'] ?? $form['owner']['#default_value'];
+  protected function apiProductList(array $form, FormStateInterface $form_state): array {
+    $team_name = $this->getTeamName($form, $form_state);
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface|null $team */
     $team = $this->getEntityTypeManager()->getStorage('team')->load($team_name);
     // Sanity check, team should always exists with team name in this context.
@@ -135,9 +204,41 @@ trait TeamAppFormTrait {
       return [];
     }
 
-    return array_filter($this->getEntityTypeManager()->getStorage('api_product')->loadMultiple(), function (ApiProductInterface $api_product) use ($team) {
-      return $this->getTeamMemberApiProductAccessHandler()->access($api_product, 'assign', $team);
-    });
+    // If the user is not member of the team, but it still has access to this
+    // form. (For example because it has "Manage team apps" site-wide
+    // permission.) It should see a warning and only those API products should
+    // be visible that visibility is matching with the configured
+    // non_member_team_apps_visible_api_products config key value.
+    // @see nonMemberApiProductAccessWarningElement()
+    if (!in_array($team_name, $this->getTeamMembershipMananger()->getTeams(\Drupal::currentUser()->getEmail()))) {
+      $filter = function (ApiProductInterface $api_product) use ($team) {
+        $visibility = $api_product->getAttributeValue('access') ?? 'public';
+        return in_array($visibility, $this->getConfigObject('apigee_edge_teams.team_settings')->get('non_member_team_apps_visible_api_products'));
+      };
+    }
+    else {
+      $filter = function (ApiProductInterface $api_product) use ($team) {
+        return $this->getTeamMemberApiProductAccessHandler()->access($api_product, 'assign', $team);
+      };
+    }
+
+    return array_filter($this->getEntityTypeManager()->getStorage('api_product')->loadMultiple(), $filter);
+  }
+
+  /**
+   * Gets the name of the team from the form.
+   *
+   * @param array $form
+   *   Form render array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state object.
+   *
+   * @return string
+   *   Name (id) of the team.
+   */
+  protected function getTeamName(array &$form, FormStateInterface $form_state): string {
+    $team_name = $form_state->getValue('owner') ?? $form['owner']['#value'] ?? $form['owner']['#default_value'];
+    return $team_name;
   }
 
 }

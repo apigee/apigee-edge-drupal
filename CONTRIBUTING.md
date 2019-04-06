@@ -82,13 +82,26 @@ git rebase upstream/8.x-1.x
 
 After you have installed the module from your fork you can easily create new
 branches for new fixes on your local:
+
 ```bash
 cd [DRUPAL_ROOT]/modules/contrib/apigee_edge
 git fetch upstream
 git checkout -b patch-2 upstream/8.x-1.x
-## Add your awesome changes.
-git push -u origin patch-2:patch-2 # Push changes to your repo.
-## Create PR on Github.
+
+# Add your awesome changes.
+# Do not forget to write additional test cases when it is needed and
+# run all tests provided by the module. (See "Running tests" section.)
+
+# Fix code style issues.
+# Apply automatic code style fixes with PHPCBF.
+vendor/bin/phpcbf --standard=web/modules/contrib/apigee_edge/phpcs.xml.dist web/modules/contrib/apigee_edge -s --colors
+# Check remaining code style issues with PHPCS and fix them manually.
+# Fix all reported violations with "error" severity.
+# (There are some false-positive violations with "warning" severity reported by PHPCS by default.)
+vendor/bin/phpcs --standard=web/modules/contrib/apigee_edge/phpcs.xml.dist web/modules/contrib/apigee_edge -s --colors
+
+### Push changes to your repo and create new PR on Github.
+git push -u origin patch-2:patch-2
 ```
 
 ## Running tests
@@ -124,7 +137,7 @@ PHPUnit tests with the following commands:
 
 ```bash
 cd [DRUPAL_ROOT]/modules/contrib/apigee_edge/.travis
-docker-compose up --build # Build is important because recent changes on module files have to be copied from the host to the container.
+docker-compose up --build -d # Build is important because recent changes on module files have to be copied from the host to the container.
 docker-compose run php /opt/drupal-module/.travis/run-test.sh # to run all tests of this module. This command performs some initial setup tasks if test environment has not been configured yet.
 docker-compose run php /opt/drupal-module/.travis/run-test.sh --filter testAppSettingsForm AppSettingsFormTest build/modules/contrib/apigee_edge/tests/src/FunctionalJavascript/AppSettingsFormTest.php # to run one specific test. If you pass any arguments to run-test.sh those get passed directly to PHPUnit. See [.travis/run-test.sh](run-test.sh).
 docker-compose down --remove-orphans -v # Intermediate data (like module files) must be cleared from the shared volumes otherwise recent changes won't be visible in the container.

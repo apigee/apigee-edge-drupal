@@ -190,9 +190,7 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
   /**
    * {@inheritdoc}
    */
-  public function deleteRevision($revision_id) {
-    return NULL;
-  }
+  public function deleteRevision($revision_id) {}
 
   /**
    * Returns the wrapped controller instance used by this storage.

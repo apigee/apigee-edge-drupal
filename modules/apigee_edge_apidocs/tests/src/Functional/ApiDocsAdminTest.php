@@ -80,7 +80,7 @@ class ApiDocsAdminTest extends BrowserTestBase {
       'administer apidoc form display',
       'access administration pages',
       // Access content is needed to access the referenced files.
-      'access content'
+      'access content',
     ]);
     $this->drupalLogin($this->adminUser);
   }
