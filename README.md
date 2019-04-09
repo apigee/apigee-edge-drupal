@@ -9,6 +9,7 @@ This module includes the following submodules:
 * __API product RBAC:__ enables administrators to configure access permissions to API products.
 * __Debug:__ enables administrators to configure and manage Apigee debug logs.
 * __Teams (Experimental):__ enables developers to be organized into teams.
+* __API Docs (Experimental)__: Submodule to publish documentation to your site using OpenAPI specs.
 
 For more details read the [Apigee Edge module documentation](https://www.drupal.org/docs/8/modules/apigee-edge). 
 
@@ -23,10 +24,6 @@ Following the same concept of [Drupal 8 Experimental modules](https://www.drupal
 some submodules are marked as "Experimental". They are provided for evaluation and testing purposes but are still 
 considered to be in development. Experimental modules are included in the "Apigee (Experimental)" package
  on the "Extend" page of a Drupal site (/admin/modules).
-
-# Planned features
-* __Team Roles__: Site admins can manage roles and permissions available for developers in teams submodule.
-* __API Docs__: Submodule to publish documentation to your site using OpenAPI specs.
 
 ## Installing
 
