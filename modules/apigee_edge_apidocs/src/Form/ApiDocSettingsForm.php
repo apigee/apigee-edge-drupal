@@ -76,10 +76,9 @@ class ApiDocSettingsForm extends FormBase {
     $options = $form_state->getValue('options');
     $config->set('default_revision', (bool) $options['new_revision'])->save();
 
-    $args = [
+    $this->messenger()->addStatus($this->t('@type settings have been updated.', [
       '@type' => $entity_type->getLabel(),
-    ];
-    $this->messenger($this->t('@type settings have been updated.', $args));
+    ]));
   }
 
   /**
