@@ -46,8 +46,9 @@ class ApiProduct extends EdgeEntityBase implements ApiProductInterface {
 
   // The majority of Drupal core & contrib assumes that an entity to be
   // displayed is a content entity, and because it is a content entity it also
-  // must support revisioning. This incorrect assumption justifies the
-  // reason why this is here.
+  // must support revisioning.
+  // Having this trait addresses the following issue in the EntityViewBuilder.
+  // https://www.drupal.org/node/2951487
   use RevisioningWorkaroundTrait;
 
   /**
