@@ -139,13 +139,6 @@ class ApiDoc extends EditorialContentEntityBase implements ApiDocInterface {
   /**
    * {@inheritdoc}
    */
-  public function getRevisionUser() {
-    return $this->get('revision_user')->entity;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function preSave(EntityStorageInterface $storage) {
     parent::preSave($storage);
 
@@ -164,9 +157,9 @@ class ApiDoc extends EditorialContentEntityBase implements ApiDocInterface {
 
     if (!$this->isNewRevision() && isset($this->original) && empty($record->revision_log_message)) {
       // If we are updating an existing entity without adding a new revision, we
-      // need to make sure $entity->revision_log is reset whenever it is empty.
-      // Therefore, this code allows us to avoid clobbering an existing log
-      // entry with an empty one.
+      // need to make sure $entity->revision_log_message is reset whenever it is
+      // empty. Therefore, this code allows us to avoid clobbering an existing
+      // log  entry with an empty one.
       $record->revision_log_message = $this->original->revision_log_message->value;
     }
   }

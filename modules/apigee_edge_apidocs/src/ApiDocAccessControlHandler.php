@@ -111,9 +111,6 @@ class ApiDocAccessControlHandler extends EntityAccessControlHandler implements E
    *
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access result.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   protected function checkAccessRevisions(EntityInterface $entity, $operation, AccountInterface $account) {
     /** @var \Drupal\Core\Entity\EntityStorageInterface $entity_storage */
@@ -121,8 +118,8 @@ class ApiDocAccessControlHandler extends EntityAccessControlHandler implements E
 
     // Must have access to the same operation on the default revision.
     $default_revision = $entity_storage->load($entity->id());
-    $entity_access_default = $default_revision->access($operation, $account);
-    if (!$entity_access_default) {
+    $has_default_entity_rev_access = $default_revision->access($operation, $account);
+    if (!$has_default_entity_rev_access) {
       return AccessResult::forbidden();
     }
 

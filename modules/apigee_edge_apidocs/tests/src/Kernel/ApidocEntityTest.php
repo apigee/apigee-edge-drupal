@@ -109,7 +109,7 @@ class ApidocEntityTest extends KernelTestBase {
     // Test saving without a new revision.
     $entity->setDescription('Test API v3');
     $entity->save();
-    $this->assertTrue($v2_id === $entity->getRevisionId());
+    $this->assertEquals($v2_id, $entity->getRevisionId());
 
     // Test that the revision log message wasn't overriden.
     $this->assertEquals($new_log, $entity->getRevisionLogMessage());
@@ -125,7 +125,7 @@ class ApidocEntityTest extends KernelTestBase {
     // Load and check reverted values.
     $this->entityTypeManager->getStorage('apidoc')->resetCache();
     $reverted = ApiDoc::load($entity->id());
-    $this->assertTrue($reverted->getRevisionId() > $v1_id);
+    $this->assertLessThan($reverted->getRevisionId(), $v1_id);
     $this->assertTrue($reverted->isDefaultRevision());
     $this->assertEquals($description_v1, $reverted->getDescription());
   }
