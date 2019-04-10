@@ -7,3 +7,9 @@ CONTRIBUTING.md                 export-ignore
 .github                         export-ignore
 .travis                         export-ignore
 tests                           export-ignore
+
+# Drupal specific files should be identified & highlighted as PHP files on Github.
+*.module linguist-language=PHP
+*.install linguist-language=PHP
+*.profile linguist-language=PHP
+*.theme linguist-language=PHP
