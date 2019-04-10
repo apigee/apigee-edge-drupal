@@ -104,7 +104,7 @@ class ApidocEntityTest extends KernelTestBase {
     $entity->setRevisionLogMessage($new_log);
     $entity->save();
     $v2_id = $entity->getRevisionId();
-    $this->assertTrue($v2_id > $v1_id);
+    $this->assertLessThan($v2_id, $v1_id);
 
     // Test saving without a new revision.
     $entity->setDescription('Test API v3');

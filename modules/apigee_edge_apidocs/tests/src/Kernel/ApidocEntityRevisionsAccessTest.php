@@ -93,7 +93,7 @@ class ApidocEntityRevisionsAccessTest extends KernelTestBase {
     $this->entityTypeStorage = $this->entityTypeManager->getStorage('apidoc');
 
     // Create a published apidoc.
-    $apidoc = ApiDoc::create([
+    $apidoc = $this->entityTypeStorage->create([
       'name' => 'API 1',
       'description' => 'Test API v1',
       'spec' => NULL,
@@ -137,7 +137,7 @@ class ApidocEntityRevisionsAccessTest extends KernelTestBase {
    */
   public function testApiDocRevisionsAccessLoggedIn() {
     $user = $this->createUser([]);
-    \Drupal::currentUser()->setAccount($user);
+    $this->container->get('account_switcher')->switchTo($user);
 
     $entity_v1 = $this->entityTypeStorage->loadRevision($this->apidocV1Id);
 
@@ -162,7 +162,7 @@ class ApidocEntityRevisionsAccessTest extends KernelTestBase {
       'edit apidoc entities',
       'revert all apidoc revisions',
     ]);
-    \Drupal::currentUser()->setAccount($user);
+    $this->container->get('account_switcher')->switchTo($user);
 
     $entity_v1 = $this->entityTypeStorage->loadRevision($this->apidocV1Id);
 
@@ -183,7 +183,7 @@ class ApidocEntityRevisionsAccessTest extends KernelTestBase {
     $user = $this->createUser([
       'administer apidoc entities',
     ]);
-    \Drupal::currentUser()->setAccount($user);
+    $this->container->get('account_switcher')->switchTo($user);
 
     $entity_v1 = $this->entityTypeStorage->loadRevision($this->apidocV1Id);
 
