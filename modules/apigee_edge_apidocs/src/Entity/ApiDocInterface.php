@@ -22,11 +22,12 @@ namespace Drupal\apigee_edge_apidocs\Entity;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
+use Drupal\Core\Entity\EntityPublishedInterface;
 
 /**
  * Provides an interface for defining API Doc entities.
  */
-interface ApiDocInterface extends ContentEntityInterface, EntityChangedInterface {
+interface ApiDocInterface extends ContentEntityInterface, EntityChangedInterface, EntityPublishedInterface {
 
   /**
    * Gets the API Doc name.

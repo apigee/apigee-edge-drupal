@@ -85,6 +85,8 @@ class ApiDocSettingsForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    /* @var \Drupal\apigee_edge_apidocs\Entity\ApiDoc $entity */
+    $entity = $this->entityTypeManager->getStorage('apidoc')->create();
     $form['apidoc_settings']['#markup'] = $this->t('Settings for API Docs. Manage field settings using the tabs above.');
 
     $form['additional_settings'] = [
@@ -97,11 +99,11 @@ class ApiDocSettingsForm extends FormBase {
       '#group' => 'additional_settings',
     ];
     $workflow_options = [
-      'new_revision' => ApiDoc::shouldCreateNewRevision(),
+      'new_revision' => $entity->shouldCreateNewRevision(),
     ];
     // Prepare workflow options to be used for 'checkboxes' form element.
-    $keys = array_keys(array_filter($workflow_options));
-    $workflow_options = array_combine($keys, $keys);
+    $workflow_options_keys = array_keys(array_filter($workflow_options));
+    $workflow_options = array_combine($workflow_options_keys, $workflow_options_keys);
     $form['workflow']['options'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('Default options'),

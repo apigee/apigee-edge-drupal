@@ -36,7 +36,7 @@ class ApiDocForm extends ContentEntityForm {
     $entity = $this->getEntity();
 
     // Always use the default revision setting.
-    $new_revision_default = $entity::shouldCreateNewRevision();
+    $new_revision_default = $entity->shouldCreateNewRevision();
     return $new_revision_default;
   }
 

@@ -170,7 +170,7 @@ class ApiDoc extends EditorialContentEntityBase implements ApiDocInterface {
    * @return bool
    *   TRUE if a new revision should be created by default.
    */
-  public static function shouldCreateNewRevision() {
+  public function shouldCreateNewRevision() {
     $config = \Drupal::config('apigee_edge_apidocs.settings');
     $default_revision = $config->get('default_revision');
     return is_null($default_revision) ? TRUE : (bool) $default_revision;
