@@ -72,8 +72,7 @@ module.**
   to make sure Drupal users and Apigee Edge developers are synchronized.
 * This module does not come with an entity view page for API products at this moment. (See
   [#72](https://github.com/apigee/apigee-edge-drupal/issues/72).) Unless you have a custom module enabled that provides
-  this functionality, do not use the "Rendered entity" field formatter on API product entity reference fields because
-  that could lead to a White Screen of Death (WSOD) error. (Related [issue](http://dgo.to/2951487) on Drupal.org)
+  this functionality, do not use the "Rendered entity" field formatter on API product entity reference fields.
 
 ## Requirements
 
