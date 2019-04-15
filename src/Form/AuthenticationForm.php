@@ -358,9 +358,8 @@ class AuthenticationForm extends ConfigFormBase {
 
     if (!empty($processed_submitted) && $this->keyIsWritable($this->activeKey)) {
       // Set the active key's value.
-      $this->activeKey
-        ->getKeyProvider()
-        ->setKeyValue($this->activeKey, $processed_submitted);
+      $this->activeKey->setKeyValue($processed_submitted);
+      $this->activeKey->save();
     }
 
     // The only time `submitForm` gets called is when the key provider is
