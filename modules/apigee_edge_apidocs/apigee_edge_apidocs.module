@@ -20,7 +20,7 @@
 
 /**
  * @file
- * Module file for Apigee Edge: API Docs.
+ * Module file for Apigee Edge API Docs.
  */
 
 use Drupal\Core\Routing\RouteMatchInterface;

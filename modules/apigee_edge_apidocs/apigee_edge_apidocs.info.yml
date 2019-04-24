@@ -1,4 +1,4 @@
-name: 'Apigee Edge: API Docs'
+name: 'Apigee Edge API Docs'
 type: module
 description: 'Display OpenAPI documentation of your APIs to your developers.'
 core: 8.x
