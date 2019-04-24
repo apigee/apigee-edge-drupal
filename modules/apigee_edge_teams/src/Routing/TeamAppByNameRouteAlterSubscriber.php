@@ -31,10 +31,10 @@ use Symfony\Component\Routing\RouteCollection;
  * EntityResolverManager and it is expected to contain a Team app id (UUID)
  * because this is what entity load can accept. Although, we wanted to generate
  * more user friendly paths for Team apps that does not yet have a _separated_
- * "My team apps" page, similar to "My apps" page for developer apps.
- * Therefore we added the team id (team name) to some regular team app entity
- * routes (ex.: canonical, add/edit/delete-form, etc.) and set the {team_app}
- * parameter's value to team app's name instead of its id (UUID).
+ * "Team apps" page, similar to "Apps" page for developer apps. Therefore we
+ * added the team id (team name) to some regular team app entity routes (ex.:
+ * canonical, add/edit/delete-form, etc.) and set the {team_app} parameter's
+ * value to team app's name instead of its id (UUID).
  *
  * @see \Drupal\apigee_edge_teams\Entity\TeamApp::urlRouteParameters()
  */

@@ -20,7 +20,7 @@
 
 namespace Drupal\apigee_edge\Entity;
 
-use Drupal\apigee_edge\Access\MyAppsAccessCheck;
+use Drupal\apigee_edge\Access\AppsPageAccessCheck;
 use Drupal\apigee_edge\Controller\DeveloperAppViewControllerForDeveloper;
 use Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilderForDeveloper;
 use Drupal\apigee_edge\Form\DeveloperAppAnalyticsFormForDeveloper;
@@ -197,7 +197,7 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_title_callback', DeveloperAppListBuilderForDeveloper::class . '::pageTitle');
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureUserParameter($route);
-      $route->setRequirement('_custom_access', MyAppsAccessCheck::class . '::access');
+      $route->setRequirement('_custom_access', AppsPageAccessCheck::class . '::access');
       return $route;
     }
   }

@@ -109,7 +109,7 @@ final class DeveloperStatusWarningSubscriber implements EventSubscriberInterface
         $developer = $this->developerStorage->load($app->getDeveloperId());
         $account = $developer->getOwner();
       }
-      // Taking special care of the "My apps" page.
+      // Taking special care of the "Apps" page.
       elseif ($this->routeMatch->getRouteName() === 'entity.developer_app.collection_by_developer') {
         /** @var \Drupal\Core\Session\AccountInterface $account */
         $account = $this->routeMatch->getParameter('user');
