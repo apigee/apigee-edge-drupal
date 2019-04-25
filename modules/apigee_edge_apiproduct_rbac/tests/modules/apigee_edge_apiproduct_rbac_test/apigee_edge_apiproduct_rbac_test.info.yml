@@ -1,5 +1,5 @@
-name: "Apigee Edge: API Product RBAC test"
-description: "Support module for the Apigee Edge: API Product RBAC tests."
+name: "Apigee Edge API Product RBAC test"
+description: "Support module for the Apigee Edge API Product RBAC tests."
 package: Testing
 
 type: module
