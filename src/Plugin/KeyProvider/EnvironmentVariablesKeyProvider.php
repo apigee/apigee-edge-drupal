@@ -20,15 +20,10 @@
 namespace Drupal\apigee_edge\Plugin\KeyProvider;
 
 use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
-use Drupal\apigee_edge\Plugin\KeyProviderRequirementsInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Logger\LoggerChannelInterface;
-use Drupal\Core\Utility\Error;
 use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyPluginFormInterface;
-use Drupal\key\Plugin\KeyProviderBase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Stores Apigee Edge authentication credentials in environment variables.
@@ -44,43 +39,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   }
  * )
  */
-class EnvironmentVariablesKeyProvider extends KeyProviderBase implements KeyPluginFormInterface, KeyProviderRequirementsInterface {
-
-  /**
-   * The logger.
-   *
-   * @var \Drupal\Core\Logger\LoggerChannelInterface
-   */
-  private $logger;
-
-  /**
-   * EnvironmentVariablesKeyProvider constructor.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin_id for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
-   *   The logger service.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, LoggerChannelInterface $logger) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->logger = $logger;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('logger.channel.apigee_edge')
-    );
-  }
+class EnvironmentVariablesKeyProvider extends KeyProviderRequirementsBase implements KeyPluginFormInterface {
 
   /**
    * {@inheritdoc}
@@ -96,18 +55,6 @@ class EnvironmentVariablesKeyProvider extends KeyProviderBase implements KeyPlug
   /**
    * {@inheritdoc}
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
-    try {
-      $this->checkRequirements($form_state->getFormObject()->getEntity());
-    }
-    catch (KeyProviderRequirementsException $exception) {
-      $form_state->setError($form, $exception->getTranslatableMarkupMessage());
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $this->setConfiguration($form_state->getValues());
   }
@@ -115,21 +62,7 @@ class EnvironmentVariablesKeyProvider extends KeyProviderBase implements KeyPlug
   /**
    * {@inheritdoc}
    */
-  public function getKeyValue(KeyInterface $key) {
-    // Throwing an exception would be better than returning NULL but the key
-    // module's design does not allow this.
-    // Related issue: https://www.drupal.org/project/key/issues/3038212
-    try {
-      $this->checkRequirements($key);
-    }
-    catch (KeyProviderRequirementsException $exception) {
-      $context = [
-        '@message' => (string) $exception,
-      ];
-      $context += Error::decodeException($exception);
-      $this->getLogger()->error('Could not retrieve Apigee Edge authentication key value from the environment variables: @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
-      return NULL;
-    }
+  public function realGetKeyValue(KeyInterface $key) {
     $key_value = [];
     foreach ($this->getEnvironmentVariables($key) as $id => $variable) {
       if (getenv($variable)) {
@@ -187,18 +120,6 @@ class EnvironmentVariablesKeyProvider extends KeyProviderBase implements KeyPlug
     }
 
     return $environment_variables;
-  }
-
-  /**
-   * Gets the logger service.
-   *
-   * @return \Drupal\Core\Logger\LoggerChannelInterface
-   *   The logger service.
-   */
-  protected function getLogger(): LoggerChannelInterface {
-    // This fallback is needed when the plugin instance is serialized and the
-    // property is null.
-    return $this->logger ?? \Drupal::service('logger.channel.apigee_edge');
   }
 
 }
