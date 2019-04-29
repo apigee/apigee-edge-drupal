@@ -44,7 +44,25 @@ class ApigeeAuthKeyInput extends KeyInputBase {
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $values = Json::decode($form_state->get('key_value')['current']);
+    // When AJAX rebuilds the the form (f.e.: the "Send request" button) the
+    // submitted data is only available in $form_state->getUserInput() and not
+    // in $form_state->getValues(). Key is not prepared to handle this out of
+    // the box this is the reason why we have to manually process the user
+    // input and retrieve the submitted values here.
+    $key_value = $form_state->get('key_value')['current'];
+    // Either null or an empty string.
+    if (empty($key_value)) {
+      // When "Test connection" reloads the page they are not yet processed.
+      // @see \Drupal\key\Form\KeyFormBase::createPluginFormState()
+      $key_input_plugin_form_state = clone $form_state;
+      $key_input_plugin_form_state->setValues($form_state->getUserInput()['key_input_settings']);
+      // @see \Drupal\key\Form\KeyFormBase::validateForm()
+      $key_input_processed_values = $form_state->getFormObject()->getEntity()->getKeyInput()->processSubmittedKeyValue($key_input_plugin_form_state);
+      $key_value = $key_input_processed_values['processed_submitted'];
+    }
+
+    // Could be an empty array.
+    $values = Json::decode($key_value);
 
     $form['auth_type'] = [
       '#type' => 'select',
@@ -79,7 +97,11 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#title' => $this->t('Password'),
       '#description' => $this->t("Organization user's password that is used for authenticating with the endpoint."),
       '#required' => TRUE,
-      '#attributes' => ['autocomplete' => 'off'],
+      '#attributes' => [
+        'autocomplete' => 'off',
+        // Password field should not forget the submitted value.
+        'value' => $values['password'] ?? '',
+      ],
     ];
     $form['endpoint'] = [
       '#type' => 'textfield',

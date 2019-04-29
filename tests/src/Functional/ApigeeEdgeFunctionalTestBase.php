@@ -19,7 +19,7 @@
 
 namespace Drupal\Tests\apigee_edge\Functional;
 
-use Drupal\Tests\apigee_edge\Traits\ApigeeEdgeTestTrait;
+use Drupal\Tests\apigee_edge\Traits\ApigeeEdgeFunctionalTestTrait;
 use Drupal\Tests\BrowserTestBase;
 
 /**
@@ -27,6 +27,14 @@ use Drupal\Tests\BrowserTestBase;
  */
 abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
 
-  use ApigeeEdgeTestTrait;
+  use ApigeeEdgeFunctionalTestTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+    $this->initTestEnv();
+  }
 
 }

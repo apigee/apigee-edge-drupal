@@ -20,14 +20,22 @@
 namespace Drupal\Tests\apigee_edge\FunctionalJavascript;
 
 use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
-use Drupal\Tests\apigee_edge\Traits\ApigeeEdgeTestTrait;
+use Drupal\Tests\apigee_edge\Traits\ApigeeEdgeFunctionalTestTrait;
 
 /**
  * Base class for functional javascript tests.
  */
 abstract class ApigeeEdgeFunctionalJavascriptTestBase extends WebDriverTestBase {
 
-  use ApigeeEdgeTestTrait;
+  use ApigeeEdgeFunctionalTestTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+    $this->initTestEnv();
+  }
 
   /**
    * {@inheritdoc}
@@ -46,7 +54,7 @@ abstract class ApigeeEdgeFunctionalJavascriptTestBase extends WebDriverTestBase 
     $test_id = str_replace('test', '', $database->tablePrefix());
     // Add table suffix (test id) to the file name and ensure the generated
     // file name is unique.
-    $filename = file_create_filename("{$filename_prefix}-{$test_id}.jpg", $screenshots_dir);
+    $filename = file_create_filename("{$filename_prefix}-{$test_id}.png", $screenshots_dir);
     // Also create a log entry because that way we can understand the state of
     // the system before a screenshot got created more easily from logs.
     $this->container->get('logger.channel.apigee_edge_test')->debug("Creating new screenshot: {$filename}.");
