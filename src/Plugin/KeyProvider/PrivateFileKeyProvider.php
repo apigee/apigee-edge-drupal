@@ -20,15 +20,13 @@
 namespace Drupal\apigee_edge\Plugin\KeyProvider;
 
 use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
-use Drupal\apigee_edge\Plugin\KeyProviderRequirementsInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Utility\Error;
 use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyPluginFormInterface;
-use Drupal\key\Plugin\KeyProviderBase;
 use Drupal\key\Plugin\KeyProviderSettableValueInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -45,14 +43,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   }
  * )
  */
-class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInterface, KeyProviderSettableValueInterface, KeyProviderRequirementsInterface {
-
-  /**
-   * The logger.
-   *
-   * @var \Drupal\Core\Logger\LoggerChannelInterface
-   */
-  private $logger;
+class PrivateFileKeyProvider extends KeyProviderRequirementsBase implements KeyPluginFormInterface, KeyProviderSettableValueInterface {
 
   /**
    * The file system service.
@@ -70,14 +61,13 @@ class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInt
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
-   *   The logger service.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   The logger.
    * @param \Drupal\Core\File\FileSystemInterface $file_system
    *   The file system service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, LoggerChannelInterface $logger, FileSystemInterface $file_system) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->logger = $logger;
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, LoggerInterface $logger, FileSystemInterface $file_system) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $logger);
     $this->fileSystem = $file_system;
   }
 
@@ -104,18 +94,6 @@ class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInt
   /**
    * {@inheritdoc}
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
-    try {
-      $this->checkRequirements($form_state->getFormObject()->getEntity());
-    }
-    catch (KeyProviderRequirementsException $exception) {
-      $form_state->setError($form, $exception->getTranslatableMarkupMessage());
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $this->setConfiguration($form_state->getValues());
   }
@@ -123,19 +101,10 @@ class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInt
   /**
    * {@inheritdoc}
    */
-  public function getKeyValue(KeyInterface $key) {
-    // Throwing an exception would be better than returning NULL but the key
-    // module's design does not allow this.
-    // Related issue: https://www.drupal.org/project/key/issues/3038212
-    try {
-      $this->checkRequirements($key);
-    }
-    catch (KeyProviderRequirementsException $exception) {
-      $context = [
-        '@message' => (string) $exception,
-      ];
-      $context += Error::decodeException($exception);
-      $this->getLogger()->error('Could not retrieve Apigee Edge authentication key value from the private file storage: @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
+  public function realGetKeyValue(KeyInterface $key) {
+    // If the key is new then the file does not exist in the filesystem yet
+    // so do not try to read it.
+    if ($key->isNew()) {
       return NULL;
     }
 
@@ -223,18 +192,6 @@ class PrivateFileKeyProvider extends KeyProviderBase implements KeyPluginFormInt
     // This fallback is needed when the plugin instance is serialized and the
     // property is null.
     return $this->fileSystem ?? \Drupal::service('file_system');
-  }
-
-  /**
-   * Gets the logger service.
-   *
-   * @return \Drupal\Core\Logger\LoggerChannelInterface
-   *   The logger service.
-   */
-  protected function getLogger(): LoggerChannelInterface {
-    // This fallback is needed when the plugin instance is serialized and the
-    // property is null.
-    return $this->logger ?? \Drupal::service('logger.channel.apigee_edge');
   }
 
 }

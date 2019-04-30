@@ -17,6 +17,13 @@ services:
     class: Drupal\apigee_edge\SDKConnector
     arguments: ['@http_client_factory', '@key.repository', '@entity_type.manager', '@config.factory', '@module_handler', '@info_parser']
 
+  apigee_edge.key_entity_form_enhancer:
+    class: Drupal\apigee_edge\KeyEntityFormEnhancer
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.authentication.oauth_token_storage', '@entity_type.manager', '@config.factory']
+    calls:
+      - [setMessenger, ['@messenger']]
+      - [setStringTranslation, ['@string_translation']]
+
   apigee_edge.controller.organization:
     class: Drupal\apigee_edge\Entity\Controller\OrganizationController
     arguments: ['@apigee_edge.sdk_connector']

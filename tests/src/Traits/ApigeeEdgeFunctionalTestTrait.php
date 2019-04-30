@@ -31,26 +31,24 @@ use Drupal\user\UserInterface;
 /**
  * Provides common functionality for the Apigee Edge test classes.
  *
- * TODO Consider renaming this trait to ApigeeEdgeFunctionalTestTrait because
- * its setup() method is clearly works only in functional tests. Re-usable
- * methods in kernel/functional tests can be remain in this trait, ex.:
- * getRandomUniqueId(), logException(), etc.
+ * TODO Move methods from this trait that can be also used in kernel tests to a
+ * new trait, ex.: getRandomUniqueId(), logException(), etc.
  */
-trait ApigeeEdgeTestTrait {
+trait ApigeeEdgeFunctionalTestTrait {
 
   /**
-   * {@inheritdoc}
+   * Initializes test environment with required configuration.
    */
-  protected function setUp() {
-    // TODO Trait must not call parent.
-    parent::setUp();
-
-    // TODO Find a better way to install modules from a trait.
-    // parent::setUp() must be called because it initialized the container.
-    // It will also install modules defined in static::$modules array therefore
-    // those modules gets installed earlier than apigee_edge_test.
+  protected function initTestEnv(): void {
     $this->installExtraModules(['apigee_edge_test']);
+    $this->createTestKey();
+    $this->restoreKey();
+  }
 
+  /**
+   * Creates a test key by using environment variables as key storage.
+   */
+  protected function createTestKey(): void {
     $key = Key::create([
       'id' => 'test',
       'label' => 'test',
@@ -62,10 +60,8 @@ trait ApigeeEdgeTestTrait {
       $key->save();
     }
     catch (EntityStorageException $exception) {
-      self::fail('Could not create key for testing.');
+      $this->fail('Could not create key for testing.');
     }
-
-    $this->restoreKey();
   }
 
   /**

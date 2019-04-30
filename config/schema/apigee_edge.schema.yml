@@ -221,3 +221,8 @@ apigee_edge.dangerzone:
     # even when content exists.
     skip_developer_app_settings_validation:
       type: boolean
+    # Disable modifications added by the Apigee Edge module to the Key add/edit
+    # forms. If something would be broken because of the customizations that
+    # we made this is the simplest way to disable them without any code change.
+    do_not_alter_key_entity_forms:
+      type: boolean

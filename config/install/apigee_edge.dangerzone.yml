@@ -1,0 +1,2 @@
+skip_developer_app_settings_validation: false
+do_not_alter_key_entity_forms: false

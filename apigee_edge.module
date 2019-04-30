@@ -77,6 +77,39 @@ function apigee_edge_module_implements_alter(&$implementations, $hook) {
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function apigee_edge_form_apigee_edge_authentication_form_alter(array &$form, FormStateInterface $form_state, string $form_id) {
+  /** @var bool $do_not_alter_key_entity_forms */
+  $do_not_alter_key_entity_forms = \Drupal::config('apigee_edge.dangerzone')->get('do_not_alter_key_entity_forms');
+  // Even if the original Key forms should not be altered, the Authentication
+  // form provided by this module should still work the same.
+  if ($do_not_alter_key_entity_forms) {
+    /** @var \Drupal\apigee_edge\KeyEntityFormEnhancer $key_entity_form_enhancer */
+    $key_entity_form_enhancer = \Drupal::service('apigee_edge.key_entity_form_enhancer');
+    $key_entity_form_enhancer->alterForm($form, $form_state);
+  }
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter().
+ */
+function apigee_edge_form_key_form_alter(array &$form, FormStateInterface $form_state, string $form_id) {
+  /** @var bool $do_not_alter_key_entity_forms */
+  $do_not_alter_key_entity_forms = \Drupal::config('apigee_edge.dangerzone')->get('do_not_alter_key_entity_forms');
+  // Even if the original Key forms should not be altered, the Authentication
+  // form provided by this module should still work the same.
+  if ($do_not_alter_key_entity_forms) {
+    return;
+  }
+
+  /** @var \Drupal\apigee_edge\KeyEntityFormEnhancer $key_entity_form_enhancer */
+  $key_entity_form_enhancer = \Drupal::service('apigee_edge.key_entity_form_enhancer');
+  // Only those Key forms gets altered that defines an Apigee Edge key type.
+  $key_entity_form_enhancer->alterForm($form, $form_state);
+}
+
+/**
  * Implements hook_theme().
  */
 function apigee_edge_theme() {
