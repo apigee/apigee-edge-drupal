@@ -75,6 +75,12 @@ abstract class FieldableEdgeEntityStorageBase extends EdgeEntityStorageBase impl
   /**
    * {@inheritdoc}
    */
+  public function onFieldableEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original, array $field_storage_definitions, array $original_field_storage_definitions, array &$sandbox = NULL) {
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function onEntityTypeDelete(EntityTypeInterface $entity_type) {
   }
 
