@@ -21,8 +21,8 @@
 namespace Drupal\apigee_edge\Entity\Controller\Cache;
 
 use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
+use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Egulias\EmailValidator\EmailValidatorInterface;
 
 /**
  * Developer specific app name cache by app owner factory service.
@@ -50,7 +50,7 @@ final class DeveloperAppNameCacheFactory implements AppNameCacheByOwnerFactoryIn
   /**
    * The email validator service.
    *
-   * @var \Egulias\EmailValidator\EmailValidatorInterface
+   * @var \Drupal\Component\Utility\EmailValidatorInterface
    */
   private $emailValidator;
 
@@ -61,7 +61,7 @@ final class DeveloperAppNameCacheFactory implements AppNameCacheByOwnerFactoryIn
    *   The (general) app name cache by app owner factory service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Egulias\EmailValidator\EmailValidatorInterface $email_validator
+   * @param \Drupal\Component\Utility\EmailValidatorInterface $email_validator
    *   The email validator service.
    */
   public function __construct(AppNameCacheByOwnerFactoryInterface $app_name_cache_by_owner_factory, EntityTypeManagerInterface $entity_type_manager, EmailValidatorInterface $email_validator) {
