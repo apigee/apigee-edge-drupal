@@ -15,9 +15,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-
 /* App listing components */
-.circle {
+.table--app-list .circle {
   border-radius: 50%;
   color: white;
   width: 14px;
@@ -30,22 +29,16 @@
   float: left;
 }
 
-.wrapper--status {
+.table--app-list .wrapper--status {
   float: left;
 }
 
-.row--warning {
+.table--app-list .row--warning {
   display: none;
 }
 
-/* Temporary zebra healing. */
-.table--app-list .odd,
-.table--app-list .even {
-  /* background-color: transparent; */
-}
-
 /* Collapsible functionality. */
-.toggle--warning {
+.table--app-list .toggle--warning {
   display: inline-block;
   overflow: hidden;
   border-bottom: none;
@@ -55,21 +48,13 @@
   font-size: 85%;
 }
 
-.toggle--warning:hover,
-.toggle--warning:active,
-.toggle--warning:visited,
-.toggle--warning:focus {
+.table--app-list .toggle--warning:hover,
+.table--app-list .toggle--warning:active,
+.table--app-list .toggle--warning:visited,
+.table--app-list .toggle--warning:focus {
   border-bottom: none;
 }
 
-.toggle--warning::after {
-
-}
-
-.toggle--warning.closed::after {
-
-}
-
-.toggle--warning.open span {
+.table--app-list .toggle--warning.open span {
   background-position: -65px -16px;
 }
