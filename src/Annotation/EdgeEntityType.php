@@ -28,7 +28,8 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *
  * The annotation properties of entity types are found on
  * \Drupal\apigee_edge\Entity\EdgeEntityType and are accessed using
- * get/set methods defined in \Drupal\Core\Entity\EntityTypeInterface.
+ * get/set methods defined in
+ * \Drupal\apigee_edge\Entity\EdgeEntityTypeInterface.
  *
  * @Annotation
  */

@@ -24,7 +24,6 @@ use Drupal\apigee_edge\Entity\ListBuilder\EdgeEntityListBuilder;
 use Drupal\apigee_edge\Exception\RuntimeException;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Entity\EntityType;
-use Drupal\Core\Entity\EntityViewBuilder;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
@@ -59,7 +58,7 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
     parent::__construct($definition);
     // Some default settings for our entity types.
     $this->handlers += [
-      'view_builder' => EntityViewBuilder::class,
+      'view_builder' => EdgeEntityViewBuilder::class,
       'list_builder' => EdgeEntityListBuilder::class,
       'route_provider' => [
         'html' => EdgeEntityRouteProvider::class,
