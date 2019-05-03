@@ -120,9 +120,7 @@ function apigee_edge_theme() {
     ],
     'apigee_entity__app' => [
       'render element' => 'elements',
-      // DRY.
       'base hook' => 'apigee_entity',
-      'template' => 'apigee-entity',
     ],
     'app_credential' => [
       'render element' => 'elements',
@@ -176,21 +174,6 @@ function template_preprocess_apigee_entity(array &$variables) {
   foreach (Element::children($variables['elements']) as $key) {
     $variables['content'][$key] = $variables['elements'][$key];
   }
-}
-
-/**
- * Prepares variables for Apigee App entity templates.
- *
- * Base hook: apigee_entity
- * Default template: apigee-entity.html.twig.
- *
- * @param array $variables
- *   An associative array containing:
- *   - elements: An array of elements to display in view mode.
- */
-function template_preprocess_apigee_entity__app(array &$variables) {
-  $variables['attributes']['class'][] = 'apigee-entity--app';
-  $variables['attributes']['class'][] = 'apigee-entity--app--view-mode-' . $variables['elements']['#view_mode'];
 }
 
 /**
