@@ -20,10 +20,12 @@
 
 namespace Drupal\apigee_edge_apidocs\Entity;
 
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\link\LinkItemInterface;
 
 /**
  * Defines the API Doc entity.
@@ -137,6 +139,18 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
   /**
    * {@inheritdoc}
    */
+  public function getSpecAsFile() : bool {
+    // Default is to use spec as file.
+    if ($this->get('spec_as_file')->isEmpty()) {
+      return TRUE;
+    }
+
+    return (bool) $this->get('spec_as_file')->getValue()[0]['value'];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = parent::baseFieldDefinitions($entity_type);
 
@@ -176,8 +190,23 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
       ])
       ->setDisplayConfigurable('form', TRUE);
 
+    $fields['spec_as_file'] = BaseFieldDefinition::create('boolean')
+      ->setLabel(t('Provide OpenAPI specification as a file'))
+      ->setDescription(t('Indicate if the OpenAPI spec will be provided as a
+                          file (or a URL otherwise).'))
+      ->setDefaultValue(TRUE)
+      ->setDisplayOptions('form', [
+        'type' => 'boolean_checkbox',
+        'weight' => 0,
+        'settings' => [
+          'display_label' => TRUE,
+        ],
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE);
+
     $fields['spec'] = BaseFieldDefinition::create('file')
-      ->setLabel('OpenAPI specification')
+      ->setLabel('OpenAPI specification file')
       ->setDescription('The spec snapshot.')
       ->setSettings([
         'file_directory' => 'apidoc_specs',
@@ -197,6 +226,20 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
       ->setDisplayOptions('form', [
         'label' => 'hidden',
         'type' => 'file_generic',
+        'weight' => 0,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE);
+
+    $fields['file_link'] = BaseFieldDefinition::create('file_link')
+      ->setLabel(t('URL to OpenAPI specification file'))
+      ->setDescription(t('The URL to an OpenAPI file spec.'))
+      ->setSettings([
+        'file_extensions' => 'yml yaml json',
+        'link_type' => LinkItemInterface::LINK_GENERIC,
+        'title' => DRUPAL_DISABLED,
+      ])
+      ->setDisplayOptions('form', [
         'weight' => 0,
       ])
       ->setDisplayConfigurable('form', TRUE)
@@ -232,6 +275,38 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
       ->setDescription(t('The time that the entity was last edited.'));
 
     return $fields;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function preSave(EntityStorageInterface $storage) {
+    parent::preSave($storage);
+
+    // If "spec_as_file", grab file from "file_link" and save it into the
+    // "spec" file field. The file_link field should already have validated that
+    // a valid file exists at that URL.
+
+    if (!$this->getSpecAsFile()) {
+      $file_uri = $this->get('file_link')->getValue()[0]['uri'];
+      $data = file_get_contents($file_uri);
+      if (!$data) {
+        throw new \LogicException(
+          'File could not be retrieved at specified URL.'
+        );
+      }
+
+      $filename = \Drupal::service('file_system')->basename($file_uri);
+      $specs_definition = $this->getFieldDefinition('spec')->getItemDefinition();
+      $target_dir = $specs_definition->getSetting('file_directory');
+      $uri_scheme = $specs_definition->getSetting('uri_scheme');
+      $file = file_save_data($data, "$uri_scheme://$target_dir/$filename", FILE_EXISTS_RENAME);
+      $spec_value = [
+          'target_id' => $file->id(),
+        ] + $this->get('spec')->getValue()[0];
+      $this->set('spec', $spec_value);
+    }
+
   }
 
 }

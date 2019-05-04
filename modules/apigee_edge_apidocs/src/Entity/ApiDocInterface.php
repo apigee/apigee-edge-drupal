@@ -106,4 +106,12 @@ interface ApiDocInterface extends ContentEntityInterface, EntityChangedInterface
    */
   public function setPublished(bool $published) : self;
 
+  /**
+   * Indicates if OpenAPI specs will be provided as a file (otherwise a Url).
+   *
+   * @return bool
+   *   TRUE if specs will be provided as a file (otherwise a Url).
+   */
+  public function getSpecAsFile() : bool;
+
 }

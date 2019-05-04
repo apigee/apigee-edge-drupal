@@ -28,6 +28,44 @@ use Drupal\Core\Form\FormStateInterface;
  */
 class ApiDocForm extends ContentEntityForm {
 
+
+  /**
+   * {@inheritdoc}
+   */
+  public function form(array $form, FormStateInterface $form_state) {
+    $form = parent::form($form, $form_state);
+
+    $form['specifications'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('OpenAPI Specifications File'),
+      '#weight' => $form['spec_as_file']['#weight'],
+    ];
+
+    $form['spec']['#states'] = [
+      'visible' => [
+        ':input[name="spec_as_file[value]"]' => ['checked' => TRUE],
+      ],
+      'required' => [
+        ':input[name="spec_as_file[value]"]' => ['checked' => TRUE],
+      ],
+    ];
+    $form['file_link']['#states'] = [
+      'visible' => [
+        ':input[name="spec_as_file[value]"]' => ['checked' => FALSE],
+      ],
+      'required' => [
+        ':input[name="spec_as_file[value]"]' => ['checked' => FALSE],
+      ],
+    ];
+
+    $form['specifications']['spec_as_file'] = $form['spec_as_file'];
+    $form['specifications']['spec'] = $form['spec'];
+    $form['specifications']['file_link'] = $form['file_link'];
+    unset($form['spec_as_file'], $form['spec'], $form['file_link']);
+
+    return $form;
+  }
+
   /**
    * {@inheritdoc}
    */

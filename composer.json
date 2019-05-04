@@ -10,6 +10,7 @@
         "drupal/core": "^8.7.0",
         "drupal/entity": "^1.0",
         "drupal/key": "^1.8",
+        "drupal/file_link": "^1.4",
         "php-http/guzzle6-adapter": "^1.1.1"
     },
     "require-dev": {
