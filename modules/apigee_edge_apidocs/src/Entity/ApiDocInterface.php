@@ -114,4 +114,26 @@ interface ApiDocInterface extends ContentEntityInterface, EntityChangedInterface
    */
   public function getSpecAsFile() : bool;
 
+  /**
+   * Check if entity is revisionable.
+   *
+   * @return bool
+   *   TRUE if entity is revisionable.
+   */
+  public function isRevisionable() : bool;
+
+  /**
+   * Update OpenAPI specifications file from URL.
+   *
+   * @param bool $save
+   *   Boolean indicating if method should save the entity.
+   * @param bool $new_revision
+   *   Boolean indicating if method should create a new revision when saving
+   *   the entity.
+   *
+   * @return bool
+   *   Returned TRUE if the operation completed without errors.
+   */
+  public function updateOpenApiSpecFile($save = TRUE, $new_revision = TRUE);
+
 }

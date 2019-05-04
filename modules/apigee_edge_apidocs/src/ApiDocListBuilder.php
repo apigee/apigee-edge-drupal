@@ -82,4 +82,22 @@ class ApiDocListBuilder extends EntityListBuilder {
     return $row + parent::buildRow($entity);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getOperations(EntityInterface $entity) {
+    $operations = parent::getOperations($entity);
+
+    // Add "Update OpenAPI spec" link.
+    if ($entity->access('update') && $entity->hasLinkTemplate('update-spec-form')) {
+      $operations['update_spec'] = [
+        'title' => $this->t('Update OpenAPI spec'),
+        'weight' => 15,
+        'url' => $this->ensureDestination($entity->toUrl('update-spec-form')),
+      ];
+    }
+
+    return $operations;
+  }
+
 }
