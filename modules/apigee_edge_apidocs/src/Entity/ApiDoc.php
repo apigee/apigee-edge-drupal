@@ -25,6 +25,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\link\LinkItemInterface;
 
 /**
@@ -75,6 +76,7 @@ use Drupal\link\LinkItemInterface;
 class ApiDoc extends ContentEntityBase implements ApiDocInterface {
 
   use EntityChangedTrait;
+  use StringTranslationTrait;
 
   /**
    * {@inheritdoc}
@@ -234,6 +236,7 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
     $fields['file_link'] = BaseFieldDefinition::create('file_link')
       ->setLabel(t('URL to OpenAPI specification file'))
       ->setDescription(t('The URL to an OpenAPI file spec.'))
+      ->addConstraint('ApiDocFileLink')
       ->setSettings([
         'file_extensions' => 'yml yaml json',
         'link_type' => LinkItemInterface::LINK_GENERIC,
@@ -302,9 +305,11 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
       $file_uri = $this->get('file_link')->getValue()[0]['uri'];
       $data = file_get_contents($file_uri);
       if (empty($data)) {
-        throw new \LogicException(
-          'File could not be retrieved at specified URL.'
-        );
+        \Drupal::messenger()
+          ->addMessage($this->t('Could not retrieve OpenAPI specifications file located at %url', [
+            '%url' => $file_uri,
+          ]), 'error');
+        return;
       }
 
       // Only save file if it hasn't been fetched previously.
@@ -323,11 +328,13 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
         $this->set('spec_md5', $data_md5);
       }
     }
+
     elseif (!empty($spec_value['target_id'])) {
       /* @var \Drupal\file\Entity\File $file */
       $file = \Drupal::entityTypeManager()
         ->getStorage('file')
         ->load($spec_value['target_id']);
+
       if ($file) {
         $this->set('spec_md5', md5_file($file->getFileUri()));
       }
