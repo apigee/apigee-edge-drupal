@@ -245,6 +245,15 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
+    $fields['spec_md5'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('OpenAPI specification file MD5'))
+      ->setDescription(t('OpenAPI specification file MD5'))
+      ->setSettings([
+        'text_processing' => 0,
+      ])
+      ->setDisplayConfigurable('form', FALSE)
+      ->setDisplayConfigurable('view', FALSE);
+
     $fields['api_product'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('API Product'))
       ->setDescription(t('The API Product this is documenting.'))
@@ -287,24 +296,41 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
     // "spec" file field. The file_link field should already have validated that
     // a valid file exists at that URL.
 
+    $spec_value = $this->get('spec')->isEmpty() ? [] : $this->get('spec')->getValue()[0];
+
     if (!$this->getSpecAsFile()) {
       $file_uri = $this->get('file_link')->getValue()[0]['uri'];
       $data = file_get_contents($file_uri);
-      if (!$data) {
+      if (empty($data)) {
         throw new \LogicException(
           'File could not be retrieved at specified URL.'
         );
       }
 
-      $filename = \Drupal::service('file_system')->basename($file_uri);
-      $specs_definition = $this->getFieldDefinition('spec')->getItemDefinition();
-      $target_dir = $specs_definition->getSetting('file_directory');
-      $uri_scheme = $specs_definition->getSetting('uri_scheme');
-      $file = file_save_data($data, "$uri_scheme://$target_dir/$filename", FILE_EXISTS_RENAME);
-      $spec_value = [
-          'target_id' => $file->id(),
-        ] + $this->get('spec')->getValue()[0];
-      $this->set('spec', $spec_value);
+      // Only save file if it hasn't been fetched previously.
+      $data_md5 = md5($data);
+      $prev_md5 = $this->get('spec_md5')->isEmpty() ? NULL : $this->get('spec_md5')->getValue()[0]['value'];
+      if ($prev_md5 != $data_md5) {
+        $filename = \Drupal::service('file_system')->basename($file_uri);
+        $specs_definition = $this->getFieldDefinition('spec')->getItemDefinition();
+        $target_dir = $specs_definition->getSetting('file_directory');
+        $uri_scheme = $specs_definition->getSetting('uri_scheme');
+        $file = file_save_data($data, "$uri_scheme://$target_dir/$filename", FILE_EXISTS_RENAME);
+        $spec_value = [
+            'target_id' => $file->id(),
+          ] + $spec_value;
+        $this->set('spec', $spec_value);
+        $this->set('spec_md5', $data_md5);
+      }
+    }
+    elseif (!empty($spec_value['target_id'])) {
+      /* @var \Drupal\file\Entity\File $file */
+      $file = \Drupal::entityTypeManager()
+        ->getStorage('file')
+        ->load($spec_value['target_id']);
+      if ($file) {
+        $this->set('spec_md5', md5_file($file->getFileUri()));
+      }
     }
 
   }
