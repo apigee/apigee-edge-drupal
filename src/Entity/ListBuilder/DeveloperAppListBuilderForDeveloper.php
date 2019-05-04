@@ -177,16 +177,16 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
   }
 
   /**
-   * Redirects users to their My apps page.
+   * Redirects users to their Apps page.
    *
    * This controller assumes that it is only invoked for authenticated users.
-   * This is enforced for the 'apigee_edge.user.my_apps' route with the
+   * This is enforced for the 'apigee_edge.user.apps' route with the
    * '_user_is_logged_in' requirement.
    *
    * @return \Symfony\Component\HttpFoundation\RedirectResponse
-   *   Returns a redirect to the My apps of the currently logged in user.
+   *   Returns a redirect to the Apps of the currently logged in user.
    */
-  public function myAppsPage(): RedirectResponse {
+  public function appsPage(): RedirectResponse {
     $options['absolute'] = TRUE;
     $url = Url::fromRoute('entity.developer_app.collection_by_developer', ['user' => $this->currentUser->id()], $options);
     return new RedirectResponse($url->toString(), 302);
@@ -201,13 +201,12 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
   public function pageTitle(): TranslatableMarkup {
     /** @var \Drupal\user\UserInterface $account */
     $account = $this->routeMatch->getParameter('user');
-    $args['@developer_app'] = $this->entityType->getPluralLabel();
     if ($account && $account->id() != $this->currentUser->id()) {
       $args['@user'] = Markup::create($account->label());
-      $title = $this->t('@developer_app of @user', $args);
+      $title = $this->t('Apps of @user', $args);
     }
     else {
-      $title = $this->t('My @developer_app', $args);
+      $title = $this->t('Apps');
     }
 
     return $title;

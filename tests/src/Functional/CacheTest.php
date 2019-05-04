@@ -170,7 +170,7 @@ class CacheTest extends ApigeeEdgeFunctionalTestBase {
     $this->submitForm([], 'Save');
     // Update the label of the "cached" developer app entity so the next
     // warmCaches() method call could find the related link to that on the
-    // My apps page.
+    // Apps page.
     $this->developerApp->setDisplayName($developer_app->getDisplayName());
   }
 

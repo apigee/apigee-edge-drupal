@@ -166,11 +166,11 @@ apigee_edge.developer_sync.run:
     _permission: 'administer apigee edge'
     _csrf_token: 'TRUE'
 
-apigee_edge.user.my_apps:
+apigee_edge.user.apps:
   path: '/user/apps'
   defaults:
-    _controller: '\Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilderForDeveloper::myAppsPage'
-    _title_callback: '\Drupal\apigee_edge\Plugin\Menu\MyAppsMenuLink::getTitle'
+    _controller: '\Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilderForDeveloper::appsPage'
+    _title: 'Apps'
   requirements:
     _permission: 'view own developer_app'
 

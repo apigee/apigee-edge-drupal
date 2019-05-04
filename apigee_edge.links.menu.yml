@@ -44,8 +44,9 @@ apigee_edge.product:
   route_name: apigee_edge.settings.product.alias
   weight: -2
 
-apigee_edge.my_apps:
-  class: Drupal\apigee_edge\Plugin\Menu\MyAppsMenuLink
-  route_name: apigee_edge.user.my_apps
+apigee_edge.apps:
+  title: 'Apps'
+  description: "A developer's apps."
+  route_name: apigee_edge.user.apps
   menu_name: account
   weight: -30

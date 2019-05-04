@@ -26,12 +26,12 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 
 /**
- * Custom access handler to My apps page.
+ * Custom access handler to Apps page.
  */
-class MyAppsAccessCheck implements AccessInterface {
+class AppsPageAccessCheck implements AccessInterface {
 
   /**
-   * Grant access to My apps page if user has any of the required permissions.
+   * Grant access to the Apps page if user has any of the required permissions.
    *
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The parametrized route.

@@ -3,7 +3,7 @@
 The Apigee Edge module enables you to integrate Drupal 8 with Apigee Edge:  
 
 * Users that register or are added to the Drupal site will be added as developers in Apigee Edge.
-* Click on "My Apps" in user menu to get keys for the APIs exposed in Apigee Edge.
+* Click on "Apps" in user menu to get keys for the APIs exposed in Apigee Edge.
 
 This module includes the following submodules:
 * __API product RBAC:__ enables administrators to configure access permissions to API products.
