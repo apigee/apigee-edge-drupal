@@ -72,10 +72,10 @@ apigee_edge.settings.developer.cache:
   base_route: apigee_edge.settings.developer
   weight: 10
 
-apigee_edge.settings.developer.api_product_access:
+apigee_edge.settings.product.api_product_access:
   route_name: apigee_edge.settings.developer.api_product_access
   title: 'API product access'
-  base_route: apigee_edge.settings.developer
+  base_route: apigee_edge.settings.product.alias
   weight: 20
 
 apigee_edge.settings.developer.sync:
