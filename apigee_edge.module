@@ -187,11 +187,11 @@ function apigee_edge_theme_suggestions_apigee_entity(array $variables) {
 
   if ($entity instanceof AppInterface) {
     $suggestions[] = 'apigee_entity__app';
-    $suggestions[] = 'apigee_entity__app__view_mode__' . $sanitized_view_mode;
+    $suggestions[] = 'apigee_entity__app__' . $sanitized_view_mode;
   }
 
   $suggestions[] = 'apigee_entity__' . $entity->getEntityTypeId();
-  $suggestions[] = 'apigee_entity__' . $entity->getEntityTypeId() . '__view_mode__' . $sanitized_view_mode;
+  $suggestions[] = 'apigee_entity__' . $entity->getEntityTypeId() . '__' . $sanitized_view_mode;
 
   return $suggestions;
 }
