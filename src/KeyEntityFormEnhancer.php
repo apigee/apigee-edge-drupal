@@ -497,7 +497,11 @@ final class KeyEntityFormEnhancer {
     // authentication).
     else {
       // Invalid credentials.
-      if ($exception->getCode() === 401) {
+      // TODO Remove the second condition which is a workaround for a
+      // regression bug in the Apigee Edge for Public Cloud 19.03.01 release. If
+      // valid organization name and username provided with an invalid password
+      // the MGMT server returns HTTP 500 with an error instead of HTTP 401.
+      if ($exception->getCode() === 401 || ($exception->getCode() === 500 && $exception->getEdgeErrorCode() === 'usersandroles.SsoInternalServerError')) {
         $suggestion = $this->t('@fail_text The given username (%username) or password is incorrect.', [
           '@fail_text' => $fail_text,
           '%username' => $key_type->getUsername($key),
