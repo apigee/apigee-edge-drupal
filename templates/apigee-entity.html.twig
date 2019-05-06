@@ -1,0 +1,75 @@
+{#
+/**
+ * @file
+ * Generic theme implementation to display an Apigee entity.
+ *
+ * Drupal core does not yet provide a generic theme for entities therefore you
+ * have to implement your own entity type specific theme. This will change
+ * when http://dgo.to/2808481 gets fixed which will introduce a generic template
+ * for entities with common preprocess functions and theme suggestions.
+ *
+ * Available variables:
+ * - entity: The entity with limited access to object properties and methods.
+ *   Only method names starting with "get", "has", or "is" and a few common
+ *   methods such as "id", "label", and "bundle" are available. For example:
+ *   - entity.getEntityTypeId() will return the entity type ID.
+ *   - entity.hasField('field_example') returns TRUE if the entity includes
+ *     field_example. (This does not indicate the presence of a value in this
+ *     field.)
+ *   Calling other methods, such as entity.delete(), will result in an exception.
+ *   See \Drupal\apigee_edge\Entity\EdgeEntityInterface for a full list of
+ *   methods.
+ * - label: The title of the entity.
+ * - content: All rendered field items. Use {{ content }} to print them all,
+ *   or print a subset such as {{ content.field_example }}. Use
+ *   {{ content|without('field_example') }} to temporarily suppress the printing
+ *   of a given child element.
+ * - url: Direct URL of the current entity.
+ * - attributes: HTML attributes for the containing element.
+ * - title_attributes: Same as attributes, except applied to the main title
+ *   tag that appears in the template.
+ * - content_attributes: Same as attributes, except applied to the main
+ *   content tag that appears in the template.
+ * - title_prefix: Additional output populated by modules, intended to be
+ *   displayed in front of the main title tag that appears in the template.
+ * - title_suffix: Additional output populated by modules, intended to be
+ *   displayed after the main title tag that appears in the template.
+ * - view_mode: View mode; for example, "teaser" or "full".
+ *
+ * @see \Drupal\apigee_edge\Entity\EdgeEntityViewBuilder::getBuildDefaults()
+ * @see \Drupal\Core\Entity\EntityViewBuilder::getBuildDefaults()
+ * @see template_preprocess_apigee_entity()
+ * @see https://www.drupal.org/project/drupal/issues/2808481
+ *
+ * @ingroup themeable
+ */
+#}
+
+{%
+  set classes = [
+  'apigee-entity',
+  view_mode ? 'apigee-entity--view-mode-' ~ view_mode|clean_class,
+  entity.getEntityTypeId|clean_class,
+  view_mode ? entity.getEntityTypeId|clean_class ~ '--view-mode-' ~ view_mode|clean_class,
+]|merge(classes|default([]))
+%}
+
+{% block apigee_entity %}
+  <article role="article"{{ attributes|without('role').addClass(classes) }}>
+
+    {% block content %}
+      {{ title_prefix }}
+      {% if label and view_mode != 'full' %}
+        <h2{{ title_attributes }}>
+          {{ label }}
+        </h2>
+      {% endif %}
+      {{ title_suffix }}
+
+      <div{{ content_attributes }}>
+        {{ content }}
+      </div>
+    {% endblock %}
+
+  </article>
+{% endblock %}

@@ -49,6 +49,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
+use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Site\Settings;
@@ -114,6 +115,13 @@ function apigee_edge_form_key_form_alter(array &$form, FormStateInterface $form_
  */
 function apigee_edge_theme() {
   return [
+    'apigee_entity' => [
+      'render element' => 'elements',
+    ],
+    'apigee_entity__app' => [
+      'render element' => 'elements',
+      'base hook' => 'apigee_entity',
+    ],
     'app_credential' => [
       'render element' => 'elements',
     ],
@@ -139,6 +147,53 @@ function apigee_edge_user_format_name_alter(&$name, AccountInterface $account) {
       $name = $first_name_last_name;
     }
   }
+}
+
+/**
+ * Prepares variables for Apigee entity templates.
+ *
+ * Default template: apigee-entity.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - elements: An array of elements to display in view mode.
+ */
+function template_preprocess_apigee_entity(array &$variables) {
+  $variables['view_mode'] = $variables['elements']['#view_mode'];
+  /** @var \Drupal\apigee_edge\Entity\EdgeEntityInterface $entity */
+  $entity = $variables['entity'] = $variables['elements']['#entity'];
+
+  $variables['label'] = $entity->label();
+
+  if (!$entity->isNew() && $entity->hasLinkTemplate('canonical')) {
+    $variables['url'] = $entity->toUrl('canonical', ['language' => $entity->language()])->toString();
+  }
+
+  // Helpful $content variable for templates.
+  $variables += ['content' => []];
+  foreach (Element::children($variables['elements']) as $key) {
+    $variables['content'][$key] = $variables['elements'][$key];
+  }
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK().
+ */
+function apigee_edge_theme_suggestions_apigee_entity(array $variables) {
+  $suggestions = [];
+  /** @var \Drupal\apigee_edge\Entity\EdgeEntityInterface $entity */
+  $entity = $variables['elements']['#entity'];
+  $sanitized_view_mode = str_replace('.', '_', $variables['elements']['#view_mode']);
+
+  if ($entity instanceof AppInterface) {
+    $suggestions[] = 'apigee_entity__app';
+    $suggestions[] = 'apigee_entity__app__' . $sanitized_view_mode;
+  }
+
+  $suggestions[] = 'apigee_entity__' . $entity->getEntityTypeId();
+  $suggestions[] = 'apigee_entity__' . $entity->getEntityTypeId() . '__' . $sanitized_view_mode;
+
+  return $suggestions;
 }
 
 /**

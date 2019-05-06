@@ -15,13 +15,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-.field {
+.apigee-entity--app--view-mode-full .field {
   width: 48%;
   display: inline-block;
   vertical-align: top;
 }
 
-.field--label {
+.apigee-entity--app--view-mode-full .field--label {
   margin-bottom: 1rem;
   vertical-align: middle;
   font-weight: bold;
@@ -32,41 +32,37 @@
   min-width: 160px;
 }
 
-.panel-body .field .field--label::after {
-  content: '';
-}
-
-.wrapper--primary,
-.wrapper--secondary {
+.apigee-entity--app--view-mode-full .wrapper--primary,
+.apigee-entity--app--view-mode-full .wrapper--secondary {
   width: 48%;
   display: inline-block;
   vertical-align: top;
 }
 
-.wrapper--secondary {
+.apigee-entity--app--view-mode-full .wrapper--secondary {
   margin-left: 2%;
 }
 
-.wrapper--secondary .api-product-list-row {
+.apigee-entity--app--view-mode-full .wrapper--secondary .api-product-list-row {
   max-width: 300px;
   margin-bottom: 1rem;
 }
 
-.api-product-list-row .api-product-name {
+.apigee-entity--app--view-mode-full .api-product-list-row .api-product-name {
   float: left;
 }
 
-.api-product-list-row .wrapper--status {
+.apigee-entity--app--view-mode-full .api-product-list-row .wrapper--status {
   float: right;
 }
 
-.secret {
+.apigee-entity--app--view-mode-full .secret {
   display: none;
   position: relative;
   z-index: auto;
 }
 
-.secret:hover {
+.apigee-entity--app--view-mode-full .secret:hover {
   z-index: 999;
   background-color: rgba(255,255,255,0.8);
 }
