@@ -10,6 +10,10 @@ When you enable this module, it creates a new Drupal entity in your system named
 Once added, the API name and description for each API Doc will be displayed in the
 "APIs" menu item on the site to all visitors.
 
+The OpenAPI spec can be directly uploaded as a file, or associated to a source location
+such as Apigee Edge or a URL. A "Re-import OpenAPI spec" operation is available per
+API Doc to re-import the spec file when source location changes.
+
 The OpenAPI spec by default is shown on the API Doc detail page by default.
 To render the OpenAPI spec using Swagger UI:
 
@@ -28,10 +32,7 @@ under Structure > Views in the admin menu.
 
 - Create additional field formatters to use for rendering OpenAPI specs
 - Integration with Apigee API Products
-- Allow OpenAPI specs to be associated to a source location such as Apigee Edge or
-  a URL
 - Add visual notifications when source URL specs have changed on the API Doc admin screen
-- Ability to update API Docs when source location changes
 
 ### Known issues
 
