@@ -105,7 +105,7 @@ abstract class DebugMessageFormatterPluginBase extends PluginBase implements Con
       }
     }
     if ($this->maskOrganization) {
-      $pattern = '/(\/v\d+\/(?:o|organizations))(?:\/)([^\/]+)(?:\/?)(.*)/';
+      $pattern = '/(\/v\d+\/(?:mint\/)?(?:o|organizations))(?:\/)([^\/]+)(?:\/?)(.*)/';
       $path = rtrim(preg_replace($pattern, '$1/***organization***/$3', $request->getUri()
         ->getPath()), '/');
       $request = $request->withUri($request->getUri()->withPath($path));
