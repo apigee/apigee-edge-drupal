@@ -27,7 +27,7 @@ use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 
 /**
- * Class ApiDocFileLinkConstraintValidator
+ * Class ApiDocFileLinkConstraintValidator.
  */
 class ApiDocFileLinkConstraintValidator extends ConstraintValidator {
 
@@ -75,4 +75,5 @@ class ApiDocFileLinkConstraintValidator extends ConstraintValidator {
       }
     }
   }
+
 }

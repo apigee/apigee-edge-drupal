@@ -28,7 +28,6 @@ use Drupal\Core\Form\FormStateInterface;
  */
 class ApiDocForm extends ContentEntityForm {
 
-
   /**
    * {@inheritdoc}
    */

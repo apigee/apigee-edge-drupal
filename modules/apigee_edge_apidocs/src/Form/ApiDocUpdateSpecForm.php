@@ -23,10 +23,9 @@ class ApiDocUpdateSpecForm extends ContentEntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function getQuestion() {
-    return $this->t('Are you sure you want to re-import the OpenAPI specification
-     file from URL on API Doc %name?', [
-       '%name' => $this->entity->label(),
-      ]);
+    return $this->t('Are you sure you want to update the OpenAPI specification file from URL on API Doc %name?', [
+      '%name' => $this->entity->label(),
+    ]);
   }
 
   /**

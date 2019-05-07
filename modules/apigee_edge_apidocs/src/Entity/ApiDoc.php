@@ -327,8 +327,8 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
         $uri_scheme = $specs_definition->getSetting('uri_scheme');
         $file = file_save_data($data, "$uri_scheme://$target_dir/$filename", FILE_EXISTS_RENAME);
         $spec_value = [
-            'target_id' => $file->id(),
-          ] + $spec_value;
+          'target_id' => $file->id(),
+        ] + $spec_value;
         $this->set('spec', $spec_value);
         $this->set('spec_md5', $data_md5);
 

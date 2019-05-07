@@ -34,7 +34,9 @@ use Symfony\Component\Validator\Constraint;
 class ApiDocFileLinkConstraint extends Constraint {
 
   /**
-   * @var string Message to be shown when it is not a valid link.
+   * Message to be shown when it is not a valid link.
+   *
+   * @var string
    */
   public $notValid = '%value is not a valid link';
 
