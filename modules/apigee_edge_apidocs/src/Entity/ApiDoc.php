@@ -182,17 +182,19 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
       ])
       ->setDisplayConfigurable('form', TRUE);
 
-    $fields['spec_as_file'] = BaseFieldDefinition::create('boolean')
-      ->setLabel(t('Provide OpenAPI specification as a file'))
+    $fields['spec_file_source'] = BaseFieldDefinition::create('list_string')
+      ->setLabel(t('OpenAPI specification file source'))
       ->setDescription(t('Indicate if the OpenAPI spec will be provided as a
-                          file (or a URL otherwise).'))
-      ->setDefaultValue(TRUE)
+                          file for upload or a URL.'))
+      ->setDefaultValue(ApiDocInterface::SPEC_AS_FILE)
+      ->setRequired(TRUE)
+      ->setSetting('allowed_values', [
+        ApiDocInterface::SPEC_AS_FILE => t('File'),
+        ApiDocInterface::SPEC_AS_URL => t('URL'),
+      ])
       ->setDisplayOptions('form', [
-        'type' => 'boolean_checkbox',
+        'type' => 'options_buttons',
         'weight' => 0,
-        'settings' => [
-          'display_label' => TRUE,
-        ],
       ])
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
@@ -293,14 +295,12 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
    */
   public function reimportOpenApiSpecFile($save = TRUE, $new_revision = TRUE) {
     $needs_save = FALSE;
-
-    // If "spec_as_file", grab file from "file_link" and save it into the
-    // "spec" file field. The file_link field should already have validated that
-    // a valid file exists at that URL.
-
     $spec_value = $this->get('spec')->isEmpty() ? [] : $this->get('spec')->getValue()[0];
 
-    if (!$this->get('spec_as_file')->value) {
+    // If "spec_file_source" uses URL, grab file from "file_link" and save it
+    // into the "spec" file field. The file_link field should already have
+    // validated that a valid file exists at that URL.
+    if ($this->get('spec_file_source')->value == ApiDocInterface::SPEC_AS_URL) {
 
       // If the file_link field is empty, return without showing errors.
       if ($this->get('file_link')->isEmpty()) {
@@ -319,7 +319,7 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
 
       // Only save file if it hasn't been fetched previously.
       $data_md5 = md5($data);
-      $prev_md5 = $this->get('spec_md5')->isEmpty() ? NULL : $this->get('spec_md5')->getValue()[0]['value'];
+      $prev_md5 = $this->get('spec_md5')->isEmpty() ? NULL : $this->get('spec_md5')->value;
       if ($prev_md5 != $data_md5) {
         $filename = \Drupal::service('file_system')->basename($file_uri);
         $specs_definition = $this->getFieldDefinition('spec')->getItemDefinition();
@@ -343,11 +343,10 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
         ->load($spec_value['target_id']);
 
       if ($file) {
-        $prev_md5 = $this->get('spec_md5')->isEmpty() ? NULL : $this->get('spec_md5')->getValue()[0]['value'];
+        $prev_md5 = $this->get('spec_md5')->isEmpty() ? NULL : $this->get('spec_md5')->value;
         $file_md5 = md5_file($file->getFileUri());
         if ($prev_md5 != $file_md5) {
           $this->set('spec_md5', $file_md5);
-
           $needs_save = TRUE;
         }
       }

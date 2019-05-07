@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge_apidocs\Form;
 
+use Drupal\apigee_edge_apidocs\Entity\ApiDocInterface;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 
@@ -37,30 +38,30 @@ class ApiDocForm extends ContentEntityForm {
     $form['specifications'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('OpenAPI Specifications File'),
-      '#weight' => $form['spec_as_file']['#weight'],
+      '#weight' => $form['spec_file_source']['#weight'],
     ];
 
     $form['spec']['#states'] = [
       'visible' => [
-        ':input[name="spec_as_file[value]"]' => ['checked' => TRUE],
+        ':input[name="spec_file_source"]' => ['value' => ApiDocInterface::SPEC_AS_FILE],
       ],
       'required' => [
-        ':input[name="spec_as_file[value]"]' => ['checked' => TRUE],
+        ':input[name="spec_file_source"]' => ['value' => ApiDocInterface::SPEC_AS_FILE],
       ],
     ];
     $form['file_link']['#states'] = [
       'visible' => [
-        ':input[name="spec_as_file[value]"]' => ['checked' => FALSE],
+        ':input[name="spec_file_source"]' => ['value' => ApiDocInterface::SPEC_AS_URL],
       ],
       'required' => [
-        ':input[name="spec_as_file[value]"]' => ['checked' => FALSE],
+        ':input[name="spec_file_source"]' => ['value' => ApiDocInterface::SPEC_AS_URL],
       ],
     ];
 
-    $form['specifications']['spec_as_file'] = $form['spec_as_file'];
+    $form['specifications']['spec_file_source'] = $form['spec_file_source'];
     $form['specifications']['spec'] = $form['spec'];
     $form['specifications']['file_link'] = $form['file_link'];
-    unset($form['spec_as_file'], $form['spec'], $form['file_link']);
+    unset($form['spec_file_source'], $form['spec'], $form['file_link']);
 
     return $form;
   }
