@@ -123,7 +123,7 @@ interface ApiDocInterface extends ContentEntityInterface, EntityChangedInterface
   public function isRevisionable() : bool;
 
   /**
-   * Update OpenAPI specifications file from URL.
+   * Re-import OpenAPI specifications file from URL.
    *
    * @param bool $save
    *   Boolean indicating if method should save the entity.
@@ -134,6 +134,6 @@ interface ApiDocInterface extends ContentEntityInterface, EntityChangedInterface
    * @return bool
    *   Returned TRUE if the operation completed without errors.
    */
-  public function updateOpenApiSpecFile($save = TRUE, $new_revision = TRUE);
+  public function reimportOpenApiSpecFile($save = TRUE, $new_revision = TRUE);
 
 }

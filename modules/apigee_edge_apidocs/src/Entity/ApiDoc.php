@@ -46,7 +46,7 @@ use Drupal\link\LinkItemInterface;
  *       "add" = "Drupal\apigee_edge_apidocs\Form\ApiDocForm",
  *       "edit" = "Drupal\apigee_edge_apidocs\Form\ApiDocForm",
  *       "delete" = "Drupal\apigee_edge_apidocs\Form\ApiDocDeleteForm",
- *       "update_spec" = "Drupal\apigee_edge_apidocs\Form\ApiDocUpdateSpecForm",
+ *       "reimport_spec" = "Drupal\apigee_edge_apidocs\Form\ApiDocUpdateSpecForm",
  *     },
  *     "access" = "Drupal\apigee_edge_apidocs\ApiDocAccessControlHandler",
  *     "route_provider" = {
@@ -69,7 +69,7 @@ use Drupal\link\LinkItemInterface;
  *     "add-form" = "/admin/structure/apidoc/add",
  *     "edit-form" = "/admin/structure/apidoc/{apidoc}/edit",
  *     "delete-form" = "/admin/structure/apidoc/{apidoc}/delete",
- *     "update-spec-form" = "/admin/structure/apidoc/{apidoc}/update",
+ *     "reimport-spec-form" = "/admin/structure/apidoc/{apidoc}/reimport",
  *     "collection" = "/admin/structure/apidoc",
  *   },
  *   field_ui_base_route = "apigee_edge_apidocs.settings"
@@ -305,13 +305,13 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
   public function preSave(EntityStorageInterface $storage) {
     parent::preSave($storage);
 
-    $this->updateOpenApiSpecFile(FALSE, FALSE);
+    $this->reimportOpenApiSpecFile(FALSE, FALSE);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function updateOpenApiSpecFile($save = TRUE, $new_revision = TRUE) {
+  public function reimportOpenApiSpecFile($save = TRUE, $new_revision = TRUE) {
     $needs_save = FALSE;
 
     // If "spec_as_file", grab file from "file_link" and save it into the

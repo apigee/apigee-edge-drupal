@@ -17,13 +17,13 @@ class ApiDocUpdateSpecForm extends ContentEntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  protected $operation = 'update_spec';
+  protected $operation = 'reimport_spec';
 
   /**
    * {@inheritdoc}
    */
   public function getQuestion() {
-    return $this->t('Are you sure you want to update the OpenAPI specification
+    return $this->t('Are you sure you want to re-import the OpenAPI specification
      file from URL on API Doc %name?', [
        '%name' => $this->entity->label(),
       ]);
@@ -57,16 +57,16 @@ class ApiDocUpdateSpecForm extends ContentEntityConfirmFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     /* @var \Drupal\apigee_edge_apidocs\Entity\ApiDocInterface $entity */
     $entity = $this->getEntity();
-    $status = $entity->updateOpenApiSpecFile(TRUE, TRUE);
+    $status = $entity->reimportOpenApiSpecFile(TRUE, TRUE);
 
     if ($status) {
-      $this->messenger()->addStatus($this->t('API Doc %label: updated the OpenAPI
+      $this->messenger()->addStatus($this->t('API Doc %label: imported the OpenAPI
       specification file from URL.', [
         '%label' => $this->entity->label(),
       ]));
     }
     else {
-      $this->messenger()->addError($this->t('API Doc %label: could not update
+      $this->messenger()->addError($this->t('API Doc %label: could not import
       the OpenAPI specification file from URL.', [
         '%label' => $this->entity->label(),
       ]));

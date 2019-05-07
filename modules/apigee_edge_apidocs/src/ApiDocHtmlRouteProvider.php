@@ -48,8 +48,8 @@ class ApiDocHtmlRouteProvider extends AdminHtmlRouteProvider {
       $apidoc_collection_route->setDefault('_title', 'API Docs');
     }
 
-    if ($update_spec_route = $this->getUpdateSpecFormRoute($entity_type)) {
-      $collection->add("entity.{$entity_type_id}.update_spec_form", $update_spec_route);
+    if ($reimport_spec_route = $this->getUpdateSpecFormRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.reimport_spec_form", $reimport_spec_route);
     }
 
     return $collection;
@@ -80,7 +80,7 @@ class ApiDocHtmlRouteProvider extends AdminHtmlRouteProvider {
   }
 
   /**
-   * Gets the update-spec-form route.
+   * Gets the reimport-spec-form route.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type.
@@ -89,17 +89,17 @@ class ApiDocHtmlRouteProvider extends AdminHtmlRouteProvider {
    *   The generated route, if available.
    */
   protected function getUpdateSpecFormRoute(EntityTypeInterface $entity_type) {
-    if ($entity_type->hasLinkTemplate('update-spec-form')) {
+    if ($entity_type->hasLinkTemplate('reimport-spec-form')) {
       $entity_type_id = $entity_type->id();
-      $route = new Route($entity_type->getLinkTemplate('update-spec-form'));
-      // Use the update_spec form handler.
-      if ($entity_type->getFormClass('update_spec')) {
-        $operation = 'update_spec';
+      $route = new Route($entity_type->getLinkTemplate('reimport-spec-form'));
+      // Use the reimport_spec form handler.
+      if ($entity_type->getFormClass('reimport_spec')) {
+        $operation = 'reimport_spec';
       }
       $route
         ->setDefaults([
           '_entity_form' => "{$entity_type_id}.{$operation}",
-          '_title' => 'Update API Doc OpenAPI specification',
+          '_title' => 'Re-import API Doc OpenAPI specification',
         ])
         ->setRequirement('_entity_access', "{$entity_type_id}.update")
         ->setOption('parameters', [

@@ -20,8 +20,8 @@ entity.apidoc.delete_form:
   title: 'Delete'
   weight: 10
 
-entity.apidoc.update_spec_form:
-  route_name:  entity.apidoc.update_spec_form
+entity.apidoc.reimport_spec_form:
+  route_name:  entity.apidoc.reimport_spec_form
   base_route:  entity.apidoc.canonical
-  title: 'Update OpenAPI spec'
+  title: 'Re-import OpenAPI spec'
   weight: 15
