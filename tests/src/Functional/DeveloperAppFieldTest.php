@@ -381,6 +381,11 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
        */
       public function getEntityType() {}
 
+      /**
+       * {@inheritdoc}
+       */
+      public function restore(EntityInterface $entity) {}
+
     });
 
     foreach ($field_values as $field_name => $field_value) {

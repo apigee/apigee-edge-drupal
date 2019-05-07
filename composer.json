@@ -7,7 +7,7 @@
         "php": ">=7.1",
         "apigee/apigee-client-php": "^2.0.1",
         "cweagans/composer-patches": "^1.6.5",
-        "drupal/core": "^8.6.3",
+        "drupal/core": "^8.7.0",
         "drupal/entity": "^1.0",
         "drupal/key": "^1.8",
         "php-http/guzzle6-adapter": "^1.1.1"
@@ -15,9 +15,8 @@
     "require-dev": {
         "behat/mink" : "dev-master#9ea1cebe",
         "drush/drush": "^9.0",
-        "egulias/email-validator": "1.2.14",
         "phpunit/phpunit": "^6.5",
-        "webflo/drupal-core-require-dev": "^8.6"
+        "webflo/drupal-core-require-dev": "^8.7.0"
     },
     "config": {
         "sort-packages": true
