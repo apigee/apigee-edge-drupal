@@ -143,18 +143,6 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
   /**
    * {@inheritdoc}
    */
-  public function getSpecAsFile() : bool {
-    // Default is to use spec as file.
-    if ($this->get('spec_as_file')->isEmpty()) {
-      return TRUE;
-    }
-
-    return (bool) $this->get('spec_as_file')->getValue()[0]['value'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function isRevisionable() : bool {
     // Entity types are revisionable if a revision key has been specified.
     return (bool) $this->getEntityKey('revision');
@@ -320,7 +308,13 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
 
     $spec_value = $this->get('spec')->isEmpty() ? [] : $this->get('spec')->getValue()[0];
 
-    if (!$this->getSpecAsFile()) {
+    if (!$this->get('spec_as_file')->value) {
+
+      // If the file_link field is empty, return without showing errors.
+      if ($this->get('file_link')->isEmpty()) {
+        return TRUE;
+      }
+
       $file_uri = $this->get('file_link')->getValue()[0]['uri'];
       $data = file_get_contents($file_uri);
       if (empty($data)) {
