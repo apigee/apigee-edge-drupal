@@ -65,7 +65,7 @@ class ApiDocFileLinkConstraintValidator extends ConstraintValidator {
         ];
 
         // Perform only a HEAD method to save bandwidth.
-        /* @var $response ResponseInterface */
+        /* @var $response \Psr\Http\Message\ResponseInterface */
         $response = \Drupal::httpClient()->head($url, $options);
       }
       catch (RequestException $request_exception) {

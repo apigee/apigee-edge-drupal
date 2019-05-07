@@ -293,7 +293,7 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
   /**
    * {@inheritdoc}
    */
-  public function reimportOpenApiSpecFile($save = TRUE, $new_revision = TRUE) {
+  public function reimportOpenApiSpecFile(bool $save = TRUE, bool $new_revision = TRUE) {
     $needs_save = FALSE;
     $spec_value = $this->get('spec')->isEmpty() ? [] : $this->get('spec')->getValue()[0];
 

@@ -132,6 +132,6 @@ interface ApiDocInterface extends ContentEntityInterface, EntityChangedInterface
    * @return bool
    *   Returned TRUE if the operation completed without errors.
    */
-  public function reimportOpenApiSpecFile($save = TRUE, $new_revision = TRUE);
+  public function reimportOpenApiSpecFile(bool $save = TRUE, bool $new_revision = TRUE);
 
 }
