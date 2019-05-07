@@ -96,7 +96,6 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
     $key->save();
 
     $this->drupalGet($status_report_path);
-    $this->assertSession()->pageTextContains('Unauthorized');
     $this->assertSession()->pageTextContains(self::CANNOT_CONNECT_LONG);
 
     // Create new Apigee Edge OAuth key with private file provider.
@@ -132,7 +131,6 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
     $key->save();
 
     $this->drupalGet($status_report_path);
-    $this->assertSession()->pageTextContains('Forbidden');
     $this->assertSession()->pageTextContains(self::CANNOT_CONNECT_LONG);
 
     // Unset private file path.
