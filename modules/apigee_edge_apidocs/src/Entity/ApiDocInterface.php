@@ -107,14 +107,6 @@ interface ApiDocInterface extends ContentEntityInterface, EntityChangedInterface
   public function setPublished(bool $published) : self;
 
   /**
-   * Check if entity is revisionable.
-   *
-   * @return bool
-   *   TRUE if entity is revisionable.
-   */
-  public function isRevisionable() : bool;
-
-  /**
    * Re-import OpenAPI specifications file from URL.
    *
    * @param bool $save

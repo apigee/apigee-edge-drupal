@@ -143,14 +143,6 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
   /**
    * {@inheritdoc}
    */
-  public function isRevisionable() : bool {
-    // Entity types are revisionable if a revision key has been specified.
-    return (bool) $this->getEntityKey('revision');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = parent::baseFieldDefinitions($entity_type);
 
@@ -363,7 +355,7 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
 
     // Only save if changes were made.
     if ($save && $needs_save) {
-      if ($new_revision && $this->isRevisionable()) {
+      if ($new_revision && $this->getEntityType()->isRevisionable()) {
         $this->setNewRevision();
       }
       $this->save();
