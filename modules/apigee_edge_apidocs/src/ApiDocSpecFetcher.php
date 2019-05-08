@@ -164,6 +164,12 @@ class ApiDocSpecFetcher implements ApiDocSpecFetcherInterface {
     }
 
     elseif (!empty($spec_value['target_id'])) {
+      if ($show_messages) {
+        $this->messenger->addStatus($this->t('API Doc %label is using a file upload as source. Nothing to update.', [
+          '%label' => $apidoc->label(),
+        ]));
+      }
+
       /* @var \Drupal\file\Entity\File $file */
       $file = $this->entityTypeManager
         ->getStorage('file')
