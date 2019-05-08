@@ -105,7 +105,7 @@ class ApiDocUpdateSpecForm extends ContentEntityConfirmFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     /* @var \Drupal\apigee_edge_apidocs\Entity\ApiDocInterface $entity */
     $entity = $this->getEntity();
-    $status = $this->specFetcher->fetchSpec($entity, FALSE, FALSE);
+    $status = $this->specFetcher->fetchSpec($entity, TRUE, TRUE);
 
     if ($status) {
       $this->messenger->addStatus($this->t('API Doc %label: imported the OpenAPI
