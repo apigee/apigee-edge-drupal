@@ -20,16 +20,43 @@
 
 namespace Drupal\apigee_edge_apidocs\Plugin\Validation\Constraint;
 
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Url;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\RequestException;
 use Psr\Http\Message\ResponseInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 
 /**
  * Class ApiDocFileLinkConstraintValidator.
  */
-class ApiDocFileLinkConstraintValidator extends ConstraintValidator {
+class ApiDocFileLinkConstraintValidator extends ConstraintValidator implements ContainerInjectionInterface {
+
+  /**
+   * The HTTP client to fetch the files with.
+   *
+   * @var \GuzzleHttp\ClientInterface
+   */
+  protected $httpClient;
+
+  /**
+   * ApiDocFileLinkConstraintValidator constructor.
+   *
+   * @param \GuzzleHttp\ClientInterface $http_client
+   *   A Guzzle client object.
+   */
+  public function __construct(ClientInterface $http_client) {
+    $this->httpClient = $http_client;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static($container->get('http_client'));
+  }
 
   /**
    * {@inheritdoc}
@@ -66,7 +93,7 @@ class ApiDocFileLinkConstraintValidator extends ConstraintValidator {
 
         // Perform only a HEAD method to save bandwidth.
         /* @var $response \Psr\Http\Message\ResponseInterface */
-        $response = \Drupal::httpClient()->head($url, $options);
+        $response = $this->httpClient->head($url, $options);
       }
       catch (RequestException $request_exception) {
         $this->context->addViolation($constraint->notValid, [
