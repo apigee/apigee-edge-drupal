@@ -130,7 +130,29 @@ class ApiDocSpecFetcher implements ApiDocSpecFetcherInterface {
         $specs_definition = $apidoc->getFieldDefinition('spec')->getItemDefinition();
         $target_dir = $specs_definition->getSetting('file_directory');
         $uri_scheme = $specs_definition->getSetting('uri_scheme');
-        $file = file_save_data($data, "$uri_scheme://$target_dir/$filename", FILE_EXISTS_RENAME);
+        $destination = "$uri_scheme://$target_dir/";
+
+        try {
+          $this->checkRequirements($destination);
+          $file = file_save_data($data, $destination . $filename, FILE_EXISTS_RENAME);
+
+          if (empty($file)) {
+            throw new \Exception('Could not save API Doc specification file.');
+          }
+        }
+        catch (\Exception $e) {
+          $message = 'Error while saving API Doc spec file from URL on API Doc ID: %id. Error: %error';
+          $params = [
+            '%id' => $apidoc->id(),
+            '%error' => $e->getMessage(),
+          ];
+          $this->logger->error($message, $params);
+          if ($show_messages) {
+            $this->messenger->addMessage($this->t($message, $params), 'error');
+          }
+          return FALSE;
+        }
+
         $spec_value = [
             'target_id' => $file->id(),
           ] + $spec_value;
@@ -180,6 +202,37 @@ class ApiDocSpecFetcher implements ApiDocSpecFetcherInterface {
     }
 
     return TRUE;
+  }
+
+  /**
+   * Checks requirements for saving of a file spec.
+   *
+   * If a requirement is not fulfilled it throws an exception.
+   *
+   * @param string $destination
+   *   The specification file destination directory, including scheme.
+   *
+   * @throws \Exception
+   */
+  private function checkRequirements(string $destination): void {
+    // If using private filesystem, check that it's been configured.
+    if (strpos($destination, 'private://') === 0 && !$this->isPrivateFileSystemConfigured()) {
+      throw new \Exception('Private filesystem has not been configured.');
+    }
+
+    if (!file_prepare_directory($destination, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
+      throw new \Exception('Could not prepare API Doc specification file destination directory.');
+    }
+  }
+
+  /**
+   * Checks whether the private filesystem is configured.
+   *
+   * @return bool
+   *   True if configured, FALSE otherwise.
+   */
+  private function isPrivateFileSystemConfigured(): bool {
+    return (bool) $this->fileSystem->realpath('private://');
   }
 
 }
