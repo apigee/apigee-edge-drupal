@@ -29,45 +29,43 @@ use Http\Message\Authentication;
 interface SDKConnectorInterface {
 
   /**
-   * Gets the organization.
+   * Gets the organization used by the API client.
    *
    * @return string
-   *   The organization.
+   *   The organization or an empty string if the Apigee Edge authentication
+   *   key has not been saved yet.
    */
   public function getOrganization(): string;
 
   /**
-   * Returns the http client.
+   * Returns a pre-configured API client.
+   *
+   * @param null|\Http\Message\Authentication $authentication
+   *   The authentication method, default is retrieved from the active key.
+   * @param null|string $endpoint
+   *   API endpoint, default is https://api.enterprise.apigee.com/v1.
+   * @param array $options
+   *   The API Client configuration options.
    *
    * @return \Apigee\Edge\ClientInterface
-   *   The http client.
+   *   The API client.
+   *
+   * @throws \Drupal\apigee_edge\Exception\AuthenticationKeyException
+   *   If the API client could not be built, ex.: missing Apigee Edge
+   *   authentication key.
    */
-  public function getClient(): ClientInterface;
+  public function getClient(?Authentication $authentication = NULL, ?string $endpoint = NULL, array $options = []): ClientInterface;
 
   /**
    * Test connection with the Edge Management Server.
    *
    * @param \Drupal\key\KeyInterface|null $key
-   *   Key entity to check connection with Edge,
-   *   if NULL, then use the stored key.
+   *   Key entity with Apigee Edge credentials or NULL if the saved key should
+   *   be used.
    *
-   * @throws \Exception
+   * @throws \Drupal\apigee_edge\Exception\AuthenticationKeyException
+   *   If the authentication fails with the saved- or provided key.
    */
-  public function testConnection(KeyInterface $key = NULL);
-
-  /**
-   * Returns a pre-configured API client with the provided credentials.
-   *
-   * @param \Http\Message\Authentication $authentication
-   *   Authentication.
-   * @param null|string $endpoint
-   *   API endpoint, default is https://api.enterprise.apigee.com/v1.
-   * @param array $options
-   *   Client configuration option.
-   *
-   * @return \Apigee\Edge\ClientInterface
-   *   Configured API client.
-   */
-  public function buildClient(Authentication $authentication, ?string $endpoint = NULL, array $options = []): ClientInterface;
+  public function testConnection(KeyInterface $key = NULL): void;
 
 }

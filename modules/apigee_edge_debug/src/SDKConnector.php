@@ -20,22 +20,19 @@
 
 namespace Drupal\apigee_edge_debug;
 
+use Apigee\Edge\ClientInterface;
 use Drupal\apigee_edge\SDKConnector as OriginalSDKConnector;
 use Drupal\apigee_edge\SDKConnectorInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Extension\InfoParserInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Http\ClientFactory;
-use Drupal\key\KeyRepositoryInterface;
+use Drupal\key\KeyInterface;
+use Http\Message\Authentication;
 
 /**
  * Service decorator for SDKConnector.
  */
-class SDKConnector extends OriginalSDKConnector implements SDKConnectorInterface {
+final class SDKConnector implements SDKConnectorInterface {
 
   /**
-   * Customer http request header.
+   * Custom HTTP request header.
    *
    * This tells the ApiClientProfiler to profile requests made by the underlying
    * HTTP client.
@@ -49,40 +46,60 @@ class SDKConnector extends OriginalSDKConnector implements SDKConnectorInterface
   /**
    * The inner SDK connector service.
    *
-   * @var \Drupal\apigee_edge\SDKConnector
+   * @var \Drupal\apigee_edge\SDKConnectorInterface
    */
   private $innerService;
+
+  /**
+   * The API client initialized from the saved credentials and default config.
+   *
+   * @var null|\Apigee\Edge\ClientInterface
+   *
+   * @see getClient()
+   */
+  private $defaultClient;
 
   /**
    * Constructs a new SDKConnector.
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $inner_service
    *   The decorated SDK connector service.
-   * @param \Drupal\Core\Http\ClientFactory $client_factory
-   *   Http client.
-   * @param \Drupal\key\KeyRepositoryInterface $key_repository
-   *   The key repository.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   Entity type manager service.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The factory for configuration objects.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
-   *   Module handler service.
-   * @param \Drupal\Core\Extension\InfoParserInterface $info_parser
-   *   Info file parser service.
    */
-  public function __construct(SDKConnectorInterface $inner_service, ClientFactory $client_factory, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $module_handler, InfoParserInterface $info_parser) {
+  public function __construct(SDKConnectorInterface $inner_service) {
     $this->innerService = $inner_service;
-    parent::__construct($client_factory, $key_repository, $entity_type_manager, $config_factory, $module_handler, $info_parser);
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function httpClientConfiguration(): array {
-    $config = $this->innerService->httpClientConfiguration();
-    $config['headers'][static::HEADER] = static::HEADER;
-    return $config;
+  public function getOrganization(): string {
+    return $this->innerService->getOrganization();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getClient(?Authentication $authentication = NULL, ?string $endpoint = NULL, array $options = []): ClientInterface {
+    $extra_options[OriginalSDKConnector::CLIENT_FACTORY_OPTIONS]['headers'][static::HEADER] = static::HEADER;
+
+    // If method got called without default parameters, initialize and/or
+    // return the default API client from the internal cache.
+    if (!isset($authentication, $endpoint) && empty($options)) {
+      if ($this->defaultClient === NULL) {
+        $this->defaultClient = $this->innerService->getClient($authentication, $endpoint, $extra_options);
+      }
+
+      return $this->defaultClient;
+    }
+
+    return $this->innerService->getClient($authentication, $endpoint, array_merge($options, $extra_options));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function testConnection(KeyInterface $key = NULL): void {
+    $this->innerService->testConnection($key);
   }
 
 }

@@ -26,8 +26,8 @@ use Apigee\Edge\HttpClient\Utility\Builder;
 use Drupal\apigee_edge\Exception\AuthenticationKeyException;
 use Drupal\apigee_edge\Exception\AuthenticationKeyNotFoundException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
+use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\InfoParserInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Http\ClientFactory;
@@ -39,63 +39,67 @@ use Http\Message\Authentication;
 /**
  * Provides an Apigee Edge SDK connector.
  */
-class SDKConnector implements SDKConnectorInterface {
+final class SDKConnector implements SDKConnectorInterface {
 
   /**
-   * The client object.
+   * HTTP client configuration options for ClientFactory.
    *
-   * @var null|\Http\Client\HttpClient
+   * @param string
    */
-  private static $client = NULL;
+  public const CLIENT_FACTORY_OPTIONS = 'client_factory_options';
+
+  /**
+   * The API client initialized from the saved credentials and default config.
+   *
+   * @var null|\Apigee\Edge\ClientInterface
+   *
+   * @see getClient()
+   */
+  private $defaultClient;
 
   /**
    * The currently used credentials object.
    *
    * @var null|\Drupal\apigee_edge\CredentialsInterface
    */
-  private static $credentials = NULL;
+  private $credentials;
 
   /**
    * Custom user agent prefix.
    *
    * @var null|string
+   *
+   * @see userAgentPrefix()
    */
-  private static $userAgentPrefix = NULL;
+  private $userAgentPrefix;
 
   /**
    * The config factory.
    *
    * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
-  protected $configFactory;
+  private $configFactory;
 
   /**
    * The key repository.
    *
    * @var \Drupal\key\KeyRepositoryInterface
    */
-  protected $keyRepository;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
+  private $keyRepository;
 
   /**
    * The module handler service.
    *
    * @var \Drupal\Core\Extension\ModuleHandlerInterface
    */
-  protected $moduleHandler;
+  private $moduleHandler;
 
   /**
    * The info parser.
    *
    * @var \Drupal\Core\Extension\InfoParserInterface
    */
-  protected $infoParser;
+  private $infoParser;
 
   /**
    * The HTTP client factory.
@@ -111,8 +115,6 @@ class SDKConnector implements SDKConnectorInterface {
    *   Http client.
    * @param \Drupal\key\KeyRepositoryInterface $key_repository
    *   The key repository.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   Entity type manager service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
@@ -120,9 +122,8 @@ class SDKConnector implements SDKConnectorInterface {
    * @param \Drupal\Core\Extension\InfoParserInterface $info_parser
    *   Info file parser service.
    */
-  public function __construct(ClientFactory $client_factory, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $module_handler, InfoParserInterface $info_parser) {
+  public function __construct(ClientFactory $client_factory, KeyRepositoryInterface $key_repository, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $module_handler, InfoParserInterface $info_parser) {
     $this->clientFactory = $client_factory;
-    $this->entityTypeManager = $entity_type_manager;
     $this->keyRepository = $key_repository;
     $this->configFactory = $config_factory;
     $this->moduleHandler = $module_handler;
@@ -130,56 +131,62 @@ class SDKConnector implements SDKConnectorInterface {
   }
 
   /**
-   * Get HTTP client overrides for Apigee Edge API client.
-   *
-   * Allows to override some configuration of the http client built by the
-   * factory for the API client.
-   *
-   * @return array
-   *   Associative array of configuration settings.
-   *
-   * @see http://docs.guzzlephp.org/en/stable/request-options.html
-   */
-  protected function httpClientConfiguration(): array {
-    return [
-      'connect_timeout' => $this->configFactory->get('apigee_edge.client')->get('http_client_connect_timeout') ?? 30,
-      'timeout' => $this->configFactory->get('apigee_edge.client')->get('http_client_timeout') ?? 30,
-      'proxy' => $this->configFactory->get('apigee_edge.client')->get('http_client_proxy') ?? '',
-    ];
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function getOrganization(): string {
-    $credentials = $this->getCredentials();
+    try {
+      $credentials = $this->getCredentials();
+    }
+    catch (AuthenticationKeyException $e) {
+      return '';
+    }
     return $credentials->getKeyType()->getOrganization($credentials->getKey());
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getClient(?Authentication $authentication = NULL, ?string $endpoint = NULL): ClientInterface {
-    if ($authentication === NULL) {
-      if (self::$client === NULL) {
+  public function getClient(?Authentication $authentication = NULL, ?string $endpoint = NULL, array $options = []): ClientInterface {
+    // If method got called without default parameters, initialize and/or
+    // return the default API client from the internal cache.
+    if (!isset($authentication, $endpoint) && empty($options)) {
+      if ($this->defaultClient === NULL) {
         $credentials = $this->getCredentials();
-        /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $key_type */
-        self::$client = $this->buildClient($credentials->getAuthentication(), $credentials->getKeyType()->getEndpoint($credentials->getKey()));
+        $this->defaultClient = $this->buildClient($credentials->getAuthentication(), $credentials->getKeyType()->getEndpoint($credentials->getKey()));
       }
 
-      return self::$client;
+      return $this->defaultClient;
     }
-    else {
-      return $this->buildClient($authentication, $endpoint);
+
+    // Fallback to the saved credentials.
+    if ($authentication === NULL) {
+      $credentials = $this->getCredentials();
+      $authentication = $credentials->getAuthentication();
     }
+
+    return $this->buildClient($authentication, $endpoint, $options);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildClient(Authentication $authentication, ?string $endpoint = NULL, array $options = []): ClientInterface {
+  private function buildClient(Authentication $authentication, ?string $endpoint = NULL, array $options = []): ClientInterface {
+    $default_client_options = [
+      'connect_timeout' => $this->configFactory->get('apigee_edge.client')->get('http_client_connect_timeout') ?? 30,
+      'timeout' => $this->configFactory->get('apigee_edge.client')->get('http_client_timeout') ?? 30,
+      'proxy' => $this->configFactory->get('apigee_edge.client')->get('http_client_proxy') ?? '',
+    ];
+    if (isset($options[static::CLIENT_FACTORY_OPTIONS])) {
+      $http_client_options = NestedArray::mergeDeep($default_client_options, $options[static::CLIENT_FACTORY_OPTIONS]);
+      unset($options[static::CLIENT_FACTORY_OPTIONS]);
+    }
+    else {
+      $http_client_options = $default_client_options;
+    }
+
+    // Builder and user-agent prefix can not be overridden.
     $options += [
-      Client::CONFIG_HTTP_CLIENT_BUILDER => new Builder(new GuzzleClientAdapter($this->clientFactory->fromOptions($this->httpClientConfiguration()))),
+      Client::CONFIG_HTTP_CLIENT_BUILDER => new Builder(new GuzzleClientAdapter($this->clientFactory->fromOptions($http_client_options))),
       Client::CONFIG_USER_AGENT_PREFIX => $this->userAgentPrefix(),
     ];
     return new Client($authentication, $endpoint, $options);
@@ -192,30 +199,19 @@ class SDKConnector implements SDKConnectorInterface {
    *   The key entity.
    */
   private function getCredentials(): CredentialsInterface {
-    if (self::$credentials === NULL) {
+    if ($this->credentials === NULL) {
       $active_key = $this->configFactory->get('apigee_edge.auth')->get('active_key');
       if (empty($active_key)) {
         throw new AuthenticationKeyException('Apigee Edge API authentication key is not set.');
       }
-      if (!($key = $this->keyRepository->getKey($active_key))) {
+      $key = $this->keyRepository->getKey($active_key);
+      if (!$key) {
         throw new AuthenticationKeyNotFoundException($active_key, 'Apigee Edge API authentication key not found with "@id" id.');
       }
-      self::$credentials = $this->buildCredentials($key);
+      $this->credentials = $this->buildCredentials($key);
     }
 
-    return self::$credentials;
-  }
-
-  /**
-   * Changes credentials used by the API client.
-   *
-   * @param \Drupal\apigee_edge\CredentialsInterface $credentials
-   *   The new credentials object.
-   */
-  private function setCredentials(CredentialsInterface $credentials) {
-    self::$credentials = $credentials;
-    // Ensure that client will be rebuilt with the new key.
-    self::$client = NULL;
+    return $this->credentials;
   }
 
   /**
@@ -228,46 +224,44 @@ class SDKConnector implements SDKConnectorInterface {
    *   The credentials.
    */
   private function buildCredentials(KeyInterface $key): CredentialsInterface {
-    /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $key */
     if ($key->getKeyType() instanceof EdgeKeyTypeInterface) {
       if ($key->getKeyType()->getAuthenticationType($key) === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
         return new OauthCredentials($key);
       }
       return new Credentials($key);
     }
-    else {
-      throw new AuthenticationKeyException("Type of {$key->id()} key does not implement EdgeKeyTypeInterface.");
-    }
+
+    throw new AuthenticationKeyException("Type of {$key->id()} key does not implement EdgeKeyTypeInterface.");
   }
 
   /**
    * Generates a custom user agent prefix.
    */
-  protected function userAgentPrefix(): string {
-    if (NULL === self::$userAgentPrefix) {
+  private function userAgentPrefix(): string {
+    if ($this->userAgentPrefix === NULL) {
       $module_info = $this->infoParser->parse($this->moduleHandler->getModule('apigee_edge')->getPathname());
       if (!isset($module_info['version'])) {
         $module_info['version'] = '8.x-1.x-dev';
       }
       // TODO Change "DevPortal" to "Drupal module" later. It has been added for
       // Apigee's convenience this way.
-      self::$userAgentPrefix = $module_info['name'] . ' DevPortal ' . $module_info['version'];
+      $this->userAgentPrefix = $module_info['name'] . ' DevPortal ' . $module_info['version'];
     }
 
-    return self::$userAgentPrefix;
+    return $this->userAgentPrefix;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function testConnection(KeyInterface $key = NULL) {
-    if ($key !== NULL) {
-      $credentials = $this->buildCredentials($key);
-      $client = $this->buildClient($credentials->getAuthentication(), $credentials->getKeyType()->getEndpoint($credentials->getKey()));
-    }
-    else {
+  public function testConnection(KeyInterface $key = NULL): void {
+    if ($key === NULL) {
       $client = $this->getClient();
       $credentials = $this->getCredentials();
+    }
+    else {
+      $credentials = $this->buildCredentials($key);
+      $client = $this->buildClient($credentials->getAuthentication(), $credentials->getKeyType()->getEndpoint($credentials->getKey()));
     }
 
     try {
@@ -276,12 +270,7 @@ class SDKConnector implements SDKConnectorInterface {
       $oc->load($credentials->getKeyType()->getOrganization($credentials->getKey()));
     }
     catch (\Exception $e) {
-      throw $e;
-    }
-    finally {
-      if (isset($original_credentials)) {
-        self::$credentials = $this->setCredentials($original_credentials);
-      }
+      throw new AuthenticationKeyException($e->getMessage(), $e->getCode(), $e);
     }
   }
 

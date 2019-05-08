@@ -21,8 +21,10 @@
 namespace Drupal\apigee_edge;
 
 use Apigee\Edge\Exception\ApiRequestException;
+use Apigee\Edge\Exception\ApiResponseException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
+use Drupal\apigee_edge\Exception\AuthenticationKeyException;
 use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\apigee_edge\Plugin\KeyProviderRequirementsInterface;
@@ -324,7 +326,7 @@ final class KeyEntityFormEnhancer {
       $this->connector->testConnection($test_key);
       $this->messenger()->addStatus($this->t('Connection successful.'));
     }
-    catch (\Exception $exception) {
+    catch (AuthenticationKeyException $exception) {
       watchdog_exception('apigee_edge', $exception);
 
       $form_state->setError($form, $this->t('@suggestion Error message: %response', [
@@ -423,15 +425,16 @@ final class KeyEntityFormEnhancer {
   /**
    * Creates a suggestion text to be displayed in the connection failed message.
    *
-   * @param \Exception $exception
-   *   The thrown exception during form validation.
+   * @param \Drupal\apigee_edge\Exception\AuthenticationKeyException $exception
+   *   The thrown exception during testing connection.
    * @param \Drupal\key\KeyInterface $key
    *   The used key during form validation.
    *
    * @return \Drupal\Component\Render\MarkupInterface
    *   The suggestion text to be displayed.
    */
-  private function createSuggestion(\Exception $exception, KeyInterface $key): MarkupInterface {
+  private function createSuggestion(AuthenticationKeyException $exception, KeyInterface $key): MarkupInterface {
+    $prev_exception = $exception->getPrevious() ?? $exception;
     $fail_text = $this->t('Failed to connect to Apigee Edge.');
     // General error message.
     $suggestion = $this->t('@fail_text', [
@@ -441,14 +444,14 @@ final class KeyEntityFormEnhancer {
     $key_type = $key->getKeyType();
 
     // Failed to connect to the Oauth authorization server.
-    if ($exception instanceof OauthAuthenticationException) {
+    if ($prev_exception instanceof OauthAuthenticationException) {
       $fail_text = $this->t('Failed to connect to the OAuth authorization server.');
       // General error message.
       $suggestion = $this->t('@fail_text Check the debug information below for more details.', [
         '@fail_text' => $fail_text,
       ]);
       // Invalid credentials.
-      if ($exception->getCode() === 401) {
+      if ($prev_exception->getCode() === 401) {
         // Invalid credentials using defined client_id/client_secret.
         if ($key_type->getClientId($key) !== Oauth::DEFAULT_CLIENT_ID || $key_type->getClientSecret($key) !== Oauth::DEFAULT_CLIENT_SECRET) {
           $suggestion = $this->t('@fail_text The given username (%username) or password or client ID (%client_id) or client secret is incorrect.', [
@@ -466,10 +469,10 @@ final class KeyEntityFormEnhancer {
         }
       }
       // Failed request.
-      elseif ($exception->getCode() === 0) {
-        if ($exception->getPrevious() instanceof ApiRequestException && $exception->getPrevious()->getPrevious() instanceof NetworkException && $exception->getPrevious()->getPrevious()->getPrevious() instanceof ConnectException) {
+      elseif ($prev_exception->getCode() === 0) {
+        if ($prev_exception->getPrevious() instanceof ApiRequestException && $prev_exception->getPrevious()->getPrevious() instanceof NetworkException && $prev_exception->getPrevious()->getPrevious()->getPrevious() instanceof ConnectException) {
           /** @var \GuzzleHttp\Exception\ConnectException $curl_exception */
-          $curl_exception = $exception->getPrevious()->getPrevious()->getPrevious();
+          $curl_exception = $prev_exception->getPrevious()->getPrevious()->getPrevious();
           // Resolving timed out.
           if ($curl_exception->getHandlerContext()['errno'] === CURLE_OPERATION_TIMEDOUT) {
             $suggestion = $this->t('@fail_text The connection timeout threshold (%connect_timeout) or the request timeout (%timeout) is too low or something is wrong with the connection.', [
@@ -496,24 +499,24 @@ final class KeyEntityFormEnhancer {
       // regression bug in the Apigee Edge for Public Cloud 19.03.01 release. If
       // valid organization name and username provided with an invalid password
       // the MGMT server returns HTTP 500 with an error instead of HTTP 401.
-      if ($exception->getCode() === 401 || ($exception->getCode() === 500 && $exception->getEdgeErrorCode() === 'usersandroles.SsoInternalServerError')) {
+      if ($prev_exception->getCode() === 401 || ($prev_exception->getCode() === 500 && $prev_exception instanceof ApiResponseException && $prev_exception->getEdgeErrorCode() === 'usersandroles.SsoInternalServerError')) {
         $suggestion = $this->t('@fail_text The given username (%username) or password is incorrect.', [
           '@fail_text' => $fail_text,
           '%username' => $key_type->getUsername($key),
         ]);
       }
       // Invalid organization name.
-      elseif ($exception->getCode() === 403) {
+      elseif ($prev_exception->getCode() === 403) {
         $suggestion = $this->t('@fail_text The given organization name (%organization) is incorrect.', [
           '@fail_text' => $fail_text,
           '%organization' => $key_type->getOrganization($key),
         ]);
       }
       // Failed request.
-      elseif ($exception->getCode() === 0) {
-        if ($exception->getPrevious() instanceof NetworkException && $exception->getPrevious()->getPrevious() instanceof ConnectException) {
+      elseif ($prev_exception->getCode() === 0) {
+        if ($prev_exception->getPrevious() instanceof NetworkException && $prev_exception->getPrevious()->getPrevious() instanceof ConnectException) {
           /** @var \GuzzleHttp\Exception\ConnectException $curl_exception */
-          $curl_exception = $exception->getPrevious()->getPrevious();
+          $curl_exception = $prev_exception->getPrevious()->getPrevious();
           // Resolving timed out.
           if ($curl_exception->getHandlerContext()['errno'] === CURLE_OPERATION_TIMEDOUT) {
             $suggestion = $this->t('@fail_text The connection timeout threshold (%connect_timeout) or the request timeout (%timeout) is too low or something is wrong with the connection.', [
@@ -539,15 +542,16 @@ final class KeyEntityFormEnhancer {
   /**
    * Creates debug text if there was an error during form validation.
    *
-   * @param \Exception $exception
-   *   The thrown exception during form validation.
+   * @param \Drupal\apigee_edge\Exception\AuthenticationKeyException $exception
+   *   The thrown exception during testing connection.
    * @param \Drupal\key\KeyInterface $key
    *   The used key during form validation.
    *
    * @return string
    *   The debug text to be displayed.
    */
-  private function createDebugText(\Exception $exception, KeyInterface $key): string {
+  private function createDebugText(AuthenticationKeyException $exception, KeyInterface $key): string {
+    $prev_exception = $exception->getPrevious() ?? $exception;
     $key_type = $key->getKeyType();
 
     $credentials = !($key_type instanceof EdgeKeyTypeInterface) ? [] : [
@@ -578,7 +582,7 @@ final class KeyEntityFormEnhancer {
       '$1***mfa-token***$3',
       '$1***password***$3',
       '$1***credentials***',
-    ], (string) $exception);
+    ], (string) $prev_exception);
 
     // Filter out any private values from config.
     $client_config = array_filter($this->configFactory->get('apigee_edge.client')->get(), static function ($key) {
