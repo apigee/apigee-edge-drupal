@@ -378,7 +378,7 @@ function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityV
  * permission always.
  * - If operation is "view" or "view label" then the user gets access allowed
  * for the API Product (entity) if the API product's access attribute value is
- * either one of the selected access attribute values OR s/he an a developer
+ * either one of the selected access attribute values OR it an a developer
  * app that is in association with the selected API product.
  * - If operation is "assign" then second part of the previous sentence does
  * not apply only access attribute's value matters.
@@ -397,9 +397,9 @@ function apigee_edge_api_product_access(EntityInterface $entity, $operation, Acc
     $product_visibility = $entity->getAttributeValue('access') ?? 'public';
     $visible_to_roles = \Drupal::config($config_name)->get('access')[$product_visibility] ?? [];
 
-    // User may not have access to this API product based on the current
-    // access setting but we should still grant him/her view access
-    // if s/he has a developer app in association with this API product.
+    // A user may not have access to this API product based on the current
+    // access setting but we should still grant view access
+    // if it has a developer app in association with this API product.
     if (empty(array_intersect($visible_to_roles, $account->getRoles()))) {
       // We should not return allowed if the operation is "assign"
       // just because a user has an app with the API product.
@@ -774,7 +774,7 @@ function apigee_edge_form_user_register_form_developer_email_validate(array $for
     // Add email address to the whitelist because we do not want to
     // display the same error message for an admin user as a regular user.
     DeveloperEmailUniqueValidator::whitelist($form_state->getValue('mail'));
-    // If administrator has not confirmed that s/he would like to create a user
+    // If administrator has not confirmed that it would like to create a user
     // in Drupal with an existing developer id on Apigee Edge then add a custom
     // error to the field.
     if (empty($form_state->getValue('apigee_edge_developer_exists'))) {
@@ -868,8 +868,8 @@ function _apigee_edge_existing_developer_email_verification_link(UserInterface $
 /**
  * Generates a token for an email address that is already taken on Apigee Edge.
  *
- * We do not want to enforce user to use the same first name, last name,
- * username when this token is generated and whe s/he re-opens the registration
+ * We do not want to enforce a user to use the same first name, last name,
+ * username when this token is generated and when it re-opens the registration
  * form by clicking on the link (that includes this token) from the verification
  * email. Therefore we only use the email address for token generation.
  *
