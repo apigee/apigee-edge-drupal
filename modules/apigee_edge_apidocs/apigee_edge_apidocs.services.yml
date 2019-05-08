@@ -2,3 +2,6 @@ services:
   logger.channel.apigee_edge_apidocs:
     parent: logger.channel_base
     arguments: ['apigee_edge_apidocs']  
+  apigee_edge_apidocs.spec_fetcher:
+    class: Drupal\apigee_edge_apidocs\ApiDocSpecFetcher
+    arguments: ['@file_system', '@http_client', '@entity_type.manager', '@messenger', '@logger.channel.apigee_edge_apidocs']

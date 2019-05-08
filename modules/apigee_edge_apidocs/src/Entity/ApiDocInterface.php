@@ -120,18 +120,4 @@ interface ApiDocInterface extends ContentEntityInterface, EntityChangedInterface
    */
   public function setPublished(bool $published) : self;
 
-  /**
-   * Re-import OpenAPI specifications file from URL.
-   *
-   * @param bool $save
-   *   Boolean indicating if method should save the entity.
-   * @param bool $new_revision
-   *   Boolean indicating if method should create a new revision when saving
-   *   the entity.
-   *
-   * @return bool
-   *   Returned TRUE if the operation completed without errors.
-   */
-  public function reimportOpenApiSpecFile(bool $save = TRUE, bool $new_revision = TRUE);
-
 }
