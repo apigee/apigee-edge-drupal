@@ -48,7 +48,7 @@ class ApiDocHtmlRouteProvider extends AdminHtmlRouteProvider {
       $apidoc_collection_route->setDefault('_title', 'API Docs');
     }
 
-    if ($reimport_spec_route = $this->getUpdateSpecFormRoute($entity_type)) {
+    if ($reimport_spec_route = $this->getReimportSpecFormRoute($entity_type)) {
       $collection->add("entity.{$entity_type_id}.reimport_spec_form", $reimport_spec_route);
     }
 
@@ -88,7 +88,7 @@ class ApiDocHtmlRouteProvider extends AdminHtmlRouteProvider {
    * @return \Symfony\Component\Routing\Route|null
    *   The generated route, if available.
    */
-  protected function getUpdateSpecFormRoute(EntityTypeInterface $entity_type) {
+  protected function getReimportSpecFormRoute(EntityTypeInterface $entity_type) {
     if ($entity_type->hasLinkTemplate('reimport-spec-form')) {
       $entity_type_id = $entity_type->id();
       $route = new Route($entity_type->getLinkTemplate('reimport-spec-form'));

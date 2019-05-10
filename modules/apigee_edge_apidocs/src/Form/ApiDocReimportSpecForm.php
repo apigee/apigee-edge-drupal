@@ -13,9 +13,9 @@ use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Class ApiDocUpdateSpecForm.
+ * Class ApiDocReimportSpecForm.
  */
-class ApiDocUpdateSpecForm extends ContentEntityConfirmFormBase {
+class ApiDocReimportSpecForm extends ContentEntityConfirmFormBase {
 
   /**
    * The messenger service.
@@ -37,7 +37,7 @@ class ApiDocUpdateSpecForm extends ContentEntityConfirmFormBase {
   protected $operation = 'reimport_spec';
 
   /**
-   * Constructs a ApiDocUpdateSpecForm object.
+   * Constructs a ApiDocReimportSpecForm object.
    *
    * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
    *   The entity repository service.
