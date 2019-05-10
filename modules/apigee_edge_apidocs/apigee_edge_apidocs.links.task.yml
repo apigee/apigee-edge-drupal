@@ -15,8 +15,8 @@ entity.apidoc.edit_form:
   title: 'Edit'
 
 entity.apidoc.delete_form:
-  route_name:  entity.apidoc.delete_form
-  base_route:  entity.apidoc.canonical
+  route_name: entity.apidoc.delete_form
+  base_route: entity.apidoc.canonical
   title: 'Delete'
   weight: 10
 

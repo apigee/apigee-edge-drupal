@@ -53,5 +53,6 @@ interface ApiDocSpecFetcherInterface {
    *   Returns TRUE if the entity was changed and needs to be saved, FALSE
    *   otherwise.
    */
-  public function fetchSpec(ApiDocInterface $apidoc, bool $show_messages = TRUE) : bool;
+  public function fetchSpec(ApiDocInterface $apidoc, bool $show_messages = TRUE): bool;
+
 }

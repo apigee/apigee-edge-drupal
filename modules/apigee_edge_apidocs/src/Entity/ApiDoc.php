@@ -83,14 +83,14 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
   /**
    * {@inheritdoc}
    */
-  public function getName() : string {
+  public function getName(): string {
     return $this->get('name')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setName(string $name) : ApiDocInterface {
+  public function setName(string $name): ApiDocInterface {
     $this->set('name', $name);
     return $this;
   }
@@ -98,14 +98,14 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
   /**
    * {@inheritdoc}
    */
-  public function getDescription() : string {
+  public function getDescription(): string {
     return $this->get('description')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setDescription(string $description) : ApiDocInterface {
+  public function setDescription(string $description): ApiDocInterface {
     $this->set('description', $description);
     return $this;
   }
@@ -113,14 +113,14 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCreatedTime() : int {
+  public function getCreatedTime(): int {
     return $this->get('created')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime(int $timestamp) : ApiDocInterface {
+  public function setCreatedTime(int $timestamp): ApiDocInterface {
     $this->set('created', $timestamp);
     return $this;
   }
@@ -128,14 +128,14 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
   /**
    * {@inheritdoc}
    */
-  public function isPublished() : bool {
+  public function isPublished(): bool {
     return (bool) $this->getEntityKey('status');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setPublished(bool $published) : ApiDocInterface {
+  public function setPublished(bool $published): ApiDocInterface {
     $this->set('status', $published);
     return $this;
   }

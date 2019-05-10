@@ -81,6 +81,8 @@ class ApiDocSpecFetcher implements ApiDocSpecFetcherInterface {
    *   The file_system service.
    * @param \GuzzleHttp\ClientInterface $http_client
    *   The http_client service.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   The entity type manager.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
    * @param \Psr\Log\LoggerInterface $logger
@@ -97,7 +99,7 @@ class ApiDocSpecFetcher implements ApiDocSpecFetcherInterface {
   /**
    * {@inheritdoc}
    */
-  public function fetchSpec(ApiDocInterface $apidoc, bool $show_messages = TRUE) : bool {
+  public function fetchSpec(ApiDocInterface $apidoc, bool $show_messages = TRUE): bool {
     $needs_save = FALSE;
     $spec_value = $apidoc->get('spec')->isEmpty() ? [] : $apidoc->get('spec')->getValue()[0];
 
@@ -179,9 +181,7 @@ class ApiDocSpecFetcher implements ApiDocSpecFetcherInterface {
           return FALSE;
         }
 
-        $spec_value = [
-            'target_id' => $file->id(),
-          ] + $spec_value;
+        $spec_value = ['target_id' => $file->id()] + $spec_value;
         $apidoc->set('spec', $spec_value);
         $apidoc->set('spec_md5', $data_md5);
         $apidoc->set('fetched_timestamp', time());
@@ -219,7 +219,9 @@ class ApiDocSpecFetcher implements ApiDocSpecFetcherInterface {
       case static::TYPE_ERROR:
         $this->logger->error($message, $params);
         break;
+
       case static::TYPE_STATUS:
+
       default:
         $this->logger->info($message, $params);
     }

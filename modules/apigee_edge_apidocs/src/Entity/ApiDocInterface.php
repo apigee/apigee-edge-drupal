@@ -48,7 +48,7 @@ interface ApiDocInterface extends ContentEntityInterface, EntityChangedInterface
    * @return string
    *   Name of the API Doc.
    */
-  public function getName() : string;
+  public function getName(): string;
 
   /**
    * Sets the API Doc name.
@@ -59,7 +59,7 @@ interface ApiDocInterface extends ContentEntityInterface, EntityChangedInterface
    * @return \Drupal\apigee_edge_apidocs\Entity\ApiDocInterface
    *   The called API Doc entity.
    */
-  public function setName(string $name) : self;
+  public function setName(string $name): self;
 
   /**
    * Gets the description.
@@ -67,7 +67,7 @@ interface ApiDocInterface extends ContentEntityInterface, EntityChangedInterface
    * @return null|string
    *   The API Doc description.
    */
-  public function getDescription() : string;
+  public function getDescription(): string;
 
   /**
    * Sets the description.
@@ -78,7 +78,7 @@ interface ApiDocInterface extends ContentEntityInterface, EntityChangedInterface
    * @return \Drupal\apigee_edge_apidocs\Entity\ApiDocInterface
    *   The API Doc entity.
    */
-  public function setDescription(string $description) : self;
+  public function setDescription(string $description): self;
 
   /**
    * Gets the API Doc creation timestamp.
@@ -86,7 +86,7 @@ interface ApiDocInterface extends ContentEntityInterface, EntityChangedInterface
    * @return int
    *   Creation timestamp of the API Doc.
    */
-  public function getCreatedTime() : int;
+  public function getCreatedTime(): int;
 
   /**
    * Sets the API Doc creation timestamp.
@@ -97,7 +97,7 @@ interface ApiDocInterface extends ContentEntityInterface, EntityChangedInterface
    * @return \Drupal\apigee_edge_apidocs\Entity\ApiDocInterface
    *   The called API Doc entity.
    */
-  public function setCreatedTime(int $timestamp) : self;
+  public function setCreatedTime(int $timestamp): self;
 
   /**
    * Returns the API Doc published status indicator.
@@ -107,7 +107,7 @@ interface ApiDocInterface extends ContentEntityInterface, EntityChangedInterface
    * @return bool
    *   TRUE if the API Doc is published.
    */
-  public function isPublished() : bool;
+  public function isPublished(): bool;
 
   /**
    * Sets the published status of a API Doc.
@@ -118,6 +118,6 @@ interface ApiDocInterface extends ContentEntityInterface, EntityChangedInterface
    * @return \Drupal\apigee_edge_apidocs\Entity\ApiDocInterface
    *   The called API Doc entity.
    */
-  public function setPublished(bool $published) : self;
+  public function setPublished(bool $published): self;
 
 }

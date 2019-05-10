@@ -55,6 +55,7 @@ class ApiDocReimportSpecForm extends ContentEntityConfirmFormBase {
     $this->messenger = $messenger;
     $this->specFetcher = $spec_fetcher;
   }
+
   /**
    * {@inheritdoc}
    */
@@ -112,8 +113,7 @@ class ApiDocReimportSpecForm extends ContentEntityConfirmFormBase {
         $entity->setNewRevision();
       }
       $entity->save();
-      $this->messenger->addStatus($this->t('API Doc %label: imported the
-        OpenAPI specification file from URL.', [
+      $this->messenger->addStatus($this->t('API Doc %label: imported the OpenAPI specification file from URL.', [
         '%label' => $this->entity->label(),
       ]));
     }
