@@ -278,6 +278,10 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
       ->setLabel(t('Changed'))
       ->setDescription(t('The time that the entity was last edited.'));
 
+    $fields['fetched_timestamp'] = BaseFieldDefinition::create('timestamp')
+      ->setLabel(t('Spec fetched from URL timestamp'))
+      ->setDescription(t('When the OpenAPI spec file was last fetched from URL as a Unix timestamp.'));
+
     return $fields;
   }
 
@@ -287,7 +291,22 @@ class ApiDoc extends ContentEntityBase implements ApiDocInterface {
   public function preSave(EntityStorageInterface $storage) {
     parent::preSave($storage);
 
-    \Drupal::service('apigee_edge_apidocs.spec_fetcher')->fetchSpec($this, FALSE, FALSE);
+    \Drupal::service('apigee_edge_apidocs.spec_fetcher')->fetchSpec($this, TRUE);
+
+    // Update spec_md5 value if using "file" as source.
+    if ($this->get('spec_file_source')->value == static::SPEC_AS_FILE) {
+      $spec_value = $this->get('spec')->isEmpty() ? [] : $this->get('spec')->getValue()[0];
+      if (!empty($spec_value['target_id'])) {
+        /* @var \Drupal\file\Entity\File $file */
+        $file = $this->entityTypeManager()
+          ->getStorage('file')
+          ->load($spec_value['target_id']);
+
+        if ($file) {
+          $this->set('spec_md5', md5_file($file->getFileUri()));
+        }
+      }
+    }
   }
 
 }

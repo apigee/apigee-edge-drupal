@@ -105,17 +105,15 @@ class ApiDocUpdateSpecForm extends ContentEntityConfirmFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     /* @var \Drupal\apigee_edge_apidocs\Entity\ApiDocInterface $entity */
     $entity = $this->getEntity();
-    $status = $this->specFetcher->fetchSpec($entity, TRUE, TRUE);
 
-    if ($status) {
-      $this->messenger->addStatus($this->t('API Doc %label: imported the OpenAPI
-      specification file from URL.', [
-        '%label' => $this->entity->label(),
-      ]));
-    }
-    else {
-      $this->messenger()->addError($this->t('API Doc %label: could not import
-      the OpenAPI specification file from URL.', [
+    $needs_save = $this->specFetcher->fetchSpec($entity, TRUE);
+    if ($needs_save) {
+      if ($entity->getEntityType()->isRevisionable()) {
+        $entity->setNewRevision();
+      }
+      $entity->save();
+      $this->messenger->addStatus($this->t('API Doc %label: imported the
+        OpenAPI specification file from URL.', [
         '%label' => $this->entity->label(),
       ]));
     }

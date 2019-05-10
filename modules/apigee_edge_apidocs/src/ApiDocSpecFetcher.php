@@ -21,12 +21,15 @@
 namespace Drupal\apigee_edge_apidocs;
 
 use Drupal\apigee_edge_apidocs\Entity\ApiDocInterface;
-use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Component\Datetime\DateTimePlus;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\Url;
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Psr7\Request;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -94,7 +97,7 @@ class ApiDocSpecFetcher implements ApiDocSpecFetcherInterface {
   /**
    * {@inheritdoc}
    */
-  public function fetchSpec(ApiDocInterface $apidoc, bool $save = TRUE, bool $new_revision = TRUE, bool $show_messages = TRUE) : bool {
+  public function fetchSpec(ApiDocInterface $apidoc, bool $show_messages = TRUE) : bool {
     $needs_save = FALSE;
     $spec_value = $apidoc->get('spec')->isEmpty() ? [] : $apidoc->get('spec')->getValue()[0];
 
@@ -103,22 +106,50 @@ class ApiDocSpecFetcher implements ApiDocSpecFetcherInterface {
     // validated that a valid file exists at that URL.
     if ($apidoc->get('spec_file_source')->value == ApiDocInterface::SPEC_AS_URL) {
 
-      // If the file_link field is empty, return without error.
+      // If the file_link field is empty, return without changes.
       if ($apidoc->get('file_link')->isEmpty()) {
-        return TRUE;
+        return FALSE;
       }
 
       $file_uri = $apidoc->get('file_link')->getValue()[0]['uri'];
-      $data = file_get_contents($file_uri);
-      if (empty($data)) {
-        $message = 'Could not retrieve OpenAPI specification file located at %url';
-        $params = [
-          '%url' => $file_uri,
-        ];
-        $this->logger->error($message, $params);
-        if ($show_messages) {
-          $this->messenger->addMessage($this->t($message, $params), 'error');
+      $file_uri = Url::fromUri($file_uri, ['absolute' => TRUE])->toString();
+      $request = new Request('GET', $file_uri);
+      $options = [
+        'exceptions' => TRUE,
+        'allow_redirects' => [
+          'strict' => TRUE,
+        ],
+      ];
+
+      // Generate conditional GET header.
+      if (!$apidoc->get('fetched_timestamp')->isEmpty()) {
+        $request = $request->withAddedHeader('If-Modified-Since', gmdate(DateTimePlus::RFC7231, $apidoc->get('fetched_timestamp')->value));
+      }
+
+      try {
+        $response = $this->httpClient->send($request, $options);
+
+        // In case of a 304 Not Modified there are no changes, but update
+        // last fetched timestamp.
+        if ($response->getStatusCode() == 304) {
+          $apidoc->set('fetched_timestamp', time());
+          return TRUE;
         }
+      }
+      catch (RequestException $e) {
+        $this->log($apidoc, static::TYPE_ERROR, 'API Doc %label: Could not retrieve OpenAPI specification file located at %url.', [
+          '%url' => $file_uri,
+          '%label' => $apidoc->label(),
+        ], $show_messages);
+        return FALSE;
+      }
+
+      $data = (string) $response->getBody();
+      if (empty($data)) {
+        $this->log($apidoc, static::TYPE_ERROR, 'API Doc %label: OpenAPI specification file located at %url is empty.', [
+          '%url' => $file_uri,
+          '%label' => $apidoc->label(),
+        ], $show_messages);
         return FALSE;
       }
 
@@ -141,15 +172,10 @@ class ApiDocSpecFetcher implements ApiDocSpecFetcherInterface {
           }
         }
         catch (\Exception $e) {
-          $message = 'Error while saving API Doc spec file from URL on API Doc ID: %id. Error: %error';
-          $params = [
+          $this->log($apidoc, static::TYPE_ERROR, 'Error while saving API Doc spec file from URL on API Doc ID: %id. Error: %error', [
             '%id' => $apidoc->id(),
             '%error' => $e->getMessage(),
-          ];
-          $this->logger->error($message, $params);
-          if ($show_messages) {
-            $this->messenger->addMessage($this->t($message, $params), 'error');
-          }
+          ], $show_messages);
           return FALSE;
         }
 
@@ -158,56 +184,48 @@ class ApiDocSpecFetcher implements ApiDocSpecFetcherInterface {
           ] + $spec_value;
         $apidoc->set('spec', $spec_value);
         $apidoc->set('spec_md5', $data_md5);
+        $apidoc->set('fetched_timestamp', time());
 
         $needs_save = TRUE;
       }
     }
 
-    elseif (!empty($spec_value['target_id'])) {
-      if ($show_messages) {
-        $this->messenger->addStatus($this->t('API Doc %label is using a file upload as source. Nothing to update.', [
-          '%label' => $apidoc->label(),
-        ]));
-      }
-
-      /* @var \Drupal\file\Entity\File $file */
-      $file = $this->entityTypeManager
-        ->getStorage('file')
-        ->load($spec_value['target_id']);
-
-      if ($file) {
-        $prev_md5 = $apidoc->get('spec_md5')->isEmpty() ? NULL : $apidoc->get('spec_md5')->value;
-        $file_md5 = md5_file($file->getFileUri());
-        if ($prev_md5 != $file_md5) {
-          $apidoc->set('spec_md5', $file_md5);
-          $needs_save = TRUE;
-        }
-      }
+    elseif ($apidoc->get('spec_file_source')->value == ApiDocInterface::SPEC_AS_FILE) {
+      $this->log($apidoc, static::TYPE_STATUS, 'API Doc %label is using a file upload as source. Nothing to update.', [
+        '%label' => $apidoc->label(),
+      ], $show_messages);
+      $needs_save = FALSE;
     }
 
-    // Only save if changes were made.
-    if ($save && $needs_save) {
-      if ($new_revision && $apidoc->getEntityType()->isRevisionable()) {
-        $apidoc->setNewRevision();
-      }
+    return $needs_save;
+  }
 
-      try {
-        $apidoc->save();
-      }
-      catch (EntityStorageException $e) {
-        $message = 'Error while saving API Doc while fetching OpenAPI specification file located at %url';
-        $params = [
-          '%url' => $file_uri,
-        ];
+  /**
+   * Log a message, and optionally display it on the UI.
+   *
+   * @param \Drupal\apigee_edge_apidocs\Entity\ApiDocInterface $apidoc
+   *   The API Doc entity.
+   * @param string $type
+   *   Type of message.
+   * @param string $message
+   *   The message.
+   * @param array $params
+   *   Optional parameters array.
+   * @param bool $show_messages
+   *   TRUE if message should be displayed to the UI as well.
+   */
+  private function log(ApiDocInterface $apidoc, string $type, string $message, array $params = [], bool $show_messages = TRUE) {
+    switch ($type) {
+      case static::TYPE_ERROR:
         $this->logger->error($message, $params);
-        if ($show_messages) {
-          $this->messenger->addMessage($this->t($message, $params), 'error');
-        }
-        return FALSE;
-      }
+        break;
+      case static::TYPE_STATUS:
+      default:
+        $this->logger->info($message, $params);
     }
-
-    return TRUE;
+    if ($show_messages) {
+      $this->messenger->addMessage($this->t($message, $params), $type);
+    }
   }
 
   /**

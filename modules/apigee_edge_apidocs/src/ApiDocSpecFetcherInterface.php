@@ -28,6 +28,16 @@ use Drupal\apigee_edge_apidocs\Entity\ApiDocInterface;
 interface ApiDocSpecFetcherInterface {
 
   /**
+   * A status message.
+   */
+  const TYPE_STATUS = 'status';
+
+  /**
+   * An error.
+   */
+  const TYPE_ERROR = 'error';
+
+  /**
    * Fetch OpenAPI specification file from URL.
    *
    * Takes care of updating an ApiDoc entity with the updated spec file. If
@@ -36,16 +46,12 @@ interface ApiDocSpecFetcherInterface {
    *
    * @param \Drupal\apigee_edge_apidocs\Entity\ApiDocInterface $apidoc
    *   The ApiDoc entity.
-   * @param bool $save
-   *   Boolean indicating if method should save the entity.
-   * @param bool $new_revision
-   *   Boolean indicating if method should create a new revision when saving
-   *   the entity.
    * @param bool $show_messages
    *   Boolean indicating if method should display status messages.
    *
    * @return bool
-   *   Returns TRUE if the operation completed without errors.
+   *   Returns TRUE if the entity was changed and needs to be saved, FALSE
+   *   otherwise.
    */
-  public function fetchSpec(ApiDocInterface $apidoc, bool $save = TRUE, bool $new_revision = TRUE, bool $show_messages = TRUE) : bool;
+  public function fetchSpec(ApiDocInterface $apidoc, bool $show_messages = TRUE) : bool;
 }
