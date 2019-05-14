@@ -21,9 +21,11 @@ namespace Drupal\Tests\apigee_edge\FunctionalJavascript\Form;
 
 use Drupal\apigee_edge\Form\AuthenticationForm;
 use Drupal\apigee_edge\OauthTokenFileStorage;
+use Drupal\apigee_edge_test\EventSubscriber\MockApiRequestSubscriber\ApiResponseFromState;
 use Drupal\Core\Url;
 use Drupal\key\Entity\Key;
 use Drupal\Tests\apigee_edge\FunctionalJavascript\ApigeeEdgeFunctionalJavascriptTestBase;
+use GuzzleHttp\Psr7\Response;
 
 /**
  * Apigee Edge API credentials, authentication form, key integration test.
@@ -62,6 +64,13 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
   private $endpoint;
 
   /**
+   * The API response from State mock API request subscriber.
+   *
+   * @var \Drupal\apigee_edge_test\EventSubscriber\MockApiRequestSubscriber\ApiResponseFromState
+   */
+  private $apiResponseFromState;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp() {
@@ -78,13 +87,15 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     // we would like to run a test that tries to connect to an invalid
     // endpoint and we should not wait 6 minutes for the result.
     $this->config('apigee_edge.client')->set('http_client_timeout', 30)->save();
+    $this->apiResponseFromState = $this->container->get('apigee_edge_test.mock_api_request_subscriber.api_response_from_state');
   }
 
   /**
    * Tests the Authentication form.
    */
-  public function testAuthenticationForm() {
+  public function testAuthenticationForm(): void {
     $web_assert = $this->assertSession();
+    $page = $this->getSession()->getPage();
 
     // Test the authentication form using the default key stored by environment
     // variable key provider.
@@ -99,6 +110,12 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
     // Validate that the form actually saved the valid credentials (DRUP-734).
     $this->visitAuthenticationForm();
+    // Fill in the form with valid credentials again.
+    $page->fillField('Username', $this->username);
+    $page->fillField('Password', $this->password);
+    $page->fillField('Organization', $this->organization);
+    $page->fillField('Apigee Edge endpoint', $this->endpoint);
+    $this->pressKeySaveButton('op', [$this, 'visitAuthenticationForm']);
     $web_assert->fieldValueEquals('Organization', $this->organization);
     $web_assert->fieldValueEquals('Username', $this->username);
     $web_assert->fieldValueEquals('Password', $this->password);
@@ -112,7 +129,7 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
    * then the Key edit form also works correctly, because the Authentication
    * form is a customized Key edit form.
    */
-  public function testKeyAddForm() {
+  public function testKeyAddForm(): void {
     $web_assert = $this->assertSession();
 
     // Test the authentication form using the default key stored by environment
@@ -255,13 +272,48 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     // Test the connection with basic auth.
     $this->assertSendRequestMessage('.messages--status', 'Connection successful.');
     $web_assert->elementNotExists('css', 'details[data-drupal-selector="edit-debug"]');
-    // Press the Save/Save configuration button.
-    $page->pressButton('op');
+    // Press the Save/Save configuration button and save valid credentials.
+    $this->pressKeySaveButton('op', $visitFormAsAdmin);
 
-    // Because Key add/edit form redirects the user to the Key entity listing
-    // page on success therefore we have to re-visit the form again.
-    $visitFormAsAdmin();
-    // Setup valid credentials again.
+    // EDGE CASE 1
+    // - Save valid credentials for ORG A.
+    // - Fill in the form with valid credentials for ORG B.
+    // - Test connection.
+    // - Save form with valid credentials for ORG B.
+    // Generate ORG B credentials that are actually invalid credentials but we
+    // will mock them as if they would be valid.
+    $random_username = $this->randomMachineName() . '@example.com';
+    $random_pass = $this->randomMachineName();
+    $random_org = $this->randomMachineName();
+    $random_endpoint = "http://{$this->randomGenerator->word(16)}.example.com";
+    $page->fillField('Username', $random_username);
+    $page->fillField('Password', $random_pass);
+    $page->fillField('Organization', $random_org);
+    $page->fillField('Apigee Edge endpoint', $random_endpoint);
+    // Queue a new HTTP 200 response for (invalid) ORG B credentials before
+    // we would press the "Test connection" button.
+    $this->apiResponseFromState->queueResponse(new Response(200, ['Content-Type' => 'application/json'], '{}'));
+    // Capture mocked HTTP requests from the state storege.
+    $settings['settings'][ApiResponseFromState::SETTINGS_CAPTURE_REQUESTS] = (object) ['value' => TRUE, 'required' => TRUE];
+    $this->writeSettings($settings);
+    $this->assertSendRequestMessage('.messages--status', 'Connection successful.');
+    /** @var \Psr\Http\Message\RequestInterface $mocked_request */
+    $mocked_requests = $this->apiResponseFromState->getMockedRequests();
+    $mocked_request = reset($mocked_requests);
+    // Make sure that all sent API credentials belongs to ORG B.
+    $this->assertStringStartsWith($random_endpoint . '/organizations/' . $random_org, (string) $mocked_request->getUri());
+    $this->assertEquals(sprintf('Basic %s', base64_encode(sprintf('%s:%s', $random_username, $random_pass))), $mocked_request->getHeaderLine('Authorization'));
+    // Disable capturing mocked API request as it is not necessary anymore.
+    $settings['settings'][ApiResponseFromState::SETTINGS_CAPTURE_REQUESTS] = (object) ['value' => FALSE, 'required' => TRUE];
+    $this->writeSettings($settings);
+    // Queue a new HTTP 200 response for (invalid) ORG B credentials before
+    // we would save the form.
+    $this->apiResponseFromState->queueResponse(new Response(200, ['Content-Type' => 'application/json'], '{}'));
+    // Press the Save/Save configuration button and save invalid credentials.
+    $this->pressKeySaveButton('op', $visitFormAsAdmin);
+    // END OF EDGE CASE 1.
+
+    // Fill in the form with valid credentials again.
     $page->fillField('Username', $this->username);
     $page->fillField('Password', $this->password);
     $page->fillField('Organization', $this->organization);
@@ -326,6 +378,24 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"client_id\": \"{$client_id}\"");
     $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', '"client_secret": "edgeclisecret"');
     $page->fillField('Client ID', '');
+  }
+
+  /**
+   * Clicks on the key save button and revisits the form.
+   *
+   * @param string $locator
+   *   Button id, value or alt.
+   * @param callable $visitFormAsAdmin
+   *   Callback function that revisits the form as admin.
+   */
+  private function pressKeySaveButton(string $locator, callable $visitFormAsAdmin): void {
+    $web_assert = $this->assertSession();
+    $page = $this->getSession()->getPage();
+    $page->pressButton($locator);
+    $web_assert->elementTextContains('css', '.messages--status', 'Connection successful.');
+    // Because Key add/edit form redirects the user to the Key entity listing
+    // page on success therefore we have to re-visit the form again.
+    $visitFormAsAdmin();
   }
 
   /**
