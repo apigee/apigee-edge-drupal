@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge_apidocs;
 
+use Drupal\apigee_edge_apidocs\Entity\ApiDocInterface;
 use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -36,27 +37,29 @@ class ApiDocAccessControlHandler extends EntityAccessControlHandler {
    * {@inheritdoc}
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    $parent_access = parent::checkAccess($entity, $operation, $account);
+    /** @var \Drupal\apigee_edge_apidocs\Entity\ApiDocInterface $entity */
+    $access = parent::checkAccess($entity, $operation, $account);
 
-    if (!$parent_access->isAllowed()) {
-      /** @var \Drupal\apigee_edge_apidocs\Entity\ApiDocInterface $entity */
-      switch ($operation) {
-        case 'view':
-          if (!$entity->isPublished()) {
-            return $parent_access->orIf(AccessResult::allowedIfHasPermission($account, 'view unpublished apidoc entities'));
-          }
-          return $parent_access->orIf(AccessResult::allowedIfHasPermission($account, 'view published apidoc entities'));
+    switch ($operation) {
+      case 'view':
+        return $access->orIf($entity->isPublished()
+          ? AccessResult::allowedIfHasPermission($account, 'view published apidoc entities')
+          : AccessResult::allowedIfHasPermission($account, 'view unpublished apidoc entities')
+        );
 
-        case 'update':
-          return $parent_access->orIf(AccessResult::allowedIfHasPermission($account, 'edit apidoc entities'));
+      case 'reimport':
+        return AccessResult::allowedIf($entity->spec_file_source->value === ApiDocInterface::SPEC_AS_URL)
+          ->andIf($entity->access('update', $account, TRUE));
 
-        case 'delete':
-          return $parent_access->orIf(AccessResult::allowedIfHasPermission($account, 'delete apidoc entities'));
-      }
+      case 'update':
+        return $access->orIf(AccessResult::allowedIfHasPermission($account, 'edit apidoc entities'));
+
+      case 'delete':
+        return $access->orIf(AccessResult::allowedIfHasPermission($account, 'delete apidoc entities'));
     }
 
     // Unknown operation, no opinion.
-    return $parent_access;
+    return $access;
   }
 
   /**
