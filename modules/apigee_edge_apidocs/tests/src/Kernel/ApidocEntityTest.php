@@ -33,11 +33,14 @@ class ApidocEntityTest extends KernelTestBase {
 
   protected static $modules = [
     'user',
-    'text',
-    'file',
+    'system',
     'apigee_edge',
     'key',
     'apigee_edge_apidocs',
+    'options',
+    'text',
+    'file',
+    'file_link',
   ];
 
   /**
