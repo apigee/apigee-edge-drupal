@@ -15,7 +15,7 @@ services:
 
   apigee_edge.sdk_connector:
     class: Drupal\apigee_edge\SDKConnector
-    arguments: ['@http_client_factory', '@key.repository', '@config.factory', '@module_handler', '@info_parser']
+    arguments: ['@http_client_factory', '@key.repository', '@config.factory', '@module_handler', '@info_parser', '@service_container']
 
   apigee_edge.key_entity_form_enhancer:
     class: Drupal\apigee_edge\KeyEntityFormEnhancer

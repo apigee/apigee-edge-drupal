@@ -35,6 +35,7 @@ use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
 use Http\Adapter\Guzzle6\Client as GuzzleClientAdapter;
 use Http\Message\Authentication;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides an Apigee Edge SDK connector.
@@ -109,6 +110,13 @@ final class SDKConnector implements SDKConnectorInterface {
   private $clientFactory;
 
   /**
+   * The service container.
+   *
+   * @var \Symfony\Component\DependencyInjection\ContainerInterface
+   */
+  private $container;
+
+  /**
    * Constructs a new SDKConnector.
    *
    * @param \Drupal\Core\Http\ClientFactory $client_factory
@@ -121,13 +129,16 @@ final class SDKConnector implements SDKConnectorInterface {
    *   Module handler service.
    * @param \Drupal\Core\Extension\InfoParserInterface $info_parser
    *   Info file parser service.
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The service container.
    */
-  public function __construct(ClientFactory $client_factory, KeyRepositoryInterface $key_repository, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $module_handler, InfoParserInterface $info_parser) {
+  public function __construct(ClientFactory $client_factory, KeyRepositoryInterface $key_repository, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $module_handler, InfoParserInterface $info_parser, ContainerInterface $container) {
     $this->clientFactory = $client_factory;
     $this->keyRepository = $key_repository;
     $this->configFactory = $config_factory;
     $this->moduleHandler = $module_handler;
     $this->infoParser = $info_parser;
+    $this->container = $container;
   }
 
   /**
@@ -255,13 +266,17 @@ final class SDKConnector implements SDKConnectorInterface {
    * {@inheritdoc}
    */
   public function testConnection(KeyInterface $key = NULL): void {
+    // Instead of calling $this->getClient() here we retrieve the current
+    // instance of the SDK connector service and call getClient() on that.
+    // We do this because otherwise SDK connector service decorators that
+    // decorates the getClient() method would not be called.
     if ($key === NULL) {
-      $client = $this->getClient();
+      $client = $this->container->get('apigee_edge.sdk_connector')->getClient();
       $credentials = $this->getCredentials();
     }
     else {
       $credentials = $this->buildCredentials($key);
-      $client = $this->buildClient($credentials->getAuthentication(), $credentials->getKeyType()->getEndpoint($credentials->getKey()));
+      $client = $this->container->get('apigee_edge.sdk_connector')->getClient($credentials->getAuthentication(), $credentials->getKeyType()->getEndpoint($credentials->getKey()));
     }
 
     try {
