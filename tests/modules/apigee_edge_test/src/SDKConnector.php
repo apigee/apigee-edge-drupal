@@ -23,7 +23,9 @@ namespace Drupal\apigee_edge_test;
 use Apigee\Edge\Client;
 use Apigee\Edge\ClientInterface;
 use Apigee\Edge\Exception\ApiResponseException;
+use Drupal\apigee_edge\SDKConnector as OriginalSDKConnector;
 use Drupal\apigee_edge\SDKConnectorInterface;
+use Drupal\Component\Utility\NestedArray;
 use Drupal\key\KeyInterface;
 use Http\Client\Exception;
 use Http\Message\Authentication;
@@ -34,6 +36,18 @@ use Psr\Log\LoggerInterface;
  * Service decorator for SDKConnector.
  */
 final class SDKConnector implements SDKConnectorInterface {
+
+  /**
+   * Custom HTTP request header.
+   *
+   * This tells the MockApiRequestEventDispatcher to call mock API request
+   * subscribers for this request.
+   *
+   * @see \Drupal\apigee_edge_test\HttpClientMiddleware\MockApiRequestEventDispatcher
+   *
+   * @var string
+   */
+  public const HEADER = 'X-Apigee-Edge-Api-Test-Client';
 
   /**
    * The decorated SDK connector service.
@@ -119,13 +133,18 @@ final class SDKConnector implements SDKConnectorInterface {
       return FALSE;
     };
     // Use the retry plugin in tests.
-    return array_merge($options, [
+    return NestedArray::mergeDeep($options, [
       Client::CONFIG_RETRY_PLUGIN_CONFIG => [
         'retries' => 5,
         'exception_decider' => $decider,
         'exception_delay' => static function (RequestInterface $request, Exception $e, $retries) : int {
           return $retries * 15000000;
         },
+      ],
+      OriginalSDKConnector::CLIENT_FACTORY_OPTIONS => [
+        'headers' => [
+          static::HEADER => static::HEADER,
+        ],
       ],
     ]);
   }

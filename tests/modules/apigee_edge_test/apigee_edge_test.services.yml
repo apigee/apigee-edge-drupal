@@ -27,6 +27,18 @@ services:
       # Without this property for decorated services, serialization will fail. @see: https://www.drupal.org/project/drupal/issues/2536370
       _serviceId: apigee_edge.sdk_connector
 
+  apigee_edge_test.http_middleware.mock_api_request:
+    class: Drupal\apigee_edge_test\HttpClientMiddleware\MockApiRequestEventDispatcher
+    arguments: ['@event_dispatcher']
+    tags:
+      - { name: http_client_middleware }
+
+  apigee_edge_test.mock_api_request_subscriber.api_response_from_state:
+    class: Drupal\apigee_edge_test\EventSubscriber\MockApiRequestSubscriber\ApiResponseFromState
+    arguments: ['@state', '@settings']
+    tags:
+      - { name: event_subscriber }
+
   apigee_edge_test.converter.user_developer:
     class: Drupal\apigee_edge_test\UserDeveloperConverter
     decorates: apigee_edge.converter.user_developer

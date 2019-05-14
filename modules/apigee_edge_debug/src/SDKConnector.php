@@ -23,6 +23,7 @@ namespace Drupal\apigee_edge_debug;
 use Apigee\Edge\ClientInterface;
 use Drupal\apigee_edge\SDKConnector as OriginalSDKConnector;
 use Drupal\apigee_edge\SDKConnectorInterface;
+use Drupal\Component\Utility\NestedArray;
 use Drupal\key\KeyInterface;
 use Http\Message\Authentication;
 
@@ -92,7 +93,7 @@ final class SDKConnector implements SDKConnectorInterface {
       return $this->defaultClient;
     }
 
-    return $this->innerService->getClient($authentication, $endpoint, array_merge($options, $extra_options));
+    return $this->innerService->getClient($authentication, $endpoint, NestedArray::mergeDeep($options, $extra_options));
   }
 
   /**
