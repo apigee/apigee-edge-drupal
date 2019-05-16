@@ -30,7 +30,7 @@ use Symfony\Component\Routing\Route;
  * EntityConverter always loads the cached version of an entity. In our case
  * this could cause inconsistency problems, especially on the entity edit forms.
  * For example, a developer could easily remove a previously added API product
- * (on Apigee Edge) from its app when modifies it on the Developer Portal.
+ * (on Apigee Edge) from their app when modifies it on the Developer Portal.
  * This is why it is recommended to add "apigee_edge_load_unchanged_entity"
  * option to the entity routes where non-cached data should be displayed.
  *

@@ -76,8 +76,8 @@ function apigee_edge_apiproduct_rbac_api_product_access(EntityInterface $entity,
       // Attribute is missing from the API product but the user already has an
       // app with this API product. (Maybe someone assigned this API product
       // to developer's app on Apigee Edge.) We have to grant access to the
-      // API product otherwise it could not see it on its developer app's
-      // credentials list for example.
+      // API product otherwise they would not see the API product on the developer app's
+      // credentials list.
       else {
         $result = _apigee_edge_user_has_an_app_with_product($entity->id(), $account, TRUE);
         if (!$result->isAllowed()) {
@@ -89,9 +89,9 @@ function apigee_edge_apiproduct_rbac_api_product_access(EntityInterface $entity,
       $roles = explode(APIGEE_EDGE_APIPRODUCT_RBAC_ATTRIBUTE_VALUE_DELIMITER, $entity->getAttributeValue($rbac_attribute_name));
       // A user may not have access to this API product based on the current
       // access control attribute value but we should still grant access
-      // if it has a developer app in association with this API product.
+      // if they have a developer app in association with this API product.
       // We should not provide access if operation is "assign" just
-      // because it has an app with the API product.
+      // because they have an app with the API product.
       // Displaying these products should be solved on the form level always.
       if (empty(array_intersect($roles, $account->getRoles()))) {
         if ('assign' === $operation) {
