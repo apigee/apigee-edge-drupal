@@ -1,3 +1,3 @@
 langcode: en
-attribute_name: 'APIGEE_EDGE_APIPRODUCT_RBAC'
+attribute_name: 'DRUPAL_RBAC'
 grant_access_if_attribute_missing: false
