@@ -312,7 +312,6 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     // Press the Save/Save configuration button and save invalid credentials.
     $this->pressKeySaveButton('op', $visitFormAsAdmin);
     // END OF EDGE CASE 1.
-
     // Fill in the form with valid credentials again.
     $page->fillField('Username', $this->username);
     $page->fillField('Password', $this->password);

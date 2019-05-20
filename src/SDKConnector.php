@@ -182,13 +182,18 @@ final class SDKConnector implements SDKConnectorInterface {
    * {@inheritdoc}
    */
   private function buildClient(Authentication $authentication, ?string $endpoint = NULL, array $options = []): ClientInterface {
+    $client_config = $this->configFactory->get('apigee_edge.client');
+
     $default_client_options = [
-      'connect_timeout' => $this->configFactory->get('apigee_edge.client')->get('http_client_connect_timeout') ?? 30,
-      'timeout' => $this->configFactory->get('apigee_edge.client')->get('http_client_timeout') ?? 30,
-      'proxy' => $this->configFactory->get('apigee_edge.client')->get('http_client_proxy') ?? '',
+      'connect_timeout' => $client_config->get('http_client_connect_timeout') ?? 30,
+      'timeout' => $client_config->get('http_client_timeout') ?? 30,
+      'proxy' => $client_config->get('http_client_proxy') ?? '',
     ];
+
     if (isset($options[static::CLIENT_FACTORY_OPTIONS])) {
       $http_client_options = NestedArray::mergeDeep($default_client_options, $options[static::CLIENT_FACTORY_OPTIONS]);
+      // This key is not a valid API client option key.
+      // @see \Apigee\Edge\Client::configureOptions()
       unset($options[static::CLIENT_FACTORY_OPTIONS]);
     }
     else {
@@ -270,13 +275,14 @@ final class SDKConnector implements SDKConnectorInterface {
     // instance of the SDK connector service and call getClient() on that.
     // We do this because otherwise SDK connector service decorators that
     // decorates the getClient() method would not be called.
+    $current_instance = $this->container->get('apigee_edge.sdk_connector');
     if ($key === NULL) {
-      $client = $this->container->get('apigee_edge.sdk_connector')->getClient();
+      $client = $current_instance->getClient();
       $credentials = $this->getCredentials();
     }
     else {
       $credentials = $this->buildCredentials($key);
-      $client = $this->container->get('apigee_edge.sdk_connector')->getClient($credentials->getAuthentication(), $credentials->getKeyType()->getEndpoint($credentials->getKey()));
+      $client = $current_instance->getClient($credentials->getAuthentication(), $credentials->getKeyType()->getEndpoint($credentials->getKey()));
     }
 
     try {
