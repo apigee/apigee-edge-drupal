@@ -285,7 +285,7 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $random_username = $this->randomMachineName() . '@example.com';
     $random_pass = $this->randomMachineName();
     $random_org = $this->randomMachineName();
-    $random_endpoint = "http://{$this->randomGenerator->word(16)}.example.com";
+    $random_endpoint = "http://{$this->randomGenerator->word(16)}.example.com/v1";
     $page->fillField('Username', $random_username);
     $page->fillField('Password', $random_pass);
     $page->fillField('Organization', $random_org);
@@ -341,10 +341,10 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
     // Test invalid endpoint.
     $invalid_domain = "{$this->randomGenerator->word(16)}.example.com";
-    $page->fillField('Apigee Edge endpoint', "http://{$invalid_domain}/");
-    $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given endpoint (http://{$invalid_domain}/) is incorrect or something is wrong with the connection. Error message: ");
-    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"endpoint\": \"http:\/\/{$invalid_domain}\/\"");
-    $web_assert->fieldValueEquals('Apigee Edge endpoint', "http://{$invalid_domain}/");
+    $page->fillField('Apigee Edge endpoint', "http://{$invalid_domain}/v1");
+    $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given endpoint (http://{$invalid_domain}/v1) is incorrect or something is wrong with the connection. Error message: ");
+    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"endpoint\": \"http:\/\/{$invalid_domain}\/v1\"");
+    $web_assert->fieldValueEquals('Apigee Edge endpoint', "http://{$invalid_domain}/v1");
     $page->fillField('Apigee Edge endpoint', '');
 
     // Test invalid authorization server.
