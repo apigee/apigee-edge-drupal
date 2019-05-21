@@ -40,6 +40,15 @@ if [[ -n "${DRUPAL_CORE}" ]]; then
   composer require drupal/core:${DRUPAL_CORE} webflo/drupal-core-require-dev:${DRUPAL_CORE} ${COMPOSER_GLOBAL_OPTIONS};
 fi
 
+# Allow to run tests with the latest dev version of the Apigee PHP API Client.
+if [[ "${PHP_API_CLIENT_DEV}" = true ]]; then
+  # Little trick that fakes the latest dev version as the latest tagged version
+  # in the 2.x branch.
+  composer require apigee/apigee-client-php:"2.x-dev as 2.1024.0" ${COMPOSER_GLOBAL_OPTIONS};
+  # For some reasons without this the client files does not get registered.
+  composer update none
+fi
+
 # Downgrade dependencies if needed.
 # (This fix is necessary since PR#130 had been merged because after that lowest
 # builds started to fail. Probably caused by a merge plugin issue because this

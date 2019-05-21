@@ -10,6 +10,7 @@ services:
       - log:/mnt/files/log
     environment:
       DRUPAL_CORE: ${DRUPAL_CORE:-}
+      PHP_API_CLIENT_DEV: ${PHP_API_CLIENT_DEV:-false}
       DEPENDENCIES: ${DEPENDENCIES:-}
       # We can not pass these environment variables with `docker-compose run -e` until
       # this has not been improved. https://github.com/wodby/php/pull/21#issuecomment-361200733
