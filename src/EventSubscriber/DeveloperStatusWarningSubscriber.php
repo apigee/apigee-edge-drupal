@@ -61,11 +61,11 @@ final class DeveloperStatusWarningSubscriber implements EventSubscriberInterface
   private $messenger;
 
   /**
-   * The developer storage.
+   * The entity type manager.
    *
-   * @var \Drupal\apigee_edge\Entity\Storage\DeveloperStorageInterface
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  private $developerStorage;
+  private $entityTypeManager;
 
   /**
    * DeveloperStatusWarningSubscriber constructor.
@@ -84,7 +84,7 @@ final class DeveloperStatusWarningSubscriber implements EventSubscriberInterface
   public function __construct(AccountInterface $current_user, RouteMatchInterface $route_match, EntityTypeManagerInterface $entity_type_manager, MessengerInterface $messenger, TranslationInterface $string_translation) {
     $this->routeMatch = $route_match;
     $this->currentUser = $current_user;
-    $this->developerStorage = $entity_type_manager->getStorage('developer');
+    $this->entityTypeManager = $entity_type_manager;
     $this->messenger = $messenger;
     $this->stringTranslation = $string_translation;
   }
@@ -98,6 +98,7 @@ final class DeveloperStatusWarningSubscriber implements EventSubscriberInterface
   public function onRespond(FilterResponseEvent $event) {
     // Anonymous user's does not have access to these routes.
     if ($this->currentUser->isAuthenticated() && strpos($this->routeMatch->getRouteName(), 'entity.developer_app.') === 0) {
+      $developer_storage = $this->entityTypeManager->getStorage('developer');
       /** @var \Drupal\apigee_edge\Entity\DeveloperInterface|NULL $developer */
       $developer = NULL;
       /** @var \Drupal\Core\Session\AccountInterface|NULL $account */
@@ -106,14 +107,14 @@ final class DeveloperStatusWarningSubscriber implements EventSubscriberInterface
       $app = $this->routeMatch->getParameter('developer_app') ?? $this->routeMatch->getParameter('app');
       if ($app) {
         /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
-        $developer = $this->developerStorage->load($app->getDeveloperId());
+        $developer = $developer_storage->load($app->getDeveloperId());
         $account = $developer->getOwner();
       }
       // Taking special care of the "Apps" page.
       elseif ($this->routeMatch->getRouteName() === 'entity.developer_app.collection_by_developer') {
         /** @var \Drupal\Core\Session\AccountInterface $account */
         $account = $this->routeMatch->getParameter('user');
-        $developer = $this->developerStorage->load($account->getEmail());
+        $developer = $developer_storage->load($account->getEmail());
       }
 
       // If we could figure out the developer from the route and its status
