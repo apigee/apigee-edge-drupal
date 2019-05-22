@@ -36,7 +36,7 @@ function apigee_edge_apidocs_requirements($phase) {
       'description' => t('The Apigee Edge Apidocs module is deprecated and will be removed before Apigee Edge version 8.x-1.0 is released. Please use the @catalog_link module as an alternative.', [
         '@catalog_link' => Link::fromTextAndUrl('Apigee API Catalog', Url::fromUri('https://www.drupal.org/project/apigee_api_catalog'))->toString(),
       ]),
-      'severity' => REQUIREMENT_ERROR,
+      'severity' => $phase === 'update' ? REQUIREMENT_WARNING : REQUIREMENT_ERROR,
     ],
   ];
 }

@@ -8,6 +8,3 @@ dependencies:
   - drupal:text
   - drupal:file
   - apigee_edge:apigee_edge
-  # The following project doesn't exist but it prevents this deprecated module
-  # from being installed via the Drupal user interface.
-  - apigee_edge:deprecated
