@@ -2,6 +2,13 @@
 
 A module to render OpenAPI specs as documentation to your API developers.
 
+## End of life
+
+This sub-project has been deprecated in favor of the __[Apigee API Catalog](https://www.drupal.org/project/apigee_api_catalog)__
+module. Uninstall `apigee_edge_apidocs` before enabling `apigee_api_catalog`. The Apigee API Catalog module has the same
+planned features that were planned for Apigee Edge API Docs and is currently more complete. This module will be removed
+before Apigee Edge version 8.x-1.0 is released.
+
 ## Overview
 
 When you enable this module, it creates a new Drupal entity in your system named
@@ -23,16 +30,3 @@ menu.
 
 The "APIs" menu link is a view, you can modify it by editing the "API Documentation" view
 under Structure > Views in the admin menu.
-
-## Planned Features
-
-- Create additional field formatters to use for rendering OpenAPI specs
-- Integration with Apigee API Products
-- Allow OpenAPI specs to be associated to a source location such as Apigee Edge or
-  a URL
-- Add visual notifications when source URL specs have changed on the API Doc admin screen
-- Ability to update API Docs when source location changes
-
-### Known issues
-
-- none

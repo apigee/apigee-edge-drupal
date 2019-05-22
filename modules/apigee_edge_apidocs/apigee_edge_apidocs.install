@@ -1,0 +1,42 @@
+<?php
+
+/**
+ * @file
+ * Copyright 2019 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
+/**
+ * @file
+ * Install file for Apigee Edge API Docs.
+ */
+
+use Drupal\Core\Link;
+use Drupal\Core\Url;
+
+/**
+ * Implements hook_requirements().
+ */
+function apigee_edge_apidocs_requirements($phase) {
+  return [
+    'apigee_edge_apidocs_all' => [
+      'title' => t('Apigee Edge Apidocs'),
+      'description' => t('The Apigee Edge Apidocs module is deprecated and will be removed before Apigee Edge version 8.x-1.0 is released. Please use the @catalog_link module as an alternative.', [
+        '@catalog_link' => Link::fromTextAndUrl('Apigee API Catalog', Url::fromUri('https://www.drupal.org/project/apigee_api_catalog'))->toString(),
+      ]),
+      'severity' => $phase === 'update' ? REQUIREMENT_WARNING : REQUIREMENT_ERROR,
+    ],
+  ];
+}
