@@ -2,7 +2,7 @@ name: 'Apigee Edge API Docs (deprecated)'
 type: module
 description: 'Display OpenAPI documentation of your APIs to your developers.'
 core: 8.x
-package: 'Apigee (Experimental)'
+package: 'Apigee (Deprecated)'
 configure: apidocs.settings
 dependencies:
   - drupal:text
