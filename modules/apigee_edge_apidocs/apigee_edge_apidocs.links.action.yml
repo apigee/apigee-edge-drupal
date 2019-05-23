@@ -1,5 +1,0 @@
-entity.apidoc.add_form:
-  route_name: entity.apidoc.add_form
-  title: 'Add API Doc'
-  appears_on:
-    - entity.apidoc.collection
