@@ -128,6 +128,7 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
     $this->moduleHandler = $module_handler;
     $this->classResolver = $class_resolver;
     $this->teamMembershipManager = $team_membership_manager;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
