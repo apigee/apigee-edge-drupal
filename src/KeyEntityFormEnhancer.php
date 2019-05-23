@@ -289,13 +289,8 @@ final class KeyEntityFormEnhancer {
         // saved key. We must remove that from the storage otherwise an
         // invalid combination of the saved key values and the new values from
         // the input fields gets sent to Apigee Edge.
-        // TODO Add test coverage to this.
-        // For this, the SDKConnector service decorator in the testing module
-        // has to be able to return a client object that either returns a mock
-        // response from its queue or make a real API call if the queue is
-        // empty.
-        // @see https://github.com/apigee/apigee-edge-drupal/pull/179#pullrequestreview-230512792
-        unset($form_state->getStorage()['key_value']);
+        $key_value_from_storage = &$form_state->get('key_value');
+        unset($key_value_from_storage['original'], $key_value_from_storage['processed_original']);
       }
 
       // Create a temp key for testing without saving it.
