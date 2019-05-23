@@ -67,11 +67,11 @@ final class KeyEntityFormEnhancer {
   private $connector;
 
   /**
-   * The entity type manager.
+   * The key entity storage.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   * @var \Drupal\Core\Config\Entity\ConfigEntityStorageInterface
    */
-  private $entityTypeManager;
+  private $keyStorage;
 
   /**
    * The OAuth token storage.
@@ -101,7 +101,7 @@ final class KeyEntityFormEnhancer {
    */
   public function __construct(SDKConnectorInterface $connector, OauthTokenStorageInterface $oauth_token_storage, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory) {
     $this->connector = $connector;
-    $this->entityTypeManager = $entity_type_manager;
+    $this->keyStorage = $entity_type_manager->getStorage('key');
     $this->oauthTokenStorage = $oauth_token_storage;
     $this->configFactory = $config_factory;
   }
@@ -296,7 +296,7 @@ final class KeyEntityFormEnhancer {
       // Create a temp key for testing without saving it.
       $random = new Random();
       /** @var \Drupal\key\KeyInterface $test_key */
-      $test_key = $this->entityTypeManager->getStorage('key')->create([
+      $test_key = $this->keyStorage->create([
         'id' => strtolower($random->name(16)),
         'key_type' => $key->getKeyType()->getPluginID(),
         'key_input' => $key->getKeyInput()->getPluginID(),

@@ -61,11 +61,25 @@ class TeamStatusWarningSubscriber implements EventSubscriberInterface {
   private $messenger;
 
   /**
-   * The entity type manager.
+   * The team storage.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   * @var \Drupal\apigee_edge\Entity\Storage\DeveloperStorageInterface
    */
-  private $entityTypeManager;
+  private $teamStorage;
+
+  /**
+   * The team entity type.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeInterface
+   */
+  private $teamEntityType;
+
+  /**
+   * The team app entity type.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeInterface
+   */
+  private $teamAppEntityType;
 
   /**
    * TeamStatusWarningSubscriber constructor.
@@ -86,7 +100,9 @@ class TeamStatusWarningSubscriber implements EventSubscriberInterface {
   public function __construct(AccountInterface $current_user, RouteMatchInterface $route_match, EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager, MessengerInterface $messenger, TranslationInterface $string_translation) {
     $this->routeMatch = $route_match;
     $this->currentUser = $current_user;
-    $this->entityTypeManager = $entity_type_manager;
+    $this->teamStorage = $entity_type_manager->getStorage('team');
+    $this->teamEntityType = $entity_type_manager->getDefinition('team');
+    $this->teamAppEntityType = $entity_type_manager->getDefinition('team_app');
     $this->messenger = $messenger;
     $this->stringTranslation = $string_translation;
   }
@@ -108,14 +124,14 @@ class TeamStatusWarningSubscriber implements EventSubscriberInterface {
         /** @var \Drupal\apigee_edge_teams\Entity\TeamAppInterface $app */
         $app = $this->routeMatch->getParameter('team_app') ?? $this->routeMatch->getParameter('app');
         if ($app) {
-          $team = $this->entityTypeManager->getStorage('team')->load($app->getCompanyName());
+          $team = $this->teamStorage->load($app->getCompanyName());
         }
       }
 
       if ($team && $team->getStatus() === TeamInterface::STATUS_INACTIVE) {
         $this->messenger->addWarning($this->t('This @team has inactive status so @team members will not be able to use @team_app credentials until the @team gets activated. Please contact support for further assistance.', [
-          '@team' => $this->entityTypeManager->getDefinition('team')->getLowercaseLabel(),
-          '@team_app' => $this->entityTypeManager->getDefinition('team_app')->getLowercaseLabel(),
+          '@team' => $this->teamEntityType->getLowercaseLabel(),
+          '@team_app' => $this->teamAppEntityType->getLowercaseLabel(),
         ]));
       }
     }

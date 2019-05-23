@@ -99,6 +99,13 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
   private $yamlDiscovery;
 
   /**
+   * The team member role entity storage.
+   *
+   * @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorageInterface
+   */
+  private $teamMemberRoleStorage;
+
+  /**
    * The team membership manager service.
    *
    * @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface
@@ -106,11 +113,11 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
   private $teamMembershipManager;
 
   /**
-   * The entity type manager.
+   * The team role storage.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   * @var \Drupal\apigee_edge_teams\Entity\Storage\TeamRoleStorageInterface
    */
-  private $entityTypeManager;
+  private $teamRoleStorage;
 
   /**
    * TeamPermissionHandler constructor.
@@ -128,7 +135,8 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
     $this->moduleHandler = $module_handler;
     $this->classResolver = $class_resolver;
     $this->teamMembershipManager = $team_membership_manager;
-    $this->entityTypeManager = $entity_type_manager;
+    $this->teamRoleStorage = $entity_type_manager->getStorage('team_role');
+    $this->teamMemberRoleStorage = $entity_type_manager->getStorage('team_member_role');
   }
 
   /**
@@ -159,10 +167,10 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
     // is still member of the team in Apigee Edge.
     if (in_array($team->id(), $developer_team_ids)) {
       /** @var \Drupal\apigee_edge_teams\Entity\TeamRoleInterface $member_role */
-      $member_role = $this->entityTypeManager->getStorage('team_role')->load(TeamRoleInterface::TEAM_MEMBER_ROLE);
+      $member_role = $this->teamRoleStorage->load(TeamRoleInterface::TEAM_MEMBER_ROLE);
       $permissions += $member_role->getPermissions();
       /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface|null $dev_team_role */
-      $dev_team_role = $this->entityTypeManager->getStorage('team_member_role')->loadByDeveloperAndTeam($account, $team);
+      $dev_team_role = $this->teamMemberRoleStorage->loadByDeveloperAndTeam($account, $team);
       if ($dev_team_role) {
         foreach ($dev_team_role->getTeamRoles() as $role) {
           $permissions = array_merge($permissions, $role->getPermissions());
