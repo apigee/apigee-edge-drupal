@@ -51,14 +51,14 @@ class DeveloperAppAliasForm extends EdgeEntityAliasConfigFormBase {
    * {@inheritdoc}
    */
   protected function originalSingularLabel(): string {
-    return $this->t('App');
+    return $this->t('Developer App');
   }
 
   /**
    * {@inheritdoc}
    */
   protected function originalPluralLabel(): string {
-    return $this->t('Apps');
+    return $this->t('Developer Apps');
   }
 
 }
