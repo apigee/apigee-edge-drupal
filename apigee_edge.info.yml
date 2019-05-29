@@ -13,7 +13,7 @@ dependencies:
   - drupal:filter
   - drupal:options
   - key:key
-  - drupal:system (>=8.6.0)
+  - drupal:system (>=8.7.0)
 
 configure: apigee_edge.settings
 
