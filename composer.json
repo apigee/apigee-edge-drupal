@@ -28,6 +28,11 @@
             "services": {
                 "drush.services.yml": "^9"
             }
+        },
+        "patches": {
+            "drupal/core": {
+                "Add/remove event listeners provided by a module on module install/uninstall": "https://www.drupal.org/files/issues/2019-05-28/uninstalled-module-kernel-response-listener-fix-3056604-29.patch"
+            }
         }
     }
 }
