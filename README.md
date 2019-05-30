@@ -84,6 +84,6 @@ Apigee Edge module.**
 
 Development is coordinated in our [GitHub repository](https://github.com/apigee/apigee-edge-drupal). The drupal.org issue queue is disabled; we use the [GitHub issue queue](https://github.com/apigee/apigee-edge-drupal/issues) to coordinate development.
 
-## Disclaimer
+## Support
 
-This is not an officially supported Google product.
+This project, which integrates Drupal 8 with Apigee Edge, is supported by Google.
