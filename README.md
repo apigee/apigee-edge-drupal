@@ -9,22 +9,14 @@ This module includes the following submodules:
 * __API product RBAC:__ enables administrators to configure access permissions to API products.
 * __Debug:__ enables administrators to configure and manage Apigee debug logs.
 * __Teams (Experimental):__ enables developers to be organized into teams.
-* __API Docs (Experimental)__: Submodule to publish documentation to your site using OpenAPI specs.
 
 For more details read the [Apigee Edge module documentation](https://www.drupal.org/docs/8/modules/apigee-edge). 
-
-## Module status
-
-The core functionality of this module is complete and we are currently completing final testing and critical
-issue fixes. We encourage you to download and evaluate the module, and to use our 
-[GitHub issue queue](https://github.com/apigee/apigee-edge-drupal/issues) to give feedback, ask questions, 
-or log issues.
 
 Following the same concept of [Drupal 8 Experimental modules](https://www.drupal.org/core/experimental), 
 some submodules are marked as "Experimental". They are provided for evaluation and testing purposes but are still 
 considered to be in development. Experimental modules are included in the "Apigee (Experimental)" package
  on the "Extend" page of a Drupal site (/admin/modules).
- 
+
 ## Requirements
 
 * The Apigee Edge module requires **Drupal 8.7.x** or higher and PHP 7.1 or higher.
