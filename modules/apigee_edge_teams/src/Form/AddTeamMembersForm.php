@@ -145,7 +145,7 @@ class AddTeamMembersForm extends FormBase {
       '#type' => 'actions',
       'submit' => [
         '#type' => 'submit',
-        '#value' => $this->t('Add members'),
+        '#value' => $this->t('Add team members'),
         '#button_type' => 'primary',
       ],
       'cancel' => [
@@ -229,7 +229,7 @@ class AddTeamMembersForm extends FormBase {
                 '%roles' => implode(', ', array_map(function (TeamRole $role) {
                   return $role->label();
                 }, $team_member_roles->getTeamRoles())),
-                'link' => $this->team->toLink($this->t('Members'), 'members')->toString(),
+                'link' => $this->team->toLink($this->t('Team Members'), 'members')->toString(),
               ];
               $context += Error::decodeException($exception);
               $logger->error('Integrity check: %developer developer had a team member role entity with "%roles" team roles for %team_id team when it was added to the team. These roles could not been deleted automatically. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);

@@ -130,7 +130,7 @@ class TeamRouteProvider extends EdgeEntityRouteProvider {
     if ($entity_type->hasLinkTemplate('add-members')) {
       $route = new Route($entity_type->getLinkTemplate('add-members'));
       $route->setDefault('_form', AddTeamMembersForm::class);
-      $route->setDefault('_title', 'Add members');
+      $route->setDefault('_title', 'Add team members');
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureTeamParameter($route);
       $route->setRequirement('_apigee_edge_teams_manage_team_access', 'TRUE');
@@ -155,7 +155,7 @@ class TeamRouteProvider extends EdgeEntityRouteProvider {
     // can not be defined in the link templates defined on the Team entity.
     $route = new Route('/teams/{team}/members/{developer}/edit');
     $route->setDefault('_form', EditTeamMemberForm::class);
-    $route->setDefault('_title', 'Edit member');
+    $route->setDefault('_title', 'Edit team member');
     $route->setDefault('entity_type_id', $entity_type->id());
     $route->setRequirement('_apigee_edge_teams_manage_team_access', 'TRUE');
     // Make sure parameters gets up-casted.
@@ -188,7 +188,7 @@ class TeamRouteProvider extends EdgeEntityRouteProvider {
     // can not be defined in the link templates defined on the Team entity.
     $route = new Route('/teams/{team}/members/{developer}/remove');
     $route->setDefault('_form', RemoveTeamMemberForm::class);
-    $route->setDefault('_title', 'Remove member');
+    $route->setDefault('_title', 'Remove team member');
     $route->setDefault('entity_type_id', $entity_type->id());
     $route->setRequirement('_apigee_edge_teams_manage_team_access', 'TRUE');
     // Make sure parameters gets up-casted.

@@ -157,7 +157,7 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
         // a new team gets created with a previously used team id.
         $context = [
           '%team' => "{$entity->label()} ({$entity->id()})",
-          'link' => $entity->toLink($this->t('Members'), 'members')->toString(),
+          'link' => $entity->toLink($this->t('Team Members'), 'members')->toString(),
         ];
         $this->logger->warning('Integrity check: Remnant team member roles found for new %team team.', $context);
         $success = TRUE;
