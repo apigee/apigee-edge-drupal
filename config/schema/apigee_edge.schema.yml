@@ -13,6 +13,9 @@ apigee_edge.error_page:
         value:
           type: text
           label: 'Error page content'
+    error_page_debug_messages:
+      type: boolean
+      label: 'Show additional debug messages'
 
 apigee_edge.auth:
   type: config_object
