@@ -84,7 +84,7 @@ namespace Drupal\Tests\apigee_edge\Unit {
         Argument::type('string'),
         Argument::type('string'),
         Argument::type('string'),
-        Argument::type('string'),
+        Argument::type('string')
         )
         ->shouldHaveBeenCalledTimes(1);
 
