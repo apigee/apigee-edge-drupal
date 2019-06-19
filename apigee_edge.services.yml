@@ -13,6 +13,10 @@ services:
   apigee_edge.cli:
     class: Drupal\apigee_edge\CliService
 
+  apigee_edge.edge_connection_util:
+    class: Drupal\apigee_edge\util\EdgeConnectionUtilService
+    arguments: ['@http_client']
+
   apigee_edge.sdk_connector:
     class: Drupal\apigee_edge\SDKConnector
     arguments: ['@http_client_factory', '@key.repository', '@entity_type.manager', '@config.factory', '@module_handler', '@info_parser']
