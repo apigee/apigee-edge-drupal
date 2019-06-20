@@ -36,11 +36,11 @@ namespace Drupal\Tests\apigee_edge\Unit {
    */
   class ApigeeEdgeCommandsTest extends UnitTestCase {
 
-    protected $apigee_edge_commands;
+    protected $apigeeEdgeCommands;
 
-    protected $edge_connection_util_service;
+    protected $edgeConnectionUtilService;
 
-    protected $cli_service;
+    protected $cliService;
 
     protected $io;
 
@@ -49,16 +49,16 @@ namespace Drupal\Tests\apigee_edge\Unit {
      */
     protected function setUp() {
       parent::setUp();
-      $this->edge_connection_util_service = $this->prophesize(EdgeConnectionUtilServiceInterface::class);
-      $this->cli_service = $this->prophesize(CliServiceInterface::class);
-      $this->apigee_edge_commands = new ApigeeEdgeCommands($this->cli_service->reveal(), $this->edge_connection_util_service->reveal());
+      $this->edgeConnectionUtilService = $this->prophesize(EdgeConnectionUtilServiceInterface::class);
+      $this->cliService = $this->prophesize(CliServiceInterface::class);
+      $this->apigeeEdgeCommands = new ApigeeEdgeCommands($this->cliService->reveal(), $this->edgeConnectionUtilService->reveal());
 
       // Set io in DrushCommands to a mock.
-      $apigee_edge_commands_reflection = new ReflectionClass($this->apigee_edge_commands);
+      $apigee_edge_commands_reflection = new ReflectionClass($this->apigeeEdgeCommands);
       $reflection_io_property = $apigee_edge_commands_reflection->getProperty('io');
       $reflection_io_property->setAccessible(TRUE);
       $this->io = $this->prophesize(DrushStyle::class);
-      $reflection_io_property->setValue($this->apigee_edge_commands, $this->io->reveal());
+      $reflection_io_property->setValue($this->apigeeEdgeCommands, $this->io->reveal());
 
       $this->io->askHidden(Argument::type('string'), Argument::any())
         ->willReturn('I<3APIS!');
@@ -75,9 +75,9 @@ namespace Drupal\Tests\apigee_edge\Unit {
         'role-name' => 'portalRole',
       ];
 
-      $this->apigee_edge_commands->createEdgeRole('orgA', 'emailA', $drush_options);
+      $this->apigeeEdgeCommands->createEdgeRole('orgA', 'emailA', $drush_options);
 
-      $this->edge_connection_util_service->createEdgeRoleForDrupal(
+      $this->edgeConnectionUtilService->createEdgeRoleForDrupal(
         Argument::type(DrushStyle::class),
         Argument::type('string'),
         Argument::type('string'),
@@ -104,7 +104,7 @@ namespace Drupal\Tests\apigee_edge\Unit {
       $command_data = $this->prophesize(CommandData::class);
       $command_data->input()->willReturn($command_data_input->reveal());
 
-      $this->apigee_edge_commands->validateCreateEdgeRole($command_data->reveal());
+      $this->apigeeEdgeCommands->validateCreateEdgeRole($command_data->reveal());
 
       // Make sure password was not prompted to user.
       $command_data_input->getOption('password')->shouldHaveBeenCalled();
@@ -128,7 +128,7 @@ namespace Drupal\Tests\apigee_edge\Unit {
       $command_data = $this->prophesize(CommandData::class);
       $command_data->input()->willReturn($command_data_input->reveal());
 
-      $this->apigee_edge_commands->validateCreateEdgeRole($command_data->reveal());
+      $this->apigeeEdgeCommands->validateCreateEdgeRole($command_data->reveal());
 
       // Make sure password not requested.
       $command_data_input->getOption('password')->shouldHaveBeenCalled();

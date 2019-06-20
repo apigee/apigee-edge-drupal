@@ -45,10 +45,10 @@ class EdgeConnectionUtilServiceTest extends KernelTestBase implements ServiceMod
 
   protected $endpoint;
   protected $organization;
-  protected $orgadmin_email;
-  protected $orgadmin_password;
+  protected $orgadminEmail;
+  protected $orgadminPassword;
 
-  protected $http_client;
+  protected $httpClient;
 
   /**
    * {@inheritdoc}
@@ -72,11 +72,11 @@ class EdgeConnectionUtilServiceTest extends KernelTestBase implements ServiceMod
     // Get environment variables for Edge connection.
     $this->endpoint = getenv('APIGEE_EDGE_ENDPOINT');
     $this->organization = getenv('APIGEE_EDGE_ORGANIZATION');
-    $this->orgadmin_email = getenv('APIGEE_EDGE_USERNAME');
-    $this->orgadmin_password = getenv('APIGEE_EDGE_PASSWORD');
+    $this->orgadminEmail = getenv('APIGEE_EDGE_USERNAME');
+    $this->orgadminPassword = getenv('APIGEE_EDGE_PASSWORD');
 
     /** @var \GuzzleHttp\Client $client */
-    $this->http_client = $this->container->get('http_client');
+    $this->httpClient = $this->container->get('http_client');
   }
 
   /**
@@ -84,9 +84,9 @@ class EdgeConnectionUtilServiceTest extends KernelTestBase implements ServiceMod
    */
   protected function tearDown() {
     $url = $this->endpoint . '/o/' . $this->organization . '/userroles/' . self::TEST_ROLE_NAME;
-    $response = $this->http_client->get($url, [
+    $response = $this->httpClient->get($url, [
       'http_errors' => FALSE,
-      'auth' => [$this->orgadmin_email, $this->orgadmin_password],
+      'auth' => [$this->orgadminEmail, $this->orgadminPassword],
       'headers' => [
         'Accept' => 'application/json',
         'Content-Type' => 'application/json',
@@ -95,8 +95,8 @@ class EdgeConnectionUtilServiceTest extends KernelTestBase implements ServiceMod
 
     if ($response->getStatusCode() == 200) {
       $url = $this->endpoint . '/o/' . $this->organization . '/userroles/' . self::TEST_ROLE_NAME;
-      $this->http_client->delete($url, [
-        'auth' => [$this->orgadmin_email, $this->orgadmin_password],
+      $this->httpClient->delete($url, [
+        'auth' => [$this->orgadminEmail, $this->orgadminPassword],
         'headers' => [
           'Accept' => 'application/json',
           'Content-Type' => 'application/json',
@@ -122,8 +122,8 @@ class EdgeConnectionUtilServiceTest extends KernelTestBase implements ServiceMod
    */
   public function testIsValidEdgeCredentialsEdgeApi() {
     $url = $this->endpoint . '/o/' . $this->organization;
-    $response = $this->http_client->get($url, [
-      'auth' => [$this->orgadmin_email, $this->orgadmin_password],
+    $response = $this->httpClient->get($url, [
+      'auth' => [$this->orgadminEmail, $this->orgadminPassword],
       'headers' => ['Accept' => 'application/json'],
     ]);
 
@@ -139,9 +139,9 @@ class EdgeConnectionUtilServiceTest extends KernelTestBase implements ServiceMod
     // Role should not exist.
     $url = $this->endpoint . '/o/' . $this->organization . '/userroles/' . self::TEST_ROLE_NAME;
 
-    $response = $this->http_client->get($url, [
+    $response = $this->httpClient->get($url, [
       'http_errors' => FALSE,
-      'auth' => [$this->orgadmin_email, $this->orgadmin_password],
+      'auth' => [$this->orgadminEmail, $this->orgadminPassword],
       'headers' => [
         'Accept' => 'application/json',
         'Content-Type' => 'application/json',
@@ -157,11 +157,11 @@ class EdgeConnectionUtilServiceTest extends KernelTestBase implements ServiceMod
   public function testCreateEdgeRoleAndSetPermissions() {
 
     $url = $this->endpoint . '/o/' . $this->organization . '/userroles';
-    $response = $this->http_client->post($url, [
+    $response = $this->httpClient->post($url, [
       'body' => json_encode([
         'role' => [self::TEST_ROLE_NAME],
       ]),
-      'auth' => [$this->orgadmin_email, $this->orgadmin_password],
+      'auth' => [$this->orgadminEmail, $this->orgadminPassword],
       'headers' => [
         'Accept' => 'application/json',
         'Content-Type' => 'application/json',
@@ -175,9 +175,9 @@ class EdgeConnectionUtilServiceTest extends KernelTestBase implements ServiceMod
       'path' => '/developers',
       'permissions' => ['get', 'put', 'delete'],
     ]);
-    $response = $this->http_client->post($url, [
+    $response = $this->httpClient->post($url, [
       'body' => $body,
-      'auth' => [$this->orgadmin_email, $this->orgadmin_password],
+      'auth' => [$this->orgadminEmail, $this->orgadminPassword],
       'headers' => [
         'Accept' => 'application/json',
         'Content-Type' => 'application/json',

@@ -39,20 +39,20 @@ use Symfony\Component\Console\Style\StyleInterface;
  */
 class EdgeConnectionUtilServiceTest extends UnitTestCase {
 
-  protected $base_url = 'http://api.apigee.com';
+  protected $baseUrl = 'http://api.apigee.com';
   protected $email = 'noreply@apigee.com';
   protected $password = 'secret';
   protected $org = 'org1';
-  protected $role_name = 'drupal_connect_role';
+  protected $roleName = 'drupal_connect_role';
 
-  protected $http_client;
+  protected $httpClient;
 
   /**
    * {@inheritdoc}
    */
   protected function setUp() {
     parent::setUp();
-    $this->http_client = $this->prophesize(Client::class);
+    $this->httpClient = $this->prophesize(Client::class);
   }
 
   /**
@@ -74,12 +74,12 @@ class EdgeConnectionUtilServiceTest extends UnitTestCase {
     $io->text(Argument::type('string'))
       ->shouldBeCalledTimes(1);
 
-    $this->http_client
+    $this->httpClient
       ->get(Argument::type('string'), Argument::type('array'))
       ->willReturn($response->reveal());
 
-    $edge_connection_util_service = new EdgeConnectionUtilService($this->http_client->reveal());
-    $is_valid_creds = $edge_connection_util_service->isValidEdgeCredentials($io->reveal(), [$this, 'mockDt'], $this->org, $this->email, $this->password, $this->base_url);
+    $edge_connection_util_service = new EdgeConnectionUtilService($this->httpClient->reveal());
+    $is_valid_creds = $edge_connection_util_service->isValidEdgeCredentials($io->reveal(), [$this, 'mockDt'], $this->org, $this->email, $this->password, $this->baseUrl);
     $this->assertEquals(FALSE, $is_valid_creds, 'Credentials are not valid, should return false.');
   }
 
@@ -94,7 +94,7 @@ class EdgeConnectionUtilServiceTest extends UnitTestCase {
       ->shouldBeCalledTimes(1)
       ->willReturn($body);
 
-    $this->http_client
+    $this->httpClient
       ->get(Argument::type('string'), Argument::type('array'))
       ->willReturn($response->reveal());
 
@@ -108,8 +108,8 @@ class EdgeConnectionUtilServiceTest extends UnitTestCase {
     $io->success(Argument::type('string'))
       ->shouldBeCalled();
 
-    $edge_connection_util_service = new EdgeConnectionUtilService($this->http_client->reveal());
-    $is_valid_creds = $edge_connection_util_service->isValidEdgeCredentials($io->reveal(), [$this, 'mockDt'], $this->org, $this->email, $this->password, $this->base_url);
+    $edge_connection_util_service = new EdgeConnectionUtilService($this->httpClient->reveal());
+    $is_valid_creds = $edge_connection_util_service->isValidEdgeCredentials($io->reveal(), [$this, 'mockDt'], $this->org, $this->email, $this->password, $this->baseUrl);
     $this->assertEquals(TRUE, $is_valid_creds, 'Credentials are not valid, should return false.');
   }
 
@@ -120,9 +120,9 @@ class EdgeConnectionUtilServiceTest extends UnitTestCase {
 
     $io = $this->prophesize(StyleInterface::class);
     $io->success(Argument::exact('Connected to Edge org ' . $this->org . '.'))->shouldBeCalledTimes(1);
-    $io->success(Argument::containingString('Role ' . $this->role_name . ' is configured.'))->shouldBeCalledTimes(1);
-    $io->text(Argument::containingString('Role ' . $this->role_name . ' already exists.'))->shouldBeCalledTimes(1);
-    $io->text(Argument::containingString('Setting permissions on role ' . $this->role_name . '.'))->shouldBeCalledTimes(1);
+    $io->success(Argument::containingString('Role ' . $this->roleName . ' is configured.'))->shouldBeCalledTimes(1);
+    $io->text(Argument::containingString('Role ' . $this->roleName . ' already exists.'))->shouldBeCalledTimes(1);
+    $io->text(Argument::containingString('Setting permissions on role ' . $this->roleName . '.'))->shouldBeCalledTimes(1);
     $io->text(Argument::containingString('/'))->shouldBeCalledTimes(12);
 
     $body = '{ "name": "' . $this->org . '" }';
@@ -131,22 +131,22 @@ class EdgeConnectionUtilServiceTest extends UnitTestCase {
       ->shouldBeCalledTimes(1)
       ->willReturn($body);
 
-    $this->http_client
-      ->get(Argument::exact($this->base_url . '/o/' . $this->org), Argument::type('array'))
+    $this->httpClient
+      ->get(Argument::exact($this->baseUrl . '/o/' . $this->org), Argument::type('array'))
       ->shouldBeCalledTimes(1)
       ->willReturn($response->reveal());
 
-    $this->http_client
-      ->get(Argument::exact($this->base_url . '/o/' . $this->org . '/userroles/' . $this->role_name), Argument::type('array'))
+    $this->httpClient
+      ->get(Argument::exact($this->baseUrl . '/o/' . $this->org . '/userroles/' . $this->roleName), Argument::type('array'))
       ->shouldBeCalledTimes(1)
       ->willReturn($response->reveal());
 
-    $this->http_client
+    $this->httpClient
       ->post(Argument::type('string'), Argument::type('array'))
       ->willReturn($response->reveal());
 
-    $edge_connection_util_service = new EdgeConnectionUtilService($this->http_client->reveal());
-    $edge_connection_util_service->createEdgeRoleForDrupal($io->reveal(), [$this, 'mockDt'], $this->org, $this->email, $this->password, $this->base_url, $this->role_name);
+    $edge_connection_util_service = new EdgeConnectionUtilService($this->httpClient->reveal());
+    $edge_connection_util_service->createEdgeRoleForDrupal($io->reveal(), [$this, 'mockDt'], $this->org, $this->email, $this->password, $this->baseUrl, $this->roleName);
   }
 
   /**
@@ -155,9 +155,9 @@ class EdgeConnectionUtilServiceTest extends UnitTestCase {
   public function testCreateEdgeRoleForDrupalWhenRoleExistsTest() {
     $io = $this->prophesize(StyleInterface::class);
     $io->success(Argument::exact('Connected to Edge org ' . $this->org . '.'))->shouldBeCalledTimes(1);
-    $io->success(Argument::containingString('Role ' . $this->role_name . ' is configured.'))->shouldBeCalledTimes(1);
-    $io->text(Argument::containingString('Role ' . $this->role_name . ' already exists.'))->shouldBeCalledTimes(1);
-    $io->text(Argument::containingString('Setting permissions on role ' . $this->role_name . '.'))->shouldBeCalledTimes(1);
+    $io->success(Argument::containingString('Role ' . $this->roleName . ' is configured.'))->shouldBeCalledTimes(1);
+    $io->text(Argument::containingString('Role ' . $this->roleName . ' already exists.'))->shouldBeCalledTimes(1);
+    $io->text(Argument::containingString('Setting permissions on role ' . $this->roleName . '.'))->shouldBeCalledTimes(1);
     $io->text(Argument::containingString('/'))->shouldBeCalledTimes(12);
 
     $response_org = $this->prophesize(Response::class);
@@ -165,23 +165,23 @@ class EdgeConnectionUtilServiceTest extends UnitTestCase {
       ->shouldBeCalledTimes(1)
       ->willReturn('{ "name": "' . $this->org . '" }');
 
-    $this->http_client
-      ->get(Argument::exact($this->base_url . '/o/' . $this->org), Argument::type('array'))
+    $this->httpClient
+      ->get(Argument::exact($this->baseUrl . '/o/' . $this->org), Argument::type('array'))
       ->shouldBeCalledTimes(1)
       ->willReturn($response_org->reveal());
 
     $response_user_role = $this->prophesize(Response::class);
 
-    $this->http_client
-      ->get(Argument::exact($this->base_url . '/o/' . $this->org . '/userroles/' . $this->role_name), Argument::type('array'))
+    $this->httpClient
+      ->get(Argument::exact($this->baseUrl . '/o/' . $this->org . '/userroles/' . $this->roleName), Argument::type('array'))
       ->willReturn($response_user_role->reveal());
 
-    $this->http_client
-      ->post(Argument::exact($this->base_url . '/o/' . $this->org . '/userroles/' . $this->role_name . '/permissions'), Argument::type('array'))
+    $this->httpClient
+      ->post(Argument::exact($this->baseUrl . '/o/' . $this->org . '/userroles/' . $this->roleName . '/permissions'), Argument::type('array'))
       ->shouldBeCalledTimes(12);
 
-    $edge_connection_util_service = new EdgeConnectionUtilService($this->http_client->reveal());
-    $edge_connection_util_service->createEdgeRoleForDrupal($io->reveal(), [$this, 'mockDt'], $this->org, $this->email, $this->password, $this->base_url, $this->role_name);
+    $edge_connection_util_service = new EdgeConnectionUtilService($this->httpClient->reveal());
+    $edge_connection_util_service->createEdgeRoleForDrupal($io->reveal(), [$this, 'mockDt'], $this->org, $this->email, $this->password, $this->baseUrl, $this->roleName);
   }
 
   /**
@@ -189,13 +189,13 @@ class EdgeConnectionUtilServiceTest extends UnitTestCase {
    */
   public function testDoesRoleExistTrue() {
 
-    $this->http_client
+    $this->httpClient
       ->get(Argument::cetera())
       ->shouldBeCalledTimes(1)
       ->willReturn(NULL);
 
-    $edge_connection_util_service = new EdgeConnectionUtilService($this->http_client->reveal());
-    $does_role_exist = $edge_connection_util_service->doesRoleExist($this->org, $this->email, $this->password, $this->base_url, $this->role_name);
+    $edge_connection_util_service = new EdgeConnectionUtilService($this->httpClient->reveal());
+    $does_role_exist = $edge_connection_util_service->doesRoleExist($this->org, $this->email, $this->password, $this->baseUrl, $this->roleName);
     $this->assertEquals(TRUE, $does_role_exist, 'Method doesRoleExist() should return true when role exists.');
   }
 
@@ -211,12 +211,12 @@ class EdgeConnectionUtilServiceTest extends UnitTestCase {
     // Http client throws exception when role does not exist.
     $exception = new ClientException('Role does not exist.', $request->reveal(), $response->reveal());
 
-    $this->http_client
+    $this->httpClient
       ->get(Argument::type('string'), Argument::type('array'))
       ->willThrow($exception);
 
-    $edge_connection_util_service = new EdgeConnectionUtilService($this->http_client->reveal());
-    $does_role_exist = $edge_connection_util_service->doesRoleExist($this->org, $this->email, $this->password, $this->base_url, $this->role_name);
+    $edge_connection_util_service = new EdgeConnectionUtilService($this->httpClient->reveal());
+    $does_role_exist = $edge_connection_util_service->doesRoleExist($this->org, $this->email, $this->password, $this->baseUrl, $this->roleName);
 
     $this->assertEquals(FALSE, $does_role_exist, 'Method doesRoleExist() should return false when role exists.');
   }
@@ -232,12 +232,12 @@ class EdgeConnectionUtilServiceTest extends UnitTestCase {
     // Http client throws exception if network or server error happens.
     $exception = new ServerException('Server error.', $request->reveal(), $response->reveal());
     $this->expectException(ServerException::class);
-    $this->http_client
+    $this->httpClient
       ->get(Argument::type('string'), Argument::type('array'))
       ->willThrow($exception);
 
-    $edge_connection_util_service = new EdgeConnectionUtilService($this->http_client->reveal());
-    $edge_connection_util_service->doesRoleExist($this->org, $this->email, $this->password, $this->base_url, $this->role_name);
+    $edge_connection_util_service = new EdgeConnectionUtilService($this->httpClient->reveal());
+    $edge_connection_util_service->doesRoleExist($this->org, $this->email, $this->password, $this->baseUrl, $this->roleName);
   }
 
   /**
@@ -249,7 +249,7 @@ class EdgeConnectionUtilServiceTest extends UnitTestCase {
     $io->error(Argument::containingString('Error connecting to Apigee Edge'))->shouldBeCalledTimes(1);
     $io->note(Argument::containingString('Your system may not be able to connect'))->shouldBeCalledTimes(1);
 
-    $edge_connection_util_service = new EdgeConnectionUtilService($this->http_client->reveal());
+    $edge_connection_util_service = new EdgeConnectionUtilService($this->httpClient->reveal());
     $edge_connection_util_service->handleHttpClientExceptions($exception->reveal(), $io->reveal(), [$this, 'mockDt'], 'http://api.apigee.com/test', $this->org, $this->email);
   }
 
@@ -267,7 +267,7 @@ class EdgeConnectionUtilServiceTest extends UnitTestCase {
     $io->error(Argument::containingString('Error connecting to Apigee Edge'))->shouldBeCalledTimes(1);
     $io->note(Argument::containingString('User ' . $this->email . ' may not have the orgadmin role'))->shouldBeCalledTimes(1);
 
-    $edge_connection_util_service = new EdgeConnectionUtilService($this->http_client->reveal());
+    $edge_connection_util_service = new EdgeConnectionUtilService($this->httpClient->reveal());
     $edge_connection_util_service->handleHttpClientExceptions($exception, $io->reveal(), [$this, 'mockDt'], 'http://api.apigee.com/test', $this->org, $this->email);
   }
 
@@ -283,10 +283,10 @@ class EdgeConnectionUtilServiceTest extends UnitTestCase {
 
     $io = $this->prophesize(StyleInterface::class);
     $io->error(Argument::containingString('Error connecting to Apigee Edge'))->shouldBeCalledTimes(1);
-    $io->note(Argument::containingString('the url ' . $this->base_url . '/test' . ' does not seem to be a valid Apigee Edge endpoint.'))->shouldBeCalledTimes(1);
+    $io->note(Argument::containingString('the url ' . $this->baseUrl . '/test' . ' does not seem to be a valid Apigee Edge endpoint.'))->shouldBeCalledTimes(1);
 
-    $edge_connection_util_service = new EdgeConnectionUtilService($this->http_client->reveal());
-    $edge_connection_util_service->handleHttpClientExceptions($exception, $io->reveal(), [$this, 'mockDt'], $this->base_url . '/test', $this->org, $this->email);
+    $edge_connection_util_service = new EdgeConnectionUtilService($this->httpClient->reveal());
+    $edge_connection_util_service->handleHttpClientExceptions($exception, $io->reveal(), [$this, 'mockDt'], $this->baseUrl . '/test', $this->org, $this->email);
   }
 
   /**
@@ -295,10 +295,10 @@ class EdgeConnectionUtilServiceTest extends UnitTestCase {
    * @throws \ReflectionException
    */
   public function testSetDefaultPermissions() {
-    $edge_connection_util_service = new EdgeConnectionUtilService($this->http_client->reveal());
+    $edge_connection_util_service = new EdgeConnectionUtilService($this->httpClient->reveal());
     $io = $this->prophesize(StyleInterface::class);
 
-    $this->http_client->post(Argument::type('string'), Argument::type('array'))->shouldBeCalledTimes(12);
+    $this->httpClient->post(Argument::type('string'), Argument::type('array'))->shouldBeCalledTimes(12);
 
     // Make method under test not private.
     $edge_connection_util_service_reflection = new ReflectionClass($edge_connection_util_service);
@@ -311,8 +311,8 @@ class EdgeConnectionUtilServiceTest extends UnitTestCase {
       $this->org,
       $this->email,
       $this->password,
-      $this->base_url,
-      $this->role_name,
+      $this->baseUrl,
+      $this->roleName,
     ];
     $method_set_default_permissions->invokeArgs($edge_connection_util_service, $args);
   }
