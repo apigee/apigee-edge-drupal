@@ -43,13 +43,13 @@ use Symfony\Component\Routing\RequestContext;
 class EdgeExceptionSubscriberTest extends UnitTestCase {
 
   protected $exception;
-  protected $http_kernel;
+  protected $httpKernel;
   protected $logger;
-  protected $redirect_destination;
-  protected $access_unaware_router;
-  protected $config_factory;
+  protected $redirectDestination;
+  protected $accessUnawareRouter;
+  protected $configFactory;
   protected $messenger;
-  protected $get_response_for_exception_event;
+  protected $getResponseForExceptionEvent;
 
   /**
    * {@inheritdoc}
@@ -59,13 +59,13 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
 
     $this->exception = new ApiException("API response error message.");
 
-    $this->http_kernel = $this->prophesize(HttpKernelInterface::class);
+    $this->httpKernel = $this->prophesize(HttpKernelInterface::class);
     $this->logger = $this->prophesize(LoggerInterface::class);
-    $this->redirect_destination = $this->prophesize(RedirectDestinationInterface::class);
+    $this->redirectDestination = $this->prophesize(RedirectDestinationInterface::class);
 
     $request = $this->prophesize(RequestContext::class);
-    $this->access_unaware_router = $this->prophesize(UrlMatcherInterface::class);
-    $this->access_unaware_router->getContext(Argument::any())->willReturn($request->reveal());
+    $this->accessUnawareRouter = $this->prophesize(UrlMatcherInterface::class);
+    $this->accessUnawareRouter->getContext(Argument::any())->willReturn($request->reveal());
 
     $this->messenger = $this->prophesize(MessengerInterface::class);
 
@@ -80,10 +80,10 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
     $request->server = new stdClass();
     $request->headers = new stdClass();
 
-    $this->get_response_for_exception_event = $this->prophesize(GetResponseForExceptionEvent::class);
-    $this->get_response_for_exception_event->getRequest()
+    $this->getResponseForExceptionEvent = $this->prophesize(GetResponseForExceptionEvent::class);
+    $this->getResponseForExceptionEvent->getRequest()
       ->willReturn($request->reveal());
-    $this->get_response_for_exception_event->getException()
+    $this->getResponseForExceptionEvent->getException()
       ->willReturn($this->exception);
 
   }
@@ -102,8 +102,8 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
       ->get(Argument::is('error_page_debug_messages'))
       ->shouldBeCalledTimes(1)
       ->willReturn(TRUE);
-    $this->config_factory = $this->prophesize(ConfigFactoryInterface::class);
-    $this->config_factory
+    $this->configFactory = $this->prophesize(ConfigFactoryInterface::class);
+    $this->configFactory
       ->get(Argument::is('apigee_edge.error_page'))
       ->willReturn($config_error_page->reveal());
 
@@ -112,15 +112,15 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
       ->shouldBeCalledTimes(1);
 
     $edge_exception_subscriber = new EdgeExceptionSubscriber(
-      $this->http_kernel->reveal(),
+      $this->httpKernel->reveal(),
       $this->logger->reveal(),
-      $this->redirect_destination->reveal(),
-      $this->access_unaware_router->reveal(),
-      $this->config_factory->reveal(),
+      $this->redirectDestination->reveal(),
+      $this->accessUnawareRouter->reveal(),
+      $this->configFactory->reveal(),
       $this->messenger->reveal()
     );
 
-    $edge_exception_subscriber->onException($this->get_response_for_exception_event->reveal());
+    $edge_exception_subscriber->onException($this->getResponseForExceptionEvent->reveal());
   }
 
   /**
@@ -137,8 +137,8 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
       ->get(Argument::is('error_page_debug_messages'))
       ->shouldBeCalledTimes(1)
       ->willReturn(FALSE);
-    $this->config_factory = $this->prophesize(ConfigFactoryInterface::class);
-    $this->config_factory
+    $this->configFactory = $this->prophesize(ConfigFactoryInterface::class);
+    $this->configFactory
       ->get(Argument::is('apigee_edge.error_page'))
       ->willReturn($config_error_page->reveal());
 
@@ -147,15 +147,15 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
       ->shouldNotBeCalled();
 
     $edge_exception_subscriber = new EdgeExceptionSubscriber(
-      $this->http_kernel->reveal(),
+      $this->httpKernel->reveal(),
       $this->logger->reveal(),
-      $this->redirect_destination->reveal(),
-      $this->access_unaware_router->reveal(),
-      $this->config_factory->reveal(),
+      $this->redirectDestination->reveal(),
+      $this->accessUnawareRouter->reveal(),
+      $this->configFactory->reveal(),
       $this->messenger->reveal()
     );
 
-    $edge_exception_subscriber->onException($this->get_response_for_exception_event->reveal());
+    $edge_exception_subscriber->onException($this->getResponseForExceptionEvent->reveal());
   }
 
 }
