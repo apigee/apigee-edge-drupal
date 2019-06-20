@@ -115,6 +115,8 @@ services:
       - '@logger.channel.apigee_edge'
       - '@redirect.destination'
       - '@router.no_access_checks'
+      - '@config.factory'
+      - '@messenger'
     tags:
       - { name: event_subscriber }
 
