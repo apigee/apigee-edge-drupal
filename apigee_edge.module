@@ -166,7 +166,12 @@ function template_preprocess_apigee_entity(array &$variables) {
   $variables['label'] = $entity->label();
 
   if (!$entity->isNew() && $entity->hasLinkTemplate('canonical')) {
-    $variables['url'] = $entity->toUrl('canonical', ['language' => $entity->language()])->toString();
+    try {
+      $variables['url'] = $entity->toUrl('canonical', ['language' => $entity->language()])->toString();
+    }
+    catch (Exception $exception) {
+      watchdog_exception('apigee_edge', $exception);
+    }
   }
 
   // Helpful $content variable for templates.
