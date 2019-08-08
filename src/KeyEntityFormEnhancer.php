@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge;
 
+use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
@@ -529,6 +530,12 @@ final class KeyEntityFormEnhancer {
               '%endpoint' => $key_type->getEndpoint($key),
             ]);
           }
+        }
+        elseif ($exception instanceof ApiException) {
+          $suggestion = $this->t('@fail_text The given endpoint (%endpoint) is incorrect or something is wrong with the connection.', [
+            '@fail_text' => $fail_text,
+            '%endpoint' => $key_type->getEndpoint($key),
+          ]);
         }
       }
     }

@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge;
 use Apigee\Edge\Api\Management\Controller\OrganizationController;
 use Apigee\Edge\Client;
 use Apigee\Edge\ClientInterface;
+use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\HttpClient\Utility\Builder;
 use Drupal\apigee_edge\Exception\AuthenticationKeyException;
 use Drupal\apigee_edge\Exception\AuthenticationKeyNotFoundException;
@@ -273,7 +274,11 @@ class SDKConnector implements SDKConnectorInterface {
     try {
       // We use the original, non-decorated organization controller here.
       $oc = new OrganizationController($client);
-      $oc->load($credentials->getKeyType()->getOrganization($credentials->getKey()));
+      /* @var \Apigee\Edge\Api\Management\Entity\Organization $org */
+      $org = $oc->load($credentials->getKeyType()->getOrganization($credentials->getKey()));
+      if (empty($org->id())) {
+        throw new ApiException('Failed to load a valid organization.');
+      }
     }
     catch (\Exception $e) {
       throw $e;
