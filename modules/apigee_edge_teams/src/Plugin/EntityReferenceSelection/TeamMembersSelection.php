@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge_teams\Plugin\EntityReferenceSelection;
 
 use Drupal\apigee_edge\Entity\Controller\DeveloperControllerInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -169,7 +170,13 @@ class TeamMembersSelection extends UserSelection {
    * {@inheritdoc}
    */
   protected function buildEntityQuery($match = NULL, $match_operator = 'CONTAINS') {
-    $query = parent::buildEntityQuery($match, $match_operator);
+    // Do not pass $match so that it does not add the "name" field to the query,
+    // as we will search by email instead.
+    $query = parent::buildEntityQuery(NULL, $match_operator);
+    if (isset($match)) {
+      $query->condition('mail', $match, $match_operator);
+    }
+
     $config = $this->getConfiguration();
     $team_name = $config['filter']['team'];
 
@@ -220,6 +227,23 @@ class TeamMembersSelection extends UserSelection {
     }
 
     return $query;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getReferenceableEntities($match = NULL, $match_operator = 'CONTAINS', $limit = 0) {
+    $options = parent::getReferenceableEntities($match, $match_operator, $limit);
+
+    $target_type = $this->getConfiguration()['target_type'];
+    $ids = array_keys($options[$target_type]);
+    $entities = $this->entityTypeManager->getStorage($target_type)->loadMultiple($ids);
+
+    /* @var \Drupal\user\UserInterface $entity */
+    foreach ($entities as $id => $entity) {
+      $options[$target_type][$id] = Html::escape($entity->getEmail());
+    }
+    return $options;
   }
 
 }
