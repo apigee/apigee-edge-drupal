@@ -110,9 +110,7 @@ class AddTeamMembersForm extends FormBase {
     $this->team = $team;
 
     $role_options = array_reduce($this->teamRoleStorage->loadMultiple(), function (array $carry, TeamRoleInterface $role) {
-      if ($role->id() !== TeamRoleInterface::TEAM_MEMBER_ROLE) {
-        $carry[$role->id()] = $role->label();
-      }
+      $carry[$role->id()] = $role->label();
       return $carry;
     }, []);
 
@@ -136,6 +134,12 @@ class AddTeamMembersForm extends FormBase {
       '#options' => $role_options,
       '#multiple' => TRUE,
       '#required' => FALSE,
+      TeamRoleInterface::TEAM_MEMBER_ROLE => [
+        '#disabled' => TRUE,
+      ],
+      '#default_value' => [
+        TeamRoleInterface::TEAM_MEMBER_ROLE,
+      ],
     ];
     $form['team_roles']['description'] = [
       '#markup' => $this->t('Assign one or more roles to <em>all developers</em> that you selected in %team_label @team.', ['%team_label' => $this->team->label(), '@team' => $this->team->getEntityType()->getLowercaseLabel()]),
@@ -206,7 +210,10 @@ class AddTeamMembersForm extends FormBase {
         )));
       $form_state->setRedirectUrl($this->team->toUrl('members'));
 
-      if (($selected_roles = array_filter($form_state->getValue('team_roles', [])))) {
+      if (($selected_roles = array_filter($form_state->getValue('team_roles', []), function ($role) {
+        // Remove the TEAM_MEMBER_ROLE, as it is granted implicitly.
+        return $role && $role != TeamRoleInterface::TEAM_MEMBER_ROLE;
+      }))) {
         /** @var \Drupal\user\UserInterface[] $users */
         $users = $this->userStorage->loadByProperties(['mail' => $developer_emails]);
         foreach ($users as $user) {

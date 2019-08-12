@@ -97,9 +97,7 @@ class EditTeamMemberForm extends FormBase {
     $this->developer = $developer;
 
     $role_options = array_reduce($this->teamRoleStorage->loadMultiple(), function (array $carry, TeamRoleInterface $role) {
-      if ($role->id() !== TeamRoleInterface::TEAM_MEMBER_ROLE) {
-        $carry[$role->id()] = $role->label();
-      }
+      $carry[$role->id()] = $role->label();
       return $carry;
     }, []);
 
@@ -110,6 +108,8 @@ class EditTeamMemberForm extends FormBase {
     else {
       $current_role_options = [];
     }
+    // Add TEAM_MEMBER_ROLE to current role options so it's always displayed.
+    $current_role_options[] = TeamRoleInterface::TEAM_MEMBER_ROLE;
 
     $form['team_roles'] = [
       '#type' => 'checkboxes',
@@ -118,6 +118,9 @@ class EditTeamMemberForm extends FormBase {
       '#default_value' => $current_role_options,
       '#multiple' => TRUE,
       '#required' => FALSE,
+      TeamRoleInterface::TEAM_MEMBER_ROLE => [
+        '#disabled' => TRUE,
+      ],
     ];
     $form['team_roles']['description'] = [
       '#markup' => $this->t('Modify roles of %developer in the %team_label @team.', [
@@ -151,7 +154,10 @@ class EditTeamMemberForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $logger = $this->logger('apigee_edge_teams');
 
-    $selected_roles = array_filter($form_state->getValue('team_roles', []));
+    $selected_roles = array_filter($form_state->getValue('team_roles', []), function ($role) {
+      // Remove the TEAM_MEMBER_ROLE, as it is granted implicitly.
+      return $role && $role != TeamRoleInterface::TEAM_MEMBER_ROLE;
+    });
     $new_roles = array_diff($selected_roles, $form['team_roles']['#default_value']);
     $removed_roles = array_diff($form['team_roles']['#default_value'], $selected_roles);
     $success = TRUE;
