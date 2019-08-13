@@ -24,7 +24,6 @@ use Drupal\apigee_edge\Entity\DeveloperInterface;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Utility\Error;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -32,14 +31,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Edit team member form.
  */
-class EditTeamMemberForm extends FormBase {
-
-  /**
-   * The team from the route.
-   *
-   * @var \Drupal\apigee_edge_teams\Entity\TeamInterface
-   */
-  protected $team;
+class EditTeamMemberForm extends TeamMembersFormBase {
 
   /**
    * The developer from the route.
@@ -47,20 +39,6 @@ class EditTeamMemberForm extends FormBase {
    * @var \Drupal\apigee_edge\Entity\DeveloperInterface
    */
   protected $developer;
-
-  /**
-   * Team role storage.
-   *
-   * @var \Drupal\apigee_edge_teams\Entity\Storage\TeamRoleStorageInterface
-   */
-  protected $teamRoleStorage;
-
-  /**
-   * Team member role storage.
-   *
-   * @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorage
-   */
-  protected $teamMemberRoleStorage;
 
   /**
    * EditTeamMemberForm constructor.
@@ -95,11 +73,7 @@ class EditTeamMemberForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state, TeamInterface $team = NULL, DeveloperInterface $developer = NULL) {
     $this->team = $team;
     $this->developer = $developer;
-
-    $role_options = array_reduce($this->teamRoleStorage->loadMultiple(), function (array $carry, TeamRoleInterface $role) {
-      $carry[$role->id()] = $role->label();
-      return $carry;
-    }, []);
+    $role_options = $this->getRoleOptions();
 
     $team_member_roles = $this->teamMemberRoleStorage->loadByDeveloperAndTeam($developer->getOwner(), $team);
     if ($team_member_roles) {
@@ -158,10 +132,7 @@ class EditTeamMemberForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $logger = $this->logger('apigee_edge_teams');
 
-    $selected_roles = array_filter($form_state->getValue('team_roles', []), function ($role) {
-      // Remove the TEAM_MEMBER_ROLE, as it is granted implicitly.
-      return $role && $role != TeamRoleInterface::TEAM_MEMBER_ROLE;
-    });
+    $selected_roles = $this->filterSelectedRoles($form_state->getValue('team_roles', []));
     $new_roles = array_diff($selected_roles, $form['team_roles']['#default_value']);
     $removed_roles = array_diff($form['team_roles']['#default_value'], $selected_roles);
     $success = TRUE;
