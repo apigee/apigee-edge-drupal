@@ -74,7 +74,7 @@ class TeamListBuilder extends EdgeEntityListBuilder {
       $members_url = $entity->toUrl('members');
       if ($members_url->access()) {
         $operations['members'] = [
-          'title' => $this->t('Team Members'),
+          'title' => $this->t('Members'),
           'url' => $members_url,
         ];
       }

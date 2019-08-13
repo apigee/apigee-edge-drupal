@@ -192,12 +192,12 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
     $this->assertSession()->pageTextContains($this->fields['email']['data_edited']);
 
     // Add the other user as a member to the team.
-    $this->clickLink('Team Members');
+    $this->clickLink('Members');
     $this->assertSession()->pageTextContains("{$this->account->get('first_name')->value} {$this->account->get('last_name')->value}");
-    $this->clickLink('Add team members');
+    $this->clickLink('Add members');
     $this->submitForm([
       'developers' => "{$this->otherAccount->get('first_name')->value} {$this->otherAccount->get('last_name')->value} ({$this->otherAccount->id()})",
-    ], 'Add team members');
+    ], 'Add members');
     $this->assertSession()->pageTextContains("{$this->account->get('first_name')->value} {$this->account->get('last_name')->value}");
     $this->assertSession()->pageTextContains("{$this->otherAccount->get('first_name')->value} {$this->otherAccount->get('last_name')->value}");
 
@@ -269,7 +269,7 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
     $this->drupalLogin($this->account);
     $this->drupalGet(Url::fromRoute('entity.team_app.collection'));
     $this->clickLink($team_modified_display_name);
-    $this->clickLink('Team Members');
+    $this->clickLink('Members');
     $this->getSession()->getPage()->findById((Html::getUniqueId($this->otherAccount->getEmail())))->clickLink('Remove');
     $this->submitForm([], 'Confirm');
 

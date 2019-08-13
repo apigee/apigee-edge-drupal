@@ -155,7 +155,7 @@ class TeamMembersSelection extends UserSelection {
     }
 
     $form['filter']['team'] = [
-      '#title' => $this->t('Exclude team members of this team'),
+      '#title' => $this->t('Exclude members of this team'),
       '#type' => 'entity_autocomplete',
       '#target_type' => 'team',
       '#description' => $this->t('Exclude users who are already member of the selected team.'),

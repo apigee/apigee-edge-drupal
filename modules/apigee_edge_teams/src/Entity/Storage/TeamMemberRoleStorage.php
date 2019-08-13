@@ -173,7 +173,7 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
         '%developer' => $account->getEmail(),
         '%team_id' => $team->id(),
         '%roles' => implode(',', $roles),
-        'link' => $team->toLink($this->t('Team Members'), 'members')->toString(),
+        'link' => $team->toLink($this->t('Members'), 'members')->toString(),
       ];
       $context += Error::decodeException($exception);
       $this->logger->warning('%developer team member roles in %team_id team could not be saved. Roles: %roles. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
@@ -224,7 +224,7 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
         '%developer' => $account->getEmail(),
         '%team_id' => $team->id(),
         '%roles' => implode(',', $roles),
-        'link' => $team->toLink($this->t('Team Members'), 'members')->toString(),
+        'link' => $team->toLink($this->t('Members'), 'members')->toString(),
       ];
       $context += Error::decodeException($exception);
       $this->logger->warning('%developer team member roles in %team_id team could not be removed. Roles: %roles. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
