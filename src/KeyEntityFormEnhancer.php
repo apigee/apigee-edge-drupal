@@ -20,10 +20,10 @@
 
 namespace Drupal\apigee_edge;
 
-use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
+use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\apigee_edge\Plugin\KeyProviderRequirementsInterface;
@@ -531,7 +531,10 @@ final class KeyEntityFormEnhancer {
             ]);
           }
         }
-        elseif ($exception instanceof ApiException) {
+
+        // If SDKConnector::testConnection() fails to retrieve a valid org,
+        // then this exception is thrown.
+        elseif ($exception instanceof InvalidArgumentException) {
           $suggestion = $this->t('@fail_text The given endpoint (%endpoint) is incorrect or something is wrong with the connection.', [
             '@fail_text' => $fail_text,
             '%endpoint' => $key_type->getEndpoint($key),
