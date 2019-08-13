@@ -118,10 +118,14 @@ class EditTeamMemberForm extends FormBase {
       '#default_value' => $current_role_options,
       '#multiple' => TRUE,
       '#required' => FALSE,
-      TeamRoleInterface::TEAM_MEMBER_ROLE => [
-        '#disabled' => TRUE,
-      ],
     ];
+
+    // Special handling for the inevitable team member role.
+    $form['team_roles'][TeamRoleInterface::TEAM_MEMBER_ROLE] = [
+      '#default_value' => TRUE,
+      '#disabled' => TRUE,
+    ];
+
     $form['team_roles']['description'] = [
       '#markup' => $this->t('Modify roles of %developer in the %team_label @team.', [
         '%developer' => $this->developer->getOwner()->label(),

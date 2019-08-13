@@ -134,13 +134,14 @@ class AddTeamMembersForm extends FormBase {
       '#options' => $role_options,
       '#multiple' => TRUE,
       '#required' => FALSE,
-      TeamRoleInterface::TEAM_MEMBER_ROLE => [
-        '#disabled' => TRUE,
-      ],
-      '#default_value' => [
-        TeamRoleInterface::TEAM_MEMBER_ROLE,
-      ],
     ];
+
+    // Special handling for the inevitable team member role.
+    $form['team_roles'][TeamRoleInterface::TEAM_MEMBER_ROLE] = [
+      '#default_value' => TRUE,
+      '#disabled' => TRUE,
+    ];
+
     $form['team_roles']['description'] = [
       '#markup' => $this->t('Assign one or more roles to <em>all developers</em> that you selected in %team_label @team.', ['%team_label' => $this->team->label(), '@team' => $this->team->getEntityType()->getLowercaseLabel()]),
     ];
