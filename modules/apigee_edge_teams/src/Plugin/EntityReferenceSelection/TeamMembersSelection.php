@@ -173,7 +173,8 @@ class TeamMembersSelection extends UserSelection {
     // Do not pass $match so that it does not add the "name" field to the query,
     // as we will search by email instead.
     $query = parent::buildEntityQuery(NULL, $match_operator);
-    if (isset($match)) {
+    $match = trim($match);
+    if ($match) {
       $query->condition('mail', $match, $match_operator);
     }
 
@@ -233,15 +234,25 @@ class TeamMembersSelection extends UserSelection {
    * {@inheritdoc}
    */
   public function getReferenceableEntities($match = NULL, $match_operator = 'CONTAINS', $limit = 0) {
-    $options = parent::getReferenceableEntities($match, $match_operator, $limit);
-
     $target_type = $this->getConfiguration()['target_type'];
-    $ids = array_keys($options[$target_type]);
-    $entities = $this->entityTypeManager->getStorage($target_type)->loadMultiple($ids);
+
+    $query = $this->buildEntityQuery($match, $match_operator);
+    if ($limit > 0) {
+      $query->range(0, $limit);
+    }
+
+    $result = $query->execute();
+
+    if (empty($result)) {
+      return [];
+    }
+
+    $options = [];
+    $entities = $this->entityTypeManager->getStorage($target_type)->loadMultiple($result);
 
     /* @var \Drupal\user\UserInterface $entity */
     foreach ($entities as $id => $entity) {
-      $options[$target_type][$id] = Html::escape($entity->getEmail());
+      $options[$target_type][$id] = $entity->getEmail();
     }
     return $options;
   }
