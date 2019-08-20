@@ -72,7 +72,7 @@ abstract class DeveloperCreateUpdate extends EdgeJob {
       }
     }
     catch (\Exception $exception) {
-      $message = '@operation: Skipping %email developer. @message %function (line %line of %file). <pre>@backtrace_string</pre>';
+      $message = '@operation: Skipping %mail developer. @message %function (line %line of %file). <pre>@backtrace_string</pre>';
       $context = [
         '%mail' => $this->email,
         'link' => $account->toLink(t('View user'))->toString(),
