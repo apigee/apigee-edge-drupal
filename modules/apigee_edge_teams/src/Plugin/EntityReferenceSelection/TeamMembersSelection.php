@@ -22,7 +22,6 @@ namespace Drupal\apigee_edge_teams\Plugin\EntityReferenceSelection;
 
 use Drupal\apigee_edge\Entity\Controller\DeveloperControllerInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
-use Drupal\Component\Utility\Html;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
