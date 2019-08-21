@@ -296,6 +296,16 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $web_assert->fieldValueEquals('Apigee Edge endpoint', "http://{$invalid_domain}/");
     $page->fillField('Apigee Edge endpoint', '');
 
+    // Test another invalid endpoint scenario:
+    // This endpoint is not a Management API endpoint, but still returns
+    // HTTP 200 with a JSON response.
+    $invalid_endpoint = 'enterprise.apigee.com/platform/orgname';
+    $page->fillField('Apigee Edge endpoint', "https://{$invalid_endpoint}/");
+    $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given endpoint (https://{$invalid_endpoint}/) is incorrect or something is wrong with the connection. Error message: ");
+    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"endpoint\": \"https:\/\/{$invalid_endpoint}\/\"");
+    $web_assert->fieldValueEquals('Apigee Edge endpoint', "https://{$invalid_endpoint}/");
+    $page->fillField('Apigee Edge endpoint', '');
+
     // Test invalid authorization server.
     $this->cssSelect('select[data-drupal-selector="edit-key-input-settings-auth-type"]')[0]->setValue('oauth');
     $invalid_domain = "{$this->randomGenerator->word(16)}.example.com";
