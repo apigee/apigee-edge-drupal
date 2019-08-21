@@ -23,10 +23,8 @@ namespace Drupal\apigee_edge_teams\Form;
 use Drupal\apigee_edge\Entity\DeveloperInterface;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Utility\Error;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Edit team member form.
@@ -39,26 +37,6 @@ class EditTeamMemberForm extends TeamMembersFormBase {
    * @var \Drupal\apigee_edge\Entity\DeveloperInterface
    */
   protected $developer;
-
-  /**
-   * EditTeamMemberForm constructor.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->teamRoleStorage = $entity_type_manager->getStorage('team_role');
-    $this->teamMemberRoleStorage = $entity_type_manager->getStorage('team_member_role');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('entity_type.manager')
-    );
-  }
 
   /**
    * {@inheritdoc}

@@ -58,10 +58,10 @@ class AddTeamMembersForm extends TeamMembersFormBase {
    *   The entity type manager.
    */
   public function __construct(TeamMembershipManagerInterface $team_membership_manager, EntityTypeManagerInterface $entity_type_manager) {
+    parent::__construct($entity_type_manager);
+
     $this->teamMembershipManager = $team_membership_manager;
     $this->userStorage = $entity_type_manager->getStorage('user');
-    $this->teamRoleStorage = $entity_type_manager->getStorage('team_role');
-    $this->teamMemberRoleStorage = $entity_type_manager->getStorage('team_member_role');
   }
 
   /**
