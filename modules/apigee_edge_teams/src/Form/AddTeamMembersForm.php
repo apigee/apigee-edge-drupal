@@ -118,7 +118,7 @@ class AddTeamMembersForm extends FormBase {
 
     $form['developers'] = [
       '#title' => $this->t('Developers'),
-      '#description' => $this->t('Add one or more developers to the @team.', ['@team' => $this->team->getEntityType()->getLowercaseLabel()]),
+      '#description' => $this->t('Enter the email of one or more developers to add them to the @team.', ['@team' => $this->team->getEntityType()->getLowercaseLabel()]),
       '#type' => 'entity_autocomplete',
       '#target_type' => 'user',
       '#tags' => TRUE,
