@@ -23,23 +23,13 @@ namespace Drupal\apigee_edge_teams\Form;
 use Drupal\apigee_edge\Entity\DeveloperInterface;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Utility\Error;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Edit team member form.
  */
-class EditTeamMemberForm extends FormBase {
-
-  /**
-   * The team from the route.
-   *
-   * @var \Drupal\apigee_edge_teams\Entity\TeamInterface
-   */
-  protected $team;
+class EditTeamMemberForm extends TeamMembersFormBase {
 
   /**
    * The developer from the route.
@@ -47,40 +37,6 @@ class EditTeamMemberForm extends FormBase {
    * @var \Drupal\apigee_edge\Entity\DeveloperInterface
    */
   protected $developer;
-
-  /**
-   * Team role storage.
-   *
-   * @var \Drupal\apigee_edge_teams\Entity\Storage\TeamRoleStorageInterface
-   */
-  protected $teamRoleStorage;
-
-  /**
-   * Team member role storage.
-   *
-   * @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorage
-   */
-  protected $teamMemberRoleStorage;
-
-  /**
-   * EditTeamMemberForm constructor.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->teamRoleStorage = $entity_type_manager->getStorage('team_role');
-    $this->teamMemberRoleStorage = $entity_type_manager->getStorage('team_member_role');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('entity_type.manager')
-    );
-  }
 
   /**
    * {@inheritdoc}
@@ -95,13 +51,7 @@ class EditTeamMemberForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state, TeamInterface $team = NULL, DeveloperInterface $developer = NULL) {
     $this->team = $team;
     $this->developer = $developer;
-
-    $role_options = array_reduce($this->teamRoleStorage->loadMultiple(), function (array $carry, TeamRoleInterface $role) {
-      if ($role->id() !== TeamRoleInterface::TEAM_MEMBER_ROLE) {
-        $carry[$role->id()] = $role->label();
-      }
-      return $carry;
-    }, []);
+    $role_options = $this->getRoleOptions();
 
     $team_member_roles = $this->teamMemberRoleStorage->loadByDeveloperAndTeam($developer->getOwner(), $team);
     if ($team_member_roles) {
@@ -110,6 +60,8 @@ class EditTeamMemberForm extends FormBase {
     else {
       $current_role_options = [];
     }
+    // Add TEAM_MEMBER_ROLE to current role options so it's always displayed.
+    $current_role_options[] = TeamRoleInterface::TEAM_MEMBER_ROLE;
 
     $form['team_roles'] = [
       '#type' => 'checkboxes',
@@ -119,6 +71,13 @@ class EditTeamMemberForm extends FormBase {
       '#multiple' => TRUE,
       '#required' => FALSE,
     ];
+
+    // Special handling for the inevitable team member role.
+    $form['team_roles'][TeamRoleInterface::TEAM_MEMBER_ROLE] = [
+      '#default_value' => TRUE,
+      '#disabled' => TRUE,
+    ];
+
     $form['team_roles']['description'] = [
       '#markup' => $this->t('Modify roles of %developer in the %team_label @team.', [
         '%developer' => $this->developer->getOwner()->label(),
@@ -151,7 +110,7 @@ class EditTeamMemberForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $logger = $this->logger('apigee_edge_teams');
 
-    $selected_roles = array_filter($form_state->getValue('team_roles', []));
+    $selected_roles = $this->filterSelectedRoles($form_state->getValue('team_roles', []));
     $new_roles = array_diff($selected_roles, $form['team_roles']['#default_value']);
     $removed_roles = array_diff($form['team_roles']['#default_value'], $selected_roles);
     $success = TRUE;
