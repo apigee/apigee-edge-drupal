@@ -284,7 +284,7 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $random_org = $this->randomGenerator->word(16);
     $page->fillField('Organization', $random_org);
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given organization name ({$random_org}) is incorrect. Error message: ");
-    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', 'HTTP/1.1 403 Forbidden');
+    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', 'HTTP/1.1 404 Not Found');
     $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"organization\": \"{$random_org}\"");
     $page->fillField('Organization', $this->organization);
 
@@ -302,7 +302,8 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $invalid_endpoint = 'enterprise.apigee.com/platform/orgname';
     $page->fillField('Apigee Edge endpoint', "https://{$invalid_endpoint}/");
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given endpoint (https://{$invalid_endpoint}/) is incorrect or something is wrong with the connection. Error message: ");
-    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"endpoint\": \"https:\/\/{$invalid_endpoint}\/\"");
+    $invalid_endpoint_escaped = str_replace('/', '\/', $invalid_endpoint);
+    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"endpoint\": \"https:\/\/{$invalid_endpoint_escaped}\/\"");
     $web_assert->fieldValueEquals('Apigee Edge endpoint', "https://{$invalid_endpoint}/");
     $page->fillField('Apigee Edge endpoint', '');
 
