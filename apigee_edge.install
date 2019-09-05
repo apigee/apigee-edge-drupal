@@ -23,7 +23,9 @@
  * Install, update and uninstall functions for Apigee Edge.
  */
 
+use Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType;
 use Drupal\apigee_edge\OauthTokenFileStorage;
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Url;
 use Drupal\user\RoleInterface;
 
@@ -157,4 +159,21 @@ function apigee_edge_update_8001() {
     ->set('skip_developer_app_settings_validation', FALSE)
     ->set('do_not_alter_key_entity_forms', FALSE)
     ->save(TRUE);
+}
+
+/**
+ * Update defaults on Apigee Auth Keys.
+ */
+function apigee_edge_update_8002() {
+  $keys = \Drupal::service('key.repository')->getKeys();
+  foreach ($keys as $key) {
+    /* @var \Drupal\key\Entity\Key $key */
+    if ($key->getKeyType() instanceof ApigeeAuthKeyType) {
+      $values = $key->getKeyValues();
+      $values['endpoint_type'] = $values['endpoint'] ? 'custom' : 'default';
+      $values['authorization_server_type'] = $values['authorization_server'] ? 'custom' : 'default';
+      $key->setKeyValue(Json::encode($values));
+      $key->save();
+    }
+  }
 }

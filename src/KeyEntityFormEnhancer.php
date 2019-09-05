@@ -504,7 +504,7 @@ final class KeyEntityFormEnhancer {
         ]);
       }
       // Invalid organization name.
-      elseif ($exception->getCode() === 403) {
+      elseif ($exception->getCode() === 404) {
         $suggestion = $this->t('@fail_text The given organization name (%organization) is incorrect.', [
           '@fail_text' => $fail_text,
           '%organization' => $key_type->getOrganization($key),
