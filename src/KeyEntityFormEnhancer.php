@@ -29,6 +29,7 @@ use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\apigee_edge\Plugin\KeyProviderRequirementsInterface;
 use Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType;
 use Drupal\Component\Render\MarkupInterface;
+use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Component\Utility\Random;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
@@ -89,6 +90,13 @@ final class KeyEntityFormEnhancer {
   private $configFactory;
 
   /**
+   * The email validator.
+   *
+   * @var \Drupal\Component\Utility\EmailValidatorInterface
+   */
+  protected $emailValidator;
+
+  /**
    * KeyEntityFormEnhancer constructor.
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
@@ -99,12 +107,15 @@ final class KeyEntityFormEnhancer {
    *   The entity type manager serivce.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
+   * @param \Drupal\Component\Utility\EmailValidatorInterface $email_validator
+   *   The email validator.
    */
-  public function __construct(SDKConnectorInterface $connector, OauthTokenStorageInterface $oauth_token_storage, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory) {
+  public function __construct(SDKConnectorInterface $connector, OauthTokenStorageInterface $oauth_token_storage, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, EmailValidatorInterface $email_validator) {
     $this->connector = $connector;
     $this->entityTypeManager = $entity_type_manager;
     $this->oauthTokenStorage = $oauth_token_storage;
     $this->configFactory = $config_factory;
+    $this->emailValidator = $email_validator;
   }
 
   /**
@@ -262,6 +273,15 @@ final class KeyEntityFormEnhancer {
     // Only call this when form is saved or "Test connection" is clicked.
     if (!in_array($form_state->getTriggeringElement()['#name'] ?? [], ['test_connection', 'op'])) {
       return;
+    }
+
+    // If on public cloud (using the default endpoint), the username should be
+    // an email.
+    $submitted = json_decode($form_state->getStorage()['key_value']['submitted']);
+    if ($submitted->endpoint_type == 'default' && !empty($submitted->username)) {
+      if (!$this->emailValidator->isValid($submitted->username)) {
+        $form_state->setError($form, $this->t('The organization username should be a valid email.'));
+      }
     }
 
     // If there is a form error already do not nothing.

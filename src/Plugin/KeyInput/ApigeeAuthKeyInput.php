@@ -87,9 +87,9 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#attributes' => ['autocomplete' => 'off'],
     ];
     $form['username'] = [
-      '#type' => 'email',
+      '#type' => 'textfield',
       '#title' => $this->t('Username'),
-      '#description' => $this->t("Organization user's email address that is used for authenticating with the endpoint."),
+      '#description' => $this->t("Organization username that is used for authenticating with the endpoint."),
       '#required' => TRUE,
       '#default_value' => $values['username'] ?? '',
       '#attributes' => ['autocomplete' => 'off'],
