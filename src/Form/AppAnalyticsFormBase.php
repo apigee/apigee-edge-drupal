@@ -445,14 +445,16 @@ abstract class AppAnalyticsFormBase extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $url = $this->urlGenerator->generateFromRoute('<current>', [], [
+    $route = \Drupal::routeMatch();
+    $parameters = $route->getRawParameters()->all();
+    $options = [
       'query' => [
         'metric' => $form_state->getValue('metrics'),
         'since' => $form_state->getValue('since')->getTimeStamp(),
         'until' => $form_state->getValue('until')->getTimeStamp(),
       ],
-    ]);
-    $form_state->setRedirectUrl(Url::fromUri('internal:' . $url));
+    ];
+    $form_state->setRedirect($route->getRouteName(), $parameters, $options);
   }
 
   /**
