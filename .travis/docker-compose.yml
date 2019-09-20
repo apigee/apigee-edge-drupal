@@ -29,7 +29,7 @@ services:
       DB_DRIVER: ${DB_DRIVER:-mysql}
       SIMPLETEST_BASE_URL: http://webserver
       SIMPLETEST_DB: ${DB_DRIVER:-mysql}://${DB_USER:-drupal}:${DB_PASSWORD-password}@${DB_HOST:-database}/${DB_NAME:-drupal}
-      MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", null, "http://webdriver:4444/wd/hub"]'
+      MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", { "chromeOptions": { "w3c": false } }, "http://webdriver:4444/wd/hub"]'
       BROWSERTEST_OUTPUT_DIRECTORY: "/mnt/files/log/simpletest"
       COMPOSER_AUTH: ${COMPOSER_AUTH:-}
     volumes:
