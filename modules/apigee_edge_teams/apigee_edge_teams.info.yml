@@ -8,6 +8,6 @@ core: 8.x
 dependencies:
 - apigee_edge:apigee_edge
 
-configure: apigee_edge.settings
+configure: apigee_edge_teams.settings.team
 
 php: "7.1"
