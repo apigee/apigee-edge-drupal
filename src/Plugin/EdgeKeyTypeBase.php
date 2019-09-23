@@ -65,6 +65,13 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
   /**
    * {@inheritdoc}
    */
+  public function getEndpointType(KeyInterface $key): string {
+    return $key->getKeyValues()['endpoint_type'] ?? 'default';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getOrganization(KeyInterface $key): string {
     if (!isset($key->getKeyValues()['organization'])) {
       throw new AuthenticationKeyValueMalformedException('organization');

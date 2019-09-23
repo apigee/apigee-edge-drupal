@@ -64,6 +64,17 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
   public function getEndpoint(KeyInterface $key): string;
 
   /**
+   * Gets the API endpoint type (default or custom).
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
+   *
+   * @return string
+   *   The API endpoint type.
+   */
+  public function getEndpointType(KeyInterface $key): string;
+
+  /**
    * Gets the API organization.
    *
    * @param \Drupal\key\KeyInterface $key

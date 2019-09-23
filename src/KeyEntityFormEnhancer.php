@@ -275,15 +275,6 @@ final class KeyEntityFormEnhancer {
       return;
     }
 
-    // If on public cloud (using the default endpoint), the username should be
-    // an email.
-    $submitted = json_decode($form_state->getStorage()['key_value']['submitted']);
-    if ($submitted->endpoint_type == 'default' && !empty($submitted->username)) {
-      if (!$this->emailValidator->isValid($submitted->username)) {
-        $form_state->setError($form, $this->t('The organization username should be a valid email.'));
-      }
-    }
-
     // If there is a form error already do not nothing.
     if (!empty($form_state->getErrors())) {
       return;
@@ -518,10 +509,20 @@ final class KeyEntityFormEnhancer {
       // valid organization name and username provided with an invalid password
       // the MGMT server returns HTTP 500 with an error instead of HTTP 401.
       if ($exception->getCode() === 401 || ($exception->getCode() === 500 && $exception->getEdgeErrorCode() === 'usersandroles.SsoInternalServerError')) {
-        $suggestion = $this->t('@fail_text The given username (%username) or password is incorrect.', [
-          '@fail_text' => $fail_text,
-          '%username' => $key_type->getUsername($key),
-        ]);
+
+        // If on public cloud (using the default endpoint), the username should
+        // be an email.
+        if ($key_type->getEndpointType($key) == 'default' && !$this->emailValidator->isValid($key_type->getUsername($key))) {
+          $suggestion = $this->t('@fail_text The organization username should be a valid email.', [
+            '@fail_text' => $fail_text,
+          ]);
+        }
+        else {
+          $suggestion = $this->t('@fail_text The given username (%username) or password is incorrect.', [
+            '@fail_text' => $fail_text,
+            '%username' => $key_type->getUsername($key),
+          ]);
+        }
       }
       // Invalid organization name.
       elseif ($exception->getCode() === 404) {
