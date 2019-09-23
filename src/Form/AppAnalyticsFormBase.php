@@ -445,8 +445,6 @@ abstract class AppAnalyticsFormBase extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $route = \Drupal::routeMatch();
-    $parameters = $route->getRawParameters()->all();
     $options = [
       'query' => [
         'metric' => $form_state->getValue('metrics'),
@@ -454,7 +452,7 @@ abstract class AppAnalyticsFormBase extends FormBase {
         'until' => $form_state->getValue('until')->getTimeStamp(),
       ],
     ];
-    $form_state->setRedirect($route->getRouteName(), $parameters, $options);
+    $form_state->setRedirect('<current>', [],  $options);
   }
 
   /**
