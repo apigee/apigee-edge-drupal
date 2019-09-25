@@ -66,7 +66,7 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
    * {@inheritdoc}
    */
   public function getEndpointType(KeyInterface $key): string {
-    return $key->getKeyValues()['endpoint_type'] ?? 'default';
+    return $key->getKeyValues()['endpoint_type'] ?? EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_DEFAULT;
   }
 
   /**

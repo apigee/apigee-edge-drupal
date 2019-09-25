@@ -94,7 +94,7 @@ final class KeyEntityFormEnhancer {
    *
    * @var \Drupal\Component\Utility\EmailValidatorInterface
    */
-  protected $emailValidator;
+  private $emailValidator;
 
   /**
    * KeyEntityFormEnhancer constructor.
@@ -512,7 +512,7 @@ final class KeyEntityFormEnhancer {
 
         // If on public cloud (using the default endpoint), the username should
         // be an email.
-        if ($key_type->getEndpointType($key) == 'default' && !$this->emailValidator->isValid($key_type->getUsername($key))) {
+        if ($key_type->getEndpointType($key) === EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_DEFAULT && !$this->emailValidator->isValid($key_type->getUsername($key))) {
           $suggestion = $this->t('@fail_text The organization username should be a valid email.', [
             '@fail_text' => $fail_text,
           ]);
