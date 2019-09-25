@@ -80,6 +80,9 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
   /**
    * Gets the API endpoint type (default or custom).
    *
+   * If the "endpoint_type" property is empty, it returns "default" if the
+   * "endpoint" is empty or the same as the default endpoint.
+   *
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
    *
