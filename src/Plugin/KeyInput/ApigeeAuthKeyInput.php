@@ -63,7 +63,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
 
     // Could be an empty array.
     $values = Json::decode($key_value);
-    $values['endpoint_type'] = empty($values['endpoint']) ? 'default' : 'custom';
+    $values['endpoint_type'] = empty($values['endpoint']) ? EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_DEFAULT : EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_CUSTOM;
     $values['authorization_server_type'] = empty($values['authorization_server']) ? 'default' : 'custom';
 
     $form['auth_type'] = [
@@ -87,9 +87,9 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#attributes' => ['autocomplete' => 'off'],
     ];
     $form['username'] = [
-      '#type' => 'email',
+      '#type' => 'textfield',
       '#title' => $this->t('Username'),
-      '#description' => $this->t("Organization user's email address that is used for authenticating with the endpoint."),
+      '#description' => $this->t("Apigee user's email address or identity provider username that is used for authenticating with the endpoint."),
       '#required' => TRUE,
       '#default_value' => $values['username'] ?? '',
       '#attributes' => ['autocomplete' => 'off'],
@@ -109,10 +109,10 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#title' => $this->t('Apigee Edge endpoint'),
       '#type' => 'radios',
       '#required' => TRUE,
-      '#default_value' => $values['endpoint_type'] ?? 'default',
+      '#default_value' => $values['endpoint_type'],
       '#options' => [
-        'default' => $this->t('Default'),
-        'custom' => $this->t('Custom'),
+        EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_DEFAULT => $this->t('Default'),
+        EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_CUSTOM => $this->t('Custom'),
       ],
       '#description' => $this->t('Apigee Edge endpoint where the API calls are being sent. Use the default (%endpoint) when pointing to an organization on <a href="@link" target="_blank">Public Cloud</a>, or custom when using <a href="@link" target="_blank">Private Cloud</a>.', [
         '%endpoint' => ClientInterface::DEFAULT_ENDPOINT,
@@ -218,7 +218,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
     $input_values = $form_state->getValues();
 
     // Make sure the endpoint defaults are not overridden by other values.
-    if (empty($input_values['endpoint_type']) || $input_values['endpoint_type'] == 'default') {
+    if (empty($input_values['endpoint_type']) || $input_values['endpoint_type'] == EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_DEFAULT) {
       $input_values['endpoint'] = '';
     }
     if (empty($input_values['authorization_server_type']) || $input_values['authorization_server_type'] == 'default') {

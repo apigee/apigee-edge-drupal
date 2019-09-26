@@ -42,6 +42,20 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
   const EDGE_AUTH_TYPE_OAUTH = 'oauth';
 
   /**
+   * The endpoint type for default.
+   *
+   * @var string
+   */
+  const EDGE_ENDPOINT_TYPE_DEFAULT = 'default';
+
+  /**
+   * The endpoint type for custom.
+   *
+   * @var string
+   */
+  const EDGE_ENDPOINT_TYPE_CUSTOM = 'custom';
+
+  /**
    * Gets the authentication type.
    *
    * @param \Drupal\key\KeyInterface $key
@@ -62,6 +76,20 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
    *   The API endpoint.
    */
   public function getEndpoint(KeyInterface $key): string;
+
+  /**
+   * Gets the API endpoint type (default or custom).
+   *
+   * If the "endpoint_type" property is empty, it returns "default" if the
+   * "endpoint" is empty or the same as the default endpoint.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
+   *
+   * @return string
+   *   The API endpoint type.
+   */
+  public function getEndpointType(KeyInterface $key): string;
 
   /**
    * Gets the API organization.

@@ -282,6 +282,12 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $web_assert->elementNotContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', $random_pass);
     $page->fillField('Password', $this->password);
 
+    // Test invalid username when using default endpoint.
+    $page->selectFieldOption('key_input_settings[endpoint_type]', 'default');
+    $page->fillField('Username', $this->randomMachineName());
+    $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The organization username should be a valid email. Error message: ");
+    $page->fillField('Username', $this->username);
+
     // Test invalid organization.
     $random_org = $this->randomGenerator->word(16);
     $page->fillField('Organization', $random_org);
