@@ -153,6 +153,7 @@ namespace Drupal\Tests\apigee_edge\Unit {
 
 namespace {
 
+  // phpcs:disable PSR2.Namespaces.UseDeclaration.UseAfterNamespace
   use Drush\Utils\StringUtils;
 
   /**

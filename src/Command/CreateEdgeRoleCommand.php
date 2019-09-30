@@ -79,7 +79,7 @@ class CreateEdgeRoleCommand extends CommandBase {
   /**
    * {@inheritdoc}
    */
-  function interact(InputInterface $input, OutputInterface $output) {
+  public function interact(InputInterface $input, OutputInterface $output) {
     $this->setupIo($input, $output);
     $password = $input->getOption('password');
     if (!$password) {
@@ -93,7 +93,7 @@ class CreateEdgeRoleCommand extends CommandBase {
   /**
    * {@inheritdoc}
    */
-  function execute(InputInterface $input, OutputInterface $output) {
+  public function execute(InputInterface $input, OutputInterface $output) {
     $this->setupIo($input, $output);
     $org = $input->getArgument('org');
     $email = $input->getArgument('email');
