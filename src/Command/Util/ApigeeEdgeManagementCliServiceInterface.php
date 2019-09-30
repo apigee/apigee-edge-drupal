@@ -17,14 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Util;
+namespace Drupal\apigee_edge\Command\Util;
 
 use Symfony\Component\Console\Style\StyleInterface;
 
 /**
  * Defines an interface for Edge connection classes.
  */
-interface EdgeConnectionUtilServiceInterface {
+interface ApigeeEdgeManagementCliServiceInterface {
+
+  // Default base url.
+  const DEFAULT_BASE_URL = 'https://api.enterprise.apigee.com/v1';
+
+  // Default role name to create in Apigee Edge.
+  const DEFAULT_ROLE_NAME = 'drupalportal';
 
   /**
    * Create role in Apigee Edge for Drupal to use for Edge connection.
@@ -39,11 +45,11 @@ interface EdgeConnectionUtilServiceInterface {
    *   The email of an Edge user with org admin role to make Edge API calls.
    * @param string $password
    *   The password of an Edge user with org admin role to make Edge API calls.
-   * @param string $base_url
+   * @param null|string $base_url
    *   The base url of the Edge API.
-   * @param string $role_name
+   * @param null|string $role_name
    *   The role name to add the permissions to.
    */
-  public function createEdgeRoleForDrupal(StyleInterface $io, callable $t, string $org, string $email, string $password, string $base_url, string $role_name);
+  public function createEdgeRoleForDrupal(StyleInterface $io, callable $t, string $org, string $email, string $password, ?string $base_url, ?string $role_name);
 
 }

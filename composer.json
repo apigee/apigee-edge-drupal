@@ -5,6 +5,7 @@
     "description": "Apigee Edge for Drupal.",
     "require": {
         "php": ">=7.1",
+        "ext-json": "*",
         "apigee/apigee-client-php": "^2.0.1",
         "cweagans/composer-patches": "^1.6.5",
         "drupal/core": "~8.7.0",

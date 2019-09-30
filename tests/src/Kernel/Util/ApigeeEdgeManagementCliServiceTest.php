@@ -24,17 +24,17 @@ use Drupal\Core\DependencyInjection\ServiceModifierInterface;
 use Drupal\KernelTests\KernelTestBase;
 
 /**
- * EdgeConnectionUtilService Edge tests.
+ * ApigeeEdgeManagementCliService Edge tests.
  *
- * Make sure Edge API works as expected for the EdgeConnectionUtilService.
+ * Make sure Edge API works as expected for the ApigeeEdgeManagementCliService.
  *
  * These tests validate Edge API request/responses needed for
- * EdgeConnectionUtilService are valid.
+ * ApigeeEdgeManagementCliService are valid.
  *
  * @group apigee_edge
  * @group apigee_edge_kernel
  */
-class EdgeConnectionUtilServiceTest extends KernelTestBase implements ServiceModifierInterface {
+class ApigeeEdgeManagementCliServiceTest extends KernelTestBase implements ServiceModifierInterface {
 
   protected const TEST_ROLE_NAME = 'temp_role';
 
@@ -43,11 +43,39 @@ class EdgeConnectionUtilServiceTest extends KernelTestBase implements ServiceMod
    */
   protected static $modules = [];
 
+  /**
+   * Apigee API endpoint.
+   *
+   * @var array|false|string
+   */
   protected $endpoint;
+
+  /**
+   * Apigee Edge organization.
+   *
+   * @var array|false|string
+   */
   protected $organization;
+
+  /**
+   * Email of an account with the organization admin Apigee role.
+   *
+   * @var array|false|string
+   */
   protected $orgadminEmail;
+
+  /**
+   * The password of the orgadmin account.
+   *
+   * @var array|false|string
+   */
   protected $orgadminPassword;
 
+  /**
+   * A GuzzleHttp\Client object.
+   *
+   * @var object|null
+   */
   protected $httpClient;
 
   /**

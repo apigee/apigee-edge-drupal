@@ -22,7 +22,6 @@ namespace Drupal\Tests\apigee_edge\Unit {
   use Consolidation\AnnotatedCommand\CommandData;
   use Drupal\apigee_edge\CliServiceInterface;
   use Drupal\apigee_edge\Commands\ApigeeEdgeCommands;
-  use Drupal\apigee_edge\Util\EdgeConnectionUtilServiceInterface;
   use Drupal\Tests\UnitTestCase;
   use Drush\Style\DrushStyle;
   use Prophecy\Argument;
@@ -36,12 +35,25 @@ namespace Drupal\Tests\apigee_edge\Unit {
    */
   class ApigeeEdgeCommandsTest extends UnitTestCase {
 
+    /**
+     * The system under test.
+     *
+     * @var \Drupal\apigee_edge\Commands\ApigeeEdgeCommands
+     */
     protected $apigeeEdgeCommands;
 
-    protected $edgeConnectionUtilService;
-
+    /**
+     * The CLI Service mock.
+     *
+     * @var \Prophecy\Prophecy\ObjectProphecy
+     */
     protected $cliService;
 
+    /**
+     * The DrushStyle mock.
+     *
+     * @var \Prophecy\Prophecy\ObjectProphecy
+     */
     protected $io;
 
     /**
@@ -49,9 +61,8 @@ namespace Drupal\Tests\apigee_edge\Unit {
      */
     protected function setUp() {
       parent::setUp();
-      $this->edgeConnectionUtilService = $this->prophesize(EdgeConnectionUtilServiceInterface::class);
       $this->cliService = $this->prophesize(CliServiceInterface::class);
-      $this->apigeeEdgeCommands = new ApigeeEdgeCommands($this->cliService->reveal(), $this->edgeConnectionUtilService->reveal());
+      $this->apigeeEdgeCommands = new ApigeeEdgeCommands($this->cliService->reveal());
 
       // Set io in DrushCommands to a mock.
       $apigee_edge_commands_reflection = new ReflectionClass($this->apigeeEdgeCommands);
@@ -71,13 +82,13 @@ namespace Drupal\Tests\apigee_edge\Unit {
 
       $drush_options = [
         'password' => 'opensesame',
-        'base-url' => ApigeeEdgeCommands::DEFAULT_BASE_URL,
+        'base-url' => 'http://api.apigee.com/v1',
         'role-name' => 'portalRole',
       ];
 
       $this->apigeeEdgeCommands->createEdgeRole('orgA', 'emailA', $drush_options);
 
-      $this->edgeConnectionUtilService->createEdgeRoleForDrupal(
+      $this->cliService->createEdgeRoleForDrupal(
         Argument::type(DrushStyle::class),
         Argument::type('string'),
         Argument::type('string'),
@@ -94,13 +105,12 @@ namespace Drupal\Tests\apigee_edge\Unit {
      * Test validateCreateEdgeRole function does not prompt for password.
      *
      * When password option is set, do not prompt for password.
-     *
-     * @throws \ReflectionException
      */
     public function testValidatePasswordParam() {
 
       $command_data_input = $this->prophesize(InputInterface::class);
       $command_data_input->getOption('password')->willReturn('secret');
+      $command_data_input->getArgument('email')->willReturn('email.example.com');
       $command_data = $this->prophesize(CommandData::class);
       $command_data->input()->willReturn($command_data_input->reveal());
 
@@ -117,14 +127,13 @@ namespace Drupal\Tests\apigee_edge\Unit {
      * Test validateCreateEdgeRole prompts for password.
      *
      * When password option not set, password should be inputted by user.
-     *
-     * @throws \ReflectionException
      */
     public function testValidatePasswordParamEmpty() {
 
       $command_data_input = $this->prophesize(InputInterface::class);
       $command_data_input->getOption('password')->willReturn(NULL);
       $command_data_input->setOption(Argument::type('string'), Argument::type('string'))->willReturn();
+      $command_data_input->getArgument('email')->willReturn('email.example.com');
       $command_data = $this->prophesize(CommandData::class);
       $command_data->input()->willReturn($command_data_input->reveal());
 
@@ -143,6 +152,8 @@ namespace Drupal\Tests\apigee_edge\Unit {
 }
 
 namespace {
+
+  use Drush\Utils\StringUtils;
 
   /**
    * Mock out dt() so function exists for tests.

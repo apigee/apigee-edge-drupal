@@ -21,19 +21,12 @@ namespace Drupal\apigee_edge\Commands;
 
 use Consolidation\AnnotatedCommand\CommandData;
 use Drupal\apigee_edge\CliServiceInterface;
-use Drupal\apigee_edge\Util\EdgeConnectionUtilServiceInterface;
 use Drush\Commands\DrushCommands;
 
 /**
  * Drush 9 command file.
  */
 class ApigeeEdgeCommands extends DrushCommands {
-
-  // Default base url.
-  const DEFAULT_BASE_URL = 'https://api.enterprise.apigee.com/v1';
-
-  // Default role name to create in Apigee Edge.
-  const DEFAULT_ROLE_NAME = 'drupalportal';
 
   /**
    * The interoperability cli service.
@@ -42,20 +35,15 @@ class ApigeeEdgeCommands extends DrushCommands {
    */
   protected $cliService;
 
-  protected $edgeConnectionUtilService;
-
   /**
    * ApigeeEdgeCommands constructor.
    *
    * @param \Drupal\apigee_edge\CliServiceInterface $cli_service
    *   The CLI service which allows interoperability.
-   * @param \Drupal\apigee_edge\Util\EdgeConnectionUtilServiceInterface $edge_connection_util_service
-   *   The Edge connection utilty service.
    */
-  public function __construct(CliServiceInterface $cli_service = NULL, EdgeConnectionUtilServiceInterface $edge_connection_util_service = NULL) {
+  public function __construct(CliServiceInterface $cli_service = NULL) {
     parent::__construct();
     $this->cliService = $cli_service;
-    $this->edgeConnectionUtilService = $edge_connection_util_service;
   }
 
   /**
@@ -72,11 +60,10 @@ class ApigeeEdgeCommands extends DrushCommands {
   }
 
   /**
-   * Create a role in an Apigee organization.
+   * Create a custom role in an Apigee organization for Drupal usage.
    *
-   * Create role with proper permissions for connecting a Drupal
-   * Apigee Edge module to the Edge org. You must run this script
-   * as a user with the orgadmin role.
+   * Create a custom Apigee role that limits permissions for Drupal connections
+   * to the Apigee API.
    *
    * @param string $org
    *   The Apigee Edge org to create the role in.
@@ -89,9 +76,10 @@ class ApigeeEdgeCommands extends DrushCommands {
    *   Password for the Apigee orgadmin user. If not set, you will be prompted
    *   for the password.
    * @option base-url
-   *   Base URL to use, defaults to public cloud URL.
+   *   Base URL to use, defaults to public cloud URL:
+   *   https://api.enterprise.apigee.com/v1.
    * @option role-name
-   *   The role to create in the Apigee Edge org.
+   *   The role to create in the Apigee Edge org, defaults to "drupalportal".
    * @usage drush create-edge-role myorg me@example.com
    *   Create "drupalportal" role as orgadmin me@example.com for org myorg.
    * @usage drush create-edge-role myorg me@example.com --base-url=https://api.edge.example.com
@@ -106,10 +94,10 @@ class ApigeeEdgeCommands extends DrushCommands {
     string $email,
     array $options = [
       'password' => NULL,
-      'base-url' => self::DEFAULT_BASE_URL,
-      'role-name' => self::DEFAULT_ROLE_NAME,
+      'base-url' => NULL,
+      'role-name' => NULL,
     ]) {
-    $this->edgeConnectionUtilService->createEdgeRoleForDrupal($this->io(), 'dt', $org, $email, $options['password'], $options['base-url'], $options['role-name']);
+    $this->cliService->createEdgeRoleForDrupal($this->io(), 'dt', $org, $email, $options['password'], $options['base-url'], $options['role-name']);
   }
 
   /**
@@ -120,8 +108,9 @@ class ApigeeEdgeCommands extends DrushCommands {
   public function validateCreateEdgeRole(CommandData $commandData) {
     // If the user did not specify a password, then prompt for one.
     $password = $commandData->input()->getOption('password');
+    $email = $commandData->input()->getArgument('email');
     if (empty($password)) {
-      $password = $this->io()->askHidden("Enter a password:", function ($value) {
+      $password = $this->io()->askHidden(dt('Enter password for :email', [':email' => $email]), function ($value) {
         return $value;
       });
       $commandData->input()->setOption('password', $password);
