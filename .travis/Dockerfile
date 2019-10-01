@@ -5,3 +5,6 @@ FROM ${PHP_IMAGE}
 COPY --chown=wodby:www-data . /opt/drupal-module
 
 USER wodby
+
+RUN composer global require --no-suggest dealerdirect/phpcodesniffer-composer-installer \
+    drupal/coder
