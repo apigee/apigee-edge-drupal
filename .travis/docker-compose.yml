@@ -52,15 +52,6 @@ services:
     volumes:
       - codebase:/var/www/html
 
-  phpcs:
-    image: mxr576/docker-phpcs
-    container_name: "${COMPOSE_PROJECT_NAME:-my_project}_phpcs"
-    volumes:
-      - ../:/opt/drupal-module
-      - codebase:/var/www/html
-    depends_on:
-      - php
-
   webdriver:
     image: selenium/standalone-chrome:3
     # Unfortunatelly its seems this image is not working at this moment.

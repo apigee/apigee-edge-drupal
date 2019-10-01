@@ -66,11 +66,9 @@ before_install:
 
 script:
   - set -e
-  # Do not report warnings (like Drupal.Semantics.FunctionT.NotLiteralString) on Travis CI. Use selective disabling
-  # when Drupal Coder will support PHPCS >= 3.2.0.
-  # https://github.com/squizlabs/PHP_CodeSniffer/wiki/Advanced-Usage#ignoring-parts-of-a-file
-  - docker-compose run phpcs -s -n --colors --standard=/opt/drupal-module/phpcs.xml.dist /opt/drupal-module
-  # Do not exist if a PHPUnit test fails, we would like to run everything from
+  # Run phpcs on module
+  - docker-compose run php phpcs -p -s -n --colors --standard=/opt/drupal-module/phpcs.xml.dist /opt/drupal-module/
+  # Do not exit if a PHPUnit test fails, we would like to run everything from
   # after_* sections.
   - set +e
   - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then docker-compose run php /opt/drupal-module/.travis/run-test.sh; fi
