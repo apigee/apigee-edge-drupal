@@ -63,6 +63,8 @@ class ApigeeAuthKeyInput extends KeyInputBase {
 
     // Could be an empty array.
     $values = Json::decode($key_value);
+    $values['endpoint_type'] = empty($values['endpoint']) ? EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_DEFAULT : EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_CUSTOM;
+    $values['authorization_server_type'] = empty($values['authorization_server']) ? 'default' : 'custom';
 
     $form['auth_type'] = [
       '#type' => 'select',
@@ -85,9 +87,9 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#attributes' => ['autocomplete' => 'off'],
     ];
     $form['username'] = [
-      '#type' => 'email',
+      '#type' => 'textfield',
       '#title' => $this->t('Username'),
-      '#description' => $this->t("Organization user's email address that is used for authenticating with the endpoint."),
+      '#description' => $this->t("Apigee user's email address or identity provider username that is used for authenticating with the endpoint."),
       '#required' => TRUE,
       '#default_value' => $values['username'] ?? '',
       '#attributes' => ['autocomplete' => 'off'],
@@ -103,26 +105,71 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         'value' => $values['password'] ?? '',
       ],
     ];
+    $form['endpoint_type'] = [
+      '#title' => $this->t('Apigee Edge endpoint'),
+      '#type' => 'radios',
+      '#required' => TRUE,
+      '#default_value' => $values['endpoint_type'],
+      '#options' => [
+        EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_DEFAULT => $this->t('Default'),
+        EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_CUSTOM => $this->t('Custom'),
+      ],
+      '#description' => $this->t('Apigee Edge endpoint where the API calls are being sent. Use the default (%endpoint) when pointing to an organization on <a href="@link" target="_blank">Public Cloud</a>, or custom when using <a href="@link" target="_blank">Private Cloud</a>.', [
+        '%endpoint' => ClientInterface::DEFAULT_ENDPOINT,
+        '@link' => 'https://docs.apigee.com/api-platform/get-started/what-apigee-edge#cloudvonprem',
+      ]),
+    ];
     $form['endpoint'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Apigee Edge endpoint'),
-      '#description' => $this->t('Apigee Edge endpoint where the API calls are being sent. Leave empty to use the default %endpoint endpoint.', [
-        '%endpoint' => ClientInterface::DEFAULT_ENDPOINT,
+      '#title' => $this->t('Custom Apigee Edge endpoint'),
+      '#description' => $this->t('For a Private Cloud installation, it is in the form: %form_a or %form_b.', [
+        '%form_a' => 'http://ms_IP_or_DNS:8080/v1',
+        '%form_b' => 'https://ms_IP_or_DNS:TLSport/v1',
       ]),
       '#default_value' => $values['endpoint'] ?? '',
       '#attributes' => ['autocomplete' => 'off'],
+      '#states' => [
+        'visible' => [
+          ':input[name="key_input_settings[endpoint_type]"]' => ['value' => 'custom'],
+        ],
+        'required' => [
+          ':input[name="key_input_settings[endpoint_type]"]' => ['value' => 'custom'],
+        ],
+      ],
+    ];
+    $form['authorization_server_type'] = [
+      '#title' => $this->t('Authorization server'),
+      '#type' => 'radios',
+      '#required' => TRUE,
+      '#default_value' => $values['authorization_server_type'] ?? 'default',
+      '#options' => [
+        'default' => $this->t('Default'),
+        'custom' => $this->t('Custom'),
+      ],
+      '#description' => $this->t('The server issuing access tokens to the client. Use the default (%authorization_server), unless using a SAML enabled organization.', [
+        '%authorization_server' => Oauth::DEFAULT_AUTHORIZATION_SERVER,
+      ]),
+      '#states' => [
+        'visible' => [
+          ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH],
+        ],
+      ],
     ];
     $form['authorization_server'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Authorization server'),
-      '#description' => $this->t('The server issuing access tokens to the client. Leave empty to use the default %authorization_server authorization server.', [
-        '%authorization_server' => Oauth::DEFAULT_AUTHORIZATION_SERVER,
+      '#title' => $this->t('Custom authorization server'),
+      '#description' => $this->t('The authorization server endpoint for a SAML enabled edge org is in the form: %form.', [
+        '%form' => 'https://{zonename}.login.apigee.com/oauth/token',
       ]),
       '#default_value' => $values['authorization_server'] ?? '',
       '#attributes' => ['autocomplete' => 'off'],
       '#states' => [
         'visible' => [
           ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH],
+          ':input[name="key_input_settings[authorization_server_type]"]' => ['value' => 'custom'],
+        ],
+        'required' => [
+          ':input[name="key_input_settings[authorization_server_type]"]' => ['value' => 'custom'],
         ],
       ],
     ];
@@ -169,6 +216,15 @@ class ApigeeAuthKeyInput extends KeyInputBase {
   public function processSubmittedKeyValue(FormStateInterface $form_state) {
     // Get input values.
     $input_values = $form_state->getValues();
+
+    // Make sure the endpoint defaults are not overridden by other values.
+    if (empty($input_values['endpoint_type']) || $input_values['endpoint_type'] == EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_DEFAULT) {
+      $input_values['endpoint'] = '';
+    }
+    if (empty($input_values['authorization_server_type']) || $input_values['authorization_server_type'] == 'default') {
+      $input_values['authorization_server'] = '';
+    }
+
     // Remove `key_value` so it doesn't get double encoded.
     unset($input_values['key_value']);
     // Reset values to just `key_value`.

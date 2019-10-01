@@ -25,7 +25,6 @@ use Drupal\apigee_edge_teams\Entity\TeamRole;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Utility\Error;
 use Drupal\user\UserInterface;
@@ -34,14 +33,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Add team members form.
  */
-class AddTeamMembersForm extends FormBase {
-
-  /**
-   * The team from the route.
-   *
-   * @var \Drupal\apigee_edge_teams\Entity\TeamInterface
-   */
-  protected $team;
+class AddTeamMembersForm extends TeamMembersFormBase {
 
   /**
    * The team membership manager service.
@@ -58,20 +50,6 @@ class AddTeamMembersForm extends FormBase {
   protected $userStorage;
 
   /**
-   * Team role storage.
-   *
-   * @var \Drupal\apigee_edge_teams\Entity\Storage\TeamRoleStorageInterface
-   */
-  protected $teamRoleStorage;
-
-  /**
-   * Team member role storage.
-   *
-   * @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorage
-   */
-  protected $teamMemberRoleStorage;
-
-  /**
    * AddTeamMemberForms constructor.
    *
    * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
@@ -80,10 +58,10 @@ class AddTeamMembersForm extends FormBase {
    *   The entity type manager.
    */
   public function __construct(TeamMembershipManagerInterface $team_membership_manager, EntityTypeManagerInterface $entity_type_manager) {
+    parent::__construct($entity_type_manager);
+
     $this->teamMembershipManager = $team_membership_manager;
     $this->userStorage = $entity_type_manager->getStorage('user');
-    $this->teamRoleStorage = $entity_type_manager->getStorage('team_role');
-    $this->teamMemberRoleStorage = $entity_type_manager->getStorage('team_member_role');
   }
 
   /**
@@ -108,17 +86,11 @@ class AddTeamMembersForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, TeamInterface $team = NULL) {
     $this->team = $team;
-
-    $role_options = array_reduce($this->teamRoleStorage->loadMultiple(), function (array $carry, TeamRoleInterface $role) {
-      if ($role->id() !== TeamRoleInterface::TEAM_MEMBER_ROLE) {
-        $carry[$role->id()] = $role->label();
-      }
-      return $carry;
-    }, []);
+    $role_options = $this->getRoleOptions();
 
     $form['developers'] = [
       '#title' => $this->t('Developers'),
-      '#description' => $this->t('Add one or more developers to the @team.', ['@team' => $this->team->getEntityType()->getLowercaseLabel()]),
+      '#description' => $this->t('Enter the email of one or more developers to add them to the @team.', ['@team' => $this->team->getEntityType()->getLowercaseLabel()]),
       '#type' => 'entity_autocomplete',
       '#target_type' => 'user',
       '#tags' => TRUE,
@@ -137,6 +109,13 @@ class AddTeamMembersForm extends FormBase {
       '#multiple' => TRUE,
       '#required' => FALSE,
     ];
+
+    // Special handling for the inevitable team member role.
+    $form['team_roles'][TeamRoleInterface::TEAM_MEMBER_ROLE] = [
+      '#default_value' => TRUE,
+      '#disabled' => TRUE,
+    ];
+
     $form['team_roles']['description'] = [
       '#markup' => $this->t('Assign one or more roles to <em>all developers</em> that you selected in %team_label @team.', ['%team_label' => $this->team->label(), '@team' => $this->team->getEntityType()->getLowercaseLabel()]),
     ];
@@ -206,7 +185,7 @@ class AddTeamMembersForm extends FormBase {
         )));
       $form_state->setRedirectUrl($this->team->toUrl('members'));
 
-      if (($selected_roles = array_filter($form_state->getValue('team_roles', [])))) {
+      if (($selected_roles = $this->filterSelectedRoles($form_state->getValue('team_roles', [])))) {
         /** @var \Drupal\user\UserInterface[] $users */
         $users = $this->userStorage->loadByProperties(['mail' => $developer_emails]);
         foreach ($users as $user) {

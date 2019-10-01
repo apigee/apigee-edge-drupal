@@ -109,7 +109,7 @@ class TeamMembersList extends ControllerBase {
         'roles' => $this->t('Roles'),
         'operations' => $this->t('Operations'),
       ],
-      '#title' => $this->t('@team members', ['@team' => $entity_type->getSingularLabel()]),
+      '#title' => $this->t('@team Members', ['@team' => $entity_type->getSingularLabel()]),
       '#rows' => [],
       '#empty' => $this->t('There are no members yet.'),
       '#cache' => [

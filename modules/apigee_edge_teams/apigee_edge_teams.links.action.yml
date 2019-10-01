@@ -13,6 +13,6 @@ apigee_edge_teams.team_app.add_form_for_team:
 
 entity.team_role.add_form:
   route_name: entity.team_role.add_form
-  title: 'Add role'
+  title: 'Add team role'
   appears_on:
     - 'entity.team_role.collection'

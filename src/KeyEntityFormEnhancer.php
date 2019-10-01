@@ -23,11 +23,13 @@ namespace Drupal\apigee_edge;
 use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
+use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\apigee_edge\Plugin\KeyProviderRequirementsInterface;
 use Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType;
 use Drupal\Component\Render\MarkupInterface;
+use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Component\Utility\Random;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
@@ -88,6 +90,13 @@ final class KeyEntityFormEnhancer {
   private $configFactory;
 
   /**
+   * The email validator.
+   *
+   * @var \Drupal\Component\Utility\EmailValidatorInterface
+   */
+  private $emailValidator;
+
+  /**
    * KeyEntityFormEnhancer constructor.
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
@@ -98,12 +107,15 @@ final class KeyEntityFormEnhancer {
    *   The entity type manager serivce.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
+   * @param \Drupal\Component\Utility\EmailValidatorInterface $email_validator
+   *   The email validator.
    */
-  public function __construct(SDKConnectorInterface $connector, OauthTokenStorageInterface $oauth_token_storage, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory) {
+  public function __construct(SDKConnectorInterface $connector, OauthTokenStorageInterface $oauth_token_storage, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, EmailValidatorInterface $email_validator) {
     $this->connector = $connector;
     $this->entityTypeManager = $entity_type_manager;
     $this->oauthTokenStorage = $oauth_token_storage;
     $this->configFactory = $config_factory;
+    $this->emailValidator = $email_validator;
   }
 
   /**
@@ -497,13 +509,23 @@ final class KeyEntityFormEnhancer {
       // valid organization name and username provided with an invalid password
       // the MGMT server returns HTTP 500 with an error instead of HTTP 401.
       if ($exception->getCode() === 401 || ($exception->getCode() === 500 && $exception->getEdgeErrorCode() === 'usersandroles.SsoInternalServerError')) {
-        $suggestion = $this->t('@fail_text The given username (%username) or password is incorrect.', [
-          '@fail_text' => $fail_text,
-          '%username' => $key_type->getUsername($key),
-        ]);
+
+        // If on public cloud (using the default endpoint), the username should
+        // be an email.
+        if ($key_type->getEndpointType($key) === EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_DEFAULT && !$this->emailValidator->isValid($key_type->getUsername($key))) {
+          $suggestion = $this->t('@fail_text The organization username should be a valid email.', [
+            '@fail_text' => $fail_text,
+          ]);
+        }
+        else {
+          $suggestion = $this->t('@fail_text The given username (%username) or password is incorrect.', [
+            '@fail_text' => $fail_text,
+            '%username' => $key_type->getUsername($key),
+          ]);
+        }
       }
       // Invalid organization name.
-      elseif ($exception->getCode() === 403) {
+      elseif ($exception->getCode() === 404) {
         $suggestion = $this->t('@fail_text The given organization name (%organization) is incorrect.', [
           '@fail_text' => $fail_text,
           '%organization' => $key_type->getOrganization($key),
@@ -529,6 +551,15 @@ final class KeyEntityFormEnhancer {
               '%endpoint' => $key_type->getEndpoint($key),
             ]);
           }
+        }
+
+        // If SDKConnector::testConnection() fails to retrieve a valid org,
+        // then this exception is thrown.
+        elseif ($exception instanceof InvalidArgumentException) {
+          $suggestion = $this->t('@fail_text The given endpoint (%endpoint) is incorrect or something is wrong with the connection.', [
+            '@fail_text' => $fail_text,
+            '%endpoint' => $key_type->getEndpoint($key),
+          ]);
         }
       }
     }

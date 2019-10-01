@@ -20,6 +20,7 @@
  */
 
 use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
+use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Breadcrumb\Breadcrumb;
 use Drupal\Core\Entity\EntityInterface;
@@ -29,6 +30,7 @@ use Drupal\Core\Link;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Url;
 
 /**
  * Implements hook_module_implements_alter().
@@ -224,4 +226,18 @@ function apigee_edge_teams_api_product_access(EntityInterface $entity, $operatio
 
   // $result is always defined.
   return $result;
+}
+
+/**
+ * Implements hook_help().
+ */
+function apigee_edge_teams_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'entity.team_role.collection':
+      $member_role = \Drupal::entityTypeManager()->getStorage('team_role')->load(TeamRoleInterface::TEAM_MEMBER_ROLE);
+      return '<p>' . t('A role defines a group of users that have certain privileges. These privileges are defined on the <a href=":permissions">Permissions page</a>. Here you can define the names of the team roles on your site. Users who are part of a team have the :member team role, plus any other team roles granted to their user account.', [
+        ':permissions' => Url::fromRoute('apigee_edge_teams.settings.team.permissions')->toString(),
+        ':member' => $member_role->label(),
+      ]) . '</p>';
+  }
 }

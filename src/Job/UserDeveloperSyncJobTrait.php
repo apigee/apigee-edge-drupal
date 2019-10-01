@@ -37,7 +37,7 @@ trait UserDeveloperSyncJobTrait {
    *   Logger interface.
    */
   protected function logger() : LoggerChannelInterface {
-    return \Drupal::service('logger.channel.apigee_edge_debug');
+    return \Drupal::service('logger.channel.apigee_edge');
   }
 
   /**

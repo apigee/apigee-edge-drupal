@@ -24,7 +24,7 @@ services:
 
   apigee_edge.key_entity_form_enhancer:
     class: Drupal\apigee_edge\KeyEntityFormEnhancer
-    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.authentication.oauth_token_storage', '@entity_type.manager', '@config.factory']
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.authentication.oauth_token_storage', '@entity_type.manager', '@config.factory', '@email.validator']
     calls:
       - [setMessenger, ['@messenger']]
       - [setStringTranslation, ['@string_translation']]
@@ -120,6 +120,8 @@ services:
       - '@logger.channel.apigee_edge'
       - '@redirect.destination'
       - '@router.no_access_checks'
+      - '@config.factory'
+      - '@messenger'
     tags:
       - { name: event_subscriber }
 
