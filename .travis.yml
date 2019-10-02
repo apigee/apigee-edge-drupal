@@ -28,6 +28,7 @@ jobs:
 stages:
   - lint
   - test
+    if: env(TRAVIS_PULL_REQUEST) = true
 
 env:
   global:
