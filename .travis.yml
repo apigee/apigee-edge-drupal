@@ -17,6 +17,19 @@ cache:
 notifications:
   email: false
 
+jobs:
+  include:
+    # Create a new stage to check coding standards that can run in sequence of test jobs.
+    - stage: lint
+      name: "Validate Coding Standards"
+      script: docker-compose run php phpcs -p -s -n --colors --standard=/opt/drupal-module/phpcs.xml.dist /opt/drupal-module/
+
+# Run the lint stage before starting tests. The test job is the default name for the matrix tests.
+stages:
+  - lint
+  - name: test
+    if: env(TRAVIS_PULL_REQUEST) = true
+
 env:
   global:
     - DOCKER_COMPOSE_VERSION=1.18.0
@@ -65,9 +78,6 @@ before_install:
   - docker-compose ps
 
 script:
-  - set -e
-  # Run phpcs on module
-  - docker-compose run php phpcs -p -s -n --colors --standard=/opt/drupal-module/phpcs.xml.dist /opt/drupal-module/
   # Do not exit if a PHPUnit test fails, we would like to run everything from
   # after_* sections.
   - set +e
