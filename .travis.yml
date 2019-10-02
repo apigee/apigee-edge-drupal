@@ -27,7 +27,7 @@ jobs:
 # Run the lint stage before starting tests. The test job is the default name for the matrix tests.
 stages:
   - lint
-  - test
+  - name: test
     if: env(TRAVIS_PULL_REQUEST) = true
 
 env:
