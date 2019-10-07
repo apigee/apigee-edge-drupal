@@ -27,6 +27,7 @@ use Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType;
 use Drupal\apigee_edge\OauthTokenFileStorage;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Url;
+use Drupal\key\Plugin\KeyProviderSettableValueInterface;
 use Drupal\user\RoleInterface;
 
 /**
@@ -168,7 +169,7 @@ function apigee_edge_update_8002() {
   $keys = \Drupal::service('key.repository')->getKeys();
   foreach ($keys as $key) {
     /* @var \Drupal\key\Entity\Key $key */
-    if ($key->getKeyType() instanceof ApigeeAuthKeyType) {
+    if ($key->getKeyType() instanceof ApigeeAuthKeyType && $key->getKeyProvider() instanceof KeyProviderSettableValueInterface) {
       $values = $key->getKeyValues();
       $values['endpoint_type'] = $values['endpoint'] ? 'custom' : 'default';
       $values['authorization_server_type'] = $values['authorization_server'] ? 'custom' : 'default';
