@@ -28,6 +28,26 @@ use Drupal\key\Plugin\KeyTypeMultivalueInterface;
 interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthenticationMethodInterface {
 
   /**
+   * Apigee instance on public cloud.
+   *
+   * @var string
+   */
+  public const INSTANCE_TYPE_PUBLIC = 'public';
+
+  /**
+   * Apigee instance on private cloud.
+   *
+   * @var string
+   */
+  public const INSTANCE_TYPE_PRIVATE = 'private';
+
+  /**
+   * Apigee instance on hybrid cloud.
+   *
+   * @var string
+   */
+  public const INSTANCE_TYPE_HYBRID = 'hybrid';
+  /**
    * ID of the basic authentication method.
    *
    * @var string

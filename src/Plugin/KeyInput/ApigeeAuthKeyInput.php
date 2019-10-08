@@ -20,7 +20,6 @@
 namespace Drupal\apigee_edge\Plugin\KeyInput;
 
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
-use Apigee\Edge\ClientInterface;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
@@ -67,17 +66,13 @@ class ApigeeAuthKeyInput extends KeyInputBase {
     $values['authorization_server_type'] = empty($values['authorization_server']) ? 'default' : 'custom';
 
     $state_for_public = [
-      ':input[name="key_input_settings[instance_type]"]' => ['value' => 'public'],
+      ':input[name="key_input_settings[instance_type]"]' => ['value' => EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC],
     ];
     $state_for_private = [
-      ':input[name="key_input_settings[instance_type]"]' => ['value' => 'private'],
+      ':input[name="key_input_settings[instance_type]"]' => ['value' => EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE],
     ];
     $state_for_hybrid = [
-      ':input[name="key_input_settings[instance_type]"]' => ['value' => 'hybrid'],
-    ];
-    $states_for_public_or_private = [
-      'visible' => [$state_for_public, 'xor', $state_for_private],
-      'required' => [$state_for_public, 'xor', $state_for_private],
+      ':input[name="key_input_settings[instance_type]"]' => ['value' => EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID],
     ];
 
     $form['instance_type'] = [
@@ -88,11 +83,61 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       ]),
       '#required' => TRUE,
       '#options' => [
-        'public' => $this->t('Public Cloud'),
-        'private' => $this->t('Private Cloud'),
-        'hybrid' => $this->t('Hybrid Cloud'),
+        EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC => $this->t('Public Cloud'),
+        EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE => $this->t('Private Cloud'),
+        EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID => $this->t('Hybrid Cloud'),
       ],
       '#default_value' => $values['instance_type'] ?? 'public',
+    ];
+    $form['auth_type'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Authentication type'),
+      '#description' => $this->t('Select the authentication method to use.'),
+      '#required' => TRUE,
+      '#options' => [
+        EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH => $this->t('OAuth'),
+        EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC => $this->t('HTTP basic'),
+      ],
+      '#default_value' => $values['auth_type'] ?? EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC,
+      '#states' => [
+        'visible' => [$state_for_public, 'xor', $state_for_private],
+        'required' => [$state_for_public, 'xor', $state_for_private],
+      ],
+    ];
+    $form['organization'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Organization'),
+      '#description' => $this->t('Name of the organization on Apigee Edge. Changing this value could make your site stop working.'),
+      '#required' => TRUE,
+      '#default_value' => $values['organization'] ?? '',
+      '#attributes' => ['autocomplete' => 'off'],
+    ];
+    $form['username'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Username'),
+      '#description' => $this->t("Apigee user's email address or identity provider username that is used for authenticating with the endpoint."),
+      '#required' => TRUE,
+      '#default_value' => $values['username'] ?? '',
+      '#attributes' => ['autocomplete' => 'off'],
+      '#states' => [
+        'visible' => [$state_for_public, 'xor', $state_for_private],
+        'required' => [$state_for_public, 'xor', $state_for_private],
+      ],
+    ];
+    $form['password'] = [
+      '#type' => 'password',
+      '#title' => $this->t('Password'),
+      '#description' => $this->t("Organization user's password that is used for authenticating with the endpoint."),
+      '#required' => TRUE,
+      '#attributes' => [
+        'autocomplete' => 'off',
+        // Password field should not forget the submitted value.
+        'value' => $values['password'] ?? '',
+      ],
+      '#states' => [
+        'visible' => [$state_for_public, 'xor', $state_for_private],
+        'required' => [$state_for_public, 'xor', $state_for_private],
+      ],
     ];
     $form['account_json_key'] = [
       '#type' => 'textarea',
@@ -105,48 +150,6 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         'visible' => $state_for_hybrid,
         'required' => $state_for_hybrid,
       ],
-    ];
-    $form['auth_type'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Authentication type'),
-      '#description' => $this->t('Select the authentication method to use.'),
-      '#required' => TRUE,
-      '#options' => [
-        EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH => $this->t('OAuth'),
-        EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC => $this->t('HTTP basic'),
-      ],
-      '#default_value' => $values['auth_type'] ?? EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC,
-      '#states' => $states_for_public_or_private,
-    ];
-    $form['organization'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Organization'),
-      '#description' => $this->t('Name of the organization on Apigee Edge. Changing this value could make your site stop working.'),
-      '#required' => TRUE,
-      '#default_value' => $values['organization'] ?? '',
-      '#attributes' => ['autocomplete' => 'off'],
-      '#states' => $states_for_public_or_private,
-    ];
-    $form['username'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Username'),
-      '#description' => $this->t("Apigee user's email address or identity provider username that is used for authenticating with the endpoint."),
-      '#required' => TRUE,
-      '#default_value' => $values['username'] ?? '',
-      '#attributes' => ['autocomplete' => 'off'],
-      '#states' => $states_for_public_or_private,
-    ];
-    $form['password'] = [
-      '#type' => 'password',
-      '#title' => $this->t('Password'),
-      '#description' => $this->t("Organization user's password that is used for authenticating with the endpoint."),
-      '#required' => TRUE,
-      '#attributes' => [
-        'autocomplete' => 'off',
-        // Password field should not forget the submitted value.
-        'value' => $values['password'] ?? '',
-      ],
-      '#states' => $states_for_public_or_private,
     ];
     $form['endpoint'] = [
       '#type' => 'textfield',
@@ -176,6 +179,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       ]),
       '#states' => [
         'visible' => [
+          [$state_for_public, 'xor', $state_for_private],
           ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH],
         ],
       ],
@@ -190,10 +194,13 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#attributes' => ['autocomplete' => 'off'],
       '#states' => [
         'visible' => [
+          [$state_for_public, 'xor', $state_for_private],
           ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH],
           ':input[name="key_input_settings[authorization_server_type]"]' => ['value' => 'custom'],
         ],
         'required' => [
+          [$state_for_public, 'xor', $state_for_private],
+          ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH],
           ':input[name="key_input_settings[authorization_server_type]"]' => ['value' => 'custom'],
         ],
       ],
@@ -208,6 +215,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#attributes' => ['autocomplete' => 'off'],
       '#states' => [
         'visible' => [
+          [$state_for_public, 'xor', $state_for_private],
           ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH],
         ],
       ],
@@ -222,6 +230,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#attributes' => ['autocomplete' => 'off'],
       '#states' => [
         'visible' => [
+          [$state_for_public, 'xor', $state_for_private],
           ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH],
         ],
       ],
