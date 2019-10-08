@@ -21,6 +21,7 @@ namespace Drupal\Tests\apigee_edge\FunctionalJavascript\Form;
 
 use Drupal\apigee_edge\Form\AuthenticationForm;
 use Drupal\apigee_edge\OauthTokenFileStorage;
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Core\Url;
 use Drupal\key\Entity\Key;
 use Drupal\Tests\apigee_edge\FunctionalJavascript\ApigeeEdgeFunctionalJavascriptTestBase;
@@ -219,11 +220,10 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $this->assertFalse($this->cssSelect('input[name="key_input_settings[client_secret]"]')[0]->isVisible());
 
     // Test the connection with basic auth.
+    $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC);
     $page->fillField('Username', $this->username);
     $page->fillField('Password', $this->password);
     $page->fillField('Organization', $this->organization);
-    $page->selectFieldOption('key_input_settings[endpoint_type]', 'custom');
-    $page->fillField('Custom Apigee Edge endpoint', $this->endpoint);
     $this->assertSession()->pageTextContains('Send request using the given API credentials.');
     $this->assertSendRequestMessage('.messages--status', 'Connection successful.');
     $web_assert->elementNotExists('css', 'details[data-drupal-selector="edit-debug"]');
@@ -263,11 +263,10 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     // page on success therefore we have to re-visit the form again.
     $visitFormAsAdmin();
     // Setup valid credentials again.
+    $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC);
     $page->fillField('Username', $this->username);
     $page->fillField('Password', $this->password);
     $page->fillField('Organization', $this->organization);
-    $page->selectFieldOption('key_input_settings[endpoint_type]', 'custom');
-    $page->fillField('Custom Apigee Edge endpoint', $this->endpoint);
 
     // Test invalid password.
     $random_pass = $this->randomString();
@@ -282,8 +281,8 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $web_assert->elementNotContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', $random_pass);
     $page->fillField('Password', $this->password);
 
-    // Test invalid username when using default endpoint.
-    $page->selectFieldOption('key_input_settings[endpoint_type]', 'default');
+    // Test invalid username when using default public cloud endpoint.
+    $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC);
     $page->fillField('Username', $this->randomMachineName());
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The organization username should be a valid email. Error message: ");
     $page->fillField('Username', $this->username);
@@ -297,27 +296,27 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $page->fillField('Organization', $this->organization);
 
     // Test invalid endpoint.
-    $page->selectFieldOption('key_input_settings[endpoint_type]', 'custom');
+    $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE);
     $invalid_domain = "{$this->randomGenerator->word(16)}.example.com";
-    $page->fillField('Custom Apigee Edge endpoint', "http://{$invalid_domain}/");
+    $page->fillField('Apigee Edge endpoint', "http://{$invalid_domain}/");
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given endpoint (http://{$invalid_domain}/) is incorrect or something is wrong with the connection. Error message: ");
     $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"endpoint\": \"http:\/\/{$invalid_domain}\/\"");
     $web_assert->fieldValueEquals('Custom Apigee Edge endpoint', "http://{$invalid_domain}/");
-    $page->fillField('Custom Apigee Edge endpoint', '');
-    $page->selectFieldOption('key_input_settings[endpoint_type]', 'default');
+    $page->fillField('Apigee Edge endpoint', '');
+    $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC);
 
     // Test another invalid endpoint scenario:
     // This endpoint is not a Management API endpoint, but still returns
     // HTTP 200 with a JSON response.
     $invalid_endpoint = 'enterprise.apigee.com/platform/orgname';
-    $page->selectFieldOption('key_input_settings[endpoint_type]', 'custom');
+    $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE);
     $page->fillField('Apigee Edge endpoint', "https://{$invalid_endpoint}/");
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given endpoint (https://{$invalid_endpoint}/) is incorrect or something is wrong with the connection. Error message: ");
     $invalid_endpoint_escaped = str_replace('/', '\/', $invalid_endpoint);
     $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"endpoint\": \"https:\/\/{$invalid_endpoint_escaped}\/\"");
-    $web_assert->fieldValueEquals('Custom Apigee Edge endpoint', "https://{$invalid_endpoint}/");
-    $page->fillField('Custom Apigee Edge endpoint', '');
-    $page->selectFieldOption('key_input_settings[endpoint_type]', 'default');
+    $web_assert->fieldValueEquals('Apigee Edge endpoint', "https://{$invalid_endpoint}/");
+    $page->fillField('Apigee Edge endpoint', '');
+    $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC);
 
     // Test invalid authorization server.
     $this->cssSelect('select[data-drupal-selector="edit-key-input-settings-auth-type"]')[0]->setValue('oauth');
