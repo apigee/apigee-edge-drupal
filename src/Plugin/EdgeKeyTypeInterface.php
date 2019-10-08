@@ -65,6 +65,8 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
    * The endpoint type for default.
    *
    * @var string
+   *
+   * @deprecated
    */
   const EDGE_ENDPOINT_TYPE_DEFAULT = 'default';
 
@@ -72,6 +74,8 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
    * The endpoint type for custom.
    *
    * @var string
+   *
+   * @deprecated
    */
   const EDGE_ENDPOINT_TYPE_CUSTOM = 'custom';
 
@@ -98,16 +102,28 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
   public function getEndpoint(KeyInterface $key): string;
 
   /**
+   * Gets the instance type (public, private or hybrid).
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
+   *
+   * @return string
+   *   The instance type.
+   */
+  public function getInstanceType(KeyInterface $key): string;
+
+  /**
    * Gets the API endpoint type (default or custom).
    *
-   * If the "endpoint_type" property is empty, it returns "default" if the
-   * "endpoint" is empty or the same as the default endpoint.
+   * It returns "default" on a public cloud instance, otherwise "custom".
    *
    * @param \Drupal\key\KeyInterface $key
    *   The key entity.
    *
    * @return string
    *   The API endpoint type.
+   *
+   * @deprecated Use getInstanceType() instead.
    */
   public function getEndpointType(KeyInterface $key): string;
 

@@ -510,9 +510,8 @@ final class KeyEntityFormEnhancer {
       // the MGMT server returns HTTP 500 with an error instead of HTTP 401.
       if ($exception->getCode() === 401 || ($exception->getCode() === 500 && $exception->getEdgeErrorCode() === 'usersandroles.SsoInternalServerError')) {
 
-        // If on public cloud (using the default endpoint), the username should
-        // be an email.
-        if ($key_type->getEndpointType($key) === EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_DEFAULT && !$this->emailValidator->isValid($key_type->getUsername($key))) {
+        // If on public cloud, the username should be an email.
+        if ($key_type->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC && !$this->emailValidator->isValid($key_type->getUsername($key))) {
           $suggestion = $this->t('@fail_text The organization username should be a valid email.', [
             '@fail_text' => $fail_text,
           ]);

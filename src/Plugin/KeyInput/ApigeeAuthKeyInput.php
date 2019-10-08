@@ -62,7 +62,6 @@ class ApigeeAuthKeyInput extends KeyInputBase {
 
     // Could be an empty array.
     $values = Json::decode($key_value);
-    $values['endpoint_type'] = empty($values['endpoint']) ? EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_DEFAULT : EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_CUSTOM;
     $values['authorization_server_type'] = empty($values['authorization_server']) ? 'default' : 'custom';
 
     $state_for_public = [
@@ -252,11 +251,18 @@ class ApigeeAuthKeyInput extends KeyInputBase {
     $input_values = $form_state->getValues();
 
     // Make sure the endpoint defaults are not overridden by other values.
-    if (empty($input_values['endpoint_type']) || $input_values['endpoint_type'] == EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_DEFAULT) {
+    if ($input_values['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC) {
       $input_values['endpoint'] = '';
     }
     if (empty($input_values['authorization_server_type']) || $input_values['authorization_server_type'] == 'default') {
       $input_values['authorization_server'] = '';
+    }
+
+    // Remove unneeded values if on a Hybrid instance.
+    if ($input_values['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+      $input_values['endpoint'] = '';
+      $input_values['authorization_server'] = '';
+      $input_values['auth_type'] = '';
     }
 
     // Remove `key_value` so it doesn't get double encoded.

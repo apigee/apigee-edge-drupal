@@ -20,6 +20,7 @@
 namespace Drupal\apigee_edge\Plugin;
 
 use Apigee\Edge\Client;
+use Apigee\Edge\ClientInterface;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use Drupal\apigee_edge\Exception\AuthenticationKeyValueMalformedException;
 use Drupal\Component\Serialization\Json;
@@ -66,15 +67,28 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
    * {@inheritdoc}
    */
   public function getEndpointType(KeyInterface $key): string {
-    if (isset($key->getKeyValues()['endpoint_type'])) {
-      return $key->getKeyValues()['endpoint_type'];
-    }
-
-    if (empty($key->getKeyValues()['endpoint']) || $key->getKeyValues()['endpoint'] === Client::DEFAULT_ENDPOINT) {
+    if ($this->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC) {
       return EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_DEFAULT;
     }
 
     return EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_CUSTOM;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getInstanceType(KeyInterface $key): string {
+    $key_values = $key->getKeyValues();
+    if (isset($key_values['instance_type'])) {
+      return $key_values['instance_type'];
+    }
+
+    // Backwards compatibility, before Hybrid support.
+    if (empty($key_values['endpoint']) || $key_values['endpoint'] === ClientInterface::DEFAULT_ENDPOINT) {
+      return EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC;
+    }
+
+    return EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE;
   }
 
   /**
