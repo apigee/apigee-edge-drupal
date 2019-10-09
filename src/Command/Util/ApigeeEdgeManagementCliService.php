@@ -21,6 +21,7 @@ namespace Drupal\apigee_edge\Command\Util;
 
 use Drupal\Component\Utility\UrlHelper;
 use GuzzleHttp\ClientInterface;
+use Apigee\Edge\ClientInterface as ApigeeClientInterface;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\TransferException;
 use Symfony\Component\Console\Style\StyleInterface;
@@ -48,22 +49,7 @@ class ApigeeEdgeManagementCliService implements ApigeeEdgeManagementCliServiceIn
   }
 
   /**
-   * Create role in Apigee Edge for Drupal to use for Edge connection.
-   *
-   * @param \Symfony\Component\Console\Style\StyleInterface $io
-   *   The IO interface of the CLI tool calling the method.
-   * @param callable $t
-   *   The translation function akin to t().
-   * @param string $org
-   *   The organization to connect to.
-   * @param string $email
-   *   The email of an Edge user with org admin role to make Edge API calls.
-   * @param string $password
-   *   The password of an Edge user with org admin role to make Edge API calls.
-   * @param null|string $base_url
-   *   The base url of the Edge API.
-   * @param null|string $role_name
-   *   The role name to add the permissions to.
+   * {@inheritdoc}
    */
   public function createEdgeRoleForDrupal(StyleInterface $io,
                                           callable $t,
@@ -71,11 +57,12 @@ class ApigeeEdgeManagementCliService implements ApigeeEdgeManagementCliServiceIn
                                           string $email,
                                           string $password,
                                           ?string $base_url,
-                                          ?string $role_name) {
+                                          ?string $role_name,
+                                          bool $force) {
 
-    if ($base_url === NULL || $base_url === '') {
-      // Set default base URL if var is null or empty string.
-      $base_url = self::DEFAULT_BASE_URL;
+    // Set default base URL if var is null or empty string.
+    if (empty($base_url)) {
+      $base_url = ApigeeClientInterface::DEFAULT_ENDPOINT;
     }
     else {
       // Validate it is a valid URL.
@@ -83,13 +70,10 @@ class ApigeeEdgeManagementCliService implements ApigeeEdgeManagementCliServiceIn
         $io->error($t('Base URL is not valid.'));
         return;
       }
-
     }
 
-    if ($role_name === NULL || $role_name === '') {
-      // Set default if null or empty string.
-      $role_name = self::DEFAULT_ROLE_NAME;
-    }
+    // Set default if null or empty string.
+    $role_name = $role_name ?: self::DEFAULT_ROLE_NAME;
 
     if (!$this->isValidEdgeCredentials($io, $t, $org, $email, $password, $base_url)) {
       return;
@@ -97,7 +81,14 @@ class ApigeeEdgeManagementCliService implements ApigeeEdgeManagementCliServiceIn
 
     $does_role_exist = $this->doesRoleExist($org, $email, $password, $base_url, $role_name);
 
-    // If role does not exist, create it.
+    // If role does not exist and force flag is not used, throw error.
+    if ($does_role_exist && !$force) {
+      $io->error('Role ' . $role_name . ' already exists.');
+      $io->note('Run with --force option to set default permissions on this role.');
+      return;
+    }
+
+    // Create the role if it does not exist.
     if (!$does_role_exist) {
       $io->text($t('Role :role does not exist. Creating role.', [':role' => $role_name]));
 
@@ -118,9 +109,6 @@ class ApigeeEdgeManagementCliService implements ApigeeEdgeManagementCliServiceIn
         $this->handleHttpClientExceptions($exception, $io, $t, $url, $org, $email);
         return;
       }
-    }
-    else {
-      $io->text('Role ' . $role_name . ' already exists.');
     }
 
     $this->setDefaultPermissions($io, $t, $org, $email, $password, $base_url, $role_name);
@@ -152,7 +140,7 @@ class ApigeeEdgeManagementCliService implements ApigeeEdgeManagementCliServiceIn
     $permissions = [
       // GET access by default for all resources.
       '/' => ['get'],
-      // Read only access to environments.
+      // Read only access to environments for analytics.
       '/environments/' => ['get'],
       '/environments/*/stats/*' => ['get'],
       // We do not need to update/edit roles, just read them.
@@ -219,7 +207,7 @@ class ApigeeEdgeManagementCliService implements ApigeeEdgeManagementCliServiceIn
   public function doesRoleExist(string $org, string $email, string $password, string $base_url, string $role_name) {
     $url = $base_url . '/o/' . $org . '/userroles/' . $role_name;
     try {
-      $this->httpClient->get($url, [
+      $response = $this->httpClient->get($url, [
         'auth' => [$email, $password],
         'headers' => ['Accept' => 'application/json'],
       ]);
@@ -232,8 +220,15 @@ class ApigeeEdgeManagementCliService implements ApigeeEdgeManagementCliServiceIn
       // Any other response was an exception.
       throw $exception;
     }
-    // If 200 response, role exists.
-    return TRUE;
+
+    // Make sure role exists.
+    $body = json_decode((string) $response->getBody());
+    if (isset($body->name) && $body->name == $role_name) {
+      return TRUE;
+    }
+    else {
+      return FALSE;
+    }
   }
 
   /**
@@ -268,15 +263,28 @@ class ApigeeEdgeManagementCliService implements ApigeeEdgeManagementCliServiceIn
       return FALSE;
     }
 
-    $body = json_decode($response->getBody());
+    // Make sure a response is returned.
+    $raw_body = (string) $response->getBody();
+    if (empty($raw_body)) {
+      $io->error($t('Response to :url returned empty. HTTP !response_code !response_reason', [
+        ':url' => $url,
+        '!response_code' => $response->getStatusCode(),
+        '!response_reason' => json_last_error_msg(),
+      ]));
+      return FALSE;
+    }
+    $body = json_decode($raw_body);
+
     if (JSON_ERROR_NONE !== json_last_error()) {
-      $io->error($t('Unable to parse response from Apigee Edge into JSON. !error ', ['error' => json_last_error_msg()]));
-      $io->section($t('Server response from :url', [':url' => $url]));
-      $io->text($response->getBody());
+      $io->error($t('Unable to parse response from GET :url into JSON: !error ', [
+        ':url' => $url,
+        '!error' => json_last_error_msg(),
+      ]));
       return FALSE;
     }
     if (!isset($body->name)) {
-      $io->warning($t('The response from :url did not contain the org name.', [':url' => $url]));
+      $io->error($t('The response from GET :url did not contain valid org data.', [':url' => $url]));
+      return FALSE;
     }
     else {
       $io->success($t('Connected to Edge org :org.', [':org' => $body->name]));
@@ -301,7 +309,10 @@ class ApigeeEdgeManagementCliService implements ApigeeEdgeManagementCliServiceIn
    *   The email of an Edge user with org admin role to make Edge API calls.
    */
   public function handleHttpClientExceptions(TransferException $exception, StyleInterface $io, callable $t, string $url, string $org, string $email): void {
+    // Display error message.
     $io->error($t('Error connecting to Apigee Edge. :exception_message', [':exception_message' => $exception->getMessage()]));
+
+    // Add a note to common situations on what could be wrong.
     switch ($exception->getCode()) {
       case 0:
         $io->note($t('Your system may not be able to connect to :url.', [
@@ -323,7 +334,6 @@ class ApigeeEdgeManagementCliService implements ApigeeEdgeManagementCliServiceIn
       case 302:
         $io->note($t('Edge endpoint gives a redirect response, is the url :url does not seem to be a valid Apigee Edge endpoint.', [':url' => $url]));
         return;
-
     }
   }
 

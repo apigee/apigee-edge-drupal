@@ -26,9 +26,6 @@ use Symfony\Component\Console\Style\StyleInterface;
  */
 interface ApigeeEdgeManagementCliServiceInterface {
 
-  // Default base url.
-  const DEFAULT_BASE_URL = 'https://api.enterprise.apigee.com/v1';
-
   // Default role name to create in Apigee Edge.
   const DEFAULT_ROLE_NAME = 'drupalportal';
 
@@ -49,7 +46,18 @@ interface ApigeeEdgeManagementCliServiceInterface {
    *   The base url of the Edge API.
    * @param null|string $role_name
    *   The role name to add the permissions to.
+   * @param null|bool $force
+   *   Force running of permissions on a role that already exists.
    */
-  public function createEdgeRoleForDrupal(StyleInterface $io, callable $t, string $org, string $email, string $password, ?string $base_url, ?string $role_name);
+  public function createEdgeRoleForDrupal(
+    StyleInterface $io,
+    callable $t,
+    string $org,
+    string $email,
+    string $password,
+    ?string $base_url,
+    ?string $role_name,
+    bool $force
+  );
 
 }

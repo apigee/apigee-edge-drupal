@@ -7,6 +7,7 @@ options:
   password: 'Password for the Apigee orgadmin user (if not passed in you will be prompted)'
   base-url: 'Base URL to use, defaults to public cloud URL https://api.enterprise.apigee.com/v1'
   role-name: 'The role to create in the Apigee Edge org, defaults to "drupalportal"'
+  force: 'Force running of permissions on a role that already exists.'
 questions:
   password: 'Enter password for Apigee orgadmin user'
 messages:

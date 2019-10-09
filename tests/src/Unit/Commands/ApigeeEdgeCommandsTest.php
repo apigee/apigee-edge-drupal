@@ -84,6 +84,7 @@ namespace Drupal\Tests\apigee_edge\Unit {
         'password' => 'opensesame',
         'base-url' => 'http://api.apigee.com/v1',
         'role-name' => 'portalRole',
+        'force' => 'FALSE',
       ];
 
       $this->apigeeEdgeCommands->createEdgeRole('orgA', 'emailA', $drush_options);
@@ -95,7 +96,8 @@ namespace Drupal\Tests\apigee_edge\Unit {
         Argument::type('string'),
         Argument::type('string'),
         Argument::type('string'),
-        Argument::type('string')
+        Argument::type('string'),
+        Argument::type('bool')
         )
         ->shouldHaveBeenCalledTimes(1);
 
@@ -145,7 +147,58 @@ namespace Drupal\Tests\apigee_edge\Unit {
         ->shouldBeCalled();
       $command_data_input->setOption('password', 'I<3APIS!')
         ->shouldHaveBeenCalled();
+    }
 
+    /**
+     * Test calling with force function when role already exists.
+     */
+    public function testCreateEdgeEdgeRoleWithForceParam() {
+      $drush_options = [
+        'password' => 'opensesame',
+        'base-url' => 'http://api.apigee.com/v1',
+        'role-name' => 'portalRole',
+        'force' => TRUE,
+      ];
+
+      $this->apigeeEdgeCommands->createEdgeRole('orgA', 'emailA', $drush_options);
+
+      $this->cliService->createEdgeRoleForDrupal(
+        Argument::type(DrushStyle::class),
+        Argument::type('string'),
+        Argument::type('string'),
+        Argument::type('string'),
+        Argument::type('string'),
+        Argument::type('string'),
+        Argument::type('string'),
+        TRUE
+      )
+        ->shouldHaveBeenCalledTimes(1);
+    }
+
+    /**
+     * Test calling when role exists but force flag not given, should error.
+     */
+    public function testCreateEdgeEdgeRoleWithoutForceParam() {
+      $drush_options = [
+        'password' => 'opensesame',
+        'base-url' => 'http://api.apigee.com/v1',
+        'role-name' => 'portalRole',
+        'force' => FALSE,
+      ];
+
+      $this->apigeeEdgeCommands->createEdgeRole('orgA', 'emailA', $drush_options);
+
+      $this->cliService->createEdgeRoleForDrupal(
+        Argument::type(DrushStyle::class),
+        Argument::type('string'),
+        Argument::type('string'),
+        Argument::type('string'),
+        Argument::type('string'),
+        Argument::type('string'),
+        Argument::type('string'),
+        FALSE
+      )
+        ->shouldHaveBeenCalledTimes(1);
     }
 
   }

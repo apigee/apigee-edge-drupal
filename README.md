@@ -39,6 +39,7 @@ considered to be in development. Experimental modules are included in the "Apige
 2. Click **Extend** in the Drupal administration menu.
 3. Select the **Apigee Edge** module.
 4. Click **Install**.
+5. Configure the [connection to your Apigee org](https://www.drupal.org/docs/8/modules/apigee-edge/configure-the-connection-to-apigee-edge)
 
 ## Notes
 

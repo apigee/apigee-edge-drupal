@@ -21,6 +21,7 @@ namespace Drupal\apigee_edge\Command;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -32,12 +33,6 @@ use Symfony\Component\Console\Output\OutputInterface;
  * )
  */
 class CreateEdgeRoleCommand extends CommandBase {
-
-  // Default base url.
-  const DEFAULT_BASE_URL = 'https://api.enterprise.apigee.com/v1';
-
-  // Default role name to create in Apigee Edge.
-  const DEFAULT_ROLE_NAME = 'drupalportal';
 
   /**
    * {@inheritdoc}
@@ -64,16 +59,23 @@ class CreateEdgeRoleCommand extends CommandBase {
         $this->trans('commands.apigee_edge.role.create.options.password')
       )
       ->addOption(
-      'base-url',
-      'b',
-      InputArgument::OPTIONAL,
-      $this->trans('commands.apigee_edge.role.create.options.base-url')
-    )->addOption(
+        'base-url',
+        'b',
+        InputArgument::OPTIONAL,
+        $this->trans('commands.apigee_edge.role.create.options.base-url')
+      )
+      ->addOption(
         'role-name',
         'r',
         InputArgument::OPTIONAL,
         $this->trans('commands.apigee_edge.role.create.options.role-name')
-      );;
+      )->addOption(
+        'force',
+        'f',
+        InputOption::VALUE_NONE,
+        $this->trans('commands.apigee_edge.role.create.options.force')
+      );
+
   }
 
   /**
@@ -100,8 +102,9 @@ class CreateEdgeRoleCommand extends CommandBase {
     $password = $input->getOption('password');
     $base_url = $input->getOption('base-url');
     $role_name = $input->getOption('role-name');
+    $force = $input->getOption('force');
 
-    $this->cliService->createEdgeRoleForDrupal($this->getIo(), 't', $org, $email, $password, $base_url, $role_name);
+    $this->cliService->createEdgeRoleForDrupal($this->getIo(), 't', $org, $email, $password, $base_url, $role_name, $force);
   }
 
 }

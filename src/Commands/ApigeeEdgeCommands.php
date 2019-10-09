@@ -80,12 +80,17 @@ class ApigeeEdgeCommands extends DrushCommands {
    *   https://api.enterprise.apigee.com/v1.
    * @option role-name
    *   The role to create in the Apigee Edge org, defaults to "drupalportal".
+   * @option $force
+   *   Force running of permissions on a role that already exists, defaults
+   *   to throwing an error message if role exists.
    * @usage drush create-edge-role myorg me@example.com
    *   Create "drupalportal" role as orgadmin me@example.com for org myorg.
+   * @usage drush create-edge-role myorg me@example.com --role-name=portal
+   *   Create role named "portal"
    * @usage drush create-edge-role myorg me@example.com --base-url=https://api.edge.example.com
    *   Create role on private Apigee Edge server "api.edge.example.com".
-   * @usage drush create-edge-role myorg me@example.com --role-name=portal
-   *   Create role named "portal".
+   * @usage drush create-edge-role myorg me@example.com --force
+   *   Update permissions on "drupalportal" role even if role already exists.
    * @command apigee-edge:create-edge-role
    * @aliases create-edge-role
    */
@@ -96,8 +101,20 @@ class ApigeeEdgeCommands extends DrushCommands {
       'password' => NULL,
       'base-url' => NULL,
       'role-name' => NULL,
+      'force' => FALSE,
     ]) {
-    $this->cliService->createEdgeRoleForDrupal($this->io(), 'dt', $org, $email, $options['password'], $options['base-url'], $options['role-name']);
+
+    // Call the CLI Service.
+    $this->cliService->createEdgeRoleForDrupal(
+      $this->io(),
+      'dt',
+      $org,
+      $email,
+      $options['password'],
+      $options['base-url'],
+      $options['role-name'],
+      $options['force']
+    );
   }
 
   /**

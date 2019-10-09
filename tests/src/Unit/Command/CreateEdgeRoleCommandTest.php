@@ -129,9 +129,34 @@ namespace Drupal\Tests\apigee_edge\Unit {
         Argument::type('string'),
         Argument::type('string'),
         Argument::type('string'),
-        Argument::type('string')
-        )
-        ->shouldHaveBeenCalledTimes(1);
+        Argument::type('string'),
+        Argument::type('bool')
+      )->shouldHaveBeenCalledTimes(1);
+    }
+
+    /**
+     * Calls to Drush command should pass through to CLI service.
+     */
+    public function testCreateEdgeRoleForceParam() {
+      $this->input->getArgument(Argument::is('org'))->willReturn('myorg');
+      $this->input->getArgument(Argument::is('email'))->willReturn('email@example.com');
+      $this->input->getOption(Argument::is('password'))->willReturn('secret');
+      $this->input->getOption(Argument::is('base-url'))->willReturn('http://base-url');
+      $this->input->getOption(Argument::is('role-name'))->willReturn('custom_drupal_role');
+      $this->input->getOption(Argument::is('force'))->willReturn('true');
+
+      $this->createEdgeRoleCommand->execute($this->input->reveal(), $this->output->reveal());
+
+      $this->cliService->createEdgeRoleForDrupal(
+        Argument::type(DrupalStyle::class),
+        Argument::type('string'),
+        Argument::type('string'),
+        Argument::type('string'),
+        Argument::type('string'),
+        Argument::type('string'),
+        Argument::type('string'),
+        Argument::type('bool')
+      )->shouldHaveBeenCalledTimes(1);
     }
 
     /**
@@ -151,7 +176,6 @@ namespace Drupal\Tests\apigee_edge\Unit {
       // Interact should not change password since it was passed in.
       $this->input->getOption('password')->shouldHaveBeenCalled();
       $this->input->setOption('password')->shouldNotHaveBeenCalled();
-
     }
 
     /**
@@ -172,7 +196,6 @@ namespace Drupal\Tests\apigee_edge\Unit {
       // Interact should not change password since it was passed in.
       $this->input->getOption('password')->shouldHaveBeenCalled();
       $this->input->setOption('password', NULL)->shouldHaveBeenCalled();
-
     }
 
   }

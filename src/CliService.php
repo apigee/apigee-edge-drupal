@@ -73,8 +73,26 @@ class CliService implements CliServiceInterface {
   /**
    * {@inheritdoc}
    */
-  public function createEdgeRoleForDrupal(StyleInterface $io, callable $t, string $org, string $email, string $password, ?string $base_url, ?string $role_name) {
-    $this->apigeeEdgeManagementCliService->createEdgeRoleForDrupal($io, $t, $org, $email, $password, $base_url, $role_name);
+  public function createEdgeRoleForDrupal(
+    StyleInterface $io,
+    callable $t,
+    string $org,
+    string $email,
+    string $password,
+    ?string $base_url,
+    ?string $role_name,
+    ?bool $force
+  ) {
+    $this->apigeeEdgeManagementCliService->createEdgeRoleForDrupal(
+      $io,
+      $t,
+      $org,
+      $email,
+      $password,
+      $base_url,
+      $role_name,
+      $force
+    );
   }
 
 }

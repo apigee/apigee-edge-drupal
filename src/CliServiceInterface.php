@@ -53,7 +53,18 @@ interface CliServiceInterface {
    *   The base url of the Edge API.
    * @param string|null $role_name
    *   The role name to add the permissions to.
+   * @param bool|null $force
+   *   Force permissions to be set even if role exists.
    */
-  public function createEdgeRoleForDrupal(StyleInterface $io, callable $t, string $org, string $email, string $password, ?string $base_url, ?string $role_name);
+  public function createEdgeRoleForDrupal(
+    StyleInterface $io,
+    callable $t,
+    string $org,
+    string $email,
+    string $password,
+    ?string $base_url,
+    ?string $role_name,
+    ?bool $force
+  );
 
 }
