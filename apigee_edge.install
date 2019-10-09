@@ -86,6 +86,9 @@ function apigee_edge_install() {
       'analytics own developer_app',
     ];
     user_role_grant_permissions(RoleInterface::AUTHENTICATED_ID, $authenticated_user_permissions);
+
+    // Update the anonymous user first_name and last_name fields.
+    _apigee_edge_rename_anonymous_user();
   }
 }
 
@@ -176,5 +179,25 @@ function apigee_edge_update_8002() {
       $key->setKeyValue(Json::encode($values));
       $key->save();
     }
+  }
+}
+
+/**
+ * Rename the anonymous user from "Firstname Lastname" to "Anonymous".
+ */
+function apigee_edge_update_8003() {
+  _apigee_edge_rename_anonymous_user();
+}
+
+/**
+ * Helper to rename the anonymous user.
+ */
+function _apigee_edge_rename_anonymous_user() {
+  /** @var \Drupal\user\UserInterface $anonymous */
+  if ($anonymous = Drupal::entityTypeManager()->getStorage('user')->load(0)) {
+    // Use the value from config.
+    $anonymous->first_name->value = \Drupal::config('user.settings')->get('anonymous');
+    $anonymous->last_name->value = '';
+    $anonymous->save();
   }
 }

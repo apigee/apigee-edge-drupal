@@ -1121,6 +1121,11 @@ function template_preprocess_app_credential(array &$variables) {
  * it has been in Apigee Edge.
  */
 function apigee_edge_user_presave(UserInterface $account) {
+  // Do not sync the anonymous user.
+  if ($account->isAnonymous()) {
+    return;
+  }
+
   // If the developer-user synchronization is in progress, then saving
   // developers while saving Drupal user should be avoided.
   if (_apigee_edge_is_sync_in_progress()) {
