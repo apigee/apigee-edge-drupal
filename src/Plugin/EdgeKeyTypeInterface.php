@@ -193,4 +193,15 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
    */
   public function getClientSecret(KeyInterface $key): string;
 
+  /**
+   * Return the JSON account key decoded as an array.
+   *
+   * @param \Drupal\key\KeyInterface $key
+   *   The key entity.
+   *
+   * @return array|null
+   *   The account key as an array.
+   */
+  public function getAccountKey(KeyInterface $key): ?array;
+
 }

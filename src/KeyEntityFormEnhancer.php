@@ -43,6 +43,7 @@ use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyProviderSettableValueInterface;
 use GuzzleHttp\Exception\ConnectException;
 use Http\Client\Exception\NetworkException;
+use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 
 /**
  * Enhances Apigee Edge related Key entity add/edit forms.
@@ -554,7 +555,7 @@ final class KeyEntityFormEnhancer {
 
         // If SDKConnector::testConnection() fails to retrieve a valid org,
         // then this exception is thrown.
-        elseif ($exception instanceof InvalidArgumentException) {
+        elseif ($exception instanceof InvalidArgumentException || $exception instanceof NotEncodableValueException) {
           $suggestion = $this->t('@fail_text The given endpoint (%endpoint) is incorrect or something is wrong with the connection.', [
             '@fail_text' => $fail_text,
             '%endpoint' => $key_type->getEndpoint($key),

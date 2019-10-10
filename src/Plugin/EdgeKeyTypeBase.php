@@ -50,6 +50,10 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
    * {@inheritdoc}
    */
   public function getAuthenticationType(KeyInterface $key): string {
+    if ($this->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+      return 'hybrid';
+    }
+
     if (!isset($key->getKeyValues()['auth_type'])) {
       throw new AuthenticationKeyValueMalformedException('auth_type');
     }
@@ -60,6 +64,9 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
    * {@inheritdoc}
    */
   public function getEndpoint(KeyInterface $key): string {
+    if ($this->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+      return ClientInterface::HYBRID_ENDPOINT;
+    }
     return $key->getKeyValues()['endpoint'] ?? Client::DEFAULT_ENDPOINT;
   }
 
@@ -140,6 +147,14 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
    */
   public function getClientSecret(KeyInterface $key): string {
     return $key->getKeyValues()['client_secret'] ?? Oauth::DEFAULT_CLIENT_SECRET;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getAccountKey(KeyInterface $key): ?array {
+    $value = $key->getKeyValues()['account_json_key'] ?? '';
+    return json_decode($value, TRUE);
   }
 
 }
