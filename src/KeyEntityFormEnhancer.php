@@ -23,6 +23,7 @@ namespace Drupal\apigee_edge;
 use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
+use Drupal\apigee_edge\Exception\AuthenticationKeyException;
 use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
@@ -247,9 +248,18 @@ final class KeyEntityFormEnhancer {
         ],
         '#states' => [
           'enabled' => [
-            ':input[name="key_input_settings[password]"]' => ['filled' => TRUE],
-            ':input[name="key_input_settings[organization]"]' => ['filled' => TRUE],
-            ':input[name="key_input_settings[username]"]' => ['filled' => TRUE],
+            [
+              ':input[name="key_input_settings[organization]"]' => ['filled' => TRUE],
+              ':input[name="key_input_settings[password]"]' => ['filled' => TRUE],
+              ':input[name="key_input_settings[username]"]' => ['filled' => TRUE],
+            ],
+            'xor',
+            [
+              ':input[name="key_input_settings[instance_type]"]' => ['value' => EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID],
+              ':input[name="key_input_settings[organization]"]' => ['filled' => TRUE],
+              ':input[name="key_input_settings[account_json_key]"]' => ['filled' => TRUE],
+            ]
+
           ],
         ],
       ];
@@ -353,7 +363,9 @@ final class KeyEntityFormEnhancer {
       // still not clear the submitted value.
       // \Drupal\apigee_edge\Plugin\KeyInput\ApigeeAuthKeyInput::buildConfigurationForm()
       // does not get called in this case.
-      $form['settings']['input_section']['key_input_settings']['password']['#attributes']['value'] = $test_key_type->getPassword($test_key);
+      if ($test_key_type->getInstanceType($test_key) != EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+        $form['settings']['input_section']['key_input_settings']['password']['#attributes']['value'] = $test_key_type->getPassword($test_key);
+      }
     }
     finally {
       // Clear Oauth token data that may have been saved during testing
@@ -453,8 +465,13 @@ final class KeyEntityFormEnhancer {
     /** @var \Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType $key_type */
     $key_type = $key->getKeyType();
 
+    if ($exception instanceof AuthenticationKeyException) {
+      $suggestion = $this->t('@fail_text Verify the Apigee Edge connection settings.', [
+        '@fail_text' => $fail_text,
+      ]);
+    }
     // Failed to connect to the Oauth authorization server.
-    if ($exception instanceof OauthAuthenticationException) {
+    elseif ($exception instanceof OauthAuthenticationException) {
       $fail_text = $this->t('Failed to connect to the OAuth authorization server.');
       // General error message.
       $suggestion = $this->t('@fail_text Check the debug information below for more details.', [
@@ -581,16 +598,26 @@ final class KeyEntityFormEnhancer {
   private function createDebugText(\Exception $exception, KeyInterface $key): string {
     $key_type = $key->getKeyType();
 
-    $credentials = !($key_type instanceof EdgeKeyTypeInterface) ? [] : [
-      'endpoint' => $key_type->getEndpoint($key),
-      'organization' => $key_type->getOrganization($key),
-      'username' => $key_type->getUsername($key),
-    ];
+    if ($key_type instanceof EdgeKeyTypeInterface
+      && $key_type->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+      $credentials = [
+        'endpoint' => $key_type->getEndpoint($key),
+        'organization' => $key_type->getOrganization($key),
+      ];
+    }
 
-    $keys = [
-      'auth_type' => ($key_type instanceof EdgeKeyTypeInterface) ? $key_type->getAuthenticationType($key) : 'invalid credentials',
-      'key_provider' => get_class($key->getKeyProvider()),
-    ];
+    else {
+      $credentials = !($key_type instanceof EdgeKeyTypeInterface) ? [] : [
+        'endpoint' => $key_type->getEndpoint($key),
+        'organization' => $key_type->getOrganization($key),
+        'username' => $key_type->getUsername($key),
+      ];
+
+      $keys = [
+        'auth_type' => ($key_type instanceof EdgeKeyTypeInterface) ? $key_type->getAuthenticationType($key) : 'invalid credentials',
+        'key_provider' => get_class($key->getKeyProvider()),
+      ];
+    }
 
     if (!empty($credentials) && $keys['auth_type'] === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
       $credentials['authorization_server'] = $key_type->getAuthorizationServer($key);

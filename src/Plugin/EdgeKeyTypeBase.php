@@ -152,9 +152,13 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
   /**
    * {@inheritdoc}
    */
-  public function getAccountKey(KeyInterface $key): ?array {
+  public function getAccountKey(KeyInterface $key): array {
     $value = $key->getKeyValues()['account_json_key'] ?? '';
-    return json_decode($value, TRUE);
+    $json = json_decode($value, TRUE);
+    if (empty($json['private_key']) || empty($json['client_email'])) {
+      throw new AuthenticationKeyValueMalformedException('account_json_key');
+    }
+    return $json;
   }
 
 }

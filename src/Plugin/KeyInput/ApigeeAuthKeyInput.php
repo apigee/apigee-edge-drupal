@@ -115,7 +115,6 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#type' => 'textfield',
       '#title' => $this->t('Username'),
       '#description' => $this->t("Apigee user's email address or identity provider username that is used for authenticating with the endpoint."),
-      '#required' => TRUE,
       '#default_value' => $values['username'] ?? '',
       '#attributes' => ['autocomplete' => 'off'],
       '#states' => [
@@ -127,7 +126,6 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#type' => 'password',
       '#title' => $this->t('Password'),
       '#description' => $this->t("Organization user's password that is used for authenticating with the endpoint."),
-      '#required' => TRUE,
       '#attributes' => [
         'autocomplete' => 'off',
         // Password field should not forget the submitted value.
@@ -241,6 +239,21 @@ class ApigeeAuthKeyInput extends KeyInputBase {
     ];
 
     return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+    $input_values = $form_state->getUserInput()['key_input_settings'];
+
+    if ($input_values['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+      $account_key = $input_values['account_json_key'] ?? '';
+      $json = json_decode($account_key, TRUE);
+      if (empty($json['private_key']) || empty($json['client_email'])) {
+        $form_state->setErrorByName('key_input_settings][account_json_key', $this->t('Account key JSON file is invalid.'));
+      }
+    }
   }
 
   /**
