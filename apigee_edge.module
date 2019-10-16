@@ -135,21 +135,6 @@ function apigee_edge_theme() {
 }
 
 /**
- * Implements hook_user_format_name_alter().
- */
-function apigee_edge_user_format_name_alter(&$name, AccountInterface $account) {
-  // Ignore Anonymous user.
-  if ($account instanceof UserInterface && !$account->isAnonymous()) {
-    $first_name_last_name = trim($account->get('first_name')->value) . ' ' . trim($account->get('last_name')->value);
-    // If both fields were empty this string still could be empty.
-    $first_name_last_name = trim($first_name_last_name);
-    if (!empty($first_name_last_name)) {
-      $name = $first_name_last_name;
-    }
-  }
-}
-
-/**
  * Prepares variables for Apigee entity templates.
  *
  * Default template: apigee-entity.html.twig.
