@@ -604,6 +604,7 @@ final class KeyEntityFormEnhancer {
         'endpoint' => $key_type->getEndpoint($key),
         'organization' => $key_type->getOrganization($key),
       ];
+      $keys = [];
     }
 
     else {

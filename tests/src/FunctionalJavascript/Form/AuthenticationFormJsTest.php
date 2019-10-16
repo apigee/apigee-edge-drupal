@@ -103,7 +103,6 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $web_assert->fieldValueEquals('Organization', $this->organization);
     $web_assert->fieldValueEquals('Username', $this->username);
     $web_assert->fieldValueEquals('Password', $this->password);
-    $web_assert->fieldValueEquals('Custom Apigee Edge endpoint', $this->endpoint);
   }
 
   /**
@@ -140,6 +139,36 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $this->config('apigee_edge.dangerzone')->set('do_not_alter_key_entity_forms', FALSE)->save();
 
     $this->validateForm([$this, 'visitKeyAddForm']);
+  }
+
+  /**
+   * Tests the Authentication form using Hybrid auth.
+   *
+   * @group hybrid
+   */
+  public function testUsingHybridForm() {
+    $organization = getenv('APIGEE_EDGE_HYBRID_ORGANIZATION');
+    $account_key = getenv('APIGEE_EDGE_ACCOUNT_JSON_KEY');
+
+    if (!$organization || !$account_key) {
+      $this->markTestSkipped('Skipping "testUsingHybridForm": missing test environment variables APIGEE_EDGE_HYBRID_ORGANIZATION and/or APIGEE_EDGE_ACCOUNT_JSON_KEY.');
+    }
+
+    $web_assert = $this->assertSession();
+
+    // Test the authentication form.
+    $this->drupalLogin($this->rootUser);
+    $this->drupalGet(Url::fromRoute('entity.key.add_form'));
+    $this->visitKeyAddForm();
+
+    $page = $this->getSession()->getPage();
+
+    $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID);
+    $page->fillField('Organization', $organization);
+    $page->fillField('Account key', $account_key);
+
+    $this->assertSendRequestMessage('.messages--status', 'Connection successful.');
+    $web_assert->elementNotExists('css', 'details[data-drupal-selector="edit-debug"]');
   }
 
   /**
@@ -301,7 +330,7 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $page->fillField('Apigee Edge endpoint', "http://{$invalid_domain}/");
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given endpoint (http://{$invalid_domain}/) is incorrect or something is wrong with the connection. Error message: ");
     $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"endpoint\": \"http:\/\/{$invalid_domain}\/\"");
-    $web_assert->fieldValueEquals('Custom Apigee Edge endpoint', "http://{$invalid_domain}/");
+    $web_assert->fieldValueEquals('Apigee Edge endpoint', "http://{$invalid_domain}/");
     $page->fillField('Apigee Edge endpoint', '');
     $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC);
 

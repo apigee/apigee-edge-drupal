@@ -140,7 +140,6 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#type' => 'textarea',
       '#title' => $this->t('Account key'),
       '#description' => $this->t("Paste the contents of the account key JSON file."),
-      '#required' => TRUE,
       '#default_value' => $values['account_json_key'] ?? '',
       '#rows' => '8',
       '#states' => [
