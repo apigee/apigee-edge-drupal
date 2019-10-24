@@ -373,11 +373,9 @@ abstract class AppAnalyticsFormBase extends FormBase {
       $this->store->set($data_id = Crypt::randomBytesBase64(), $analytics);
       $form['export_csv']['#url'] = Url::fromRoute('apigee_edge.export_analytics.csv', ['data_id' => $data_id]);
 
-      $values = $analytics['stats']['data'][0]['metric'][0]['values'];
-
       $form['#attached']['drupalSettings']['analytics']['metric'] = $form['controls']['metrics']['#options'][$metric];
       $form['#attached']['drupalSettings']['analytics']['timestamps'] = $analytics['TimeUnit'];
-      $form['#attached']['drupalSettings']['analytics']['values'] = $values;
+      $form['#attached']['drupalSettings']['analytics']['values'] = $analytics['stats']['data'][0]['metric'][0]['values'];
       $form['#attached']['drupalSettings']['analytics']['skip_zero_values'] = FALSE;
       $form['#attached']['drupalSettings']['analytics']['language'] = $this->currentUser()
         ->getPreferredLangcode();
