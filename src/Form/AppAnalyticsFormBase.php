@@ -373,37 +373,27 @@ abstract class AppAnalyticsFormBase extends FormBase {
       $this->store->set($data_id = Crypt::randomBytesBase64(), $analytics);
       $form['export_csv']['#url'] = Url::fromRoute('apigee_edge.export_analytics.csv', ['data_id' => $data_id]);
 
+      $values = $analytics['stats']['data'][0]['metric'][0]['values'];
+
       $form['#attached']['drupalSettings']['analytics']['metric'] = $form['controls']['metrics']['#options'][$metric];
       $form['#attached']['drupalSettings']['analytics']['timestamps'] = $analytics['TimeUnit'];
-      $form['#attached']['drupalSettings']['analytics']['values'] = $analytics['stats']['data'][0]['metric'][0]['values'];
-      $form['#attached']['drupalSettings']['analytics']['skip_zero_values'] = TRUE;
+      $form['#attached']['drupalSettings']['analytics']['values'] = $values;
+      $form['#attached']['drupalSettings']['analytics']['skip_zero_values'] = FALSE;
       $form['#attached']['drupalSettings']['analytics']['language'] = $this->currentUser()
         ->getPreferredLangcode();
       $form['#attached']['drupalSettings']['analytics']['chart_container'] = $form['chart']['#attributes']['id'];
-
-      $view_window_min = $view_window_max = 0;
-      if (array_key_exists('TimeUnit', $analytics) && is_array($analytics['TimeUnit'])) {
-        for ($i = count($analytics['TimeUnit']) - 1; $i > 0; $i--) {
-          if ($analytics['stats']['data'][0]['metric'][0]['values'][$i] !== 0) {
-            $view_window_min = $i;
-          }
-          if ($view_window_max === 0 && $analytics['stats']['data'][0]['metric'][0]['values'][$i] !== 0) {
-            $view_window_max = $i;
-          }
-        }
-      }
 
       // Visualization options for Google Charts draw() function,
       // must be JSON encoded before passing.
       // @see: https://developers.google.com/chart/interactive/docs/gallery/linechart#configuration-options
       $visualization_options = [
-        'width' => '100%',
+        'width' => '900',
         'legend' => 'none',
         'interpolateNulls' => 'true',
         'hAxis' => [
           'viewWindow' => [
-            'min' => $analytics['TimeUnit'][$view_window_min],
-            'max' => $analytics['TimeUnit'][$view_window_max],
+            'min' => !empty($analytics['TimeUnit']) ? min($analytics['TimeUnit']) : 0,
+            'max' => !empty($analytics['TimeUnit']) ? max($analytics['TimeUnit']) : 0,
           ],
           'gridlines' => [
             'count' => -1,
