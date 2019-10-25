@@ -606,7 +606,6 @@ final class KeyEntityFormEnhancer {
       ];
       $keys = [];
     }
-
     else {
       $credentials = !($key_type instanceof EdgeKeyTypeInterface) ? [] : [
         'endpoint' => $key_type->getEndpoint($key),

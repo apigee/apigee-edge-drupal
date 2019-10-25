@@ -66,7 +66,7 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
    *
    * @var string
    *
-   * @deprecated
+   * @deprecated See EdgeKeyTypeInterface::getEndpointType().
    */
   const EDGE_ENDPOINT_TYPE_DEFAULT = 'default';
 
@@ -75,7 +75,7 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
    *
    * @var string
    *
-   * @deprecated
+   * @deprecated See EdgeKeyTypeInterface::getEndpointType().
    */
   const EDGE_ENDPOINT_TYPE_CUSTOM = 'custom';
 
@@ -124,6 +124,8 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
    *   The API endpoint type.
    *
    * @deprecated Use getInstanceType() instead.
+   *
+   * @see https://github.com/apigee/apigee-edge-drupal/issues/268
    */
   public function getEndpointType(KeyInterface $key): string;
 

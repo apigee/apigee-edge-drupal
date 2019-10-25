@@ -22,7 +22,6 @@ namespace Drupal\apigee_edge;
 use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\key\KeyInterface;
-use Http\Message\Authentication;
 
 /**
  * The API credentials for HybridCredentials.

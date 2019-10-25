@@ -250,7 +250,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       $account_key = $input_values['account_json_key'] ?? '';
       $json = json_decode($account_key, TRUE);
       if (empty($json['private_key']) || empty($json['client_email'])) {
-        $form_state->setErrorByName('key_input_settings][account_json_key', $this->t('Account key JSON file is invalid.'));
+        $form_state->setErrorByName('key_input_settings][account_json_key', $this->t('GCP service account key JSON file is invalid.'));
       }
     }
   }

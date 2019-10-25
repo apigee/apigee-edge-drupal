@@ -165,7 +165,7 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
     $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID);
     $page->fillField('Organization', $organization);
-    $page->fillField('Account key', $account_key);
+    $page->fillField('GCP service account key', $account_key);
 
     $this->assertSendRequestMessage('.messages--status', 'Connection successful.');
     $web_assert->elementNotExists('css', 'details[data-drupal-selector="edit-debug"]');
