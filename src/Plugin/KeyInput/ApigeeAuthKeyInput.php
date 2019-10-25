@@ -77,7 +77,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
     $form['instance_type'] = [
       '#type' => 'radios',
       '#title' => $this->t('Apigee instance type'),
-      '#description' => $this->t('Select the Apigee instance type you are connecting to. More information can be found in the <a href="@link" target="_blank">docs</a>.', [
+      '#description' => $this->t('Select the Apigee instance type you are connecting to. More information can be found in the <a href="@link" target="_blank">Apigee documentation</a>.', [
         '@link' => 'https://docs.apigee.com/api-platform/get-started/what-apigee-edge#cloudvonprem',
       ]),
       '#required' => TRUE,
@@ -138,8 +138,8 @@ class ApigeeAuthKeyInput extends KeyInputBase {
     ];
     $form['account_json_key'] = [
       '#type' => 'textarea',
-      '#title' => $this->t('Account key'),
-      '#description' => $this->t("Paste the contents of the account key JSON file."),
+      '#title' => $this->t('GCP service account key'),
+      '#description' => $this->t("Paste the contents of the GCP service account key JSON file."),
       '#default_value' => $values['account_json_key'] ?? '',
       '#rows' => '8',
       '#states' => [

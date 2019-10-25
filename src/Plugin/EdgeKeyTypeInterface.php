@@ -108,7 +108,7 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
    *   The key entity.
    *
    * @return string
-   *   The instance type.
+   *   The instance type, either `public`, `private` or `hybrid`.
    */
   public function getInstanceType(KeyInterface $key): string;
 
