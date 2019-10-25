@@ -18,7 +18,7 @@
   <rule ref="Drupal.NamingConventions.ValidVariableName.LowerCamelName">
     <severity>0</severity>
   </rule>
-  <!-- Deprecation notices do not need a link to drupal nodes. -->
+  <!-- Deprecation notices do not need a link to drupal nodes since we use GitHub issue queue. -->
   <rule ref="Drupal.Commenting.DeprecatedSniff.DeprecatedWrongSeeUrlFormat">
     <severity>0</severity>
   </rule>
