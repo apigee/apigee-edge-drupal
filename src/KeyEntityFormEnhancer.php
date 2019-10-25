@@ -258,8 +258,7 @@ final class KeyEntityFormEnhancer {
               ':input[name="key_input_settings[instance_type]"]' => ['value' => EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID],
               ':input[name="key_input_settings[organization]"]' => ['filled' => TRUE],
               ':input[name="key_input_settings[account_json_key]"]' => ['filled' => TRUE],
-            ]
-
+            ],
           ],
         ],
       ];
@@ -337,7 +336,7 @@ final class KeyEntityFormEnhancer {
     $test_key_type = $test_key->getKeyType();
     $test_auth_type = $test_key_type->getAuthenticationType($test_key);
     try {
-      if ($test_auth_type === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
+      if (in_array($test_auth_type, [EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH, EdgeKeyTypeInterface::EDGE_AUTH_TYPE_JWT])) {
         // Check the requirements first.
         $this->oauthTokenStorage->checkRequirements();
         // Clear existing OAuth token data.

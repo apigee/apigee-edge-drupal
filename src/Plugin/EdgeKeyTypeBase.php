@@ -51,7 +51,7 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
    */
   public function getAuthenticationType(KeyInterface $key): string {
     if ($this->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
-      return 'hybrid';
+      return EdgeKeyTypeInterface::EDGE_AUTH_TYPE_JWT;
     }
 
     if (!isset($key->getKeyValues()['auth_type'])) {

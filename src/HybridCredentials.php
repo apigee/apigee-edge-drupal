@@ -40,7 +40,9 @@ class HybridCredentials extends Credentials {
    */
   public function __construct(KeyInterface $key) {
     if ($key->getKeyType() instanceof EdgeKeyTypeInterface
-      && $key->getKeyType()->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+      && ($auth_type = $key->getKeyType()->getAuthenticationType($key))
+      && $auth_type === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_JWT
+    ) {
       parent::__construct($key);
     }
     else {

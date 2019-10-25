@@ -62,6 +62,13 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
   const EDGE_AUTH_TYPE_OAUTH = 'oauth';
 
   /**
+   * ID of the JWT authentication method.
+   *
+   * @var string
+   */
+  const EDGE_AUTH_TYPE_JWT = 'jwt';
+
+  /**
    * The endpoint type for default.
    *
    * @var string
