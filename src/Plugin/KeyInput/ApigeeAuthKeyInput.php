@@ -78,7 +78,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#type' => 'radios',
       '#title' => $this->t('Apigee instance type'),
       '#description' => $this->t('Select the Apigee instance type you are connecting to. More information can be found in the <a href="@link" target="_blank">Apigee documentation</a>.', [
-        '@link' => 'https://docs.apigee.com/api-platform/get-started/what-apigee-edge#cloudvonprem',
+        '@link' => 'https://www.drupal.org/docs/8/modules/apigee-edge/configure-the-connection-to-apigee-edge',
       ]),
       '#required' => TRUE,
       '#options' => [
