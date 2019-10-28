@@ -272,9 +272,18 @@ class ApigeeAuthKeyInput extends KeyInputBase {
 
     // Remove unneeded values if on a Hybrid instance.
     if ($input_values['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
-      $input_values['endpoint'] = '';
-      $input_values['authorization_server'] = '';
       $input_values['auth_type'] = '';
+      $input_values['username'] = '';
+      $input_values['password'] = '';
+      $input_values['endpoint'] = '';
+      $input_values['authorization_server_type'] = '';
+      $input_values['authorization_server'] = '';
+      $input_values['client_id'] = '';
+      $input_values['client_secret'] = '';
+    }
+    // Remove unneeded values if on a Public or Private instance.
+    else {
+      $input_values['account_json_key'] = '';
     }
 
     // Remove `key_value` so it doesn't get double encoded.
