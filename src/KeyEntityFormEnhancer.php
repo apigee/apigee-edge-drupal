@@ -603,32 +603,27 @@ final class KeyEntityFormEnhancer {
    */
   private function createDebugText(\Exception $exception, KeyInterface $key): string {
     $key_type = $key->getKeyType();
+    $credentials = [];
+    $keys = [
+      'auth_type' => ($key_type instanceof EdgeKeyTypeInterface) ? $key_type->getAuthenticationType($key) : 'invalid credentials',
+      'key_provider' => get_class($key->getKeyProvider()),
+    ];
 
-    if ($key_type instanceof EdgeKeyTypeInterface
-      && $key_type->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+    if ($key_type instanceof EdgeKeyTypeInterface) {
       $credentials = [
         'endpoint' => $key_type->getEndpoint($key),
         'organization' => $key_type->getOrganization($key),
       ];
-      $keys = [];
-    }
-    else {
-      $credentials = !($key_type instanceof EdgeKeyTypeInterface) ? [] : [
-        'endpoint' => $key_type->getEndpoint($key),
-        'organization' => $key_type->getOrganization($key),
-        'username' => $key_type->getUsername($key),
-      ];
 
-      $keys = [
-        'auth_type' => ($key_type instanceof EdgeKeyTypeInterface) ? $key_type->getAuthenticationType($key) : 'invalid credentials',
-        'key_provider' => get_class($key->getKeyProvider()),
-      ];
-    }
+      if ($key_type->getInstanceType($key) != EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+        $credentials['username'] = $key_type->getUsername($key);
+      }
 
-    if (!empty($credentials) && $key_type->getAuthenticationType($key) === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
-      $credentials['authorization_server'] = $key_type->getAuthorizationServer($key);
-      $credentials['client_id'] = $key_type->getClientId($key);
-      $credentials['client_secret'] = $key_type->getClientSecret($key) === Oauth::DEFAULT_CLIENT_SECRET ? Oauth::DEFAULT_CLIENT_SECRET : '***client-secret***';
+      if ($key_type->getAuthenticationType($key) === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
+        $credentials['authorization_server'] = $key_type->getAuthorizationServer($key);
+        $credentials['client_id'] = $key_type->getClientId($key);
+        $credentials['client_secret'] = $key_type->getClientSecret($key) === Oauth::DEFAULT_CLIENT_SECRET ? Oauth::DEFAULT_CLIENT_SECRET : '***client-secret***';
+      }
     }
 
     // Sanitize exception text.

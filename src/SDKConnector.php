@@ -23,6 +23,7 @@ use Apigee\Edge\Api\Management\Controller\OrganizationController;
 use Apigee\Edge\Client;
 use Apigee\Edge\ClientInterface;
 use Apigee\Edge\HttpClient\Utility\Builder;
+use Drupal\apigee_edge\Connector\Credentials;
 use Drupal\apigee_edge\Connector\CredentialsInterface;
 use Drupal\apigee_edge\Connector\HybridCredentials;
 use Drupal\apigee_edge\Connector\OauthCredentials;
