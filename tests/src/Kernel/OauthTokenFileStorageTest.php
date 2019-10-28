@@ -20,7 +20,7 @@
 namespace Drupal\Tests\apigee_edge\Kernel;
 
 use Drupal\apigee_edge\Exception\OauthTokenStorageException;
-use Drupal\apigee_edge\OauthTokenFileStorage;
+use Drupal\apigee_edge\Connector\OauthTokenFileStorage;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\KernelTests\KernelTestBase;
 
@@ -74,7 +74,7 @@ class OauthTokenFileStorageTest extends KernelTestBase {
    *   Enforces rebuild of the container and with the the token storage
    *   service.
    *
-   * @return \Drupal\apigee_edge\OauthTokenFileStorage
+   * @return \Drupal\apigee_edge\Connector\OauthTokenFileStorage
    *   The configured and initialized OAuth file token storage service.
    *
    * @throws \Exception
@@ -112,7 +112,7 @@ class OauthTokenFileStorageTest extends KernelTestBase {
    * Validates checks in the storage.
    */
   public function testCheckRequirements() {
-    /** @var \Drupal\apigee_edge\OauthTokenFileStorage $storage */
+    /** @var \Drupal\apigee_edge\Connector\OauthTokenFileStorage $storage */
     $storage = $this->container->get('apigee_edge.authentication.oauth_token_storage');
     try {
       $storage->checkRequirements();

@@ -19,8 +19,8 @@
 
 namespace Drupal\apigee_edge\Plugin\KeyType;
 
-use Drupal\apigee_edge\HybridAuthentication;
-use Drupal\apigee_edge\OauthAuthentication;
+use Drupal\apigee_edge\Connector\HybridAuthentication;
+use Drupal\apigee_edge\Connector\OauthAuthentication;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeBase;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Core\Form\FormStateInterface;

@@ -202,5 +202,5 @@ services:
     arguments: ['@config.factory', '@entity_type.manager', '@plugin.manager.apigee_field_storage_format', '@apigee_edge.converter.field_attribute']
 
   apigee_edge.authentication.oauth_token_storage:
-    class: Drupal\apigee_edge\OauthTokenFileStorage
+    class: Drupal\apigee_edge\Connector\OauthTokenFileStorage
     arguments: ['@config.factory', '@file_system', '@logger.channel.apigee_edge']

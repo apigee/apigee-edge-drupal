@@ -18,23 +18,24 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge;
+namespace Drupal\apigee_edge\Connector;
 
-use Apigee\Edge\HttpClient\Plugin\Authentication\OauthTokenStorageInterface as EdgeOauthTokenStorageInterface;
+use Apigee\Edge\ClientInterface;
+use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
+use Http\Message\Authentication\BasicAuth;
 
 /**
- * Base definition of the OAuth token storage service implementations.
+ * Decorator for OAuth authentication plugin.
  */
-interface OauthTokenStorageInterface extends EdgeOauthTokenStorageInterface {
+class OauthAuthentication extends Oauth {
 
   /**
-   * Checks requirements of the token storage.
-   *
-   * If a requirement does not fulfilled it throws an exception.
-   *
-   * @throws \Drupal\apigee_edge\Exception\OauthTokenStorageException
-   *   Exception with the unfulfilled requirement.
+   * {@inheritdoc}
    */
-  public function checkRequirements(): void;
+  protected function authClient(): ClientInterface {
+    /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
+    $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
+    return $sdk_connector->buildClient(new BasicAuth($this->clientId, $this->clientSecret), $this->auth_server);
+  }
 
 }

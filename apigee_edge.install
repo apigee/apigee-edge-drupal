@@ -23,7 +23,7 @@
  * Install, update and uninstall functions for Apigee Edge.
  */
 
-use Drupal\apigee_edge\OauthTokenFileStorage;
+use Drupal\apigee_edge\Connector\OauthTokenFileStorage;
 use Drupal\Core\Url;
 use Drupal\user\RoleInterface;
 

@@ -17,20 +17,33 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge;
+namespace Drupal\apigee_edge\Connector;
 
-use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\key\KeyInterface;
 use Http\Message\Authentication;
 
 /**
- * The API credentials for OAuth.
+ * The API credentials.
  */
-class OauthCredentials extends Credentials {
+class Credentials implements CredentialsInterface {
 
   /**
-   * OauthCredentials constructor.
+   * The key entity which stores the API credentials.
+   *
+   * @var \Drupal\key\KeyInterface
+   */
+  protected $key;
+
+  /**
+   * The key type of the key entity.
+   *
+   * @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface
+   */
+  protected $keyType;
+
+  /**
+   * Credentials constructor.
    *
    * @param \Drupal\key\KeyInterface $key
    *   The key entity which stores the API credentials.
@@ -40,16 +53,12 @@ class OauthCredentials extends Credentials {
    *   does not implement EdgeKeyTypeInterface.
    */
   public function __construct(KeyInterface $key) {
+    if (!(($key_type = $key->getKeyType()) instanceof EdgeKeyTypeInterface)) {
+      throw new \InvalidArgumentException("Type of {$key->id()} key does not implement EdgeKeyTypeInterface.");
+    }
 
-    if ($key->getKeyType() instanceof EdgeKeyTypeInterface
-      && ($auth_type = $key->getKeyType()->getAuthenticationType($key))
-      && $auth_type === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH
-    ) {
-      parent::__construct($key);
-    }
-    else {
-      throw new InvalidArgumentException("The `{$key->id()}` key is not configured for OAuth.");
-    }
+    $this->key = $key;
+    $this->keyType = $key_type;
   }
 
   /**
@@ -57,6 +66,20 @@ class OauthCredentials extends Credentials {
    */
   public function getAuthentication(): Authentication {
     return $this->keyType->getAuthenticationMethod($this->key);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getKey(): KeyInterface {
+    return $this->key;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getKeyType(): EdgeKeyTypeInterface {
+    return $this->keyType;
   }
 
 }

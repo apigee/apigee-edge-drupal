@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2019 Google Inc.
+ * Copyright 2018 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License version 2 as published by the
@@ -17,19 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge;
+namespace Drupal\apigee_edge\Connector;
 
 use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\key\KeyInterface;
+use Http\Message\Authentication;
 
 /**
- * The API credentials for HybridCredentials.
+ * The API credentials for OAuth.
  */
-class HybridCredentials extends Credentials {
+class OauthCredentials extends Credentials {
 
   /**
-   * HybridCredentials constructor.
+   * OauthCredentials constructor.
    *
    * @param \Drupal\key\KeyInterface $key
    *   The key entity which stores the API credentials.
@@ -39,15 +40,23 @@ class HybridCredentials extends Credentials {
    *   does not implement EdgeKeyTypeInterface.
    */
   public function __construct(KeyInterface $key) {
+
     if ($key->getKeyType() instanceof EdgeKeyTypeInterface
       && ($auth_type = $key->getKeyType()->getAuthenticationType($key))
-      && $auth_type === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_JWT
+      && $auth_type === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH
     ) {
       parent::__construct($key);
     }
     else {
-      throw new InvalidArgumentException("The `{$key->id()}` key is not configured for Hybrid Authentication.");
+      throw new InvalidArgumentException("The `{$key->id()}` key is not configured for OAuth.");
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getAuthentication(): Authentication {
+    return $this->keyType->getAuthenticationMethod($this->key);
   }
 
 }

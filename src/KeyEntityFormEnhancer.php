@@ -24,6 +24,7 @@ use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use DomainException;
+use Drupal\apigee_edge\Connector\OauthTokenStorageInterface;
 use Drupal\apigee_edge\Exception\AuthenticationKeyException;
 use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
@@ -81,7 +82,7 @@ final class KeyEntityFormEnhancer {
   /**
    * The OAuth token storage.
    *
-   * @var \Drupal\apigee_edge\OauthTokenStorageInterface
+   * @var \Drupal\apigee_edge\Connector\OauthTokenStorageInterface
    */
   private $oauthTokenStorage;
 
@@ -104,7 +105,7 @@ final class KeyEntityFormEnhancer {
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
    *   The SDK connector service.
-   * @param \Drupal\apigee_edge\OauthTokenStorageInterface $oauth_token_storage
+   * @param \Drupal\apigee_edge\Connector\OauthTokenStorageInterface $oauth_token_storage
    *   The OAuth token storage.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager serivce.
@@ -625,7 +626,7 @@ final class KeyEntityFormEnhancer {
       ];
     }
 
-    if (!empty($credentials) && $keys['auth_type'] === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
+    if (!empty($credentials) && $key_type->getAuthenticationType($key) === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
       $credentials['authorization_server'] = $key_type->getAuthorizationServer($key);
       $credentials['client_id'] = $key_type->getClientId($key);
       $credentials['client_secret'] = $key_type->getClientSecret($key) === Oauth::DEFAULT_CLIENT_SECRET ? Oauth::DEFAULT_CLIENT_SECRET : '***client-secret***';
