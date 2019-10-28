@@ -99,8 +99,8 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       ],
       '#default_value' => $values['auth_type'] ?? EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC,
       '#states' => [
-        'visible' => [$state_for_public, 'xor', $state_for_private],
-        'required' => [$state_for_public, 'xor', $state_for_private],
+        'visible' => [$state_for_public, $state_for_private],
+        'required' => [$state_for_public, $state_for_private],
       ],
     ];
     $form['organization'] = [
@@ -118,8 +118,8 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#default_value' => $values['username'] ?? '',
       '#attributes' => ['autocomplete' => 'off'],
       '#states' => [
-        'visible' => [$state_for_public, 'xor', $state_for_private],
-        'required' => [$state_for_public, 'xor', $state_for_private],
+        'visible' => [$state_for_public, $state_for_private],
+        'required' => [$state_for_public, $state_for_private],
       ],
     ];
     $form['password'] = [
@@ -132,8 +132,8 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         'value' => $values['password'] ?? '',
       ],
       '#states' => [
-        'visible' => [$state_for_public, 'xor', $state_for_private],
-        'required' => [$state_for_public, 'xor', $state_for_private],
+        'visible' => [$state_for_public, $state_for_private],
+        'required' => [$state_for_public, $state_for_private],
       ],
     ];
     $form['account_json_key'] = [
@@ -175,7 +175,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       ]),
       '#states' => [
         'visible' => [
-          [$state_for_public, 'xor', $state_for_private],
+          [$state_for_public, $state_for_private],
           ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH],
         ],
       ],
@@ -190,12 +190,12 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#attributes' => ['autocomplete' => 'off'],
       '#states' => [
         'visible' => [
-          [$state_for_public, 'xor', $state_for_private],
+          [$state_for_public, $state_for_private],
           ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH],
           ':input[name="key_input_settings[authorization_server_type]"]' => ['value' => 'custom'],
         ],
         'required' => [
-          [$state_for_public, 'xor', $state_for_private],
+          [$state_for_public, $state_for_private],
           ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH],
           ':input[name="key_input_settings[authorization_server_type]"]' => ['value' => 'custom'],
         ],
@@ -211,7 +211,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#attributes' => ['autocomplete' => 'off'],
       '#states' => [
         'visible' => [
-          [$state_for_public, 'xor', $state_for_private],
+          [$state_for_public, $state_for_private],
           ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH],
         ],
       ],
@@ -226,7 +226,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#attributes' => ['autocomplete' => 'off'],
       '#states' => [
         'visible' => [
-          [$state_for_public, 'xor', $state_for_private],
+          [$state_for_public, $state_for_private],
           ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH],
         ],
       ],

@@ -251,15 +251,14 @@ final class KeyEntityFormEnhancer {
         '#states' => [
           'enabled' => [
             [
-              ':input[name="key_input_settings[organization]"]' => ['filled' => TRUE],
-              ':input[name="key_input_settings[password]"]' => ['filled' => TRUE],
-              ':input[name="key_input_settings[username]"]' => ['filled' => TRUE],
+              ':input[name="key_input_settings[organization]"]' => ['empty' => FALSE],
+              ':input[name="key_input_settings[password]"]' => ['empty' => FALSE],
+              ':input[name="key_input_settings[username]"]' => ['empty' => FALSE],
             ],
-            'xor',
             [
               ':input[name="key_input_settings[instance_type]"]' => ['value' => EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID],
-              ':input[name="key_input_settings[organization]"]' => ['filled' => TRUE],
-              ':input[name="key_input_settings[account_json_key]"]' => ['filled' => TRUE],
+              ':input[name="key_input_settings[organization]"]' => ['empty' => FALSE],
+              ':input[name="key_input_settings[account_json_key]"]' => ['empty' => FALSE],
             ],
           ],
         ],
