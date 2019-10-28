@@ -578,7 +578,7 @@ final class KeyEntityFormEnhancer {
 
         // If SDKConnector::testConnection() fails to retrieve a valid org,
         // then this exception is thrown.
-        elseif ($exception instanceof InvalidArgumentException || $exception instanceof NotEncodableValueException) {
+        elseif ($exception instanceof InvalidArgumentException) {
           $suggestion = $this->t('@fail_text The given endpoint (%endpoint) is incorrect or something is wrong with the connection.', [
             '@fail_text' => $fail_text,
             '%endpoint' => $key_type->getEndpoint($key),
