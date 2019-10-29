@@ -385,7 +385,7 @@ abstract class AppAnalyticsFormBase extends FormBase {
       // must be JSON encoded before passing.
       // @see: https://developers.google.com/chart/interactive/docs/gallery/linechart#configuration-options
       $visualization_options = [
-        'width' => '900',
+        'width' => '100%',
         'legend' => 'none',
         'interpolateNulls' => 'true',
         'hAxis' => [
