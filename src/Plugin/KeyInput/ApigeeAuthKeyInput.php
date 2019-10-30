@@ -262,32 +262,35 @@ class ApigeeAuthKeyInput extends KeyInputBase {
     // Get input values.
     $input_values = $form_state->getValues();
 
-    // Make sure the endpoint defaults are not overridden by other values.
-    if ($input_values['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC) {
-      $input_values['endpoint'] = '';
-    }
-    if (empty($input_values['authorization_server_type']) || $input_values['authorization_server_type'] == 'default') {
-      $input_values['authorization_server'] = '';
+    if (!empty($input_values)) {
+      // Make sure the endpoint defaults are not overridden by other values.
+      if ($input_values['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC) {
+        $input_values['endpoint'] = '';
+      }
+      if (empty($input_values['authorization_server_type']) || $input_values['authorization_server_type'] == 'default') {
+        $input_values['authorization_server'] = '';
+      }
+
+      // Remove unneeded values if on a Hybrid instance.
+      if ($input_values['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+        $input_values['auth_type'] = '';
+        $input_values['username'] = '';
+        $input_values['password'] = '';
+        $input_values['endpoint'] = '';
+        $input_values['authorization_server_type'] = '';
+        $input_values['authorization_server'] = '';
+        $input_values['client_id'] = '';
+        $input_values['client_secret'] = '';
+      }
+      // Remove unneeded values if on a Public or Private instance.
+      else {
+        $input_values['account_json_key'] = '';
+      }
+
+      // Remove `key_value` so it doesn't get double encoded.
+      unset($input_values['key_value']);
     }
 
-    // Remove unneeded values if on a Hybrid instance.
-    if ($input_values['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
-      $input_values['auth_type'] = '';
-      $input_values['username'] = '';
-      $input_values['password'] = '';
-      $input_values['endpoint'] = '';
-      $input_values['authorization_server_type'] = '';
-      $input_values['authorization_server'] = '';
-      $input_values['client_id'] = '';
-      $input_values['client_secret'] = '';
-    }
-    // Remove unneeded values if on a Public or Private instance.
-    else {
-      $input_values['account_json_key'] = '';
-    }
-
-    // Remove `key_value` so it doesn't get double encoded.
-    unset($input_values['key_value']);
     // Reset values to just `key_value`.
     $form_state->setValues(['key_value' => Json::encode(array_filter($input_values))]);
     return parent::processSubmittedKeyValue($form_state);

@@ -35,7 +35,7 @@ class HybridAuthentication extends HybridOauth2 {
   protected function authClient(): ClientInterface {
     /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
     $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
-    return $sdk_connector->buildClient(new NullAuthentication(), $this->auth_server);
+    return $sdk_connector->buildClient(new NullAuthentication(), $this->authServer);
   }
 
 }
