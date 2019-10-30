@@ -1,4 +1,5 @@
 langcode: en
+override_usernames: true
 verification_action: verify_email
 display_only_error_message_content:
   value: 'This email address already exists in our system. Contact us if you have any questions.'

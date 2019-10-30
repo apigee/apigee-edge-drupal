@@ -110,6 +110,8 @@ apigee_edge.developer_settings:
   type: config_object
   label: 'Developer settings'
   mapping:
+    override_usernames:
+      type: boolean
     verification_action:
       type: string
     display_only_error_message_content:

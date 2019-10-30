@@ -178,3 +178,14 @@ function apigee_edge_update_8002() {
     }
   }
 }
+
+/**
+ * Initialize new developer_settings.override_usernames configuration.
+ */
+function apigee_edge_update_8003() {
+  $config_factory = \Drupal::configFactory();
+
+  $developer_settings = $config_factory->getEditable('apigee_edge.developer_settings');
+  $developer_settings->set('override_usernames', TRUE)
+    ->save(TRUE);
+}

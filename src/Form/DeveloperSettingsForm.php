@@ -61,6 +61,13 @@ class DeveloperSettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('apigee_edge.developer_settings');
 
+    $form['override_usernames'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Override usernames'),
+      '#description' => $this->t('Display first name and last name instead of username.'),
+      '#default_value' => $config->get('override_usernames'),
+    ];
+
     $form['email_verification_on_registration'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('When a new user registers and the developer email address is already taken on Apigee Edge but not in Drupal'),
@@ -192,6 +199,7 @@ class DeveloperSettingsForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->configFactory->getEditable('apigee_edge.developer_settings')
+      ->set('override_usernames', $form_state->getValue('override_usernames'))
       ->set('verification_action', $form_state->getValue('verification_action'))
       ->set('display_only_error_message_content.value', $form_state->getValue(['display_only_error_message_content', 'value']))
       ->set('display_only_error_message_content.format', $form_state->getValue(['display_only_error_message_content', 'format']))
