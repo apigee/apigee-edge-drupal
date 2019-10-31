@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge\Entity\ListBuilder;
 
 use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
@@ -75,13 +76,15 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
    *   The render.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack object.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time service.
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   Currently logged-in user.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The route match object.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render, RequestStack $request_stack, AccountInterface $current_user, RouteMatchInterface $route_match) {
-    parent::__construct($entity_type, $entity_type_manager, $render, $request_stack);
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render, RequestStack $request_stack, TimeInterface $time, AccountInterface $current_user, RouteMatchInterface $route_match) {
+    parent::__construct($entity_type, $entity_type_manager, $render, $request_stack, $time);
     $this->currentUser = $current_user;
     $this->routeMatch = $route_match;
   }
@@ -95,6 +98,7 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
       $container->get('entity_type.manager'),
       $container->get('renderer'),
       $container->get('request_stack'),
+      $container->get('datetime.time'),
       $container->get('current_user'),
       $container->get('current_route_match')
     );
