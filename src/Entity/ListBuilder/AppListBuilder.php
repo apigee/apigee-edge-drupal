@@ -215,7 +215,7 @@ class AppListBuilder extends EdgeEntityListBuilder {
     // - any credentials of the app is in revoked status
     // - any products of any credentials of the app is in revoked or
     //   pending status.
-    if ($app->getStatus() === AppInterface::STATUS_APPROVED && ($warnings['revokedCred'] || $warnings['revokedOrPendingCredProduct'])) {
+    if ($app->getStatus() === AppInterface::STATUS_APPROVED && ($warnings['revokedCred'] || $warnings['revokedOrPendingCredProduct'] || $warnings['expiredCred'])) {
       $build['status'] = $rows[$info_row_css_id]['data']['status']['data'];
       $build['warning'] = [
         '#type' => 'html_tag',
@@ -246,12 +246,22 @@ class AppListBuilder extends EdgeEntityListBuilder {
         'colspan' => count($this->buildHeader()),
       ];
 
+      $items = [];
       if ($warnings['revokedCred']) {
-        $row['data']['info']['data'] = $warnings['revokedCred'];
+        $items[] = $warnings['revokedCred'];
       }
       elseif ($warnings['revokedOrPendingCredProduct']) {
-        $row['data']['info']['data'] = $warnings['revokedOrPendingCredProduct'];
+        $items[] = $warnings['revokedOrPendingCredProduct'];
       }
+
+      if ($warnings['expiredCred']) {
+        $items[] = $warnings['expiredCred'];
+      }
+
+      $row['data']['info']['data'] = [
+        '#theme' => 'item_list',
+        '#items' => $items,
+      ];
     }
 
     $rows[$warning_row_css_id] = $row;
@@ -302,6 +312,7 @@ class AppListBuilder extends EdgeEntityListBuilder {
     $warnings = [];
     $warnings['revokedCred'] = FALSE;
     $warnings['revokedOrPendingCredProduct'] = FALSE;
+    $warnings['expiredCred'] = FALSE;
 
     foreach ($app->getCredentials() as $credential) {
       if ($credential->getStatus() === AppCredential::STATUS_REVOKED) {
@@ -316,6 +327,14 @@ class AppListBuilder extends EdgeEntityListBuilder {
         }
         break;
       }
+
+      // Check for expired credentials.
+      if (($expired_date = $credential->getExpiresAt()) && \Drupal::time()->getRequestTime() - intval($expired_date->getTimestamp() / 1000) > 0) {
+        $warnings['expiredCred'] = $this->t('At least one of the credentials associated with this @app is expired.', [
+          '@app' => $this->entityType->getLowercaseLabel(),
+        ]);
+      }
+
       foreach ($credential->getApiProducts() as $cred_product) {
         if ($cred_product->getStatus() == CredentialProduct::STATUS_REVOKED || $cred_product->getStatus() == CredentialProduct::STATUS_PENDING) {
           $args = [
