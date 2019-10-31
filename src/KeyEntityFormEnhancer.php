@@ -21,9 +21,11 @@
 namespace Drupal\apigee_edge;
 
 use Apigee\Edge\Exception\ApiRequestException;
+use Apigee\Edge\Exception\HybridOauth2AuthenticationException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use DomainException;
+use Drupal\apigee_edge\Connector\OauthTokenFileStorage;
 use Drupal\apigee_edge\Connector\OauthTokenStorageInterface;
 use Drupal\apigee_edge\Exception\AuthenticationKeyException;
 use Drupal\apigee_edge\Exception\InvalidArgumentException;
@@ -46,7 +48,6 @@ use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyProviderSettableValueInterface;
 use GuzzleHttp\Exception\ConnectException;
 use Http\Client\Exception\NetworkException;
-use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 
 /**
  * Enhances Apigee Edge related Key entity add/edit forms.
@@ -470,12 +471,22 @@ final class KeyEntityFormEnhancer {
         '@fail_text' => $fail_text,
       ]);
     }
-    // Invalid key / OpenSSL unable to sign data.
-    elseif ($exception instanceof DomainException) {
-      $suggestion = $this->t('@fail_text The private key in the GCP service account key JSON is invalid.', [
+
+    elseif ($exception instanceof HybridOauth2AuthenticationException) {
+      $fail_text = $this->t('Failed to connect to the authorization server.');
+      // General error message.
+      $suggestion = $this->t('@fail_text Check the debug information below for more details.', [
         '@fail_text' => $fail_text,
       ]);
+
+      // Invalid key / OpenSSL unable to sign data.
+      if ($exception->getPrevious() && $exception->getPrevious() instanceof DomainException) {
+        $suggestion = $this->t('@fail_text The private key in the GCP service account key JSON is invalid.', [
+          '@fail_text' => $fail_text,
+        ]);
+      }
     }
+
     // Failed to connect to the Oauth authorization server.
     elseif ($exception instanceof OauthAuthenticationException) {
       $fail_text = $this->t('Failed to connect to the OAuth authorization server.');
