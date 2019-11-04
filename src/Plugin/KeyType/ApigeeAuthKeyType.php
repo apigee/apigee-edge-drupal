@@ -44,7 +44,7 @@ use Http\Message\Authentication\BasicAuth;
  *     "fields" = {
  *       "instance_type" = {
  *         "label" = @Translation("Instance type"),
- *         "required" = true
+ *         "required" = false
  *       },
  *       "auth_type" = {
  *         "label" = @Translation("Authentication type"),

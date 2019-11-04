@@ -263,8 +263,10 @@ class ApigeeAuthKeyInput extends KeyInputBase {
     $input_values = $form_state->getValues();
 
     if (!empty($input_values)) {
+      $instance_type = $input_values['instance_type'] ?? NULL;
+
       // Make sure the endpoint defaults are not overridden by other values.
-      if ($input_values['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC) {
+      if ($instance_type == EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC) {
         $input_values['endpoint'] = '';
       }
       if (empty($input_values['authorization_server_type']) || $input_values['authorization_server_type'] == 'default') {
@@ -272,7 +274,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       }
 
       // Remove unneeded values if on a Hybrid instance.
-      if ($input_values['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+      if ($instance_type == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
         $input_values['auth_type'] = '';
         $input_values['username'] = '';
         $input_values['password'] = '';

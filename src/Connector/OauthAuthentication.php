@@ -35,7 +35,7 @@ class OauthAuthentication extends Oauth {
   protected function authClient(): ClientInterface {
     /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
     $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
-    return $sdk_connector->buildClient(new BasicAuth($this->clientId, $this->clientSecret), $this->authServer);
+    return $sdk_connector->buildClient(new BasicAuth($this->clientId, $this->clientSecret), $this->getAuthServer());
   }
 
 }

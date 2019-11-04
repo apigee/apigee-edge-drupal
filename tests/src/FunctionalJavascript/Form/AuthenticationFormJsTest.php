@@ -63,6 +63,20 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
   private $endpoint;
 
   /**
+   * The Apigee instance type.
+   *
+   * @var string
+   */
+  private $instanceType;
+
+  /**
+   * The account JSON key.
+   *
+   * @var string
+   */
+  private $account_key;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp() {
@@ -71,10 +85,17 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $test_key_type */
     $test_key = Key::load($this->config(AuthenticationForm::CONFIG_NAME)->get('active_key'));
     $test_key_type = $test_key->getKeyType();
-    $this->username = $test_key_type->getUsername($test_key);
-    $this->password = $test_key_type->getPassword($test_key);
+    $this->instanceType = $test_key_type->getInstanceType($test_key);
+
     $this->organization = $test_key_type->getOrganization($test_key);
-    $this->endpoint = $test_key_type->getEndpoint($test_key);
+    if ($this->instanceType != EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+      $this->username = $test_key_type->getUsername($test_key);
+      $this->password = $test_key_type->getPassword($test_key);
+      $this->endpoint = $test_key_type->getEndpoint($test_key);
+    }
+    else {
+      $this->account_key = $test_key_type->getAccountKey($test_key);
+    }
     // Restore the default HTTP timeout set by the testing module because
     // we would like to run a test that tries to connect to an invalid
     // endpoint and we should not wait 6 minutes for the result.
@@ -85,6 +106,10 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
    * Tests the Authentication form.
    */
   public function testAuthenticationForm() {
+    if ($this->instanceType == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+      $this->markTestSkipped('Skipping "testAuthenticationForm": can only be tested with public/private cloud credentials.');
+    }
+
     $web_assert = $this->assertSession();
 
     // Test the authentication form using the default key stored by environment
@@ -113,6 +138,10 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
    * form is a customized Key edit form.
    */
   public function testKeyAddForm() {
+    if ($this->instanceType == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+      $this->markTestSkipped('Skipping "testAuthenticationForm": can only be tested with public/private cloud credentials.');
+    }
+
     $web_assert = $this->assertSession();
 
     // Test the authentication form using the default key stored by environment
@@ -147,8 +176,14 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
    * @group hybrid
    */
   public function testUsingHybridForm() {
-    $organization = getenv('APIGEE_EDGE_HYBRID_ORGANIZATION');
-    $account_key = getenv('APIGEE_EDGE_ACCOUNT_JSON_KEY');
+    // We have to structure the key variables so that this test class can
+    // be run both against a Public and Hybrid cloud orgs. Because of this,
+    // if the APIGEE_EDGE_HYBRID_ORGANIZATION environment var is set, it will
+    // use it as the Hybrid org for this test.
+    // Similarly, if the configured key credentials are for a Public/Private
+    // cloud org, then retrieve the account key directly from the environment.
+    $organization = getenv('APIGEE_EDGE_HYBRID_ORGANIZATION') ?: $this->organization;
+    $account_key = $this->account_key ? json_encode($this->account_key) : getenv('APIGEE_EDGE_ACCOUNT_JSON_KEY');
 
     if (!$organization || !$account_key) {
       $this->markTestSkipped('Skipping "testUsingHybridForm": missing test environment variables APIGEE_EDGE_HYBRID_ORGANIZATION and/or APIGEE_EDGE_ACCOUNT_JSON_KEY.');
