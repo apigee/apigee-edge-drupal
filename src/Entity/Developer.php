@@ -314,7 +314,7 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
    * {@inheritdoc}
    */
   public function hasCompany(string $company_name): bool {
-    return $this->decorated->hasCompany($company_name);
+    return in_array($company_name, $this->getCompanies(), TRUE);
   }
 
   /**
