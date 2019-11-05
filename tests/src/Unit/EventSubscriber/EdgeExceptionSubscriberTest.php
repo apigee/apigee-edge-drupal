@@ -42,13 +42,60 @@ use Symfony\Component\Routing\RequestContext;
  */
 class EdgeExceptionSubscriberTest extends UnitTestCase {
 
+  /**
+   * The API Exception class.
+   *
+   * @var \Apigee\Edge\Exception\ApiException
+   */
   protected $exception;
+
+  /**
+   * The HTTP Kernel mock.
+   *
+   * @var \Prophecy\Prophecy\ObjectProphecy
+   */
   protected $httpKernel;
+
+  /**
+   * The logger mock.
+   *
+   * @var \Prophecy\Prophecy\ObjectProphecy
+   */
   protected $logger;
+
+  /**
+   * The redirect destination mock.
+   *
+   * @var \Prophecy\Prophecy\ObjectProphecy
+   */
   protected $redirectDestination;
+
+  /**
+   * The access unaware router mock.
+   *
+   * @var \Prophecy\Prophecy\ObjectProphecy
+   */
   protected $accessUnawareRouter;
+
+  /**
+   * The configuration factory.
+   *
+   * @var \Drupal\Core\Config\Config
+   */
   protected $configFactory;
+
+  /**
+   * The messenger mock.
+   *
+   * @var \Prophecy\Prophecy\ObjectProphecy
+   */
   protected $messenger;
+
+  /**
+   * The getResponseForException mock.
+   *
+   * @var \Prophecy\Prophecy\ObjectProphecy
+   */
   protected $getResponseForExceptionEvent;
 
   /**
