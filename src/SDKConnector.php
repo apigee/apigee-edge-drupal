@@ -23,10 +23,7 @@ use Apigee\Edge\Api\Management\Controller\OrganizationController;
 use Apigee\Edge\Client;
 use Apigee\Edge\ClientInterface;
 use Apigee\Edge\HttpClient\Utility\Builder;
-use Drupal\apigee_edge\Connector\Credentials;
-use Drupal\apigee_edge\Connector\CredentialsInterface;
 use Drupal\apigee_edge\Connector\HybridCredentials;
-use Drupal\apigee_edge\Connector\OauthCredentials;
 use Drupal\apigee_edge\Exception\AuthenticationKeyException;
 use Drupal\apigee_edge\Exception\AuthenticationKeyNotFoundException;
 use Drupal\apigee_edge\Exception\InvalidArgumentException;
@@ -56,7 +53,7 @@ class SDKConnector implements SDKConnectorInterface {
   /**
    * The currently used credentials object.
    *
-   * @var null|\Drupal\apigee_edge\Connector\CredentialsInterface
+   * @var null|\Drupal\apigee_edge\CredentialsInterface
    */
   private static $credentials = NULL;
 
@@ -193,7 +190,7 @@ class SDKConnector implements SDKConnectorInterface {
   /**
    * Returns the credentials object used by the API client.
    *
-   * @return \Drupal\apigee_edge\Connector\CredentialsInterface
+   * @return \Drupal\apigee_edge\CredentialsInterface
    *   The key entity.
    */
   private function getCredentials(): CredentialsInterface {
@@ -214,7 +211,7 @@ class SDKConnector implements SDKConnectorInterface {
   /**
    * Changes credentials used by the API client.
    *
-   * @param \Drupal\apigee_edge\Connector\CredentialsInterface $credentials
+   * @param \Drupal\apigee_edge\CredentialsInterface $credentials
    *   The new credentials object.
    */
   private function setCredentials(CredentialsInterface $credentials) {
@@ -229,7 +226,7 @@ class SDKConnector implements SDKConnectorInterface {
    * @param \Drupal\key\KeyInterface $key
    *   The key entity which stores the API credentials.
    *
-   * @return \Drupal\apigee_edge\Connector\CredentialsInterface
+   * @return \Drupal\apigee_edge\CredentialsInterface
    *   The credentials.
    */
   private function buildCredentials(KeyInterface $key): CredentialsInterface {

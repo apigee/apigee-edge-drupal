@@ -20,7 +20,7 @@
 namespace Drupal\Tests\apigee_edge\FunctionalJavascript\Form;
 
 use Drupal\apigee_edge\Form\AuthenticationForm;
-use Drupal\apigee_edge\Connector\OauthTokenFileStorage;
+use Drupal\apigee_edge\OauthTokenFileStorage;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Core\Url;
 use Drupal\key\Entity\Key;

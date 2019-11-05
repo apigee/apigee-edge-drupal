@@ -18,12 +18,14 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Connector;
+namespace Drupal\apigee_edge;
 
 use Apigee\Edge\HttpClient\Plugin\Authentication\OauthTokenStorageInterface as EdgeOauthTokenStorageInterface;
 
 /**
  * Base definition of the OAuth token storage service implementations.
+ *
+ * @todo: move to \Drupal\apigee_edge\Connector namespace.
  */
 interface OauthTokenStorageInterface extends EdgeOauthTokenStorageInterface {
 

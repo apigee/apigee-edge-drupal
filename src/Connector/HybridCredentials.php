@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge\Connector;
 
+use Drupal\apigee_edge\Credentials;
 use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\key\KeyInterface;

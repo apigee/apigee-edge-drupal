@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Connector;
+namespace Drupal\apigee_edge;
 
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\key\KeyInterface;
@@ -25,6 +25,8 @@ use Http\Message\Authentication;
 
 /**
  * Defines an interface for credentials classes.
+ *
+ * @todo: move to \Drupal\apigee_edge\Connector namespace.
  */
 interface CredentialsInterface {
 

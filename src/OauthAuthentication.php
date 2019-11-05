@@ -18,7 +18,7 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Connector;
+namespace Drupal\apigee_edge;
 
 use Apigee\Edge\ClientInterface;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
@@ -26,6 +26,8 @@ use Http\Message\Authentication\BasicAuth;
 
 /**
  * Decorator for OAuth authentication plugin.
+ *
+ * @todo: move to \Drupal\apigee_edge\Connector namespace.
  */
 class OauthAuthentication extends Oauth {
 

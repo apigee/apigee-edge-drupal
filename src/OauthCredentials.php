@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Connector;
+namespace Drupal\apigee_edge;
 
 use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
@@ -26,6 +26,8 @@ use Http\Message\Authentication;
 
 /**
  * The API credentials for OAuth.
+ *
+ * @todo: move to \Drupal\apigee_edge\Connector namespace.
  */
 class OauthCredentials extends Credentials {
 

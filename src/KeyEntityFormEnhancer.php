@@ -25,8 +25,6 @@ use Apigee\Edge\Exception\HybridOauth2AuthenticationException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use DomainException;
-use Drupal\apigee_edge\Connector\OauthTokenFileStorage;
-use Drupal\apigee_edge\Connector\OauthTokenStorageInterface;
 use Drupal\apigee_edge\Exception\AuthenticationKeyException;
 use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
@@ -83,7 +81,7 @@ final class KeyEntityFormEnhancer {
   /**
    * The OAuth token storage.
    *
-   * @var \Drupal\apigee_edge\Connector\OauthTokenStorageInterface
+   * @var \Drupal\apigee_edge\OauthTokenStorageInterface
    */
   private $oauthTokenStorage;
 
@@ -106,7 +104,7 @@ final class KeyEntityFormEnhancer {
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
    *   The SDK connector service.
-   * @param \Drupal\apigee_edge\Connector\OauthTokenStorageInterface $oauth_token_storage
+   * @param \Drupal\apigee_edge\OauthTokenStorageInterface $oauth_token_storage
    *   The OAuth token storage.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager serivce.

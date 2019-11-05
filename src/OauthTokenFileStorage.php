@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Connector;
+namespace Drupal\apigee_edge;
 
 use Drupal\apigee_edge\Exception\OauthTokenStorageException;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -26,6 +26,8 @@ use Drupal\Core\Logger\LoggerChannelInterface;
 
 /**
  * Stores OAuth token data in a file.
+ *
+ * @todo: move to \Drupal\apigee_edge\Connector namespace.
  */
 final class OauthTokenFileStorage implements OauthTokenStorageInterface {
 
