@@ -139,7 +139,7 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
    */
   public function testKeyAddForm() {
     if ($this->instanceType == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
-      $this->markTestSkipped('Skipping "testAuthenticationForm": can only be tested with public/private cloud credentials.');
+      $this->markTestSkipped('Skipping "testKeyAddForm": can only be tested with public/private cloud credentials.');
     }
 
     $web_assert = $this->assertSession();
