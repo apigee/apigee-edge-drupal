@@ -24,6 +24,8 @@ use Apigee\Edge\HttpClient\Plugin\Authentication\OauthTokenStorageInterface as E
 
 /**
  * Base definition of the OAuth token storage service implementations.
+ *
+ * @todo: move to \Drupal\apigee_edge\Connector namespace.
  */
 interface OauthTokenStorageInterface extends EdgeOauthTokenStorageInterface {
 

@@ -26,6 +26,8 @@ use Drupal\Core\Logger\LoggerChannelInterface;
 
 /**
  * Stores OAuth token data in a file.
+ *
+ * @todo: move to \Drupal\apigee_edge\Connector namespace.
  */
 final class OauthTokenFileStorage implements OauthTokenStorageInterface {
 
