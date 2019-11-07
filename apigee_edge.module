@@ -1081,6 +1081,10 @@ function template_preprocess_app_credential(array &$variables) {
       ];
     }
     elseif ($def['value_type'] === 'status') {
+      // Check if expired.
+      if ($normalized['expiresAt'] !== -1 && \Drupal::time()->getRequestTime() - (int) ($normalized['expiresAt'] / 1000) > 0) {
+        $value = t('Expired');
+      }
       $variables['primary_wrapper'][$property]['value'] = [
         '#type' => 'status_property',
         '#value' => $value,
