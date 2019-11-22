@@ -41,7 +41,7 @@ function apigee_edge_teams_requirements($phase) {
       if ($organization && !OrganizationFeatures::isCompaniesFeatureAvailable($organization)) {
         $requirements['apigee_edge_teams_not_supported'] = [
           'title' => t('Apigee Edge Teams'),
-          'description' => t('Teams are not supported for your Apigee Edge organization.'),
+          'description' => t('Teams are not available for your org because <a href=':url' target='_blank'>Edge company APIs are not supported in Apigee hybrid orgs</a>.', [':url' => 'https://docs.apigee.com/hybrid/compare-hybrid-edge#unsupported-apis'] ),
           'severity' => REQUIREMENT_ERROR,
         ];
       }
