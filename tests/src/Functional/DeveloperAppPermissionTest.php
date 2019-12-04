@@ -241,7 +241,10 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
       }
       else {
         $this->visitPages($myUrl, $shouldAccess, $rel, $permission);
-        $this->visitPages($otherUrl, $shouldAccess, $rel, $permission);
+        // Issue #285, a user should not have access to other user's create
+        // (own) app form.
+        $otherShouldAccess = $permission === 'create developer_app' ? FALSE : $shouldAccess;
+        $this->visitPages($otherUrl, $otherShouldAccess, $rel, $permission);
       }
     }
   }

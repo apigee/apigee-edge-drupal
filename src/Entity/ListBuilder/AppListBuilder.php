@@ -23,6 +23,7 @@ namespace Drupal\apigee_edge\Entity\ListBuilder;
 use Apigee\Edge\Api\Management\Entity\AppCredential;
 use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\AppInterface;
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\EntityInterface;
@@ -54,6 +55,13 @@ class AppListBuilder extends EdgeEntityListBuilder {
   protected $requestStack;
 
   /**
+   * The time service.
+   *
+   * @var \Drupal\Component\Datetime\TimeInterface
+   */
+  protected $time;
+
+  /**
    * AppListBuilder constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -64,12 +72,15 @@ class AppListBuilder extends EdgeEntityListBuilder {
    *   The renderer service.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack object.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time service.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, RequestStack $request_stack) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, RequestStack $request_stack, TimeInterface $time) {
     parent::__construct($entity_type, $entity_type_manager);
     $this->renderer = $renderer;
     $this->entityTypeManager = $entity_type_manager;
     $this->requestStack = $request_stack;
+    $this->time = $time;
   }
 
   /**
@@ -80,7 +91,8 @@ class AppListBuilder extends EdgeEntityListBuilder {
       $entity_type,
       $container->get('entity_type.manager'),
       $container->get('renderer'),
-      $container->get('request_stack')
+      $container->get('request_stack'),
+      $container->get('datetime.time')
     );
   }
 
@@ -212,10 +224,10 @@ class AppListBuilder extends EdgeEntityListBuilder {
 
     // Display warning sign next to the status if the app's status is
     // approved, but:
-    // - any credentials of the app is in revoked status
+    // - any credentials of the app is in revoked or expired status
     // - any products of any credentials of the app is in revoked or
     //   pending status.
-    if ($app->getStatus() === AppInterface::STATUS_APPROVED && ($warnings['revokedCred'] || $warnings['revokedOrPendingCredProduct'])) {
+    if ($app->getStatus() === AppInterface::STATUS_APPROVED && ($warnings['revokedCred'] || $warnings['revokedOrPendingCredProduct'] || $warnings['expiredCred'])) {
       $build['status'] = $rows[$info_row_css_id]['data']['status']['data'];
       $build['warning'] = [
         '#type' => 'html_tag',
@@ -246,12 +258,22 @@ class AppListBuilder extends EdgeEntityListBuilder {
         'colspan' => count($this->buildHeader()),
       ];
 
+      $items = [];
       if ($warnings['revokedCred']) {
-        $row['data']['info']['data'] = $warnings['revokedCred'];
+        $items[] = $warnings['revokedCred'];
       }
       elseif ($warnings['revokedOrPendingCredProduct']) {
-        $row['data']['info']['data'] = $warnings['revokedOrPendingCredProduct'];
+        $items[] = $warnings['revokedOrPendingCredProduct'];
       }
+
+      if ($warnings['expiredCred']) {
+        $items[] = $warnings['expiredCred'];
+      }
+
+      $row['data']['info']['data'] = [
+        '#theme' => 'item_list',
+        '#items' => $items,
+      ];
     }
 
     $rows[$warning_row_css_id] = $row;
@@ -302,6 +324,7 @@ class AppListBuilder extends EdgeEntityListBuilder {
     $warnings = [];
     $warnings['revokedCred'] = FALSE;
     $warnings['revokedOrPendingCredProduct'] = FALSE;
+    $warnings['expiredCred'] = FALSE;
 
     foreach ($app->getCredentials() as $credential) {
       if ($credential->getStatus() === AppCredential::STATUS_REVOKED) {
@@ -316,6 +339,14 @@ class AppListBuilder extends EdgeEntityListBuilder {
         }
         break;
       }
+
+      // Check for expired credentials.
+      if (($expired_date = $credential->getExpiresAt()) && $this->time->getRequestTime() - $expired_date->getTimestamp() > 0) {
+        $warnings['expiredCred'] = $this->t('At least one of the credentials associated with this @app is expired.', [
+          '@app' => $this->entityType->getLowercaseLabel(),
+        ]);
+      }
+
       foreach ($credential->getApiProducts() as $cred_product) {
         if ($cred_product->getStatus() == CredentialProduct::STATUS_REVOKED || $cred_product->getStatus() == CredentialProduct::STATUS_PENDING) {
           $args = [

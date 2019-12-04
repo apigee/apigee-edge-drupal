@@ -110,7 +110,7 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_title_callback', AppTitleProvider::class . '::addTitle');
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureUserParameter($route);
-      $route->setRequirement('_entity_create_access', $entity_type->id());
+      $route->setRequirement('_custom_access', AppsPageAccessCheck::class . '::createAppAccess');
       return $route;
     }
   }
