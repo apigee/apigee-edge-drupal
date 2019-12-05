@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge\Plugin\KeyType;
 
+use Drupal\apigee_edge\Connector\HybridAuthentication;
 use Drupal\apigee_edge\OauthAuthentication;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeBase;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
@@ -41,9 +42,13 @@ use Http\Message\Authentication\BasicAuth;
  *   multivalue = {
  *     "enabled" = true,
  *     "fields" = {
+ *       "instance_type" = {
+ *         "label" = @Translation("Instance type"),
+ *         "required" = false
+ *       },
  *       "auth_type" = {
  *         "label" = @Translation("Authentication type"),
- *         "required" = true
+ *         "required" = false
  *       },
  *       "organization" = {
  *         "label" = @Translation("Organization"),
@@ -51,11 +56,11 @@ use Http\Message\Authentication\BasicAuth;
  *       },
  *       "username" = {
  *         "label" = @Translation("Username"),
- *         "required" = true
+ *         "required" = false
  *       },
  *       "password" = {
  *         "label" = @Translation("Password"),
- *         "required" = true
+ *         "required" = false
  *       },
  *       "endpoint" = {
  *         "label" = @Translation("Apigee Edge endpoint"),
@@ -71,6 +76,10 @@ use Http\Message\Authentication\BasicAuth;
  *       },
  *       "client_secret" = {
  *         "label" = @Translation("Client secret"),
+ *         "required" = false
+ *       },
+ *       "account_json_key" = {
+ *         "label" = @Translation("Account JSON key"),
  *         "required" = false
  *       }
  *     }
@@ -121,7 +130,13 @@ class ApigeeAuthKeyType extends EdgeKeyTypeBase {
    */
   public function getAuthenticationMethod(KeyInterface $key): Authentication {
     $values = $key->getKeyValues();
-    if ($values['auth_type'] === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
+
+    if ($this->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+      $account_key = $this->getAccountKey($key);
+      return new HybridAuthentication($account_key['client_email'], $account_key['private_key'], \Drupal::service('apigee_edge.authentication.oauth_token_storage'));
+    }
+
+    elseif ($values['auth_type'] === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
       // Use Oauth authentication.
       return new OauthAuthentication($this->getUsername($key), $this->getPassword($key), \Drupal::service('apigee_edge.authentication.oauth_token_storage'), NULL, $this->getClientId($key), $this->getClientSecret($key), NULL, $this->getAuthorizationServer($key));
     }

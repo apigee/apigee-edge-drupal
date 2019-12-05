@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Google Inc.
+ * Copyright 2019 Google Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,18 +18,16 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge;
+namespace Drupal\apigee_edge\Connector;
 
 use Apigee\Edge\ClientInterface;
-use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
-use Http\Message\Authentication\BasicAuth;
+use Apigee\Edge\HttpClient\Plugin\Authentication\HybridOauth2;
+use Apigee\Edge\HttpClient\Plugin\Authentication\NullAuthentication;
 
 /**
- * Decorator for OAuth authentication plugin.
- *
- * @todo: move to \Drupal\apigee_edge\Connector namespace.
+ * Decorator for Hybrid authentication plugin.
  */
-class OauthAuthentication extends Oauth {
+class HybridAuthentication extends HybridOauth2 {
 
   /**
    * {@inheritdoc}
@@ -37,7 +35,7 @@ class OauthAuthentication extends Oauth {
   protected function authClient(): ClientInterface {
     /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
     $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
-    return $sdk_connector->buildClient(new BasicAuth($this->clientId, $this->clientSecret), $this->getAuthServer());
+    return $sdk_connector->buildClient(new NullAuthentication(), $this->getAuthServer());
   }
 
 }

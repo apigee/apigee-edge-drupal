@@ -1,0 +1,61 @@
+<?php
+
+/**
+ * @file
+ * Copyright 2019 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 2 as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
+use Apigee\Edge\Utility\OrganizationFeatures;
+
+/**
+ * @file
+ * Install, update and uninstall functions for Apigee Edge Teams.
+ */
+
+/**
+ * Implements hook_requirements().
+ */
+function apigee_edge_teams_requirements($phase) {
+  $requirements = [];
+
+  if ($phase == 'install' || $phase == 'runtime') {
+    try {
+      /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
+      $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
+      $org_controller = \Drupal::service('apigee_edge.controller.organization');
+      /* @var \Apigee\Edge\Api\Management\Entity\Organization $organization */
+      $organization = $org_controller->load($sdk_connector->getOrganization());
+      if ($organization && !OrganizationFeatures::isCompaniesFeatureAvailable($organization)) {
+        $url = [
+          ':url' => 'https://docs.apigee.com/hybrid/compare-hybrid-edge#unsupported-apis',
+        ];
+        $message = ($phase == 'runtime') ?
+          t("The Apigee Edge Teams module functionality is not available for your org and should be uninstalled, because <a href=':url' target='_blank'>Edge company APIs are not supported in Apigee hybrid orgs</a>.", $url) :
+          t("The Apigee Edge Teams module functionality is not available for your org because <a href=':url' target='_blank'>Edge company APIs are not supported in Apigee hybrid orgs</a>.", $url);
+        $requirements['apigee_edge_teams_not_supported'] = [
+          'title' => t('Apigee Edge Teams'),
+          'description' => $message,
+          'severity' => REQUIREMENT_ERROR,
+        ];
+      }
+    }
+    catch (\Exception $exception) {
+      // Do nothing if connection to Edge is not available.
+    }
+  }
+
+  return $requirements;
+}

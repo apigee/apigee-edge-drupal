@@ -20,7 +20,6 @@
 namespace Drupal\apigee_edge\Plugin\KeyInput;
 
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
-use Apigee\Edge\ClientInterface;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
@@ -63,9 +62,41 @@ class ApigeeAuthKeyInput extends KeyInputBase {
 
     // Could be an empty array.
     $values = Json::decode($key_value);
-    $values['endpoint_type'] = empty($values['endpoint']) ? EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_DEFAULT : EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_CUSTOM;
     $values['authorization_server_type'] = empty($values['authorization_server']) ? 'default' : 'custom';
 
+    $state_for_public = [
+      ':input[name="key_input_settings[instance_type]"]' => ['value' => EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC],
+    ];
+    $state_for_private = [
+      ':input[name="key_input_settings[instance_type]"]' => ['value' => EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE],
+    ];
+    $state_for_hybrid = [
+      ':input[name="key_input_settings[instance_type]"]' => ['value' => EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID],
+    ];
+
+    $form['instance_type'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Apigee instance type'),
+      '#description' => $this->t('Select the Apigee instance type you are connecting to. More information can be found in the <a href="@link" target="_blank">Apigee documentation</a>.', [
+        '@link' => 'https://www.drupal.org/docs/8/modules/apigee-edge/configure-the-connection-to-apigee-edge',
+      ]),
+      '#required' => TRUE,
+      '#options' => [
+        EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC => $this->t('Public Cloud'),
+        EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE => $this->t('Private Cloud'),
+        EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID => $this->t('Hybrid Cloud'),
+      ],
+      '#default_value' => $values['instance_type'] ?? 'public',
+    ];
+    $form['hybrid_support_info'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Support for Apigee hybrid'),
+      '#description' => $this->t('Support for Apigee hybrid in the Apigee modules is in Alpha. Connecting to a hybrid organization is appropriate for evaluation and testing purposes during this pre-production stage.'),
+
+      '#states' => [
+        'visible' => $state_for_hybrid,
+      ],
+    ];
     $form['auth_type'] = [
       '#type' => 'select',
       '#title' => $this->t('Authentication type'),
@@ -76,8 +107,11 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC => $this->t('HTTP basic'),
       ],
       '#default_value' => $values['auth_type'] ?? EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC,
+      '#states' => [
+        'visible' => [$state_for_public, $state_for_private],
+        'required' => [$state_for_public, $state_for_private],
+      ],
     ];
-
     $form['organization'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Organization'),
@@ -90,51 +124,50 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#type' => 'textfield',
       '#title' => $this->t('Username'),
       '#description' => $this->t("Apigee user's email address or identity provider username that is used for authenticating with the endpoint."),
-      '#required' => TRUE,
       '#default_value' => $values['username'] ?? '',
       '#attributes' => ['autocomplete' => 'off'],
+      '#states' => [
+        'visible' => [$state_for_public, $state_for_private],
+        'required' => [$state_for_public, $state_for_private],
+      ],
     ];
     $form['password'] = [
       '#type' => 'password',
       '#title' => $this->t('Password'),
       '#description' => $this->t("Organization user's password that is used for authenticating with the endpoint."),
-      '#required' => TRUE,
       '#attributes' => [
         'autocomplete' => 'off',
         // Password field should not forget the submitted value.
         'value' => $values['password'] ?? '',
       ],
-    ];
-    $form['endpoint_type'] = [
-      '#title' => $this->t('Apigee Edge endpoint'),
-      '#type' => 'radios',
-      '#required' => TRUE,
-      '#default_value' => $values['endpoint_type'],
-      '#options' => [
-        EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_DEFAULT => $this->t('Default'),
-        EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_CUSTOM => $this->t('Custom'),
+      '#states' => [
+        'visible' => [$state_for_public, $state_for_private],
+        'required' => [$state_for_public, $state_for_private],
       ],
-      '#description' => $this->t('Apigee Edge endpoint where the API calls are being sent. Use the default (%endpoint) when pointing to an organization on <a href="@link" target="_blank">Public Cloud</a>, or custom when using <a href="@link" target="_blank">Private Cloud</a>.', [
-        '%endpoint' => ClientInterface::DEFAULT_ENDPOINT,
-        '@link' => 'https://docs.apigee.com/api-platform/get-started/what-apigee-edge#cloudvonprem',
-      ]),
+    ];
+    $form['account_json_key'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('GCP service account key'),
+      '#description' => $this->t("Paste the contents of the GCP service account key JSON file."),
+      '#default_value' => $values['account_json_key'] ?? '',
+      '#rows' => '8',
+      '#states' => [
+        'visible' => $state_for_hybrid,
+        'required' => $state_for_hybrid,
+      ],
     ];
     $form['endpoint'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Custom Apigee Edge endpoint'),
-      '#description' => $this->t('For a Private Cloud installation, it is in the form: %form_a or %form_b.', [
+      '#title' => $this->t('Apigee Edge endpoint'),
+      '#description' => $this->t('Apigee Edge endpoint where the API calls are being sent. For a Private Cloud installation it is in the form: %form_a or %form_b.', [
         '%form_a' => 'http://ms_IP_or_DNS:8080/v1',
         '%form_b' => 'https://ms_IP_or_DNS:TLSport/v1',
       ]),
       '#default_value' => $values['endpoint'] ?? '',
       '#attributes' => ['autocomplete' => 'off'],
       '#states' => [
-        'visible' => [
-          ':input[name="key_input_settings[endpoint_type]"]' => ['value' => 'custom'],
-        ],
-        'required' => [
-          ':input[name="key_input_settings[endpoint_type]"]' => ['value' => 'custom'],
-        ],
+        'visible' => $state_for_private,
+        'required' => $state_for_private,
       ],
     ];
     $form['authorization_server_type'] = [
@@ -151,6 +184,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       ]),
       '#states' => [
         'visible' => [
+          [$state_for_public, $state_for_private],
           ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH],
         ],
       ],
@@ -165,10 +199,13 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#attributes' => ['autocomplete' => 'off'],
       '#states' => [
         'visible' => [
+          [$state_for_public, $state_for_private],
           ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH],
           ':input[name="key_input_settings[authorization_server_type]"]' => ['value' => 'custom'],
         ],
         'required' => [
+          [$state_for_public, $state_for_private],
+          ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH],
           ':input[name="key_input_settings[authorization_server_type]"]' => ['value' => 'custom'],
         ],
       ],
@@ -183,6 +220,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#attributes' => ['autocomplete' => 'off'],
       '#states' => [
         'visible' => [
+          [$state_for_public, $state_for_private],
           ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH],
         ],
       ],
@@ -197,6 +235,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#attributes' => ['autocomplete' => 'off'],
       '#states' => [
         'visible' => [
+          [$state_for_public, $state_for_private],
           ':input[name="key_input_settings[auth_type]"]' => ['value' => EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH],
         ],
       ],
@@ -213,20 +252,56 @@ class ApigeeAuthKeyInput extends KeyInputBase {
   /**
    * {@inheritdoc}
    */
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+    $input_values = $form_state->getUserInput()['key_input_settings'];
+
+    if ($input_values['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+      $account_key = $input_values['account_json_key'] ?? '';
+      $json = json_decode($account_key, TRUE);
+      if (empty($json['private_key']) || empty($json['client_email'])) {
+        $form_state->setErrorByName('key_input_settings][account_json_key', $this->t('GCP service account key JSON file is invalid.'));
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function processSubmittedKeyValue(FormStateInterface $form_state) {
     // Get input values.
     $input_values = $form_state->getValues();
 
-    // Make sure the endpoint defaults are not overridden by other values.
-    if (empty($input_values['endpoint_type']) || $input_values['endpoint_type'] == EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_DEFAULT) {
-      $input_values['endpoint'] = '';
-    }
-    if (empty($input_values['authorization_server_type']) || $input_values['authorization_server_type'] == 'default') {
-      $input_values['authorization_server'] = '';
+    if (!empty($input_values)) {
+      $instance_type = $input_values['instance_type'] ?? NULL;
+
+      // Make sure the endpoint defaults are not overridden by other values.
+      if ($instance_type == EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC) {
+        $input_values['endpoint'] = '';
+      }
+      if (empty($input_values['authorization_server_type']) || $input_values['authorization_server_type'] == 'default') {
+        $input_values['authorization_server'] = '';
+      }
+
+      // Remove unneeded values if on a Hybrid instance.
+      if ($instance_type == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+        $input_values['auth_type'] = '';
+        $input_values['username'] = '';
+        $input_values['password'] = '';
+        $input_values['endpoint'] = '';
+        $input_values['authorization_server_type'] = '';
+        $input_values['authorization_server'] = '';
+        $input_values['client_id'] = '';
+        $input_values['client_secret'] = '';
+      }
+      // Remove unneeded values if on a Public or Private instance.
+      else {
+        $input_values['account_json_key'] = '';
+      }
+
+      // Remove `key_value` so it doesn't get double encoded.
+      unset($input_values['key_value']);
     }
 
-    // Remove `key_value` so it doesn't get double encoded.
-    unset($input_values['key_value']);
     // Reset values to just `key_value`.
     $form_state->setValues(['key_value' => Json::encode(array_filter($input_values))]);
     return parent::processSubmittedKeyValue($form_state);
