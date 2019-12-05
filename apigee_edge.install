@@ -23,11 +23,9 @@
  * Install, update and uninstall functions for Apigee Edge.
  */
 
-use Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType;
+use Apigee\Edge\Utility\OrganizationFeatures;
 use Drupal\apigee_edge\OauthTokenFileStorage;
-use Drupal\Component\Serialization\Json;
 use Drupal\Core\Url;
-use Drupal\key\Plugin\KeyProviderSettableValueInterface;
 use Drupal\user\RoleInterface;
 
 /**
@@ -35,6 +33,7 @@ use Drupal\user\RoleInterface;
  */
 function apigee_edge_requirements($phase) {
   $requirements = [];
+  $hybrid_support_message = t('Support for Apigee hybrid in the Apigee modules is in Alpha. Connecting to a hybrid organization is appropriate for evaluation and testing purposes during this pre-production stage.');
 
   if ($phase === 'install') {
     // This should be checked only if Drupal is installed.
@@ -51,12 +50,26 @@ function apigee_edge_requirements($phase) {
         ];
       }
     }
+
+    \Drupal::messenger()->addWarning($hybrid_support_message);
   }
   elseif ($phase === 'runtime') {
     /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
     $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
     try {
       $sdk_connector->testConnection();
+
+      // Hybrid support warning.
+      $org_controller = \Drupal::service('apigee_edge.controller.organization');
+      /* @var \Apigee\Edge\Api\Management\Entity\Organization $organization */
+      $organization = $org_controller->load($sdk_connector->getOrganization());
+      if ($organization && OrganizationFeatures::isHybridEnabled($organization)) {
+        $requirements['apigee_edge_hybrid_support'] = [
+          'title' => t('Apigee Edge'),
+          'description' => $hybrid_support_message,
+          'severity' => REQUIREMENT_WARNING,
+        ];
+      }
     }
     catch (\Exception $exception) {
       $requirements['apigee_edge_connection_error'] = [
@@ -166,15 +179,6 @@ function apigee_edge_update_8001() {
  * Update defaults on Apigee Auth Keys.
  */
 function apigee_edge_update_8002() {
-  $keys = \Drupal::service('key.repository')->getKeys();
-  foreach ($keys as $key) {
-    /* @var \Drupal\key\Entity\Key $key */
-    if ($key->getKeyType() instanceof ApigeeAuthKeyType && $key->getKeyProvider() instanceof KeyProviderSettableValueInterface) {
-      $values = $key->getKeyValues();
-      $values['endpoint_type'] = $values['endpoint'] ? 'custom' : 'default';
-      $values['authorization_server_type'] = $values['authorization_server'] ? 'custom' : 'default';
-      $key->setKeyValue(Json::encode($values));
-      $key->save();
-    }
-  }
+  // Empty.
+  // Removed because Hybrid support makes this update hook unneeded.
 }
