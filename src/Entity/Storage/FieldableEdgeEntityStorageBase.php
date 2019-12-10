@@ -73,7 +73,7 @@ abstract class FieldableEdgeEntityStorageBase extends EdgeEntityStorageBase impl
   }
 
   /**
-   * @inheritDoc
+   * {@inheritdoc}
    */
   public function onFieldableEntityTypeCreate(EntityTypeInterface $entity_type, array $field_storage_definitions) {
   }
