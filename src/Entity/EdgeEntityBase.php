@@ -154,4 +154,11 @@ abstract class EdgeEntityBase extends EntityBase implements EdgeEntityInterface 
     return $label;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function isTranslatable() {
+    return FALSE;
+  }
+
 }
