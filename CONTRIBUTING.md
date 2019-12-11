@@ -104,7 +104,7 @@ vendor/bin/phpcs --standard=web/modules/contrib/apigee_edge/phpcs.xml.dist web/m
 git push -u origin patch-2:patch-2
 ```
 
-## Running tests
+## Set up environment variables
 
 Before you could start testing this module some environment variables
 needs to be set on your system. These variables are:
@@ -123,6 +123,23 @@ Value of `APIGEE_EDGE_USERNAME` should be an email address of an Apigee Edge use
 You can set these environment variables multiple ways, either by defining them
 with `export` or `set` in the terminal or creating a copy of the `core/phpunit.xml.dist`
 file as `core/phpunit.xml` and specifying them in that file.
+
+### Notes for testing using a Hybrid organization
+
+If testing with a Hybrid organization, only the following three environment variables are required:
+
+* `APIGEE_EDGE_INSTANCE_TYPE`: should be `hybrid`.
+* `APIGEE_EDGE_ORGANIZATION`
+* `APIGEE_EDGE_ACCOUNT_JSON_KEY`: the JSON encoded GCP service account key.
+
+If you wish to run tests both against a Public and a Hybrid instance:
+
+1. First configure the credentials to the public org as described above.
+2. Add the `APIGEE_EDGE_ACCOUNT_JSON_KEY` environment variable.
+3. Add a`APIGEE_EDGE_HYBRID_ORGANIZATION` environment variable, which specifies the Hybrid organization to use for tests.
+
+
+## Running tests
 
 After you have these environment variables set you can execute tests of this
 module with the following command (note the location of the `phpunit` executable

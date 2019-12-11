@@ -17,6 +17,12 @@ some submodules are marked as "Experimental". They are provided for evaluation a
 considered to be in development. Experimental modules are included in the "Apigee (Experimental)" package
  on the "Extend" page of a Drupal site (/admin/modules).
 
+## Support for Apigee Hybrid Cloud: Alpha Release
+
+Support for [Apigee hybrid API](https://docs.apigee.com/hybrid/reference-overview) has been added but is considered to
+be an alpha. If you run into any problems, add an issue to our [GitHub issue queue](https://github.com/apigee/apigee-edge-drupal/issues).
+Please note that Team APIs and Monetization APIs are not currently supported on Apigee hybrid.
+
 ## Requirements
 
 * The Apigee Edge module requires **Drupal 8.7.x** or higher and PHP 7.1 or higher.

@@ -346,9 +346,10 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
-   * Tests getCompanies() function of the developer entity.
+   * Tests getCompanies() and hasCompany() methods on the developer entity.
    *
    * @see \Drupal\apigee_edge\Entity\Developer::getCompanies()
+   * @see \Drupal\apigee_edge\Entity\Developer::hasCompany()
    */
   public function developerGetCompanyListTest() {
     // Create a new developer.
@@ -388,6 +389,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
     $developer = $this->developerStorage->loadMultiple()[$this->developer->id()];
     $this->assertContains($this->company->getName(), $developer->getCompanies());
+    self::assertTrue($developer->hasCompany($this->company->getName()));
 
     // Check the companies array if the developer is removed from the member
     // list.
@@ -395,6 +397,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $developer_cache->removeEntities([$this->developer->id()]);
     $developer = $this->developerStorage->loadUnchanged($this->developer->id());
     $this->assertNotContains($this->company->getName(), $developer->getCompanies());
+    self::assertFalse($developer->hasCompany($this->company->getName()));
   }
 
 }
