@@ -307,7 +307,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
     // >> Bypass user.
     $this->drupalLogin($this->users[self::USER_WITH_BYPASS_PERM]);
     // Even if a user has bypass permission they should see only those API
-    // Products on on an other user's add/edit form that the other user has
+    // Products on another user's add/edit form that the other user has
     // access.
     $this->drupalGet(Url::fromRoute('entity.developer_app.add_form_for_developer', [
       'user' => $this->users[AccountInterface::AUTHENTICATED_ROLE]->id(),
