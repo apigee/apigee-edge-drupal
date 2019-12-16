@@ -37,7 +37,7 @@ composer update ${COMPOSER_GLOBAL_OPTIONS}
 
 # Allow to run tests with a specific Drupal core version (ex.: latest dev).
 if [[ -n "${DRUPAL_CORE}" ]]; then
-  composer require drupal/core:${DRUPAL_CORE} webflo/drupal-core-require-dev:${DRUPAL_CORE} ${COMPOSER_GLOBAL_OPTIONS};
+  composer require drupal/core:${DRUPAL_CORE} drupal/core-dev:${DRUPAL_CORE} ${COMPOSER_GLOBAL_OPTIONS};
 fi
 
 # Downgrade dependencies if needed.

@@ -23,12 +23,12 @@ namespace Drupal\apigee_edge\Entity;
 use Apigee\Edge\Entity\EntityInterface;
 use Apigee\Edge\Entity\Property\DisplayNamePropertyInterface;
 use Drupal\apigee_edge\Exception\InvalidArgumentException;
-use Drupal\Core\Entity\Entity;
+use Drupal\Core\Entity\EntityBase;
 
 /**
  * Base class for Apigee Edge entities in Drupal.
  */
-abstract class EdgeEntityBase extends Entity implements EdgeEntityInterface {
+abstract class EdgeEntityBase extends EntityBase implements EdgeEntityInterface {
 
   /**
    * The decorated SDK entity.
@@ -152,6 +152,13 @@ abstract class EdgeEntityBase extends Entity implements EdgeEntityInterface {
     }
 
     return $label;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isTranslatable() {
+    return FALSE;
   }
 
 }
