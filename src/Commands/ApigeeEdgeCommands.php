@@ -82,7 +82,8 @@ class ApigeeEdgeCommands extends DrushCommands {
    *   The role to create in the Apigee Edge org, defaults to "drupalportal".
    * @option $force
    *   Force running of permissions on a role that already exists, defaults
-   *   to throwing an error message if role exists.
+   *   to throwing an error message if role exists. Note that permissions are
+   *   only added, any current permissions not not removed.
    * @usage drush create-edge-role myorg me@example.com
    *   Create "drupalportal" role as orgadmin me@example.com for org myorg.
    * @usage drush create-edge-role myorg me@example.com --role-name=portal
