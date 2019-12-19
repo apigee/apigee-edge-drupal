@@ -24,7 +24,7 @@ use Drupal\Console\Core\Command\Shared\CommandTrait;
 use Drupal\Console\Core\Style\DrupalStyle;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Logger\LogMessageParserInterface;
-use Symfony\Component\Console\Command\Command;
+use Drupal\Console\Core\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -115,7 +115,7 @@ abstract class CommandBase extends Command {
    * @return \Symfony\Component\Console\Style\StyleInterface
    *   The IO interface.
    */
-  protected function getIo(): StyleInterface {
+  public function getIo(): StyleInterface {
     return $this->io;
   }
 

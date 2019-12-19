@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Google Inc.
+ * Copyright 2019 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License version 2 as published by the
@@ -17,27 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge;
+namespace Drupal\apigee_edge\Command\Util;
 
 use Symfony\Component\Console\Style\StyleInterface;
 
 /**
- * Defines an interface for CLI service classes.
+ * Defines an interface for Edge connection classes.
  */
-interface CliServiceInterface {
+interface ApigeeEdgeManagementCliServiceInterface {
+
+  // Default role name to create in Apigee Edge.
+  const DEFAULT_ROLE_NAME = 'drupalportal';
 
   /**
-   * Handle the sync interaction.
-   *
-   * @param \Symfony\Component\Console\Style\StyleInterface $io
-   *   The IO interface of the CLI tool calling the method.
-   * @param callable $t
-   *   The translation function akin to t().
-   */
-  public function sync(StyleInterface $io, callable $t);
-
-  /**
-   * Create an Apigee role for Drupal use.
+   * Create role in Apigee Edge for Drupal to use for Edge connection.
    *
    * @param \Symfony\Component\Console\Style\StyleInterface $io
    *   The IO interface of the CLI tool calling the method.
@@ -49,12 +42,12 @@ interface CliServiceInterface {
    *   The email of an Edge user with org admin role to make Edge API calls.
    * @param string $password
    *   The password of an Edge user with org admin role to make Edge API calls.
-   * @param string|null $base_url
+   * @param null|string $base_url
    *   The base url of the Edge API.
-   * @param string|null $role_name
+   * @param null|string $role_name
    *   The role name to add the permissions to.
-   * @param bool|null $force
-   *   Force permissions to be set even if role exists.
+   * @param null|bool $force
+   *   Force running of permissions on a role that already exists.
    */
   public function createEdgeRoleForDrupal(
     StyleInterface $io,
@@ -64,7 +57,7 @@ interface CliServiceInterface {
     string $password,
     ?string $base_url,
     ?string $role_name,
-    ?bool $force
+    bool $force
   );
 
 }

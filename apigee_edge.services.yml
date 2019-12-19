@@ -12,6 +12,11 @@ services:
 
   apigee_edge.cli:
     class: Drupal\apigee_edge\CliService
+    arguments: ['@apigee_edge.apigee_edge_mgmt_cli_service']
+
+  apigee_edge.apigee_edge_mgmt_cli_service:
+    class: Drupal\apigee_edge\Command\Util\ApigeeEdgeManagementCliService
+    arguments: ['@http_client']
 
   apigee_edge.sdk_connector:
     class: Drupal\apigee_edge\SDKConnector

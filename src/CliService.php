@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Google Inc.
+ * Copyright 2019 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License version 2 as published by the
@@ -20,12 +20,30 @@
 namespace Drupal\apigee_edge;
 
 use Drupal\apigee_edge\Controller\DeveloperSyncController;
+use Drupal\apigee_edge\Command\Util\ApigeeEdgeManagementCliServiceInterface;
 use Symfony\Component\Console\Style\StyleInterface;
 
 /**
  * A CLI service which defines all the commands logic and delegates the methods.
  */
 class CliService implements CliServiceInterface {
+
+  /**
+   * The service that makes calls to the Apigee API.
+   *
+   * @var \Drupal\apigee_edge\Command\Util\ApigeeEdgeManagementCliServiceInterface
+   */
+  private $apigeeEdgeManagementCliService;
+
+  /**
+   * CliService constructor.
+   *
+   * @param \Drupal\apigee_edge\Command\Util\ApigeeEdgeManagementCliServiceInterface $apigeeEdgeManagementCliService
+   *   The ApigeeEdgeManagementCliService to make calls to Apigee Edge.
+   */
+  public function __construct(ApigeeEdgeManagementCliServiceInterface $apigeeEdgeManagementCliService) {
+    $this->apigeeEdgeManagementCliService = $apigeeEdgeManagementCliService;
+  }
 
   /**
    * {@inheritdoc}
@@ -50,6 +68,31 @@ class CliService implements CliServiceInterface {
         gc_collect_cycles();
       }
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function createEdgeRoleForDrupal(
+    StyleInterface $io,
+    callable $t,
+    string $org,
+    string $email,
+    string $password,
+    ?string $base_url,
+    ?string $role_name,
+    ?bool $force
+  ) {
+    $this->apigeeEdgeManagementCliService->createEdgeRoleForDrupal(
+      $io,
+      $t,
+      $org,
+      $email,
+      $password,
+      $base_url,
+      $role_name,
+      $force
+    );
   }
 
 }

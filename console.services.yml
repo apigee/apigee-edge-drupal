@@ -4,3 +4,8 @@ services:
     arguments: ['@apigee_edge.cli', '@logger.log_message_parser', '@logger.factory']
     tags:
       - { name: drupal.command }
+  apigee_edge.edge_role_create:
+    class: Drupal\apigee_edge\Command\CreateEdgeRoleCommand
+    arguments: ['@apigee_edge.cli', '@logger.log_message_parser', '@logger.factory']
+    tags:
+      - { name: drupal.command }

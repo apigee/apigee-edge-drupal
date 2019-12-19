@@ -285,7 +285,7 @@ final class KeyEntityFormEnhancer {
       return;
     }
 
-    // If there is a form error already do not nothing.
+    // If there is a form error already do not continue.
     if (!empty($form_state->getErrors())) {
       return;
     }
