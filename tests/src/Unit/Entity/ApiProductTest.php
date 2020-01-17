@@ -70,8 +70,6 @@ class ApiProductTest extends UnitTestCase {
     $this->apiProduct->setEnvironments(...$environments_expected);
     $environments_actual = $this->apiProduct->getEnvironments();
     $this->assertArrayEquals($environments_expected, $environments_actual);
-
   }
-
 
 }
