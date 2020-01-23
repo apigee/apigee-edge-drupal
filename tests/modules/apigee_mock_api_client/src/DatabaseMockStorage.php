@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright 2020 Google Inc.
+ * Copyright 2019 Google Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_mock_client;
+namespace Drupal\apigee_mock_api_client;
 
 use Apigee\MockClient\MatchableResultInterface;
 use Apigee\MockClient\MockStorageInterface;
@@ -33,9 +33,9 @@ use Psr\Http\Message\RequestInterface;
  */
 class DatabaseMockStorage implements MockStorageInterface {
 
-  public const STATE_DEFAULT_RESULT_ID = 'apigee_mock_client.db_mock_storage.default';
-  public const STATE_REQUESTS_ID = 'apigee_mock_client.db_mock_storage.requests';
-  public const STATE_MATCHABLE_RESULT_ID = 'apigee_mock_client.db_mock_storage.responses';
+  public const STATE_DEFAULT_RESULT_ID = 'apigee_mock_api_client.db_mock_storage.default';
+  public const STATE_REQUESTS_ID = 'apigee_mock_api_client.db_mock_storage.requests';
+  public const STATE_MATCHABLE_RESULT_ID = 'apigee_mock_api_client.db_mock_storage.responses';
 
   /**
    * The queue to use to store the responses.
@@ -60,7 +60,7 @@ class DatabaseMockStorage implements MockStorageInterface {
    *   The state API.
    */
   public function __construct(QueueDatabaseFactory $queue_factory, StateInterface $state) {
-    $this->queue = $queue_factory->get('apigee_mock_client.db_mock_storage');
+    $this->queue = $queue_factory->get('apigee_mock_api_client.db_mock_storage');
     $this->state = $state;
   }
 

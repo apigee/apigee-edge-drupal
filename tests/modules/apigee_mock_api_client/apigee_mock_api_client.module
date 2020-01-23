@@ -23,7 +23,7 @@
  * Helper module for apigee_edge tests.
  */
 
-use Drupal\apigee_mock_client\Plugin\KeyProvider\TestEnvironmentVariablesKeyProvider;
+use Drupal\apigee_mock_api_client\Plugin\KeyProvider\TestEnvironmentVariablesKeyProvider;
 
 /**
  * Implements hook_key_provider_info_alter().

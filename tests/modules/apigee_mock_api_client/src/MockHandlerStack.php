@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright 2020 Google Inc.
+ * Copyright 2018 Google Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_mock_client;
+namespace Drupal\apigee_mock_api_client;
 
 use Apigee\MockClient\Generator\TwigSource;
 use Apigee\MockClient\GuzzleHttp\MockHandler;
@@ -92,7 +92,7 @@ class MockHandlerStack extends MockHandler {
     if (empty($this->responses)) {
       // Get the module path for this module.
       $module_path = \Drupal::moduleHandler()
-        ->getModule('apigee_mock_client')
+        ->getModule('apigee_mock_api_client')
         ->getPath();
       $this->responses = Yaml::parseFile($module_path . '/response_catalog.yml')['responses'];
     }

@@ -67,10 +67,10 @@ class MockIntegrationToggleKernelTest extends KernelTestBase {
     $integration_enabled = getenv('APIGEE_INTEGRATION_ENABLE');
     putenv('APIGEE_INTEGRATION_ENABLE=0');
 
-    $this->enableModules(['apigee_mock_client']);
+    $this->enableModules(['apigee_mock_api_client']);
 
     $handler = $this->container
-      ->get('apigee_mock_client.mock_http_client_factory')
+      ->get('apigee_mock_api_client.mock_http_client_factory')
       ->fromOptions([])
       ->getConfig('handler');
 
@@ -86,10 +86,10 @@ class MockIntegrationToggleKernelTest extends KernelTestBase {
     $integration_enabled = getenv('APIGEE_INTEGRATION_ENABLE');
     putenv('APIGEE_INTEGRATION_ENABLE=1');
 
-    $this->enableModules(['apigee_mock_client']);
+    $this->enableModules(['apigee_mock_api_client']);
 
     $handler = $this->container
-      ->get('apigee_mock_client.mock_http_client_factory')
+      ->get('apigee_mock_api_client.mock_http_client_factory')
       ->fromOptions([])
       ->getConfig('handler');
 

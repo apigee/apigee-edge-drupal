@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright 2020 Google Inc.
+ * Copyright 2018 Google Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_mock_client\TwigExtension;
+namespace Drupal\apigee_mock_api_client\TwigExtension;
 
 use Drupal\Core\Extension\ModuleHandlerInterface;
 

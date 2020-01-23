@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_mock_client\Plugin\KeyProvider;
+namespace Drupal\apigee_mock_api_client\Plugin\KeyProvider;
 
 use Drupal\apigee_edge\Plugin\KeyProvider\EnvironmentVariablesKeyProvider;
 use Drupal\Core\Logger\LoggerChannelInterface;
@@ -30,7 +30,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class TestEnvironmentVariablesKeyProvider extends EnvironmentVariablesKeyProvider {
 
-  const KEY_VALUE_STATE_ID = 'apigee_mock_client_test_key_value';
+  const KEY_VALUE_STATE_ID = 'apigee_mock_api_client_test_key_value';
 
   /**
    * Drupal state.

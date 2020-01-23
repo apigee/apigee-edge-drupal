@@ -48,7 +48,7 @@ class TestFrameworkKernelTest extends KernelTestBase {
     'entity',
     'syslog',
     'apigee_edge',
-    'apigee_mock_client',
+    'apigee_mock_api_client',
   ];
 
   /**
@@ -75,7 +75,7 @@ class TestFrameworkKernelTest extends KernelTestBase {
   public function testServiceModification() {
     self::assertEquals(
       (string) $this->container->getDefinition('apigee_edge.sdk_connector')->getArgument(0),
-      'apigee_mock_client.mock_http_client_factory'
+      'apigee_mock_api_client.mock_http_client_factory'
     );
   }
 

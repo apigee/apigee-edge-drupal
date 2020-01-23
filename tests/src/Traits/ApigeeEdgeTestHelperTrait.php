@@ -21,7 +21,7 @@ namespace Drupal\Tests\apigee_edge\Traits;
 
 use Apigee\Edge\Api\Management\Entity\Organization;
 use Apigee\MockClient\Generator\ApigeeSdkEntitySource;
-use Drupal\apigee_mock_client\Plugin\KeyProvider\TestEnvironmentVariablesKeyProvider;
+use Drupal\apigee_mock_api_client\Plugin\KeyProvider\TestEnvironmentVariablesKeyProvider;
 use Drupal\key\Entity\Key;
 use Drupal\user\UserInterface;
 use Http\Message\RequestMatcher\RequestMatcher;
@@ -41,7 +41,7 @@ trait ApigeeEdgeTestHelperTrait {
   /**
    * The mock handler stack is responsible for serving queued api responses.
    *
-   * @var \Drupal\apigee_mock_client\MockHandlerStack
+   * @var \Drupal\apigee_mock_api_client\MockHandlerStack
    */
   protected $stack;
 
@@ -78,10 +78,10 @@ trait ApigeeEdgeTestHelperTrait {
    * Setup.
    */
   protected function apigeeTestPropertiesSetup() {
-    $this->stack = $this->container->get('apigee_mock_client.mock_http_handler_stack');
+    $this->stack = $this->container->get('apigee_mock_api_client.mock_http_handler_stack');
     $this->sdkConnector = $this->container->get('apigee_edge.sdk_connector');
     $this->entityTypeManager = $this->container->get('entity_type.manager');
-    $this->mockResponseFactory = $this->container->get('apigee_mock_client.response_factory');
+    $this->mockResponseFactory = $this->container->get('apigee_mock_api_client.response_factory');
     $this->integration_enabled = getenv('APIGEE_INTEGRATION_ENABLE');
   }
 
