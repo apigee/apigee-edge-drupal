@@ -21,6 +21,8 @@ namespace Drupal\Tests\apigee_edge\Traits;
 
 use Apigee\Edge\Api\Management\Entity\Organization;
 use Apigee\MockClient\Generator\ApigeeSdkEntitySource;
+use Drupal\apigee_edge\Entity\Developer;
+use Drupal\apigee_edge\Entity\DeveloperInterface;
 use Drupal\apigee_mock_api_client\Plugin\KeyProvider\TestEnvironmentVariablesKeyProvider;
 use Drupal\key\Entity\Key;
 use Drupal\user\UserInterface;
@@ -67,6 +69,13 @@ trait ApigeeEdgeTestHelperTrait {
   protected $integration_enabled;
 
   /**
+   * The Apigee Edge key used in tests.
+   *
+   * @var string
+   */
+  protected $apigee_edge_test_key = 'apigee_edge_test_auth';
+
+  /**
    * Setup.
    */
   protected function apigeeTestHelperSetup() {
@@ -94,7 +103,7 @@ trait ApigeeEdgeTestHelperTrait {
 
     // Create new Apigee Edge basic auth key.
     $key = Key::create([
-      'id'           => 'apigee_m10n_test_auth',
+      'id'           => $this->apigee_edge_test_key,
       'label'        => 'Apigee M10n Test Authorization',
       'key_type'     => 'apigee_auth',
       'key_provider' => 'apigee_edge_environment_variables',
@@ -115,7 +124,7 @@ trait ApigeeEdgeTestHelperTrait {
     \Drupal::state()->set(TestEnvironmentVariablesKeyProvider::KEY_VALUE_STATE_ID, $fields);
 
     $this->config('apigee_edge.auth')
-      ->set('active_key', 'apigee_m10n_test_auth')
+      ->set('active_key', $this->apigee_edge_test_key)
       ->save();
   }
 
@@ -138,6 +147,31 @@ trait ApigeeEdgeTestHelperTrait {
   }
 
   /**
+   * Add matched developer response.
+   *
+   * @param \Drupal\user\UserInterface $developer
+   *   The developer user to get properties from.
+   */
+  protected function addDeveloperMatchedResponse(UserInterface $developer) {
+    $organization = $this->sdkConnector->getOrganization();
+    $dev = new Developer([
+      'email' => $developer->getEmail(),
+      'developerId' => $developer->uuid(),
+      'firstName' => $developer->first_name->value,
+      'lastName' => $developer->last_name->value,
+      'userName' => $developer->getAccountName(),
+      'organizationName' => $organization,
+    ]);
+
+    $this->stack->on(
+      new RequestMatcher("/v1/organizations/{$organization}/developers/{$developer->getEmail()}$", NULL, [
+        'GET',
+      ]),
+      $this->mockResponseFactory->generateResponse(new ApigeeSdkEntitySource($developer))
+    );
+  }
+
+  /**
    * Queues up a mock developer response.
    *
    * @param \Drupal\user\UserInterface $developer
@@ -152,6 +186,40 @@ trait ApigeeEdgeTestHelperTrait {
     $context['org_name'] = $this->sdkConnector->getOrganization();
 
     $this->stack->queueMockResponse(['get_developer' => $context]);
+  }
+
+  /**
+   * Queues up a mock developer response.
+   *
+   * @param \Drupal\apigee_edge\Entity\DeveloperInterface $developer
+   *   The developer user to get properties from.
+   * @param string|null $response_code
+   *   Add a response code to override the default.
+   */
+  protected function queueDeveloperResponseFromDeveloper(DeveloperInterface $developer, $response_code = NULL) {
+    $account = $this->entityTypeManager->getStorage('user')->create([
+      'mail' => $developer->getEmail(),
+      'name' => $developer->getUserName(),
+      'first_name' => $developer->getFirstName(),
+      'last_name' => $developer->getLastName(),
+    ]);
+
+    $this->queueDeveloperResponse($account, $response_code);
+  }
+
+  /**
+   * Installs a given list of modules and rebuilds the cache.
+   *
+   * @param string[] $module_list
+   *   An array of module names.
+   *
+   * @see \Drupal\Tests\toolbar\Functional\ToolbarCacheContextsTest::installExtraModules()
+   */
+  protected function installExtraModules(array $module_list) {
+    \Drupal::service('module_installer')->install($module_list);
+    // Installing modules updates the container and needs a router rebuild.
+    $this->container = \Drupal::getContainer();
+    $this->container->get('router.builder')->rebuildIfNeeded();
   }
 
 }

@@ -36,13 +36,31 @@ use Drupal\user\UserInterface;
  */
 trait ApigeeEdgeFunctionalTestTrait {
 
+  use ApigeeEdgeTestHelperTrait;
+
+  /**
+   * Use the mock_api_client or not.
+   *
+   * Meant to be overriden by extending classes when they switch to use the new
+   * apigee_mock_api_client.
+   *
+   * @var bool
+   */
+  protected static $use_mock_api_client = FALSE;
+
   /**
    * Initializes test environment with required configuration.
    */
   protected function initTestEnv(): void {
-    $this->installExtraModules(['apigee_edge_test']);
-    $this->createTestKey();
-    $this->restoreKey();
+    if (static::$use_mock_api_client) {
+      $this->installExtraModules(['apigee_mock_api_client']);
+      $this->apigeeTestHelperSetup();
+    }
+    else {
+      $this->installExtraModules(['apigee_edge_test']);
+      $this->createTestKey();
+      $this->restoreKey();
+    }
   }
 
   /**
@@ -319,21 +337,6 @@ trait ApigeeEdgeFunctionalTestTrait {
       return $url;
     }
     return (strpos($url, '/') === 0) ? $url : "/{$url}";
-  }
-
-  /**
-   * Installs a given list of modules and rebuilds the cache.
-   *
-   * @param string[] $module_list
-   *   An array of module names.
-   *
-   * @see \Drupal\Tests\toolbar\Functional\ToolbarCacheContextsTest::installExtraModules()
-   */
-  protected function installExtraModules(array $module_list) {
-    \Drupal::service('module_installer')->install($module_list);
-    // Installing modules updates the container and needs a router rebuild.
-    $this->container = \Drupal::getContainer();
-    $this->container->get('router.builder')->rebuildIfNeeded();
   }
 
   /**
