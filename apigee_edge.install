@@ -33,7 +33,7 @@ use Drupal\user\RoleInterface;
  */
 function apigee_edge_requirements($phase) {
   $requirements = [];
-  $hybrid_support_message = t('Support for Apigee hybrid in the Apigee modules is in Alpha. Connecting to a hybrid organization is appropriate for evaluation and testing purposes during this pre-production stage.');
+  $hybrid_support_message = t('Support for Apigee hybrid in the Apigee modules is in Beta. Connecting to a hybrid organization is appropriate for evaluation and testing purposes during this pre-production stage.');
 
   if ($phase === 'install') {
     // This should be checked only if Drupal is installed.
