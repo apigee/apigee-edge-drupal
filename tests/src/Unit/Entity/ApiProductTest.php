@@ -28,6 +28,8 @@ use Drupal\Tests\UnitTestCase;
 class ApiProductTest extends UnitTestCase {
 
   /**
+   * The API Product under test.
+   *
    * @var \Drupal\apigee_edge\Entity\ApiProduct
    */
   private $apiProduct;
