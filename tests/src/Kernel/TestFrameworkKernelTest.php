@@ -19,6 +19,7 @@
 
 namespace Drupal\Tests\apigee_edge\Kernel;
 
+use Drupal\apigee_edge\Entity\Developer;
 use Drupal\Core\Form\FormState;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\apigee_edge\Traits\ApigeeEdgeTestHelperTrait;
@@ -50,6 +51,13 @@ class TestFrameworkKernelTest extends KernelTestBase {
     'apigee_edge',
     'apigee_mock_api_client',
   ];
+
+  /**
+   * Developer entities to test.
+   *
+   * @var \Drupal\apigee_edge\Entity\DeveloperInterface[]
+   */
+  protected $developers = [];
 
   /**
    * {@inheritdoc}
@@ -147,6 +155,51 @@ class TestFrameworkKernelTest extends KernelTestBase {
   }
 
   /**
+   * Test integration enabled.
+   *
+   * Tests that responses are not fetched from the stacked mocks when
+   * integration is enabled.
+   */
+  public function testNotStackedMockResponse() {
+    if (!$this->integration_enabled) {
+      $this->markTestSkipped('Integration not enabled, skipping test.');
+    }
+
+    $developerStorage = $this->entityTypeManager->getStorage('developer');
+
+    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
+    $developer = $developerStorage->create([
+      'email' => $this->randomMachineName() . '@example.com',
+      'userName' => $this->randomMachineName(),
+      'firstName' => $this->getRandomGenerator()->word(8),
+      'lastName' => $this->getRandomGenerator()->word(8),
+    ]);
+
+    $developerStorage->resetCache([$developer->getEmail()]);
+
+    // Unsaved developer, should not be found (should ignore the mock stack).
+    $this->queueDeveloperResponseFromDeveloper($developer);
+    $loaded_developer = $developerStorage->load($developer->getEmail());
+    $this->isEmpty($loaded_developer);
+
+    // Saved developer, following calls should load from the real API,
+    // and ignore all stacked responses.
+    $this->queueDeveloperResponseFromDeveloper($developer, 201);
+    $developer->save();
+
+    // Add to the array of developers to be deleted in tearDown().
+    $this->developers[] = $developer;
+
+    $this->queueDeveloperResponseFromDeveloper($developer);
+    $loaded_developer = $developerStorage->load($developer->getEmail());
+    $this->assertInstanceOf(Developer::class, $loaded_developer);
+    $this->assertEqual($loaded_developer->getEmail(), $developer->getEmail());
+
+    // This line is what actually tests that the mock is not used.
+    $this->assertFalse($developer->getAttributeValue('IS_MOCK_CLIENT'));
+  }
+
+  /**
    * Tests a more complex scenario.
    *
    * Registers a user and fetches the "created" developer from the API mocks.
@@ -201,6 +254,19 @@ class TestFrameworkKernelTest extends KernelTestBase {
 
     $this->assertEqual($developer->getEmail(), $test_user['mail']);
     $this->assertEqual($developer->getAttributeValue('IS_MOCK_CLIENT'), 1);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function tearDown() {
+    if ($this->integration_enabled && !empty($this->developers)) {
+      foreach ($this->developers as $developer) {
+        $developer->delete();
+      }
+    }
+
+    parent::tearDown();
   }
 
 }

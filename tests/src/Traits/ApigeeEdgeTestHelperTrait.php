@@ -19,6 +19,7 @@
 
 namespace Drupal\Tests\apigee_edge\Traits;
 
+use Apigee\Edge\Api\Management\Entity\Company;
 use Apigee\Edge\Api\Management\Entity\Organization;
 use Apigee\MockClient\Generator\ApigeeSdkEntitySource;
 use Drupal\apigee_edge\Entity\Developer;
@@ -178,9 +179,13 @@ trait ApigeeEdgeTestHelperTrait {
    *   The developer user to get properties from.
    * @param string|null $response_code
    *   Add a response code to override the default.
+   * @param array $context
+   *   Extra keys to pass to the template.
    */
-  protected function queueDeveloperResponse(UserInterface $developer, $response_code = NULL) {
-    $context = empty($response_code) ? [] : ['status_code' => $response_code];
+  protected function queueDeveloperResponse(UserInterface $developer, $response_code = NULL, array $context = []) {
+    if (!empty($response_code)) {
+      $context['status_code'] = $response_code;
+    }
 
     $context['developer'] = $developer;
     $context['org_name'] = $this->sdkConnector->getOrganization();
@@ -195,6 +200,9 @@ trait ApigeeEdgeTestHelperTrait {
    *   The developer user to get properties from.
    * @param string|null $response_code
    *   Add a response code to override the default.
+   *
+   * @return \Drupal\user\Entity\User
+   *   A user account with the same data as the created developer.
    */
   protected function queueDeveloperResponseFromDeveloper(DeveloperInterface $developer, $response_code = NULL) {
     $account = $this->entityTypeManager->getStorage('user')->create([
@@ -202,9 +210,45 @@ trait ApigeeEdgeTestHelperTrait {
       'name' => $developer->getUserName(),
       'first_name' => $developer->getFirstName(),
       'last_name' => $developer->getLastName(),
+      'status' => ($developer->getStatus() == DeveloperInterface::STATUS_ACTIVE) ? 1 : 0,
     ]);
 
     $this->queueDeveloperResponse($account, $response_code);
+
+    return $account;
+  }
+
+  /**
+   * Queues up a mock company response.
+   *
+   * @param \Apigee\Edge\Api\Management\Entity\Company $company
+   *   The cpmpany to get properties from.
+   * @param string|null $response_code
+   *   Add a response code to override the default.
+   */
+  protected function queueCompanyResponse(Company $company, $response_code = NULL) {
+    $context = empty($response_code) ? [] : ['status_code' => $response_code];
+
+    $context['company'] = $company;
+    $context['org_name'] = $this->sdkConnector->getOrganization();
+
+    $this->stack->queueMockResponse(['company' => $context]);
+  }
+
+  /**
+   * Queues up a mock developers in a company response.
+   *
+   * @param array $developers
+   *   An array of arrays containing developer emails and roles.
+   * @param string|null $response_code
+   *   Add a response code to override the default.
+   */
+  protected function queueDevsInCompanyResponse(array $developers, $response_code = NULL) {
+    $context = empty($response_code) ? [] : ['status_code' => $response_code];
+
+    $context['developers'] = $developers;
+
+    $this->stack->queueMockResponse(['developers_in_company' => $context]);
   }
 
   /**

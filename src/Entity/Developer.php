@@ -284,7 +284,7 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
         }
       }
 
-      /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
+      /** @var \Apigee\Edge\Api\Management\Entity\DeveloperInterface $developer */
       try {
         $developer = $controller->load($this->getEmail());
         // Save the list of companies (even if it is actually empty) to this

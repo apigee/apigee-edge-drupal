@@ -25,7 +25,7 @@
     "lastName" : "{{ developer.last_name.value }}",
     "userName" : "{{ developer.name.value }}",
     "organizationName" : "{{ org_name }}",
-    "status" : "active",
+    "status": "{{ developer.status.value|default(1) ? 'active' : 'inactive' }}",
     "attributes" : [
         {
             "name" : "MINT_BILLING_TYPE",

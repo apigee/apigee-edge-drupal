@@ -107,6 +107,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function tearDown() {
+    $this->stack->reset();
     try {
       if ($this->developer !== NULL) {
         $this->queueDeveloperResponseFromDeveloper($this->developer);
@@ -148,36 +149,12 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
-   * Tests user/developer registration and edit.
-   */
-  public function testRegistrationUnavailable() {
-    $test_user = [
-      'email' => $this->randomMachineName() . '@example.com',
-      'username' => $this->randomMachineName(),
-      'first_name' => $this->getRandomGenerator()->word(16),
-      'last_name' => $this->getRandomGenerator()->word(16),
-    ];
-
-    $formdata = [
-      'mail' => $test_user['email'],
-      'first_name[0][value]' => $test_user['first_name'],
-      'last_name[0][value]' => $test_user['last_name'],
-      'name' => $test_user['username'],
-    ];
-
-    // Try to register with incorrect API credentials.
-    $this->invalidateKey();
-    $this->drupalPostForm(Url::fromRoute('user.register'), $formdata, 'Create new account');
-    $this->assertSession()->pageTextContains(self::USER_REGISTRATION_UNAVAILABLE);
-  }
-
-  /**
    * Tests developer registration and create by admin.
    */
   public function testDeveloperRegisterAndCreate() {
     $this->developerRegisterTest();
-//    $this->developerCreateByAdminTest();
-    //    $this->developerGetCompanyListTest();
+    $this->developerCreateByAdminTest();
+    $this->developerGetCompanyListTest();
   }
 
   /**
@@ -198,6 +175,14 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
       'name' => $test_user['username'],
     ];
 
+    // Try to register with incorrect API credentials.
+    $this->invalidateKey();
+    $this->drupalPostForm(Url::fromRoute('user.register'), $formdata, 'Create new account');
+    $this->assertSession()->pageTextContains(self::USER_REGISTRATION_UNAVAILABLE);
+
+    // Try to register with correct API credentials.
+    $this->restoreKey();
+
     $account = $this->entityTypeManager->getStorage('user')->create([
       'mail' => $test_user['email'],
       'name' => $test_user['username'],
@@ -206,7 +191,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     ]);
 
     $this->entityTypeManager->getStorage('user')->resetCache();
-    $this->entityTypeManager->getStorage('developer')->resetCache();
+    $this->developerStorage->resetCache();
 
     $this->addOrganizationMatchedResponse();
     $this->stack->queueMockResponse('get_not_found');
@@ -227,14 +212,22 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $this->assertEquals($this->developerRegistered->getFirstName(), $test_user['first_name']);
     $this->assertEquals($this->developerRegistered->getLastName(), $test_user['last_name']);
     $this->assertEquals($this->developerRegistered->getUserName(), $test_user['username']);
+    $this->assertEquals($this->developerRegistered->getStatus(), DeveloperInterface::STATUS_INACTIVE);
+
+    $this->assertEqual($this->developerRegistered->getAttributeValue('IS_MOCK_CLIENT'), !$this->integration_enabled);
 
     $this->drupalLogin($this->rootUser);
     $this->drupalPostForm(Url::fromRoute('entity.user.edit_form', ['user' => $account->id()]), ['status' => '1'], 'Save');
 
+    // Ensure status change was saved.
+    $this->entityTypeManager->getStorage('user')->resetCache();
+    $account = user_load_by_mail($test_user['email']);
+    $this->assertTrue($account->isActive());
+
     // Ensure that entity static cache is also invalidated in this scope too.
     $this->developerStorage->resetCache([$test_user['email']]);
     $this->queueDeveloperResponse($account);
-    $this->developerRegistered = $this->developerStorage->load($test_user['email']);
+    $this->developerRegistered = $this->developerStorage->loadUnchanged($test_user['email']);
 
     $this->assertEquals($this->developerRegistered->getEmail(), $test_user['email']);
     $this->assertEquals($this->developerRegistered->getFirstName(), $test_user['first_name']);
@@ -276,12 +269,29 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
 
     // Try to register with correct API credentials.
     $this->restoreKey();
+
+    $account = $this->entityTypeManager->getStorage('user')->create([
+      'mail' => $test_user['email'],
+      'name' => $test_user['username'],
+      'first_name' => $test_user['first_name'],
+      'last_name' => $test_user['last_name'],
+    ]);
+
+    $this->entityTypeManager->getStorage('user')->resetCache();
+    $this->developerStorage->resetCache();
+
+    $this->addOrganizationMatchedResponse();
+    $this->stack->queueMockResponse('get_not_found');
+    $this->stack->queueMockResponse('get_not_found');
+    $this->queueDeveloperResponse($account, 201);
+
     $this->drupalPostForm(Url::fromRoute('user.admin_create'), $formdata, 'Create new account');
 
     /** @var \Drupal\user\Entity\User $account */
     $account = user_load_by_mail($test_user['email']);
     $this->assertNotEmpty($account);
 
+    $this->queueDeveloperResponse($account);
     $this->developerCreatedByAdmin = $this->developerStorage->load($test_user['email']);
     $this->assertNotEmpty($this->developerCreatedByAdmin);
 
@@ -306,13 +316,13 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
 
     // Flush user entity cache to ensure the updated user gets loaded.
     // (Especially in apigee_edge_developer_app_storage_load().)
-    $this->container->get('entity_type.manager')->getStorage('user')->resetCache([$account->id()]);
+    $this->entityTypeManager->getStorage('user')->resetCache([$account->id()]);
     $account = user_load_by_mail($test_user['email']);
     $this->assertNotEmpty($account);
 
     // Ensure that entity static cache is also invalidated in this scope
     // too.
-    $this->queueDeveloperResponseFromDeveloper($this->developerCreatedByAdmin);
+    $this->queueDeveloperResponse($account);
     $this->developerCreatedByAdmin = $this->developerStorage->loadUnchanged($test_user['email']);
     $this->assertNotEmpty($this->developerCreatedByAdmin);
 
@@ -330,7 +340,10 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
 
     // Ensure that entity static cache is also invalidated in this scope
     // too.
-    $this->queueDeveloperResponseFromDeveloper($this->developerCreatedByAdmin);
+    // - Stack response with the blocked developer.
+    $modified_dev = clone $this->developerCreatedByAdmin;
+    $modified_dev->setStatus(DeveloperInterface::STATUS_INACTIVE);
+    $this->queueDeveloperResponseFromDeveloper($modified_dev);
     $this->developerCreatedByAdmin = $this->developerStorage->loadUnchanged($test_user['email']);
     $this->assertEquals($this->developerCreatedByAdmin->getStatus(), DeveloperInterface::STATUS_INACTIVE);
 
@@ -387,8 +400,9 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
 
     // Ensure that entity static cache is also invalidated in this scope
     // too.
-    $this->stack->queueMockResponse('no_content');
-    $this->assertFalse($this->developerStorage->loadUnchanged($test_user['email']), 'Developer does not exists anymore.');
+    $this->stack->queueMockResponse('get_not_found');
+    $loaded = $this->developerStorage->loadUnchanged($test_user['email']);
+    $this->assertFalse($loaded, 'Developer does not exists anymore.');
   }
 
   /**
@@ -398,6 +412,8 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
    * @see \Drupal\apigee_edge\Entity\Developer::hasCompany()
    */
   public function developerGetCompanyListTest() {
+    $this->addOrganizationMatchedResponse();
+
     // Create a new developer.
     $name = strtolower($this->randomMachineName());
     $this->developer = $this->developerStorage->create([
@@ -406,19 +422,31 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
       'firstName' => $this->getRandomGenerator()->word(8),
       'lastName' => $this->getRandomGenerator()->word(8),
     ]);
+    $account = $this->queueDeveloperResponseFromDeveloper($this->developer, 201);
+    $this->stack->queueMockResponse('no_content');
     $this->developer->save();
 
     // Result of getCompanies() function should be an empty array.
+    $this->queueDeveloperResponse($account);
+    $this->developer->getCompanies();
     $this->assertNotNull($this->developer->getCompanies());
     $this->assertEmpty($this->developer->getCompanies());
 
     // Create a new company and add developer as a member to it.
     $this->company = new Company([
       'name' => $this->getRandomGenerator()->name(),
+      'displayName' => $this->getRandomGenerator()->name(),
     ]);
     $company_controller = new CompanyController($this->sdkConnector->getOrganization(), $this->sdkConnector->getClient());
+    $this->queueCompanyResponse($this->company, 201);
     $company_controller->create($this->company);
 
+    $this->queueDevsInCompanyResponse([
+      [
+        'email' => $this->developer->getEmail(),
+        'role' => '',
+      ],
+    ]);
     $company_membership_controller = new CompanyMembersController($this->company->getName(), $this->sdkConnector->getOrganization(), $this->sdkConnector->getClient());
     $company_membership = new CompanyMembership([$this->developer->getEmail() => NULL]);
     $company_membership_controller->setMembers($company_membership);
@@ -433,15 +461,25 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
 
     // Check the companies array if the developer is reloaded.
     /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
+    $this->stack->queueMockResponse([
+      'developers' => [
+        'developers' => [$account],
+        'expand' => TRUE,
+      ],
+    ]);
+    $this->queueDeveloperResponse($account, NULL, ['companies' => [$this->company->getName()]]);
     $developer = $this->developerStorage->loadMultiple()[$this->developer->id()];
     $this->assertContains($this->company->getName(), $developer->getCompanies());
     self::assertTrue($developer->hasCompany($this->company->getName()));
 
     // Check the companies array if the developer is removed from the member
     // list.
+    $this->stack->queueMockResponse('no_content');
     $company_membership_controller->removeMember($this->developer->getEmail());
     $developer_cache->removeEntities([$this->developer->id()]);
+    $this->queueDeveloperResponse($account);
     $developer = $this->developerStorage->loadUnchanged($this->developer->id());
+    $this->queueDeveloperResponse($account);
     $this->assertNotContains($this->company->getName(), $developer->getCompanies());
     self::assertFalse($developer->hasCompany($this->company->getName()));
   }
