@@ -209,3 +209,81 @@ composer.json:
 module's composer.json before the next stable release. Code changes cannot be
 merged until the related PR(s) have not been released in a new stable version of
 the Apigee Client Library for PHP.
+
+#### Tests using the Mock API Client
+
+Tests are being refactored to use a mock API client that uses stacked or matched responses instead of connecting and
+querying the real API.
+
+How this works:
+
+* Declare the `APIGEE_INTEGRATION_ENABLE` environment variable. It will be evaluated as a boolean:
+  - If true, the (refactored) tests will run against the real API.
+  - If false or undefined, they will use the mock responses.
+
+To refactor a test and use the mock API client, or write a new test that uses it:
+
+* Functional tests will most likely use `ApigeeEdgeFunctionalTestTrait`, which already has the logic to use the mock
+client. All that is needed is overriding and setting the following property to "true" in the test class:
+
+```
+  protected static $use_mock_api_client = TRUE;
+```
+
+* Kernel tests:
+  -  During test initialization, enable the `apigee_mock_api_client` module. The easiest way is by overriding the
+  property `$modules` array to include it.
+  - Use `Drupal\Tests\apigee_edge\Traits\ApigeeEdgeTestHelperTrait` in the test class. It provides helper methods to
+  initialize and use the mock API client.
+  - Call `$this->apigeeTestHelperSetup()` to set the client up.
+
+##### Mock responses
+
+Mock responses can be stacked, and they will be returned in a FIFO way.
+
+- There is a catalog of response codes for when only an HTTP code needs to be returned. A response can be added to
+the stack like:
+
+  ```
+  // Stack a 204 (no content) response.
+  $this->stack->queueMockResponse('no_content');
+
+  // Stack a 404 (not found) response.
+  $this->stack->queueMockResponse('get_not_found');
+  ```
+
+- Responses can also be created from twig templates. The included `apigee_mock_api_client` already includes many
+templates. The full list can be found under [`tests/modules/apigee_mock_api_client/tests/response-templates/`](tests/modules/apigee_mock_api_client/tests/response-templates/).
+
+  Example:
+
+  ```
+  // Stack a company response from the "company.json.twig" template.
+  $context['company'] = $company; // An \Apigee\Edge\Api\Management\Entity\Company object.
+  $context['org_name'] = 'test-org';
+  $context['status_code'] = 201; // Defaults to 200 if undefined.
+  $this->stack->queueMockResponse(['company' => $context]);
+  ```
+
+- Last, responses can also be added to be "matched" by path, hostname, methods, or schemes. Note that path and hostname
+ parameters are regular expressions. Example:
+
+  ```
+  $organization = new \Apigee\Edge\Api\Management\Entity\Organization(['name' => $organizationName]);
+  $host = NULL;
+  $methods = ['GET', 'PUT', 'DELETE'];
+  $entitySource = new \Apigee\MockClient\Generator\ApigeeSdkEntitySource\ApigeeSdkEntitySource($organization);
+  $this->stack->on(
+    new RequestMatcher("/v1/organizations/{$organization->id()}$", $host, $methods),
+    $this->mockResponseFactory->generateResponse($entitySource)
+  );
+  ```
+
+For convenience, helper methods have been added to `ApigeeEdgeTestHelperTrait`, such as:
+
+- `addOrganizationMatchedResponse($organizationName = '')`
+- `queueDeveloperResponse(UserInterface $developer, $response_code = NULL, array $context = [])`
+- `queueCompanyResponse(Company $company, $response_code = NULL)`
+
+See [ApigeeEdgeTestHelperTrait](tests/src/Traits/ApigeeEdgeTestHelperTrait.php) for a full list of helper methods and
+documentation on usage.
