@@ -186,7 +186,7 @@ function apigee_edge_update_8002() {
 /**
  * Increase the max_length for first_name and last_name fields.
  */
-function apigee_edge_update_8003() {
+function apigee_edge_update_8101() {
   $entity_type_id = 'user';
   $fields = ['first_name', 'last_name'];
   $field_length = 64;
