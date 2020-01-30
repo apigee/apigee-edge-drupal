@@ -151,8 +151,8 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       $this->edgeDevelopers[$mail] = Developer::create([
         'email' => $mail,
         'userName' => $this->randomMachineName(),
-        'firstName' => $this->randomMachineName(),
-        'lastName' => $this->randomMachineName(),
+        'firstName' => $this->randomMachineName(64),
+        'lastName' => $this->randomMachineName(64),
       ]);
       foreach ($this->fields as $field_type => $data) {
         $formatter = $this->formatManager->lookupPluginForFieldType($field_type);
