@@ -210,7 +210,7 @@ function apigee_edge_update_8101() {
     $field_storage_definitions[$field_name]->setSetting('max_length', $field_length);
   }
 
-  $definition_update_manager->updateFieldableEntityType($entity_type, $field_storage_definitions, $sandbox);
+  $definition_update_manager->updateFieldableEntityType($entity_type, $field_storage_definitions);
 
   // Update table schema.
   foreach ($fields as $field_name) {
