@@ -109,7 +109,7 @@ class ApiProduct extends EdgeEntityBase implements ApiProductInterface {
    * {@inheritdoc}
    */
   public function setProxies(string ...$proxy): void {
-    $this->decorated->setProxies($proxy);
+    $this->decorated->setProxies(...$proxy);
   }
 
   /**

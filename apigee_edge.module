@@ -248,7 +248,7 @@ function apigee_edge_entity_base_field_info(EntityTypeInterface $entity_type) {
     $fields['first_name'] = BaseFieldDefinition::create('string')
       ->setLabel(t('First name'))
       ->setDescription(t('Your first name.'))
-      ->setSetting('max_length', 32)
+      ->setSetting('max_length', 64)
       ->setRequired(TRUE)
       ->setInitialValue('Firstname')
       ->setDisplayOptions('form', [
@@ -263,7 +263,7 @@ function apigee_edge_entity_base_field_info(EntityTypeInterface $entity_type) {
     $fields['last_name'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Last name'))
       ->setDescription(t('Your last name.'))
-      ->setSetting('max_length', 32)
+      ->setSetting('max_length', 64)
       ->setRequired(TRUE)
       ->setInitialValue('Lastname')
       ->setDisplayOptions('form', [

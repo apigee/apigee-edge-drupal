@@ -1,6 +1,6 @@
 services:
   apigee_edge.commands:
     class: \Drupal\apigee_edge\Commands\ApigeeEdgeCommands
-    arguments: ['@apigee_edge.cli']
+    arguments: ['@apigee_edge.cli', '@apigee_edge.apigee_edge_mgmt_cli_service']
     tags:
       - { name: drush.command }

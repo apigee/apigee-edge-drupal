@@ -1,0 +1,13 @@
+description: 'Create Apigee role for Drupal'
+help: 'Create a custom Apigee role that limits permissions for Drupal connections to the Apigee API. '
+arguments:
+  org: 'The Apigee Edge org to create the role in'
+  email: 'An Apigee user email address with orgadmin role for this org'
+options:
+  password: 'Password for the Apigee orgadmin user (if not passed in you will be prompted)'
+  base-url: 'Base URL to use, defaults to public cloud URL https://api.enterprise.apigee.com/v1'
+  role-name: 'The role to create in the Apigee Edge org, defaults to "drupalportal"'
+  force: 'Force running of permissions on a role that already exists. Note that permissions are only added, any current permissions not not removed.'
+questions:
+  password: 'Enter password for Apigee orgadmin user'
+messages:

@@ -33,7 +33,7 @@ use Drupal\user\RoleInterface;
  */
 function apigee_edge_requirements($phase) {
   $requirements = [];
-  $hybrid_support_message = t('Support for Apigee hybrid in the Apigee modules is in Alpha. Connecting to a hybrid organization is appropriate for evaluation and testing purposes during this pre-production stage.');
+  $hybrid_support_message = t('Support for Apigee hybrid in the Apigee modules is in Beta. Connecting to a hybrid organization is appropriate for evaluation and testing purposes during this pre-production stage.');
 
   if ($phase === 'install') {
     // This should be checked only if Drupal is installed.
@@ -181,4 +181,58 @@ function apigee_edge_update_8001() {
 function apigee_edge_update_8002() {
   // Empty.
   // Removed because Hybrid support makes this update hook unneeded.
+}
+
+/**
+ * Increase the max_length for first_name and last_name fields.
+ */
+function apigee_edge_update_8101() {
+  $entity_type_id = 'user';
+  $fields = ['first_name', 'last_name'];
+  $field_length = 64;
+
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  $last_installed_schema_repository = \Drupal::service('entity.last_installed_schema.repository');
+
+  /** @var \Drupal\Core\Field\FieldStorageDefinitionInterface[] $field_storage_definitions */
+  $field_storage_definitions = $last_installed_schema_repository->getLastInstalledFieldStorageDefinitions($entity_type_id);
+  $entity_type = $definition_update_manager->getEntityType($entity_type_id);
+
+  $definition = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
+  $data_table = $definition->getDataTable();
+  $revision_data_table = $definition->getRevisionDataTable();
+  $entity_storage_schema_sql = \Drupal::keyValue('entity.storage_schema.sql');
+
+  $schema = \Drupal::database()->schema();
+
+  // Update the field storage definition.
+  foreach ($fields as $field_name) {
+    $field_storage_definitions[$field_name]->setSetting('max_length', $field_length);
+  }
+
+  $definition_update_manager->updateFieldableEntityType($entity_type, $field_storage_definitions);
+
+  // Update table schema.
+  foreach ($fields as $field_name) {
+    $schema_key = "$entity_type_id.field_schema_data.$field_name";
+    if ($field_schema_data = $entity_storage_schema_sql->get($schema_key)) {
+      // Update storage schema for data table.
+      $field_schema_data[$data_table]['fields'][$field_name]['length'] = $field_length;
+
+      // Update storage schema for the revision table.
+      if ($revision_data_table) {
+        $field_schema_data[$revision_data_table]['fields'][$field_name]['length'] = $field_length;
+      }
+
+      $entity_storage_schema_sql->set($schema_key, $field_schema_data);
+
+      // Update the base database field.
+      $schema->changeField($data_table, $field_name, $field_name, $field_schema_data[$data_table]['fields'][$field_name]);
+
+      // Update schema for the revision table.
+      if ($revision_data_table) {
+        $schema->changeField($revision_data_table, $field_name, $field_name, $field_schema_data[$revision_data_table]['fields'][$field_name]);
+      }
+    }
+  }
 }
