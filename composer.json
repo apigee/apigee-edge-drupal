@@ -14,17 +14,11 @@
         "php-http/guzzle6-adapter": "^1.1.1"
     },
     "require-dev": {
-        "apigee/apigee-php-mock-client": "1.x-dev",
+        "apigee/apigee-mock-client-php": "^1.0@beta",
         "behat/mink" : "dev-master#9ea1cebe",
         "drush/drush": "^9.0",
         "phpunit/phpunit": "^6.5",
         "drupal/core-dev": "^8.7"
-    },
-    "repositories": {
-        "apigee-php-mock-client": {
-            "type": "vcs",
-            "url": "git@github.com:apigee/apigee-mock-client-php.git"
-        }
     },
     "config": {
         "sort-packages": true
