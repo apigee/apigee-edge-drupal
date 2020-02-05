@@ -44,7 +44,7 @@ class EmailTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $use_mock_api_client = TRUE;
+  protected static $mock_api_client_ready = TRUE;
 
   /**
    * {@inheritdoc}
