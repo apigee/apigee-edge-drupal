@@ -395,4 +395,32 @@ class RoboFile extends \Robo\Tasks
     }
   }
 
+  /**
+   * Adds modules to the merge section.
+   */
+  public function configureModuleDependencies()
+  {
+    $config = json_decode(file_get_contents('composer.json'));
+
+    // The Drupal core image might be updated. Request the newest stable.
+    $config->require->{"drupal/core"} = "~8.8";
+    $config->require->{"drupal/core-recommended"} = "~8.8";
+
+    // If you require core, you must not replace it.
+    unset($config->replace);
+
+    // You can't merge from a package that is required.
+    foreach ($config->extra->{"merge-plugin"}->include as $index => $merge_entry) {
+      if ($merge_entry === 'core/composer.json') {
+        unset($config->extra->{"merge-plugin"}->include[$index]);
+      }
+    }
+    $config->extra->{"merge-plugin"}->include = array_values($config->extra->{"merge-plugin"}->include);
+
+    // Add dependencies for phpunit tests.
+    $config->require->{"drupal/core-dev"} = "~8.8";
+
+    file_put_contents('composer.json', json_encode($config, JSON_PRETTY_PRINT));
+  }
+
 }

@@ -5,6 +5,7 @@ cp modules/apigee_edge/.circleci/RoboFile.php ./
 
 robo setup:skeleton
 robo add:modules $1
+robo configure:module-dependencies
 robo update:dependencies
 
 # Touch a flag so we know dependencies have been set. Otherwise, there is no
