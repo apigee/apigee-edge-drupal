@@ -63,7 +63,8 @@ update_dependencies: &update_dependencies
     - run:
         working_directory: /var/www/html
         command: |
-          ./update-dependencies.sh $CIRCLE_PROJECT_REPONAME
+          cp ./modules/apigee_edge/.circleci/update-dependencies.sh /var/www/html
+          ./update-dependencies.sh apigee_edge
 
     - save_cache: *save_cache
 
@@ -85,7 +86,7 @@ unit_kernel_tests: &unit_kernel_tests
     - run:
         working_directory: /var/www/html
         command: |
-          ./test.sh $CIRCLE_PROJECT_REPONAME
+          ./test.sh apigee_edge
 
     - store_test_results:
         path: /var/www/html/artifacts/phpunit
@@ -105,7 +106,7 @@ functional_tests: &functional_tests
     - run:
         working_directory: /var/www/html
         command: |
-          ./test-functional.sh $CIRCLE_PROJECT_REPONAME
+          ./test-functional.sh apigee_edge
 
     - store_test_results:
         path: /var/www/html/artifacts/phpunit
@@ -125,27 +126,10 @@ functional_js_tests: &functional_js_tests
     - run:
         working_directory: /var/www/html
         command: |
-          ./test-functional-js.sh $CIRCLE_PROJECT_REPONAME
+          ./test-functional-js.sh apigee_edge
 
     - store_test_results:
         path: /var/www/html/artifacts/phpunit
-    - store_artifacts:
-        path: /var/www/html/artifacts
-
-# Run Behat tests. This command invokes the behat.sh hook.
-behat_tests: &behat_tests
-  <<: *defaults
-  steps:
-    - attach_workspace:
-        at: /var/www/html
-
-    - checkout
-
-    - run:
-        working_directory: /var/www/html
-        command: |
-          ./behat.sh $CIRCLE_PROJECT_REPONAME
-
     - store_artifacts:
         path: /var/www/html/artifacts
 
@@ -161,7 +145,7 @@ code_sniffer: &code_sniffer
     - run:
         working_directory: /var/www/html
         command: |
-          ./code-sniffer.sh $CIRCLE_PROJECT_REPONAME
+          ./code-sniffer.sh apigee_edge
 
     - store_test_results:
         path: /var/www/html/artifacts/phpcs
@@ -180,7 +164,7 @@ code_coverage: &code_coverage
     - run:
         working_directory: /var/www/html
         command: |
-          ./code-coverage-stats.sh $CIRCLE_PROJECT_REPONAME
+          ./code-coverage-stats.sh apigee_edge
     - store_artifacts:
         path: /var/www/html/artifacts
 
@@ -195,8 +179,6 @@ jobs:
      <<: *functional_tests
   run-functional-js-tests:
      <<: *functional_js_tests
-  run-behat-tests:
-     <<: *behat_tests
   run-code-sniffer:
      <<: *code_sniffer
   run-code-coverage:
@@ -216,9 +198,6 @@ workflows:
           requires:
             - update-dependencies
       - run-functional-js-tests:
-          requires:
-            - update-dependencies
-      - run-behat-tests:
           requires:
             - update-dependencies
       - run-code-sniffer:
