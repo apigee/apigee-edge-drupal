@@ -194,6 +194,10 @@ class RoboFile extends \Robo\Tasks
     // Add php info to an artifact file.
     $this->taskExec('php -i > artifacts/phpinfo.txt')
       ->run();
+
+    // Add composer version info to an artifact file.
+    $this->taskExec('composer show > artifacts/composer-show.txt')
+      ->run();
   }
 
   /**
