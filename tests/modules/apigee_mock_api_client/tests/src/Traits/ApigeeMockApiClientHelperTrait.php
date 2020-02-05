@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\apigee_edge\Traits;
+namespace Drupal\Tests\apigee_mock_api_client\Traits;
 
 use Apigee\Edge\Api\Management\Entity\Company;
 use Apigee\Edge\Api\Management\Entity\Organization;
@@ -32,7 +32,7 @@ use Http\Message\RequestMatcher\RequestMatcher;
 /**
  * Helper functions working with Apigee tests.
  */
-trait ApigeeEdgeTestHelperTrait {
+trait ApigeeMockApiClientHelperTrait {
 
   /**
    * The SDK connector service.

@@ -25,6 +25,7 @@ use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\key\Entity\Key;
+use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
@@ -36,7 +37,7 @@ use Drupal\user\UserInterface;
  */
 trait ApigeeEdgeFunctionalTestTrait {
 
-  use ApigeeEdgeTestHelperTrait;
+  use ApigeeMockApiClientHelperTrait;
 
   /**
    * Use the mock_api_client or not.

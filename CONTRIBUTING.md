@@ -233,7 +233,7 @@ client. All that is needed is overriding and setting the following property to "
 * Kernel tests:
   -  During test initialization, enable the `apigee_mock_api_client` module. The easiest way is by overriding the
   property `$modules` array to include it.
-  - Use `Drupal\Tests\apigee_edge\Traits\ApigeeEdgeTestHelperTrait` in the test class. It provides helper methods to
+  - Use `Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait` in the test class. It provides helper methods to
   initialize and use the mock API client.
   - Call `$this->apigeeTestHelperSetup()` to set the client up.
 
@@ -279,11 +279,11 @@ templates. The full list can be found under [`tests/modules/apigee_mock_api_clie
   );
   ```
 
-For convenience, helper methods have been added to `ApigeeEdgeTestHelperTrait`, such as:
+For convenience, helper methods have been added to `ApigeeMockApiClientHelperTrait`, such as:
 
 - `addOrganizationMatchedResponse($organizationName = '')`
 - `queueDeveloperResponse(UserInterface $developer, $response_code = NULL, array $context = [])`
 - `queueCompanyResponse(Company $company, $response_code = NULL)`
 
-See [ApigeeEdgeTestHelperTrait](tests/src/Traits/ApigeeEdgeTestHelperTrait.php) for a full list of helper methods and
+See [ApigeeMockApiClientHelperTrait](tests/modules/apigee_mock_api_client/tests/src/Traits/ApigeeMockApiClientHelperTrait.php) for a full list of helper methods and
 documentation on usage.
