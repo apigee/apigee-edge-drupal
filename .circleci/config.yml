@@ -73,6 +73,9 @@ update_dependencies: &update_dependencies
         paths:
           - .
 
+    - store_artifacts:
+        path: /var/www/html/artifacts
+
 # Run Drupal unit and kernel tests as one job. This command invokes the test.sh
 # hook.
 unit_kernel_tests: &unit_kernel_tests
@@ -194,12 +197,12 @@ workflows:
       - run-unit-kernel-tests:
           requires:
             - update-dependencies
-      - run-functional-tests:
-          requires:
-            - update-dependencies
-      - run-functional-js-tests:
-          requires:
-            - update-dependencies
+#      - run-functional-tests:
+#          requires:
+#            - update-dependencies
+#      - run-functional-js-tests:
+#          requires:
+#            - update-dependencies
       - run-code-sniffer:
           requires:
             - update-dependencies
