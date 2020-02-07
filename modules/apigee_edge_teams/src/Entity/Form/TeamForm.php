@@ -38,6 +38,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterface {
 
   /**
+   * Admin email attribute name.
+   */
+  const ADMIN_EMAIL_ATTRIBUTE = 'ADMIN_EMAIL';
+
+  /**
    * The team membership manager service.
    *
    * @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface
@@ -87,6 +92,19 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
       $container->get('current_user'),
       $container->get('logger.channel.apigee_edge_teams')
     );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildEntity(array $form, FormStateInterface $form_state) {
+    /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
+    $team = parent::buildEntity($form, $form_state);
+
+    // Set the required attributes for the team.
+    $team->setAttribute(static::ADMIN_EMAIL_ATTRIBUTE, $this->currentUser->getEmail());
+
+    return $team;
   }
 
   /**
