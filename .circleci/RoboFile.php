@@ -347,6 +347,7 @@ class RoboFile extends \Robo\Tasks
     return $this->taskPhpUnit('vendor/bin/phpunit')
       ->option('verbose')
       ->option('debug')
+      ->option('log-junit', '/var/www/html/artifacts/phpunit/phpunit.xml')
       ->configFile('core')
       ->group($module);
   }
@@ -406,9 +407,13 @@ class RoboFile extends \Robo\Tasks
   {
     $config = json_decode(file_get_contents('composer.json'));
 
-    // The Drupal core image might be updated. Request the newest stable.
+    // The Drupal core image might need updating. Request the newest stable.
     $config->require->{"drupal/core"} = "~8.8";
     $config->require->{"drupal/core-recommended"} = "~8.8";
+
+    // We require Drupal console and drush for some tests.
+    $config->require->{"drupal/console"} = "~1.0";
+    $config->require->{"drush/drush"} = "^9.7";
 
     // If you require core, you must not replace it.
     unset($config->replace);
