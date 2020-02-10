@@ -101,7 +101,9 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
     $team = parent::buildEntity($form, $form_state);
 
-    // Set the required attributes for the team.
+    // ADMIN_EMAIL_ATTRIBUTE is a required field for monetization.
+    // We add to any team to make sure team creation works for mint orgs even
+    // if they do not enable the m10n teams module.
     $team->setAttribute(static::ADMIN_EMAIL_ATTRIBUTE, $this->currentUser->getEmail());
 
     return $team;
