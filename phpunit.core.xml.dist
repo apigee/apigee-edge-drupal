@@ -35,6 +35,14 @@
     <!-- Example for changing the driver args to mink tests MINK_DRIVER_ARGS value: '["http://127.0.0.1:8510"]' -->
     <!-- Example for changing the driver args to phantomjs tests MINK_DRIVER_ARGS_PHANTOMJS value: '["http://127.0.0.1:8510"]' -->
     <!-- Example for changing the driver args to webdriver tests MINK_DRIVER_ARGS_WEBDRIVER value: '["firefox", null, "http://localhost:4444/wd/hub"]' -->
+
+    <!--  Apigee Edge credentials defaults  -->
+    <env name="APIGEE_EDGE_AUTH_TYPE" value="basic"/>
+    <env name="APIGEE_EDGE_ORGANIZATION" value="foo"/>
+    <env name="APIGEE_EDGE_USERNAME" value="foo@@example.com"/>
+    <env name="APIGEE_EDGE_PASSWORD" value="****************"/>
+    <env name="APIGEE_EDGE_INSTANCE_TYPE" value="public"/>
+    <env name="APIGEE_INTEGRATION_ENABLE" value="0"/>
   </php>
   <testsuites>
     <testsuite name="unit">
