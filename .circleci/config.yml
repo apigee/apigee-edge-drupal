@@ -148,6 +148,7 @@ code_sniffer: &code_sniffer
     - run:
         working_directory: /var/www/html
         command: |
+          cp ./modules/apigee_edge/.circleci/code-sniffer.sh /var/www/html
           ./code-sniffer.sh apigee_edge
 
     - store_test_results:
