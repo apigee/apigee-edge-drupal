@@ -43,6 +43,7 @@
     <env name="APIGEE_EDGE_PASSWORD" value="****************"/>
     <env name="APIGEE_EDGE_INSTANCE_TYPE" value="public"/>
     <env name="APIGEE_INTEGRATION_ENABLE" value="0"/>
+    <env name="APIGEE_EDGE_ENDPOINT" value="https://api.enterprise.apigee.com/v1"/>
   </php>
   <testsuites>
     <testsuite name="unit">

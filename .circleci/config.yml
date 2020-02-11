@@ -198,12 +198,12 @@ workflows:
       - run-unit-kernel-tests:
           requires:
             - update-dependencies
-#      - run-functional-tests:
-#          requires:
-#            - update-dependencies
-#      - run-functional-js-tests:
-#          requires:
-#            - update-dependencies
+      - run-functional-tests:
+          requires:
+            - update-dependencies
+      - run-functional-js-tests:
+          requires:
+            - update-dependencies
       - run-code-sniffer:
           requires:
             - update-dependencies
