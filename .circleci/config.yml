@@ -110,6 +110,7 @@ functional_tests: &functional_tests
     - run:
         working_directory: /var/www/html
         command: |
+          cp ./modules/apigee_edge/.circleci/test-functional.sh /var/www/html
           ./test-functional.sh apigee_edge
 
     - store_test_results:
@@ -130,6 +131,7 @@ functional_js_tests: &functional_js_tests
     - run:
         working_directory: /var/www/html
         command: |
+          cp ./modules/apigee_edge/.circleci/test-functional-js.sh /var/www/html
           ./test-functional-js.sh apigee_edge
 
     - store_test_results:
