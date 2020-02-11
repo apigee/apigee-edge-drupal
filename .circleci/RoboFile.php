@@ -52,14 +52,14 @@ class RoboFile extends \Robo\Tasks
 
     // Create a directory for our artifacts.
     $this->taskFilesystemStack()
-      ->mkdir('artifacts')
-      ->mkdir('artifacts/phpunit')
-      ->mkdir('artifacts/phpcs')
-      ->mkdir('artifacts/phpmd')
+      ->mkdir('/tmp/artifacts')
+      ->mkdir('/tmp/artifacts/phpunit')
+      ->mkdir('/tmp/artifacts/phpcs')
+      ->mkdir('/tmp/artifacts/phpmd')
       ->run();
 
     $this->taskFilesystemStack()
-      ->chown('artifacts', 'www-data', TRUE)
+      ->chown('/tmp/artifacts', 'www-data', TRUE)
       ->run();
   }
 
@@ -181,22 +181,22 @@ class RoboFile extends \Robo\Tasks
 
     // Preserve composer.lock as an artifact for future debugging.
     $this->taskFilesystemStack()
-      ->copy('composer.json', 'artifacts/composer.json')
-      ->copy('composer.lock', 'artifacts/composer.lock')
+      ->copy('composer.json', '/tmp/artifacts/composer.json')
+      ->copy('composer.lock', '/tmp/artifacts/composer.lock')
       ->run();
 
     // Write drush status results to an artifact file.
-    $this->taskExec('vendor/bin/drush status > artifacts/core-stats.txt')
+    $this->taskExec('vendor/bin/drush status > /tmp/artifacts/core-stats.txt')
       ->run();
-    $this->taskExec('cat artifacts/core-stats.txt')
+    $this->taskExec('cat /tmp/artifacts/core-stats.txt')
       ->run();
 
     // Add php info to an artifact file.
-    $this->taskExec('php -i > artifacts/phpinfo.txt')
+    $this->taskExec('php -i > /tmp/artifacts/phpinfo.txt')
       ->run();
 
     // Add composer version info to an artifact file.
-    $this->taskExec('composer show > artifacts/composer-show.txt')
+    $this->taskExec('composer show > /tmp/artifacts/composer-show.txt')
       ->run();
   }
 
@@ -347,7 +347,7 @@ class RoboFile extends \Robo\Tasks
     return $this->taskPhpUnit('vendor/bin/phpunit')
       ->option('verbose')
       ->option('debug')
-      ->option('log-junit', '/var/www/html/artifacts/phpunit/phpunit.xml')
+      ->option('log-junit', '/tmp/artifacts/phpunit/phpunit.xml')
       ->configFile('core')
       ->group($module);
   }

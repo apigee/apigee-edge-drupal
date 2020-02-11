@@ -74,7 +74,7 @@ update_dependencies: &update_dependencies
           - .
 
     - store_artifacts:
-        path: /var/www/html/artifacts
+        path: /tmp/artifacts
 
 # Run Drupal unit and kernel tests as one job. This command invokes the test.sh
 # hook.
@@ -89,12 +89,13 @@ unit_kernel_tests: &unit_kernel_tests
     - run:
         working_directory: /var/www/html
         command: |
+          cp ./modules/apigee_edge/.circleci/test.sh /var/www/html
           ./test.sh apigee_edge
 
     - store_test_results:
-        path: /var/www/html/artifacts/phpunit
+        path: /tmp/artifacts/phpunit
     - store_artifacts:
-        path: /var/www/html/artifacts
+        path: /tmp/artifacts
 
 # Run Drupal functional tests. This command invokes the test-functional.sh
 # hook.
@@ -112,9 +113,9 @@ functional_tests: &functional_tests
           ./test-functional.sh apigee_edge
 
     - store_test_results:
-        path: /var/www/html/artifacts/phpunit
+        path: /tmp/artifacts/phpunit
     - store_artifacts:
-        path: /var/www/html/artifacts
+        path: /tmp/artifacts
 
 # Run Drupal functional tests. This command invokes the test-functional-js.sh
 # hook.
@@ -132,9 +133,9 @@ functional_js_tests: &functional_js_tests
           ./test-functional-js.sh apigee_edge
 
     - store_test_results:
-        path: /var/www/html/artifacts/phpunit
+        path: /tmp/artifacts/phpunit
     - store_artifacts:
-        path: /var/www/html/artifacts
+        path: /tmp/artifacts
 
 # Run code quality tests. This invokes code-sniffer.sh.
 code_sniffer: &code_sniffer
@@ -152,9 +153,9 @@ code_sniffer: &code_sniffer
           ./code-sniffer.sh apigee_edge
 
     - store_test_results:
-        path: /var/www/html/artifacts/phpcs
+        path: /tmp/artifacts/phpcs
     - store_artifacts:
-        path: /var/www/html/artifacts
+        path: /tmp/artifacts
 
 # Run code coverage tests. This invokes code-coverage-stats.sh.
 code_coverage: &code_coverage
@@ -170,7 +171,7 @@ code_coverage: &code_coverage
         command: |
           ./code-coverage-stats.sh apigee_edge
     - store_artifacts:
-        path: /var/www/html/artifacts
+        path: /tmp/artifacts
 
 # Declare all of the jobs we should run.
 version: 2
