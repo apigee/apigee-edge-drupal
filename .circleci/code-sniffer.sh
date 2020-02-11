@@ -11,4 +11,4 @@ fi
 vendor/bin/phpcs --config-set installed_paths vendor/drupal/coder/coder_sniffer
 
 # Check coding standards
-vendor/bin/phpcs -p -s -n --colors --standard=modules/apigee_edge/phpcs.xml.dist --report=junit --report-junit=/tmp/artifacts/phpcs/phpcs.xml modules/$1
+vendor/bin/phpcs -p -s -n --colors --standard=modules/apigee_edge/phpcs.xml.dist --report=junit --report-junit=artifacts/phpcs/phpcs.xml modules/$1

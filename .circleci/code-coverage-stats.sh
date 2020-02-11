@@ -12,4 +12,4 @@ fi
 robo override:phpunit-config $1
 
 timeout 60m sudo -E -u www-data robo test:coverage $1 /tmp/artifacts || true
-tar czf /tmp/artifacts/coverage.tar.gz -C /tmp/artifacts coverage-html coverage-xml
+tar czf artifacts/coverage.tar.gz -C artifacts coverage-html coverage-xml

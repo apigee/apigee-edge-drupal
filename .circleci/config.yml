@@ -153,9 +153,9 @@ code_sniffer: &code_sniffer
           ./code-sniffer.sh apigee_edge
 
     - store_test_results:
-        path: /tmp/artifacts/phpcs
+        path: /var/www/html/artifacts/phpcs
     - store_artifacts:
-        path: /tmp/artifacts
+        path: /var/www/html/artifacts
 
 # Run code coverage tests. This invokes code-coverage-stats.sh.
 code_coverage: &code_coverage
@@ -171,7 +171,7 @@ code_coverage: &code_coverage
         command: |
           ./code-coverage-stats.sh apigee_edge
     - store_artifacts:
-        path: /tmp/artifacts
+        path: /var/www/html/artifacts
 
 # Declare all of the jobs we should run.
 version: 2
