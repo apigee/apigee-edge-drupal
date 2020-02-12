@@ -192,7 +192,14 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $this->entityTypeManager->getStorage('user')->resetCache();
     $this->developerStorage->resetCache();
 
+    // Add matched organization response so it returns the org whenever called.
     $this->addOrganizationMatchedResponse();
+
+    // Add other responses needed to create an account. In order:
+    // - 'get_not_found' - when creating an account `apigee_edge` module checks
+    //   that the email does not already exist in Edge.
+    // - 'get_not_found' - @to-do: why is this needed again?
+    // - stack a mocked developer created response.
     $this->stack->queueMockResponse('get_not_found');
     $this->stack->queueMockResponse('get_not_found');
     $this->queueDeveloperResponse($account, 201);
@@ -203,6 +210,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $account = user_load_by_mail($test_user['email']);
     $this->assertNotEmpty($account, 'Account is created');
 
+    // Queue a developer response to mock the loading of a developer.
     $this->queueDeveloperResponse($account);
     $this->developerRegistered = $this->developerStorage->load($test_user['email']);
     $this->assertNotEmpty($this->developerRegistered);
@@ -225,6 +233,8 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
 
     // Ensure that entity static cache is also invalidated in this scope too.
     $this->developerStorage->resetCache([$test_user['email']]);
+
+    // Queue a developer response to mock the loading of a developer.
     $this->queueDeveloperResponse($account);
     $this->developerRegistered = $this->developerStorage->loadUnchanged($test_user['email']);
 
@@ -279,6 +289,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $this->entityTypeManager->getStorage('user')->resetCache();
     $this->developerStorage->resetCache();
 
+    // Stack responses needed to create a new developer account for the account.
     $this->addOrganizationMatchedResponse();
     $this->stack->queueMockResponse('get_not_found');
     $this->stack->queueMockResponse('get_not_found');
@@ -290,6 +301,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $account = user_load_by_mail($test_user['email']);
     $this->assertNotEmpty($account);
 
+    // Queue a developer response to mock the loading of a developer.
     $this->queueDeveloperResponse($account);
     $this->developerCreatedByAdmin = $this->developerStorage->load($test_user['email']);
     $this->assertNotEmpty($this->developerCreatedByAdmin);
@@ -319,9 +331,10 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $account = user_load_by_mail($test_user['email']);
     $this->assertNotEmpty($account);
 
-    // Ensure that entity static cache is also invalidated in this scope
-    // too.
+    // Queue a developer response to mock the loading of a developer.
     $this->queueDeveloperResponse($account);
+
+    // Ensure that entity static cache is also invalidated in this scope.
     $this->developerCreatedByAdmin = $this->developerStorage->loadUnchanged($test_user['email']);
     $this->assertNotEmpty($this->developerCreatedByAdmin);
 
@@ -411,6 +424,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
    * @see \Drupal\apigee_edge\Entity\Developer::hasCompany()
    */
   public function developerGetCompanyListTest() {
+    // Add matched organization response so it returns the org whenever called.
     $this->addOrganizationMatchedResponse();
 
     // Create a new developer.
@@ -421,11 +435,16 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
       'firstName' => $this->getRandomGenerator()->word(8),
       'lastName' => $this->getRandomGenerator()->word(8),
     ]);
+
+    // Stack a created developer response, and an empty response
+    // mocking the status change to active.
     $account = $this->queueDeveloperResponseFromDeveloper($this->developer, 201);
     $this->stack->queueMockResponse('no_content');
     $this->developer->save();
 
     // Result of getCompanies() function should be an empty array.
+    // - Queue a developer response, as method getCompanies() loads the dev if
+    // the companies are null initially.
     $this->queueDeveloperResponse($account);
     $this->developer->getCompanies();
     $this->assertNotNull($this->developer->getCompanies());
@@ -437,9 +456,11 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
       'displayName' => $this->getRandomGenerator()->name(),
     ]);
     $company_controller = new CompanyController($this->sdkConnector->getOrganization(), $this->sdkConnector->getClient());
+    // Queue a created company response.
     $this->queueCompanyResponse($this->company, 201);
     $company_controller->create($this->company);
 
+    // Queue a developers in a company response.
     $this->queueDevsInCompanyResponse([
       [
         'email' => $this->developer->getEmail(),
@@ -473,6 +494,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
 
     // Check the companies array if the developer is removed from the member
     // list.
+    // - Add an empty response simulating when a member is deleted.
     $this->stack->queueMockResponse('no_content');
     $company_membership_controller->removeMember($this->developer->getEmail());
     $developer_cache->removeEntities([$this->developer->id()]);

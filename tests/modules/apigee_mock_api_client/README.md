@@ -62,6 +62,10 @@ $this->stack->queueMockResponse('get_not_found');
 
 Responses can also be created from twig templates. This module provides some base responses - see [`tests/response-templates/`](tests/response-templates/).
 Other modules can add additional templates by storing them in their `[MODULE_NAME]/tests/response-templates` directory.
+
+Note that the  `queueMockResponse()` method expects the template name without file extensions, and any `_` characters
+will be replaced by `-` (eg. `$template = 'api_product';` would load a template named `api-product.json.twig`).
+
 Example:
 
 ```
@@ -69,7 +73,8 @@ Example:
 $context['company'] = $company; // An \Apigee\Edge\Api\Management\Entity\Company object.
 $context['org_name'] = 'test-org';
 $context['status_code'] = 201; // Defaults to 200 if undefined.
-$this->stack->queueMockResponse(['company' => $context]);
+$template_name = 'company'; // Will load the template company.json.twig
+$this->stack->queueMockResponse([$template_name => $context]);
 ```
 
 #### Matched responses by path, hostname, methods, or schemes
@@ -79,7 +84,7 @@ parameters are regular expressions. Example:
 
 ```
 $organization = new \Apigee\Edge\Api\Management\Entity\Organization(['name' => $organizationName]);
-$host = NULL;
+$host = NULL; // Match any host, as the mock client is only used for Apigee Edge API calls.
 $methods = ['GET', 'PUT', 'DELETE'];
 $entitySource = new \Apigee\MockClient\Generator\ApigeeSdkEntitySource\ApigeeSdkEntitySource($organization);
 $this->stack->on(
