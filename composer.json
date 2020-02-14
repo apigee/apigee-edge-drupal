@@ -14,7 +14,7 @@
         "php-http/guzzle6-adapter": "^1.1.1"
     },
     "require-dev": {
-        "apigee/apigee-mock-client-php": "^1.0@beta",
+        "apigee/apigee-mock-client-php": "^1.0",
         "behat/mink" : "dev-master#9ea1cebe",
         "drush/drush": "^9.0",
         "phpunit/phpunit": "^6.5",
