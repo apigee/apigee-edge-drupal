@@ -28,7 +28,7 @@ use Drupal\apigee_mock_api_client\Plugin\KeyProvider\TestEnvironmentVariablesKey
 /**
  * Implements hook_key_provider_info_alter().
  */
-function apigee_m10n_test_key_provider_info_alter(array &$key_providers) {
+function apigee_mock_api_client_key_provider_info_alter(array &$key_providers) {
   // This key provider override will make sure credentials are available during
   // functional test callbacks.
   $key_providers['apigee_edge_environment_variables']['class'] = TestEnvironmentVariablesKeyProvider::class;

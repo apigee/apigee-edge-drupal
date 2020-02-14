@@ -85,7 +85,7 @@ class MockHandlerStack extends MockHandler {
    *
    * @return $this
    */
-  public function queueMockResponse(array $response_ids) {
+  public function queueMockResponse($response_ids) {
     $org_name = \Drupal::service('apigee_edge.sdk_connector')
       ->getOrganization();
 

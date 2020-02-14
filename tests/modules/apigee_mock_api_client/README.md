@@ -4,7 +4,7 @@ Apigee Edge Mock API Client Testing Module
 This module allows you to test apigee_edge functionality without making external API calls, by providing response templates
 that can be queued up or matched in a mock Guzzle client stack handler.
 
-**Note:** This module should not installed on a standard drupal site, it should only be enabled during testing.
+**Note:** This module should not be installed on a standard Drupal site, it should only be enabled during testing.
 
 ### Requirements
 
