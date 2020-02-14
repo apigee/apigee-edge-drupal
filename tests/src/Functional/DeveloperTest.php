@@ -221,6 +221,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $this->assertEquals($this->developerRegistered->getUserName(), $test_user['username']);
     $this->assertEquals($this->developerRegistered->getStatus(), DeveloperInterface::STATUS_INACTIVE);
 
+    // Attribute is set by mock twig template.
     $this->assertEqual($this->developerRegistered->getAttributeValue('IS_MOCK_CLIENT'), !$this->integration_enabled);
 
     $this->drupalLogin($this->rootUser);

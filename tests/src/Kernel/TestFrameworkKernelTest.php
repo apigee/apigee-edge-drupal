@@ -151,6 +151,7 @@ class TestFrameworkKernelTest extends KernelTestBase {
     $developer = $developerStorage->load($test_user['mail']);
 
     $this->assertEqual($developer->getEmail(), $test_user['mail']);
+    // Attribute is set by mock twig template.
     $this->assertEqual($developer->getAttributeValue('IS_MOCK_CLIENT'), 1);
   }
 
@@ -195,7 +196,7 @@ class TestFrameworkKernelTest extends KernelTestBase {
     $this->assertInstanceOf(Developer::class, $loaded_developer);
     $this->assertEqual($loaded_developer->getEmail(), $developer->getEmail());
 
-    // This line is what actually tests that the mock is not used.
+    // This line is what actually tests that the mock is not used since the mock template sets this attribute.
     $this->assertFalse($developer->getAttributeValue('IS_MOCK_CLIENT'));
   }
 
@@ -253,6 +254,7 @@ class TestFrameworkKernelTest extends KernelTestBase {
     $developer = $developerStorage->load($test_user['mail']);
 
     $this->assertEqual($developer->getEmail(), $test_user['mail']);
+    // Attribute is set by mock twig template.
     $this->assertEqual($developer->getAttributeValue('IS_MOCK_CLIENT'), 1);
   }
 

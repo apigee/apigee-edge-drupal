@@ -105,7 +105,7 @@ trait ApigeeMockApiClientHelperTrait {
     // Create new Apigee Edge basic auth key.
     $key = Key::create([
       'id'           => $this->apigee_edge_test_key,
-      'label'        => 'Apigee M10n Test Authorization',
+      'label'        => 'Apigee Test Authorization',
       'key_type'     => 'apigee_auth',
       'key_provider' => 'apigee_edge_environment_variables',
       'key_input'    => 'apigee_auth_input',
