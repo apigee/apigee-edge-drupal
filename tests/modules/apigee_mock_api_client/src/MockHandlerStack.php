@@ -114,8 +114,7 @@ class MockHandlerStack extends MockHandler {
       $status_code = !empty($this->responses[$id]['status_code']) ? $this->responses[$id]['status_code'] : 200;
       $status_code = !empty($context['status_code']) ? $context['status_code'] : $status_code;
 
-      if ($this->twig->getLoader()
-        ->exists($id)) {
+      if ($this->twig->getLoader()->exists($id)) {
         $this->addResponse($this->responseFactory->generateResponse(new TwigSource(
           $id,
           $context,

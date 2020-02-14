@@ -93,6 +93,8 @@ $this->stack->on(
 );
 ```
 
+Note: The regular expression for path should include the full path whenever possible, including the prefix `/v1`.
+
 #### Other methods
 
 To completely clear all stacked, matched responses and logs from the mock client, use:
