@@ -118,8 +118,7 @@ functional_tests: &functional_tests
     - store_artifacts:
         path: /tmp/artifacts
 
-# Run Drupal functional tests. This command invokes the test-functional-js.sh
-# hook.
+# Run Drupal functional tests. This command invokes test-functional-js.sh.
 functional_js_tests: &functional_js_tests
   <<: *defaults
   steps:
