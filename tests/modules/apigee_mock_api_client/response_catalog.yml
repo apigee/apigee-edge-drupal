@@ -1,0 +1,5 @@
+responses:
+  no_content:
+    status_code: 204
+  get_not_found:
+    status_code: 404

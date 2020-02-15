@@ -1,0 +1,28 @@
+{#
+/**
+ * @file
+ *   Developers
+ *
+ * Usage:
+ *   @code {% include 'developers.json.twig' %} @endcode
+ *
+ * Variables:
+ * - developers: an array of user emails, or developer objects if using "expand = TRUE".
+ * - expand: if true, full developer objects returned.
+ */
+#}
+{% if (expand) %}
+{
+  "developer": [
+    {% for developer in developers %}
+    {% include 'developer.json.twig' with {'developer': developer} %}{{ loop.last ? '' : ',' }}
+    {% endfor %}
+  ]
+}
+{% else %}
+[
+  {% for developer in developers %}
+  "{{ developer }}"{{ loop.last ? '' : ',' }}
+  {% endfor %}
+]
+{% endif %}
