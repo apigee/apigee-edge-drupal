@@ -1,0 +1,50 @@
+{#
+/**
+ * @file
+ *   Developer
+ *
+ * Usage:
+ *   @code {% include 'developer.json.twig' %} @endcode
+ *
+ * Variables:
+ * - developer: The user account for the developer.
+ * - org_name: The name of the organization.
+ * - companies: A list of companies.
+ */
+#}
+{
+    "apps" : [ ],
+    "companies" : [
+        {% for company in companies %}
+            "{{ company }}"{{ loop.last ? '' : ',' }}
+        {% endfor %}
+    ],
+    "email" : "{{ developer.mail.value }}",
+    "developerId" : "{{ developer.uuid.value }}",
+    "firstName" : "{{ developer.first_name.value }}",
+    "lastName" : "{{ developer.last_name.value }}",
+    "userName" : "{{ developer.name.value }}",
+    "organizationName" : "{{ org_name }}",
+    "status": "{{ developer.status.value|default(1) ? 'active' : 'inactive' }}",
+    "attributes" : [
+        {
+            "name" : "MINT_BILLING_TYPE",
+            "value" : "PREPAID"
+        },
+        {
+            "name" : "MINT_DEVELOPER_TYPE",
+            "value" : "UNTRUSTED"
+        },
+        {
+            "name": "MINT_DEVELOPER_LEGAL_NAME",
+            "value": "{{ developer.mail.value }}"
+        },
+        {
+            "name": "IS_MOCK_CLIENT",
+            "value": "1"
+        } ],
+    "createdAt" : 1537547358558,
+    "createdBy" : "user@example.com",
+    "lastModifiedAt" : 1537547358558,
+    "lastModifiedBy" : "user@example.com"
+}

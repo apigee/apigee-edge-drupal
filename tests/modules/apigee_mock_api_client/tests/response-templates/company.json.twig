@@ -1,0 +1,62 @@
+{#
+/**
+ * @file
+ *   Company
+ *
+ * Usage:
+ *   @code {% include 'team.json.twig' %} @endcode
+ *
+ * Variables:
+ * - company: The team (company).
+ * - org_name: The org name.
+ */
+#}
+{
+    "apps": [],
+    "name": "{{ company.name|default('foo') }}",
+    "displayName": "{{ company.displayName }}",
+    "organization": "{{ org_name }}",
+    "status": "active",
+    "attributes": [
+        {
+            "name": "ADMIN_EMAIL",
+            "value": "test2@test.com"
+        },
+        {
+            "name": "MINT_BILLING_TYPE",
+            "value": "PREPAID"
+        },
+        {
+            "name": "MINT_COMPANY_ID",
+            "value": ""
+        },
+        {
+            "name": "MINT_DEVELOPER_ADDRESS",
+            "value": "{}"
+        },
+        {
+            "name": "MINT_DEVELOPER_LEGAL_NAME",
+            "value": "test-company2"
+        },
+        {
+            "name": "MINT_DEVELOPER_PHONE",
+            "value": ""
+        },
+        {
+            "name": "MINT_DEVELOPER_TYPE",
+            "value": "UNTRUSTED"
+        },
+        {
+            "name": "MINT_REGISTRATION_ID",
+            "value": ""
+        },
+        {
+            "name": "MINT_TAX_EXEMPT_AUTH_NO",
+            "value": ""
+        }
+    ],
+    "createdAt": 1506959878351,
+    "createdBy" : "user@example.com",
+    "lastModifiedAt": 1506959878351,
+    "lastModifiedBy" : "user@example.com"
+}

@@ -1,0 +1,30 @@
+{#
+/**
+ * @file
+ *   ApiProduct include file. Use this whenever an edge product is a part of an object.
+ *
+ * Usage:
+ *   @code {% include 'api-product.json.twig' %} @endcode
+ *
+ * Variables:
+ *   - description:     Description of API product.
+ *   - display_name:    User-friendly display name of the API product.
+ *   - name:            Name of the API product.
+ *   - createdBy:       The user who created the product.
+ */
+#}
+{
+    "apiResources" : [ ],
+    "approvalType" : "auto",
+    "attributes" : [ ],
+    "createdAt" : 1540110813284,
+    "createdBy" : "{{ product.createdBy|default('foo@example.com') }}",
+    "description" : "{{ product.description|default('All about the Foo.') }}",
+    "displayName" : "{{ product.displayName|default('The Foo') }}",
+    "environments" : [ ],
+    "lastModifiedAt" : 1540110813284,
+    "lastModifiedBy" : "foo@example.com",
+    "name" : "{{ product.name|default('Foo') }}",
+    "proxies" : [ ],
+    "scopes" : [ ]
+}

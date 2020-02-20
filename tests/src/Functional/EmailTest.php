@@ -44,9 +44,16 @@ class EmailTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
+  protected static $mock_api_client_ready = TRUE;
+
+  /**
+   * {@inheritdoc}
+   */
   protected function tearDown() {
     try {
       if ($this->developer !== NULL) {
+
+        $this->queueDeveloperResponseFromDeveloper($this->developer);
         $this->developer->delete();
       }
     }
@@ -67,7 +74,14 @@ class EmailTest extends ApigeeEdgeFunctionalTestBase {
       'firstName' => $this->getRandomGenerator()->word(8),
       'lastName' => $this->getRandomGenerator()->word(8),
     ]);
+
+    // Stack developer responses for "created" and "set active".
+    $this->queueDeveloperResponseFromDeveloper($this->developer, 201);
+    $this->stack->queueMockResponse('no_content');
+
     $this->developer->save();
+
+    $this->addOrganizationMatchedResponse();
 
     $this->editUserWithAlreadyExistingEmailTest();
     $this->registerWithAlreadyExistingEmail();
@@ -84,6 +98,10 @@ class EmailTest extends ApigeeEdgeFunctionalTestBase {
     $this->enableUserPresave();
 
     $this->drupalLogin($account);
+
+    // Stack developer response.
+    $this->queueDeveloperResponseFromDeveloper($this->developer);
+
     $this->drupalPostForm(Url::fromRoute('entity.user.edit_form', ['user' => $account->id()]), [
       'mail' => $this->developer->getEmail(),
       'current_pass' => $account->passRaw,

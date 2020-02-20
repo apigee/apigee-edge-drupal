@@ -1,0 +1,22 @@
+{#
+/**
+ * @file
+ *   Developers
+ *
+ * Usage:
+ *   @code {% include 'developers.json.twig' %} @endcode
+ *
+ * Variables:
+ * - developers: an array arrays of user emails and roles.
+ */
+#}
+{
+  "developer" : [
+    {% for developer in developers %}
+    {
+      "email" : "{{ developer.email }}",
+      "role" : "{{ developer.role }}"
+    }{{ loop.last ? '' : ',' }}
+    {% endfor %}
+  ]
+}

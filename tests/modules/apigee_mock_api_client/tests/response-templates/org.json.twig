@@ -1,0 +1,51 @@
+{#
+/**
+ * @file
+ *   Organization include file. Use this whenever an org is a part of an object.
+ *
+ * Usage:
+ *   @code
+ *   {% include 'org.json.twig' %}
+ *   @endcode
+ *
+ * Variables:
+ *   - org_name: The name of the org.
+ *   - timezone: The org timezone.
+ */
+#}
+{
+    "address" : [ {
+        "address1" : "1600 Amphitheatre Parkway",
+        "city" : "Mountain View",
+        "country" : "US",
+        "id" : "address1",
+        "isPrimary" : true,
+        "state" : "California",
+        "zip" : "94043"
+    } ],
+    "approveTrusted" : false,
+    "approveUntrusted" : false,
+    "billingCycle" : "CALENDAR_MONTH",
+    "country" : "US",
+    "currency" : "USD",
+    "description" : "Duo Reges: constructio interrete. Idem fecisset Epicurus, si sententiam hanc.",
+    "hasBillingAdjustment" : false,
+    "hasBroker" : false,
+    "hasSelfBilling" : false,
+    "hasSeparateInvoiceForProduct" : false,
+    "id" : "{{ org_name|default('example-org') }}",
+    "issueNettingStmt" : false,
+    "logoUrl" : "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Apigee_logo.svg/320px-Apigee_logo.svg.png",
+    "name" : "{{ org_name|default('example-org') }}",
+    "nettingStmtPerCurrency" : false,
+    "regNo" : "dsdsds",
+    "selfBillingAsExchOrg" : false,
+    "selfBillingForAllDev" : false,
+    "separateInvoiceForFees" : false,
+    "status" : "ACTIVE",
+    "supportedBillingType" : "BOTH",
+    "taxEngineExternalId" : "APIGEE01",
+    "taxModel" : "HYBRID",
+    "taxNexus" : "US",
+    "timezone" : "{{ timezone|default('America/Los_Angeles') }}"
+}

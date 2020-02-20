@@ -1,0 +1,16 @@
+{#
+/**
+ * @file
+ *   - GET /v1/mint/organizations/{org}/any-getter
+ *
+ * Response Code: 404
+ *
+ * Variables:
+ * - message: The message that would have been returned for an missing object.
+ */
+#}
+{
+    "code" : "{{ code|default('mint.resourceDoesNotExist') }}",
+    "message" : "{{ message|default('The requested object does not exist.') }}",
+    "contexts" : [ ]
+}

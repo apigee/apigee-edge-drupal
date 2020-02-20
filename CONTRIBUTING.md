@@ -209,3 +209,13 @@ composer.json:
 module's composer.json before the next stable release. Code changes cannot be
 merged until the related PR(s) have not been released in a new stable version of
 the Apigee Client Library for PHP.
+
+#### Tests using the Mock API Client
+
+Tests are being refactored to use a mock API client that uses stacked or matched responses instead of connecting and
+querying the real API. Refer to [`tests/modules/apigee_mock_api_client/README.md`](tests/modules/apigee_mock_api_client/README.md)
+for documentation.
+
+Note that Composer only installs the packages listed as `require-dev` of your master `composer.json` file, so you may
+need to run `composer require --dev --optimize-autoloader apigee/apigee-mock-client-php` to include this module's
+development requirements to run the tests.
