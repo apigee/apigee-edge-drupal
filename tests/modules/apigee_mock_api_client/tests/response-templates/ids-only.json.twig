@@ -1,0 +1,17 @@
+{#
+/**
+ * @file
+ *   IDs only listing.
+ *
+ * Usage:
+ *   @code {% include 'ids-only.json.twig' %} @endcode
+ *
+ * Variables:
+ * - ids: an array of ids.
+ */
+#}
+[
+  {% for id in ids %}
+  "{{ id }}"{{ loop.last ? '' : ',' }}
+  {% endfor %}
+]

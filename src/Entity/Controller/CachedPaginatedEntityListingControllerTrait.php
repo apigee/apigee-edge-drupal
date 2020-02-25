@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge\Entity\Controller;
 
+use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Structure\PagerInterface;
 
 /**
@@ -55,7 +56,29 @@ trait CachedPaginatedEntityListingControllerTrait {
       }
     }
 
-    $entities = $this->decorated()->getEntities($pager, $key_provider);
+    try {
+      $entities = $this->decorated()->getEntities($pager, $key_provider);
+    }
+    catch (ApiException $e) {
+      $context = [
+        '@message' => (string) $e,
+        '@pager_start' => 'Pager start key: ' . ($pager ? $pager->getStartKey() : '-'),
+        '@pager_limit' => 'Pager limit: ' . ($pager ? $pager->getLimit() : '-'),
+      ];
+      watchdog_exception('apigee_edge', $e, 'Could not load paginated entity list. @message %function (line %line of %file). @pager_start @pager_limit <pre>@backtrace_string</pre>', $context);
+
+      if (method_exists($this, 'getEntityIds') && method_exists($this, 'load')) {
+        $entity_ids = $this->getEntityIds($pager);
+        $entities = [];
+        foreach ($entity_ids as $id) {
+          $entities[] = $this->load($id);
+        }
+      }
+      else {
+        throw $e;
+      }
+    }
+
     $this->entityCache()->saveEntities($entities);
     if ($pager === NULL) {
       $this->entityCache()->allEntitiesInCache(TRUE);
