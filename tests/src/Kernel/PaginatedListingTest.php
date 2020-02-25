@@ -112,21 +112,55 @@ class PaginatedListingTest extends KernelTestBase {
       ],
     ]);
 
-    // Then return a each product individually.
+    // Throw an error for the first product loaded individually.
+    // Then return the rest individually.
     foreach ($this->apiProducts as $apiProduct) {
-      $this->stack->queueMockResponse(['api_product' => ['product' => $apiProduct]]);
+      if (!isset($failing_id)) {
+        $failing_id = $apiProduct->id();
+        $this->stack->queueMockResponse([
+          'get_not_found' => [
+            'status_code' => 404,
+            'code' => 'cps.kms.ApiProductDoesNotExist',
+            'message' => 'API Product [name] does not exist for  tenant [tenant] and id [null]',
+          ],
+        ]);
+      }
+      else {
+        $this->stack->queueMockResponse(['api_product' => ['product' => $apiProduct]]);
+      }
     }
 
     $entities = \Drupal::entityTypeManager()
       ->getStorage('api_product')
       ->loadMultiple();
 
-    $this->assertEqual(count($entities), count($this->apiProducts));
+    $this->assertEqual(count($entities), count($this->apiProducts) - 1);
 
+    foreach ($this->apiProducts as $apiProduct) {
+      if ($apiProduct->id() == $failing_id) {
+        $this->assertFalse(array_key_exists($apiProduct->id(), $entities));
+      }
+      else {
+        $this->assertTrue(array_key_exists($apiProduct->id(), $entities));
+      }
+    }
+
+    // Verify failing listing call gets logged.
     $logged = (bool) Database::getConnection()->select('watchdog')
       ->fields('watchdog', ['wid'])
       ->condition('type', 'apigee_edge')
       ->condition('message', 'Could not load paginated entity list%', 'LIKE')
+      ->condition('severity', RfcLogLevel::ERROR)
+      ->execute()
+      ->fetchField();
+    $this->assertTrue($logged);
+
+    // Verify failing entity load gets logged.
+    $logged = (bool) Database::getConnection()->select('watchdog')
+      ->fields('watchdog', ['wid', 'message'])
+      ->condition('type', 'apigee_edge')
+      ->condition('message', '%failed to load entity with ID%', 'LIKE')
+      ->condition('variables', "%$failing_id%", 'LIKE')
       ->condition('severity', RfcLogLevel::ERROR)
       ->execute()
       ->fetchField();

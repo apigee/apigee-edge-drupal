@@ -67,11 +67,25 @@ trait CachedPaginatedEntityListingControllerTrait {
       ];
       watchdog_exception('apigee_edge', $e, 'Could not load paginated entity list. @message %function (line %line of %file). @pager_start @pager_limit <pre>@backtrace_string</pre>', $context);
 
-      if (method_exists($this, 'getEntityIds') && method_exists($this, 'load')) {
+      if (method_exists($this, 'getEntityIds')
+        && method_exists($this, 'load')
+        && method_exists($this->decorated(), 'getEntityClass')) {
         $entity_ids = $this->getEntityIds($pager);
         $entities = [];
         foreach ($entity_ids as $id) {
-          $entities[] = $this->load($id);
+          try {
+            $entities[] = $this->load($id);
+          }
+          catch (ApiException $e) {
+            $context = [
+              '%controller' => static::class,
+              '%id' => $id,
+              '@message' => (string) $e,
+              '@pager_start' => 'Pager start key: ' . ($pager ? $pager->getStartKey() : '-'),
+              '@pager_limit' => 'Pager limit: ' . ($pager ? $pager->getLimit() : '-'),
+            ];
+            watchdog_exception('apigee_edge', $e, 'Controller %controller failed to load entity with ID %id. @message %function (line %line of %file). @pager_start @pager_limit <pre>@backtrace_string</pre>', $context);
+          }
         }
       }
       else {
