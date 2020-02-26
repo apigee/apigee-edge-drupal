@@ -18,12 +18,5 @@
   <rule ref="Drupal.NamingConventions.ValidVariableName.LowerCamelName">
     <severity>0</severity>
   </rule>
-  <!-- Core doesn't conform to this standard.
-         @see: https://www.drupal.org/project/coder/issues/2803251
-         @see: https://www.drupal.org/project/drupal/issues/1158720
-         -->
-    <rule ref="Drupal.Commenting.FunctionComment.TypeHintMissing">
-      <severity>0</severity>
-    </rule>
 
 </ruleset>
