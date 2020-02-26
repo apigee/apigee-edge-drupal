@@ -154,7 +154,7 @@ code_sniffer: &code_sniffer
           ./code-sniffer.sh apigee_edge
 
     - store_test_results:
-        path: /var/www/html/artifacts/phpcs
+        path: /var/www/html/artifacts
     - store_artifacts:
         path: /var/www/html/artifacts
 
