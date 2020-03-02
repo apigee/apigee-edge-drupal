@@ -92,7 +92,7 @@ class ConfigForm extends ConfigFormBase {
     $form['log_message_format']['format'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Log message format'),
-      '#description' => $this->t('Adding API responses to log messages by using <em>{response_formatted}</em> token is not recommended because they could contain sensitive data (ex.: app credentials, etc.).'),
+      '#description' => $this->t('Note: Adding API responses to log messages by using <em>{response_formatted}</em> token may contain sensitive data (ex.: app credentials, etc.).'),
       '#required' => TRUE,
       '#default_value' => $config->get('log_message_format'),
     ];
