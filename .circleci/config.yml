@@ -1,0 +1,215 @@
+# Default configuration file for Drupal modules.
+#
+# Use setup.sh to automate setting this up. Otherwise, to use this in a new
+# module:
+#   1. Copy config.yml to the module's .circleci directory.
+#   2. Change 'latest' in the image tag to the latest tag.
+#   3. Update the working_directory key.
+#   4. Connect CircleCI to the repository through the Circle UI.
+#   5. Set the COMPOSER_AUTH environment variable in Circle to grant access to
+#      any private repositories.
+#   6. Create a status badge embed code in Circle and add it to the README.md.
+#
+# Check https://circleci.com/docs/2.0/language-php/ for more details
+#
+
+defaults: &defaults
+  docker:
+    # specify the version you desire here (avoid latest except for testing)
+    - image: andrewberry/drupal_tests:0.4.0
+
+    - image: selenium/standalone-chrome-debug:3.141.59-neon
+
+    - image: mariadb:10.4
+      environment:
+        MYSQL_ALLOW_EMPTY_PASSWORD: 1
+
+    # Specify service dependencies here if necessary
+    # CircleCI maintains a library of pre-built images
+    # documented at https://circleci.com/docs/2.0/circleci-images/
+    # - image: circleci/mysql:9.4
+
+  # 'checkout' supports a path key, but not on locals where you test with the
+  # circleci CLI tool.
+  # https://discuss.circleci.com/t/bug-circleci-build-command-ignores-checkout-path-config/13004
+  working_directory: /var/www/html/modules/apigee_edge
+
+# YAML does not support merging of lists. That means we can't have a default
+# 'steps' configuration, though we can have defaults for individual step
+# properties.
+
+# We use the composer.json as a way to determine if we can cache our build.
+restore_cache: &restore_cache
+  keys:
+  - v4-dependencies-{{ checksum "composer.json" }}-{{ checksum "../../composer.json" }}
+  # fallback to using the latest cache if no exact match is found
+  - v4-dependencies-
+
+# If composer.json hasn't changed, restore the Composer cache directory. We
+# don't restore the lock file so we ensure we get updated dependencies.
+save_cache: &save_cache
+  paths:
+    - /root/.composer/cache/files
+  key: v4-dependencies-{{ checksum "composer.json" }}-{{ checksum "../../composer.json" }}
+
+# Install composer dependencies into the workspace to share with all jobs.
+update_dependencies: &update_dependencies
+  <<: *defaults
+  steps:
+    - checkout
+
+    - restore_cache: *restore_cache
+
+    - run:
+        working_directory: /var/www/html
+        command: |
+          cp ./modules/apigee_edge/.circleci/update-dependencies.sh /var/www/html
+          ./update-dependencies.sh apigee_edge
+
+    - save_cache: *save_cache
+
+    - persist_to_workspace:
+        root: /var/www/html
+        paths:
+          - .
+
+    - store_artifacts:
+        path: /tmp/artifacts
+
+# Run Drupal unit and kernel tests as one job. This command invokes the test.sh
+# hook.
+unit_kernel_tests: &unit_kernel_tests
+  <<: *defaults
+  steps:
+    - attach_workspace:
+        at: /var/www/html
+
+    - checkout
+
+    - run:
+        working_directory: /var/www/html
+        command: |
+          cp ./modules/apigee_edge/.circleci/test.sh /var/www/html
+          ./test.sh apigee_edge
+
+    - store_test_results:
+        path: /tmp/artifacts/phpunit
+    - store_artifacts:
+        path: /tmp/artifacts
+
+# Run Drupal functional tests. This command invokes the test-functional.sh
+# hook.
+functional_tests: &functional_tests
+  <<: *defaults
+  steps:
+    - attach_workspace:
+        at: /var/www/html
+
+    - checkout
+
+    - run:
+        working_directory: /var/www/html
+        command: |
+          cp ./modules/apigee_edge/.circleci/test-functional.sh /var/www/html
+          ./test-functional.sh apigee_edge
+
+    - store_test_results:
+        path: /tmp/artifacts/phpunit
+    - store_artifacts:
+        path: /tmp/artifacts
+
+# Run Drupal functional tests. This command invokes test-functional-js.sh.
+functional_js_tests: &functional_js_tests
+  <<: *defaults
+  steps:
+    - attach_workspace:
+        at: /var/www/html
+
+    - checkout
+
+    - run:
+        working_directory: /var/www/html
+        command: |
+          cp ./modules/apigee_edge/.circleci/test-functional-js.sh /var/www/html
+          ./test-functional-js.sh apigee_edge
+
+    - store_test_results:
+        path: /tmp/artifacts/phpunit
+    - store_artifacts:
+        path: /tmp/artifacts
+
+# Run code quality tests. This invokes code-sniffer.sh.
+code_sniffer: &code_sniffer
+  <<: *defaults
+  steps:
+    - attach_workspace:
+        at: /var/www/html
+
+    - checkout
+
+    - run:
+        working_directory: /var/www/html
+        command: |
+          cp ./modules/apigee_edge/.circleci/code-sniffer.sh /var/www/html
+          ./code-sniffer.sh apigee_edge
+
+    - store_test_results:
+        path: /var/www/html/artifacts
+    - store_artifacts:
+        path: /var/www/html/artifacts
+
+# Run code coverage tests. This invokes code-coverage-stats.sh.
+code_coverage: &code_coverage
+  <<: *defaults
+  steps:
+    - attach_workspace:
+        at: /var/www/html
+
+    - checkout
+
+    - run:
+        working_directory: /var/www/html
+        command: |
+          ./code-coverage-stats.sh apigee_edge
+    - store_artifacts:
+        path: /var/www/html/artifacts
+
+# Declare all of the jobs we should run.
+version: 2
+jobs:
+  update-dependencies:
+     <<: *update_dependencies
+  run-unit-kernel-tests:
+     <<: *unit_kernel_tests
+  run-functional-tests:
+     <<: *functional_tests
+  run-functional-js-tests:
+     <<: *functional_js_tests
+  run-code-sniffer:
+     <<: *code_sniffer
+  run-code-coverage:
+     <<: *code_coverage
+
+workflows:
+  version: 2
+
+  # Declare a workflow that runs all of our jobs in parallel.
+  test_and_lint:
+    jobs:
+      - update-dependencies
+#      - run-unit-kernel-tests:
+#          requires:
+#            - update-dependencies
+#      - run-functional-tests:
+#          requires:
+#            - update-dependencies
+#      - run-functional-js-tests:
+#          requires:
+#            - update-dependencies
+      - run-code-sniffer:
+          requires:
+            - update-dependencies
+#      - run-code-coverage:
+#          requires:
+#            - update-dependencies
+#            - run-unit-kernel-tests

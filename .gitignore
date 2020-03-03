@@ -1,5 +1,6 @@
 # Ignore all hidden files exept these.
 .*
+!/.circleci
 !/.github
 !/.gitignore
 !/.gitattributes
@@ -10,3 +11,4 @@
 # Other ignored paths and files.
 /vendor
 composer.lock
+tests/src/Behat/behat.local.yml
