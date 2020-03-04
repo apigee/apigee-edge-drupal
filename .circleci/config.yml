@@ -197,9 +197,9 @@ workflows:
   test_and_lint:
     jobs:
       - update-dependencies
-#      - run-unit-kernel-tests:
-#          requires:
-#            - update-dependencies
+      - run-unit-kernel-tests:
+          requires:
+            - update-dependencies
 #      - run-functional-tests:
 #          requires:
 #            - update-dependencies
