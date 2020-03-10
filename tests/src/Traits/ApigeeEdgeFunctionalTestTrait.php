@@ -23,8 +23,6 @@ use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController as Ed
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
-use Drupal\Core\Entity\EntityStorageException;
-use Drupal\key\Entity\Key;
 use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
@@ -62,69 +60,6 @@ trait ApigeeEdgeFunctionalTestTrait {
       $this->createTestKey();
       $this->restoreKey();
     }
-  }
-
-  /**
-   * Creates a test key from environment variables, using config key storage.
-   *
-   * Using config storage , as opposed to environment vars, has the advantage
-   * of the key values persisting in subsequent page requests.
-   */
-  protected function createTestKey(): void {
-    $environment_variables = [];
-    $definition = \Drupal::service('plugin.manager.key.key_type')->getDefinition('apigee_auth');
-    foreach ($definition['multivalue']['fields'] as $id => $field) {
-      $env_var_name = 'APIGEE_EDGE_' . strtoupper($id);
-      if (getenv($env_var_name)) {
-        $environment_variables[$id] = getenv($env_var_name);
-      }
-    }
-
-    $key = Key::create([
-      'id' => 'test',
-      'label' => 'test',
-      'key_type' => 'apigee_auth',
-      'key_provider' => 'config',
-      'key_input' => 'none',
-      'key_provider_settings' => ['key_value' => json_encode($environment_variables)],
-    ]);
-    try {
-      $key->save();
-    }
-    catch (EntityStorageException $exception) {
-      $this->fail('Could not create key for testing.');
-    }
-  }
-
-  /**
-   * Restores the active key.
-   */
-  protected function restoreKey() {
-    $test_key_id = 'test';
-    $this->config('apigee_edge.auth')
-      ->set('active_key', $test_key_id)
-      ->save();
-  }
-
-  /**
-   * Removes the active key for testing with unset API credentials.
-   */
-  protected function invalidateKey() {
-    $this->config('apigee_edge.auth')
-      ->set('active_key', '')
-      ->save();
-  }
-
-  /**
-   * Set active authentication keys in config.
-   *
-   * @param string $active_key
-   *   The active authentication key.
-   */
-  protected function setKey(string $active_key) {
-    $this->config('apigee_edge.auth')
-      ->set('active_key', $active_key)
-      ->save();
   }
 
   /**

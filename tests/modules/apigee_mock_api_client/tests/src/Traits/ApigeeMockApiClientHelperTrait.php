@@ -24,8 +24,7 @@ use Apigee\Edge\Api\Management\Entity\Organization;
 use Apigee\MockClient\Generator\ApigeeSdkEntitySource;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperInterface;
-use Drupal\apigee_mock_api_client\Plugin\KeyProvider\TestEnvironmentVariablesKeyProvider;
-use Drupal\key\Entity\Key;
+use Drupal\Tests\apigee_edge\Traits\ApigeeEdgeUtilTestTrait;
 use Drupal\user\UserInterface;
 use Http\Message\RequestMatcher\RequestMatcher;
 
@@ -33,6 +32,8 @@ use Http\Message\RequestMatcher\RequestMatcher;
  * Helper functions working with Apigee tests.
  */
 trait ApigeeMockApiClientHelperTrait {
+
+  use ApigeeEdgeUtilTestTrait;
 
   /**
    * The SDK connector service.
