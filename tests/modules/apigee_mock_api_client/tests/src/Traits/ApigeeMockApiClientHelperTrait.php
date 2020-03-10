@@ -70,13 +70,6 @@ trait ApigeeMockApiClientHelperTrait {
   protected $integration_enabled;
 
   /**
-   * The Apigee Edge key used in tests.
-   *
-   * @var string
-   */
-  protected $apigee_edge_test_key = 'apigee_edge_test_auth';
-
-  /**
    * Setup.
    */
   protected function apigeeTestHelperSetup() {
@@ -101,32 +94,8 @@ trait ApigeeMockApiClientHelperTrait {
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   protected function initAuth() {
-
-    // Create new Apigee Edge basic auth key.
-    $key = Key::create([
-      'id'           => $this->apigee_edge_test_key,
-      'label'        => 'Apigee Test Authorization',
-      'key_type'     => 'apigee_auth',
-      'key_provider' => 'apigee_edge_environment_variables',
-      'key_input'    => 'apigee_auth_input',
-    ]);
-
-    $key->save();
-
-    // Collect credentials from environment variables.
-    $fields = [];
-    foreach (array_keys($key->getKeyType()->getPluginDefinition()['multivalue']['fields']) as $field) {
-      $id = 'APIGEE_EDGE_' . strtoupper($field);
-      if ($value = getenv($id)) {
-        $fields[$id] = $value;
-      }
-    }
-    // Make sure the credentials persists for functional tests.
-    \Drupal::state()->set(TestEnvironmentVariablesKeyProvider::KEY_VALUE_STATE_ID, $fields);
-
-    $this->config('apigee_edge.auth')
-      ->set('active_key', $this->apigee_edge_test_key)
-      ->save();
+    $this->createTestKey();
+    $this->restoreKey();
   }
 
   /**

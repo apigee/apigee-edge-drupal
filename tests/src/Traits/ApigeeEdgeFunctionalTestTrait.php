@@ -100,7 +100,7 @@ trait ApigeeEdgeFunctionalTestTrait {
    * Restores the active key.
    */
   protected function restoreKey() {
-    $test_key_id = static::$mock_api_client_ready ? $this->apigee_edge_test_key : 'test';
+    $test_key_id = 'test';
     $this->config('apigee_edge.auth')
       ->set('active_key', $test_key_id)
       ->save();
