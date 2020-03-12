@@ -207,7 +207,6 @@ workflows:
       - run-functional-js-tests:
           requires:
             - update-dependencies
-            - run-functional-tests
       - run-code-sniffer:
           requires:
             - update-dependencies

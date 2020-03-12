@@ -18,7 +18,7 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\apigee_edge\Functional;
+namespace Drupal\Tests\apigee_edge\FunctionalJavascript;
 
 use Apigee\Edge\Api\Management\Entity\App;
 use Drupal\apigee_edge\Entity\ApiProduct;
@@ -37,7 +37,7 @@ use Drupal\user\UserInterface;
  * @group apigee_edge_api_product
  * @group apigee_edge_api_product_access
  */
-class ApiProductAccessTest extends ApigeeEdgeFunctionalTestBase {
+class ApiProductAccessTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
   protected const USER_WITH_BYPASS_PERM = 'user_with_bypass_perm';
   protected const INTERNAL_ROLE = 'internal';

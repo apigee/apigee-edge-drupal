@@ -261,7 +261,7 @@ class TeamApiProductAccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
     // we do not need to validate the developer app/edit forms because those
     // are covered by the parent module's ApiProductAccessTest which ensures
     // the API product list is filtered properly there.
-    // \Drupal\Tests\apigee_edge\Functional\ApiProductAccessTest.
+    // \Drupal\Tests\apigee_edge\FunctionalJavascript\ApiProductAccessTest.
     $this->drupalLogout();
     // <<< Team member.
     // If team member gets removed from the team its API Product access

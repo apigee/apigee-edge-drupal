@@ -18,11 +18,11 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\apigee_edge_apiproduct_rbac\Functional;
+namespace Drupal\Tests\apigee_edge_apiproduct_rbac\FunctionalJavascript;
 
 use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\Core\Url;
-use Drupal\Tests\apigee_edge\Functional\ApiProductAccessTest;
+use Drupal\Tests\apigee_edge\FunctionalJavascript\ApiProductAccessTest;
 use Drupal\user\UserInterface;
 
 /**
