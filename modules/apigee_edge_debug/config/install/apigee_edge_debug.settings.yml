@@ -1,4 +1,4 @@
 formatter: full_html
-log_message_format: "<pre>{request_formatted}</pre>\n<p>Transfer statistics: <pre>{stats}</pre></p>"
+log_message_format: "<pre>{request_formatted}</pre>\n<pre>{response_formatted}</pre>\n<p>Transfer statistics: <pre>{stats}</pre></p>"
 mask_organization: true
 remove_credentials: true
