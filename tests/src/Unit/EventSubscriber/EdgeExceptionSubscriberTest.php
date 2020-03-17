@@ -28,8 +28,8 @@ use Drupal\Tests\UnitTestCase;
 use Drupal\Core\Config\Config;
 use Prophecy\Argument;
 use Psr\Log\LoggerInterface;
-use stdClass;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\Routing\Matcher\UrlMatcherInterface;
@@ -107,32 +107,26 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
     $this->exception = new ApiException("API response error message.");
 
     $this->httpKernel = $this->prophesize(HttpKernelInterface::class);
+    $this->httpKernel->handle(Argument::any(), Argument::any())->willReturn(new Response());
     $this->logger = $this->prophesize(LoggerInterface::class);
     $this->redirectDestination = $this->prophesize(RedirectDestinationInterface::class);
+    $this->redirectDestination->getAsArray()->willReturn([]);
 
     $request = $this->prophesize(RequestContext::class);
     $this->accessUnawareRouter = $this->prophesize(UrlMatcherInterface::class);
     $this->accessUnawareRouter->getContext(Argument::any())->willReturn($request->reveal());
+    $this->accessUnawareRouter->setContext(Argument::any())->willReturn();
+    $this->accessUnawareRouter->match(Argument::any())->willReturn([]);
 
     $this->messenger = $this->prophesize(MessengerInterface::class);
 
-    $request = $this->prophesize(Request::class);
-
-    // Set empty objects so that clone on request object works.
-    $request->query = new stdClass();
-    $request->request = new stdClass();
-    $request->attributes = new stdClass();
-    $request->cookies = new stdClass();
-    $request->files = new stdClass();
-    $request->server = new stdClass();
-    $request->headers = new stdClass();
-
     $this->getResponseForExceptionEvent = $this->prophesize(GetResponseForExceptionEvent::class);
     $this->getResponseForExceptionEvent->getRequest()
-      ->willReturn($request->reveal());
+      ->willReturn(new Request());
     $this->getResponseForExceptionEvent->getException()
       ->willReturn($this->exception);
-
+    $this->getResponseForExceptionEvent->setResponse(Argument::any())
+      ->willReturn();
   }
 
   /**

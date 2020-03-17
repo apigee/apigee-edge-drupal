@@ -112,14 +112,18 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
     $web_assert = $this->assertSession();
 
-    // Test the authentication form using the default key stored by environment
-    // variable key provider.
+    // Test the authentication form.
     $this->drupalLogin($this->rootUser);
     $this->drupalGet(Url::fromRoute('apigee_edge.settings'));
-    $this->assertSession()->pageTextContains("The selected key provider does not accept a value. See the provider's description for instructions on how and where to store the key value.");
-    $this->assertSession()->pageTextContains('Send request using the active authentication key.');
+
+    $this->assertSession()->pageTextContains('Send request using the given API credentials.');
     $this->assertSendRequestMessage('.messages--status', 'Connection successful.');
     $web_assert->elementNotExists('css', 'details[data-drupal-selector="edit-debug"]');
+
+    $page = $this->getSession()->getPage();
+    $page->find('css', 'details[data-drupal-selector="edit-provider-section"] > summary')->click();
+    $page->selectFieldOption('key_provider', 'apigee_edge_environment_variables');
+    $this->assertSession()->waitForText("The selected key provider does not accept a value. See the provider's description for instructions on how and where to store the key value.");
 
     $this->validateForm([$this, 'visitAuthenticationForm']);
 
@@ -370,17 +374,20 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC);
 
     // Test another invalid endpoint scenario:
-    // This endpoint is not a Management API endpoint, but still returns
+    // Some endpoints are not a Management API endpoint, but still return
     // HTTP 200 with a JSON response.
-    $invalid_endpoint = 'enterprise.apigee.com/platform/orgname';
-    $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE);
-    $page->fillField('Apigee Edge endpoint', "https://{$invalid_endpoint}/");
-    $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given endpoint (https://{$invalid_endpoint}/) is incorrect or something is wrong with the connection. Error message: ");
-    $invalid_endpoint_escaped = str_replace('/', '\/', $invalid_endpoint);
-    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"endpoint\": \"https:\/\/{$invalid_endpoint_escaped}\/\"");
-    $web_assert->fieldValueEquals('Apigee Edge endpoint', "https://{$invalid_endpoint}/");
-    $page->fillField('Apigee Edge endpoint', '');
-    $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC);
+    // Only test with mock client.
+    if (static::$mock_api_client_ready && !$this->integration_enabled) {
+      $invalid_endpoint = 'enterprise.apigee.com/platform/orgname';
+      $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE);
+      $page->fillField('Apigee Edge endpoint', "https://{$invalid_endpoint}/");
+      $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given endpoint (https://{$invalid_endpoint}/) is incorrect or something is wrong with the connection. Error message: ");
+      $invalid_endpoint_escaped = str_replace('/', '\/', $invalid_endpoint);
+      $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"endpoint\": \"https:\/\/{$invalid_endpoint_escaped}\/\"");
+      $web_assert->fieldValueEquals('Apigee Edge endpoint', "https://{$invalid_endpoint}/");
+      $page->fillField('Apigee Edge endpoint', '');
+      $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC);
+    }
 
     // Test invalid authorization server.
     $this->cssSelect('select[data-drupal-selector="edit-key-input-settings-auth-type"]')[0]->setValue('oauth');

@@ -24,8 +24,7 @@ use Apigee\Edge\Api\Management\Entity\Organization;
 use Apigee\MockClient\Generator\ApigeeSdkEntitySource;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperInterface;
-use Drupal\apigee_mock_api_client\Plugin\KeyProvider\TestEnvironmentVariablesKeyProvider;
-use Drupal\key\Entity\Key;
+use Drupal\Tests\apigee_edge\Traits\ApigeeEdgeUtilTestTrait;
 use Drupal\user\UserInterface;
 use Http\Message\RequestMatcher\RequestMatcher;
 
@@ -33,6 +32,8 @@ use Http\Message\RequestMatcher\RequestMatcher;
  * Helper functions working with Apigee tests.
  */
 trait ApigeeMockApiClientHelperTrait {
+
+  use ApigeeEdgeUtilTestTrait;
 
   /**
    * The SDK connector service.
@@ -70,13 +71,6 @@ trait ApigeeMockApiClientHelperTrait {
   protected $integration_enabled;
 
   /**
-   * The Apigee Edge key used in tests.
-   *
-   * @var string
-   */
-  protected $apigee_edge_test_key = 'apigee_edge_test_auth';
-
-  /**
    * Setup.
    */
   protected function apigeeTestHelperSetup() {
@@ -101,32 +95,8 @@ trait ApigeeMockApiClientHelperTrait {
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   protected function initAuth() {
-
-    // Create new Apigee Edge basic auth key.
-    $key = Key::create([
-      'id'           => $this->apigee_edge_test_key,
-      'label'        => 'Apigee Test Authorization',
-      'key_type'     => 'apigee_auth',
-      'key_provider' => 'apigee_edge_environment_variables',
-      'key_input'    => 'apigee_auth_input',
-    ]);
-
-    $key->save();
-
-    // Collect credentials from environment variables.
-    $fields = [];
-    foreach (array_keys($key->getKeyType()->getPluginDefinition()['multivalue']['fields']) as $field) {
-      $id = 'APIGEE_EDGE_' . strtoupper($field);
-      if ($value = getenv($id)) {
-        $fields[$id] = $value;
-      }
-    }
-    // Make sure the credentials persists for functional tests.
-    \Drupal::state()->set(TestEnvironmentVariablesKeyProvider::KEY_VALUE_STATE_ID, $fields);
-
-    $this->config('apigee_edge.auth')
-      ->set('active_key', $this->apigee_edge_test_key)
-      ->save();
+    $this->createTestKey();
+    $this->restoreKey();
   }
 
   /**

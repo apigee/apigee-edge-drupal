@@ -18,14 +18,14 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\apigee_edge_apiproduct_rbac\Functional;
+namespace Drupal\Tests\apigee_edge_apiproduct_rbac\FunctionalJavascript;
 
 use Drupal\Core\Session\AccountInterface;
 
 /**
  * Validates role based access control on API products.
  *
- * Validates entity access with anonymous and authenticated roles.
+ * Validates entity access with authenticated and internal roles.
  *
  * @group apigee_edge_apiproduct_rbac
  * @group apigee_edge
@@ -33,7 +33,7 @@ use Drupal\Core\Session\AccountInterface;
  * @group apigee_edge_api_product
  * @group apigee_edge_api_product_access
  */
-class ApiProductRoleBasedAccessAnonymousAuthenticatedTest extends ApiProductRoleBasedAccessTestBase {
+class ApiProductRoleBasedAccessAuthenticatedInternalTest extends ApiProductRoleBasedAccessTestBase {
 
   /**
    * {@inheritdoc}
@@ -41,16 +41,6 @@ class ApiProductRoleBasedAccessAnonymousAuthenticatedTest extends ApiProductRole
   protected function setUp() {
     parent::setUp();
     $this->ridCombinations = $this->calculateRidCombinations([AccountInterface::ANONYMOUS_ROLE, AccountInterface::AUTHENTICATED_ROLE]);
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * \Drupal\Tests\apigee_edge\Functional\ApiProductAccessTest validates
-   * developerAppEditFormTest().
-   */
-  public function testApiProductAccess() {
-    $this->entityAccessTest();
   }
 
 }
