@@ -1,0 +1,9 @@
+name: Apigee Edge Actions
+description: Rules integration for Apigee Edge.
+package: Apigee (Experimental)
+type: module
+core: 8.x
+configure: entity.rules_reaction_rule.collection
+dependencies:
+  - apigee_edge:apigee_edge
+  - rules:rules

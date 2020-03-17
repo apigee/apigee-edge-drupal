@@ -1,0 +1,84 @@
+<?php
+
+/**
+ * Copyright 2020 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
+ */
+
+use Drupal\apigee_edge_actions\Event\EdgeEntityEventEdge;
+use Drupal\apigee_edge\Entity\AppInterface;
+use Drupal\Core\Entity\EntityInterface;
+
+/**
+ * Implements hook_entity_insert().
+ */
+function apigee_edge_actions_entity_insert(EntityInterface $entity) {
+  _apigee_edge_actions_dispatch_entity_event($entity, 'insert');
+}
+
+/**
+ * Implements hook_entity_delete().
+ */
+function apigee_edge_actions_entity_delete(EntityInterface $entity) {
+  _apigee_edge_actions_dispatch_entity_event($entity, 'delete');
+}
+
+/**
+ * Implements hook_entity_update().
+ */
+function apigee_edge_actions_entity_update(EntityInterface $entity) {
+  _apigee_edge_actions_dispatch_entity_event($entity, 'update');
+}
+
+/**
+ * Helper to dispatch an entity event.
+ *
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ *   The entity.
+ * @param string $event_name
+ *   The event name.
+ *
+ * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+ * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+ */
+function _apigee_edge_actions_dispatch_entity_event(EntityInterface $entity, string $event_name) {
+  if (Drupal::service('apigee_edge_actions.edge_entity_type_manager')
+    ->isEdgeEntityType($entity->getEntityType())) {
+    $dispatched_event_name = "apigee_edge_actions_entity_$event_name:{$entity->getEntityTypeId()}";
+
+    $arguments = [
+      $entity->getEntityTypeId() => $entity
+    ];
+
+    // TODO: Move this to a plugin?
+    if ($entity instanceof AppInterface) {
+      $user = Drupal::entityTypeManager()
+        ->getStorage('user')
+        ->loadByProperties([
+          'uuid' => $entity->getAppOwner(),
+        ]);
+      $arguments['developer'] = reset($user);
+    }
+
+    if ($event_name === 'update') {
+      $arguments["{$entity->getEntityTypeId()}_unchanged"] = $entity->original;
+    }
+
+    /** @var \Drupal\apigee_edge\Entity\EdgeEntityInterface $entity */
+    Drupal::service('event_dispatcher')
+      ->dispatch($dispatched_event_name, new EdgeEntityEventEdge($entity, $arguments));
+  }
+}

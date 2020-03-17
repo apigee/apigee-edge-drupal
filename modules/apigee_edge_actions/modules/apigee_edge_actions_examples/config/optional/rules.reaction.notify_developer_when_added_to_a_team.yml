@@ -1,0 +1,47 @@
+langcode: en
+status: true
+dependencies: {  }
+id: notify_developer_when_added_to_a_team
+label: 'Notify developer when added to a team'
+events:
+  -
+    event_name: 'apigee_edge_actions_entity_add_member:team'
+description: 'Sends an email to a developer when added to a team.'
+tags:
+  - example
+config_version: '3'
+expression:
+  id: rules_rule
+  uuid: 0b36c5a1-b1f4-43ba-b3c1-b70859d22522
+  conditions:
+    id: rules_and
+    uuid: 9f479df0-8312-49a4-bda3-e27091f13acb
+    conditions: {  }
+  actions:
+    id: rules_action_set
+    uuid: fd94da7a-428d-446d-afa1-5e63725d3258
+    actions:
+      -
+        id: rules_action
+        uuid: 5415ce2c-3238-4458-a472-2ac8097c07a1
+        context_values:
+          to:
+            - '{{ member.mail }}'
+          subject: 'You have been added to the {{ team.displayName }} team.'
+          message: 'Hey {{ member.first_name }}, you have been added to the {{ team.displayName }} team.'
+          reply: ''
+          language: ''
+        context_mapping: {  }
+        context_processors:
+          to:
+            rules_tokens: {  }
+          subject:
+            rules_tokens: {  }
+          message:
+            rules_tokens: {  }
+          reply:
+            rules_tokens: {  }
+          language:
+            rules_tokens: {  }
+        provides_mapping: {  }
+        action_id: rules_send_email

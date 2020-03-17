@@ -1,0 +1,7 @@
+{
+  "apps" : [
+    {% for app in apps %}
+    {% include 'get-developer-app.json.twig' with {'app': app} %}{{ loop.last ? '' : ',' }}
+    {% endfor %}
+  ]
+}

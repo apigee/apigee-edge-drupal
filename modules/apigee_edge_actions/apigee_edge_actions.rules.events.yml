@@ -1,0 +1,27 @@
+apigee_edge_actions_entity_insert:
+  deriver: '\Drupal\apigee_edge_actions\Plugin\RulesEvent\EdgeEntityInsertEventDeriver'
+  event: 'insert'
+
+apigee_edge_actions_entity_delete:
+  deriver: '\Drupal\apigee_edge_actions\Plugin\RulesEvent\EdgeEntityDeleteEventDeriver'
+  event: 'delete'
+
+apigee_edge_actions_entity_update:
+  deriver: '\Drupal\apigee_edge_actions\Plugin\RulesEvent\EdgeEntityUpdateEventDeriver'
+  event: 'update'
+
+apigee_edge_actions_entity_add_member:
+  deriver: '\Drupal\apigee_edge_actions\Plugin\RulesEvent\EdgeEntityAddMemberEventDeriver'
+  event: 'add_member'
+
+apigee_edge_actions_entity_remove_member:
+  deriver: '\Drupal\apigee_edge_actions\Plugin\RulesEvent\EdgeEntityRemoveMemberEventDeriver'
+  event: 'remove_member'
+
+apigee_edge_actions_entity_add_product:
+  deriver: '\Drupal\apigee_edge_actions\Plugin\RulesEvent\EdgeEntityAddProductEventDeriver'
+  event: 'add_product'
+
+apigee_edge_actions_entity_remove_product:
+  deriver: '\Drupal\apigee_edge_actions\Plugin\RulesEvent\EdgeEntityRemoveProductEventDeriver'
+  event: 'remove_product'
