@@ -18,7 +18,7 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\apigee_edge_apiproduct_rbac\Functional;
+namespace Drupal\Tests\apigee_edge_apiproduct_rbac\FunctionalJavascript;
 
 use Drupal\Core\Session\AccountInterface;
 
@@ -39,8 +39,8 @@ class ApiProductRoleBasedAccessMissingAttributeTest extends ApiProductRoleBasedA
   /**
    * {@inheritdoc}
    *
-   * \Drupal\Tests\apigee_edge\Functional\ApiProductAccessTest validates
-   * developerAppEditFormTest().
+   * \Drupal\Tests\apigee_edge\FunctionalJavascript\ApiProductAccessTest
+   * validates developerAppEditFormTest().
    */
   public function testApiProductAccess() {
     $this->entityAccessTest();

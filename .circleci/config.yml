@@ -193,19 +193,20 @@ jobs:
 workflows:
   version: 2
 
-  # Declare a workflow that runs all of our jobs in parallel.
+  # Declare a workflow that runs jobs in parallel.
+  # Functional JS tests need to run after functional due to a conflict in apigee_edge_apiproduct_rbac tests.
   test_and_lint:
     jobs:
       - update-dependencies
-#      - run-unit-kernel-tests:
-#          requires:
-#            - update-dependencies
-#      - run-functional-tests:
-#          requires:
-#            - update-dependencies
-#      - run-functional-js-tests:
-#          requires:
-#            - update-dependencies
+      - run-unit-kernel-tests:
+          requires:
+            - update-dependencies
+      - run-functional-tests:
+          requires:
+            - update-dependencies
+      - run-functional-js-tests:
+          requires:
+            - update-dependencies
       - run-code-sniffer:
           requires:
             - update-dependencies

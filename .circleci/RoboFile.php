@@ -45,7 +45,6 @@ class RoboFile extends \Robo\Tasks
     // composer config doesn't allow us to set arrays, so we have to do this by
     // hand.
     $config = json_decode(file_get_contents('composer.json'));
-    $config->require->{"drush/drush"} = "~9.0";
     $config->extra->{"enable-patching"} = 'true';
     $config->extra->{"patches"} = new \stdClass();
     file_put_contents('composer.json', json_encode($config));
@@ -81,9 +80,8 @@ class RoboFile extends \Robo\Tasks
   public function addBehatDeps()
   {
     $config = json_decode(file_get_contents('composer.json'));
-    $config->require->{"behat/mink-selenium2-driver"} = "^1.3";
+    // Package behat/mink-selenium2-driver is included in  drupal/core-dev.
     $config->require->{"drupal/drupal-extension"} = "master-dev";
-    $config->require->{"drush/drush"} = "~9.0";
     $config->require->{"guzzlehttp/guzzle"} = "^6.0@dev";
     file_put_contents('composer.json', json_encode($config));
   }
@@ -410,7 +408,7 @@ class RoboFile extends \Robo\Tasks
     $config = json_decode(file_get_contents('composer.json'));
 
     // The Drupal core image might need updating. Request the newest stable.
-    $config->require->{"drupal/core"} = "~8.8";
+    unset($config->require->{"drupal/core"});
     $config->require->{"drupal/core-recommended"} = "~8.8";
 
     // We require Drupal console and drush for some tests.

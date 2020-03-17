@@ -23,8 +23,6 @@ use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController as Ed
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
-use Drupal\Core\Entity\EntityStorageException;
-use Drupal\key\Entity\Key;
 use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
@@ -62,56 +60,6 @@ trait ApigeeEdgeFunctionalTestTrait {
       $this->createTestKey();
       $this->restoreKey();
     }
-  }
-
-  /**
-   * Creates a test key by using environment variables as key storage.
-   */
-  protected function createTestKey(): void {
-    $key = Key::create([
-      'id' => 'test',
-      'label' => 'test',
-      'key_type' => 'apigee_auth',
-      'key_provider' => 'apigee_edge_environment_variables',
-      'key_input' => 'none',
-    ]);
-    try {
-      $key->save();
-    }
-    catch (EntityStorageException $exception) {
-      $this->fail('Could not create key for testing.');
-    }
-  }
-
-  /**
-   * Restores the active key.
-   */
-  protected function restoreKey() {
-    $test_key_id = static::$mock_api_client_ready ? $this->apigee_edge_test_key : 'test';
-    $this->config('apigee_edge.auth')
-      ->set('active_key', $test_key_id)
-      ->save();
-  }
-
-  /**
-   * Removes the active key for testing with unset API credentials.
-   */
-  protected function invalidateKey() {
-    $this->config('apigee_edge.auth')
-      ->set('active_key', '')
-      ->save();
-  }
-
-  /**
-   * Set active authentication keys in config.
-   *
-   * @param string $active_key
-   *   The active authentication key.
-   */
-  protected function setKey(string $active_key) {
-    $this->config('apigee_edge.auth')
-      ->set('active_key', $active_key)
-      ->save();
   }
 
   /**
