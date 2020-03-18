@@ -34,6 +34,13 @@ class UserCreateTest extends KernelTestBase {
   use ApigeeMockApiClientHelperTrait;
 
   /**
+   * A Drupal user.
+   *
+   * @var \Drupal\user\Entity\User
+   */
+  protected $account;
+
+  /**
    * {@inheritdoc}
    */
   protected static $modules = [
@@ -65,19 +72,40 @@ class UserCreateTest extends KernelTestBase {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  protected function tearDown() {
+    $this->stack->reset();
+    try {
+      if ($this->account) {
+        $this->queueDeveloperResponse($this->account);
+        $developer = \Drupal::entityTypeManager()
+          ->getStorage('developer')
+          ->create([
+            'email' => $this->account->getEmail(),
+          ]);
+        $developer->delete();
+      }
+    }
+    catch (\Exception $exception) {
+      $this->logException($exception);
+    }
+  }
+
+  /**
    * Test user create.
    */
   public function testUserCreate() {
-    $user = User::create([
+    $this->account = User::create([
       'mail' => $this->randomMachineName() . '@example.com',
       'name' => $this->randomMachineName(),
       'first_name' => $this->randomMachineName(64),
       'last_name' => $this->randomMachineName(64),
     ]);
 
-    $this->queueDeveloperResponse($user, 200);
+    $this->queueDeveloperResponse($this->account, 200);
 
-    $this->assertEquals(SAVED_NEW, $user->save());
+    $this->assertEquals(SAVED_NEW, $this->account->save());
   }
 
 }
