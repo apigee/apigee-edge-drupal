@@ -20,6 +20,7 @@
 namespace Drupal\Tests\apigee_edge\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 use Drupal\user\Entity\User;
 
 /**
@@ -29,6 +30,9 @@ use Drupal\user\Entity\User;
  * @group apigee_edge_kernel
  */
 class UserCreateTest extends KernelTestBase {
+
+  use ApigeeMockApiClientHelperTrait;
+
   /**
    * {@inheritdoc}
    */
@@ -37,7 +41,15 @@ class UserCreateTest extends KernelTestBase {
     'system',
     'apigee_edge',
     'key',
+    'apigee_mock_api_client',
   ];
+
+  /**
+   * Indicates this test class is mock API client ready.
+   *
+   * @var bool
+   */
+  protected static $mock_api_client_ready = TRUE;
 
   /**
    * {@inheritdoc}
@@ -48,6 +60,8 @@ class UserCreateTest extends KernelTestBase {
     $this->installSchema('system', ['sequences']);
     $this->installSchema('user', ['users_data']);
     $this->installEntitySchema('user');
+
+    $this->apigeeTestHelperSetup();
   }
 
   /**
@@ -60,6 +74,8 @@ class UserCreateTest extends KernelTestBase {
       'first_name' => $this->randomMachineName(64),
       'last_name' => $this->randomMachineName(64),
     ]);
+
+    $this->queueDeveloperResponse($user, 200);
 
     $this->assertEquals(SAVED_NEW, $user->save());
   }
