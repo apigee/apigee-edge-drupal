@@ -39,6 +39,13 @@ class TestFrameworkKernelTest extends KernelTestBase {
   use UserCreationTrait;
 
   /**
+   * Indicates this test class is mock API client ready.
+   *
+   * @var bool
+   */
+  protected static $mock_api_client_ready = TRUE;
+
+  /**
    * {@inheritdoc}
    */
   protected static $modules = [
