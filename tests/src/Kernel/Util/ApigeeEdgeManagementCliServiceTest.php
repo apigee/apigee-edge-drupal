@@ -136,6 +136,7 @@ class ApigeeEdgeManagementCliServiceTest extends KernelTestBase implements Servi
   protected function tearDown() {
     $url = $this->endpoint . '/o/' . $this->organization . '/userroles/' . self::TEST_ROLE_NAME;
     try {
+      $this->stack->queueMockResponse('get_not_found');
       $response = $this->httpClient->get($url);
 
       if ($response->getStatusCode() == 200) {
@@ -165,6 +166,11 @@ class ApigeeEdgeManagementCliServiceTest extends KernelTestBase implements Servi
    * Test actual call to Edge API that IsValidEdgeCredentials() uses.
    */
   public function testIsValidEdgeCredentialsEdgeApi() {
+    $this->stack->queueMockResponse([
+      'get_organization' => [
+        'org_name' => $this->organization,
+      ],
+    ]);
     $url = $this->endpoint . '/o/' . $this->organization;
     $response = $this->httpClient->get($url);
 
@@ -176,12 +182,19 @@ class ApigeeEdgeManagementCliServiceTest extends KernelTestBase implements Servi
   /**
    * Test Edge API response/request for doesRoleExist()
    */
-  public function AtestDoesRoleExist() {
+  public function testDoesRoleExist() {
     // Role should not exist.
     $url = $this->endpoint . '/o/' . $this->organization . '/userroles/' . self::TEST_ROLE_NAME;
+    $errorMsg = 'Userrole temp_role does not exist';
 
+    $this->stack->queueMockResponse([
+      'get_not_found'  => [
+        'status_code' => 404,
+        'message' => $errorMsg,
+      ],
+    ]);
     $this->expectException(ClientErrorException::class);
-    $this->expectExceptionMessage('Userrole temp_role does not exist');
+    $this->expectExceptionMessage($errorMsg);
     $response = $this->httpClient->get($url);
     $this->assertEquals('404', $response->getStatusCode(), 'Role that does not exist should return 404.');
   }
@@ -189,8 +202,8 @@ class ApigeeEdgeManagementCliServiceTest extends KernelTestBase implements Servi
   /**
    * Test Edge API for creating role and setting permissions.
    */
-  public function AtestCreateEdgeRoleAndSetPermissions() {
-
+  public function testCreateEdgeRoleAndSetPermissions() {
+    $this->stack->queueMockResponse(['no_content' => ['status_code' => 201]]);
     $url = $this->endpoint . '/o/' . $this->organization . '/userroles';
     $response = $this->httpClient->post($url, json_encode([
       'role' => [self::TEST_ROLE_NAME],
@@ -198,6 +211,7 @@ class ApigeeEdgeManagementCliServiceTest extends KernelTestBase implements Servi
     $this->assertEquals('201', $response->getStatusCode(), 'Role should be created.');
 
     // Add permissions to this role.
+    $this->stack->queueMockResponse(['no_content' => ['status_code' => 201]]);
     $url = $this->endpoint . '/o/' . $this->organization . '/userroles/' . self::TEST_ROLE_NAME . '/permissions';
     $body = json_encode([
       'path' => '/developers',
