@@ -12,18 +12,14 @@ tags:
 config_version: '3'
 expression:
   id: rules_rule
-  uuid: a3c7f453-75a4-4d1b-87f7-973831d18365
   conditions:
     id: rules_and
-    uuid: 3e95f490-4379-412e-9bf3-2a2b8b68e6e3
     conditions: {  }
   actions:
     id: rules_action_set
-    uuid: ea47410d-065e-4cf4-8f8e-9fafdcdbee9b
     actions:
       -
         id: rules_action
-        uuid: b2826e2c-5322-4dfe-9020-fc622f0bbf2e
         context_values:
           roles:
             - administrator

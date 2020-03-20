@@ -12,18 +12,14 @@ tags:
 config_version: '3'
 expression:
   id: rules_rule
-  uuid: 9863eac4-9005-4185-a078-e979eb1e0668
   conditions:
     id: rules_and
-    uuid: 0874eaac-3379-4b4c-8653-74ce89ae9c1f
     conditions: {  }
   actions:
     id: rules_action_set
-    uuid: 5f2f78a9-c970-4d7c-9ada-30dca4133d2d
     actions:
       -
         id: rules_action
-        uuid: e4ec54f4-917a-413b-a410-8089296058f6
         context_values:
           to:
             - '{{ developer.mail }}'
