@@ -88,15 +88,6 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       ],
       '#default_value' => $values['instance_type'] ?? 'public',
     ];
-    $form['hybrid_support_info'] = [
-      '#type' => 'fieldset',
-      '#title' => $this->t('Support for Apigee hybrid'),
-      '#description' => $this->t('Support for Apigee hybrid in the Apigee modules is in Beta. Connecting to a hybrid organization is appropriate for evaluation and testing purposes during this pre-production stage.'),
-
-      '#states' => [
-        'visible' => $state_for_hybrid,
-      ],
-    ];
     $form['auth_type'] = [
       '#type' => 'select',
       '#title' => $this->t('Authentication type'),
