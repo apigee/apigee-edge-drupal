@@ -193,13 +193,13 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
 
     // Add the other user as a member to the team.
     $this->clickLink('Members');
-    $this->assertSession()->pageTextContains("{$this->account->get('first_name')->value} {$this->account->get('last_name')->value}");
+    $this->assertSession()->pageTextContains($this->account->getAccountName());
     $this->clickLink('Add members');
     $this->submitForm([
-      'developers' => "{$this->otherAccount->get('first_name')->value} {$this->otherAccount->get('last_name')->value} ({$this->otherAccount->id()})",
+      'developers' => "{$this->otherAccount->getEmail()} ({$this->otherAccount->id()})",
     ], 'Add members');
-    $this->assertSession()->pageTextContains("{$this->account->get('first_name')->value} {$this->account->get('last_name')->value}");
-    $this->assertSession()->pageTextContains("{$this->otherAccount->get('first_name')->value} {$this->otherAccount->get('last_name')->value}");
+    $this->assertSession()->pageTextContains($this->account->getAccountName());
+    $this->assertSession()->pageTextContains($this->otherAccount->getAccountName());
 
     // Team members have access to every team app and membership operations.
     $this->drupalPostForm(Url::fromRoute('apigee_edge_teams.settings.team.permissions'), [
