@@ -28,11 +28,9 @@ use Drupal\Component\Plugin\Exception\PluginException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\user\UserInterface;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use function Clue\StreamFilter\fun;
 
 /**
  * Proxy for Apigee Edge app credential events.
@@ -100,7 +98,7 @@ class AppCredentialEventSubscriber implements EventSubscriberInterface {
    * Responds to remove product events.
    *
    * @param \Drupal\apigee_edge\Event\AppCredentialDeleteApiProductEvent $event
-   *   The app credential remoe product event.
+   *   The app credential remove product event.
    */
   public function onRemoveProduct(AppCredentialDeleteApiProductEvent $event) {
     $this->dispatchRulesEvent('apigee_edge_actions_entity_remove_product:developer_app', $event, [$event->getApiProduct()]);

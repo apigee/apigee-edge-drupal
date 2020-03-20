@@ -34,6 +34,8 @@ class ApigeeEdgeActionsServiceProvider implements ServiceProviderInterface {
    */
   public function register(ContainerBuilder $container) {
     // Decorate the apigee_edge_teams.team_membership_manager service.
+    // This cannot be done from "apigee_edge_actions.services.yml" because the
+    // "apigee_edge_teams" module might not be enabled.
     if ($container->has('apigee_edge_teams.team_membership_manager')) {
       $container->register('apigee_edge_actions.team_membership_manager', TeamMembershipManager::class)
         ->setDecoratedService('apigee_edge_teams.team_membership_manager')
@@ -45,7 +47,7 @@ class ApigeeEdgeActionsServiceProvider implements ServiceProviderInterface {
           new Reference('apigee_edge.controller.cache.developer_companies'),
           new Reference('cache_tags.invalidator'),
           new Reference('logger.channel.apigee_edge_teams'),
-          new Reference('event_dispatcher')
+          new Reference('event_dispatcher'),
         ]);
     }
   }
