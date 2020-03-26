@@ -103,7 +103,7 @@ class UserCreateTest extends KernelTestBase {
       'last_name' => $this->randomMachineName(64),
     ]);
 
-    $this->queueDeveloperResponse($this->account, 200);
+    $this->queueDeveloperResponse($this->account, 201);
 
     $this->assertEquals(SAVED_NEW, $this->account->save());
   }
