@@ -20,6 +20,7 @@
 namespace Drupal\Tests\apigee_edge\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 use Drupal\user\Entity\User;
 
 /**
@@ -29,6 +30,16 @@ use Drupal\user\Entity\User;
  * @group apigee_edge_kernel
  */
 class UserCreateTest extends KernelTestBase {
+
+  use ApigeeMockApiClientHelperTrait;
+
+  /**
+   * A Drupal user.
+   *
+   * @var \Drupal\user\Entity\User
+   */
+  protected $account;
+
   /**
    * {@inheritdoc}
    */
@@ -37,7 +48,15 @@ class UserCreateTest extends KernelTestBase {
     'system',
     'apigee_edge',
     'key',
+    'apigee_mock_api_client',
   ];
+
+  /**
+   * Indicates this test class is mock API client ready.
+   *
+   * @var bool
+   */
+  protected static $mock_api_client_ready = TRUE;
 
   /**
    * {@inheritdoc}
@@ -48,20 +67,45 @@ class UserCreateTest extends KernelTestBase {
     $this->installSchema('system', ['sequences']);
     $this->installSchema('user', ['users_data']);
     $this->installEntitySchema('user');
+
+    $this->apigeeTestHelperSetup();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function tearDown() {
+    $this->stack->reset();
+    try {
+      if ($this->account) {
+        $this->queueDeveloperResponse($this->account);
+        $developer = \Drupal::entityTypeManager()
+          ->getStorage('developer')
+          ->create([
+            'email' => $this->account->getEmail(),
+          ]);
+        $developer->delete();
+      }
+    }
+    catch (\Exception $exception) {
+      $this->logException($exception);
+    }
   }
 
   /**
    * Test user create.
    */
   public function testUserCreate() {
-    $user = User::create([
+    $this->account = User::create([
       'mail' => $this->randomMachineName() . '@example.com',
       'name' => $this->randomMachineName(),
       'first_name' => $this->randomMachineName(64),
       'last_name' => $this->randomMachineName(64),
     ]);
 
-    $this->assertEquals(SAVED_NEW, $user->save());
+    $this->queueDeveloperResponse($this->account, 201);
+
+    $this->assertEquals(SAVED_NEW, $this->account->save());
   }
 
 }
