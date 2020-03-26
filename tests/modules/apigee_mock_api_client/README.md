@@ -31,6 +31,11 @@ client. All that is needed is overriding and setting the following property to "
   - Use `Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait` in the test class. It provides
   helper methods to initialize and use the mock API client.
   - Call `$this->apigeeTestHelperSetup()` to set the client up.
+  - To make it easier to know that a kernel test is compatible with the mock client, add the following property:
+
+  ```
+    protected static $mock_api_client_ready = TRUE;
+  ```
 
 ### Mock responses
 
