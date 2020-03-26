@@ -126,10 +126,22 @@ class AppCredentialEventSubscriber implements EventSubscriberInterface {
    */
   protected function dispatchRulesEvent(string $rules_event_name, Event $event, array $api_products) {
     try {
+      $app = $this->getAppByName($event->getAppName(), $event->getOwnerId(), $event->getAppType());
       $app_type = "{$event->getAppType()}_app";
-      $app = $this->getAppByName($event->getAppName(), $app_type);
-      $developer = $this->entityTypeManger->getStorage('user')
-        ->load($this->currentUser->id());
+
+      if ('developer_app' == $app_type) {
+        // For developer apps, get the Drupal account from the app owner.
+        /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperStorageInterface $developer_storage */
+        /** @var \Drupal\apigee_edge\Entity\Developer $owner */
+        $developer_storage = $this->entityTypeManger->getStorage($event->getAppType());
+        $owner = $developer_storage->load($event->getOwnerId());
+        $developer = user_load_by_mail($owner->getEmail());
+      }
+      else {
+        // For team apps, default to the current user.
+        $developer = $this->entityTypeManger->getStorage('user')
+          ->load($this->currentUser->id());
+      }
 
       foreach ($api_products as $product) {
         /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $api_product */
@@ -154,21 +166,33 @@ class AppCredentialEventSubscriber implements EventSubscriberInterface {
    *
    * @param string $name
    *   The name of the app.
+   * @param string $owner_id
+   *   The developer or team.
    * @param string $app_type
    *   The type of the app.
    *
    * @return \Drupal\apigee_edge\Entity\AppInterface|null
    *   The app with the provided name or null.
    */
-  protected function getAppByName(string $name, string $app_type): ?AppInterface {
-    try {
-      $storage = $this->entityTypeManger->getStorage($app_type);
-      $apps = $storage->loadMultiple();
-      $app = array_filter($apps, function (AppInterface $app) use ($name) {
-        return $app->getName() === $name;
-      });
+  protected function getAppByName(string $name, string $owner_id, string $app_type): ?AppInterface {
+    /* @var \Drupal\apigee_edge\Entity\AppInterface $appClass */
+    $appClass = $this->entityTypeManger->getStorage("{$app_type}_app")->getEntityType()->getClass();
 
-      return count($app) ? reset($app) : NULL;
+    try {
+      if ($app_type == 'developer') {
+        /* @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerFactoryInterface $controller */
+        $controller = \Drupal::service('apigee_edge.controller.developer_app_controller_factory');
+        $edge_app = $controller->developerAppController($owner_id)->load($name);
+      }
+      else {
+        /* @var \Drupal\apigee_edge_teams\Entity\Controller\TeamAppControllerFactory $controller */
+        $controller = \Drupal::service('apigee_edge_teams.controller.team_app_controller_factory');
+        $edge_app = $controller->teamAppController($owner_id)->load($name);
+      }
+
+      $app = $appClass::createFrom($edge_app);
+
+      return $app;
     }
     catch (PluginException $exception) {
       $this->logger->error($exception);
