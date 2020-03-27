@@ -1,6 +1,6 @@
-# Apigee Edge Actions
+# APIgee Edge Actions
 
-The Apigee Edge Actions module provides rules integration for Apigee Edge. It makes it easy to automate tasks and react on events such as:
+The APIgee Edge Actions module provides rules integration for APIgee Edge. It makes it easy to automate tasks and react on events such as:
 
   * Sending an email when an App is created.
   * Notify a developer when added to a Team.
@@ -18,8 +18,8 @@ The following events are supported out of the box:
 | After saving a new App  | `apigee_edge_actions_entity_insert:developer_app`  |
 | After deleting an App   | `apigee_edge_actions_entity_delete:developer_app`  |
 | After updating an App   | `apigee_edge_actions_entity_insert:developer_app`  |
-| After adding an Api Product   | `apigee_edge_actions_entity_add_product:developer_app`  |
-| After removing an Api Product   | `apigee_edge_actions_entity_remove_product:developer_app`  |
+| After adding an API Product   | `apigee_edge_actions_entity_add_product:developer_app`  |
+| After removing an API Product   | `apigee_edge_actions_entity_remove_product:developer_app`  |
 
 ### Team App
 `\Drupal\apigee_edge_teams\Entity\TeamApp`
@@ -29,8 +29,8 @@ The following events are supported out of the box:
 | After saving a new Team App  | `apigee_edge_actions_entity_insert:team_app`  |
 | After deleting an Team App   | `apigee_edge_actions_entity_delete:team_app`  |
 | After updating an Team App   | `apigee_edge_actions_entity_insert:team_app`  |
-| After adding an Api Product   | `apigee_edge_actions_entity_add_product:team_app`  |
-| After removing an Api Product   | `apigee_edge_actions_entity_remove_product:team_app`  |
+| After adding an API Product   | `apigee_edge_actions_entity_add_product:team_app`  |
+| After removing an API Product   | `apigee_edge_actions_entity_remove_product:team_app`  |
 
 ### Team
 `\Drupal\apigee_edge_teams\Entity\Team`
