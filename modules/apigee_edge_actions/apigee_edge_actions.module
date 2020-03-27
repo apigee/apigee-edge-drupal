@@ -58,40 +58,42 @@ function apigee_edge_actions_entity_update(EntityInterface $entity) {
 function _apigee_edge_actions_dispatch_entity_event(EntityInterface $entity, string $event_name) {
   if (Drupal::service('apigee_edge_actions.edge_entity_type_manager')
     ->isEdgeEntityType($entity->getEntityType())) {
-    $dispatched_event_name = "apigee_edge_actions_entity_$event_name:{$entity->getEntityTypeId()}";
-
-    $arguments = [
-      $entity->getEntityTypeId() => $entity
-    ];
-
-    // TODO: Move this to a plugin?
-    if ($entity instanceof AppInterface) {
-      if ($entity instanceof DeveloperAppInterface) {
-        // $entity->getCreatedBy() is deprecated, so to get the developer Drupal
-        // account we need to load the developer by UUID, then load the user by
-        // email.
-        // Note: $entity->getAppOwner() returns a developer UUID, which is
-        // different from a user's UUID, so we load the developer first and then
-        // the account.
-        $developer = Drupal::entityTypeManager()
-          ->getStorage('developer')
-          ->load($entity->getAppOwner());
-        $arguments['developer'] = user_load_by_mail($developer->getEmail());
-      }
-      else {
-        // For TeamApps, getAppOwner() is a team name, not a developer or email,
-        // and we cannot rely on getCreatedBy() as it is deprecated, so we
-        // default to the current user for the developer.
-        $arguments['developer'] = Drupal::currentUser();
-      }
-    }
-
-    if ($event_name === 'update') {
-      $arguments["{$entity->getEntityTypeId()}_unchanged"] = $entity->original;
-    }
-
-    /** @var \Drupal\apigee_edge\Entity\EdgeEntityInterface $entity */
-    Drupal::service('event_dispatcher')
-      ->dispatch($dispatched_event_name, new EdgeEntityEventEdge($entity, $arguments));
+    return;
   }
+
+  $dispatched_event_name = "apigee_edge_actions_entity_$event_name:{$entity->getEntityTypeId()}";
+
+  $arguments = [
+    $entity->getEntityTypeId() => $entity
+  ];
+
+  // TODO: Move this to a plugin?
+  if ($entity instanceof AppInterface) {
+    if ($entity instanceof DeveloperAppInterface) {
+      // $entity->getCreatedBy() is deprecated, so to get the developer Drupal
+      // account we need to load the developer by UUID, then load the user by
+      // email.
+      // Note: $entity->getAppOwner() returns a developer UUID, which is
+      // different from a user's UUID, so we load the developer first and then
+      // the account.
+      $developer = Drupal::entityTypeManager()
+        ->getStorage('developer')
+        ->load($entity->getAppOwner());
+      $arguments['developer'] = user_load_by_mail($developer->getEmail());
+    }
+    else {
+      // For TeamApps, getAppOwner() is a team name, not a developer or email,
+      // and we cannot rely on getCreatedBy() as it is deprecated, so we
+      // default to the current user for the developer.
+      $arguments['developer'] = Drupal::currentUser();
+    }
+  }
+
+  if ($event_name === 'update') {
+    $arguments["{$entity->getEntityTypeId()}_unchanged"] = $entity->original;
+  }
+
+  /** @var \Drupal\apigee_edge\Entity\EdgeEntityInterface $entity */
+  Drupal::service('event_dispatcher')
+    ->dispatch($dispatched_event_name, new EdgeEntityEventEdge($entity, $arguments));
 }
