@@ -42,6 +42,19 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
   const CANNOT_CONNECT_LONG = 'Cannot connect to Apigee Edge server. You have either given wrong credential details or the Apigee Edge server is unreachable. Visit the Apigee Edge general settings page to get more information.';
 
   /**
+   * {@inheritdoc}
+   */
+  protected static $mock_api_client_ready = TRUE;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+    $this->installExtraModules(['apigee_edge_debug']);
+  }
+
+  /**
    * Tests invalid credentials.
    */
   public function testInvalidCredentials() {
