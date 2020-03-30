@@ -56,7 +56,7 @@ function apigee_edge_actions_entity_update(EntityInterface $entity) {
  * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
  */
 function _apigee_edge_actions_dispatch_entity_event(EntityInterface $entity, string $event_name) {
-  if (Drupal::service('apigee_edge_actions.edge_entity_type_manager')
+  if (!Drupal::service('apigee_edge_actions.edge_entity_type_manager')
     ->isEdgeEntityType($entity->getEntityType())) {
     return;
   }
