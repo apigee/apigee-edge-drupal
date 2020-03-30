@@ -93,11 +93,7 @@ class EdgeEntityRemoveProductEventTest extends EdgeEntityEventTestBase {
       ],
     ]);
     $this->queueDeveloperResponse($this->account);
-    $this->stack->queueMockResponse([
-      'get_developer_apps' => [
-        'apps' => [$developer_app]
-      ],
-    ]);
+    $this->queueDeveloperAppResponse($developer_app);
 
     /** @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface $credential_factory */
     $credential_factory = \Drupal::service('apigee_edge.controller.developer_app_credential_factory');
