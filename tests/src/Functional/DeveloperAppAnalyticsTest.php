@@ -22,7 +22,6 @@ namespace Drupal\Tests\apigee_edge\Functional;
 use Apigee\Edge\Api\Management\Entity\App;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
-use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Url;
@@ -254,29 +253,6 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
   protected function queueAppAnalyticsStackedResponse() {
     $this->stack->queueMockResponse([
       'app_analytics' => [],
-    ]);
-  }
-
-  /**
-   * Add an app analytics mock response to the stack.
-   *
-   * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $app
-   *   The app.
-   * @param int $response_code
-   *   Response code, defaults to 200.
-   */
-  protected function queueDeveloperAppResponse(DeveloperAppInterface $app, $response_code = 200) {
-    $this->stack->queueMockResponse([
-      'get_developer_app' => [
-        'status_code' => $response_code,
-        'app' => [
-          'appId' => $app->getAppId() ?: $this->randomMachineName(),
-          'name' => $app->getName(),
-          'status' => $app->getStatus(),
-          'displayName' => $app->getStatus(),
-          'developerId' => $app->getDeveloperId(),
-        ],
-      ],
     ]);
   }
 
