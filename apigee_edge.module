@@ -365,8 +365,9 @@ function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityV
  * for the API Product (entity) if the API product's access attribute value is
  * either one of the selected access attribute values OR if a developer
  * app is in association with the selected API product.
- * - If operation is "assign" then second part of the previous sentence does
- * not apply only access attribute's value matters.
+ * - If operation is "assign" then disallow access if the role is configured
+ * in the "Access by visibility" settings at the route
+ * apigee_edge.settings.developer.api_product_access.
  */
 function apigee_edge_api_product_access(EntityInterface $entity, $operation, AccountInterface $account) {
   /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $entity */
@@ -386,12 +387,12 @@ function apigee_edge_api_product_access(EntityInterface $entity, $operation, Acc
     // access setting but we should still grant view access
     // if they have a developer app in association with this API product.
     if (empty(array_intersect($visible_to_roles, $account->getRoles()))) {
-      // We should not return allowed if the operation is "assign"
-      // just because a user has an app with the API product.
-      // Displaying these API products to a user should be solved on the
-      // form level always.
+
       if ($operation === 'assign') {
-        $result = AccessResult::neutral();
+        // If the apigee_edge.settings.developer.api_product_access settings
+        // limits access to this API product, do not allow user to assign it
+        // to an application.
+        $result = AccessResult::forbidden("User {$account->getEmail()} is does not have permissions to see API Product with visibility {$product_visibility}.");
       }
       else {
         $result = _apigee_edge_user_has_an_app_with_product($entity->id(), $account, TRUE);
