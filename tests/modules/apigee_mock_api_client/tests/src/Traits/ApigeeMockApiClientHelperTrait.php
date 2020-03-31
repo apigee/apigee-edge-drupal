@@ -238,7 +238,7 @@ trait ApigeeMockApiClientHelperTrait {
           'appId' => $app->getAppId() ?: $this->randomMachineName(),
           'name' => $app->getName(),
           'status' => $app->getStatus(),
-          'displayName' => $app->getStatus(),
+          'displayName' => $app->getDisplayName(),
           'developerId' => $app->getDeveloperId(),
         ],
       ],
