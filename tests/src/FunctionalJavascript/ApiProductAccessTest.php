@@ -179,7 +179,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalJavascriptTestBase {
         ];
         $this->saveAccessSettings($settings);
         // We have to clear entity access control handler's static cache because
-        // otherwise access results comes from there instead of gets
+        // otherwise access results comes from there instead of getting
         // recalculated.
         $this->accessControlHandler->resetCache();
         foreach ($this->users as $userRole => $user) {
