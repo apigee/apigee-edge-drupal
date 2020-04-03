@@ -47,21 +47,16 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
   protected static $mock_api_client_ready = TRUE;
 
   /**
-   * {@inheritdoc}
-   */
-  protected function setUp() {
-    parent::setUp();
-    $this->installExtraModules(['apigee_edge_debug']);
-  }
-
-  /**
    * Tests invalid credentials.
    */
   public function testInvalidCredentials() {
+    $orgName = $this->sdkConnector->getOrganization();
+
     $this->drupalLogin($this->rootUser);
     $status_report_path = Url::fromRoute('system.status');
 
     // Ensure that pre-defined credentials are correctly set.
+    $this->stack->queueMockResponse(['org' => ['org_name' => $orgName]]);
     $this->drupalGet($status_report_path);
     $this->assertSession()->pageTextNotContains(self::CANNOT_CONNECT_SHORT);
 
@@ -95,6 +90,7 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
     $key->save();
     $this->setKey('private_file');
 
+    $this->stack->queueMockResponse(['org' => ['org_name' => $orgName]]);
     $this->drupalGet($status_report_path);
     $this->assertSession()->pageTextNotContains(self::CANNOT_CONNECT_SHORT);
 
@@ -108,6 +104,7 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
     ]));
     $key->save();
 
+    $this->stack->queueMockResponse(['get_not_found' => ['status_code' => 401]]);
     $this->drupalGet($status_report_path);
     $this->assertSession()->pageTextContains(self::CANNOT_CONNECT_LONG);
 
@@ -130,6 +127,8 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
 
     $this->setKey('private_file_oauth');
 
+    $this->stack->queueMockResponse('access_token');
+    $this->stack->queueMockResponse(['org' => ['org_name' => $orgName]]);
     $this->drupalGet($status_report_path);
     $this->assertSession()->pageTextNotContains(self::CANNOT_CONNECT_SHORT);
 
@@ -143,6 +142,7 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
     ]));
     $key->save();
 
+    $this->stack->queueMockResponse('get_not_found');
     $this->drupalGet($status_report_path);
     $this->assertSession()->pageTextContains(self::CANNOT_CONNECT_LONG);
 

@@ -116,3 +116,9 @@ For convenience, helper methods have been added to `ApigeeMockApiClientHelperTra
 
 See [ApigeeMockApiClientHelperTrait](tests/src/Traits/ApigeeMockApiClientHelperTrait.php) for a full list of helper
 methods and documentation on usage.
+
+Notes:
+
+- This module is not currently compatible with `apigee_edge_test` or `apigee_edge_debug`, as they decorate the
+SDK connector client, and this module replaces one of the arguments (injected services). Refactored tests should not
+enable those modules.
