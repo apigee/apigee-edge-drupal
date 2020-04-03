@@ -30,6 +30,11 @@ use Symfony\Component\HttpFoundation\Response;
 class ErrorHandlerTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
+   * {@inheritdoc}
+   */
+  protected static $mock_api_client_ready = TRUE;
+
+  /**
    * User prefix.
    *
    * @var string
@@ -78,8 +83,6 @@ class ErrorHandlerTest extends ApigeeEdgeFunctionalTestBase {
     ];
 
     $routes = [
-      'apigee_edge_test.entity_storage_exception',
-      'apigee_edge_test.api_exception',
       'entity.developer_app.collection_by_developer',
       'entity.developer_app.add_form_for_developer',
       'entity.developer_app.canonical_by_developer',
