@@ -74,9 +74,10 @@ class ApigeeEdgeActionsDebugEventSubscriber implements EventSubscriberInterface 
     $events = [];
 
     // Register a callback for all registered rules events.
-    $rules_events = \Drupal::state()->get('rules.registered_events');
-    foreach ($rules_events as $rules_event) {
-      $events[$rules_event][] = ['onRulesEvent', 100];
+    if ($rules_events = \Drupal::state()->get('rules.registered_events')) {
+      foreach ($rules_events as $rules_event) {
+        $events[$rules_event][] = ['onRulesEvent', 100];
+      }
     }
 
     return $events;

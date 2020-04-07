@@ -23,6 +23,7 @@ namespace Drupal\apigee_edge_actions\Plugin\RulesEvent;
 use Drupal\apigee_edge_actions\ApigeeActionsEntityTypeHelperInterface;
 use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Entity\EdgeEntityTypeInterface;
+use Drupal\apigee_edge_teams\Entity\TeamAppInterface;
 use Drupal\Component\Plugin\Derivative\DeriverBase;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -79,13 +80,20 @@ abstract class EdgeEntityEventDeriverBase extends DeriverBase implements EdgeEnt
     ];
 
     // Add additional context for App.
-    // TODO: Move this to a plugin?
     if ($entity_type->entityClassImplements(AppInterface::class)) {
       // Add the developer to the context.
       $context['developer'] = [
         'type' => 'entity:user',
         'label' => 'Developer',
       ];
+
+      // Add the team to the context.
+      if ($entity_type->entityClassImplements(TeamAppInterface::class)) {
+        $context['team'] = [
+          'type' => 'entity:team',
+          'label' => 'Team',
+        ];
+      }
     }
 
     return $context;

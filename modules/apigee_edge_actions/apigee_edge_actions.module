@@ -80,14 +80,24 @@ function _apigee_edge_actions_dispatch_entity_event(EntityInterface $entity, str
       $developer = Drupal::entityTypeManager()
         ->getStorage('developer')
         ->load($entity->getAppOwner());
-      $arguments['developer'] = user_load_by_mail($developer->getEmail());
+      $user_id = $developer->getEmail();
     }
     else {
+      /** @var \Drupal\apigee_edge_teams\Entity\TeamAppInterface $entity */
       // For TeamApps, getAppOwner() is a team name, not a developer or email,
       // and we cannot rely on getCreatedBy() as it is deprecated, so we
       // default to the current user for the developer.
-      $arguments['developer'] = Drupal::currentUser();
+      $user_id = Drupal::currentUser()->getEmail();
+
+      // Add the team.
+      $team = Drupal::entityTypeManager()
+        ->getStorage('team')
+        ->load($entity->getAppOwner());
+      $arguments['team'] = $team;
     }
+
+    // Add the developer.
+    $arguments['developer'] = user_load_by_mail($user_id);
   }
 
   if ($event_name === 'update') {
