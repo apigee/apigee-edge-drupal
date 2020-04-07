@@ -27,7 +27,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 /**
  * Defines the apigee_edge_actions.edge_entity_type_manager service.
  */
-class EdgeEntityTypeManager implements EdgeEntityTypeManagerInterface {
+class ApigeeActionsEntityTypeHelper implements ApigeeActionsEntityTypeHelperInterface {
 
   /**
    * The entity type manager.
@@ -51,14 +51,14 @@ class EdgeEntityTypeManager implements EdgeEntityTypeManagerInterface {
    */
   public function getEntityTypes(): array {
     return array_filter($this->entityTypeManager->getDefinitions(), function (EntityTypeInterface $entity_type) {
-      return $this->isEdgeEntityType($entity_type);
+      return $this->isFieldableEdgeEntityType($entity_type);
     });
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isEdgeEntityType(EntityTypeInterface $entity_type): bool {
+  public function isFieldableEdgeEntityType(EntityTypeInterface $entity_type): bool {
     return $entity_type->entityClassImplements(FieldableEdgeEntityInterface::class);
   }
 

@@ -33,7 +33,9 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
- * Proxy for Apigee Edge app credential events.
+ * Events for an API Product being added to an app already exist.
+ *
+ * This event subscriber is a proxy for Apigee Edge app credential events.
  */
 class AppCredentialEventSubscriber implements EventSubscriberInterface {
 

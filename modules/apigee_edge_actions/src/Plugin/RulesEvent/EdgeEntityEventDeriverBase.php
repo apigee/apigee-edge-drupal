@@ -20,7 +20,7 @@
 
 namespace Drupal\apigee_edge_actions\Plugin\RulesEvent;
 
-use Drupal\apigee_edge_actions\EdgeEntityTypeManagerInterface;
+use Drupal\apigee_edge_actions\ApigeeActionsEntityTypeHelperInterface;
 use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Entity\EdgeEntityTypeInterface;
 use Drupal\Component\Plugin\Derivative\DeriverBase;
@@ -37,17 +37,17 @@ abstract class EdgeEntityEventDeriverBase extends DeriverBase implements EdgeEnt
   /**
    * The apigee app entity type manager service.
    *
-   * @var \Drupal\apigee_edge_actions\EdgeEntityTypeManagerInterface
+   * @var \Drupal\apigee_edge_actions\ApigeeActionsEntityTypeHelperInterface
    */
   protected $edgeEntityTypeManager;
 
   /**
    * AppEventDeriver constructor.
    *
-   * @param \Drupal\apigee_edge_actions\EdgeEntityTypeManagerInterface $edge_entity_type_manager
+   * @param \Drupal\apigee_edge_actions\ApigeeActionsEntityTypeHelperInterface $edge_entity_type_manager
    *   The apigee app entity type manager service.
    */
-  public function __construct(EdgeEntityTypeManagerInterface $edge_entity_type_manager) {
+  public function __construct(ApigeeActionsEntityTypeHelperInterface $edge_entity_type_manager) {
     $this->edgeEntityTypeManager = $edge_entity_type_manager;
   }
 

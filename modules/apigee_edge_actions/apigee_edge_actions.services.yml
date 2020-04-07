@@ -1,6 +1,6 @@
 services:
   apigee_edge_actions.edge_entity_type_manager:
-    class: Drupal\apigee_edge_actions\EdgeEntityTypeManager
+    class: Drupal\apigee_edge_actions\ApigeeActionsEntityTypeHelper
     arguments: ['@entity_type.manager']
   logger.channel.apigee_edge_actions:
     parent: logger.channel_base

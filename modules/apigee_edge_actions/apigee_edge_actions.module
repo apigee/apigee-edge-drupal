@@ -57,7 +57,7 @@ function apigee_edge_actions_entity_update(EntityInterface $entity) {
  */
 function _apigee_edge_actions_dispatch_entity_event(EntityInterface $entity, string $event_name) {
   if (!Drupal::service('apigee_edge_actions.edge_entity_type_manager')
-    ->isEdgeEntityType($entity->getEntityType())) {
+    ->isFieldableEdgeEntityType($entity->getEntityType())) {
     return;
   }
 
@@ -67,7 +67,8 @@ function _apigee_edge_actions_dispatch_entity_event(EntityInterface $entity, str
     $entity->getEntityTypeId() => $entity
   ];
 
-  // TODO: Move this to a plugin?
+  // Note: Refactor this to plugins if more entity types requires custom
+  // arguments.
   if ($entity instanceof AppInterface) {
     if ($entity instanceof DeveloperAppInterface) {
       // $entity->getCreatedBy() is deprecated, so to get the developer Drupal

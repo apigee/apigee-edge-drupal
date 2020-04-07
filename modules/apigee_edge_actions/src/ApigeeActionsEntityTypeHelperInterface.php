@@ -23,9 +23,9 @@ namespace Drupal\apigee_edge_actions;
 use Drupal\Core\Entity\EntityTypeInterface;
 
 /**
- * Defines the ApigeeAppEntityTypeManagerInterface interface.
+ * Defines the ApigeeActionsEntityTypeHelperInterface interface.
  */
-interface EdgeEntityTypeManagerInterface {
+interface ApigeeActionsEntityTypeHelperInterface {
 
   /**
    * Returns an array of Apigee Edge entity types.
@@ -36,14 +36,14 @@ interface EdgeEntityTypeManagerInterface {
   public function getEntityTypes(): array;
 
   /**
-   * Determines if the given entity type is an Apigee Edge entity type.
+   * Determines if the given entity type is a fieldable Edge entity type.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type.
    *
    * @return bool
-   *   TRUE if given entity type is an Apigee Edge entity type. FALSE otherwise.
+   *   TRUE if given entity type is a fieldable Edge entity type. FALSE otherwise.
    */
-  public function isEdgeEntityType(EntityTypeInterface $entity_type): bool;
+  public function isFieldableEdgeEntityType(EntityTypeInterface $entity_type): bool;
 
 }
