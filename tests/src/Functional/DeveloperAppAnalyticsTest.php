@@ -35,6 +35,11 @@ use Drupal\Core\Url;
 class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
+   * {@inheritdoc}
+   */
+  protected static $mock_api_client_ready = TRUE;
+
+  /**
    * The Drupal user that belongs to the developer app's developer.
    *
    * @var \Drupal\user\UserInterface
@@ -72,6 +77,8 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
       'analytics own developer_app',
       'analytics any developer_app',
     ]);
+
+    $this->queueDeveloperResponse($this->account, 200);
     $this->developer = Developer::load($this->account->getEmail());
 
     $this->developerApp = DeveloperApp::create([
@@ -81,6 +88,8 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
       'developerId' => $this->developer->getDeveloperId(),
     ]);
     $this->developerApp->setOwner($this->account);
+
+    $this->queueDeveloperAppResponse($this->developerApp, 201);
     $this->developerApp->save();
 
     // Build the URL query string.
@@ -120,6 +129,11 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
       'user' => $this->account->id(),
       'app' => $this->developerApp->getName(),
     ])->toString();
+
+    // App is loaded once and then saved into cache, so the mock
+    // developerApp response only needs to be added once.
+    $this->queueDeveloperAppResponse($this->developerApp);
+
     $this->visitAnalyticsPage($path);
     $this->visitAnalyticsPage($path, TRUE);
 
@@ -141,6 +155,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
    *   A boolean indicating whether the URL query parameters should be appended.
    */
   protected function visitAnalyticsPage(string $path, bool $appendQueryParameters = FALSE) {
+    $this->queueAppAnalyticsStackedResponse();
     if ($appendQueryParameters) {
       $this->drupalGet($path, $this->queryParameters);
     }
@@ -155,6 +170,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
     $since_in_the_future = new DrupalDateTime();
     $since_in_the_future->add(new \DateInterval('P3D'));
     $until = new DrupalDateTime();
+    $this->queueAppAnalyticsStackedResponse();
     $this->drupalGet($path, [
       'query' => [
         'metric' => 'message_count',
@@ -167,6 +183,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
 
     // Start date is in the future.
     $until = new DrupalDateTime();
+    $this->queueAppAnalyticsStackedResponse();
     $this->drupalGet($path, [
       'query' => [
         'metric' => 'message_count',
@@ -178,6 +195,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->pageTextContains('Start date cannot be in future. The current local time of the Developer Portal:');
 
     // Invalid metric in the URL query.
+    $this->queueAppAnalyticsStackedResponse();
     $this->drupalGet($path, [
       'query' => [
         'metric' => $this->randomMachineName(),
@@ -189,6 +207,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->pageTextContains('Invalid parameter metric in the URL.');
 
     // Invalid timestamp parameters in the URL query.
+    $this->queueAppAnalyticsStackedResponse();
     $this->drupalGet($path, [
       'query' => [
         'metric' => 'min_response_time',
@@ -226,6 +245,15 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
     $store->set($data_id = Crypt::randomBytesBase64(), []);
     $this->drupalGet(Url::fromRoute('apigee_edge.export_analytics.csv', ['data_id' => $data_id]));
     $this->assertEquals(403, $this->getSession()->getStatusCode());
+  }
+
+  /**
+   * Add an app analytics mock response to the stack.
+   */
+  protected function queueAppAnalyticsStackedResponse() {
+    $this->stack->queueMockResponse([
+      'app_analytics' => [],
+    ]);
   }
 
 }

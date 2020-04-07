@@ -32,6 +32,13 @@ use Drupal\KernelTests\KernelTestBase;
  */
 class OauthTokenFileStorageTest extends KernelTestBase {
 
+  /**
+   * Indicates this test class is mock API client ready.
+   *
+   * @var bool
+   */
+  protected static $mock_api_client_ready = TRUE;
+
   private const CUSTOM_TOKEN_DIR = 'oauth/token/dir';
 
   /**

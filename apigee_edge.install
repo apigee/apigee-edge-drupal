@@ -33,7 +33,6 @@ use Drupal\user\RoleInterface;
  */
 function apigee_edge_requirements($phase) {
   $requirements = [];
-  $hybrid_support_message = t('Support for Apigee hybrid in the Apigee modules is in Beta. Connecting to a hybrid organization is appropriate for evaluation and testing purposes during this pre-production stage.');
 
   if ($phase === 'install') {
     // This should be checked only if Drupal is installed.
@@ -51,25 +50,12 @@ function apigee_edge_requirements($phase) {
       }
     }
 
-    \Drupal::messenger()->addWarning($hybrid_support_message);
   }
   elseif ($phase === 'runtime') {
     /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
     $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
     try {
       $sdk_connector->testConnection();
-
-      // Hybrid support warning.
-      $org_controller = \Drupal::service('apigee_edge.controller.organization');
-      /* @var \Apigee\Edge\Api\Management\Entity\Organization $organization */
-      $organization = $org_controller->load($sdk_connector->getOrganization());
-      if ($organization && OrganizationFeatures::isHybridEnabled($organization)) {
-        $requirements['apigee_edge_hybrid_support'] = [
-          'title' => t('Apigee Edge'),
-          'description' => $hybrid_support_message,
-          'severity' => REQUIREMENT_WARNING,
-        ];
-      }
     }
     catch (\Exception $exception) {
       $requirements['apigee_edge_connection_error'] = [
@@ -236,3 +222,27 @@ function apigee_edge_update_8101() {
     }
   }
 }
+
+/**
+ * Update the field storage definitions for first_name and last_name fields.
+ */
+function apigee_edge_update_8102() {
+  $entity_type_id = 'user';
+  $fields = ['first_name', 'last_name'];
+
+  /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager */
+  $entity_field_manager = Drupal::service('entity_field.manager');
+  /** @var \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $last_installed_schema_repository */
+  $last_installed_schema_repository = \Drupal::service('entity.last_installed_schema.repository');
+
+  $field_definitions = $entity_field_manager->getFieldStorageDefinitions($entity_type_id);
+  $original_storage_definitions = $last_installed_schema_repository->getLastInstalledFieldStorageDefinitions($entity_type_id);
+  foreach ($fields as $field) {
+    $original_storage_definitions[$field] = $field_definitions[$field];
+  }
+
+  // The schema updates are already handled in apigee_edge_update_8101().
+  // This updates the last installed definition.
+  $last_installed_schema_repository->setLastInstalledFieldStorageDefinitions($entity_type_id, $original_storage_definitions);
+}
+

@@ -19,9 +19,11 @@
 
 namespace Drupal\Tests\apigee_edge\Kernel;
 
+use Apigee\Edge\Exception\ClientErrorException;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\DependencyInjection\ServiceModifierInterface;
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 
 /**
  * ApigeeEdgeManagementCliService Edge tests.
@@ -36,12 +38,27 @@ use Drupal\KernelTests\KernelTestBase;
  */
 class ApigeeEdgeManagementCliServiceTest extends KernelTestBase implements ServiceModifierInterface {
 
+  use ApigeeMockApiClientHelperTrait;
+
+  /**
+   * Indicates this test class is mock API client ready.
+   *
+   * @var bool
+   */
+  protected static $mock_api_client_ready = TRUE;
+
   protected const TEST_ROLE_NAME = 'temp_role';
 
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [];
+  protected static $modules = [
+    'user',
+    'system',
+    'apigee_edge',
+    'key',
+    'apigee_mock_api_client',
+  ];
 
   /**
    * Apigee API endpoint.
@@ -84,6 +101,12 @@ class ApigeeEdgeManagementCliServiceTest extends KernelTestBase implements Servi
   protected function setUp() {
     parent::setUp();
 
+    $this->installSchema('system', ['sequences']);
+    $this->installSchema('user', ['users_data']);
+    $this->installEntitySchema('user');
+
+    $this->apigeeTestHelperSetup();
+
     $environment_vars = [
       'APIGEE_EDGE_ENDPOINT',
       'APIGEE_EDGE_ORGANIZATION',
@@ -104,7 +127,7 @@ class ApigeeEdgeManagementCliServiceTest extends KernelTestBase implements Servi
     $this->orgadminPassword = getenv('APIGEE_EDGE_PASSWORD');
 
     /** @var \GuzzleHttp\Client $client */
-    $this->httpClient = $this->container->get('http_client');
+    $this->httpClient = $this->sdkConnector->getClient();
   }
 
   /**
@@ -112,25 +135,19 @@ class ApigeeEdgeManagementCliServiceTest extends KernelTestBase implements Servi
    */
   protected function tearDown() {
     $url = $this->endpoint . '/o/' . $this->organization . '/userroles/' . self::TEST_ROLE_NAME;
-    $response = $this->httpClient->get($url, [
-      'http_errors' => FALSE,
-      'auth' => [$this->orgadminEmail, $this->orgadminPassword],
-      'headers' => [
-        'Accept' => 'application/json',
-        'Content-Type' => 'application/json',
-      ],
-    ]);
+    try {
+      $this->stack->queueMockResponse('get_not_found');
+      $response = $this->httpClient->get($url);
 
-    if ($response->getStatusCode() == 200) {
-      $url = $this->endpoint . '/o/' . $this->organization . '/userroles/' . self::TEST_ROLE_NAME;
-      $this->httpClient->delete($url, [
-        'auth' => [$this->orgadminEmail, $this->orgadminPassword],
-        'headers' => [
-          'Accept' => 'application/json',
-          'Content-Type' => 'application/json',
-        ],
-      ]);
+      if ($response->getStatusCode() == 200) {
+        $url = $this->endpoint . '/o/' . $this->organization . '/userroles/' . self::TEST_ROLE_NAME;
+        $this->httpClient->delete($url);
+      }
     }
+    catch (\Exception $exception) {
+      watchdog_exception('apigee_edge', $exception);
+    }
+
     parent::tearDown();
 
   }
@@ -149,11 +166,13 @@ class ApigeeEdgeManagementCliServiceTest extends KernelTestBase implements Servi
    * Test actual call to Edge API that IsValidEdgeCredentials() uses.
    */
   public function testIsValidEdgeCredentialsEdgeApi() {
-    $url = $this->endpoint . '/o/' . $this->organization;
-    $response = $this->httpClient->get($url, [
-      'auth' => [$this->orgadminEmail, $this->orgadminPassword],
-      'headers' => ['Accept' => 'application/json'],
+    $this->stack->queueMockResponse([
+      'get_organization' => [
+        'org_name' => $this->organization,
+      ],
     ]);
+    $url = $this->endpoint . '/o/' . $this->organization;
+    $response = $this->httpClient->get($url);
 
     $body = json_decode($response->getBody());
     $this->assertTrue(isset($body->name), 'Edge org entity should contain "name" attribute.');
@@ -166,51 +185,39 @@ class ApigeeEdgeManagementCliServiceTest extends KernelTestBase implements Servi
   public function testDoesRoleExist() {
     // Role should not exist.
     $url = $this->endpoint . '/o/' . $this->organization . '/userroles/' . self::TEST_ROLE_NAME;
+    $errorMsg = 'Userrole temp_role does not exist';
 
-    $response = $this->httpClient->get($url, [
-      'http_errors' => FALSE,
-      'auth' => [$this->orgadminEmail, $this->orgadminPassword],
-      'headers' => [
-        'Accept' => 'application/json',
-        'Content-Type' => 'application/json',
+    $this->stack->queueMockResponse([
+      'get_not_found'  => [
+        'status_code' => 404,
+        'message' => $errorMsg,
       ],
     ]);
+    $this->expectException(ClientErrorException::class);
+    $this->expectExceptionMessage($errorMsg);
+    $response = $this->httpClient->get($url);
     $this->assertEquals('404', $response->getStatusCode(), 'Role that does not exist should return 404.');
-
   }
 
   /**
    * Test Edge API for creating role and setting permissions.
    */
   public function testCreateEdgeRoleAndSetPermissions() {
-
+    $this->stack->queueMockResponse(['no_content' => ['status_code' => 201]]);
     $url = $this->endpoint . '/o/' . $this->organization . '/userroles';
-    $response = $this->httpClient->post($url, [
-      'body' => json_encode([
-        'role' => [self::TEST_ROLE_NAME],
-      ]),
-      'auth' => [$this->orgadminEmail, $this->orgadminPassword],
-      'headers' => [
-        'Accept' => 'application/json',
-        'Content-Type' => 'application/json',
-      ],
-    ]);
+    $response = $this->httpClient->post($url, json_encode([
+      'role' => [self::TEST_ROLE_NAME],
+    ]));
     $this->assertEquals('201', $response->getStatusCode(), 'Role should be created.');
 
     // Add permissions to this role.
+    $this->stack->queueMockResponse(['no_content' => ['status_code' => 201]]);
     $url = $this->endpoint . '/o/' . $this->organization . '/userroles/' . self::TEST_ROLE_NAME . '/permissions';
     $body = json_encode([
       'path' => '/developers',
       'permissions' => ['get', 'put', 'delete'],
     ]);
-    $response = $this->httpClient->post($url, [
-      'body' => $body,
-      'auth' => [$this->orgadminEmail, $this->orgadminPassword],
-      'headers' => [
-        'Accept' => 'application/json',
-        'Content-Type' => 'application/json',
-      ],
-    ]);
+    $response = $this->httpClient->post($url, $body);
     $this->assertEquals('201', $response->getStatusCode(), 'Permission on role should be created.');
   }
 

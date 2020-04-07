@@ -24,7 +24,6 @@ use Apigee\Edge\Api\Management\Entity\Company;
 use Apigee\Edge\Api\Management\Entity\Organization;
 use Apigee\MockClient\Generator\ApigeeSdkEntitySource;
 use Drupal\apigee_edge\Entity\Developer;
-use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\apigee_edge\Entity\DeveloperInterface;
 use Drupal\apigee_edge\Entity\EdgeEntityInterface;
@@ -228,59 +227,24 @@ trait ApigeeMockApiClientHelperTrait {
   }
 
   /**
-   * Helper to create a DeveloperApp entity.
+   * Add an app analytics mock response to the stack.
    *
-   * @return \Drupal\apigee_edge\Entity\DeveloperAppInterface
-   *   A DeveloperApp entity.
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
+   * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $app
+   *   The app.
+   * @param int $response_code
+   *   Response code, defaults to 200.
    */
-  protected function createDeveloperApp(): DeveloperAppInterface {
-    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
-    $entity = DeveloperApp::create([
-      'appId' => 1,
-      'name' => $this->randomMachineName(),
-      'status' => App::STATUS_APPROVED,
-      'displayName' => $this->randomMachineName(),
-    ]);
-    $entity->setOwner($this->account);
-    $this->queueDeveloperAppResponse($entity);
-    $entity->save();
-
-    return $entity;
-  }
-
-  /**
-   * Helper to create a Team entity.
-   *
-   * @return \Drupal\apigee_edge_teams\Entity\TeamInterface
-   *   A Team entity.
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
-   */
-  protected function createTeam(): TeamInterface {
-    /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
-    $team = Team::create([
-      'name' => $this->randomMachineName(),
-      'displayName' => $this->randomGenerator->name(),
-    ]);
-    $this->queueCompanyResponse($team->decorated());
-    $this->queueDeveloperResponse($this->account);
-    $team->save();
-
-    return $team;
-  }
-
-  /**
-   * Helper to add Edge entity response to stack.
-   *
-   * @param \Drupal\apigee_edge\Entity\EdgeEntityInterface $entity
-   *   The Edge entity.
-   */
-  protected function queueDeveloperAppResponse(EdgeEntityInterface $entity) {
+  protected function queueDeveloperAppResponse(DeveloperAppInterface $app, $response_code = 200) {
     $this->stack->queueMockResponse([
       'get_developer_app' => [
-        'app' => $entity,
+        'status_code' => $response_code,
+        'app' => [
+          'appId' => $app->getAppId() ?: $this->randomMachineName(),
+          'name' => $app->getName(),
+          'status' => $app->getStatus(),
+          'displayName' => $app->getDisplayName(),
+          'developerId' => $app->getDeveloperId(),
+        ],
       ],
     ]);
   }

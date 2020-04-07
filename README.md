@@ -19,8 +19,8 @@ considered to be in development. Experimental modules are included in the "Apige
 
 ## Support for Apigee Hybrid Cloud: Beta Release
 
-Support for [Apigee hybrid API](https://docs.apigee.com/hybrid/reference-overview) has been added but is considered to
-be an beta. If you run into any problems, add an issue to our [GitHub issue queue](https://github.com/apigee/apigee-edge-drupal/issues).
+Support for [Apigee hybrid API](https://docs.apigee.com/hybrid/reference-overview) is now considered production ready.
+If you run into any problems, add an issue to our [GitHub issue queue](https://github.com/apigee/apigee-edge-drupal/issues).
 Please note that Team APIs and Monetization APIs are not currently supported on Apigee hybrid.
 
 ## Requirements

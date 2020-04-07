@@ -1,13 +1,13 @@
 {#
 /**
  * @file
- *   Developer App include file. Use this whenever a developer app is a part of an object.
+ *   Developer App include file.
  *
  * Usage:
  *   @code {% include 'developer-app.json.twig' %} @endcode
  *
- * Variables:
- *   - uuid:          App UUID.
+ * Variables: An "app" with the following properties or keys.
+ *   - appId:          AppId.
  *   - displayName:   User-friendly display name of the Developer App.
  *   - name:          Machine name of the Developer App.
  *   - developerId:   ID of the developer/app owner.
@@ -16,7 +16,7 @@
 #}
 {
   "appFamily": "default",
-  "appId": "{{ app.uuid }}",
+  "appId": "{{ app.appId }}",
   "attributes": [
     {
       "name": "DisplayName",
@@ -25,5 +25,11 @@
   ],
   "developerId": "{{ app.developerId }}",
   "name": "{{ app.name }}",
-  "status": "{{ app.status }}"
+  "status":  "{{ app.status|default('approved') }}",
+  "createdAt" : 1540110813284,
+  "createdBy" : "{{ app.createdBy|default('foo@example.com') }}",
+  "lastModifiedAt" : 1540110813284,
+  "lastModifiedBy" : "{{ app.lastModifiedBy|default('foo@example.com') }}",
+  "scopes" : [ ],
+  "credentials" : [ ]
 }
