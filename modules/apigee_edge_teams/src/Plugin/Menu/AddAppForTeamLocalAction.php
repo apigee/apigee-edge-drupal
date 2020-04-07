@@ -38,7 +38,7 @@ class AddAppForTeamLocalAction extends LocalActionDefault {
   /**
    * The team app entity type definition.
    *
-   * @var \Drupal\Core\Entity\EntityTypeInterface
+   * @var \Drupal\apigee_edge\Entity\EdgeEntityTypeInterface
    */
   protected $teamAppEntity;
 

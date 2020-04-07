@@ -34,4 +34,12 @@ interface EdgeEntityTypeInterface extends EntityTypeInterface {
    */
   public function getQueryClass(): string;
 
+  /**
+   * Gets the lowercase form of the human-readable entity type name.
+   *
+   * @return string
+   *   The lowercase form of the human-readable entity type name.
+   */
+  public function getLowercaseLabel();
+
 }

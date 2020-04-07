@@ -25,6 +25,7 @@ use Apigee\Edge\Api\Management\Entity\Company;
 use Apigee\Edge\Api\Management\Structure\CompanyMembership;
 use Drupal\apigee_edge\Entity\DeveloperInterface;
 use Drupal\Core\Url;
+use Drupal\user\UserInterface;
 
 /**
  * Create, delete, update developer entity tests.
@@ -97,7 +98,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     parent::setUp();
     // Allow visitor account creation with administrative approval.
     $user_settings = $this->config('user.settings');
-    $user_settings->set('register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL)->save(TRUE);
+    $user_settings->set('register', UserInterface::REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL)->save(TRUE);
     $this->developerStorage = $this->container->get('entity_type.manager')->getStorage('developer');
     $this->sdkConnector = $this->container->get('apigee_edge.sdk_connector');
   }

@@ -38,7 +38,7 @@ class AddAppForDeveloperLocalAction extends LocalActionDefault {
   /**
    * The developer app entity type definition.
    *
-   * @var \Drupal\Core\Entity\EntityTypeInterface
+   * @var \Drupal\apigee_edge\Entity\EdgeEntityTypeInterface
    */
   protected $developerAppEntity;
 

@@ -23,7 +23,7 @@ namespace Drupal\apigee_edge\Entity\Form;
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\ClientErrorException;
 use Drupal\apigee_edge\Entity\ApiProductInterface;
-use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\apigee_edge\Entity\EdgeEntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Utility\Error;
@@ -87,14 +87,14 @@ trait DeveloperAppFormTrait {
   /**
    * {@inheritdoc}
    */
-  protected function appEntityDefinition(): EntityTypeInterface {
+  protected function appEntityDefinition(): EdgeEntityTypeInterface {
     return $this->getEntityTypeManager()->getDefinition('developer_app');
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function appOwnerEntityDefinition(): EntityTypeInterface {
+  protected function appOwnerEntityDefinition(): EdgeEntityTypeInterface {
     return $this->getEntityTypeManager()->getDefinition('developer');
   }
 

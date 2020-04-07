@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge\Entity\Form;
 
 use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
+use Drupal\apigee_edge\Entity\EdgeEntityTypeInterface;
 use Drupal\apigee_edge\Entity\Storage\EdgeEntityStorageBase;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -281,18 +282,18 @@ abstract class AppForm extends FieldableEdgeEntityForm {
   /**
    * Returns the developer/team (company) app entity definition.
    *
-   * @return \Drupal\Core\Entity\EntityTypeInterface
+   * @return \Drupal\apigee_edge\Entity\EdgeEntityTypeInterface
    *   The app entity definition.
    */
-  abstract protected function appEntityDefinition(): EntityTypeInterface;
+  abstract protected function appEntityDefinition(): EdgeEntityTypeInterface;
 
   /**
    * Returns the app owner (developer or team (company)) entity definition.
    *
-   * @return \Drupal\Core\Entity\EntityTypeInterface
+   * @return \Drupal\apigee_edge\Entity\EdgeEntityTypeInterface
    *   The app owner entity definition.
    */
-  abstract protected function appOwnerEntityDefinition(): EntityTypeInterface;
+  abstract protected function appOwnerEntityDefinition(): EdgeEntityTypeInterface;
 
   /**
    * {@inheritdoc}

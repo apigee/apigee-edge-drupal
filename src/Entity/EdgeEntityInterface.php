@@ -81,4 +81,12 @@ interface EdgeEntityInterface extends SdkEntityInterface, DrupalEntityInterface 
    */
   public function decorated(): SdkEntityInterface;
 
+  /**
+   * Gets the entity type definition.
+   *
+   * @return \Drupal\apigee_edge\Entity\EdgeEntityTypeInterface
+   *   The entity type definition.
+   */
+  public function getEntityType();
+
 }

@@ -24,7 +24,7 @@ use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormat\CSV;
 use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormat\JSON;
 use Drupal\Core\Url;
-use Drupal\field_ui\Tests\FieldUiTestTrait;
+use Drupal\Tests\field_ui\Traits\FieldUiTestTrait;
 use Drupal\user\Entity\User;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\BufferedOutput;

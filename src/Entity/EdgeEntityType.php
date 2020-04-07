@@ -193,4 +193,11 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
     return $this->query_class;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getLowercaseLabel() {
+    return mb_strtolower($this->getLabel());
+  }
+
 }

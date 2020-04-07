@@ -54,7 +54,7 @@ abstract class ApigeeEdgeFunctionalJavascriptTestBase extends WebDriverTestBase 
     $test_id = str_replace('test', '', $database->tablePrefix());
     // Add table suffix (test id) to the file name and ensure the generated
     // file name is unique.
-    $filename = file_create_filename("{$filename_prefix}-{$test_id}.png", $screenshots_dir);
+    $filename = \Drupal::service('file_system')->createFilename("{$filename_prefix}-{$test_id}.png", $screenshots_dir);
     // Also create a log entry because that way we can understand the state of
     // the system before a screenshot got created more easily from logs.
     $this->container->get('logger.channel.apigee_edge_test')->debug("Creating new screenshot: {$filename}.");

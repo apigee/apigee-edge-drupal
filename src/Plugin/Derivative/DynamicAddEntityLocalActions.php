@@ -20,7 +20,7 @@
 
 namespace Drupal\apigee_edge\Plugin\Derivative;
 
-use Drupal\apigee_edge\Entity\EdgeEntityType;
+use Drupal\apigee_edge\Entity\EdgeEntityTypeInterface;
 use Drupal\Component\Plugin\Derivative\DeriverBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
@@ -90,7 +90,7 @@ class DynamicAddEntityLocalActions extends DeriverBase implements ContainerDeriv
     $this->derivatives = [];
 
     foreach ($this->entityTypeManager->getDefinitions() as $type) {
-      if ($type instanceof EdgeEntityType) {
+      if ($type instanceof EdgeEntityTypeInterface) {
         foreach ($this->entityTypeManager->getRouteProviders($type->id()) as $provider) {
           $collection_route_name = "entity.{$type->id()}.collection";
           $collection_route = $provider->getRoutes($type)->get($collection_route_name);
