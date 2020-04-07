@@ -274,14 +274,21 @@ trait ApigeeMockApiClientHelperTrait {
    * Helper to add Edge entity response to stack.
    *
    * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $app
-   *   The developer_app entity.
+   *   The app.
    * @param int $response_code
-   *   The response code. Defaults to 200.
+   *   Response code, defaults to 200.
    */
   protected function queueDeveloperAppResponse(DeveloperAppInterface $app, $response_code = 200) {
     $this->stack->queueMockResponse([
       'get_developer_app' => [
-        'app' => $app,
+        'status_code' => $response_code,
+        'app' => [
+          'appId' => $app->getAppId() ?: $this->randomMachineName(),
+          'name' => $app->getName(),
+          'status' => $app->getStatus(),
+          'displayName' => $app->getDisplayName(),
+          'developerId' => $app->getDeveloperId(),
+        ],
       ],
     ]);
   }
