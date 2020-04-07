@@ -18,48 +18,58 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\apigee_edge_actions\Kernel\Plugin\RulesEvent;
+namespace Drupal\Tests\apigee_edge_actions\Kernel\Plugin\RulesAction;
 
 use Drupal\rules\Context\ContextConfig;
 use Drupal\Tests\apigee_edge_actions\Kernel\ApigeeEdgeActionsRulesKernelTestBase;
 
 /**
- * Tests Edge entity insert event.
+ * Tests Edge entity add_member event.
  *
  * @group apigee_edge
  * @group apigee_edge_kernel
  * @group apigee_edge_actions
  * @group apigee_edge_actions_kernel
  */
-class EdgeEntityInsertEventTest extends ApigeeEdgeActionsRulesKernelTestBase {
+class SystemMailToUsersOfRoleTest extends ApigeeEdgeActionsRulesKernelTestBase {
 
   /**
-   * Tests insert events for Edge entities.
+   * Tests sending email to role event.
    *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityStorageException
    * @throws \Drupal\rules\Exception\LogicException
    */
-  public function testEvent() {
-    // Create an insert rule.
+  public function testAction() {
+    $role_storage = $this->container->get('entity_type.manager')->getStorage('user_role');
+    $role_storage->create(['id' => 'test_role'])->save();
+    $this->account->addRole('test_role');
+    $this->queueDeveloperResponse($this->account);
+    $this->account->activate();
+    $this->account->save();
+
     $rule = $this->expressionManager->createRule();
-    $rule->addAction('apigee_edge_actions_log_message',
+    $rule->addAction('rules_email_to_users_of_role',
       ContextConfig::create()
-        ->setValue('message', "App {{ developer_app.name }} was created by {{ developer.first_name }}.")
-        ->process('message', 'rules_tokens')
+        ->setValue('roles', ['test_role'])
+        ->setValue('subject', 'Test email')
+        ->setValue('message', 'This is a test email')
     );
 
     $config_entity = $this->storage->create([
-      'id' => 'app_insert_rule',
+      'id' => 'send_email_to_admin_rule',
       'events' => [['event_name' => 'apigee_edge_actions_entity_insert:developer_app']],
       'expression' => $rule->getConfiguration(),
     ]);
     $config_entity->save();
 
-    // Insert an entity.
-    $entity = $this->createDeveloperApp();
+    // Insert an entity to trigger rule.
+    $this->queueDeveloperResponse($this->account);
+    $this->createDeveloperApp();
 
     $this->assertLogsContains("Event apigee_edge_actions_entity_insert:developer_app was dispatched.");
-    $this->assertLogsContains("App {$entity->getName()} was created by {$this->account->first_name->value}.");
+    $this->assertLogsContains('Successfully sent email to <em class="placeholder">1</em> out of <em class="placeholder">1</em> users having the role(s) <em class="placeholder">test_role</em>', 'rules');
   }
 
 }

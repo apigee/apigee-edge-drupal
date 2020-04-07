@@ -18,9 +18,10 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\apigee_edge_actions\Kernel\Plugin\RulesEvent;
+namespace Drupal\Tests\apigee_edge_actions\Kernel;
 
 use Drupal\Core\Database\Database;
+use Drupal\dblog\Controller\DbLogController;
 use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 use Drupal\Tests\rules\Kernel\RulesKernelTestBase;
 use Drupal\user\Entity\User;
@@ -29,7 +30,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Provides a base class for testing Edge entity events.
  */
-class EdgeEntityEventTestBase extends RulesKernelTestBase {
+class ApigeeEdgeActionsRulesKernelTestBase extends RulesKernelTestBase {
 
   use ApigeeMockApiClientHelperTrait {
     apigeeTestHelperSetup as baseSetUp;
@@ -94,15 +95,22 @@ class EdgeEntityEventTestBase extends RulesKernelTestBase {
    *
    * @param string $message
    *   The message to assert in the logs.
+   * @param string $type
+   *   The type for the log.
    */
-  protected function assertLogsContains(string $message) {
+  protected function assertLogsContains(string $message, $type = 'apigee_edge_actions') {
     $logs = Database::getConnection()->select('watchdog', 'wd')
-      ->fields('wd', ['message'])
-      ->condition('type', 'apigee_edge_actions')
+      ->fields('wd', ['message', 'variables'])
+      ->condition('type', $type)
       ->execute()
-      ->fetchCol();
+      ->fetchAll();
 
-    $this->assertContains($message, $logs);
+    $controller = DbLogController::create($this->container);
+    $messages = array_map(function ($log) use ($controller) {
+      return (string) $controller->formatMessage($log);
+    }, $logs);
+
+    $this->assertContains($message, $messages);
   }
 
 }

@@ -12,14 +12,18 @@ tags:
 config_version: '3'
 expression:
   id: rules_rule
+  uuid: 46a54411-060d-4b6d-bbef-ca7d3067ecc9
   conditions:
     id: rules_and
+    uuid: b8fa61f6-ddb0-4a97-9729-617298ac6d8f
     conditions: {  }
   actions:
     id: rules_action_set
+    uuid: 525c38c8-cf9f-4424-b084-443079d8553a
     actions:
       -
         id: rules_action
+        uuid: 632d4a81-8383-4343-82af-cabefb0824e0
         context_values:
           message: 'The team {{ team.displayName }} was deleted.'
           level: notice

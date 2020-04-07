@@ -22,6 +22,7 @@ namespace Drupal\Tests\apigee_edge_actions\Kernel\Plugin\RulesEvent;
 
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\rules\Context\ContextConfig;
+use Drupal\Tests\apigee_edge_actions\Kernel\ApigeeEdgeActionsRulesKernelTestBase;
 
 /**
  * Tests Edge entity remove_product event.
@@ -31,7 +32,7 @@ use Drupal\rules\Context\ContextConfig;
  * @group apigee_edge_actions
  * @group apigee_edge_actions_kernel
  */
-class EdgeEntityRemoveProductEventTest extends EdgeEntityEventTestBase {
+class EdgeEntityRemoveProductEventTest extends ApigeeEdgeActionsRulesKernelTestBase {
 
   /**
    * {@inheritdoc}

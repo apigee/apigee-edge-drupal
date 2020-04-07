@@ -21,6 +21,7 @@
 namespace Drupal\Tests\apigee_edge_actions\Kernel\Plugin\RulesEvent;
 
 use Drupal\rules\Context\ContextConfig;
+use Drupal\Tests\apigee_edge_actions\Kernel\ApigeeEdgeActionsRulesKernelTestBase;
 
 /**
  * Tests Edge entity delete event.
@@ -30,7 +31,7 @@ use Drupal\rules\Context\ContextConfig;
  * @group apigee_edge_actions
  * @group apigee_edge_actions_kernel
  */
-class EdgeEntityDeleteEventTest extends EdgeEntityEventTestBase {
+class EdgeEntityDeleteEventTest extends ApigeeEdgeActionsRulesKernelTestBase {
 
   /**
    * Tests delete events for Edge entities.
