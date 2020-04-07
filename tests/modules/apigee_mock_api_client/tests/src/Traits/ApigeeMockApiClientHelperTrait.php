@@ -27,7 +27,6 @@ use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\apigee_edge\Entity\DeveloperInterface;
-use Drupal\apigee_edge\Entity\EdgeEntityInterface;
 use Drupal\apigee_edge_teams\Entity\Team;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\Tests\apigee_edge\Traits\ApigeeEdgeUtilTestTrait;
@@ -274,13 +273,15 @@ trait ApigeeMockApiClientHelperTrait {
   /**
    * Helper to add Edge entity response to stack.
    *
-   * @param \Drupal\apigee_edge\Entity\EdgeEntityInterface $entity
-   *   The Edge entity.
+   * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $app
+   *   The developer_app entity.
+   * @param int $response_code
+   *   The response code. Defaults to 200.
    */
-  protected function queueDeveloperAppResponse(EdgeEntityInterface $entity) {
+  protected function queueDeveloperAppResponse(DeveloperAppInterface $app, $response_code = 200) {
     $this->stack->queueMockResponse([
       'get_developer_app' => [
-        'app' => $entity,
+        'app' => $app,
       ],
     ]);
   }
