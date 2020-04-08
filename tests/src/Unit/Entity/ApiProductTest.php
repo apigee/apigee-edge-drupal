@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
+namespace Drupal\Tests\apigee_edge\Unit\Entity;
+
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\Tests\UnitTestCase;
 

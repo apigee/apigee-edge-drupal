@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\apigee_edge\Unit {
+namespace Drupal\Tests\apigee_edge\Unit\Command {
 
   use Drupal\apigee_edge\CliServiceInterface;
   use Drupal\apigee_edge\Command\CreateEdgeRoleCommand;
@@ -206,19 +206,23 @@ namespace {
   // phpcs:disable PSR2.Namespaces.UseDeclaration.UseAfterNamespace
   use Drush\Utils\StringUtils;
 
-  /**
-   * Mock out t() so function exists for tests.
-   *
-   * @param string $message
-   *   The string with placeholders to be interpolated.
-   * @param array $context
-   *   An associative array of values to be inserted into the message.
-   *
-   * @return string
-   *   The resulting string with all placeholders filled in.
-   */
-  function t(string $message, array $context = []): string {
-    return StringUtils::interpolate($message, $context);
+  if (!function_exists('t')) {
+
+    /**
+     * Mock out t() so function exists for tests.
+     *
+     * @param string $message
+     *   The string with placeholders to be interpolated.
+     * @param array $context
+     *   An associative array of values to be inserted into the message.
+     *
+     * @return string
+     *   The resulting string with all placeholders filled in.
+     */
+    function t(string $message, array $context = []): string {
+      return StringUtils::interpolate($message, $context);
+    }
+
   }
 
 }

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Unit\EventSubscriber;
+namespace Drupal\Tests\apigee_edge\Unit\EventSubscriber;
 
 use Apigee\Edge\Exception\ApiException;
 use Drupal\apigee_edge\EventSubscriber\EdgeExceptionSubscriber;

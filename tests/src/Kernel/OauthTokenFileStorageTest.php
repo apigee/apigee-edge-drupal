@@ -180,7 +180,7 @@ class OauthTokenFileStorageTest extends KernelTestBase {
 
     // Create a new access token and write it to file.
     $stored_token['access_token'] = strtolower($this->randomMachineName(32));
-    file_unmanaged_save_data(base64_encode(serialize($stored_token)), $this->tokenFileUri(), FileSystemInterface::EXISTS_REPLACE);
+    \Drupal::service('file_system')->saveData(base64_encode(serialize($stored_token)), $this->tokenFileUri(), FileSystemInterface::EXISTS_REPLACE);
 
     // Make sure the cached version is still returned.
     $this->assertSame($access_token, $storage->getAccessToken());

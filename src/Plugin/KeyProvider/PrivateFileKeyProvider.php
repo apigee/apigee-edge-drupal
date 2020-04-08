@@ -133,12 +133,17 @@ class PrivateFileKeyProvider extends KeyProviderRequirementsBase implements KeyP
 
     $file_uri = $this->getFileUri($key);
     $file_path = $this->getFileSystem()->dirname($file_uri);
-    // TODO Use $this->fileSystem->prepareDirectory() if Drupal 8.7 is released.
+
     // Make sure the folder exists.
     $this->getFileSystem()->prepareDirectory($file_path, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-    // Save the token data.
-    // TODO Use $this->fileSystem->saveData() if Drupal 8.7 is released.
-    return file_unmanaged_save_data($key_value, $file_uri, FileSystemInterface::EXISTS_REPLACE);
+
+    try {
+      // Save the token data.
+      return $this->getFileSystem()->saveData($key_value, $file_uri, FileSystemInterface::EXISTS_REPLACE);
+    }
+    catch (FileException $e) {
+      return FALSE;
+    }
   }
 
   /**

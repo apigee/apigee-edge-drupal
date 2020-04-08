@@ -171,7 +171,10 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
     try {
       $this->checkRequirements();
       // Write the obfuscated token data to a private file.
-      file_unmanaged_save_data(base64_encode(serialize($data)), $this->tokenFilePath, FileSystemInterface::EXISTS_REPLACE);
+      $this->fileSystem->saveData(base64_encode(serialize($data)), $this->tokenFilePath, FileSystemInterface::EXISTS_REPLACE);
+    }
+    catch (FileException $e) {
+      $this->logger->critical('Error saving OAuth token file.');
     }
     catch (OauthTokenStorageException $exception) {
       $this->logger->critical('OAuth token file storage: %error.', ['%error' => $exception->getMessage()]);
