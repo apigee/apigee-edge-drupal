@@ -1,6 +1,6 @@
-# APIgee Edge Actions
+# Apigee Edge Actions
 
-The APIgee Edge Actions module provides rules integration for APIgee Edge. It makes it easy to automate tasks and react on events such as:
+The Apigee Edge Actions module provides rules integration for Apigee Edge. It makes it easy to automate tasks and react on events such as:
 
   * Sending an email when an App is created.
   * Notify a developer when added to a Team.
