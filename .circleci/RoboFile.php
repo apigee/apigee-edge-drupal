@@ -411,6 +411,9 @@ class RoboFile extends \Robo\Tasks
     unset($config->require->{"drupal/core"});
     $config->require->{"drupal/core-recommended"} = "~8.8";
 
+    // Add rules for testing apigee_edge_actions.
+    $config->require->{"drupal/rules"} = "^3.0@alpha";
+
     // We require Drupal console and drush for some tests.
     $config->require->{"drupal/console"} = "~1.0";
     $config->require->{"drush/drush"} = "^9.7";

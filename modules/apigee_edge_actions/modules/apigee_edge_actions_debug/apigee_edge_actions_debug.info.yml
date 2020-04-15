@@ -1,0 +1,7 @@
+name: Apigee Edge Actions Debug
+description: Logs debug information for Apigee Edge Actions.
+package: Apigee (Experimental)
+type: module
+core: 8.x
+dependencies:
+  - apigee_edge_actions:apigee_edge_actions

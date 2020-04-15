@@ -1,0 +1,120 @@
+<?php
+
+/**
+ * Copyright 2020 Google Inc.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
+ */
+
+use Drupal\apigee_edge\Entity\DeveloperAppInterface;
+use Drupal\apigee_edge_actions\Event\EdgeEntityEventEdge;
+use Drupal\apigee_edge\Entity\AppInterface;
+use Drupal\apigee_edge_actions\Plugin\RulesAction\SystemMailToUsersOfRole;
+use Drupal\Core\Entity\EntityInterface;
+
+/**
+ * Implements hook_entity_insert().
+ */
+function apigee_edge_actions_entity_insert(EntityInterface $entity) {
+  _apigee_edge_actions_dispatch_entity_event($entity, 'insert');
+}
+
+/**
+ * Implements hook_entity_delete().
+ */
+function apigee_edge_actions_entity_delete(EntityInterface $entity) {
+  _apigee_edge_actions_dispatch_entity_event($entity, 'delete');
+}
+
+/**
+ * Implements hook_entity_update().
+ */
+function apigee_edge_actions_entity_update(EntityInterface $entity) {
+  _apigee_edge_actions_dispatch_entity_event($entity, 'update');
+}
+
+/**
+ * Implements hook_archiver_info_alter().
+ */
+function apigee_edge_actions_rules_action_info_alter(&$info) {
+  // Override the class for this rule action to handle param upcasting.
+  // @see https://www.drupal.org/project/rules/issues/2800749
+  $info['rules_email_to_users_of_role']['class'] = SystemMailToUsersOfRole::class;
+}
+
+/**
+ * Helper to dispatch an entity event.
+ *
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ *   The entity.
+ * @param string $event_name
+ *   The event name.
+ *
+ * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+ * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+ */
+function _apigee_edge_actions_dispatch_entity_event(EntityInterface $entity, string $event_name) {
+  if (!Drupal::service('apigee_edge_actions.edge_entity_type_manager')
+    ->isFieldableEdgeEntityType($entity->getEntityType())) {
+    return;
+  }
+
+  $dispatched_event_name = "apigee_edge_actions_entity_$event_name:{$entity->getEntityTypeId()}";
+
+  $arguments = [
+    $entity->getEntityTypeId() => $entity
+  ];
+
+  // Note: Refactor this to plugins if more entity types requires custom
+  // arguments.
+  if ($entity instanceof AppInterface) {
+    if ($entity instanceof DeveloperAppInterface) {
+      // $entity->getCreatedBy() is deprecated, so to get the developer Drupal
+      // account we need to load the developer by UUID, then load the user by
+      // email.
+      // Note: $entity->getAppOwner() returns a developer UUID, which is
+      // different from a user's UUID, so we load the developer first and then
+      // the account.
+      $developer = Drupal::entityTypeManager()
+        ->getStorage('developer')
+        ->load($entity->getAppOwner());
+      $user_id = $developer->getEmail();
+    }
+    else {
+      /** @var \Drupal\apigee_edge_teams\Entity\TeamAppInterface $entity */
+      // For TeamApps, getAppOwner() is a team name, not a developer or email,
+      // and we cannot rely on getCreatedBy() as it is deprecated, so we
+      // default to the current user for the developer.
+      $user_id = Drupal::currentUser()->getEmail();
+
+      // Add the team.
+      $team = Drupal::entityTypeManager()
+        ->getStorage('team')
+        ->load($entity->getAppOwner());
+      $arguments['team'] = $team;
+    }
+
+    // Add the developer.
+    $arguments['developer'] = user_load_by_mail($user_id);
+  }
+
+  if ($event_name === 'update') {
+    $arguments["{$entity->getEntityTypeId()}_unchanged"] = $entity->original;
+  }
+
+  /** @var \Drupal\apigee_edge\Entity\EdgeEntityInterface $entity */
+  Drupal::service('event_dispatcher')
+    ->dispatch($dispatched_event_name, new EdgeEntityEventEdge($entity, $arguments));
+}

@@ -19,12 +19,16 @@
 
 namespace Drupal\Tests\apigee_mock_api_client\Traits;
 
+use Apigee\Edge\Api\Management\Entity\App;
 use Apigee\Edge\Api\Management\Entity\Company;
 use Apigee\Edge\Api\Management\Entity\Organization;
 use Apigee\MockClient\Generator\ApigeeSdkEntitySource;
 use Drupal\apigee_edge\Entity\Developer;
+use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\apigee_edge\Entity\DeveloperInterface;
+use Drupal\apigee_edge_teams\Entity\Team;
+use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\Tests\apigee_edge\Traits\ApigeeEdgeUtilTestTrait;
 use Drupal\user\UserInterface;
 use Http\Message\RequestMatcher\RequestMatcher;
@@ -223,7 +227,51 @@ trait ApigeeMockApiClientHelperTrait {
   }
 
   /**
-   * Add an app analytics mock response to the stack.
+   * Helper to create a DeveloperApp entity.
+   *
+   * @return \Drupal\apigee_edge\Entity\DeveloperAppInterface
+   *   A DeveloperApp entity.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  protected function createDeveloperApp(): DeveloperAppInterface {
+    /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
+    $entity = DeveloperApp::create([
+      'appId' => 1,
+      'name' => $this->randomMachineName(),
+      'status' => App::STATUS_APPROVED,
+      'displayName' => $this->randomMachineName(),
+    ]);
+    $entity->setOwner($this->account);
+    $this->queueDeveloperAppResponse($entity);
+    $entity->save();
+
+    return $entity;
+  }
+
+  /**
+   * Helper to create a Team entity.
+   *
+   * @return \Drupal\apigee_edge_teams\Entity\TeamInterface
+   *   A Team entity.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  protected function createTeam(): TeamInterface {
+    /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
+    $team = Team::create([
+      'name' => $this->randomMachineName(),
+      'displayName' => $this->randomGenerator->name(),
+    ]);
+    $this->queueCompanyResponse($team->decorated());
+    $this->queueDeveloperResponse($this->account);
+    $team->save();
+
+    return $team;
+  }
+
+  /**
+   * Helper to add Edge entity response to stack.
    *
    * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $app
    *   The app.

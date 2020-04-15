@@ -1,0 +1,37 @@
+langcode: en
+status: true
+dependencies: {  }
+id: log_a_message_when_team_is_deleted
+label: 'Log a message when team is deleted.'
+events:
+  -
+    event_name: 'apigee_edge_actions_entity_delete:team'
+description: 'Logs a message when a team is deleted.'
+tags:
+  - example
+config_version: '3'
+expression:
+  id: rules_rule
+  uuid: 46a54411-060d-4b6d-bbef-ca7d3067ecc9
+  conditions:
+    id: rules_and
+    uuid: b8fa61f6-ddb0-4a97-9729-617298ac6d8f
+    conditions: {  }
+  actions:
+    id: rules_action_set
+    uuid: 525c38c8-cf9f-4424-b084-443079d8553a
+    actions:
+      -
+        id: rules_action
+        uuid: 632d4a81-8383-4343-82af-cabefb0824e0
+        context_values:
+          message: 'The team {{ team.displayName }} was deleted.'
+          level: notice
+        context_mapping: {  }
+        context_processors:
+          message:
+            rules_tokens: {  }
+          level:
+            rules_tokens: {  }
+        provides_mapping: {  }
+        action_id: apigee_edge_actions_log_message

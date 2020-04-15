@@ -1,0 +1,47 @@
+langcode: en
+status: true
+dependencies: {  }
+id: notify_developer_when_adding_a_new_app
+label: 'Notify developer when adding a new app'
+events:
+  -
+    event_name: 'apigee_edge_actions_entity_insert:developer_app'
+description: 'Sends an email to the developer when adding a new app.'
+tags:
+  - example
+config_version: '3'
+expression:
+  id: rules_rule
+  uuid: 9863eac4-9005-4185-a078-e979eb1e0668
+  conditions:
+    id: rules_and
+    uuid: 0874eaac-3379-4b4c-8653-74ce89ae9c1f
+    conditions: {  }
+  actions:
+    id: rules_action_set
+    uuid: 5f2f78a9-c970-4d7c-9ada-30dca4133d2d
+    actions:
+      -
+        id: rules_action
+        uuid: e4ec54f4-917a-413b-a410-8089296058f6
+        context_values:
+          to:
+            - '{{ developer.mail }}'
+          subject: 'App {{ developer_app.displayName }} was created.'
+          message: 'App {{ developer_app.displayName }} was successfully created.'
+          reply: ''
+          language: ''
+        context_mapping: {  }
+        context_processors:
+          to:
+            rules_tokens: {  }
+          subject:
+            rules_tokens: {  }
+          message:
+            rules_tokens: {  }
+          reply:
+            rules_tokens: {  }
+          language:
+            rules_tokens: {  }
+        provides_mapping: {  }
+        action_id: rules_send_email

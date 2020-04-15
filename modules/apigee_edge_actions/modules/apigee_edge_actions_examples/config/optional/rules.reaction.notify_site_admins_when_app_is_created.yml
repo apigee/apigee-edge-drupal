@@ -1,0 +1,47 @@
+langcode: en
+status: true
+dependencies: {  }
+id: notify_site_admins_when_app_is_created
+label: 'Notify site admins when app is created'
+events:
+  -
+    event_name: 'apigee_edge_actions_entity_insert:developer_app'
+description: 'Send an email to site administrators when an app is created.'
+tags:
+  - example
+config_version: '3'
+expression:
+  id: rules_rule
+  uuid: a3c7f453-75a4-4d1b-87f7-973831d18365
+  conditions:
+    id: rules_and
+    uuid: 3e95f490-4379-412e-9bf3-2a2b8b68e6e3
+    conditions: {  }
+  actions:
+    id: rules_action_set
+    uuid: ea47410d-065e-4cf4-8f8e-9fafdcdbee9b
+    actions:
+      -
+        id: rules_action
+        uuid: b2826e2c-5322-4dfe-9020-fc622f0bbf2e
+        context_values:
+          roles:
+            - administrator
+          subject: 'App {{ developer_app.displayName }} was added to the site.'
+          message: 'App {{ developer_app.displayName }} was added to the site.'
+          reply: ''
+          language: ''
+        context_mapping: {  }
+        context_processors:
+          roles:
+            rules_tokens: {  }
+          subject:
+            rules_tokens: {  }
+          message:
+            rules_tokens: {  }
+          reply:
+            rules_tokens: {  }
+          language:
+            rules_tokens: {  }
+        provides_mapping: {  }
+        action_id: rules_email_to_users_of_role

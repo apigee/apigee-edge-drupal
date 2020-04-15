@@ -1,0 +1,16 @@
+{
+    "name": "drupal/apigee_edge_actions",
+    "description": "Rules integration for Apigee Edge.",
+    "type": "drupal-module",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=7.1",
+        "drupal/apigee_edge": "*",
+        "drupal/rules": "^3.0@alpha"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
