@@ -51,7 +51,7 @@ class RemoveTeamMemberForm extends ConfirmFormBase {
   /**
    * The team entity type definition.
    *
-   * @var \Drupal\apigee_edge\Entity\EdgeEntityTypeInterface
+   * @var \Drupal\Core\Entity\EntityTypeInterface
    */
   protected $teamEntityType;
 

@@ -127,19 +127,23 @@ class PrivateFileKeyProvider extends KeyProviderRequirementsBase implements KeyP
         '@message' => (string) $exception,
       ];
       $context += Error::decodeException($exception);
-      $this->getLogger()->error('Could not save Apigee Edge authentication key value in the private file storage: @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
+      $this->getLogger()
+        ->error('Could not save Apigee Edge authentication key value in the private file storage: @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
       return FALSE;
     }
 
     $file_uri = $this->getFileUri($key);
-    $file_path = $this->getFileSystem()->dirname($file_uri);
+    $file_path = $this->getFileSystem()
+      ->dirname($file_uri);
 
     // Make sure the folder exists.
-    $this->getFileSystem()->prepareDirectory($file_path, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+    $this->getFileSystem()
+      ->prepareDirectory($file_path, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
 
     try {
-      // Save the token data.
-      return $this->getFileSystem()->saveData($key_value, $file_uri, FileSystemInterface::EXISTS_REPLACE);
+    // Save the token data.
+      return $this->getFileSystem()
+        ->saveData($key_value, $file_uri, FileSystemInterface::EXISTS_REPLACE);
     }
     catch (FileException $e) {
       return FALSE;
@@ -151,7 +155,8 @@ class PrivateFileKeyProvider extends KeyProviderRequirementsBase implements KeyP
    */
   public function deleteKeyValue(KeyInterface $key) {
     try {
-      $this->getFileSystem()->delete($this->getFileUri($key));
+      $this->getFileSystem()
+        ->delete($this->getFileUri($key));
     }
     catch (FileException $e) {
       // Do nothing.

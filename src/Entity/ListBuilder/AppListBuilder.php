@@ -23,7 +23,6 @@ namespace Drupal\apigee_edge\Entity\ListBuilder;
 use Apigee\Edge\Api\Management\Entity\AppCredential;
 use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\AppInterface;
-use Drupal\apigee_edge\Entity\EdgeEntityTypeInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
@@ -63,16 +62,9 @@ class AppListBuilder extends EdgeEntityListBuilder {
   protected $time;
 
   /**
-   * Information about the entity type.
-   *
-   * @var \Drupal\apigee_edge\Entity\EdgeEntityTypeInterface
-   */
-  protected $entityType;
-
-  /**
    * AppListBuilder constructor.
    *
-   * @param \Drupal\apigee_edge\Entity\EdgeEntityTypeInterface $entity_type
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
@@ -83,7 +75,7 @@ class AppListBuilder extends EdgeEntityListBuilder {
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
    */
-  public function __construct(EdgeEntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, RequestStack $request_stack, TimeInterface $time) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, RequestStack $request_stack, TimeInterface $time) {
     parent::__construct($entity_type, $entity_type_manager);
     $this->renderer = $renderer;
     $this->entityTypeManager = $entity_type_manager;

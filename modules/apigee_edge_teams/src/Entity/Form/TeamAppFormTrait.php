@@ -23,11 +23,11 @@ namespace Drupal\apigee_edge_teams\Entity\Form;
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\ClientErrorException;
 use Drupal\apigee_edge\Entity\ApiProductInterface;
-use Drupal\apigee_edge\Entity\EdgeEntityTypeInterface;
 use Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandlerInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Utility\Error;
@@ -78,14 +78,14 @@ trait TeamAppFormTrait {
   /**
    * {@inheritdoc}
    */
-  protected function appEntityDefinition(): EdgeEntityTypeInterface {
+  protected function appEntityDefinition(): EntityTypeInterface {
     return $this->getEntityTypeManager()->getDefinition('team_app');
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function appOwnerEntityDefinition(): EdgeEntityTypeInterface {
+  protected function appOwnerEntityDefinition(): EntityTypeInterface {
     return $this->getEntityTypeManager()->getDefinition('team');
   }
 
