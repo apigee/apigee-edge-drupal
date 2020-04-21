@@ -99,7 +99,7 @@ class DynamicAddEntityLocalActions extends DeriverBase implements ContainerDeriv
           if ($collection_route && $add_form_route) {
             $this->derivatives["{$type->getProvider()}.{$type->id()}.add_form"] = [
               'route_name' => $add_form_route_name,
-              'title' => $this->t('Add @entity-type', ['@entity-type' => $type->getLowercaseLabel()]),
+              'title' => $this->t('Add @entity-type', ['@entity-type' => $type->getSingularLabel()]),
               'appears_on' => [$collection_route_name],
             ] + $base_plugin_definition;
 

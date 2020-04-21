@@ -32,8 +32,9 @@ use Drupal\Core\Entity\EntityTypeInterface;
  * @\Drupal\apigee_edge\Annotation\EdgeEntityType(
  *   id = "team",
  *   label = @Translation("Team"),
- *   label_singular = @Translation("Team"),
- *   label_plural = @Translation("Teams"),
+ *   label_collection = @Translation("Teams"),
+ *   label_singular = @Translation("team"),
+ *   label_plural = @Translation("teams"),
  *   label_count = @PluralTranslation(
  *     singular = "@count Team",
  *     plural = "@count Teams",

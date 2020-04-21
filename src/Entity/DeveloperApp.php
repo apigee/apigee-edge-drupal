@@ -33,8 +33,9 @@ use Drupal\user\UserInterface;
  * @\Drupal\apigee_edge\Annotation\EdgeEntityType(
  *   id = "developer_app",
  *   label = @Translation("Developer App"),
- *   label_singular = @Translation("Developer App"),
- *   label_plural = @Translation("Developer Apps"),
+ *   label_collection = @Translation("Developer Apps"),
+ *   label_singular = @Translation("developer app"),
+ *   label_plural = @Translation("developer apps"),
  *   label_count = @PluralTranslation(
  *     singular = "@count Developer App",
  *     plural = "@count Developer Apps",
