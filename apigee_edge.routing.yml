@@ -134,6 +134,15 @@ apigee_edge.settings.developer_app:
   requirements:
     _permission: 'administer apigee edge'
 
+apigee_edge.display_settings.developer_app:
+  path: '/admin/config/apigee-edge/app-settings/developer-apps/display-settings'
+  defaults:
+    _form: '\Drupal\apigee_edge\Form\EdgeEntityDisplaySettingsForm'
+    _title: 'Display settings'
+    entity_type_id: 'developer_app'
+  requirements:
+    _permission: 'administer apigee edge'
+
 apigee_edge.settings.developer_app.credentials:
   path: '/admin/config/apigee-edge/app-settings/developer-apps/credentials'
   defaults:

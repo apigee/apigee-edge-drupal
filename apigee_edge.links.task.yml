@@ -35,6 +35,12 @@ apigee_edge.settings.developer_app.alias:
   base_route: apigee_edge.settings.developer_app
   weight: -10
 
+apigee_edge.settings.developer_app.display_settings:
+  route_name: apigee_edge.display_settings.developer_app
+  title: 'Display settings'
+  base_route: apigee_edge.settings.developer_app
+  weight: -9
+
 apigee_edge.settings.developer_app.credentials:
   route_name: apigee_edge.settings.developer_app.credentials
   title: 'Credentials'

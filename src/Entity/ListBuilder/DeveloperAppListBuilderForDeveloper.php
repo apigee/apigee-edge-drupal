@@ -24,6 +24,7 @@ use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -72,6 +73,8 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
    *   The entity type.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory.
    * @param \Drupal\Core\Render\RendererInterface $render
    *   The render.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
@@ -83,8 +86,8 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The route match object.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render, RequestStack $request_stack, TimeInterface $time, AccountInterface $current_user, RouteMatchInterface $route_match) {
-    parent::__construct($entity_type, $entity_type_manager, $render, $request_stack, $time);
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, RendererInterface $render, RequestStack $request_stack, TimeInterface $time, AccountInterface $current_user, RouteMatchInterface $route_match) {
+    parent::__construct($entity_type, $entity_type_manager, $config_factory, $render, $request_stack, $time);
     $this->currentUser = $current_user;
     $this->routeMatch = $route_match;
   }
@@ -96,6 +99,7 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
     return new static(
       $entity_type,
       $container->get('entity_type.manager'),
+      $container->get('config.factory'),
       $container->get('renderer'),
       $container->get('request_stack'),
       $container->get('datetime.time'),
@@ -169,15 +173,6 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
       return $app->toLink(NULL, 'canonical-by-developer')->toRenderable();
     }
     return parent::renderAppName($app);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render() {
-    $build = parent::render();
-    $build['table']['#empty'] = $this->t('Looks like you do not have any apps. Get started by adding one.');
-    return $build;
   }
 
   /**
