@@ -42,7 +42,7 @@ class TeamRoleDeleteForm extends EntityConfirmFormBase {
       $this->t('%label @entity-type successfully deleted.',
         [
           '%label' => $this->entity->label(),
-          '@entity-type' => $this->entity->getEntityType()->getSingularLabel(),
+          '@entity-type' => strtolower($this->entity->getEntityType()->getSingularLabel()),
         ])
     );
 

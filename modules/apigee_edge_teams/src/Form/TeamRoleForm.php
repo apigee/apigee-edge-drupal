@@ -47,7 +47,7 @@ class TeamRoleForm extends EntityForm {
 
     $context = [
       '%label' => $team_role->label(),
-      '@entity-type' => $team_role->getEntityType()->getSingularLabel(),
+      '@entity-type' => strtolower($team_role->getEntityType()->getSingularLabel()),
     ];
 
     if ($status == SAVED_NEW) {

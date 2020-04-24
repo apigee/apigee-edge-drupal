@@ -82,7 +82,9 @@ class AddAppForTeamLocalAction extends LocalActionDefault {
    * {@inheritdoc}
    */
   public function getTitle(Request $request = NULL) {
-    return $this->t('Add @app', ['@app' => $this->teamAppEntity->getSingularLabel()]);
+    return $this->t('Add @app', [
+      '@app' => strtolower($this->teamAppEntity->getSingularLabel()),
+    ]);
   }
 
 }

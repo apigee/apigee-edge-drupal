@@ -194,8 +194,8 @@ abstract class AppForm extends FieldableEdgeEntityForm {
       $context = [
         '%app_name' => $app->label(),
         '%owner' => $app->getAppOwner(),
-        '@app' => $this->appEntityDefinition()->getSingularLabel(),
-        '@owner' => $this->appOwnerEntityDefinition()->getSingularLabel(),
+        '@app' => strtolower($this->appEntityDefinition()->getSingularLabel()),
+        '@owner' => strtolower($this->appOwnerEntityDefinition()->getSingularLabel()),
         '@operation' => $was_new ? $this->t('create') : $this->t('update'),
       ];
       $context += Error::decodeException($exception);

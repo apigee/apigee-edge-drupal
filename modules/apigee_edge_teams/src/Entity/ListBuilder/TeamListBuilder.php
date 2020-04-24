@@ -64,7 +64,7 @@ class TeamListBuilder extends EdgeEntityListBuilder {
     if ($team_app_list_url->access()) {
       $team_app_entity_def = $this->entityTypeManager->getDefinition('team_app');
       $operations['apps'] = [
-        'title' => $team_app_entity_def->getPluralLabel(),
+        'title' => $team_app_entity_def->getCollectionLabel(),
         'url' => $team_app_list_url,
         'weight' => -10,
       ];

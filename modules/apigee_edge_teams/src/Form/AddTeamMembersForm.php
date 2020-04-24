@@ -91,7 +91,7 @@ class AddTeamMembersForm extends TeamMembersFormBase {
     $form['developers'] = [
       '#title' => $this->t('Developers'),
       '#description' => $this->t('Enter the email of one or more developers to add them to the @team.', [
-        '@team' => $this->team->getEntityType()->getSingularLabel(),
+        '@team' => strtolower($this->team->getEntityType()->getSingularLabel()),
       ]),
       '#type' => 'entity_autocomplete',
       '#target_type' => 'user',
@@ -121,7 +121,7 @@ class AddTeamMembersForm extends TeamMembersFormBase {
     $form['team_roles']['description'] = [
       '#markup' => $this->t('Assign one or more roles to <em>all developers</em> that you selected in %team_label @team.', [
         '%team_label' => $this->team->label(),
-        '@team' => $this->team->getEntityType()->getSingularLabel(),
+        '@team' => strtolower($this->team->getEntityType()->getSingularLabel()),
       ]),
     ];
 
@@ -162,7 +162,7 @@ class AddTeamMembersForm extends TeamMembersFormBase {
 
     $context = [
       '@developers' => implode('', $developer_emails),
-      '@team' => $this->team->getEntityType()->getSingularLabel(),
+      '@team' => strtolower($this->team->getEntityType()->getSingularLabel()),
       '%team_id' => $this->team->id(),
     ];
 
