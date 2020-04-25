@@ -217,7 +217,7 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
 
     // Add a new team app to the team.
     $this->clickLink('Team Apps');
-    $this->assertSession()->pageTextContains('There are no Team Apps yet.');
+    $this->assertSession()->pageTextContains('There are no team apps yet.');
     $this->clickLink('Add team app');
 
     $team_app_1_name = $team_app_1_display_name = strtolower($this->getRandomGenerator()->name());

@@ -141,7 +141,7 @@ class PrivateFileKeyProvider extends KeyProviderRequirementsBase implements KeyP
       ->prepareDirectory($file_path, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
 
     try {
-    // Save the token data.
+      // Save the token data.
       return $this->getFileSystem()
         ->saveData($key_value, $file_uri, FileSystemInterface::EXISTS_REPLACE);
     }
