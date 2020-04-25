@@ -75,16 +75,16 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
    *   The language manager.
    * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface|null $memory_cache
    *   The memory cache backend to be used.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
-   *   The entity type bundle info.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
    * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
    *   The team membership manager service.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   *   The entity type bundle info.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, Connection $database, EntityFieldManagerInterface $entity_field_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, MemoryCacheInterface $memory_cache, EntityTypeBundleInfoInterface $entity_type_bundle_info, EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager, LoggerInterface $logger) {
+  public function __construct(EntityTypeInterface $entity_type, Connection $database, EntityFieldManagerInterface $entity_field_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, MemoryCacheInterface $memory_cache, TeamMembershipManagerInterface $team_membership_manager, LoggerInterface $logger, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, EntityTypeManagerInterface $entity_type_manager = NULL) {
     parent::__construct($entity_type, $database, $entity_field_manager, $cache, $language_manager, $memory_cache, $entity_type_bundle_info, $entity_type_manager);
     $this->teamMembershipManager = $team_membership_manager;
     $this->logger = $logger;
@@ -101,10 +101,10 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
       $container->get('cache.entity'),
       $container->get('language_manager'),
       $container->get('entity.memory_cache'),
-      $container->get('entity_type.bundle.info'),
-      $container->get('entity_type.manager'),
       $container->get('apigee_edge_teams.team_membership_manager'),
-      $container->get('logger.channel.apigee_edge_teams')
+      $container->get('logger.channel.apigee_edge_teams'),
+      $container->get('entity_type.bundle.info'),
+      $container->get('entity_type.manager')
     );
   }
 
