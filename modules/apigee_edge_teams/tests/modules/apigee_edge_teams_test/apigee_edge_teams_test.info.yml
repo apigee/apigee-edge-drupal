@@ -1,7 +1,7 @@
 name: 'Apigee Edge Teams: Testing'
 type: module
 description: 'Support module for the Apigee Edge Teams tests.'
-core: 8.x
+core_version_requirement: ^8 || ^9
 package: Testing
 
 dependencies:

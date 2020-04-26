@@ -125,6 +125,8 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
       ->willReturn(new Request());
     $this->getResponseForExceptionEvent->getException()
       ->willReturn($this->exception);
+    $this->getResponseForExceptionEvent->getThrowable()
+      ->willReturn($this->exception);
     $this->getResponseForExceptionEvent->setResponse(Argument::any())
       ->willReturn();
   }

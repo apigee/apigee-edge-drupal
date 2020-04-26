@@ -97,6 +97,10 @@ namespace Drupal\Tests\apigee_edge\Unit\Command {
      * {@inheritdoc}
      */
     protected function setUp() {
+      if (!class_exists('Drupal\Console\Core\Command\Command')) {
+        $this->markTestSkipped('Skipping because Drupal Console is not installed.');
+    }
+
       parent::setUp();
       $this->cliService = $this->prophesize(CliServiceInterface::class);
       $this->logMessageParser = $this->prophesize(LogMessageParserInterface::class);

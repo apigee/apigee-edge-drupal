@@ -42,7 +42,9 @@ class TeamTitleProvider extends EdgeEntityTitleProvider {
    */
   public function teamMembersList(RouteMatchInterface $route_match, EntityInterface $_entity = NULL) {
     if ($entity = $this->doGetEntity($route_match, $_entity)) {
-      return $this->t('@entity_type Members', ['@entity_type' => $this->entityTypeManager->getDefinition($entity->getEntityTypeId())->getSingularLabel()]);
+      return $this->t('@entity_type Members', [
+        '@entity_type' => ucfirst($this->entityTypeManager->getDefinition($entity->getEntityTypeId())->getSingularLabel()),
+      ]);
     }
   }
 
