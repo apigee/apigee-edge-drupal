@@ -125,10 +125,14 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
       ->willReturn(new Request());
     $this->getResponseForExceptionEvent->getException()
       ->willReturn($this->exception);
-    $this->getResponseForExceptionEvent->getThrowable()
-      ->willReturn($this->exception);
     $this->getResponseForExceptionEvent->setResponse(Argument::any())
       ->willReturn();
+
+    // Compatibility with Symfony 4.x and up.
+    if ((new \ReflectionClass(GetResponseForExceptionEvent::class))->hasMethod('getThrowable')) {
+      $this->getResponseForExceptionEvent->getThrowable()
+        ->willReturn($this->exception);
+    }
   }
 
   /**
