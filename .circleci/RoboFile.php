@@ -55,12 +55,15 @@ class RoboFile extends \Robo\Tasks
       ->mkdir('artifacts/phpcs')
       ->mkdir('artifacts/phpmd')
       ->mkdir('artifacts/phpmetrics')
+      ->mkdir('artifacts/d9')
       ->mkdir('/tmp/artifacts/phpunit')
       ->mkdir('/tmp/artifacts/phpmd')
       ->run();
 
     $this->taskFilesystemStack()
       ->chown('/tmp/artifacts', 'www-data', TRUE)
+      ->copy('modules/apigee_edge/.circleci/d9.sh', '/var/www/html/d9.sh')
+      ->chmod('/var/www/html/d9.sh', 0777)
       ->run();
   }
 
