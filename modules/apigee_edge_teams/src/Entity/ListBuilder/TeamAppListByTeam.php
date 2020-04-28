@@ -103,6 +103,22 @@ class TeamAppListByTeam extends AppListBuilder implements ContainerInjectionInte
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function render() {
+    $build = parent::render();
+
+    // Update the empty text for table views.
+    if (!empty($build['table'])) {
+      $build['table']['#empty'] = t('There are no @label yet.', [
+        '@label' => $this->entityType->getPluralLabel(),
+      ]);
+    }
+
+    return $build;
+  }
+
+  /**
    * Returns the title of the "team app list by team" page.
    *
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup
