@@ -6,6 +6,15 @@ apigee_edge_teams.settings.team:
   requirements:
     _permission: 'administer team'
 
+apigee_edge.display_settings.team:
+  path: '/admin/config/apigee-edge/team-settings/display-settings'
+  defaults:
+    _form: '\Drupal\apigee_edge\Form\EdgeEntityDisplaySettingsForm'
+    _title: 'Display settings'
+    entity_type_id: 'team'
+  requirements:
+    _permission: 'administer team'
+
 apigee_edge_teams.settings.team.cache:
   path: '/admin/config/apigee-edge/team-settings/caching'
   defaults:
