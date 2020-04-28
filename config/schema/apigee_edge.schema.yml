@@ -91,10 +91,10 @@ apigee_edge.display_settings.*:
   label: 'Display settings'
   mapping:
     display_type:
-      type: String
+      type: string
       label: 'Display type'
     view_mode:
-      type: String
+      type: string
       label: 'View mode'
 
 field.widget.settings.app_callback_url:
