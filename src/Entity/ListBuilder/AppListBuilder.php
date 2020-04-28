@@ -37,7 +37,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
- * General app list builder for developer- and team apps.
+ * General app list builder for developer and team apps.
  */
 class AppListBuilder extends EdgeEntityListBuilder {
 
