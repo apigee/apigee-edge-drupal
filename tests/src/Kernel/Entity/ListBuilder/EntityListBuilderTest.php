@@ -69,6 +69,13 @@ class EntityListBuilderTest extends KernelTestBase {
   protected $account;
 
   /**
+   * A DeveloperApp entity.
+   *
+   * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface
+   */
+  protected $app;
+
+  /**
    * {@inheritdoc}
    *
    * @throws \Exception
@@ -93,6 +100,33 @@ class EntityListBuilderTest extends KernelTestBase {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  protected function tearDown() {
+    $this->stack->reset();
+    try {
+      if ($this->account) {
+        $this->queueDeveloperResponse($this->account);
+        $developer = \Drupal::entityTypeManager()
+          ->getStorage('developer')
+          ->create([
+            'email' => $this->account->getEmail(),
+          ]);
+        $developer->delete();
+      }
+
+      if ($this->app) {
+        $this->app->delete();
+      }
+    }
+    catch (\Exception $exception) {
+      $this->logException($exception);
+    }
+
+    parent::tearDown();
+  }
+
+  /**
    * Tests display settings for list builder.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
@@ -101,12 +135,12 @@ class EntityListBuilderTest extends KernelTestBase {
     /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager */
     $entity_type_manager = $this->container->get('entity_type.manager');
     $this->queueDeveloperResponse($this->account);
-    $developer_app = $this->createDeveloperApp();
+    $this->app = $this->createDeveloperApp();
 
     $this->queueDeveloperResponse($this->account);
     $this->stack->queueMockResponse([
       'get_developer_apps' => [
-        'apps' => [$developer_app]
+        'apps' => [$this->app]
       ],
     ]);
 
