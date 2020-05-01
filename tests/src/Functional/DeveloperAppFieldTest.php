@@ -257,7 +257,7 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
     foreach ($fields as $name => $data) {
       $this->fieldUIAddNewField(
         $add_field_path,
-        $name, strtoupper($name),
+        $name, mb_strtoupper($name),
         $data['type'],
         ($data['settings'] ?? []) + [
           'cardinality' => -1,

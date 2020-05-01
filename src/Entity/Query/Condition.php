@@ -162,13 +162,13 @@ class Condition extends ConditionBase implements ConditionInterface {
             return !in_array($value, $condition['value'], TRUE);
 
           case 'STARTS_WITH':
-            return strpos($value, $condition['value']) === 0;
+            return mb_strpos($value, $condition['value']) === 0;
 
           case 'CONTAINS':
-            return strpos($value, $condition['value']) !== FALSE;
+            return mb_strpos($value, $condition['value']) !== FALSE;
 
           case 'ENDS_WITH':
-            return substr($value, -strlen($condition['value'])) === (string) $condition['value'];
+            return mb_substr($value, -mb_strlen($condition['value'])) === (string) $condition['value'];
 
           default:
             throw new QueryException('Invalid condition operator.');

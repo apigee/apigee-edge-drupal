@@ -188,7 +188,7 @@ function apigee_edge_apiproduct_rbac_form_apigee_edge_api_product_access_control
   // the query level does not work).
   uasort($api_products, function (ApiProductInterface $a, ApiProductInterface $b) {
     // Ignore case and malicious characters.
-    return strcmp(strtolower(Xss::filter($a->getDisplayName())), strtolower(Xss::filter($b->getDisplayName())));
+    return strcmp(mb_strtolower(Xss::filter($a->getDisplayName())), mb_strtolower(Xss::filter($b->getDisplayName())));
   });
   $product_names = [];
 

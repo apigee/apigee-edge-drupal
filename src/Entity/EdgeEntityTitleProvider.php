@@ -36,7 +36,7 @@ class EdgeEntityTitleProvider extends EntityController {
     if ($entity = $this->doGetEntity($route_match, $_entity)) {
       return $this->t('@label @entity_type', [
         '@label' => $entity->label(),
-        '@entity_type' => strtolower($this->entityTypeManager->getDefinition($entity->getEntityTypeId())->getSingularLabel()),
+        '@entity_type' => mb_strtolower($this->entityTypeManager->getDefinition($entity->getEntityTypeId())->getSingularLabel()),
       ]);
     }
     return parent::title($route_match, $_entity);
@@ -49,7 +49,7 @@ class EdgeEntityTitleProvider extends EntityController {
     if ($entity = $this->doGetEntity($route_match, $_entity)) {
       return $this->t('Edit %label @entity_type', [
         '%label' => $entity->label(),
-        '@entity_type' => strtolower($this->entityTypeManager->getDefinition($entity->getEntityTypeId())->getSingularLabel()),
+        '@entity_type' => mb_strtolower($this->entityTypeManager->getDefinition($entity->getEntityTypeId())->getSingularLabel()),
       ]);
     }
     return parent::editTitle($route_match, $_entity);
@@ -64,7 +64,7 @@ class EdgeEntityTitleProvider extends EntityController {
       // display this as a page title. This issue also existed before.
       return $this->t('Delete %label @entity_type', [
         '%label' => $entity->label(),
-        '@entity_type' => strtolower($this->entityTypeManager->getDefinition($entity->getEntityTypeId())->getSingularLabel()),
+        '@entity_type' => mb_strtolower($this->entityTypeManager->getDefinition($entity->getEntityTypeId())->getSingularLabel()),
       ]);
     }
     return parent::deleteTitle($route_match, $_entity);

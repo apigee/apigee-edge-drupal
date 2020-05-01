@@ -67,10 +67,10 @@ class OauthTokenFileStorageTest extends KernelTestBase {
     parent::setUp();
 
     $this->testTokenData = [
-      'access_token' => strtolower($this->randomMachineName(32)),
+      'access_token' => mb_strtolower($this->randomMachineName(32)),
       'token_type' => 'bearer',
       'expires_in' => 300,
-      'refresh_token' => strtolower($this->randomMachineName(32)),
+      'refresh_token' => mb_strtolower($this->randomMachineName(32)),
       'scope' => 'create',
     ];
   }
@@ -179,7 +179,7 @@ class OauthTokenFileStorageTest extends KernelTestBase {
     $stored_token = unserialize(base64_decode(file_get_contents($this->tokenFileUri())));
 
     // Create a new access token and write it to file.
-    $stored_token['access_token'] = strtolower($this->randomMachineName(32));
+    $stored_token['access_token'] = mb_strtolower($this->randomMachineName(32));
     \Drupal::service('file_system')->saveData(
       base64_encode(serialize($stored_token)),
       $this->tokenFileUri(), FileSystemInterface::EXISTS_REPLACE);

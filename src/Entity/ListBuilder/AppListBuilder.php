@@ -329,7 +329,7 @@ class AppListBuilder extends EdgeEntityListBuilder {
     foreach ($app->getCredentials() as $credential) {
       if ($credential->getStatus() === AppCredential::STATUS_REVOKED) {
         $args = [
-          '@app' => strtolower($this->entityType->getSingularLabel()),
+          '@app' => mb_strtolower($this->entityType->getSingularLabel()),
         ];
         if (count($app->getCredentials()) > 1) {
           $warnings['revokedCred'] = $this->t('One of the credentials associated with this @app is in revoked status.', $args);
@@ -343,15 +343,15 @@ class AppListBuilder extends EdgeEntityListBuilder {
       // Check for expired credentials.
       if (($expired_date = $credential->getExpiresAt()) && $this->time->getRequestTime() - $expired_date->getTimestamp() > 0) {
         $warnings['expiredCred'] = $this->t('At least one of the credentials associated with this @app is expired.', [
-          '@app' => strtolower($this->entityType->getSingularLabel()),
+          '@app' => mb_strtolower($this->entityType->getSingularLabel()),
         ]);
       }
 
       foreach ($credential->getApiProducts() as $cred_product) {
         if ($cred_product->getStatus() == CredentialProduct::STATUS_REVOKED || $cred_product->getStatus() == CredentialProduct::STATUS_PENDING) {
           $args = [
-            '@app' => strtolower($this->entityType->getSingularLabel()),
-            '@api_product' => strtolower($this->entityTypeManager->getDefinition('api_product')->getSingularLabel()),
+            '@app' => mb_strtolower($this->entityType->getSingularLabel()),
+            '@api_product' => mb_strtolower($this->entityTypeManager->getDefinition('api_product')->getSingularLabel()),
             '@status' => $cred_product->getStatus() == CredentialProduct::STATUS_REVOKED ? $this->t('revoked') : $this->t('pending'),
           ];
           if (count($app->getCredentials()) === 1) {

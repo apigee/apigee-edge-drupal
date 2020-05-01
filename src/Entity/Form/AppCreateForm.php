@@ -251,7 +251,7 @@ abstract class AppCreateForm extends AppForm {
    */
   protected function saveButtonLabel() : TranslatableMarkup {
     return $this->t('Add @app', [
-      '@app' => strtolower($this->appEntityDefinition()->getSingularLabel()),
+      '@app' => mb_strtolower($this->appEntityDefinition()->getSingularLabel()),
     ]);
   }
 

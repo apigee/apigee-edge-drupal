@@ -381,7 +381,7 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       $this->fieldUIAddNewField(
         Url::fromRoute('entity.user.admin_form')->toString(),
         $data['name'],
-        strtoupper($data['name']),
+        mb_strtoupper($data['name']),
         $field_type,
         ($data['settings'] ?? []) + [
           'cardinality' => -1,

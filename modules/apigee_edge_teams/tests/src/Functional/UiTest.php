@@ -160,7 +160,7 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
     // Create a new team and check whether the link to the team is visible on
     // the listing page.
     $this->clickLink('Add team');
-    $team_name = $team_display_name = strtolower($this->getRandomGenerator()->name());
+    $team_name = $team_display_name = mb_strtolower($this->getRandomGenerator()->name());
     $this->submitForm([
       'name' => $team_name,
       'displayName[0][value]' => $team_display_name,
@@ -220,7 +220,7 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
     $this->assertSession()->pageTextContains('There are no team apps yet.');
     $this->clickLink('Add team app');
 
-    $team_app_1_name = $team_app_1_display_name = strtolower($this->getRandomGenerator()->name());
+    $team_app_1_name = $team_app_1_display_name = mb_strtolower($this->getRandomGenerator()->name());
     $this->submitForm([
       'name' => $team_app_1_name,
       'displayName[0][value]' => $team_app_1_display_name,
@@ -338,7 +338,7 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
       foreach ($this->fields as $name => $data) {
         $this->fieldUIAddNewField(
           $add_field_path,
-          $name, strtoupper($name),
+          $name, mb_strtoupper($name),
           $data['type'],
           ($data['settings'] ?? []) + [
             'cardinality' => -1,

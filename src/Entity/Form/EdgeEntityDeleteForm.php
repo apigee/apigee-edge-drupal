@@ -106,7 +106,7 @@ class EdgeEntityDeleteForm extends EntityDeleteForm {
    */
   protected function verificationCodeErrorMessage() {
     return $this->t('The provided text does not match the id of @entity that you are attempting to delete.', [
-      '@entity' => strtolower($this->entityTypeManager->getDefinition($this->getEntity()->getEntityTypeId())->getSingularLabel()),
+      '@entity' => mb_strtolower($this->entityTypeManager->getDefinition($this->getEntity()->getEntityTypeId())->getSingularLabel()),
     ]);
   }
 
@@ -115,7 +115,7 @@ class EdgeEntityDeleteForm extends EntityDeleteForm {
    */
   public function getQuestion() {
     return $this->t('Are you sure you want to delete the %label @entity-type?', [
-      '@entity-type' => strtolower($this->getEntity()->getEntityType()->getSingularLabel()),
+      '@entity-type' => mb_strtolower($this->getEntity()->getEntityType()->getSingularLabel()),
       '%label' => $this->getEntity()->label(),
     ]);
   }
@@ -125,7 +125,7 @@ class EdgeEntityDeleteForm extends EntityDeleteForm {
    */
   protected function getDeletionMessage() {
     return $this->t('The %label @entity-type has been deleted.', [
-      '@entity-type' => strtolower($this->getEntity()->getEntityType()->getSingularLabel()),
+      '@entity-type' => mb_strtolower($this->getEntity()->getEntityType()->getSingularLabel()),
       '%label' => $this->getEntity()->label(),
     ]);
   }
