@@ -154,7 +154,7 @@ class EdgeEntityDisplaySettingsForm extends ConfigFormBase implements BaseFormId
       '#title' => $this->t('Type'),
       '#default_value' => $config->get('display_type'),
       '#required' => TRUE,
-      '#description' => $this->t('Select <em>Display mode</em> to configure a custom display.'),
+      '#description' => $this->t('Select the <em>Default</em> type to display a table of entities with links to entity operations. Select <em>Display mode</em> to configure a custom display.'),
       '#options' => [
         EdgeEntityListBuilder::DEFAULT_DISPLAY_TYPE => $this->t('Default'),
         EdgeEntityListBuilder::VIEW_MODE_DISPLAY_TYPE => $this->t('Display mode'),

@@ -52,8 +52,6 @@ class TeamAppListByTeam extends AppListBuilder implements ContainerInjectionInte
    *   The entity type.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The config factory.
    * @param \Drupal\Core\Render\RendererInterface $render
    *   The render.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
@@ -62,9 +60,15 @@ class TeamAppListByTeam extends AppListBuilder implements ContainerInjectionInte
    *   The time service.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The route match object.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, RendererInterface $render, RequestStack $request_stack, TimeInterface $time, RouteMatchInterface $route_match) {
-    parent::__construct($entity_type, $entity_type_manager, $config_factory, $render, $request_stack, $time);
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render, RequestStack $request_stack, TimeInterface $time, RouteMatchInterface $route_match, ConfigFactoryInterface $config_factory = NULL) {
+    if (!$config_factory) {
+      $config_factory = \Drupal::service('config.factory');
+    }
+
+    parent::__construct($entity_type, $entity_type_manager, $render, $request_stack, $time, $config_factory);
     $this->routeMatch = $route_match;
   }
 
@@ -75,11 +79,11 @@ class TeamAppListByTeam extends AppListBuilder implements ContainerInjectionInte
     return new static(
       $entity_type,
       $container->get('entity_type.manager'),
-      $container->get('config.factory'),
       $container->get('renderer'),
       $container->get('request_stack'),
       $container->get('datetime.time'),
-      $container->get('current_route_match')
+      $container->get('current_route_match'),
+      $container->get('config.factory')
     );
   }
 

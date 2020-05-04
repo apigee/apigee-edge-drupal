@@ -69,9 +69,14 @@ class EdgeEntityListBuilder extends EntityListBuilder {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory = NULL) {
     parent::__construct($entity_type, $entity_type_manager->getStorage($entity_type->id()));
     $this->entityTypeManager = $entity_type_manager;
+
+    if (!$config_factory) {
+      $config_factory = \Drupal::service('config.factory');
+    }
+
     $this->configFactory = $config_factory;
     // Disable pager for now for all Apigee Edge entities.
     $this->limit = 0;

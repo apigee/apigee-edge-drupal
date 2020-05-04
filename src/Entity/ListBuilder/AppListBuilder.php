@@ -77,16 +77,20 @@ class AppListBuilder extends EdgeEntityListBuilder {
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    *   The time service.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The config factory.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack object.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, RendererInterface $renderer, RequestStack $request_stack, TimeInterface $time) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, RequestStack $request_stack, TimeInterface $time, ConfigFactoryInterface $config_factory = NULL) {
+    if (!$config_factory) {
+      $config_factory = \Drupal::service('config.factory');
+    }
+
     parent::__construct($entity_type, $entity_type_manager, $config_factory);
     $this->renderer = $renderer;
     $this->entityTypeManager = $entity_type_manager;
@@ -101,10 +105,10 @@ class AppListBuilder extends EdgeEntityListBuilder {
     return new static(
       $entity_type,
       $container->get('entity_type.manager'),
-      $container->get('config.factory'),
       $container->get('renderer'),
       $container->get('request_stack'),
-      $container->get('datetime.time')
+      $container->get('datetime.time'),
+      $container->get('config.factory')
     );
   }
 
