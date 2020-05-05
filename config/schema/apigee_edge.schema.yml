@@ -86,6 +86,17 @@ apigee_edge.developer_app_settings:
     credential_lifetime:
       type: integer
 
+apigee_edge.display_settings.*:
+  type: config_object
+  label: 'Display settings'
+  mapping:
+    display_type:
+      type: string
+      label: 'Display type'
+    view_mode:
+      type: string
+      label: 'View mode'
+
 field.widget.settings.app_callback_url:
   type: mapping
   label: 'Callback URL widget settings'
