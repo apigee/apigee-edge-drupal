@@ -209,7 +209,7 @@ class AppListBuilder extends EdgeEntityListBuilder {
     array_pop($entities);
 
     $local_entities = \Drupal::keyValue("apigee_edge.local_entities.{$this->entityTypeId}")
-      ->get(Drupal::currentUser()->getEmail());
+      ->get(\Drupal::currentUser()->getEmail());
     $unsynced_entities = array_diff_key($local_entities, $entities);
 
     // Show a message if there are app created locally but not persisted yet.
