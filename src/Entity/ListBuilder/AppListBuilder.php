@@ -31,6 +31,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Link;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -200,6 +201,34 @@ class AppListBuilder extends EdgeEntityListBuilder {
    */
   public function render() {
     $build = parent::render();
+    $entities = $this->load();
+
+    // Simulate missing apps from storage.
+    array_pop($entities);
+    array_pop($entities);
+    array_pop($entities);
+
+    $local_entities = \Drupal::keyValue("apigee_edge.local_entities.{$this->entityTypeId}")
+      ->get(Drupal::currentUser()->getEmail());
+    $unsynced_entities = array_diff_key($local_entities, $entities);
+
+    // Show a message if there are app created locally but not persisted yet.
+    if (count($unsynced_entities)) {
+      $build['info'] = [
+        '#theme' => 'status_messages',
+        '#message_list' => [
+          MessengerInterface::TYPE_WARNING => [
+            $this->t('The following @entity_type_label are pending: <strong>@names</strong>. You can check the status of the app by <a href=":url">refreshing the cache</a>.', [
+              '@entity_type_label' => mb_strtolower($this->entityType->getPluralLabel()),
+              '@names' => implode(', ', $unsynced_entities),
+              ':url' => 'path/to/clear/app/cache',
+            ]),
+          ],
+        ],
+        '#weight' => -100,
+      ];
+    }
+
     if ($this->usingDisplayType(static::VIEW_MODE_DISPLAY_TYPE)) {
       return $build;
     }
@@ -208,7 +237,7 @@ class AppListBuilder extends EdgeEntityListBuilder {
     $build['table']['#rows'] = [];
     $build['table']['#empty'] = $this->t('Looks like you do not have any apps. Get started by adding one.');
 
-    foreach ($this->load() as $entity) {
+    foreach ($entities as $entity) {
       $rows = [];
       $this->buildInfoRow($entity, $rows);
       $this->buildWarningRow($entity, $rows);

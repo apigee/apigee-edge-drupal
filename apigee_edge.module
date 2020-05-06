@@ -1559,6 +1559,21 @@ function apigee_edge_developer_app_storage_load(array $entities) {
 }
 
 /**
+ * Implements hook_entity_insert().
+ */
+function apigee_edge_entity_insert(EntityInterface $entity) {
+  $user = Drupal::currentUser();
+  if ($entity instanceof AppInterface) {
+    $store = Drupal::keyValue("apigee_edge.local_entities.{$entity->getEntityTypeId()}");
+
+    // Save the inserted app to the key value store.
+    $value = $store->get($user->getEmail(), []);
+    $value[$entity->id()] = $entity->getDisplayName();
+    $store->set($user->getEmail(), $value);
+  }
+}
+
+/**
  * Checks whether a user has a developer app with an API product.
  *
  * We did not add static caching to this function because there could be
