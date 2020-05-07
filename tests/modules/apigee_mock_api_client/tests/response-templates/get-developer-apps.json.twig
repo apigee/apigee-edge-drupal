@@ -10,6 +10,7 @@
  * - developer_email_or_id: The developer email or id.
  */
 #}
+{% if (expand) %}
 {
   "apps" : [
     {% for app in apps %}
@@ -17,3 +18,10 @@
     {% endfor %}
   ]
 }
+{% else %}
+[
+  {% for app in apps %}
+  "{{ app.name }}"{{ loop.last ? '' : ',' }}
+  {% endfor %}
+]
+{% endif %}

@@ -1,0 +1,8 @@
+name: 'Apigee Edge Mock Testing'
+type: module
+description: 'Support module for the Apigee Edge testing compatible with the mock client.'
+core: 8.x
+package: Testing
+
+dependencies:
+  - apigee_edge:apigee_edge
