@@ -33,7 +33,7 @@ use Drupal\apigee_edge_test\Entity\Storage\DeveloperAppStorage;
  */
 function apigee_edge_test_entity_type_alter(array &$entity_types) {
   /* @var $entity_types \Drupal\Core\Entity\EntityTypeInterface[] */
-  foreach (_apigee_edge_entity_class_mapping() as $entity_type => $entity_class) {
+  foreach (_apigee_edge_test_entity_class_mapping() as $entity_type => $entity_class) {
     if (isset($entity_types[$entity_type])) {
       $entity_types[$entity_type]->setClass($entity_class);
     }
@@ -48,7 +48,7 @@ function apigee_edge_test_entity_type_alter(array &$entity_types) {
  * @return array
  *   Override map.
  */
-function _apigee_edge_entity_class_mapping(): array {
+function _apigee_edge_test_entity_class_mapping(): array {
   return [
     'developer' => OverriddenDeveloper::class,
     'developer_app' => OverriddenDeveloperApp::class,
