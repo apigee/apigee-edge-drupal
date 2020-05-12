@@ -120,7 +120,7 @@ abstract class FieldableEdgeEntityForm extends EntityForm implements FieldableEd
    * @return string[]
    *   An array of field names.
    *
-   * TODO Add missing return type-hint in 2.x.
+   * @todo Add missing return type-hint in 2.x.
    */
   protected function getEditedFieldNames(FormStateInterface $form_state) {
     return array_keys($this->getFormDisplay($form_state)->getComponents());
@@ -147,7 +147,7 @@ abstract class FieldableEdgeEntityForm extends EntityForm implements FieldableEd
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    *
-   * TODO Add missing return type-hint in 2.x.
+   * @todo Add missing return type-hint in 2.x.
    */
   protected function flagViolations(EntityConstraintViolationListInterface $violations, array $form, FormStateInterface $form_state) {
     // Flag entity level violations.
