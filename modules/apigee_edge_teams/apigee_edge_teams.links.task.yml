@@ -4,6 +4,12 @@ apigee_edge_teams.settings.team:
   base_route: apigee_edge_teams.settings.team
   weight: -10
 
+apigee_edge.settings.team.display_settings:
+  route_name: apigee_edge.display_settings.team
+  title: 'Display settings'
+  base_route: apigee_edge_teams.settings.team
+  weight: -9
+
 apigee_edge_teams.settings.team.roles:
   route_name: entity.team_role.collection
   title: 'Roles'
@@ -23,6 +29,12 @@ apigee_edge_teams.settings.team_app.alias:
   route_name: apigee_edge_teams.settings.team_app
   title: 'Alias'
   base_route: apigee_edge_teams.settings.team_app
+
+apigee_edge.settings.team_app.display_settings:
+  route_name: apigee_edge.display_settings.team_app
+  title: 'Display settings'
+  base_route: apigee_edge_teams.settings.team_app
+  weight: -9
 
 apigee_edge_teams.settings.team_app.credentials:
   route_name: apigee_edge_teams.settings.team_app.credentials

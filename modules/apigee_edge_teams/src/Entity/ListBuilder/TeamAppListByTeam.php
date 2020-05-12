@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge_teams\Entity\ListBuilder;
 
 use Drupal\apigee_edge\Entity\ListBuilder\AppListBuilder;
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -59,9 +60,15 @@ class TeamAppListByTeam extends AppListBuilder implements ContainerInjectionInte
    *   The time service.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The route match object.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render, RequestStack $request_stack, TimeInterface $time, RouteMatchInterface $route_match) {
-    parent::__construct($entity_type, $entity_type_manager, $render, $request_stack, $time);
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render, RequestStack $request_stack, TimeInterface $time, RouteMatchInterface $route_match, ConfigFactoryInterface $config_factory = NULL) {
+    if (!$config_factory) {
+      $config_factory = \Drupal::service('config.factory');
+    }
+
+    parent::__construct($entity_type, $entity_type_manager, $render, $request_stack, $time, $config_factory);
     $this->routeMatch = $route_match;
   }
 
@@ -75,7 +82,8 @@ class TeamAppListByTeam extends AppListBuilder implements ContainerInjectionInte
       $container->get('renderer'),
       $container->get('request_stack'),
       $container->get('datetime.time'),
-      $container->get('current_route_match')
+      $container->get('current_route_match'),
+      $container->get('config.factory')
     );
   }
 
@@ -96,6 +104,22 @@ class TeamAppListByTeam extends AppListBuilder implements ContainerInjectionInte
     $query->condition('companyName', $team->id());
 
     return $query;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function render() {
+    $build = parent::render();
+
+    // Update the empty text for table views.
+    if (!empty($build['table'])) {
+      $build['table']['#empty'] = t('There are no @label yet.', [
+        '@label' => $this->entityType->getPluralLabel(),
+      ]);
+    }
+
+    return $build;
   }
 
   /**

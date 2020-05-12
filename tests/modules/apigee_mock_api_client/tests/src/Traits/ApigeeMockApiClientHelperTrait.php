@@ -235,9 +235,12 @@ trait ApigeeMockApiClientHelperTrait {
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   protected function createDeveloperApp(): DeveloperAppInterface {
+    static $appId;
+    $appId = $appId ? $appId++ : 1;
+
     /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
     $entity = DeveloperApp::create([
-      'appId' => 1,
+      'appId' => $this->integration_enabled ? NULL : $appId,
       'name' => $this->randomMachineName(),
       'status' => App::STATUS_APPROVED,
       'displayName' => $this->randomMachineName(),

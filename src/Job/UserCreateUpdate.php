@@ -106,6 +106,17 @@ abstract class UserCreateUpdate extends EdgeJob {
    *   Can throw an exception to abort user save.
    */
   protected function beforeUserSave(DeveloperToUserConversionResult $result) : void {
+    // Abort the operation if any of these special problems occurred
+    // meanwhile the conversation.
+    foreach ($result->getProblems() as $problem) {
+      // Skip user save if username is already taken or the username
+      // is too long instead of getting a database exception in a lower layer.
+      // (Username field's value is not limited on Apigee Edge and it is not
+      // unique either.)
+      if (($problem instanceof DeveloperToUserConversationInvalidValueException) && $problem->getTarget() === 'name') {
+        throw $problem;
+      }
+    }
     // It's necessary because changed time is automatically updated on the
     // UI only.
     $result->getUser()->setChangedTime(\Drupal::time()->getCurrentTime());

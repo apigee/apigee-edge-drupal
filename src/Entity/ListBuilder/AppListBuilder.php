@@ -26,6 +26,7 @@ use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -36,7 +37,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
- * General app list builder for developer- and team apps.
+ * General app list builder for developer and team apps.
  */
 class AppListBuilder extends EdgeEntityListBuilder {
 
@@ -62,21 +63,35 @@ class AppListBuilder extends EdgeEntityListBuilder {
   protected $time;
 
   /**
+   * The config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
    * AppListBuilder constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   *   The time service.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack object.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, RequestStack $request_stack, TimeInterface $time) {
-    parent::__construct($entity_type, $entity_type_manager);
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, RequestStack $request_stack, TimeInterface $time, ConfigFactoryInterface $config_factory = NULL) {
+    if (!$config_factory) {
+      $config_factory = \Drupal::service('config.factory');
+    }
+
+    parent::__construct($entity_type, $entity_type_manager, $config_factory);
     $this->renderer = $renderer;
     $this->entityTypeManager = $entity_type_manager;
     $this->requestStack = $request_stack;
@@ -92,7 +107,8 @@ class AppListBuilder extends EdgeEntityListBuilder {
       $container->get('entity_type.manager'),
       $container->get('renderer'),
       $container->get('request_stack'),
-      $container->get('datetime.time')
+      $container->get('datetime.time'),
+      $container->get('config.factory')
     );
   }
 
@@ -184,9 +200,14 @@ class AppListBuilder extends EdgeEntityListBuilder {
    */
   public function render() {
     $build = parent::render();
-    $build['table']['#attributes']['class'][] = 'table--app-list';
+    if ($this->usingDisplayType(static::VIEW_MODE_DISPLAY_TYPE)) {
+      return $build;
+    }
 
-    // Parent couldn't build row(s) for entities, let's build them now.
+    $build['table']['#attributes']['class'][] = 'table--app-list';
+    $build['table']['#rows'] = [];
+    $build['table']['#empty'] = $this->t('Looks like you do not have any apps. Get started by adding one.');
+
     foreach ($this->load() as $entity) {
       $rows = [];
       $this->buildInfoRow($entity, $rows);
@@ -195,6 +216,7 @@ class AppListBuilder extends EdgeEntityListBuilder {
     }
 
     $build['#attached']['library'][] = 'apigee_edge/apigee_edge.app_listing';
+
     return $build;
   }
 

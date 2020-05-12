@@ -52,7 +52,7 @@ class UserUpdate extends UserCreateUpdate {
       /** @var \Drupal\user\UserInterface $original_user */
       foreach ($result->getProblems() as $problem) {
         // Do not apply rollback on base fields.
-        if ($problem instanceof DeveloperToUserConversationInvalidValueException && !in_array($problem->getTarget(), $this->userDeveloperConverter()::DEVELOPER_PROP_USER_BASE_FIELD_MAP)) {
+        if ($problem instanceof DeveloperToUserConversationInvalidValueException && !in_array($problem->getTarget(), $this->userDeveloperConverter()::DEVELOPER_PROP_USER_BASE_FIELD_MAP, TRUE)) {
           $result->getUser()->set($problem->getTarget(), $original_user->get($problem->getTarget())->getValue());
         }
       }

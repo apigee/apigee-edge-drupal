@@ -24,6 +24,7 @@ use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -82,9 +83,15 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
    *   Currently logged-in user.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The route match object.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render, RequestStack $request_stack, TimeInterface $time, AccountInterface $current_user, RouteMatchInterface $route_match) {
-    parent::__construct($entity_type, $entity_type_manager, $render, $request_stack, $time);
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render, RequestStack $request_stack, TimeInterface $time, AccountInterface $current_user, RouteMatchInterface $route_match, ConfigFactoryInterface $config_factory = NULL) {
+    if (!$config_factory) {
+      $config_factory = \Drupal::service('config.factory');
+    }
+
+    parent::__construct($entity_type, $entity_type_manager, $render, $request_stack, $time, $config_factory);
     $this->currentUser = $current_user;
     $this->routeMatch = $route_match;
   }
@@ -100,7 +107,8 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
       $container->get('request_stack'),
       $container->get('datetime.time'),
       $container->get('current_user'),
-      $container->get('current_route_match')
+      $container->get('current_route_match'),
+      $container->get('config.factory')
     );
   }
 
@@ -169,15 +177,6 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
       return $app->toLink(NULL, 'canonical-by-developer')->toRenderable();
     }
     return parent::renderAppName($app);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render() {
-    $build = parent::render();
-    $build['table']['#empty'] = $this->t('Looks like you do not have any apps. Get started by adding one.');
-    return $build;
   }
 
   /**
