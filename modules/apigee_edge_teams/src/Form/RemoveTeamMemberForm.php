@@ -115,7 +115,7 @@ class RemoveTeamMemberForm extends ConfirmFormBase {
   public function getQuestion() {
     return $this->t('Are you sure that you would like to remove %developer from the @team?', [
       '%developer' => $this->getDeveloperLabel(),
-      '@team' => $this->teamEntityType->getLowercaseLabel(),
+      '@team' => mb_strtolower($this->teamEntityType->getSingularLabel()),
     ]);
   }
 
@@ -134,7 +134,7 @@ class RemoveTeamMemberForm extends ConfirmFormBase {
       $form_state->setError($form, $this->t('%developer developer is not member of the %team_name @team.', [
         '%developer' => $this->developer->label(),
         '%team_name' => $this->team->getDisplayName(),
-        '@team' => $this->teamEntityType->getLowercaseLabel(),
+        '@team' => mb_strtolower($this->teamEntityType->getSingularLabel()),
       ]));
       $form_state->setRedirectUrl($this->getCancelUrl());
     }
@@ -149,7 +149,7 @@ class RemoveTeamMemberForm extends ConfirmFormBase {
     $context = [
       '%developer' => $this->getDeveloperLabel(),
       '%developer_mail' => $this->developer->getEmail(),
-      '@team' => $this->teamEntityType->getLowercaseLabel(),
+      '@team' => mb_strtolower($this->teamEntityType->getSingularLabel()),
       '%team_id' => $this->team->id(),
     ];
 

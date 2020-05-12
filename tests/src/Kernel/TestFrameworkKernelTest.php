@@ -204,7 +204,7 @@ class TestFrameworkKernelTest extends KernelTestBase {
     $this->assertEqual($loaded_developer->getEmail(), $developer->getEmail());
 
     // This line is what actually tests that the mock is not used since the mock template sets this attribute.
-    $this->assertFalse($developer->getAttributeValue('IS_MOCK_CLIENT'));
+    $this->assertEmpty($developer->getAttributeValue('IS_MOCK_CLIENT'));
   }
 
   /**

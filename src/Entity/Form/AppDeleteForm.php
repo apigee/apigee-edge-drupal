@@ -33,7 +33,7 @@ class AppDeleteForm extends EdgeEntityDeleteForm {
    */
   protected function verificationCodeErrorMessage() {
     return $this->t('The name does not match the @app you are attempting to delete.', [
-      '@app' => $this->entityTypeManager->getDefinition($this->getEntity()->getEntityTypeId())->getLowercaseLabel(),
+      '@app' => mb_strtolower($this->entityTypeManager->getDefinition($this->getEntity()->getEntityTypeId())->getSingularLabel()),
     ]);
   }
 

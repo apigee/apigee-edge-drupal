@@ -3,7 +3,7 @@ description: Role based access control over view operation on API products.
 package: Apigee
 
 type: module
-core: 8.x
+core_version_requirement: ^8 || ^9
 
 dependencies:
   - apigee_edge:apigee_edge

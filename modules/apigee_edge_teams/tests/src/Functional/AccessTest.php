@@ -224,12 +224,12 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
     }
 
     $this->team = $this->teamStorage->create([
-      'name' => strtolower($this->getRandomGenerator()->name()),
+      'name' => mb_strtolower($this->getRandomGenerator()->name()),
     ]);
     $this->team->save();
 
     $this->teamApp = $this->teamAppStorage->create([
-      'name' => strtolower($this->getRandomGenerator()->name()),
+      'name' => mb_strtolower($this->getRandomGenerator()->name()),
       'companyName' => $this->team->getName(),
     ]);
     $this->teamApp->save();

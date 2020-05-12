@@ -93,7 +93,7 @@ class AppCallbackUrlSettingsForm extends ConfigFormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     parent::validateForm($form, $form_state);
 
-    if (strpos($form_state->getValue(['callback_url', 'pattern'], ''), '^http') === FALSE) {
+    if (mb_strpos($form_state->getValue(['callback_url', 'pattern'], ''), '^http') === FALSE) {
       $form_state->setError($form['callback_url']['pattern'], $this->t('The pattern should start with <em>^http</em> to limit the acceptable protocols.'));
     }
   }

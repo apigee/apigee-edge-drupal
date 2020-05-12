@@ -36,6 +36,13 @@ use Drupal\user\UserInterface;
  * @\Drupal\apigee_edge\Annotation\EdgeEntityType(
  *   id = "developer",
  *   label = @Translation("Developer"),
+ *   label_collection = @Translation("Developers"),
+ *   label_singular = @Translation("developer"),
+ *   label_plural = @Translation("developers"),
+ *   label_count = @PluralTranslation(
+ *     singular = "@count developer",
+ *     plural = "@count developers",
+ *   ),
  *   handlers = {
  *     "storage" = "\Drupal\apigee_edge\Entity\Storage\DeveloperStorage",
  *   },

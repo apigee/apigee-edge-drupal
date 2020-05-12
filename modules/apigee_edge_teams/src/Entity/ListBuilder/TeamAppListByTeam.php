@@ -129,7 +129,7 @@ class TeamAppListByTeam extends AppListBuilder implements ContainerInjectionInte
    *   The title of the page.
    */
   public function pageTitle(): TranslatableMarkup {
-    return $this->t('@team_apps', ['@team_apps' => $this->entityType->getPluralLabel()]);
+    return $this->t('@team_apps', ['@team_apps' => $this->entityType->getCollectionLabel()]);
   }
 
 }

@@ -33,11 +33,12 @@ use Drupal\user\UserInterface;
  * @\Drupal\apigee_edge\Annotation\EdgeEntityType(
  *   id = "developer_app",
  *   label = @Translation("Developer App"),
- *   label_singular = @Translation("Developer App"),
- *   label_plural = @Translation("Developer Apps"),
+ *   label_collection = @Translation("Developer Apps"),
+ *   label_singular = @Translation("developer app"),
+ *   label_plural = @Translation("developer apps"),
  *   label_count = @PluralTranslation(
- *     singular = "@count Developer App",
- *     plural = "@count Developer Apps",
+ *     singular = "@count developer app",
+ *     plural = "@count developer apps",
  *   ),
  *   config_with_labels = "apigee_edge.developer_app_settings",
  *   handlers = {
@@ -242,6 +243,7 @@ class DeveloperApp extends App implements DeveloperAppInterface {
     /** @var \Drupal\Core\Field\BaseFieldDefinition[] $definitions */
     $definitions = parent::baseFieldDefinitions($entity_type);
     $developer_app_singular_label = \Drupal::entityTypeManager()->getDefinition('developer_app')->getSingularLabel();
+    $developer_app_singular_label = mb_convert_case($developer_app_singular_label, MB_CASE_TITLE);
 
     $definitions['displayName']
       ->setLabel(t('@developer_app name', ['@developer_app' => $developer_app_singular_label]));

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\apigee_edge\Kernel;
+namespace Drupal\Tests\apigee_edge\Kernel\Util;
 
 use Apigee\Edge\Exception\ClientErrorException;
 use Drupal\Core\DependencyInjection\ContainerBuilder;

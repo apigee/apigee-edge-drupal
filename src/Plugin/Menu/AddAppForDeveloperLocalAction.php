@@ -82,7 +82,7 @@ class AddAppForDeveloperLocalAction extends LocalActionDefault {
    * {@inheritdoc}
    */
   public function getTitle(Request $request = NULL) {
-    return $this->t('Add @app', ['@app' => $this->developerAppEntity->getLowercaseLabel()]);
+    return $this->t('Add @app', ['@app' => mb_strtolower($this->developerAppEntity->getSingularLabel())]);
   }
 
 }

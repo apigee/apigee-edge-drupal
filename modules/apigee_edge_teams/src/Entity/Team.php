@@ -32,11 +32,12 @@ use Drupal\Core\Entity\EntityTypeInterface;
  * @\Drupal\apigee_edge\Annotation\EdgeEntityType(
  *   id = "team",
  *   label = @Translation("Team"),
- *   label_singular = @Translation("Team"),
- *   label_plural = @Translation("Teams"),
+ *   label_collection = @Translation("Teams"),
+ *   label_singular = @Translation("team"),
+ *   label_plural = @Translation("teams"),
  *   label_count = @PluralTranslation(
- *     singular = "@count Team",
- *     plural = "@count Teams",
+ *     singular = "@count team",
+ *     plural = "@count teams",
  *   ),
  *   config_with_labels = "apigee_edge_teams.team_settings",
  *   handlers = {
@@ -273,6 +274,7 @@ class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterfa
     $team_singular_label = \Drupal::entityTypeManager()
       ->getDefinition('team')
       ->getSingularLabel();
+    $team_singular_label = mb_convert_case($team_singular_label, MB_CASE_TITLE);
 
     $definitions['displayName']
       ->setDisplayOptions('view', [

@@ -74,7 +74,7 @@ function apigee_edge_teams_entity_type_alter(array &$entity_types) {
  *   The title of the page.
  */
 function apigee_edge_teams_team_listing_page_title(): TranslatableMarkup {
-  $args['@teams'] = \Drupal::entityTypeManager()->getDefinition('team')->getPluralLabel();
+  $args['@teams'] = \Drupal::entityTypeManager()->getDefinition('team')->getCollectionLabel();
   $title = t('@teams', $args);
   // Modules and themes can alter the title.
   \Drupal::moduleHandler()->alter('apigee_edge_teams_team_listing_page_title', $title);

@@ -82,7 +82,7 @@ class EditTeamMemberForm extends TeamMembersFormBase {
       '#markup' => $this->t('Modify roles of %developer in the %team_label @team.', [
         '%developer' => $this->developer->getOwner()->label(),
         '%team_label' => $this->team->label(),
-        '@team' => $this->team->getEntityType()->getLowercaseLabel(),
+        '@team' => mb_strtolower($this->team->getEntityType()->getSingularLabel()),
       ]),
     ];
 

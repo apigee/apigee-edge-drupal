@@ -23,8 +23,8 @@
  * Install, update and uninstall functions for Apigee Edge.
  */
 
-use Apigee\Edge\Utility\OrganizationFeatures;
 use Drupal\apigee_edge\OauthTokenFileStorage;
+use Drupal\Core\Installer\InstallerKernel;
 use Drupal\Core\Url;
 use Drupal\user\RoleInterface;
 
@@ -36,7 +36,7 @@ function apigee_edge_requirements($phase) {
 
   if ($phase === 'install') {
     // This should be checked only if Drupal is installed.
-    if (!drupal_installation_attempted()) {
+    if (!InstallerKernel::installationAttempted()) {
       $missing_mails = \Drupal::entityQuery('user')
         ->notExists('mail')
         ->condition('uid', '0', '<>')

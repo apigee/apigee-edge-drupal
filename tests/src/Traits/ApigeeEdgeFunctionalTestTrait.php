@@ -283,10 +283,10 @@ trait ApigeeEdgeFunctionalTestTrait {
    *   URL starts with a slash, if the URL is absolute.
    */
   protected static function fixUrl(string $url): string {
-    if (strpos($url, 'http:') === 0 || strpos($url, 'https:') === 0) {
+    if (mb_strpos($url, 'http:') === 0 || mb_strpos($url, 'https:') === 0) {
       return $url;
     }
-    return (strpos($url, '/') === 0) ? $url : "/{$url}";
+    return (mb_strpos($url, '/') === 0) ? $url : "/{$url}";
   }
 
   /**

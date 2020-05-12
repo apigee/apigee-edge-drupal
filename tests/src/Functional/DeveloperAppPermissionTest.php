@@ -228,8 +228,8 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
     }
 
     foreach ($this->entityRoutes as $rel) {
-      $myUrl = static::fixUrl((string) $this->myDeveloperApp->url($rel));
-      $otherUrl = static::fixUrl((string) $this->otherDeveloperApp->url($rel));
+      $myUrl = static::fixUrl((string) $this->myDeveloperApp->toUrl($rel)->toString());
+      $otherUrl = static::fixUrl((string) $this->otherDeveloperApp->toUrl($rel)->toString());
       $shouldAccess = in_array($rel, $routesWithAccess);
       if (strpos($permission, ' any ') !== FALSE) {
         $this->visitPages($myUrl, $shouldAccess, $rel, $permission);

@@ -926,7 +926,7 @@ function apigee_edge_existing_developer_registration_hash(UserInterface $account
 function apigee_edge_existing_developer_registration_hash_validate(UserInterface $account, string $token, string $timestamp) {
   $current = \Drupal::time()->getRequestTime();
   $timeout = \Drupal::config('apigee_edge.developer_settings')->get('verification_token_expires');
-  if ($timestamp <= $current && $current - $timestamp < $timeout && Crypt::hashEquals($token, apigee_edge_existing_developer_registration_hash($account, $timestamp))) {
+  if ($timestamp <= $current && $current - $timestamp < $timeout && hash_equals($token, apigee_edge_existing_developer_registration_hash($account, $timestamp))) {
     return TRUE;
   }
   return FALSE;
