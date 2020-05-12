@@ -274,7 +274,7 @@ class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterfa
     $team_singular_label = \Drupal::entityTypeManager()
       ->getDefinition('team')
       ->getSingularLabel();
-    $team_singular_label = mb_convert_case($team_singular_label,  MB_CASE_TITLE);
+    $team_singular_label = mb_convert_case($team_singular_label, MB_CASE_TITLE);
 
     $definitions['displayName']
       ->setDisplayOptions('view', [

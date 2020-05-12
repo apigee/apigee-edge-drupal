@@ -153,7 +153,7 @@ class TeamApp extends App implements TeamAppInterface {
     /** @var \Drupal\Core\Field\BaseFieldDefinition[] $definitions */
     $definitions = parent::baseFieldDefinitions($entity_type);
     $team_app_singular_label = \Drupal::entityTypeManager()->getDefinition('team_app')->getSingularLabel();
-    $team_app_singular_label = mb_convert_case($team_app_singular_label,  MB_CASE_TITLE);
+    $team_app_singular_label = mb_convert_case($team_app_singular_label, MB_CASE_TITLE);
 
     $definitions['displayName']
       ->setLabel(t('@team_app name', ['@team_app' => $team_app_singular_label]));

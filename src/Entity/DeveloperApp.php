@@ -243,7 +243,7 @@ class DeveloperApp extends App implements DeveloperAppInterface {
     /** @var \Drupal\Core\Field\BaseFieldDefinition[] $definitions */
     $definitions = parent::baseFieldDefinitions($entity_type);
     $developer_app_singular_label = \Drupal::entityTypeManager()->getDefinition('developer_app')->getSingularLabel();
-    $developer_app_singular_label = mb_convert_case($developer_app_singular_label,  MB_CASE_TITLE);
+    $developer_app_singular_label = mb_convert_case($developer_app_singular_label, MB_CASE_TITLE);
 
     $definitions['displayName']
       ->setLabel(t('@developer_app name', ['@developer_app' => $developer_app_singular_label]));
