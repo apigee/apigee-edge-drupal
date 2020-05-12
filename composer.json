@@ -24,7 +24,7 @@
         "phpmetrics/phpmetrics": "^2.5",
         "phpunit/phpunit": "^6.5",
         "drupal/console": "~1.0",
-        "mglaman/drupal-check": "^1.1"
+        "mglaman/drupal-check": "dev-master"
     },
     "conflict": {
         "drupal/coder": ">8.3.8"
