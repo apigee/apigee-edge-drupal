@@ -26,6 +26,9 @@
         "drupal/console": "~1.0",
         "mglaman/drupal-check": "^1.1"
     },
+    "conflict": {
+        "drupal/coder": ">8.3.8"
+    },
     "config": {
         "sort-packages": true
     },

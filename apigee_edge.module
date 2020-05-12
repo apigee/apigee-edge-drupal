@@ -118,6 +118,9 @@ function apigee_edge_theme() {
     'apigee_entity' => [
       'render element' => 'elements',
     ],
+    'apigee_entity_list' => [
+      'render element' => 'elements',
+    ],
     'apigee_entity__app' => [
       'render element' => 'elements',
       'base hook' => 'apigee_entity',
@@ -177,6 +180,36 @@ function apigee_edge_theme_suggestions_apigee_entity(array $variables) {
 
   $suggestions[] = 'apigee_entity__' . $entity->getEntityTypeId();
   $suggestions[] = 'apigee_entity__' . $entity->getEntityTypeId() . '__' . $sanitized_view_mode;
+
+  return $suggestions;
+}
+
+/**
+ * Prepares variables for Apigee entity list templates.
+ *
+ * Default template: apigee-entity-list.html.twig.
+ */
+function template_preprocess_apigee_entity_list(array &$variables) {
+  $variables['view_mode'] = $variables['elements']['#view_mode'];
+  $variables['entity_type_id'] = $variables['elements']['#entity_type']->id();
+
+  $variables += ['content' => []];
+  foreach (Element::children($variables['elements']) as $key) {
+    $variables['content'][$key] = $variables['elements'][$key];
+  }
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK().
+ */
+function apigee_edge_theme_suggestions_apigee_entity_list(array $variables) {
+  $suggestions = [];
+  $view_mode = $variables['elements']['#view_mode'];
+  $entity_type_id = $variables['elements']['#entity_type']->id();
+
+  // Add a suggestion based on the entity type and on the view mode.
+  $suggestions[] = 'apigee_entity_list__' . $entity_type_id;
+  $suggestions[] = 'apigee_entity_list__' . $entity_type_id . '__' . $view_mode;
 
   return $suggestions;
 }

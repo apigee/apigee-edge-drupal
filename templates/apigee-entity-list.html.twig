@@ -1,0 +1,24 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a list of Apigee entities.
+ *
+ * Available variables:
+ * - content: List of apigee entities.
+ * - view_mode: The view mode for the entities.
+ * - entity_type_id: The entity type id.
+ *
+ * @see template_preprocess_apigee_entities_list()
+ *
+ * @ingroup themeable
+ */
+#}
+{% set classes = [
+  'apigee-entity-list',
+  'apigee-entity-list--' ~ entity_type_id|clean_class,
+  'apigee-entity-list--' ~ view_mode|clean_class,
+] %}
+
+<div {{ attributes.addClass(classes) }}>
+  {{ content }}
+</div>

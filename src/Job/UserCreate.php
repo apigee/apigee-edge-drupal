@@ -19,35 +19,12 @@
 
 namespace Drupal\apigee_edge\Job;
 
-use Drupal\apigee_edge\Exception\DeveloperToUserConversationInvalidValueException;
 use Drupal\apigee_edge\Structure\DeveloperToUserConversionResult;
-use Drupal\user\Plugin\Validation\Constraint\UserNameUnique;
-use Symfony\Component\Validator\ConstraintViolation;
 
 /**
  * A job to create a Drupal user from an Apigee Edge developer.
  */
 class UserCreate extends UserCreateUpdate {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function beforeUserSave(DeveloperToUserConversionResult $result): void {
-    // Abort the operation if any of these special problems occurred
-    // meanwhile the conversation.
-    foreach ($result->getProblems() as $problem) {
-      if ($problem instanceof DeveloperToUserConversationInvalidValueException) {
-        $violation = $problem->getViolation();
-        // Skip user creation if username is already taken here instead
-        // of getting a database exception in a lower layer.
-        // (Username is not unique in Apigee Edge.)
-        if ($problem->getTarget() === 'name' && $violation instanceof ConstraintViolation && $violation->getConstraint() instanceof UserNameUnique) {
-          throw $problem;
-        }
-      }
-    }
-    parent::beforeUserSave($result);
-  }
 
   /**
    * {@inheritdoc}
