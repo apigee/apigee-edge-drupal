@@ -35,8 +35,8 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   label_singular = @Translation("team app"),
  *   label_plural = @Translation("team apps"),
  *   label_count = @PluralTranslation(
- *     singular = "@count Team App",
- *     plural = "@count Team Apps",
+ *     singular = "@count team app",
+ *     plural = "@count team apps",
  *   ),
  *   config_with_labels = "apigee_edge_teams.team_app_settings",
  *   handlers = {
@@ -153,6 +153,7 @@ class TeamApp extends App implements TeamAppInterface {
     /** @var \Drupal\Core\Field\BaseFieldDefinition[] $definitions */
     $definitions = parent::baseFieldDefinitions($entity_type);
     $team_app_singular_label = \Drupal::entityTypeManager()->getDefinition('team_app')->getSingularLabel();
+    $team_app_singular_label = mb_convert_case($team_app_singular_label,  MB_CASE_TITLE);
 
     $definitions['displayName']
       ->setLabel(t('@team_app name', ['@team_app' => $team_app_singular_label]));
