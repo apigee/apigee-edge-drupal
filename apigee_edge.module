@@ -313,6 +313,13 @@ function apigee_edge_entity_base_field_info_alter(&$fields, EntityTypeInterface 
     $mail = $fields['mail'];
     $mail->setRequired(TRUE);
     $mail->addConstraint('DeveloperMailUnique');
+
+    // Add a bundle to these fields to allow other modules to display them
+    // as configurable (fields added through the UI or configuration do have a
+    // target bundle set).
+    // @see https://github.com/apigee/apigee-edge-drupal/issues/396
+    $fields['first_name']->setTargetBundle('user');
+    $fields['last_name']->setTargetBundle('user');
   }
 }
 
