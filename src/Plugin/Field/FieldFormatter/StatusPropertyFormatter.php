@@ -91,7 +91,7 @@ class StatusPropertyFormatter extends FormatterBase {
     $element[] = [
       '#type' => 'status_property',
       '#value' => $items->value,
-      '#indicator_status' => array_search(strtolower($items->value), $this->getSettings()) ?: '',
+      '#indicator_status' => array_search(mb_strtolower($items->value), $this->getSettings()) ?: '',
     ];
     return $element;
   }

@@ -184,7 +184,7 @@ trait TeamAppFormTrait {
 
     if (!in_array($this->getTeamName($form, $form_state), $this->getTeamMembershipMananger()->getTeams(\Drupal::currentUser()->getEmail()))) {
       $element['#message_list']['warning'][] = t('You are not member of this @team. You may see @api_products here that a @team member can not see.', [
-        '@team' => $this->getEntityTypeManager()->getDefinition('team')->getLowercaseLabel(),
+        '@team' => mb_strtolower($this->getEntityTypeManager()->getDefinition('team')->getSingularLabel()),
         '@api_products' => $this->getEntityTypeManager()->getDefinition('api_product')->getPluralLabel(),
       ]);
     }

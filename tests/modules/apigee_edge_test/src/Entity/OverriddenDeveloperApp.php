@@ -20,8 +20,29 @@
 namespace Drupal\apigee_edge_test\Entity;
 
 use Drupal\apigee_edge\Entity\DeveloperApp;
+use Drupal\Core\Entity\EntityTypeInterface;
 
 /**
  * Class OverriddenDeveloperApp.
  */
-final class OverriddenDeveloperApp extends DeveloperApp {}
+final class OverriddenDeveloperApp extends DeveloperApp {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function baseFieldDefinitions(EntityTypeInterface $entity_type): array {
+    /** @var \Drupal\Core\Field\BaseFieldDefinition[] $definitions */
+    $definitions = parent::baseFieldDefinitions($entity_type);
+
+    // Set a length limit on app name that we can use in tests.
+    $definitions['displayName']->setPropertyConstraints('value', [
+      'Length' => [
+        'min' => 1,
+        'max' => 30,
+      ],
+    ]);
+
+    return $definitions;
+  }
+
+}

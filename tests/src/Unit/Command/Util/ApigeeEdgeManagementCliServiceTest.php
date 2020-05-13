@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\apigee_edge\Unit;
+namespace Drupal\Tests\apigee_edge\Unit\Command\Util;
 
 use Apigee\Edge\ClientInterface as ApigeeClientInterface;
 use Drupal\apigee_edge\Command\Util\ApigeeEdgeManagementCliService;

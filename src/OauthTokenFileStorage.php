@@ -21,6 +21,7 @@ namespace Drupal\apigee_edge;
 
 use Drupal\apigee_edge\Exception\OauthTokenStorageException;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 
@@ -170,7 +171,10 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
     try {
       $this->checkRequirements();
       // Write the obfuscated token data to a private file.
-      file_unmanaged_save_data(base64_encode(serialize($data)), $this->tokenFilePath, FILE_EXISTS_REPLACE);
+      $this->fileSystem->saveData(base64_encode(serialize($data)), $this->tokenFilePath, FileSystemInterface::EXISTS_REPLACE);
+    }
+    catch (FileException $e) {
+      $this->logger->critical('Error saving OAuth token file.');
     }
     catch (OauthTokenStorageException $exception) {
       $this->logger->critical('OAuth token file storage: %error.', ['%error' => $exception->getMessage()]);
@@ -191,7 +195,7 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
     }
     // Gets the file directory so we can make sure it exists.
     $token_directory = $this->fileSystem->dirname($this->tokenFilePath);
-    if (!file_prepare_directory($token_directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
+    if (!$this->fileSystem->prepareDirectory($token_directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS)) {
       throw new OauthTokenStorageException("Unable to set up {$token_directory} directory for token file.");
     }
   }
@@ -222,7 +226,12 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
       // registered. Also do nothing if token file does not exist.
       return;
     }
-    file_unmanaged_delete($this->tokenFilePath);
+    try {
+      $this->fileSystem->delete($this->tokenFilePath);
+    }
+    catch (FileException $e) {
+      // Do nothing.
+    }
   }
 
   /**

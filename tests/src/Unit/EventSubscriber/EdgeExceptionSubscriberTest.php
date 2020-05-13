@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Unit\EventSubscriber;
+namespace Drupal\Tests\apigee_edge\Unit\EventSubscriber;
 
 use Apigee\Edge\Exception\ApiException;
 use Drupal\apigee_edge\EventSubscriber\EdgeExceptionSubscriber;
@@ -127,6 +127,12 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
       ->willReturn($this->exception);
     $this->getResponseForExceptionEvent->setResponse(Argument::any())
       ->willReturn();
+
+    // Compatibility with Symfony 4.x and up.
+    if ((new \ReflectionClass(GetResponseForExceptionEvent::class))->hasMethod('getThrowable')) {
+      $this->getResponseForExceptionEvent->getThrowable()
+        ->willReturn($this->exception);
+    }
   }
 
   /**

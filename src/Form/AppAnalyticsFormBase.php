@@ -197,7 +197,7 @@ abstract class AppAnalyticsFormBase extends FormBase {
       '#type' => 'html_tag',
       '#tag' => 'div',
       '#value' => $this->t('Your timezone: @timezone (UTC@offset)', [
-        '@timezone' => drupal_get_user_timezone(),
+        '@timezone' => date_default_timezone_get(),
         '@offset' => $offset,
       ]),
     ];
@@ -224,9 +224,9 @@ abstract class AppAnalyticsFormBase extends FormBase {
     if ($this->validateQueryString($form, $metric, $since, $until)) {
       $form['controls']['metrics']['#default_value'] = $metric;
       $since_datetime = DrupalDatetime::createFromTimestamp($since);
-      $since_datetime->setTimezone(new \Datetimezone(drupal_get_user_timezone()));
+      $since_datetime->setTimezone(new \Datetimezone(date_default_timezone_get()));
       $until_datetime = DrupalDatetime::createFromTimestamp($until);
-      $until_datetime->setTimezone(new \Datetimezone(drupal_get_user_timezone()));
+      $until_datetime->setTimezone(new \Datetimezone(date_default_timezone_get()));
       $form['controls']['since']['#default_value'] = $since_datetime;
       $form['controls']['until']['#default_value'] = $until_datetime;
       $form['controls']['quick_date_picker']['#default_value'] = 'custom';
@@ -351,7 +351,7 @@ abstract class AppAnalyticsFormBase extends FormBase {
       watchdog_exception('apigee_edge', $e);
     }
 
-    $date_time_zone = new \DateTimeZone(drupal_get_user_timezone());
+    $date_time_zone = new \DateTimeZone(date_default_timezone_get());
     $timezone_offset = $date_time_zone->getOffset(new \DateTime());
     $form['#attached']['drupalSettings']['analytics']['timezone_offset'] = $timezone_offset / 60;
 

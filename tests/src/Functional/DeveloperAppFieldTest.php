@@ -26,7 +26,7 @@ use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Url;
-use Drupal\field_ui\Tests\FieldUiTestTrait;
+use Drupal\Tests\field_ui\Traits\FieldUiTestTrait;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -257,7 +257,7 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
     foreach ($fields as $name => $data) {
       $this->fieldUIAddNewField(
         $add_field_path,
-        $name, strtoupper($name),
+        $name, mb_strtoupper($name),
         $data['type'],
         ($data['settings'] ?? []) + [
           'cardinality' => -1,

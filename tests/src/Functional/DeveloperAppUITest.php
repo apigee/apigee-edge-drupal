@@ -178,6 +178,23 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
+   * Tests that field validation constraints are executed on form save.
+   *
+   * @covers \Drupal\apigee_edge\Entity\Form\FieldableEdgeEntityForm::validateForm
+   */
+  public function testFieldValidationConstraints() {
+    /* @see \Drupal\apigee_edge_test\Entity\OverriddenDeveloperApp::baseFieldDefinitions() */
+    $name = strtolower($this->randomMachineName(31));
+
+    $this->postCreateAppForm([
+      'name' => $name,
+      'displayName[0][value]' => $name,
+      "api_products[{$this->products[0]->getName()}]" => $this->products[0]->getName(),
+    ]);
+    $this->assertSession()->pageTextContains('This value is too long. It should have 30 characters or less.');
+  }
+
+  /**
    * Tests creating two apps with the same name but different developers.
    */
   public function testSameAppNameDifferentUser() {

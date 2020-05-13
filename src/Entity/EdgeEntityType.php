@@ -75,7 +75,7 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
    */
   public function getLabel() {
     $label = $this->getEntityLabelFromConfig('entity_label_singular');
-    return empty($label) ? parent::getLabel() : $label;
+    return empty($label) ? parent::getSingularLabel() : $label;
   }
 
   /**
@@ -99,11 +99,10 @@ class EdgeEntityType extends EntityType implements EdgeEntityTypeInterface {
   public function getCollectionLabel() {
     // We do not want to display "XY entities" as default collection label
     // rather "XYs".
-    if (empty($this->label_collection)) {
-      $label = $this->getPluralLabel();
-      $this->label_collection = new TranslatableMarkup('@label', ['@label' => $label], [], $this->getStringTranslation());
-    }
-    return $this->label_collection;
+    $label = $this->getEntityLabelFromConfig('entity_label_plural');
+    $label = $label ?: parent::getCollectionLabel();
+
+    return new TranslatableMarkup('@label', ['@label' => $label], [], $this->getStringTranslation());
   }
 
   /**

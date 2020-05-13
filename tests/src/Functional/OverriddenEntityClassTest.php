@@ -32,7 +32,7 @@ class OverriddenEntityClassTest extends ApigeeEdgeFunctionalTestBase {
   public function testClassOverride() {
     /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $manager */
     $manager = $this->container->get('entity_type.manager');
-    foreach (_apigee_edge_entity_class_mapping() as $entity_type => $entity_class) {
+    foreach (_apigee_edge_test_entity_class_mapping() as $entity_type => $entity_class) {
       $entity = $manager->getStorage($entity_type)->create();
       $this->assertInstanceOf($entity_class, $entity);
     }

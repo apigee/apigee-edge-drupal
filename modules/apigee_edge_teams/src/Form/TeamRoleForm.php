@@ -47,7 +47,7 @@ class TeamRoleForm extends EntityForm {
 
     $context = [
       '%label' => $team_role->label(),
-      '@entity-type' => $team_role->getEntityType()->getLowercaseLabel(),
+      '@entity-type' => mb_strtolower($team_role->getEntityType()->getSingularLabel()),
     ];
 
     if ($status == SAVED_NEW) {

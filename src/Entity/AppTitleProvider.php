@@ -41,7 +41,10 @@ class AppTitleProvider extends EdgeEntityTitleProvider {
    */
   public function analyticsTitle(RouteMatchInterface $route_match, EntityInterface $_entity = NULL) {
     if ($entity = $this->doGetEntity($route_match, $_entity)) {
-      return $this->t('Analytics of %label @entity_type', ['%label' => $entity->label(), '@entity_type' => $this->entityTypeManager->getDefinition($entity->getEntityTypeId())->getLowercaseLabel()]);
+      return $this->t('Analytics of %label @entity_type', [
+        '%label' => $entity->label(),
+        '@entity_type' => mb_strtolower($this->entityTypeManager->getDefinition($entity->getEntityTypeId())->getSingularLabel()),
+      ]);
     }
   }
 

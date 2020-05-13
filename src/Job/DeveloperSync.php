@@ -32,7 +32,7 @@ class DeveloperSync extends EdgeJob {
   /**
    * All Apigee Edge developers indexed by their emails.
    *
-   * Format: strtolower(email) => Developer.
+   * Format: mb_strtolower(email) => Developer.
    *
    * @var \Drupal\apigee_edge\Entity\DeveloperInterface[]
    *
@@ -43,7 +43,7 @@ class DeveloperSync extends EdgeJob {
   /**
    * All Drupal users indexed by their emails.
    *
-   * Format: strtolower(mail) => User.
+   * Format: mb_strtolower(mail) => User.
    *
    * @var \Drupal\user\UserInterface[]
    *
@@ -73,7 +73,7 @@ class DeveloperSync extends EdgeJob {
    * Loads all Drupal users indexed my their emails.
    *
    * @return \Drupal\user\UserInterface[]
-   *   Format: strtolower(mail) => User
+   *   Format: mb_strtolower(mail) => User
    *
    * @see https://www.drupal.org/project/drupal/issues/2490294
    */
@@ -87,7 +87,7 @@ class DeveloperSync extends EdgeJob {
           continue;
         }
         else {
-          $users[strtolower($email)] = $user;
+          $users[mb_strtolower($email)] = $user;
         }
       }
     }
@@ -99,7 +99,7 @@ class DeveloperSync extends EdgeJob {
    * Loads all Apigee Edge developers indexed my their emails.
    *
    * @return \Drupal\apigee_edge\Entity\DeveloperInterface[]
-   *   Format: strtolower(email) => Developer
+   *   Format: mb_strtolower(email) => Developer
    *
    * @see https://www.drupal.org/project/drupal/issues/2490294
    */
@@ -115,7 +115,7 @@ class DeveloperSync extends EdgeJob {
         continue;
       }
       else {
-        $developers[strtolower($email)] = $developer;
+        $developers[mb_strtolower($email)] = $developer;
       }
     }
 

@@ -162,7 +162,7 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
   protected function actions(array $form, FormStateInterface $form_state) {
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
     $team = $this->entity;
-    $label = $this->entityTypeManager->getDefinition('team')->getLowercaseLabel();
+    $label = mb_strtolower($this->entityTypeManager->getDefinition('team')->getSingularLabel());
     $actions = parent::actions($form, $form_state);
 
     if ($team->isNew()) {
@@ -203,7 +203,7 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
             '%email' => $this->currentUser->getEmail(),
             '%team_name' => $team->label(),
             '%admin_role' => $admin_role->label(),
-            '@team' => $this->entityTypeManager->getDefinition('team')->getLowercaseLabel(),
+            '@team' => mb_strtolower($this->entityTypeManager->getDefinition('team')->getSingularLabel()),
             'link' => $team->toLink()->toString(),
           ];
           $this->messenger()->addError($this->t('Failed to grant %admin_role team role in %team_name @team.', $context));
@@ -214,7 +214,7 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
       catch (ApiException $exception) {
         $this->messenger()->addError($this->t('Failed to register team membership in %team_name @team.', [
           '%team_name' => $team->label(),
-          '@team' => $this->entityTypeManager->getDefinition('team')->getLowercaseLabel(),
+          '@team' => mb_strtolower($this->entityTypeManager->getDefinition('team')->getSingularLabel()),
         ]));
         $context = [
           '%email' => $this->currentUser->getEmail(),

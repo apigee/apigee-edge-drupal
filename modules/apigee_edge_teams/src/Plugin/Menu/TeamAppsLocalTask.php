@@ -72,7 +72,7 @@ final class TeamAppsLocalTask extends LocalTaskDefault implements ContainerFacto
    */
   public function getTitle(Request $request = NULL) {
     // Display the current plural label of the Team app entity.
-    return $this->teamAppDefinition->getPluralLabel();
+    return $this->teamAppDefinition->getCollectionLabel();
   }
 
 }

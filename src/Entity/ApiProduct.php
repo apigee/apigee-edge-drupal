@@ -29,6 +29,7 @@ use Apigee\Edge\Structure\AttributesProperty;
  * @\Drupal\apigee_edge\Annotation\EdgeEntityType(
  *   id = "api_product",
  *   label = @Translation("API"),
+ *   label_collection = @Translation("APIs"),
  *   label_singular = @Translation("API"),
  *   label_plural = @Translation("APIs"),
  *   label_count = @PluralTranslation(

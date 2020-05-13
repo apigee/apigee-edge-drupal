@@ -32,7 +32,7 @@ class TeamDeleteForm extends EdgeEntityDeleteForm {
    */
   protected function verificationCodeErrorMessage() {
     return $this->t('The name does not match the @entity you are attempting to delete.', [
-      '@entity' => $this->entityTypeManager->getDefinition($this->getEntity()->getEntityTypeId())->getLowercaseLabel(),
+      '@entity' => mb_strtolower($this->entityTypeManager->getDefinition($this->getEntity()->getEntityTypeId())->getSingularLabel()),
     ]);
   }
 
@@ -55,7 +55,7 @@ class TeamDeleteForm extends EdgeEntityDeleteForm {
 
     return $this->t('<strong>All apps, credentials and @team membership information will be deleted.</strong> @original', [
       '@original' => $original,
-      '@team' => $this->entityTypeManager->getDefinition($this->entity->getEntityTypeId())->getLowercaseLabel(),
+      '@team' => mb_strtolower($this->entityTypeManager->getDefinition($this->entity->getEntityTypeId())->getSingularLabel()),
     ]);
   }
 

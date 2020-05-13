@@ -20,6 +20,7 @@
 namespace Drupal\apigee_edge\Plugin\KeyProvider;
 
 use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
+use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Utility\Error;
@@ -126,26 +127,40 @@ class PrivateFileKeyProvider extends KeyProviderRequirementsBase implements KeyP
         '@message' => (string) $exception,
       ];
       $context += Error::decodeException($exception);
-      $this->getLogger()->error('Could not save Apigee Edge authentication key value in the private file storage: @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
+      $this->getLogger()
+        ->error('Could not save Apigee Edge authentication key value in the private file storage: @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
       return FALSE;
     }
 
     $file_uri = $this->getFileUri($key);
-    $file_path = $this->getFileSystem()->dirname($file_uri);
-    // TODO Use $this->fileSystem->prepareDirectory() if Drupal 8.7 is released.
+    $file_path = $this->getFileSystem()
+      ->dirname($file_uri);
+
     // Make sure the folder exists.
-    file_prepare_directory($file_path, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-    // Save the token data.
-    // TODO Use $this->fileSystem->saveData() if Drupal 8.7 is released.
-    return file_unmanaged_save_data($key_value, $file_uri, FILE_EXISTS_REPLACE);
+    $this->getFileSystem()
+      ->prepareDirectory($file_path, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+
+    try {
+      // Save the token data.
+      return $this->getFileSystem()
+        ->saveData($key_value, $file_uri, FileSystemInterface::EXISTS_REPLACE);
+    }
+    catch (FileException $e) {
+      return FALSE;
+    }
   }
 
   /**
    * {@inheritdoc}
    */
   public function deleteKeyValue(KeyInterface $key) {
-    // TODO Use $this->fileSystem->delete() if Drupal 8.7 is released.
-    return file_unmanaged_delete($this->getFileUri($key));
+    try {
+      $this->getFileSystem()
+        ->delete($this->getFileUri($key));
+    }
+    catch (FileException $e) {
+      // Do nothing.
+    }
   }
 
   /**

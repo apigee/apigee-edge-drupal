@@ -114,8 +114,8 @@ class TeamStatusWarningSubscriber implements EventSubscriberInterface {
 
       if ($team && $team->getStatus() === TeamInterface::STATUS_INACTIVE) {
         $this->messenger->addWarning($this->t('This @team has inactive status so @team members will not be able to use @team_app credentials until the @team gets activated. Please contact support for further assistance.', [
-          '@team' => $this->entityTypeManager->getDefinition('team')->getLowercaseLabel(),
-          '@team_app' => $this->entityTypeManager->getDefinition('team_app')->getLowercaseLabel(),
+          '@team' => mb_strtolower($this->entityTypeManager->getDefinition('team')->getSingularLabel()),
+          '@team_app' => mb_strtolower($this->entityTypeManager->getDefinition('team_app')->getSingularLabel()),
         ]));
       }
     }

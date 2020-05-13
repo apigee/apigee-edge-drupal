@@ -37,7 +37,7 @@ trait ApigeeEdgeUtilTestTrait {
     $environment_variables = [];
     $definition = \Drupal::service('plugin.manager.key.key_type')->getDefinition('apigee_auth');
     foreach ($definition['multivalue']['fields'] as $id => $field) {
-      $env_var_name = 'APIGEE_EDGE_' . strtoupper($id);
+      $env_var_name = 'APIGEE_EDGE_' . mb_strtoupper($id);
       if (getenv($env_var_name)) {
         $environment_variables[$id] = getenv($env_var_name);
       }
