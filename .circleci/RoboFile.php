@@ -98,6 +98,7 @@ class RoboFile extends \Robo\Tasks
   public function addModules(array $modules)
   {
     $config = json_decode(file_get_contents('composer.json'));
+    $config->extra->{"merge-plugin"}->{"ignore-duplicates"} = TRUE;
 
     foreach ($modules as $module) {
       list($module,) = explode(':', $module);
@@ -182,7 +183,10 @@ class RoboFile extends \Robo\Tasks
       ->optimizeAutoloader()
       ->run();
 
-    // Preserve composer.lock as an artifact for future debugging.
+    // Preserve composer.lock as an artifact for future debugging - remove token.
+    $config = json_decode(file_get_contents('composer.json'));
+    unset($config->config->{"github-oauth"});
+    file_put_contents('composer.json', json_encode($config, JSON_PRETTY_PRINT));
     $this->taskFilesystemStack()
       ->copy('composer.json', '/tmp/artifacts/composer.json')
       ->copy('composer.lock', '/tmp/artifacts/composer.lock')
@@ -199,6 +203,8 @@ class RoboFile extends \Robo\Tasks
       ->run();
 
     // Add composer version info to an artifact file.
+    $this->taskExec('composer show')
+      ->run();
     $this->taskExec('composer show > /tmp/artifacts/composer-show.txt')
       ->run();
   }
@@ -404,22 +410,62 @@ class RoboFile extends \Robo\Tasks
   }
 
   /**
+   * Set the Drupal core version.
+   *
+   * @param int $drupalCoreVersion
+   *   The major version of Drupal required.
+   */
+  public function drupalVersion($drupalCoreVersion)
+  {
+    $config = json_decode(file_get_contents('composer.json'));
+    unset($config->require->{"drupal/core"});
+
+    switch ($drupalCoreVersion) {
+      case '9':
+        $config->require->{"drupal/core-recommended"} = '^9@beta';
+        $config->require->{"drupal/core-dev"} = '^9@beta';
+
+        // We require Drupal drush for some tests.
+        $config->require->{"drush/drush"} = "^10";
+
+        // Fork of drupal/key D9 compatible.
+        $config->repositories[] = [
+          'type' => 'vcs',
+          'url' => 'https://github.com/arlina-espinoza/drupal-key.git',
+        ];
+        $config->require->{"drupal/key"} = "dev-d9 as 1.x-dev";
+
+        break;
+
+      case '8':
+        $config->require->{"drupal/core-recommended"} = '~8';
+        $config->require->{"drupal/core-dev"} = '~8';
+
+        // Add rules for testing apigee_edge_actions (only for D8).
+        $config->require->{"drupal/rules"} = "^3.0@alpha";
+
+        // We require Drupal drush and console for some tests.
+        $config->require->{"drupal/console"} = "~1.0";
+        $config->require->{"drush/drush"} = "^9.7";
+
+        # Hack to avoid installing drupal/console in D9.
+        $config->replace->{"drupal/console"} = '*';
+
+      default:
+
+        break;
+
+    }
+
+    file_put_contents('composer.json', json_encode($config, JSON_PRETTY_PRINT));
+  }
+
+  /**
    * Adds modules to the merge section.
    */
   public function configureModuleDependencies()
   {
     $config = json_decode(file_get_contents('composer.json'));
-
-    // The Drupal core image might need updating. Request the newest stable.
-    unset($config->require->{"drupal/core"});
-    $config->require->{"drupal/core-recommended"} = "~8.8";
-
-    // Add rules for testing apigee_edge_actions.
-    $config->require->{"drupal/rules"} = "^3.0@alpha";
-
-    // We require Drupal console and drush for some tests.
-    $config->require->{"drupal/console"} = "~1.0";
-    $config->require->{"drush/drush"} = "^9.7";
 
     // If you require core, you must not replace it.
     unset($config->replace);
@@ -432,8 +478,14 @@ class RoboFile extends \Robo\Tasks
     }
     $config->extra->{"merge-plugin"}->include = array_values($config->extra->{"merge-plugin"}->include);
 
-    // Add dependencies for phpunit tests.
-    $config->require->{"drupal/core-dev"} = "~8.8";
+    file_put_contents('composer.json', json_encode($config, JSON_PRETTY_PRINT));
+  }
+
+  public function githubToken(string $token) {
+    $config = json_decode(file_get_contents('composer.json'));
+
+    $config->config->{"github-oauth"} = new \stdClass();
+    $config->config->{"github-oauth"}->{"github.com"} = $token;
 
     file_put_contents('composer.json', json_encode($config, JSON_PRETTY_PRINT));
   }

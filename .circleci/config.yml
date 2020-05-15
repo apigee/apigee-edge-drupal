@@ -16,7 +16,7 @@
 defaults: &defaults
   docker:
     # specify the version you desire here (avoid latest except for testing)
-    - image: andrewberry/drupal_tests:0.4.0
+    - image: quay.io/deviantintegral/drupal_tests:0.5.0-drupal87
 
     - image: selenium/standalone-chrome-debug:3.141.59-neon
 
@@ -64,7 +64,7 @@ update_dependencies: &update_dependencies
         working_directory: /var/www/html
         command: |
           cp ./modules/apigee_edge/.circleci/update-dependencies.sh /var/www/html
-          ./update-dependencies.sh apigee_edge
+          ./update-dependencies.sh apigee_edge 9
 
     - save_cache: *save_cache
 

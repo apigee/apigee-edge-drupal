@@ -4,7 +4,9 @@
 cp modules/apigee_edge/.circleci/RoboFile.php ./
 
 robo setup:skeleton
+robo github:token "35654eccb82e092e2d496a5466b46b12f76710b3"
 robo add:modules $1
+robo drupal:version $2
 robo configure:module-dependencies
 robo update:dependencies
 
