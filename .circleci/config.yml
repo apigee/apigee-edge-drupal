@@ -34,6 +34,11 @@ defaults: &defaults
   # https://discuss.circleci.com/t/bug-circleci-build-command-ignores-checkout-path-config/13004
   working_directory: /var/www/html/modules/apigee_edge
 
+  parameters:
+    core-version:
+      type: integer
+      default: 8
+
 # YAML does not support merging of lists. That means we can't have a default
 # 'steps' configuration, though we can have defaults for individual step
 # properties.
@@ -55,7 +60,11 @@ save_cache: &save_cache
 # Install composer dependencies into the workspace to share with all jobs.
 update_dependencies: &update_dependencies
   <<: *defaults
+
   steps:
+    - print:
+        message: Using Drupal core version << parameters.core-version >>
+
     - checkout
 
     - restore_cache: *restore_cache
@@ -64,7 +73,7 @@ update_dependencies: &update_dependencies
         working_directory: /var/www/html
         command: |
           cp ./modules/apigee_edge/.circleci/update-dependencies.sh /var/www/html
-          ./update-dependencies.sh apigee_edge 9
+          ./update-dependencies.sh apigee_edge << parameters.core-version >>
 
     - save_cache: *save_cache
 
@@ -194,7 +203,14 @@ d9_check: &d9_check
         path: /var/www/html/artifacts/d9
 
 # Declare all of the jobs we should run.
-version: 2
+version: 2.1
+commands:
+  print:
+    parameters:
+      message:
+        type: string
+    steps:
+      - run: echo << parameters.message >>
 jobs:
   update-dependencies:
      <<: *update_dependencies
@@ -218,22 +234,40 @@ workflows:
   # Functional JS tests need to run after functional due to a conflict in apigee_edge_apiproduct_rbac tests.
   test_and_lint:
     jobs:
-      - update-dependencies
-      - run-unit-kernel-tests:
-          requires:
-            - update-dependencies
-      - run-functional-tests:
-          requires:
-            - update-dependencies
-      - run-functional-js-tests:
-          requires:
-            - update-dependencies
-      - run-code-sniffer:
-          requires:
-            - update-dependencies
-      - run-d9-check:
-          requires:
-            - update-dependencies
+      - update-dependencies:
+          name: update-dependencies-<< matrix.core-version >>
+          matrix:
+            parameters:
+              core-version: [8, 9]
+#          name: update-dependencies-<< matrix.core-version >>
+#          core-version: 8
+#      - run-unit-kernel-tests:
+#          name: run-unit-kernel-tests-<< matrix.version >>
+#          matrix:
+#            parameters:
+#              version: [8, 9]
+#          requires:
+#            - update-dependencies-<< matrix.version >>
+#      - run-functional-tests:
+#          name: run-functional-tests-<< matrix.version >>
+#          matrix:
+#            parameters:
+#              version: [8, 9]
+#          requires:
+#            - update-dependencies-<< matrix.version >>
+#      - run-functional-js-tests:
+#          name: run-functional-js-tests-<< matrix.version >>
+#          matrix:
+#            parameters:
+#              version: [8, 9]
+#          requires:
+#            - update-dependencies-<< matrix.version >>
+#      - run-code-sniffer:
+#          requires:
+#            - update-dependencies-8
+#      - run-d9-check:
+#          requires:
+#            - update-dependencies-8
 #      - run-code-coverage:
 #          requires:
 #            - update-dependencies

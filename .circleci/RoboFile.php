@@ -183,10 +183,7 @@ class RoboFile extends \Robo\Tasks
       ->optimizeAutoloader()
       ->run();
 
-    // Preserve composer.lock as an artifact for future debugging - remove token.
-    $config = json_decode(file_get_contents('composer.json'));
-    unset($config->config->{"github-oauth"});
-    file_put_contents('composer.json', json_encode($config, JSON_PRETTY_PRINT));
+    // Preserve composer.lock as an artifact for future debugging.
     $this->taskFilesystemStack()
       ->copy('composer.json', '/tmp/artifacts/composer.json')
       ->copy('composer.lock', '/tmp/artifacts/composer.lock')
@@ -425,15 +422,9 @@ class RoboFile extends \Robo\Tasks
         $config->require->{"drupal/core-recommended"} = '^9@beta';
         $config->require->{"drupal/core-dev"} = '^9@beta';
 
-        // We require Drupal drush for some tests.
-        $config->require->{"drush/drush"} = "^10";
 
-        // Fork of drupal/key D9 compatible.
-        $config->repositories[] = [
-          'type' => 'vcs',
-          'url' => 'https://github.com/arlina-espinoza/drupal-key.git',
-        ];
-        $config->require->{"drupal/key"} = "dev-d9 as 1.x-dev";
+        // Use drupal/key D9 compatible.
+        $config->require->{"drupal/key"} = "1.x-dev";
 
         break;
 
@@ -446,10 +437,6 @@ class RoboFile extends \Robo\Tasks
 
         // We require Drupal drush and console for some tests.
         $config->require->{"drupal/console"} = "~1.0";
-        $config->require->{"drush/drush"} = "^9.7";
-
-        # Hack to avoid installing drupal/console in D9.
-        $config->replace->{"drupal/console"} = '*';
 
       default:
 
