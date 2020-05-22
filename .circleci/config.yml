@@ -248,7 +248,6 @@ workflows:
               core-version: [8, 9]
           requires:
             - update-dependencies-<< matrix.core-version >>
-            - run-d9-check
       - run-functional-tests:
           name: run-functional-tests-<< matrix.core-version >>
           matrix:
@@ -256,7 +255,6 @@ workflows:
               core-version: [8, 9]
           requires:
             - update-dependencies-<< matrix.core-version >>
-            - run-d9-check
       - run-functional-js-tests:
           name: run-functional-js-tests-<< matrix.core-version >>
           matrix:
@@ -264,7 +262,6 @@ workflows:
               core-version: [8, 9]
           requires:
             - update-dependencies-<< matrix.core-version >>
-            - run-d9-check
       - run-code-sniffer:
           requires:
             - update-dependencies-8
