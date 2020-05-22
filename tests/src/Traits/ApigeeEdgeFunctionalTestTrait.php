@@ -93,7 +93,7 @@ trait ApigeeEdgeFunctionalTestTrait {
     $rid = NULL;
     if ($permissions) {
       $rid = $this->createRole($permissions);
-      $this->assertTrue($rid, 'Role created');
+      static::assertNotFalse($rid, 'Role created');
     }
 
     $edit = [
@@ -116,7 +116,7 @@ trait ApigeeEdgeFunctionalTestTrait {
     $account = User::create($edit);
     $account->save();
 
-    $this->assertTrue($account->id(), 'User created.');
+    static::assertNotFalse($account->id(), 'User created.');
     if (!$account->id()) {
       return NULL;
     }
