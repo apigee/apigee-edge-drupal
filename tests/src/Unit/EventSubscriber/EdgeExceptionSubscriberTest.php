@@ -20,10 +20,13 @@
 namespace Drupal\Tests\apigee_edge\Unit\EventSubscriber;
 
 use Apigee\Edge\Exception\ApiException;
+use Drupal\apigee_edge\Controller\ErrorPageController;
 use Drupal\apigee_edge\EventSubscriber\EdgeExceptionSubscriber;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\DependencyInjection\ClassResolverInterface;
 use Drupal\Core\Messenger\MessengerInterface;
-use Drupal\Core\Routing\RedirectDestinationInterface;
+use Drupal\Core\Render\MainContent\HtmlRenderer;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\Core\Config\Config;
 use Prophecy\Argument;
@@ -31,8 +34,6 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
-use Symfony\Component\HttpKernel\HttpKernelInterface;
-use Symfony\Component\Routing\Matcher\UrlMatcherInterface;
 use Symfony\Component\Routing\RequestContext;
 
 /**
@@ -50,32 +51,11 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
   protected $exception;
 
   /**
-   * The HTTP Kernel mock.
-   *
-   * @var \Prophecy\Prophecy\ObjectProphecy
-   */
-  protected $httpKernel;
-
-  /**
    * The logger mock.
    *
    * @var \Prophecy\Prophecy\ObjectProphecy
    */
   protected $logger;
-
-  /**
-   * The redirect destination mock.
-   *
-   * @var \Prophecy\Prophecy\ObjectProphecy
-   */
-  protected $redirectDestination;
-
-  /**
-   * The access unaware router mock.
-   *
-   * @var \Prophecy\Prophecy\ObjectProphecy
-   */
-  protected $accessUnawareRouter;
 
   /**
    * The configuration factory.
@@ -92,6 +72,27 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
   protected $messenger;
 
   /**
+   * Class Resolver service.
+   *
+   * @var \Drupal\Core\DependencyInjection\ClassResolverInterface
+   */
+  protected $classResolver;
+
+  /**
+   * The current route match.
+   *
+   * @var \Drupal\Core\Routing\RouteMatchInterface
+   */
+  protected $routeMatch;
+
+  /**
+   * The available main content renderer services, keyed per format.
+   *
+   * @var array
+   */
+  protected $mainContentRenderers;
+
+  /**
    * The getResponseForException mock.
    *
    * @var \Prophecy\Prophecy\ObjectProphecy
@@ -106,33 +107,58 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
 
     $this->exception = new ApiException("API response error message.");
 
-    $this->httpKernel = $this->prophesize(HttpKernelInterface::class);
-    $this->httpKernel->handle(Argument::any(), Argument::any())->willReturn(new Response());
+//    $this->httpKernel = $this->prophesize(HttpKernelInterface::class);
+//    $this->httpKernel->handle(Argument::any(), Argument::any())->willReturn(new Response());
     $this->logger = $this->prophesize(LoggerInterface::class);
-    $this->redirectDestination = $this->prophesize(RedirectDestinationInterface::class);
-    $this->redirectDestination->getAsArray()->willReturn([]);
+//    $this->redirectDestination = $this->prophesize(RedirectDestinationInterface::class);
+//    $this->redirectDestination->getAsArray()->willReturn([]);
 
     $request = $this->prophesize(RequestContext::class);
-    $this->accessUnawareRouter = $this->prophesize(UrlMatcherInterface::class);
-    $this->accessUnawareRouter->getContext(Argument::any())->willReturn($request->reveal());
-    $this->accessUnawareRouter->setContext(Argument::any())->willReturn();
-    $this->accessUnawareRouter->match(Argument::any())->willReturn([]);
+//    $this->accessUnawareRouter = $this->prophesize(UrlMatcherInterface::class);
+//    $this->accessUnawareRouter->getContext(Argument::any())->willReturn($request->reveal());
+//    $this->accessUnawareRouter->setContext(Argument::any())->willReturn();
+//    $this->accessUnawareRouter->match(Argument::any())->willReturn([]);
 
     $this->messenger = $this->prophesize(MessengerInterface::class);
 
-    $this->getResponseForExceptionEvent = $this->prophesize(GetResponseForExceptionEvent::class);
-    $this->getResponseForExceptionEvent->getRequest()
-      ->willReturn(new Request());
-    $this->getResponseForExceptionEvent->getException()
-      ->willReturn($this->exception);
-    $this->getResponseForExceptionEvent->setResponse(Argument::any())
-      ->willReturn();
+    $response = $this->prophesize(Response::class);
 
-    // Compatibility with Symfony 4.x and up.
-    if ((new \ReflectionClass(GetResponseForExceptionEvent::class))->hasMethod('getThrowable')) {
+    $this->mainContentRenderers = ['html' => 'main_content_renderer.html'];
+
+    $htmlRenderer = $this->prophesize(HtmlRenderer::class);
+    $htmlRenderer->renderResponse(Argument::cetera())
+      ->willReturn($response->reveal());
+
+    $errorPageController = $this->prophesize(ErrorPageController::class);
+    $errorPageController->render()
+      ->willReturn([]);
+    $errorPageController->getPageTitle()
+      ->willReturn('');
+
+    $this->classResolver = $this->prophesize(ClassResolverInterface::class);
+    $this->classResolver->getInstanceFromDefinition(Argument::is($this->mainContentRenderers['html']))
+      ->willReturn($htmlRenderer->reveal());
+    $this->classResolver->getInstanceFromDefinition(Argument::is(ErrorPageController::class))
+      ->willReturn($errorPageController->reveal());
+
+    $this->routeMatch = $this->prophesize(RouteMatchInterface::class);
+
+    // Drupal 9 / Symfony 4.x and up.
+    if (class_exists('\Symfony\Component\HttpKernel\Event\ExceptionEvent')) {
+      $this->getResponseForExceptionEvent = $this->prophesize('\Symfony\Component\HttpKernel\Event\ExceptionEvent');
       $this->getResponseForExceptionEvent->getThrowable()
         ->willReturn($this->exception);
     }
+    // Drupal 8.
+    else {
+      $this->getResponseForExceptionEvent = $this->prophesize(GetResponseForExceptionEvent::class);
+      $this->getResponseForExceptionEvent->getException()
+        ->willReturn($this->exception);
+    }
+    $this->getResponseForExceptionEvent->getRequest()
+      ->willReturn(new Request());
+    $this->getResponseForExceptionEvent->setResponse(Argument::any())
+      ->willReturn();
   }
 
   /**
@@ -159,12 +185,12 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
       ->shouldBeCalledTimes(1);
 
     $edge_exception_subscriber = new EdgeExceptionSubscriber(
-      $this->httpKernel->reveal(),
       $this->logger->reveal(),
-      $this->redirectDestination->reveal(),
-      $this->accessUnawareRouter->reveal(),
       $this->configFactory->reveal(),
-      $this->messenger->reveal()
+      $this->messenger->reveal(),
+      $this->classResolver->reveal(),
+      $this->routeMatch->reveal(),
+      $this->mainContentRenderers
     );
 
     $edge_exception_subscriber->onException($this->getResponseForExceptionEvent->reveal());
@@ -194,12 +220,12 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
       ->shouldNotBeCalled();
 
     $edge_exception_subscriber = new EdgeExceptionSubscriber(
-      $this->httpKernel->reveal(),
       $this->logger->reveal(),
-      $this->redirectDestination->reveal(),
-      $this->accessUnawareRouter->reveal(),
       $this->configFactory->reveal(),
-      $this->messenger->reveal()
+      $this->messenger->reveal(),
+      $this->classResolver->reveal(),
+      $this->routeMatch->reveal(),
+      $this->mainContentRenderers
     );
 
     $edge_exception_subscriber->onException($this->getResponseForExceptionEvent->reveal());
