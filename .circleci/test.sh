@@ -8,7 +8,7 @@ export BROWSERTEST_OUTPUT_DIRECTORY="/var/www/html/sites/simpletest"
 
 if [ ! -f dependencies_updated ]
 then
-  ./update-dependencies.sh $1
+  ./update-dependencies.sh $1 $2
 fi
 
 # This is the command used by the base image to serve Drupal.

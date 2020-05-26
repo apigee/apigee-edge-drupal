@@ -101,7 +101,7 @@ unit_kernel_tests: &unit_kernel_tests
         working_directory: /var/www/html
         command: |
           cp ./modules/apigee_edge/.circleci/test.sh /var/www/html
-          ./test.sh apigee_edge
+          ./test.sh apigee_edge << parameters.core-version >>
 
     - store_test_results:
         path: /tmp/artifacts/phpunit
@@ -122,7 +122,7 @@ functional_tests: &functional_tests
         working_directory: /var/www/html
         command: |
           cp ./modules/apigee_edge/.circleci/test-functional.sh /var/www/html
-          ./test-functional.sh apigee_edge
+          ./test-functional.sh apigee_edge << parameters.core-version >>
 
     - store_test_results:
         path: /tmp/artifacts/phpunit
@@ -142,7 +142,7 @@ functional_js_tests: &functional_js_tests
         working_directory: /var/www/html
         command: |
           cp ./modules/apigee_edge/.circleci/test-functional-js.sh /var/www/html
-          ./test-functional-js.sh apigee_edge
+          ./test-functional-js.sh apigee_edge << parameters.core-version >>
 
     - store_test_results:
         path: /tmp/artifacts/phpunit
