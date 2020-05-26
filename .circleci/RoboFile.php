@@ -414,6 +414,11 @@ class RoboFile extends \Robo\Tasks
    */
   public function drupalVersion($drupalCoreVersion)
   {
+    // Remove all core files.
+    $this->taskFilesystemStack()
+      ->taskDeleteDir('core')
+      ->run();
+
     $config = json_decode(file_get_contents('composer.json'));
     unset($config->require->{"drupal/core"});
 
