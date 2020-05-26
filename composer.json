@@ -24,9 +24,6 @@
         "phpmetrics/phpmetrics": "^2.5",
         "mglaman/drupal-check": "dev-master"
     },
-    "conflict": {
-        "drupal/coder": ">8.3.8"
-    },
     "suggest": {
         "drupal/console": "Needed only to run tests in Drupal 8."
     },

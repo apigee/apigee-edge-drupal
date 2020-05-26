@@ -176,10 +176,14 @@ class RoboFile extends \Robo\Tasks
     // on it fails for the first time.
     $this->taskFilesystemStack()->remove('composer.lock')->run();
 
-    $this->taskDeleteDir('vendor/behat/mink')->run();
+    // Remove all core files.
+    $this->taskFilesystemStack()
+      ->taskDeleteDir('core')
+      ->taskDeleteDir('vendor')
+      ->run();
 
     // Composer often runs out of memory when installing drupal.
-    $this->taskComposerUpdate('php -d memory_limit=-1 /usr/local/bin/composer')
+    $this->taskComposerInstall('php -d memory_limit=-1 /usr/local/bin/composer')
       ->optimizeAutoloader()
       ->run();
 
@@ -414,11 +418,6 @@ class RoboFile extends \Robo\Tasks
    */
   public function drupalVersion($drupalCoreVersion)
   {
-    // Remove all core files.
-    $this->taskFilesystemStack()
-      ->taskDeleteDir('core')
-      ->run();
-
     $config = json_decode(file_get_contents('composer.json'));
     unset($config->require->{"drupal/core"});
 
@@ -473,13 +472,20 @@ class RoboFile extends \Robo\Tasks
     file_put_contents('composer.json', json_encode($config, JSON_PRETTY_PRINT));
   }
 
-  public function githubToken(string $token) {
-    $config = json_decode(file_get_contents('composer.json'));
+  /**
+   * Perform extra tasks per Drupal core version.
+   *
+   * @param int $drupalCoreVersion
+   *   The major version of Drupal required.
+   */
+  public function doExtra($drupalCoreVersion) {
+    if ($drupalCoreVersion > 8) {
 
-    $config->config->{"github-oauth"} = new \stdClass();
-    $config->config->{"github-oauth"}->{"github.com"} = $token;
-
-    file_put_contents('composer.json', json_encode($config, JSON_PRETTY_PRINT));
+      // Delete D8 only modules.
+      $this->taskFilesystemStack()
+        ->taskDeleteDir('modules/apigee_edge/modules/apigee_edge_actions')
+        ->run();
+    }
   }
 
 }
