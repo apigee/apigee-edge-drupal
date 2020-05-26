@@ -34,7 +34,6 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
-use Symfony\Component\Routing\RequestContext;
 
 /**
  * Test EdgeExceptionSubscriber.
@@ -107,17 +106,7 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
 
     $this->exception = new ApiException("API response error message.");
 
-//    $this->httpKernel = $this->prophesize(HttpKernelInterface::class);
-//    $this->httpKernel->handle(Argument::any(), Argument::any())->willReturn(new Response());
     $this->logger = $this->prophesize(LoggerInterface::class);
-//    $this->redirectDestination = $this->prophesize(RedirectDestinationInterface::class);
-//    $this->redirectDestination->getAsArray()->willReturn([]);
-
-    $request = $this->prophesize(RequestContext::class);
-//    $this->accessUnawareRouter = $this->prophesize(UrlMatcherInterface::class);
-//    $this->accessUnawareRouter->getContext(Argument::any())->willReturn($request->reveal());
-//    $this->accessUnawareRouter->setContext(Argument::any())->willReturn();
-//    $this->accessUnawareRouter->match(Argument::any())->willReturn([]);
 
     $this->messenger = $this->prophesize(MessengerInterface::class);
 

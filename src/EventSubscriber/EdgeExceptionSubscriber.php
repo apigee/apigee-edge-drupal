@@ -135,7 +135,10 @@ final class EdgeExceptionSubscriber implements EventSubscriberInterface {
 
       $routeMatch = new RouteMatch('apigee_edge.error_page', new Route('/api-communication-error'));
       $renderer = $this->classResolver->getInstanceFromDefinition($this->mainContentRenderers['html']);
+
+      /* @var \Symfony\Component\HttpFoundation\Response $response */
       $response = $renderer->renderResponse($content, $event->getRequest(), $routeMatch);
+      $response->setStatusCode(503);
 
       // Display additional debug messages.
       if ($this->configFactory->get('apigee_edge.error_page')->get('error_page_debug_messages')) {
