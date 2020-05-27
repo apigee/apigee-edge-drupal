@@ -16,5 +16,6 @@ fi
 apache2-foreground&
 
 robo override:phpunit-config $1
+robo do:extra $2
 
 sudo -E -u www-data vendor/bin/phpunit -c core --group $1 --testsuite functional-javascript --debug --verbose --log-junit /tmp/artifacts/phpunit/phpunit.xml
