@@ -92,7 +92,7 @@ update_dependencies: &update_dependencies
 unit_kernel_tests: &unit_kernel_tests
   <<: *defaults
   steps:
-    - run: rm -rf /var/www/html
+    - run: rm -rf /var/www/html/core
 
     - attach_workspace:
         at: /var/www/html
