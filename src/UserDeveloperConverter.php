@@ -104,7 +104,10 @@ class UserDeveloperConverter implements UserDeveloperConverterInterface {
       $setter = 'set' . ucfirst($developer_prop);
       $getter = 'get' . ucfirst($developer_prop);
       if ($user->get($base_field)->value !== $developer->{$getter}()) {
+      // Checking the base field Value is not NULL.
+      if ($user->get($base_field)->value != NULL) {
         $developer->{$setter}($user->get($base_field)->value);
+      }
         $successful_changes++;
       }
     }
