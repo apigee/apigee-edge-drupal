@@ -110,4 +110,18 @@ class TeamListBuilder extends EdgeEntityListBuilder {
     return $row + parent::buildRow($entity);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function render() {
+    $build = parent::render();
+
+    // Team lists vary for each user.
+    $build['#cache']['contexts'][] = 'user';
+    $build['#cache']['tags'][] = 'user:' . \Drupal::currentUser()->id();
+    $build['#cache']['max-age'] = 0;
+
+    return $build;
+  }
+
 }
