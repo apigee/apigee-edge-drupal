@@ -115,11 +115,26 @@ class TeamListBuilder extends EdgeEntityListBuilder {
    */
   public function render() {
     $build = parent::render();
+    $account = $this->entityTypeManager->getStorage('user')->load(\Drupal::currentUser()->id());
 
     // Team lists vary for each user.
     $build['#cache']['contexts'][] = 'user';
-    $build['#cache']['tags'][] = 'user:' . \Drupal::currentUser()->id();
-    $build['#cache']['max-age'] = 0;
+
+    // This team list should be invalidated if the user's permissions change.
+    $build['#cache']['tags'][] = 'user:' . $account->id();
+
+    // This team list should be invalidated if the user roles permissions change.
+    foreach ($account->getRoles() as $rid) {
+      $build['#cache']['tags'][] = "config:user.role.$rid";
+    }
+
+    // This team list should be invalidated if the team roles permissions change.
+    $build['#cache']['tags'][] = 'team_role_list';
+
+    // Use cache expiration defined in configuration.
+    $build['#cache']['max-age'] = $this->configFactory
+      ->get('apigee_edge_teams.team_settings')
+      ->get('cache_expiration');
 
     return $build;
   }
