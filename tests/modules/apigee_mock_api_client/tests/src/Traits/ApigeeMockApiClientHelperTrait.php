@@ -260,17 +260,44 @@ trait ApigeeMockApiClientHelperTrait {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  protected function createTeam(): TeamInterface {
+  protected function createTeam(): TeamInterface {static $i = 0;
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
     $team = Team::create([
-      'name' => $this->randomMachineName(),
+      'name' => $this->randomMachineName() . '_' . $i++,
       'displayName' => $this->randomGenerator->name(),
     ]);
     $this->queueCompanyResponse($team->decorated());
-    $this->queueDeveloperResponse($this->account);
+    $this->stack->queueMockResponse('no_content');
     $team->save();
 
     return $team;
+  }
+
+  /**
+   * Adds a user to a team.
+   *
+   * Adding a team to a user will add the team as long as the developer entity
+   * is loaded from cache.
+   *
+   * @param \Drupal\apigee_edge_teams\Entity\TeamInterface $team
+   *   The team.
+   * @param \Drupal\user\UserInterface $user
+   *   A drupal user.
+   *
+   * @return \Drupal\apigee_edge\Entity\DeveloperInterface
+   *   The developer entity.
+   */
+  public function addUserToTeam(TeamInterface $team, UserInterface $user) {
+    $context['developer'] = $user;
+    $context['org_name'] = $this->sdkConnector->getOrganization();
+    $context['companies'] = [$team->id()];
+
+    $this->stack->queueMockResponse(['get_developer' => $context]);
+
+    $teams = \Drupal::service('apigee_edge_teams.team_membership_manager')->getTeams($user->getEmail());
+    static::assertSame([$team->id()], $teams);
+
+    return $this->entityTypeManager->getStorage('developer')->load($user->getEmail());
   }
 
   /**

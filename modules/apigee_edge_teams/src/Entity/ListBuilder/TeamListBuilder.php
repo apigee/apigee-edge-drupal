@@ -115,21 +115,17 @@ class TeamListBuilder extends EdgeEntityListBuilder {
    */
   public function render() {
     $build = parent::render();
-    $account = $this->entityTypeManager->getStorage('user')->load(\Drupal::currentUser()->id());
 
-    // Team lists vary for each user.
+    // Team lists vary for each user and their permissions.
+    // Note: Even though cache contexts will be optimized to only include the
+    // 'user' cache context, the element should be invalidated correctly when
+    // permissions change because the 'user.permissions' cache context defined
+    // cache tags for permission changes, which should have bubbled up for the
+    // element when it was optimized away.
+    // @see \Drupal\KernelTests\Core\Cache\CacheContextOptimizationTest
+
     $build['#cache']['contexts'][] = 'user';
-
-    // This team list should be invalidated if the user's permissions change.
-    $build['#cache']['tags'][] = 'user:' . $account->id();
-
-    // This team list should be invalidated if the user roles permissions change.
-    foreach ($account->getRoles() as $rid) {
-      $build['#cache']['tags'][] = "config:user.role.$rid";
-    }
-
-    // This team list should be invalidated if the team roles permissions change.
-    $build['#cache']['tags'][] = 'team_role_list';
+    $build['#cache']['contexts'][] = 'user.permissions';
 
     // Use cache expiration defined in configuration.
     $build['#cache']['max-age'] = $this->configFactory
