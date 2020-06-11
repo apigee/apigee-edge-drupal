@@ -211,6 +211,21 @@ trait ApigeeMockApiClientHelperTrait {
   }
 
   /**
+   * Queues up a mock companies response.
+   *
+   * @param array $companies
+   *   An array of company objects.
+   * @param string|null $response_code
+   *   Add a response code to override the default.
+   */
+  protected function queueCompaniesResponse(array $companies, $response_code = NULL) {
+    $context = empty($response_code) ? [] : ['status_code' => $response_code];
+    $context['companies'] = $companies;
+
+    $this->stack->queueMockResponse(['companies' => $context]);
+  }
+
+  /**
    * Queues up a mock developers in a company response.
    *
    * @param array $developers
@@ -260,10 +275,10 @@ trait ApigeeMockApiClientHelperTrait {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  protected function createTeam(): TeamInterface {static $i = 0;
+  protected function createTeam(): TeamInterface {
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
     $team = Team::create([
-      'name' => $this->randomMachineName() . '_' . $i++,
+      'name' => $this->randomMachineName(),
       'displayName' => $this->randomGenerator->name(),
     ]);
     $this->queueCompanyResponse($team->decorated());
@@ -288,14 +303,17 @@ trait ApigeeMockApiClientHelperTrait {
    *   The developer entity.
    */
   public function addUserToTeam(TeamInterface $team, UserInterface $user) {
-    $context['developer'] = $user;
-    $context['org_name'] = $this->sdkConnector->getOrganization();
-    $context['companies'] = [$team->id()];
+    $this->queueDevsInCompanyResponse([
+      ['email' => $user->getEmail()],
+    ]);
+    $this->queueCompanyResponse($team->decorated());
 
-    $this->stack->queueMockResponse(['get_developer' => $context]);
+    $teamMembershipManager = \Drupal::service('apigee_edge_teams.team_membership_manager');
+    $teamMembershipManager->addMembers($team->id(), [$user->getEmail()]);
 
-    $teams = \Drupal::service('apigee_edge_teams.team_membership_manager')->getTeams($user->getEmail());
-    static::assertSame([$team->id()], $teams);
+    $this->queueDeveloperResponse($user, 200, [
+      'companies' => [$team->id()],
+    ]);
 
     return $this->entityTypeManager->getStorage('developer')->load($user->getEmail());
   }

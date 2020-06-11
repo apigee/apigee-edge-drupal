@@ -23,6 +23,7 @@ namespace Drupal\apigee_edge_teams\Entity\ListBuilder;
 use Drupal\apigee_edge\Element\StatusPropertyElement;
 use Drupal\apigee_edge\Entity\ListBuilder\EdgeEntityListBuilder;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Url;
 
@@ -115,6 +116,11 @@ class TeamListBuilder extends EdgeEntityListBuilder {
    */
   public function render() {
     $build = parent::render();
+    $account = $this->entityTypeManager->getStorage('user')->load(\Drupal::currentUser()->id());
+
+    $build = empty($build['table']) ? $build : $build['table'];
+
+    $build['#cache']['keys'][] = 'team_list_per_user';
 
     // Team lists vary for each user and their permissions.
     // Note: Even though cache contexts will be optimized to only include the
@@ -123,9 +129,10 @@ class TeamListBuilder extends EdgeEntityListBuilder {
     // cache tags for permission changes, which should have bubbled up for the
     // element when it was optimized away.
     // @see \Drupal\KernelTests\Core\Cache\CacheContextOptimizationTest
-
     $build['#cache']['contexts'][] = 'user';
     $build['#cache']['contexts'][] = 'user.permissions';
+
+    $build['#cache']['tags'] = Cache::mergeTags($build['#cache']['tags'], $account->getCacheTags());
 
     // Use cache expiration defined in configuration.
     $build['#cache']['max-age'] = $this->configFactory
