@@ -100,7 +100,11 @@ class TeamListBuilderTest extends ApigeeEdgeTeamsFunctionalTestBase {
    */
   protected $teamB;
 
-
+  /**
+   * A role.
+   *
+   * @var \Drupal\user\Entity\Role
+   */
   protected $customRole;
 
   /**
