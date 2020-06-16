@@ -81,6 +81,8 @@ update_dependencies: &update_dependencies
 unit_kernel_tests: &unit_kernel_tests
   <<: *defaults
   steps:
+    - run: rm -rf /var/www/html/core
+
     - attach_workspace:
         at: /var/www/html
 
@@ -102,6 +104,8 @@ unit_kernel_tests: &unit_kernel_tests
 functional_tests: &functional_tests
   <<: *defaults
   steps:
+    - run: rm -rf /var/www/html/core
+
     - attach_workspace:
         at: /var/www/html
 
@@ -122,6 +126,8 @@ functional_tests: &functional_tests
 functional_js_tests: &functional_js_tests
   <<: *defaults
   steps:
+    - run: rm -rf /var/www/html/core
+
     - attach_workspace:
         at: /var/www/html
 
