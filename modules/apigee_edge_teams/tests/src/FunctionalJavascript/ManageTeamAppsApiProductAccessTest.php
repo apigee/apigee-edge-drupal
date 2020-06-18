@@ -27,6 +27,9 @@ use Drupal\Tests\apigee_edge\FunctionalJavascript\ApigeeEdgeFunctionalJavascript
 
 /**
  * Extra validation for API product access on team app forms.
+ *
+ * @group apigee_edge
+ * @group apigee_edge_teams
  */
 class ManageTeamAppsApiProductAccessTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
