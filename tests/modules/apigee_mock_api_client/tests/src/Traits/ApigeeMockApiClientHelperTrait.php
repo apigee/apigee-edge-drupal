@@ -253,6 +253,7 @@ trait ApigeeMockApiClientHelperTrait {
     static $appId;
     $appId = $appId ? $appId++ : 1;
 
+    $this->queueDeveloperResponse($this->account);
     /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
     $entity = DeveloperApp::create([
       'appId' => $this->integration_enabled ? NULL : $appId,

@@ -82,11 +82,7 @@ class EdgeEntityAddMemberEventTest extends ApigeeEdgeActionsRulesKernelTestBase 
     $team = $this->createTeam();
 
     // Add team member.
-    $this->queueCompanyResponse($team->decorated());
-    $this->queueDeveloperResponse($this->account);
-    $this->container->get('apigee_edge_teams.team_membership_manager')->addMembers($team->id(), [
-      $this->account->getEmail(),
-    ]);
+    $this->addUserToTeam($team, $this->account);
 
     $this->assertLogsContains("Event apigee_edge_actions_entity_add_member:team was dispatched.");
     $this->assertLogsContains("Member {$this->account->first_name->value} was added to team {$team->getDisplayName()}.");
