@@ -47,6 +47,7 @@ class RoboFile extends \Robo\Tasks
     $config = json_decode(file_get_contents('composer.json'));
     $config->extra->{"enable-patching"} = 'true';
     $config->extra->{"patches"} = new \stdClass();
+    unset($config->scripts->{"post-package-install"});
     file_put_contents('composer.json', json_encode($config));
 
     // Create a directory for our artifacts.
