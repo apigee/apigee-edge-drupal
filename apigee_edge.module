@@ -379,6 +379,7 @@ function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityV
         $build['credentials'][] = [
           '#type' => 'app_credential',
           '#credential' => $credential,
+          '#app_display_name' => $entity->getDisplayName(),
           '#attributes' => [
             'class' => 'items--inline',
           ],
@@ -1013,6 +1014,8 @@ function template_preprocess_app_credential_product_list(array &$variables) {
  *     Properties used:
  *     - #credential: A \Apigee\Edge\Api\Management\Entity\AppCredential object.
  *       A developer app credential.
+ *     - #app_display_name: string.
+ *       App name.
  *   - attributes: HTML attributes for the containing element.
  */
 function template_preprocess_app_credential(array &$variables) {
@@ -1055,7 +1058,8 @@ function template_preprocess_app_credential(array &$variables) {
   $variables['primary_wrapper'] = [
     '#type' => 'container',
     '#attributes' => [
-      'class' => 'wrapper--primary',
+      'class' => 'wrapper--primary app-details-wrapper',
+      'data-app' => $variables['elements']['#app_display_name'],
     ],
   ];
 
@@ -1103,7 +1107,7 @@ function template_preprocess_app_credential(array &$variables) {
           'class' => 'secret',
           'data-secret-type' => $property,
         ],
-        '#value' => Xss::filter($value),
+        '#value' => '',
       ];
     }
     elseif ($def['value_type'] === 'status') {

@@ -190,3 +190,6 @@ apigee_edge.export_analytics.csv:
   requirements:
     _csrf_token: 'TRUE'
     _custom_access: '\Drupal\apigee_edge\Controller\ExportAnalyticsController::access'
+
+route_callbacks:
+  - '\Drupal\apigee_edge\Routing\EdgeDynamicRouting::routes'
