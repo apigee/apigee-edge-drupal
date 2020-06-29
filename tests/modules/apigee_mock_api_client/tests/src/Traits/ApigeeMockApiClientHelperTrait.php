@@ -211,6 +211,21 @@ trait ApigeeMockApiClientHelperTrait {
   }
 
   /**
+   * Queues up a mock companies response.
+   *
+   * @param array $companies
+   *   An array of company objects.
+   * @param string|null $response_code
+   *   Add a response code to override the default.
+   */
+  protected function queueCompaniesResponse(array $companies, $response_code = NULL) {
+    $context = empty($response_code) ? [] : ['status_code' => $response_code];
+    $context['companies'] = $companies;
+
+    $this->stack->queueMockResponse(['companies' => $context]);
+  }
+
+  /**
    * Queues up a mock developers in a company response.
    *
    * @param array $developers
@@ -238,6 +253,7 @@ trait ApigeeMockApiClientHelperTrait {
     static $appId;
     $appId = $appId ? $appId++ : 1;
 
+    $this->queueDeveloperResponse($this->account);
     /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
     $entity = DeveloperApp::create([
       'appId' => $this->integration_enabled ? NULL : $appId,
@@ -267,10 +283,40 @@ trait ApigeeMockApiClientHelperTrait {
       'displayName' => $this->randomGenerator->name(),
     ]);
     $this->queueCompanyResponse($team->decorated());
-    $this->queueDeveloperResponse($this->account);
+    $this->stack->queueMockResponse('no_content');
     $team->save();
 
     return $team;
+  }
+
+  /**
+   * Adds a user to a team.
+   *
+   * Adding a team to a user will add the team as long as the developer entity
+   * is loaded from cache.
+   *
+   * @param \Drupal\apigee_edge_teams\Entity\TeamInterface $team
+   *   The team.
+   * @param \Drupal\user\UserInterface $user
+   *   A drupal user.
+   *
+   * @return \Drupal\apigee_edge\Entity\DeveloperInterface
+   *   The developer entity.
+   */
+  public function addUserToTeam(TeamInterface $team, UserInterface $user) {
+    $this->queueDevsInCompanyResponse([
+      ['email' => $user->getEmail()],
+    ]);
+    $this->queueCompanyResponse($team->decorated());
+
+    $teamMembershipManager = \Drupal::service('apigee_edge_teams.team_membership_manager');
+    $teamMembershipManager->addMembers($team->id(), [$user->getEmail()]);
+
+    $this->queueDeveloperResponse($user, 200, [
+      'companies' => [$team->id()],
+    ]);
+
+    return $this->entityTypeManager->getStorage('developer')->load($user->getEmail());
   }
 
   /**

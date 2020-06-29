@@ -1,0 +1,19 @@
+{#
+/**
+ * @file
+ *   Companies
+ *
+ * Usage:
+ *   @code {% include 'companies.json.twig' %} @endcode
+ *
+ * Variables:
+ * - companies: an array of company objects.
+ */
+#}
+{
+  "company" : [
+    {% for company in companies %}
+    {% include 'company.json.twig' with {'company': company} %}{{ loop.last ? '' : ',' }}
+    {% endfor %}
+  ]
+}

@@ -80,15 +80,13 @@ class EdgeEntityRemoveMemberEventTest extends ApigeeEdgeActionsRulesKernelTestBa
     // Create a new team.
     $team = $this->createTeam();
 
-    // Add team member.
-    $this->queueCompanyResponse($team->decorated());
-    $this->queueDeveloperResponse($this->account);
     $team_membership_manager = $this->container->get('apigee_edge_teams.team_membership_manager');
-    $team_membership_manager->addMembers($team->id(), [
-      $this->account->getEmail(),
-    ]);
+
+    // Add team member.
+    $this->addUserToTeam($team, $this->account);
 
     // Remove team member.
+    $this->stack->queueMockResponse('no_content');
     $team_membership_manager->removeMembers($team->id(), [
       $this->account->getEmail(),
     ]);
