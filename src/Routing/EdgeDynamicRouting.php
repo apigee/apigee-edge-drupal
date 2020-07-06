@@ -23,9 +23,12 @@ namespace Drupal\apigee_edge\Routing;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 
+/**
+ * Dynamically built routes.
+ */
 class EdgeDynamicRouting {
 
-  /** 
+  /**
   * Build routes dynamically.
   */
   public function routes() {
