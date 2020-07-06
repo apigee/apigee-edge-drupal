@@ -226,8 +226,8 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
     $payload = [];
     if ($credentials = array_shift($developer_app_by_name->getCredentials())) {
       $payload = [
-        'consumerKey' => $credentials->getConsumerKey(),
-        'consumerSecret' => $credentials->getConsumerSecret(),
+        $credentials->getConsumerKey(),
+        $credentials->getConsumerSecret(),
       ];
     }
     return new JsonResponse($payload);

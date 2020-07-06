@@ -26,7 +26,6 @@
   Drupal.behaviors.apigeeEdgeDetails = {
     attach: function (context, settings) {
       Drupal.apigeeEdgeDetails.editActions(context, settings);
-      alert(1111);
     }
   };
 
@@ -39,17 +38,6 @@
       }
 
       $('.item-property', context).on('click', 'a.secret-show-hide', function (event) {
-
-        var app_details_wrapper = $(this).closest('.app-details-wrapper');
-alert(app_details_wrapper.data('app'));
-        $.ajax({
-          url: settings.baseUrl + '/admin/config/apigee-edge/app/' + app_details_wrapper.data('app') + '/credentials',
-        })
-        .done(function( data ) {
-          if ( console && console.log ) {
-            console.log( "Sample of data:", data.slice( 0, 100 ) );
-          }
-        });
         secretToggle(event, $(this).parent().parent());
       });
 
@@ -65,5 +53,4 @@ alert(app_details_wrapper.data('app'));
       }
     }
   };
-
 })(jQuery, Drupal);
