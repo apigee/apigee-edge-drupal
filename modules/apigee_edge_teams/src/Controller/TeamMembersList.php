@@ -48,7 +48,7 @@ class TeamMembersList extends ControllerBase {
    *
    * @var array
    */
-  protected $defaultRoles;
+  protected $defaultRoles = [];
 
   /**
    * TeamMembersList constructor.
