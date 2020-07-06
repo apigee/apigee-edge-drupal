@@ -160,11 +160,14 @@ class TeamMembersList extends ControllerBase {
       $row['data']['member'] = $member;
     }
 
+    // Default role assigned to all users.
+    $default_roles = [TeamRoleInterface::TEAM_MEMBER_ROLE => $this->t('Member')];
+
     if (array_key_exists($member, $team_member_roles_by_mail)) {
       $roles = array_reduce($team_member_roles_by_mail[$member]->getTeamRoles(), function ($carry, TeamRoleInterface $role) {
         $carry[$role->id()] = $role->label();
         return $carry;
-      }, []);
+      }, $default_roles);
       $row['data']['roles']['data'] = [
         '#theme' => 'item_list',
         '#items' => $roles,
@@ -175,7 +178,10 @@ class TeamMembersList extends ControllerBase {
       ];
     }
     else {
-      $row['data']['roles']['data'] = NULL;
+      $row['data']['roles']['data'] = [
+        '#theme' => 'item_list',
+        '#items' => $default_roles,
+      ];
     }
 
     $row['data']['operations']['data'] = $this->buildOperations($member, $team);
