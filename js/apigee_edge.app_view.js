@@ -19,7 +19,7 @@
  * @file
  * Javascript functions related to the Apigee Edge Drupal Module.
  */
-(function ($, Drupal) {
+(function ($, Drupal, drupalSettings) {
 
   'use strict';
 
@@ -32,19 +32,27 @@
   Drupal.apigeeEdgeDetails = {
     editActions: function (context, settings) {
       var secrets = $('.secret', context);
+      var appElWrapper = '.app-details-wrapper';
+      var loader = drupalSettings.path.baseUrl + 'core/misc/throbber-active.gif';
       for (var i = 0; i < secrets.length; i++) {
         var secret = secrets[i];
         $(secret).addClass('secret-hidden').attr('data-value', $(secret).html()).html('<span>&#149;&#149;&#149;&#149;&#149;&#149;&#149;&#149;<br><a href="#" class="secret-show-hide">' + Drupal.t('Show') + '</a></span>').show();
       }
 
       $('.item-property', context).on('click', 'a.secret-show-hide', function (event) {
-        secretToggle(event, $(this).parent().parent());
+        var $wrapper = $(this).closest(appElWrapper);
+        var index = $wrapper.find('a.secret-show-hide').index(this);
+        var $el = $(this).parent().parent();
+        secretToggle(event, $el, $wrapper, index);
       });
 
-      function secretToggle(event, secret) {
+      function secretToggle(event, secret, wrapper, index) {
         event.preventDefault();
         if ($(secret).hasClass('secret-hidden')) {
-          $(secret).html(secret.attr('data-value') + '<br><span><a href="#" class="secret-show-hide">' + Drupal.t('Hide') + '</a></span>');
+          $(secret).html('<img src="' + loader + '" border="0" />');
+          getSecretValueAjax(wrapper.data('app'), function(data) {
+            $(secret).html(data[index] + '<br><span><a href="#" class="secret-show-hide">' + Drupal.t('Hide') + '</a></span>');
+          });
         }
         else {
           $(secret).html('<span>&#149;&#149;&#149;&#149;&#149;&#149;&#149;&#149;<br><a href="#" class="secret-show-hide">' + Drupal.t('Show') + '</a></span>');
@@ -53,4 +61,14 @@
       }
     }
   };
-})(jQuery, Drupal);
+
+  /**
+   * Get credentials based on the app name.
+   */
+  function getSecretValueAjax(app, callback) {
+    $.get( drupalSettings.path.baseUrl + 'admin/config/apigee-edge/app/' + app + '/credentials', function( data ) {
+      callback(data);
+    });
+  };
+
+})(jQuery, Drupal, drupalSettings);
