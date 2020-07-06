@@ -29,8 +29,8 @@ use Symfony\Component\Routing\RouteCollection;
 class EdgeDynamicRouting {
 
   /**
-  * Build routes dynamically.
-  */
+   * Build routes dynamically.
+   */
   public function routes() {
     $route_collection = new RouteCollection();
     $route = new Route('/admin/config/apigee-edge/app/{developer_app_by_name}/credentials',
