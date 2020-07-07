@@ -162,7 +162,6 @@ class EntityListBuilderTest extends KernelTestBase {
 
     // Using view mode.
     $build = $entity_type_manager->getListBuilder(static::ENTITY_TYPE)->render();
-    dump($build);
     static::assertSame('apigee_entity_list', $build['#type']);
     static::assertSame('foo', $build['#view_mode']);
   }
