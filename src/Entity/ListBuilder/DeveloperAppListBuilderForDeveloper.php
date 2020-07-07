@@ -215,4 +215,13 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
     return $title;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function getCacheMaxAge() {
+    return $this->configFactory
+      ->get('apigee_edge.developer_app_settings')
+      ->get('cache_expiration');
+  }
+
 }
