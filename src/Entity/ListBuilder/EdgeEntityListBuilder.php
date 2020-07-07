@@ -124,11 +124,12 @@ class EdgeEntityListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function render() {
-    $build = parent::render();
-
     $settings = $this->getDisplaySettings();
     if ($this->usingDisplayType(static::VIEW_MODE_DISPLAY_TYPE)) {
       $build = $this->renderUsingViewMode($settings['view_mode']);
+    }
+    else {
+      $build = parent::render();
     }
 
     // Add cache contexts.
