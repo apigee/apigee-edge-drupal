@@ -39,7 +39,6 @@ use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * Lists developer apps of a developer on the UI.
@@ -214,23 +213,6 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
     }
 
     return $title;
-  }
-
-  /**
-   * Returns app credentials.
-   *
-   * @return \Symfony\Component\HttpFoundation\JsonResponse
-   *   The app credentials.
-   */
-  public function appCredentials($developer_app_by_name): JsonResponse {
-    $payload = [];
-    if ($credentials = array_shift($developer_app_by_name->getCredentials())) {
-      $payload = [
-        $credentials->getConsumerKey(),
-        $credentials->getConsumerSecret(),
-      ];
-    }
-    return new JsonResponse($payload);
   }
 
 }

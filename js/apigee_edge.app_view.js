@@ -33,31 +33,45 @@
     editActions: function (context, settings) {
       var secrets = $('.secret', context);
       var appElWrapper = '.app-details-wrapper';
+      var showHideEl = 'a.secret-show-hide';
+      var pClass = 'processing';
       var loader = drupalSettings.path.baseUrl + 'core/misc/throbber-active.gif';
       for (var i = 0; i < secrets.length; i++) {
         var secret = secrets[i];
-        $(secret).addClass('secret-hidden').attr('data-value', $(secret).html()).html('<span>&#149;&#149;&#149;&#149;&#149;&#149;&#149;&#149;<br><a href="#" class="secret-show-hide">' + Drupal.t('Show') + '</a></span>').show();
+        $(secret)
+          .addClass('secret-hidden')
+          .attr('data-value', $(secret).html())
+          .html('<span>&#149;&#149;&#149;&#149;&#149;&#149;&#149;&#149;<br><a href="#" class="secret-show-hide">' + Drupal.t('Show') + '</a></span>')
+          .show();
       }
 
-      $('.item-property', context).on('click', 'a.secret-show-hide', function (event) {
+      $('.item-property', context).on('click', showHideEl, function (event) {
+        event.preventDefault();
         var $wrapper = $(this).closest(appElWrapper);
-        var index = $wrapper.find('a.secret-show-hide').index(this);
-        var $el = $(this).parent().parent();
-        secretToggle(event, $el, $wrapper, index);
+        if (!$(this).hasClass(pClass)) {
+          $(showHideEl).addClass(pClass);
+          secretToggle(
+            $(this).parent().parent(),
+            $wrapper.data('team'),
+            $wrapper.data('app'),
+            $wrapper.closest('fieldset').parent().find('fieldset').index($(this).closest('fieldset')),
+            $wrapper.find(showHideEl).index(this)
+          );
+        }
       });
 
-      function secretToggle(event, secret, wrapper, index) {
-        event.preventDefault();
-        if ($(secret).hasClass('secret-hidden')) {
-          $(secret).html('<img src="' + loader + '" border="0" />');
-          getSecretValueAjax(wrapper.data('app'), function(data) {
-            $(secret).html(data[index] + '<br><span><a href="#" class="secret-show-hide">' + Drupal.t('Hide') + '</a></span>');
+      function secretToggle(el, teamAppName, appName, wrapperIndex, keyIndex) {
+        if ($(el).hasClass('secret-hidden')) {
+          $(el).html('<img src="' + loader + '" border="0" />');
+          callEndpoint(teamAppName, appName, function(data) {
+            $(el).html(data[wrapperIndex][keyIndex] + '<br><span><a href="#" class="secret-show-hide">' + Drupal.t('Hide') + '</a></span>');
+            $(showHideEl).removeClass(pClass);
           });
         }
         else {
-          $(secret).html('<span>&#149;&#149;&#149;&#149;&#149;&#149;&#149;&#149;<br><a href="#" class="secret-show-hide">' + Drupal.t('Show') + '</a></span>');
+          $(el).html('<span>&#149;&#149;&#149;&#149;&#149;&#149;&#149;&#149;<br><a href="#" class="secret-show-hide">' + Drupal.t('Show') + '</a></span>');
         }
-        $(secret).toggleClass('secret-hidden');
+        $(el).toggleClass('secret-hidden');
       }
     }
   };
@@ -65,8 +79,12 @@
   /**
    * Get credentials based on the app name.
    */
-  function getSecretValueAjax(app, callback) {
-    $.get( drupalSettings.path.baseUrl + 'admin/config/apigee-edge/app/' + app + '/credentials', function( data ) {
+  function callEndpoint(teamApp,  app, callback) {
+    var endpoint = drupalSettings.path.baseUrl + 'api-keys/developer/' + drupalSettings.currentUser + '/' + app;
+    if (teamApp !== undefined) {
+      endpoint = drupalSettings.path.baseUrl + 'api-keys/team/' + teamApp + '/' + app;
+    }
+    $.get(endpoint, function(data) {
       callback(data);
     });
   };

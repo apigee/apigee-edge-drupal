@@ -362,6 +362,15 @@ function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityV
     $build['#attached']['library'][] = 'apigee_edge/apigee_edge.components';
     $build['#attached']['library'][] = 'apigee_edge/apigee_edge.app_view';
 
+    if (\Drupal::moduleHandler()->moduleExists('apigee_edge_teams')) {
+      if ($team = \Drupal::routeMatch()->getParameter('team')) {
+        $team_app_name = $team->getName();
+      }
+    }
+    if ($user = \Drupal::routeMatch()->getParameter('user')) {
+      $build['#attached']['drupalSettings']['currentUser'] = $user->id();
+    }
+
     if ($display->getComponent('credentials')) {
       /** @var \Drupal\apigee_edge\Entity\AppInterface $entity */
       $defaults = [
@@ -377,7 +386,8 @@ function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityV
         $build['credentials'][] = [
           '#type' => 'app_credential',
           '#credential' => $credential,
-          '#app_display_name' => $entity->getDisplayName(),
+          '#app_name' => $entity->getName(),
+          '#team_app_name' => isset($team_app_name) ? $team_app_name : '',
           '#attributes' => [
             'class' => 'items--inline',
           ],
@@ -1012,8 +1022,10 @@ function template_preprocess_app_credential_product_list(array &$variables) {
  *     Properties used:
  *     - #credential: A \Apigee\Edge\Api\Management\Entity\AppCredential object.
  *       A developer app credential.
- *     - #app_display_name: string.
+ *     - #app_name: string.
  *       App name.
+ *     - #team_app_name: string.
+ *       Team app name.
  *   - attributes: HTML attributes for the containing element.
  */
 function template_preprocess_app_credential(array &$variables) {
@@ -1057,9 +1069,13 @@ function template_preprocess_app_credential(array &$variables) {
     '#type' => 'container',
     '#attributes' => [
       'class' => 'wrapper--primary app-details-wrapper',
-      'data-app' => $variables['elements']['#app_display_name'],
+      'data-app' => $variables['elements']['#app_name'],
     ],
   ];
+
+  if (!empty($variables['elements']['#team_app_name'])) {
+    $variables['primary_wrapper']['#attributes']['data-team'] = $variables['elements']['#team_app_name'];
+  }
 
   foreach ($properties_in_primary as $property => $def) {
     $variables['primary_wrapper'][$property] = [
