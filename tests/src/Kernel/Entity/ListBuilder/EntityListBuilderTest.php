@@ -89,6 +89,8 @@ class EntityListBuilderTest extends KernelTestBase {
 
     $this->apigeeTestHelperSetup();
 
+    $this->addOrganizationMatchedResponse();
+
     $this->account = User::create([
       'mail' => $this->randomMachineName() . '@example.com',
       'name' => $this->randomMachineName(),
@@ -96,7 +98,6 @@ class EntityListBuilderTest extends KernelTestBase {
       'last_name' => $this->getRandomGenerator()->word(16),
     ]);
     $this->account->save();
-    $this->queueDeveloperResponse($this->account, Response::HTTP_CREATED);
   }
 
   /**
@@ -134,10 +135,7 @@ class EntityListBuilderTest extends KernelTestBase {
   public function testDisplaySettings() {
     /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager */
     $entity_type_manager = $this->container->get('entity_type.manager');
-    $this->queueDeveloperResponse($this->account);
     $this->app = $this->createDeveloperApp();
-
-    $this->queueDeveloperResponse($this->account);
     $this->stack->queueMockResponse([
       'get_developer_apps' => [
         'apps' => [$this->app]
