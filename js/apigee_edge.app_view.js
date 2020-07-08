@@ -35,7 +35,7 @@
       var appElWrapper = '.app-details-wrapper';
       var showHideEl = 'a.secret-show-hide';
       var pClass = 'processing';
-      var loader = drupalSettings.path.baseUrl + 'core/misc/throbber-active.gif';
+      var loader = '<img src="' + drupalSettings.path.baseUrl + 'core/misc/throbber-active.gif" border="0" />';
       for (var i = 0; i < secrets.length; i++) {
         var secret = secrets[i];
         $(secret)
@@ -62,7 +62,7 @@
 
       function secretToggle(el, teamAppName, appName, wrapperIndex, keyIndex) {
         if ($(el).hasClass('secret-hidden')) {
-          $(el).html('<img src="' + loader + '" border="0" />');
+          $(el).html(loader);
           callEndpoint(teamAppName, appName, function(data) {
             $(el).html(data[wrapperIndex][keyIndex] + '<br><span><a href="#" class="secret-show-hide">' + Drupal.t('Hide') + '</a></span>');
             $(showHideEl).removeClass(pClass);
