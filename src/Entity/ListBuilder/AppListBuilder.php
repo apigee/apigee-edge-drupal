@@ -26,6 +26,7 @@ use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -200,6 +201,11 @@ class AppListBuilder extends EdgeEntityListBuilder {
    */
   public function render() {
     $build = parent::render();
+
+    // Add user cache contexts.
+    $build['#cache']['contexts'][] = 'user';
+    $build['#cache']['contexts'][] = 'user.permissions';
+
     if ($this->usingDisplayType(static::VIEW_MODE_DISPLAY_TYPE)) {
       return $build;
     }
