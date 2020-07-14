@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Google Inc.
+ * Copyright 2020 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License version 2 as published by the
@@ -33,13 +33,13 @@ class TeamAppKeysController extends DeveloperAppKeysController {
    * @return \Symfony\Component\HttpFoundation\JsonResponse
    *   The app credentials.
    */
-  public function teamAppKeys($team, $app_name): JsonResponse {
+  public function teamAppKeys($team, $app): JsonResponse {
     $payload = [];
-    if ($team = $this->entityTypeManager->getStorage('team')->load($team)) {
+    if ($team) {
       $app_storage = $this->entityTypeManager->getStorage('team_app');
       $app_ids = $app_storage->getQuery()
         ->condition('companyName', $team->id())
-        ->condition('name', $app_name)
+        ->condition('name', $app->getName())
         ->execute();
       if (!empty($app_ids)) {
         $app_id = reset($app_ids);

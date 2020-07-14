@@ -63,11 +63,3 @@ apigee_edge_teams.settings.team_app.cache:
     _title: 'Caching'
   requirements:
     _permission: 'administer team'
-
-apigee_edge_teams.api_keys.team_app:
-  path: '/api-keys/team/{team}/{app_name}'
-  defaults:
-    _controller: '\Drupal\apigee_edge_teams\Controller\TeamAppKeysController::teamAppKeys'
-    _title: 'Team App Keys'
-  requirements:
-    _permission: 'team_app_view'

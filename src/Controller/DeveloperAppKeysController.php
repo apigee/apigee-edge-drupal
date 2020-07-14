@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Google Inc.
+ * Copyright 2020 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License version 2 as published by the
@@ -61,14 +61,14 @@ class DeveloperAppKeysController extends ControllerBase {
    * @return \Symfony\Component\HttpFoundation\JsonResponse
    *   The app credentials.
    */
-  public function developerAppKeys($uid, $app_name): JsonResponse {
+  public function developerAppKeys($user, $app): JsonResponse {
     $payload = [];
-    if ($user = $this->entityTypeManager->getStorage('user')->load($uid)) {
+    if ($user) {
       if ($developer_id = $user->get('apigee_edge_developer_id')->value) {
         $app_storage = $this->entityTypeManager->getStorage('developer_app');
         $app_ids = $app_storage->getQuery()
           ->condition('developerId', $developer_id)
-          ->condition('name', $app_name)
+          ->condition('name', $app->getName())
           ->execute();
         if (!empty($app_ids)) {
           $app_id = reset($app_ids);

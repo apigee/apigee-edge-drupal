@@ -190,11 +190,3 @@ apigee_edge.export_analytics.csv:
   requirements:
     _csrf_token: 'TRUE'
     _custom_access: '\Drupal\apigee_edge\Controller\ExportAnalyticsController::access'
-
-apigee_edge.api_keys.developer_app:
-  path: '/api-keys/developer/{uid}/{app_name}'
-  defaults:
-    _controller: '\Drupal\apigee_edge\Controller\DeveloperAppKeysController::developerAppKeys'
-    _title: 'App Keys'
-  requirements:
-    _permission: 'view own developer_app'

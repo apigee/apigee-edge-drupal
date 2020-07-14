@@ -80,9 +80,9 @@
    * Get credentials based on the app name.
    */
   function callEndpoint(teamApp,  app, callback) {
-    var endpoint = drupalSettings.path.baseUrl + 'api-keys/developer/' + drupalSettings.currentUser + '/' + app;
+    var endpoint = drupalSettings.path.baseUrl + 'user/' + drupalSettings.currentUser + '/apps/' + app + '/api-keys';
     if (teamApp !== undefined) {
-      endpoint = drupalSettings.path.baseUrl + 'api-keys/team/' + teamApp + '/' + app;
+      endpoint = drupalSettings.path.baseUrl + 'teams/' + teamApp + '/apps/' + app + '/api-keys';
     }
     $.get(endpoint, function(data) {
       callback(data);
