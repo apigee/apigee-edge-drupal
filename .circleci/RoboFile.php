@@ -172,10 +172,10 @@ class RoboFile extends \Robo\Tasks
     // on it fails for the first time.
     $this->taskFilesystemStack()->remove('composer.lock')->run();
 
-    $this->taskDeleteDir('vendor/behat/mink')->run();
+    $this->taskDeleteDir('vendor/')->run();
 
     // Composer often runs out of memory when installing drupal.
-    $this->taskComposerUpdate('php -d memory_limit=-1 /usr/local/bin/composer')
+    $this->taskComposerInstall('php -d memory_limit=-1 /usr/local/bin/composer')
       ->optimizeAutoloader()
       ->run();
 
@@ -420,6 +420,10 @@ class RoboFile extends \Robo\Tasks
 
     // If you require core, you must not replace it.
     unset($config->replace);
+
+    // Unset scripts that delete vendor test directories.
+    unset($config->scripts->{"post-package-install"});
+    unset($config->scripts->{"post-package-update"});
 
     // You can't merge from a package that is required.
     foreach ($config->extra->{"merge-plugin"}->include as $index => $merge_entry) {
