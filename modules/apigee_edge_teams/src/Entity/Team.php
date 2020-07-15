@@ -65,6 +65,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   },
  *   entity_keys = {
  *     "id" = "name",
+ *     "label" = "displayName",
  *   },
  *   admin_permission = "administer team",
  *   field_ui_base_route = "apigee_edge_teams.settings.team",
