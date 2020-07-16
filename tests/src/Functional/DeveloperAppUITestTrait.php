@@ -344,13 +344,14 @@ trait DeveloperAppUITestTrait {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp[] $apps */
 
     if ($developer) {
-      $results = $this->entityTypeManager->getStorage('developer_app')
+      $storage = \Drupal::entityTypeManager()->getStorage('developer_app');
+      $results_ids = $storage
         ->getQuery()
         ->condition('developerId', $developer->uuid())
         ->condition('name', $name)
         ->execute();
 
-      return $results ? reset($results) : NULL;
+      return $results_ids ? $storage->load(reset($results_ids)) : NULL;
     }
     else {
       $apps = DeveloperApp::loadMultiple();
