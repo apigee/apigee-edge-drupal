@@ -23,6 +23,8 @@ namespace Drupal\apigee_edge_teams\Entity;
 use Drupal\apigee_edge\Entity\AppRouteProvider;
 use Drupal\apigee_edge\Entity\AppTitleProvider;
 use Drupal\apigee_edge_teams\Entity\ListBuilder\TeamAppListByTeam;
+use Drupal\apigee_edge_teams\Form\TeamAppCredentialDeleteForm;
+use Drupal\apigee_edge_teams\Form\TeamAppCredentialGenerateForm;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Symfony\Component\Routing\Route;
 
@@ -51,6 +53,14 @@ class TeamAppRouteProvider extends AppRouteProvider {
 
     if ($collection_by_team = $this->getCollectionRouteByTeam($entity_type)) {
       $collection->add("entity.{$entity_type_id}.collection_by_team", $collection_by_team);
+    }
+
+    if ($generate_credential_form = $this->getGenerateCredentialRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.generate_credential_form_for_team", $generate_credential_form);
+    }
+
+    if ($delete_credential_form = $this->getDeleteCredentialRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.delete_credential_form_for_team", $delete_credential_form);
     }
 
     return $collection;
@@ -119,6 +129,47 @@ class TeamAppRouteProvider extends AppRouteProvider {
   }
 
   /**
+   * Gets the generate-credential-form route for a team app.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   *
+   * @return \Symfony\Component\Routing\Route|null
+   *   The generated route, if available.
+   */
+  protected function getGenerateCredentialRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('generate-credential-form')) {
+      $route = new Route($entity_type->getLinkTemplate('generate-credential-form'));
+      $route->setDefault('_form', TeamAppCredentialGenerateForm::class);
+      $route->setDefault('_title', 'Generate credentials');
+      $route->setDefault('entity_type_id', $entity_type->id());
+      $this->ensureTeamParameter($route);
+      $route->setRequirement('_app_access_check_by_app_name', 'update');
+      return $route;
+    }
+  }
+
+  /**
+   * Gets the delete-credential-form route for a team app.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   *
+   * @return \Symfony\Component\Routing\Route|null
+   *   The generated route, if available.
+   */
+  protected function getDeleteCredentialRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('delete-credential-form')) {
+      $route = new Route($entity_type->getLinkTemplate('delete-credential-form'));
+      $route->setDefault('_form', TeamAppCredentialDeleteForm::class);
+      $route->setDefault('entity_type_id', $entity_type->id());
+      $this->ensureTeamParameter($route);
+      $route->setRequirement('_app_access_check_by_app_name', 'update');
+      return $route;
+    }
+  }
+
+  /**
    * Alters routers with {app} and not {team_app}.
    *
    * @param \Symfony\Component\Routing\Route $route
@@ -135,7 +186,7 @@ class TeamAppRouteProvider extends AppRouteProvider {
       // Default access check must be replaced.
       // @see \Drupal\apigee_edge\Access\AppAccessCheckByAppName
       $requirements = $route->getRequirements();
-      list(, $operation) = explode('.', $requirements['_entity_access']);
+      [, $operation] = explode('.', $requirements['_entity_access']);
       $requirements['_app_access_check_by_app_name'] = $operation;
       unset($requirements['_entity_access']);
       $route->setRequirements($requirements);

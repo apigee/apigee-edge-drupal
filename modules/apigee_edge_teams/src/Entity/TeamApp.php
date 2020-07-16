@@ -50,6 +50,8 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *       "edit" = "Drupal\apigee_edge_teams\Entity\Form\TeamAppEditForm",
  *       "delete" = "Drupal\apigee_edge_teams\Entity\Form\TeamAppDeleteForm",
  *       "analytics" = "Drupal\apigee_edge_teams\Form\TeamAppAnalyticsForm",
+ *       "generate_credential" = "Drupal\apigee_edge_teams\Form\TeamAppCredentialGenerateForm",
+ *       "delete_credential" = "Drupal\apigee_edge_teams\Form\TeamAppDeleteCredentialForm",
  *     },
  *     "list_builder" = "Drupal\apigee_edge_teams\Entity\ListBuilder\TeamAppListBuilder",
  *     "view_builder" = "Drupal\apigee_edge\Entity\AppViewBuilder",
@@ -66,6 +68,8 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "edit-form" = "/teams/{team}/apps/{app}/edit",
  *     "delete-form" = "/teams/{team}/apps/{app}/delete",
  *     "analytics"  = "/teams/{team}/apps/{app}/analytics",
+ *     "generate-credential-form" = "/teams/{team}/apps/{app}/credentials/generate",
+ *     "delete-credential-form" = "/teams/{team}/apps/{app}/credentials/{consumer_key}/delete",
  *   },
  *   entity_keys = {
  *     "id" = "appId",
