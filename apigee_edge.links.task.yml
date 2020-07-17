@@ -136,3 +136,9 @@ apigee_edge.developer_app.analytics_for_developer:
   title: 'Analytics'
   base_route: entity.developer_app.canonical_by_developer
   weight: -1
+
+apigee_edge.developer_app.generate_credential:
+  route_name: entity.developer_app.generate_credential_form
+  title: 'Generate credentials'
+  base_route: entity.developer_app.canonical_by_developer
+  weight: -1

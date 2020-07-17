@@ -95,6 +95,27 @@ abstract class AppCredentialGenerateFormBase extends FormBase {
       '#value' => $this->getAppOwner(),
     ];
 
+    $form['expiry'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Expiry'),
+      '#required' => TRUE,
+      '#options' => [
+        'never' => $this->t('Never'),
+        'date' => $this->t('Date'),
+      ],
+      '#default_value' => 'never',
+    ];
+
+    $form['expiry_date'] = [
+      '#type' => 'date',
+      '#title' => $this->t('Select date'),
+      '#states' => [
+        'visible' => [
+          ':input[name="expiry"]' => ['value' => 'date'],
+        ],
+      ],
+    ];
+
     $form['api_products'] = $this->apiProductsFormElement($form, $form_state);
 
     $form['actions'] = [
@@ -121,22 +142,41 @@ abstract class AppCredentialGenerateFormBase extends FormBase {
   /**
    * {@inheritdoc}
    */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    parent::validateForm($form, $form_state);
+    $expiry = $form_state->getValue('expiry');
+    $expiry_date = $form_state->getValue('expiry_date');
+
+    // Validate expiration date.
+    if ($expiry === 'date') {
+      if ((new \DateTimeImmutable($expiry_date))->diff(new \DateTimeImmutable())->invert !== 1) {
+        $form_state->setError($form['expiry_date'], $this->t('The expiration date must be a future date.'));
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $selected_products = array_values(array_filter((array) $form_state->getValue('api_products')));
+    $expiry = $form_state->getValue('expiry');
+    $expiry_date = $form_state->getValue('expiry_date');
+    $expires_in = $expiry === 'date' ? (strtotime($expiry_date) - time()) * 1000 : -1;
+
     $args = [
       '@app' => $this->app->label(),
     ];
 
     try {
       $this->appCredentialController($this->app->getAppOwner(), $this->app->getName())
-        ->generate($selected_products, $this->app->getAttributes(), $this->app->getCallbackUrl(), []);
-      $this->messenger()->addStatus($this->t('New credential generated for the @app app', $args));
+        ->generate($selected_products, $this->app->getAttributes(), $this->app->getCallbackUrl(), [], $expires_in);
+      $this->messenger()->addStatus($this->t('New credential generated for the @app app.', $args));
+      $form_state->setRedirectUrl($this->getRedirectUrl());
     }
     catch (\Exception $exception) {
       $this->messenger()->addError($this->t('Failed to generate credential for the @app app.', $args));
     }
-
-    $form_state->setRedirectUrl($this->getRedirectUrl());
   }
 
 }

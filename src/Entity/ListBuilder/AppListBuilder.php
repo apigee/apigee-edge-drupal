@@ -125,6 +125,14 @@ class AppListBuilder extends EdgeEntityListBuilder {
       ];
     }
 
+    if ($entity->access('update') && $entity->hasLinkTemplate('generate-credential-form')) {
+      $operations['generate_credential'] = [
+        'title' => $this->t('Generate credentials'),
+        'weight' => 200,
+        'url' => $entity->toUrl('generate-credential-form'),
+      ];
+    }
+
     return $operations;
   }
 

@@ -102,7 +102,7 @@ abstract class AppCredentialDeleteFormBase extends ConfirmFormBase {
 
     try {
       $this->appCredentialController($this->app->getAppOwner(), $this->app->getName())->delete($this->consumerKey);
-      $this->messenger()->addStatus($this->t('Credential with consumer key %key deleted from the @app app', $args));
+      $this->messenger()->addStatus($this->t('Credential with consumer key %key deleted from the @app app.', $args));
     }
     catch (\Exception $exception) {
       $this->messenger()->addError($this->t('Failed to delete credential with consumer key %key from the @app app.', $args));

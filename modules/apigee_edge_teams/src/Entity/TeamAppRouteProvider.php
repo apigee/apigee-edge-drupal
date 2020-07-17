@@ -56,11 +56,11 @@ class TeamAppRouteProvider extends AppRouteProvider {
     }
 
     if ($generate_credential_form = $this->getGenerateCredentialRoute($entity_type)) {
-      $collection->add("entity.{$entity_type_id}.generate_credential_form_for_team", $generate_credential_form);
+      $collection->add("entity.{$entity_type_id}.generate_credential_form", $generate_credential_form);
     }
 
     if ($delete_credential_form = $this->getDeleteCredentialRoute($entity_type)) {
-      $collection->add("entity.{$entity_type_id}.delete_credential_form_for_team", $delete_credential_form);
+      $collection->add("entity.{$entity_type_id}.delete_credential_form", $delete_credential_form);
     }
 
     return $collection;

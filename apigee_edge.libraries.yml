@@ -56,6 +56,12 @@ apigee_edge.app_view:
   js:
     js/apigee_edge.app_view.js: {}
 
+apigee_edge.app_credential:
+  version: 1.0
+  css:
+    theme:
+      css/apigee_edge.app_credential.css: {}
+
 apiproduct_access_admin:
   version: 1.0
   js:
