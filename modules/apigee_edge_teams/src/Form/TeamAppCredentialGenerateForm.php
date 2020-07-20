@@ -20,21 +20,18 @@
 namespace Drupal\apigee_edge_teams\Form;
 
 use Drupal\apigee_edge\Entity\AppInterface;
-use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\apigee_edge\Form\AppCredentialGenerateFormBase;
-use Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface;
 use Drupal\apigee_edge_teams\Entity\Form\TeamAppFormTrait;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides credential generate form for team app.
  */
 class TeamAppCredentialGenerateForm extends AppCredentialGenerateFormBase {
 
-  use TeamAppFormTrait;
+  use TeamAppFormTrait, TeamAppCredentialFormTrait;
 
   /**
    * The team from route.
@@ -42,32 +39,6 @@ class TeamAppCredentialGenerateForm extends AppCredentialGenerateFormBase {
    * @var \Drupal\apigee_edge_teams\Entity\TeamInterface
    */
   protected $team;
-
-  /**
-   * The app credential controller factory.
-   *
-   * @var \Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface
-   */
-  protected $appCredentialControllerFactory;
-
-  /**
-   * TeamAppDeleteCredentialForm constructor.
-   *
-   * @param \Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface $app_credential_controller_factory
-   *   The app credential controller factory.
-   */
-  public function __construct(TeamAppCredentialControllerFactoryInterface $app_credential_controller_factory) {
-    $this->appCredentialControllerFactory = $app_credential_controller_factory;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('apigee_edge_teams.controller.team_app_credential_controller_factory')
-    );
-  }
 
   /**
    * {@inheritdoc}
@@ -80,15 +51,8 @@ class TeamAppCredentialGenerateForm extends AppCredentialGenerateFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function appCredentialController(string $owner, string $app_name): AppCredentialControllerInterface {
-    return $this->appCredentialControllerFactory->teamAppCredentialController($owner, $app_name);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   protected function getRedirectUrl(): Url {
-    return $this->app->toUrl();
+    return $this->getCancelUrl();
   }
 
   /**

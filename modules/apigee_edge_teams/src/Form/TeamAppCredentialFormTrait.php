@@ -17,13 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Form;
+namespace Drupal\apigee_edge_teams\Form;
+
+use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 
 /**
- * Provides delete confirmation form for developer app credential.
+ * Provides form trait for team app credential.
  */
-class DeveloperAppCredentialDeleteForm extends AppCredentialDeleteFormBase {
+trait TeamAppCredentialFormTrait {
 
-  use DeveloperAppCredentialFormTrait;
+  /**
+   * {@inheritdoc}
+   */
+  protected function appCredentialController(string $owner, string $app_name): AppCredentialControllerInterface {
+    return \Drupal::service('apigee_edge_teams.controller.team_app_credential_controller_factory')->teamAppCredentialController($owner, $app_name);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCancelUrl() {
+    return $this->app->toUrl();
+  }
 
 }

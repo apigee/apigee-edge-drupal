@@ -20,20 +20,17 @@
 namespace Drupal\apigee_edge\Form;
 
 use Drupal\apigee_edge\Entity\AppInterface;
-use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
-use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface;
 use Drupal\apigee_edge\Entity\Form\DeveloperAppFormTrait;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\user\UserInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides credential generate form for developer app.
  */
 class DeveloperAppCredentialGenerateForm extends AppCredentialGenerateFormBase {
 
-  use DeveloperAppFormTrait;
+  use DeveloperAppFormTrait, DeveloperAppCredentialFormTrait;
 
   /**
    * The user from route.
@@ -43,44 +40,11 @@ class DeveloperAppCredentialGenerateForm extends AppCredentialGenerateFormBase {
   protected $user;
 
   /**
-   * The app credential controller factory.
-   *
-   * @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface
-   */
-  protected $appCredentialControllerFactory;
-
-  /**
-   * DeveloperAppDeleteCredentialForm constructor.
-   *
-   * @param \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory
-   *   The app credential controller factory.
-   */
-  public function __construct(DeveloperAppCredentialControllerFactoryInterface $app_credential_controller_factory) {
-    $this->appCredentialControllerFactory = $app_credential_controller_factory;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('apigee_edge.controller.developer_app_credential_factory')
-    );
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, ?AppInterface $app = NULL, ?UserInterface $user = NULL) {
     $this->user = $user;
     return parent::buildForm($form, $form_state, $app);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function appCredentialController(string $owner, string $app_name): AppCredentialControllerInterface {
-    return $this->appCredentialControllerFactory->developerAppCredentialController($owner, $app_name);
   }
 
   /**
@@ -94,7 +58,7 @@ class DeveloperAppCredentialGenerateForm extends AppCredentialGenerateFormBase {
    * {@inheritdoc}
    */
   protected function getRedirectUrl(): Url {
-    return $this->app->toUrl('canonical-by-developer');
+    return $this->getCancelUrl();
   }
 
 }
