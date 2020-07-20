@@ -23,8 +23,10 @@ namespace Drupal\apigee_edge_teams\Entity;
 use Drupal\apigee_edge\Entity\AppRouteProvider;
 use Drupal\apigee_edge\Entity\AppTitleProvider;
 use Drupal\apigee_edge_teams\Entity\ListBuilder\TeamAppListByTeam;
+use Drupal\apigee_edge_teams\Form\TeamAppCredentialApproveForm;
 use Drupal\apigee_edge_teams\Form\TeamAppCredentialDeleteForm;
 use Drupal\apigee_edge_teams\Form\TeamAppCredentialGenerateForm;
+use Drupal\apigee_edge_teams\Form\TeamAppCredentialRevokeForm;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Symfony\Component\Routing\Route;
 
@@ -61,6 +63,14 @@ class TeamAppRouteProvider extends AppRouteProvider {
 
     if ($delete_credential_form = $this->getDeleteCredentialRoute($entity_type)) {
       $collection->add("entity.{$entity_type_id}.delete_credential_form", $delete_credential_form);
+    }
+
+    if ($approve_credential_form = $this->getApproveCredentialRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.approve_credential_form", $approve_credential_form);
+    }
+
+    if ($revoke_credential_form = $this->getRevokeCredentialRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.revoke_credential_form", $revoke_credential_form);
     }
 
     return $collection;
@@ -162,6 +172,46 @@ class TeamAppRouteProvider extends AppRouteProvider {
     if ($entity_type->hasLinkTemplate('delete-credential-form')) {
       $route = new Route($entity_type->getLinkTemplate('delete-credential-form'));
       $route->setDefault('_form', TeamAppCredentialDeleteForm::class);
+      $route->setDefault('entity_type_id', $entity_type->id());
+      $this->ensureTeamParameter($route);
+      $route->setRequirement('_app_access_check_by_app_name', 'update');
+      return $route;
+    }
+  }
+
+  /**
+   * Gets the approve-credential-form route for a team app.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   *
+   * @return \Symfony\Component\Routing\Route|null
+   *   The generated route, if available.
+   */
+  protected function getApproveCredentialRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('approve-credential-form')) {
+      $route = new Route($entity_type->getLinkTemplate('approve-credential-form'));
+      $route->setDefault('_form', TeamAppCredentialApproveForm::class);
+      $route->setDefault('entity_type_id', $entity_type->id());
+      $this->ensureTeamParameter($route);
+      $route->setRequirement('_app_access_check_by_app_name', 'update');
+      return $route;
+    }
+  }
+
+  /**
+   * Gets the revoke-credential-form route for a team app.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   *
+   * @return \Symfony\Component\Routing\Route|null
+   *   The generated route, if available.
+   */
+  protected function getRevokeCredentialRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('revoke-credential-form')) {
+      $route = new Route($entity_type->getLinkTemplate('revoke-credential-form'));
+      $route->setDefault('_form', TeamAppCredentialRevokeForm::class);
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureTeamParameter($route);
       $route->setRequirement('_app_access_check_by_app_name', 'update');
