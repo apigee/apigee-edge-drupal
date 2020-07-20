@@ -170,12 +170,12 @@ abstract class AppCredentialGenerateFormBase extends FormBase {
 
     try {
       $this->appCredentialController($this->app->getAppOwner(), $this->app->getName())
-        ->generate($selected_products, $this->app->getAttributes(), $this->app->getCallbackUrl(), [], $expires_in);
-      $this->messenger()->addStatus($this->t('New credential generated for the @app app.', $args));
+        ->generate($selected_products, $this->app->getAttributes(), $this->app->getCallbackUrl() ?? "", [], $expires_in);
+      $this->messenger()->addStatus($this->t('New credential generated for @app.', $args));
       $form_state->setRedirectUrl($this->getRedirectUrl());
     }
     catch (\Exception $exception) {
-      $this->messenger()->addError($this->t('Failed to generate credential for the @app app.', $args));
+      $this->messenger()->addError($this->t('Failed to generate credential for @app.', $args));
     }
   }
 

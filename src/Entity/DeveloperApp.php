@@ -57,6 +57,8 @@ use Drupal\user\UserInterface;
  *       "analytics_for_developer" = "Drupal\apigee_edge\Form\DeveloperAppAnalyticsFormForDeveloper",
  *       "generate_credential" = "Drupal\apigee_edge\Form\DeveloperAppCredentialGenerateForm",
  *       "delete_credential" = "Drupal\apigee_edge\Form\DeveloperAppCredentialDeleteForm",
+ *       "approve_credential" = "Drupal\apigee_edge\Form\DeveloperAppCredentialApproveForm",
+ *       "revoke_credential" = "Drupal\apigee_edge\Form\DeveloperAppCredentialRevokeForm",
  *     },
  *     "list_builder" = "Drupal\apigee_edge\Entity\ListBuilder\AppListBuilder",
  *     "view_builder" = "Drupal\apigee_edge\Entity\AppViewBuilder",
@@ -79,6 +81,8 @@ use Drupal\user\UserInterface;
  *     "analytics-for-developer" = "/user/{user}/apps/{app}/analytics",
  *     "generate-credential-form" = "/user/{user}/apps/{app}/credentials/generate",
  *     "delete-credential-form" = "/user/{user}/apps/{app}/credentials/{consumer_key}/delete",
+ *     "approve-credential-form" = "/user/{user}/apps/{app}/credentials/{consumer_key}/approve",
+ *     "revoke-credential-form" = "/user/{user}/apps/{app}/credentials/{consumer_key}/revoke",
  *   },
  *   entity_keys = {
  *     "id" = "appId",

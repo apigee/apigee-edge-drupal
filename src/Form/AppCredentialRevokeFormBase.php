@@ -27,9 +27,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * Provides delete confirmation base form for app credential.
+ * Provides revoke confirmation base form for app credential.
  */
-abstract class AppCredentialDeleteFormBase extends ConfirmFormBase {
+abstract class AppCredentialRevokeFormBase extends ConfirmFormBase {
 
   /**
    * The app entity.
@@ -49,9 +49,8 @@ abstract class AppCredentialDeleteFormBase extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function getQuestion() {
-    return $this->t('Are you sure that you want to delete the credential with consumer key %key from @app?', [
+    return $this->t('Are you sure that you want to revoke the credential with consumer key %key?', [
       '%key' => $this->consumerKey,
-      '@app' => $this->app->label(),
     ]);
   }
 
@@ -59,14 +58,21 @@ abstract class AppCredentialDeleteFormBase extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function getConfirmText() {
-    return $this->t('Delete');
+    return $this->t('Revoke');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getDescription() {
+    return NULL;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'apigee_edge_app_credential_delete_form';
+    return 'apigee_edge_app_credential_revoke_form';
   }
 
   /**
@@ -108,11 +114,11 @@ abstract class AppCredentialDeleteFormBase extends ConfirmFormBase {
     ];
 
     try {
-      $this->appCredentialController($this->app->getAppOwner(), $this->app->getName())->delete($this->consumerKey);
-      $this->messenger()->addStatus($this->t('Credential with consumer key %key deleted from @app.', $args));
+      $this->appCredentialController($this->app->getAppOwner(), $this->app->getName())->setStatus($this->consumerKey, AppCredentialControllerInterface::STATUS_REVOKE);
+      $this->messenger()->addStatus($this->t('Credential with consumer key %key revoked from @app.', $args));
     }
     catch (\Exception $exception) {
-      $this->messenger()->addError($this->t('Failed to delete credential with consumer key %key from @app.', $args));
+      $this->messenger()->addError($this->t('Failed to revoke credential with consumer key %key from @app.', $args));
     }
 
     $form_state->setRedirectUrl($this->getCancelUrl());
