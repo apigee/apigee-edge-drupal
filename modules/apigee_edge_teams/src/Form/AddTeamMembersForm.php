@@ -139,20 +139,20 @@ class AddTeamMembersForm extends TeamMembersFormBase {
   /**
    * Return an array of user UIDs given a list of emails.
    *
-   * @param $emails
+   * @param string $emails
    *   The emails, comma separated.
    *
    * @return array
    *   An array containing a first array of user accounts, and a second array of
    *   emails that have no account on the system.
    */
-  protected function getAccountsFromEmails($emails): array {
+  protected function getAccountsFromEmails(string $emails): array {
     $developerEmails = [];
     $notFound = [];
 
     $emails = array_map('trim', explode(',', $emails));
 
-    foreach ($emails as $email)  {
+    foreach ($emails as $email) {
       if ($account = user_load_by_mail($email)) {
         $developerEmails[$email] = $account;
       }
