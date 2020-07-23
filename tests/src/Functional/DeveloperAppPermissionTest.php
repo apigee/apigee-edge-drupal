@@ -53,6 +53,7 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
       'canonical',
       'canonical-by-developer',
       'collection-by-developer',
+      'api-keys'
     ],
     'analytics any developer_app' => ['analytics', 'analytics-for-developer'],
     'analytics own developer_app' => ['analytics', 'analytics-for-developer'],
