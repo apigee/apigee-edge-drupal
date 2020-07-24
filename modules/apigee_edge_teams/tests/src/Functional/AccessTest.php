@@ -145,7 +145,7 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
       'member.edit',
       'member.remove',
     ],
-    'team_app_view' => ['canonical', 'collection_by_team'],
+    'team_app_view' => ['canonical', 'collection_by_team', 'api-keys'],
     'team_app_create' => ['add_form_for_team'],
     'team_app_update' => ['edit_form'],
     'team_app_delete' => ['delete_form'],
