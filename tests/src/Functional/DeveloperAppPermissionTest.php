@@ -47,7 +47,11 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
     'delete own developer_app' => ['delete-form', 'delete-form-for-developer'],
     'update any developer_app' => ['edit-form', 'edit-form-for-developer'],
     'update own developer_app' => ['edit-form', 'edit-form-for-developer'],
-    'view any developer_app' => ['canonical', 'canonical-by-developer', 'api-keys'],
+    'view any developer_app' => [
+      'canonical',
+      'canonical-by-developer',
+      'api-keys'
+    ],
     'view own developer_app' => [
       'canonical',
       'canonical-by-developer',
