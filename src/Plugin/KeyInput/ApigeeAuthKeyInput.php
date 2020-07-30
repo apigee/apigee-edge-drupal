@@ -128,8 +128,6 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#description' => $this->t("Organization user's password that is used for authenticating with the endpoint."),
       '#attributes' => [
         'autocomplete' => 'off',
-        // Password field should not forget the submitted value.
-        'value' => $values['password'] ?? '',
       ],
       '#states' => [
         'visible' => [$state_for_public, $state_for_private],
