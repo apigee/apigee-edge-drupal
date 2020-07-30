@@ -85,11 +85,16 @@ abstract class AppStorage extends AttributesAwareFieldableEdgeEntityStorageBase 
     // Clear the app controller's cache if it has one.
     if ($this->appController instanceof EntityCacheAwareControllerInterface) {
       // Id could be an UUID or an app name.
-      // We do not know who is the owner so we have need the app object to be
-      // invalidate the app cache entry by the app id (UUID).
-      /** @var \Apigee\Edge\Api\Management\Entity\AppInterface $entity */
-      $entity = $this->entityController()->load($id);
-      $this->appController->entityCache()->removeEntities([$entity->getAppId()]);
+      if (preg_match('/[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}/', $id) !== FALSE) {
+        $this->appController->entityCache()->removeEntities([$id]);
+      }
+      else {
+        // We do not know who is the owner so we need the app object to
+        // invalidate the app cache entry by the app id (UUID).
+        /** @var \Apigee\Edge\Api\Management\Entity\AppInterface $entity */
+        $entity = $this->entityController()->load($id);
+        $this->appController->entityCache()->removeEntities([$entity->getAppId()]);
+      }
     }
     return parent::loadUnchanged($id);
   }
