@@ -114,7 +114,10 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
    * {@inheritdoc}
    */
   public function getCreatedBy(): ?string {
-    return $this->decorated->getCreatedBy();
+    return method_exists($this->decorated, 'getCreatedBy') ?
+      /* @phpstan-ignore-next-line */
+      $this->decorated->getCreatedBy() :
+      '';
   }
 
   /**
@@ -181,7 +184,10 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
    * {@inheritdoc}
    */
   public function getLastModifiedBy(): ?string {
-    return $this->decorated->getLastModifiedBy();
+    return method_exists($this->decorated, 'getLastModifiedBy') ?
+      /* @phpstan-ignore-next-line */
+      $this->decorated->getLastModifiedBy() :
+      '';
   }
 
   /**

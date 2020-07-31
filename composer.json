@@ -22,7 +22,7 @@
         "drush/drush": "^9.0 || ^10.0",
         "phpmd/phpmd": "^2.8",
         "phpmetrics/phpmetrics": "^2.5",
-        "mglaman/drupal-check": "dev-master"
+        "mglaman/drupal-check": "^1.1"
     },
     "suggest": {
         "drupal/console": "Needed only to run tests in Drupal 8."
