@@ -131,9 +131,12 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       ],
       '#states' => [
         'visible' => [$state_for_public, $state_for_private],
-        'required' => [$state_for_public, $state_for_private],
       ],
     ];
+    // If password was never set make sure it is required.
+    if (empty($values['organization'])) {
+      $form['password']['#states']['required'] = [$state_for_public, $state_for_private];
+    }
     $form['account_json_key'] = [
       '#type' => 'textarea',
       '#title' => $this->t('GCP service account key'),
@@ -257,6 +260,21 @@ class ApigeeAuthKeyInput extends KeyInputBase {
    * {@inheritdoc}
    */
   public function processSubmittedKeyValue(FormStateInterface $form_state) {
+    $key_value = $form_state->get('key_value')['current'];
+    // Either null or an empty string.
+    if (empty($key_value)) {
+      // When "Test connection" reloads the page they are not yet processed.
+      // @see \Drupal\key\Form\KeyFormBase::createPluginFormState()
+      $key_input_plugin_form_state = clone $form_state;
+      $key_input_plugin_form_state->setValues($form_state->getUserInput()['key_input_settings']);
+      // @see \Drupal\key\Form\KeyFormBase::validateForm()
+      $key_input_processed_values = $form_state->getFormObject()->getEntity()->getKeyInput()->processSubmittedKeyValue($key_input_plugin_form_state);
+      $key_value = $key_input_processed_values['processed_submitted'];
+    }
+
+    // Could be an empty array.
+    $values = Json::decode($key_value);
+
     // Get input values.
     $input_values = $form_state->getValues();
 
@@ -285,6 +303,10 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       // Remove unneeded values if on a Public or Private instance.
       else {
         $input_values['account_json_key'] = '';
+        // If password field is empty we just skip it and preserve initial password.
+        if (empty($input_values['password'])) {
+          $input_values['password'] = $values['password'];
+        }
       }
 
       // Remove `key_value` so it doesn't get double encoded.
