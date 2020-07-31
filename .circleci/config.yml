@@ -247,6 +247,12 @@ workflows:
           matrix:
             parameters:
               core-version: [8]
+      - run-code-sniffer:
+          requires:
+            - update-dependencies-8
+      - run-d9-check:
+          requires:
+            - update-dependencies-8
       - run-unit-kernel-tests:
           name: run-unit-kernel-tests-<< matrix.core-version >>
           matrix:
@@ -268,12 +274,6 @@ workflows:
 #              core-version: [8, 9]
 #          requires:
 #            - update-dependencies-<< matrix.core-version >>
-#      - run-code-sniffer:
-#          requires:
-#            - update-dependencies-8
-#      - run-d9-check:
-#          requires:
-#            - update-dependencies-8
 #      - run-code-coverage:
 #          requires:
 #            - update-dependencies
