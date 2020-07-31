@@ -47,7 +47,6 @@ class RoboFile extends \Robo\Tasks
     $config = json_decode(file_get_contents('composer.json'));
     $config->extra->{"enable-patching"} = 'true';
     $config->extra->{"patches"} = new \stdClass();
-    unset($config->scripts->{"post-package-install"});
     file_put_contents('composer.json', json_encode($config));
 
     // Create a directory for our artifacts.
@@ -177,7 +176,7 @@ class RoboFile extends \Robo\Tasks
     // on it fails for the first time.
     $this->taskFilesystemStack()->remove('composer.lock')->run();
 
-    // Remove all core files.
+    // Remove all core files and vendor.
     $this->taskFilesystemStack()
       ->taskDeleteDir('core')
       ->taskDeleteDir('vendor')
@@ -420,16 +419,13 @@ class RoboFile extends \Robo\Tasks
   public function drupalVersion($drupalCoreVersion)
   {
     $config = json_decode(file_get_contents('composer.json'));
+
     unset($config->require->{"drupal/core"});
 
     switch ($drupalCoreVersion) {
       case '9':
-        $config->require->{"drupal/core-recommended"} = '^9@beta';
-        $config->require->{"drupal/core-dev"} = '^9@beta';
-
-
-        // Use drupal/key D9 compatible.
-        $config->require->{"drupal/key"} = "1.x-dev";
+        $config->require->{"drupal/core-recommended"} = '^9';
+        $config->require->{"drupal/core-dev"} = '^9';
 
         break;
 
@@ -438,15 +434,13 @@ class RoboFile extends \Robo\Tasks
         $config->require->{"drupal/core-dev"} = '~8';
 
         // Add rules for testing apigee_edge_actions (only for D8).
-        $config->require->{"drupal/rules"} = "^3.0@alpha";
+        $config->require->{"drupal/rules"} = "3.0.0-alpha5";
 
         // We require Drupal drush and console for some tests.
         $config->require->{"drupal/console"} = "~1.0";
 
       default:
-
         break;
-
     }
 
     file_put_contents('composer.json', json_encode($config, JSON_PRETTY_PRINT));
@@ -461,6 +455,10 @@ class RoboFile extends \Robo\Tasks
 
     // If you require core, you must not replace it.
     unset($config->replace);
+
+    // Unset scripts that delete vendor test directories.
+    unset($config->scripts->{"post-package-install"});
+    unset($config->scripts->{"post-package-update"});
 
     // You can't merge from a package that is required.
     foreach ($config->extra->{"merge-plugin"}->include as $index => $merge_entry) {

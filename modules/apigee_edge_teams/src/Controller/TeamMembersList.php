@@ -44,6 +44,13 @@ class TeamMembersList extends ControllerBase {
   private $teamMembershipManager;
 
   /**
+   * Default member roles.
+   *
+   * @var array
+   */
+  protected $defaultRoles = [];
+
+  /**
    * TeamMembersList constructor.
    *
    * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
@@ -54,6 +61,10 @@ class TeamMembersList extends ControllerBase {
   public function __construct(TeamMembershipManagerInterface $team_membership_manager, EntityTypeManagerInterface $entity_type_manager) {
     $this->teamMembershipManager = $team_membership_manager;
     $this->entityTypeManager = $entity_type_manager;
+
+    if ($role = $this->entityTypeManager()->getStorage('team_role')->load(TeamRoleInterface::TEAM_MEMBER_ROLE)) {
+      $this->defaultRoles = [$role->id() => $role->label()];
+    }
   }
 
   /**
@@ -164,7 +175,7 @@ class TeamMembersList extends ControllerBase {
       $roles = array_reduce($team_member_roles_by_mail[$member]->getTeamRoles(), function ($carry, TeamRoleInterface $role) {
         $carry[$role->id()] = $role->label();
         return $carry;
-      }, []);
+      }, $this->defaultRoles);
       $row['data']['roles']['data'] = [
         '#theme' => 'item_list',
         '#items' => $roles,
@@ -175,7 +186,10 @@ class TeamMembersList extends ControllerBase {
       ];
     }
     else {
-      $row['data']['roles']['data'] = NULL;
+      $row['data']['roles']['data'] = [
+        '#theme' => 'item_list',
+        '#items' => $this->defaultRoles,
+      ];
     }
 
     $row['data']['operations']['data'] = $this->buildOperations($member, $team);

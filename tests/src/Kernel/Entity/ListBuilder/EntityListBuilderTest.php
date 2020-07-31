@@ -21,11 +21,12 @@
 namespace Drupal\Tests\apigee_edge\Kernel\Entity\ListBuilder;
 
 use Drupal\Core\Entity\Entity\EntityViewMode;
+use Drupal\Core\Url;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\user\Entity\User;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Tests for EntityListBuilder.
@@ -89,6 +90,8 @@ class EntityListBuilderTest extends KernelTestBase {
 
     $this->apigeeTestHelperSetup();
 
+    $this->addOrganizationMatchedResponse();
+
     $this->account = User::create([
       'mail' => $this->randomMachineName() . '@example.com',
       'name' => $this->randomMachineName(),
@@ -96,7 +99,6 @@ class EntityListBuilderTest extends KernelTestBase {
       'last_name' => $this->getRandomGenerator()->word(16),
     ]);
     $this->account->save();
-    $this->queueDeveloperResponse($this->account, Response::HTTP_CREATED);
   }
 
   /**
@@ -134,10 +136,7 @@ class EntityListBuilderTest extends KernelTestBase {
   public function testDisplaySettings() {
     /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager */
     $entity_type_manager = $this->container->get('entity_type.manager');
-    $this->queueDeveloperResponse($this->account);
     $this->app = $this->createDeveloperApp();
-
-    $this->queueDeveloperResponse($this->account);
     $this->stack->queueMockResponse([
       'get_developer_apps' => [
         'apps' => [$this->app]
@@ -165,6 +164,44 @@ class EntityListBuilderTest extends KernelTestBase {
     $build = $entity_type_manager->getListBuilder(static::ENTITY_TYPE)->render();
     static::assertSame('apigee_entity_list', $build['#type']);
     static::assertSame('foo', $build['#view_mode']);
+  }
+
+  /**
+   * Tests configurable cache max-age for entity list builders.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  public function testCacheSettings() {
+    $this->app = $this->createDeveloperApp();
+
+    $this->setCurrentUser($this->account);
+    $url = Url::fromRoute('entity.developer_app.collection_by_developer', ['user' => $this->account->id()]);
+    $request = Request::create($url->toString(), 'GET');
+
+    $this->stack->queueMockResponse([
+      'get_developer_apps_names' => [
+        'apps' => [$this->app],
+      ],
+    ]);
+    $this->queueDeveloperResponse($this->account);
+    /** @var \Drupal\Core\Render\HtmlResponse $response */
+    $response = $this->container->get('http_kernel')->handle($request);
+    $this->assertEqual($response->getCacheableMetadata()->getCacheMaxAge(), 900);
+
+    // Update the config.
+    $config = $this->config('apigee_edge.' . static::ENTITY_TYPE . '_settings');
+    $config->set('cache_expiration', 100)
+      ->save();
+
+    $this->stack->queueMockResponse([
+      'get_developer_apps_names' => [
+        'apps' => [$this->app],
+      ],
+    ]);
+    $this->queueDeveloperResponse($this->account);
+    /** @var \Drupal\Core\Render\HtmlResponse $response */
+    $response = $this->container->get('http_kernel')->handle($request);
+    $this->assertEqual($response->getCacheableMetadata()->getCacheMaxAge(), 100);
   }
 
 }

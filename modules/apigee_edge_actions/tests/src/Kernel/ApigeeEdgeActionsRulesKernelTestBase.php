@@ -86,8 +86,8 @@ class ApigeeEdgeActionsRulesKernelTestBase extends RulesKernelTestBase {
       'first_name' => $this->getRandomGenerator()->word(16),
       'last_name' => $this->getRandomGenerator()->word(16),
     ]);
-    $this->account->save();
     $this->queueDeveloperResponse($this->account, Response::HTTP_CREATED);
+    $this->account->save();
   }
 
   /**
