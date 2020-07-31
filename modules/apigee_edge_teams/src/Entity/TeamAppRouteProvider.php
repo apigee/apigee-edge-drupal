@@ -138,7 +138,7 @@ class TeamAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_controller', TeamAppKeysController::class . '::teamAppKeys');
       $route->setDefault('_title_callback', AppTitleProvider::class . '::title');
       $this->ensureTeamParameter($route);
-      $route->setRequirement('_apigee_edge_teams_team_app_list_by_team_access', 'TRUE');
+      $route->setRequirement('_app_access_check_by_app_name', 'view');
       return $route;
     }
   }
