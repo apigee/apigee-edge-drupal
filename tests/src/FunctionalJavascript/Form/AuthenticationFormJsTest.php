@@ -131,7 +131,6 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $this->visitAuthenticationForm();
     $web_assert->fieldValueEquals('Organization', $this->organization);
     $web_assert->fieldValueEquals('Username', $this->username);
-    $web_assert->fieldValueEquals('Password', $this->password);
   }
 
   /**
