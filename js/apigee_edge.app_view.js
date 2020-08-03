@@ -19,7 +19,7 @@
  * @file
  * Javascript functions related to the Apigee Edge Drupal Module.
  */
-(function ($, Drupal) {
+(function ($, Drupal, drupalSettings) {
 
   'use strict';
 
@@ -32,25 +32,61 @@
   Drupal.apigeeEdgeDetails = {
     editActions: function (context, settings) {
       var secrets = $('.secret', context);
+      var appElWrapper = '.app-details-wrapper';
+      var showHideEl = 'a.secret-show-hide';
+      var pClass = 'processing';
+      var loader = '<img src="' + drupalSettings.path.baseUrl + 'core/misc/throbber-active.gif" border="0" />';
       for (var i = 0; i < secrets.length; i++) {
         var secret = secrets[i];
-        $(secret).addClass('secret-hidden').attr('data-value', $(secret).html()).html('<span>&#149;&#149;&#149;&#149;&#149;&#149;&#149;&#149;<br><a href="#" class="secret-show-hide">' + Drupal.t('Show') + '</a></span>').show();
+        $(secret)
+          .addClass('secret-hidden')
+          .attr('data-value', $(secret).html())
+          .html('<span>&#149;&#149;&#149;&#149;&#149;&#149;&#149;&#149;<br><a href="#" class="secret-show-hide">' + Drupal.t('Show') + '</a></span>')
+          .show();
       }
 
-      $('.item-property', context).on('click', 'a.secret-show-hide', function (event) {
-        secretToggle(event, $(this).parent().parent());
+      $('.item-property', context).on('click', showHideEl, function (event) {
+        event.preventDefault();
+        var $wrapper = $(this).closest(appElWrapper);
+        if (!$(this).hasClass(pClass)) {
+          $(showHideEl).addClass(pClass);
+          secretToggle(
+            $(this).parent().parent(),
+            $wrapper.data('team'),
+            $wrapper.data('app'),
+            $wrapper.closest('fieldset').parent().find('fieldset').index($(this).closest('fieldset')),
+            $wrapper.find(showHideEl).index(this)
+          );
+        }
       });
 
-      function secretToggle(event, secret) {
-        event.preventDefault();
-        if ($(secret).hasClass('secret-hidden')) {
-          $(secret).html(secret.attr('data-value') + '<br><span><a href="#" class="secret-show-hide">' + Drupal.t('Hide') + '</a></span>');
+      function secretToggle(el, teamAppName, appName, wrapperIndex, keyIndex) {
+        if ($(el).hasClass('secret-hidden')) {
+          $(el).html(loader);
+          callEndpoint(teamAppName, appName, function(data) {
+            $(el).html(data[wrapperIndex][keyIndex] + '<br><span><a href="#" class="secret-show-hide">' + Drupal.t('Hide') + '</a></span>');
+            $(showHideEl).removeClass(pClass);
+          });
         }
         else {
-          $(secret).html('<span>&#149;&#149;&#149;&#149;&#149;&#149;&#149;&#149;<br><a href="#" class="secret-show-hide">' + Drupal.t('Show') + '</a></span>');
+          $(el).html('<span>&#149;&#149;&#149;&#149;&#149;&#149;&#149;&#149;<br><a href="#" class="secret-show-hide">' + Drupal.t('Show') + '</a></span>');
         }
-        $(secret).toggleClass('secret-hidden');
+        $(el).toggleClass('secret-hidden');
       }
     }
   };
-})(jQuery, Drupal);
+
+  /**
+   * Get credentials based on the app name.
+   */
+  function callEndpoint(teamApp,  app, callback) {
+    var endpoint = drupalSettings.path.baseUrl + 'user/' + drupalSettings.currentUser + '/apps/' + app + '/api-keys';
+    if (teamApp !== undefined) {
+      endpoint = drupalSettings.path.baseUrl + 'teams/' + teamApp + '/apps/' + app + '/api-keys';
+    }
+    $.get(endpoint, function(data) {
+      callback(data);
+    });
+  };
+
+})(jQuery, Drupal, drupalSettings);
