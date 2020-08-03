@@ -66,6 +66,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "edit-form" = "/teams/{team}/apps/{app}/edit",
  *     "delete-form" = "/teams/{team}/apps/{app}/delete",
  *     "analytics"  = "/teams/{team}/apps/{app}/analytics",
+ *     "api-keys"  = "/teams/{team}/apps/{app}/api-keys",
  *   },
  *   entity_keys = {
  *     "id" = "appId",

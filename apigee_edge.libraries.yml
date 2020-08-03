@@ -55,6 +55,11 @@ apigee_edge.app_view:
       css/apigee_edge.app_view.css: {}
   js:
     js/apigee_edge.app_view.js: {}
+  dependencies:
+    - core/jquery
+    - core/jquery.once
+    - core/drupal
+    - core/drupalSettings
 
 apiproduct_access_admin:
   version: 1.0
