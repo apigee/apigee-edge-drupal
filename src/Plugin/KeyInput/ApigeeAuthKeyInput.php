@@ -270,9 +270,11 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       else {
         $input_values['account_json_key'] = '';
         // If password field is empty we just skip it and preserve initial password.
-        $values = $this->getFormDefaultValues($form_state);
-        if (empty($input_values['password']) && !empty($values['password'])) {
-          $input_values['password'] = $values['password'];
+        if (empty($input_values['password'])) {
+          $values = $this->getFormDefaultValues($form_state);
+          if (!empty($values['password'])) {
+            $input_values['password'] = $values['password'];
+          }
         }
       }
 
