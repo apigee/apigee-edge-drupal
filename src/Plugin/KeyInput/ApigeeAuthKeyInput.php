@@ -43,26 +43,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    // When AJAX rebuilds the the form (f.e.: the "Send request" button) the
-    // submitted data is only available in $form_state->getUserInput() and not
-    // in $form_state->getValues(). Key is not prepared to handle this out of
-    // the box this is the reason why we have to manually process the user
-    // input and retrieve the submitted values here.
-    $key_value = $form_state->get('key_value')['current'];
-    // Either null or an empty string.
-    if (empty($key_value)) {
-      // When "Test connection" reloads the page they are not yet processed.
-      // @see \Drupal\key\Form\KeyFormBase::createPluginFormState()
-      $key_input_plugin_form_state = clone $form_state;
-      $key_input_plugin_form_state->setValues($form_state->getUserInput()['key_input_settings']);
-      // @see \Drupal\key\Form\KeyFormBase::validateForm()
-      $key_input_processed_values = $form_state->getFormObject()->getEntity()->getKeyInput()->processSubmittedKeyValue($key_input_plugin_form_state);
-      $key_value = $key_input_processed_values['processed_submitted'];
-    }
-
-    // Could be an empty array.
-    $values = Json::decode($key_value);
-    $values['authorization_server_type'] = empty($values['authorization_server']) ? 'default' : 'custom';
+    $values = $this->getFormDefaultValues($form_state);
 
     $state_for_public = [
       ':input[name="key_input_settings[instance_type]"]' => ['value' => EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC],
@@ -125,17 +106,19 @@ class ApigeeAuthKeyInput extends KeyInputBase {
     $form['password'] = [
       '#type' => 'password',
       '#title' => $this->t('Password'),
-      '#description' => $this->t("Organization user's password that is used for authenticating with the endpoint."),
+      '#description' => $this->t("Organization user's password that is used for authenticating with the endpoint.") .
+      (empty($values['password']) ? '' : ' ' . $this->t('Leave empty unless you want to change the stored password.')),
       '#attributes' => [
         'autocomplete' => 'off',
-        // Password field should not forget the submitted value.
-        'value' => $values['password'] ?? '',
       ],
       '#states' => [
         'visible' => [$state_for_public, $state_for_private],
-        'required' => [$state_for_public, $state_for_private],
       ],
     ];
+    // If password was never set make sure it is required.
+    if (empty($values['organization'])) {
+      $form['password']['#states']['required'] = [$state_for_public, $state_for_private];
+    }
     $form['account_json_key'] = [
       '#type' => 'textarea',
       '#title' => $this->t('GCP service account key'),
@@ -287,6 +270,13 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       // Remove unneeded values if on a Public or Private instance.
       else {
         $input_values['account_json_key'] = '';
+        // If password field is empty we just skip it and preserve initial password.
+        if (empty($input_values['password'])) {
+          $values = $this->getFormDefaultValues($form_state);
+          if (!empty($values['password'])) {
+            $input_values['password'] = $values['password'];
+          }
+        }
       }
 
       // Remove `key_value` so it doesn't get double encoded.
@@ -296,6 +286,33 @@ class ApigeeAuthKeyInput extends KeyInputBase {
     // Reset values to just `key_value`.
     $form_state->setValues(['key_value' => Json::encode(array_filter($input_values))]);
     return parent::processSubmittedKeyValue($form_state);
+  }
+
+  /**
+   * Get authentication from values.
+   */
+  protected function getFormDefaultValues(FormStateInterface $form_state) {
+    // When AJAX rebuilds the the form (f.e.: the "Send request" button) the
+    // submitted data is only available in $form_state->getUserInput() and not
+    // in $form_state->getValues(). Key is not prepared to handle this out of
+    // the box this is the reason why we have to manually process the user
+    // input and retrieve the submitted values here.
+    $key_value = $form_state->get('key_value')['current'];
+    // Either null or an empty string.
+    if (empty($key_value)) {
+      // When "Test connection" reloads the page they are not yet processed.
+      // @see \Drupal\key\Form\KeyFormBase::createPluginFormState()
+      $key_input_plugin_form_state = clone $form_state;
+      $key_input_plugin_form_state->setValues($form_state->getUserInput()['key_input_settings']);
+      // @see \Drupal\key\Form\KeyFormBase::validateForm()
+      $key_input_processed_values = $form_state->getFormObject()->getEntity()->getKeyInput()->processSubmittedKeyValue($key_input_plugin_form_state);
+      $key_value = $key_input_processed_values['processed_submitted'];
+    }
+
+    // Could be an empty array.
+    $values = Json::decode($key_value);
+    $values['authorization_server_type'] = empty($values['authorization_server']) ? 'default' : 'custom';
+    return $values;
   }
 
 }
