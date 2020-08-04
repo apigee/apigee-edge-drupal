@@ -116,6 +116,9 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $this->drupalLogin($this->rootUser);
     $this->drupalGet(Url::fromRoute('apigee_edge.settings'));
 
+    // We need to fill in the password field to test connection.
+    $this->getSession()->getPage()->fillField('Password', $this->password);
+
     $this->assertSession()->pageTextContains('Send request using the given API credentials.');
     $this->assertSendRequestMessage('.messages--status', 'Connection successful.');
     $web_assert->elementNotExists('css', 'details[data-drupal-selector="edit-debug"]');
@@ -131,6 +134,9 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $this->visitAuthenticationForm();
     $web_assert->fieldValueEquals('Organization', $this->organization);
     $web_assert->fieldValueEquals('Username', $this->username);
+
+    // Password field should be empty.
+    $web_assert->fieldValueEquals('Password', '');
   }
 
   /**
@@ -321,10 +327,13 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $this->cssSelect('select[name="key_input_settings[auth_type]"]')[0]->setValue('basic');
 
     // Test the connection with basic auth.
+    $page->fillField('Password', $this->password);
     $this->assertSendRequestMessage('.messages--status', 'Connection successful.');
     $web_assert->elementNotExists('css', 'details[data-drupal-selector="edit-debug"]');
+    $page->fillField('Password', $this->password);
     // Press the Save/Save configuration button.
     $page->pressButton('op');
+    $this->assertSession()->pageTextContains('Connection successful.');
 
     // Because Key add/edit form redirects the user to the Key entity listing
     // page on success therefore we have to re-visit the form again.
