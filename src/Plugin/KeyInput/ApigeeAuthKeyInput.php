@@ -107,7 +107,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#type' => 'password',
       '#title' => $this->t('Password'),
       '#description' => $this->t("Organization user's password that is used for authenticating with the endpoint.") .
-        (empty($values['password']) ? '' : ' ' . $this->t('Leave empty unless you want to change the stored password.')),
+      (empty($values['password']) ? '' : ' ' . $this->t('Leave empty unless you want to change the stored password.')),
       '#attributes' => [
         'autocomplete' => 'off',
       ],
