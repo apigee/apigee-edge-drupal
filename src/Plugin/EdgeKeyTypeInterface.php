@@ -73,7 +73,7 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
    *
    * @var string
    *
-   * @deprecated Deprecated in apigee_edge:8.x-1.2 and is removed from
+   * @deprecated in apigee_edge:8.x-1.2 and is removed from
    * apigee_edge:8.x-2.0. Check for endpoint type instead.
    *
    * @see EdgeKeyTypeInterface::getEndpointType().
@@ -85,7 +85,7 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
    *
    * @var string
    *
-   * @deprecated Deprecated in apigee_edge:8.x-1.2 and is removed from
+   * @deprecated in apigee_edge:8.x-1.2 and is removed from
    * apigee_edge:8.x-2.0. Check for endpoint type instead.
    *
    * @see EdgeKeyTypeInterface::getEndpointType().
@@ -136,7 +136,7 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
    * @return string
    *   The API endpoint type.
    *
-   * @deprecated Deprecated in apigee_edge:8.x-1.2 and is removed from
+   * @deprecated in apigee_edge:8.x-1.2 and is removed from
    * apigee_edge:8.x-2.0. Use getInstanceType() instead.
    *
    * @see https://github.com/apigee/apigee-edge-drupal/issues/268

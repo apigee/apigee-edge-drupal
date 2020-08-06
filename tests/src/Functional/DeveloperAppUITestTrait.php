@@ -373,7 +373,7 @@ trait DeveloperAppUITestTrait {
    *   Array of breadcrumb links.
    */
   protected function getBreadcrumbLinks(): array {
-    return $this->xpath('//nav[@class="breadcrumb"]/ol/li/a');
+    return $this->xpath('//nav[@role="navigation"]/ol/li/a');
   }
 
 }

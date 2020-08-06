@@ -116,12 +116,12 @@ services:
   apigee_edge.exception_subscriber:
     class: Drupal\apigee_edge\EventSubscriber\EdgeExceptionSubscriber
     arguments:
-      - '@http_kernel'
       - '@logger.channel.apigee_edge'
-      - '@redirect.destination'
-      - '@router.no_access_checks'
       - '@config.factory'
       - '@messenger'
+      - '@class_resolver'
+      - '@current_route_match'
+      - '%main_content_renderers%'
     tags:
       - { name: event_subscriber }
 

@@ -14,18 +14,18 @@
     },
     "require-dev": {
         "apigee/apigee-mock-client-php": "^1.0",
-        "behat/mink-extension": "v2.2",
+        "behat/mink-extension": "^2.0",
         "bex/behat-screenshot": "^1.2",
         "cweagans/composer-patches": "^1.6",
         "drupal/core-dev": "^8.7 || ^9",
         "drupal/drupal-extension": "master-dev",
-        "drush/drush": "^9.0",
+        "drush/drush": "^9.0 || ^10.0",
         "phpmd/phpmd": "^2.8",
         "phpmetrics/phpmetrics": "^2.5",
-        "drupal/console": "~1.0"
+        "mglaman/drupal-check": "^1.1"
     },
-    "conflict": {
-        "drupal/coder": ">8.3.8"
+    "suggest": {
+        "drupal/console": "Needed only to run tests in Drupal 8."
     },
     "config": {
         "sort-packages": true
