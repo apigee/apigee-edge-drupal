@@ -1194,28 +1194,26 @@ function template_preprocess_app_credential(array &$variables) {
 
   // Helpful $content variable for templates.
   $variables['content'] = $normalized;
+  
+  // Add operations.
+  $variables['operations'] = [
+    '#type' => 'operations',
+  ];
 
-  if ($app->access('update')) {
-    // Add operations.
-    $variables['operations'] = [
-      '#type' => 'operations',
+  if ($credential->getStatus() === AppCredentialInterface::STATUS_APPROVED && $app->access('revoke_api_key') && $app->hasLinkTemplate('revoke-api-key-form')) {
+    $variables['operations']['#links']['revoke'] = [
+      'title' => t('Revoke'),
+      'url' => $app->toUrl('revoke-api-key-form')
+        ->setRouteParameter('consumer_key', $credential->getConsumerKey()),
     ];
+  }
 
-    if ($credential->getStatus() === AppCredentialInterface::STATUS_APPROVED && $app->access('revoke_api_key') && $app->hasLinkTemplate('revoke-api-key-form')) {
-      $variables['operations']['#links']['revoke'] = [
-        'title' => t('Revoke'),
-        'url' => $app->toUrl('revoke-api-key-form')
-          ->setRouteParameter('consumer_key', $credential->getConsumerKey()),
-      ];
-    }
-
-    if ($app->access('delete_api_key') && $app->hasLinkTemplate('delete-api-key-form')) {
-      $variables['operations']['#links']['delete'] = [
-        'title' => t('Delete'),
-        'url' => $app->toUrl('delete-api-key-form')
-          ->setRouteParameter('consumer_key', $credential->getConsumerKey()),
-      ];
-    }
+  if ($app->access('delete_api_key') && $app->hasLinkTemplate('delete-api-key-form')) {
+    $variables['operations']['#links']['delete'] = [
+      'title' => t('Delete'),
+      'url' => $app->toUrl('delete-api-key-form')
+        ->setRouteParameter('consumer_key', $credential->getConsumerKey()),
+    ];
   }
 }
 
