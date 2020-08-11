@@ -21,6 +21,7 @@
 namespace Drupal\apigee_edge_teams\Form;
 
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
+use Drupal\apigee_edge_teams\Entity\TeamInvitation;
 use Drupal\apigee_edge_teams\Entity\TeamRole;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
@@ -50,6 +51,13 @@ class AddTeamMembersForm extends TeamMembersFormBase {
   protected $userStorage;
 
   /**
+   * The team invitation storage.
+   *
+   * @var \Drupal\Core\Entity\EntityStorageInterface
+   */
+  protected $invitationStorage;
+
+  /**
    * AddTeamMemberForms constructor.
    *
    * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
@@ -62,6 +70,7 @@ class AddTeamMembersForm extends TeamMembersFormBase {
 
     $this->teamMembershipManager = $team_membership_manager;
     $this->userStorage = $entity_type_manager->getStorage('user');
+    $this->invitationStorage = $entity_type_manager->getStorage('team_invitation');
   }
 
   /**
@@ -90,10 +99,10 @@ class AddTeamMembersForm extends TeamMembersFormBase {
 
     $form['developers'] = [
       '#title' => $this->t('Developers'),
-      '#description' => $this->t('Enter the email of one or more developers to add them to the @team, separated by comma.', [
+      '#description' => $this->t('Enter the email of one or more developers to invite them to the @team, separated by comma.', [
         '@team' => mb_strtolower($this->team->getEntityType()->getSingularLabel()),
       ]),
-      '#type' => 'textfield',
+      '#type' => 'textarea',
       '#required' => TRUE,
     ];
 
@@ -122,7 +131,7 @@ class AddTeamMembersForm extends TeamMembersFormBase {
       '#type' => 'actions',
       'submit' => [
         '#type' => 'submit',
-        '#value' => $this->t('Add members'),
+        '#value' => $this->t('Invite members'),
         '#button_type' => 'primary',
       ],
       'cancel' => [
@@ -168,10 +177,34 @@ class AddTeamMembersForm extends TeamMembersFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $logger = $this->logger('apigee_edge_teams');
+    // Create an invitation for each email.
+    $emails = array_map('trim', explode(',', $form_state->getValue('developers', '')));
+    $selected_roles = $this->filterSelectedRoles($form_state->getValue('team_roles', []));
+    foreach ($emails as $email) {
+      $this->invitationStorage->create([
+        'team' => ['target_id' => $this->team->id()],
+        'team_roles' => array_values(array_map(function (string $role) {
+          return ['target_id' => $role];
+        }, $selected_roles)),
+        'recipient' => $email,
+      ])->save();
+    }
+
+    $context = [
+      '@developers' => implode(', ', $emails),
+      '@team' => mb_strtolower($this->team->getEntityType()->getSingularLabel()),
+      '%team_id' => $this->team->id(),
+    ];
+
+    $this->messenger()->addStatus($this->formatPlural(count($emails),
+      $this->t('The following developer has been invited to @team: @developers', $context),
+      $this->t('The following developers have been invited to @team: @developers', $context
+      )));
+    $form_state->setRedirectUrl($this->team->toUrl('members'));
+
 
     // Collect user accounts from submitted values.
-    list($developerAccounts, $notFound) = $this->getAccountsFromEmails($form_state->getValue('developers', ''));
+    [$developerAccounts, $notFound] = $this->getAccountsFromEmails($form_state->getValue('developers', ''));
 
     if ($notFound) {
       $this->messenger()->addWarning($this->t("Could not add developers to the @team because they don't yet have an account: @devs", [

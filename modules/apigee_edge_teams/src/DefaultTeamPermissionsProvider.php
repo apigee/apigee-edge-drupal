@@ -84,6 +84,12 @@ final class DefaultTeamPermissionsProvider implements DynamicTeamPermissionProvi
           'access_internal' => $this->t('View and assign internal API products to team apps'),
         ],
       ],
+      'team_invitation' => [
+        'label' => $this->t('Team invitations'),
+        'permissions' => [
+          'administer' => $this->t('Administer team invitations')
+        ],
+      ],
     ];
 
     foreach ($operations as $group => $group_def) {

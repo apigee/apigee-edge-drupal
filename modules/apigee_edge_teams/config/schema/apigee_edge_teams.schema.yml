@@ -83,3 +83,6 @@ entity_reference_selection.apigee_edge_teams:team_members:
     include_anonymous:
       type: boolean
       label: 'Include the anonymous user in the matched entities.'
+
+views.filter.team_invitation_status:
+  type: views.filter.in_operator
