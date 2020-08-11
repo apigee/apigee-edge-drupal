@@ -122,7 +122,13 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
     parent::setUp();
 
     $this->entityType = $this->container->get('entity_type.manager')->getDefinition('developer_app');
-    $this->entityRoutes = array_keys($this->entityType->get('links'));
+
+    // Skip api key routes.
+    // This is tested separately with different permissions.
+    $links = array_filter($this->entityType->get('links'), function ($path) {
+      return strpos($path, '{consumer_key}') === FALSE;
+    });
+    $this->entityRoutes = array_keys($links);
 
     $this->revokeDefaultAuthUserPermissions();
 
