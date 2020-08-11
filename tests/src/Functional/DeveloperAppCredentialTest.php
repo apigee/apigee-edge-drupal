@@ -126,39 +126,33 @@ class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
 
     $this->apiProducts = [$productOne, $productTwo];
 
-    // Add default credentials to the app.
-//    $this->queueDeveloperAppResponse($this->developerApp);
-//    /** @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerInterface $dacc */
-//    $dacc = $this->container->get('apigee_edge.controller.developer_app_credential_factory')->developerAppCredentialController($this->developerApp->getDeveloperId(), $this->developerApp->getName());
-//    $dacc->generate(['api_one'], $this->developerApp->getAttributes(), (string) $this->developerApp->getCallbackUrl(), $this->developerApp->getScopes(), 60 * 60 * 1000);
-
     $this->drupalLogin($this->account);
   }
 
   /**
    * {@inheritdoc}
    */
-//  protected function tearDown() {
-//    try {
-//      if ($this->developer !== NULL) {
-//        $this->developer->delete();
-//      }
-//    }
-//    catch (\Exception $exception) {
-//      $this->logException($exception);
-//    }
-//    try {
-//      if ($this->apiProducts !== NULL) {
-//        foreach ($this->apiProducts as $product) {
-//          $product->delete();
-//        }
-//      }
-//    }
-//    catch (\Exception $exception) {
-//      $this->logException($exception);
-//    }
-//    parent::tearDown();
-//  }
+  protected function tearDown() {
+    try {
+      if ($this->developer !== NULL) {
+        $this->developer->delete();
+      }
+    }
+    catch (\Exception $exception) {
+      $this->logException($exception);
+    }
+    try {
+      if ($this->apiProducts !== NULL) {
+        foreach ($this->apiProducts as $product) {
+          $product->delete();
+        }
+      }
+    }
+    catch (\Exception $exception) {
+      $this->logException($exception);
+    }
+    parent::tearDown();
+  }
 
   /**
    * Tests app credential operations.

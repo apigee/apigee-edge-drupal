@@ -162,7 +162,6 @@ abstract class AppCredentialAddFormBase extends FormBase {
     $expires_in = $expiry === 'date' ? (strtotime($expiry_date) - time()) * 1000 : -1;
     $selected_products = [];
 
-    // Find products from the most recent
     $api_products = $this->getApiProductsForApp($this->app);
     if (count($api_products)) {
       $selected_products = array_map(function (CredentialProductInterface $api_product) {
@@ -200,7 +199,7 @@ abstract class AppCredentialAddFormBase extends FormBase {
     });
 
     // Find the recently active one.
-    usort($approved_credentials, function(AppCredentialInterface $a, AppCredentialInterface $b) {
+    usort($approved_credentials, function (AppCredentialInterface $a, AppCredentialInterface $b) {
       return $a->getIssuedAt() < $b->getIssuedAt();
     });
 
