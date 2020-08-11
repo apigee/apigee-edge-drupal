@@ -259,7 +259,7 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_title', 'Add key');
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureUserParameter($route);
-      $route->setRequirement('_app_access_check_by_app_name', 'update');
+      $route->setRequirement('_app_access_check_by_app_name', 'add_api_key');
       return $route;
     }
   }
@@ -279,7 +279,7 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_form', DeveloperAppApiKeyDeleteForm::class);
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureUserParameter($route);
-      $route->setRequirement('_app_access_check_by_app_name', 'update');
+      $route->setRequirement('_app_access_check_by_app_name', 'delete_api_key');
       return $route;
     }
   }
@@ -299,7 +299,7 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_form', DeveloperAppApiKeyRevokeForm::class);
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureUserParameter($route);
-      $route->setRequirement('_app_access_check_by_app_name', 'update');
+      $route->setRequirement('_app_access_check_by_app_name', 'revoke_api_key');
       return $route;
     }
   }

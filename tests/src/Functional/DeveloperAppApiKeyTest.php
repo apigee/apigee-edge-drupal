@@ -174,8 +174,8 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
       ],
     ]);
     $this->drupalGet($this->developerApp->toUrl('canonical-by-developer'));
-    $this->assertSession()->elementContains('css', '.app-credential:first-child .dropbutton .dropbutton-action:first-child', 'Revoke');
-    $this->assertSession()->elementContains('css', '.app-credential:first-child .dropbutton .dropbutton-action:last-child', 'Delete');
+    $this->assertSession()->elementContains('css', '.app-credential:first-child .dropbutton', 'Revoke');
+    $this->assertSession()->elementContains('css', '.app-credential:first-child .dropbutton', 'Delete');
   }
 
   /**

@@ -97,7 +97,9 @@ abstract class AppApiKeyAddFormBase extends FormBase {
     $form['message'] = [
       '#type' => 'html_tag',
       '#tag' => 'h3',
-      '#value' => $this->t('Do you really want to create a new API key for this app?'),
+      '#value' => $this->t('Do you really want to create a new API key for this @entity_type?', [
+        '@entity_type' => mb_strtolower($app->getEntityType()->getSingularLabel()),
+      ]),
     ];
 
     $form['expiry'] = [

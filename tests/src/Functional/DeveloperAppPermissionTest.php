@@ -61,6 +61,8 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
     'analytics any developer_app' => ['analytics', 'analytics-for-developer'],
     'analytics own developer_app' => ['analytics', 'analytics-for-developer'],
     'access developer_app overview' => ['collection'],
+    'add_api_key own developer_app' => ['add-api-key-form'],
+    'add_api_key any developer_app' => ['add-api-key-form'],
     // We leave this empty because we add entity links to this data set
     // later.
     self::ADMINISTER_PERMISSION => [],

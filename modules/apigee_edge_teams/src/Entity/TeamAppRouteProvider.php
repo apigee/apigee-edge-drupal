@@ -174,7 +174,7 @@ class TeamAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_title', 'Add key');
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureTeamParameter($route);
-      $route->setRequirement('_app_access_check_by_app_name', 'update');
+      $route->setRequirement('_app_access_check_by_app_name', 'add_api_key');
       return $route;
     }
   }
@@ -194,7 +194,7 @@ class TeamAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_form', TeamAppApiKeyDeleteForm::class);
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureTeamParameter($route);
-      $route->setRequirement('_app_access_check_by_app_name', 'update');
+      $route->setRequirement('_app_access_check_by_app_name', 'delete_api_key');
       return $route;
     }
   }
@@ -214,7 +214,7 @@ class TeamAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_form', TeamAppApiKeyRevokeForm::class);
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureTeamParameter($route);
-      $route->setRequirement('_app_access_check_by_app_name', 'update');
+      $route->setRequirement('_app_access_check_by_app_name', 'revoke_api_key');
       return $route;
     }
   }
