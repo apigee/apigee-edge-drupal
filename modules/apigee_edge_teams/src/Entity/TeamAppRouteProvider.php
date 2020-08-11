@@ -140,7 +140,6 @@ class TeamAppRouteProvider extends AppRouteProvider {
 
   /**
    * Gets APpi Keys for team app.
-   * Gets the add-api-key-form route for a team app.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type.
@@ -155,6 +154,7 @@ class TeamAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_title_callback', AppTitleProvider::class . '::title');
       $this->ensureTeamParameter($route);
       $route->setRequirement('_app_access_check_by_app_name', 'view');
+      return $route;
     }
   }
 
