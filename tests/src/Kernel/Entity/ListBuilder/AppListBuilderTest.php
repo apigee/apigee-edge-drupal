@@ -102,6 +102,20 @@ class AppListBuilderTest extends KernelTestBase {
   protected $revokedAppWithRevokedCredential;
 
   /**
+   * An approved DeveloperApp entity with an expired credential.
+   *
+   * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface
+   */
+  protected $approvedAppWithExpiredCredential;
+
+  /**
+   * A revoked DeveloperApp entity with an expired credential.
+   *
+   * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface
+   */
+  protected $revokedAppWithExpiredCredential;
+
+  /**
    * {@inheritdoc}
    *
    * @throws \Exception
@@ -157,6 +171,26 @@ class AppListBuilderTest extends KernelTestBase {
     $this->revokedAppWithRevokedCredential->setOwner($this->account);
     $this->queueDeveloperAppResponse($this->revokedAppWithRevokedCredential);
     $this->revokedAppWithRevokedCredential->save();
+
+    // Approved app with expired credential.
+    $this->approvedAppWithExpiredCredential = DeveloperApp::create([
+      'name' => $this->randomMachineName(),
+      'status' => App::STATUS_APPROVED,
+      'developerId' => $this->developer->getDeveloperId(),
+    ]);
+    $this->approvedAppWithExpiredCredential->setOwner($this->account);
+    $this->queueDeveloperAppResponse($this->approvedAppWithExpiredCredential);
+    $this->approvedAppWithExpiredCredential->save();
+
+    // Revoked app with expired credential.
+    $this->revokedAppWithExpiredCredential = DeveloperApp::create([
+      'name' => $this->randomMachineName(),
+      'status' => App::STATUS_REVOKED,
+      'developerId' => $this->developer->getDeveloperId(),
+    ]);
+    $this->revokedAppWithExpiredCredential->setOwner($this->account);
+    $this->queueDeveloperAppResponse($this->revokedAppWithExpiredCredential);
+    $this->revokedAppWithExpiredCredential->save();
   }
 
   /**
@@ -186,6 +220,14 @@ class AppListBuilderTest extends KernelTestBase {
       if ($this->revokedAppWithRevokedCredential) {
         $this->revokedAppWithRevokedCredential->delete();
       }
+
+      if ($this->approvedAppWithExpiredCredential) {
+        $this->approvedAppWithExpiredCredential->delete();
+      }
+
+      if ($this->revokedAppWithExpiredCredential) {
+        $this->revokedAppWithExpiredCredential->delete();
+      }
     }
     catch (\Exception $exception) {
       $this->logException($exception);
@@ -214,12 +256,21 @@ class AppListBuilderTest extends KernelTestBase {
       'expiresAt' => ($this->container->get('datetime.time')->getRequestTime() + 24 * 60 * 60) * 1000,
     ];
 
+    $expired_credential = [
+      "consumerKey" => $this->randomString(),
+      "consumerSecret" => $this->randomString(),
+      "status" => AppCredentialInterface::STATUS_REVOKED,
+      'expiresAt' => ($this->container->get('datetime.time')->getRequestTime() - 24 * 60 * 60) * 1000,
+    ];
+
     $this->stack->queueMockResponse([
       'get_developer_apps_with_credentials' => [
         'apps' => [
           $this->approvedAppWithApprovedCredential,
           $this->approvedAppWithRevokedCredential,
-          $this->revokedAppWithRevokedCredential
+          $this->revokedAppWithRevokedCredential,
+          $this->approvedAppWithExpiredCredential,
+          $this->revokedAppWithExpiredCredential,
         ],
         'credentials' => [
           $this->approvedAppWithApprovedCredential->id() => [
@@ -231,7 +282,13 @@ class AppListBuilderTest extends KernelTestBase {
           $this->revokedAppWithRevokedCredential->id() => [
             $approved_credential,
             $revoked_credential,
-          ]
+          ],
+          $this->approvedAppWithExpiredCredential->id() => [
+            $expired_credential,
+          ],
+          $this->revokedAppWithExpiredCredential->id() => [
+            $expired_credential,
+          ],
         ],
       ],
     ]);
@@ -246,6 +303,14 @@ class AppListBuilderTest extends KernelTestBase {
 
     // No warnings to revoked app with revoked credentials.
     $this->assertEmpty($build['table']['#rows'][$this->getStatusRowKey($this->revokedAppWithRevokedCredential)]['data']);
+
+    // One warning for approved app with expired credentials.
+    $warnings = $build['table']['#rows'][$this->getStatusRowKey($this->approvedAppWithExpiredCredential)]['data'];
+    $this->assertCount(1, $warnings);
+    $this->assertEqual('At least one of the credentials associated with this app is expired.', (string) $warnings['info']['data']['#items'][0]);
+
+    // No warnings for revoked app with expired credentials.
+    $this->assertEmpty($build['table']['#rows'][$this->getStatusRowKey($this->revokedAppWithExpiredCredential)]['data']);
   }
 
   /**
