@@ -132,4 +132,13 @@ class TeamAppListByTeam extends AppListBuilder implements ContainerInjectionInte
     return $this->t('@team_apps', ['@team_apps' => $this->entityType->getCollectionLabel()]);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function getCacheMaxAge() {
+    return $this->configFactory
+      ->get('apigee_edge_teams.team_app_settings')
+      ->get('cache_expiration');
+  }
+
 }

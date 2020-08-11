@@ -90,18 +90,11 @@ class AddTeamMembersForm extends TeamMembersFormBase {
 
     $form['developers'] = [
       '#title' => $this->t('Developers'),
-      '#description' => $this->t('Enter the email of one or more developers to add them to the @team.', [
+      '#description' => $this->t('Enter the email of one or more developers to add them to the @team, separated by comma.', [
         '@team' => mb_strtolower($this->team->getEntityType()->getSingularLabel()),
       ]),
-      '#type' => 'entity_autocomplete',
-      '#target_type' => 'user',
-      '#tags' => TRUE,
+      '#type' => 'textfield',
       '#required' => TRUE,
-      '#selection_handler' => 'apigee_edge_teams:team_members',
-      '#selection_settings' => [
-        'match_operator' => 'STARTS_WITH',
-        'filter' => ['team' => $this->team->id()],
-      ],
     ];
 
     $form['team_roles'] = [
@@ -144,24 +137,62 @@ class AddTeamMembersForm extends TeamMembersFormBase {
   }
 
   /**
+   * Return an array of user UIDs given a list of emails.
+   *
+   * @param string $emails
+   *   The emails, comma separated.
+   *
+   * @return array
+   *   An array containing a first array of user accounts, and a second array of
+   *   emails that have no account on the system.
+   */
+  protected function getAccountsFromEmails(string $emails): array {
+    $developerEmails = [];
+    $notFound = [];
+
+    $emails = array_map('trim', explode(',', $emails));
+
+    foreach ($emails as $email) {
+      if ($account = user_load_by_mail($email)) {
+        $developerEmails[$email] = $account;
+      }
+      else {
+        $notFound[] = $email;
+      }
+    }
+
+    return [$developerEmails, $notFound];
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $logger = $this->logger('apigee_edge_teams');
-    // Collect user ids from submitted values.
-    $uids = array_map(function (array $item) {
-      return $item['target_id'];
-    }, $form_state->getValue('developers', []));
+
+    // Collect user accounts from submitted values.
+    list($developerAccounts, $notFound) = $this->getAccountsFromEmails($form_state->getValue('developers', ''));
+
+    if ($notFound) {
+      $this->messenger()->addWarning($this->t("Could not add developers to the @team because they don't yet have an account: @devs", [
+        '@team' => mb_strtolower($this->team->getEntityType()->getSingularLabel()),
+        '@devs' => implode(', ', $notFound),
+      ]));
+    }
+
+    if (empty($developerAccounts)) {
+      return;
+    }
 
     // Collect email addresses.
     /** @var array $developer_emails */
-    $developer_emails = array_reduce($this->userStorage->loadMultiple($uids), function ($carry, UserInterface $item) {
+    $developer_emails = array_reduce($developerAccounts, function ($carry, UserInterface $item) {
       $carry[$item->id()] = $item->getEmail();
       return $carry;
     }, []);
 
     $context = [
-      '@developers' => implode('', $developer_emails),
+      '@developers' => implode(', ', $developer_emails),
       '@team' => mb_strtolower($this->team->getEntityType()->getSingularLabel()),
       '%team_id' => $this->team->id(),
     ];
@@ -177,16 +208,16 @@ class AddTeamMembersForm extends TeamMembersFormBase {
       // multiple developers selected therefore we should not display that to
       // the user.
       $this->messenger()->addError($this->formatPlural(count($developer_emails),
-        $this->t('Failed to add developer to the @team.', $context),
-        $this->t('Failed to add developers to the @team.', $context
+        $this->t('Failed to add developer to the @team: @developers', $context),
+        $this->t('Failed to add developers to the @team: @developers', $context
         )));
       $logger->error('Failed to add developers to %team_id team. Developers: @developers. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
     }
 
     if ($success) {
       $this->messenger()->addStatus($this->formatPlural(count($developer_emails),
-        $this->t('Developer successfully added to the @team.', $context),
-        $this->t('Developers successfully added to the @team.', $context
+        $this->t('Developer successfully added to the @team: @developers', $context),
+        $this->t('Developers successfully added to the @team: @developers', $context
         )));
       $form_state->setRedirectUrl($this->team->toUrl('members'));
 

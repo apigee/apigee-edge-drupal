@@ -78,6 +78,7 @@ use Drupal\user\UserInterface;
  *     "edit-form-for-developer" = "/user/{user}/apps/{app}/edit",
  *     "delete-form-for-developer" = "/user/{user}/apps/{app}/delete",
  *     "analytics-for-developer" = "/user/{user}/apps/{app}/analytics",
+ *     "api-keys" = "/user/{user}/apps/{app}/api-keys",
  *     "add-api-key-form" = "/user/{user}/apps/{app}/api-keys/add",
  *     "delete-api-key-form" = "/user/{user}/apps/{app}/api-keys/{consumer_key}/delete",
  *     "revoke-api-key-form" = "/user/{user}/apps/{app}/api-keys/{consumer_key}/revoke",

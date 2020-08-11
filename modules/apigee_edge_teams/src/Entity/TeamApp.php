@@ -69,6 +69,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "edit-form" = "/teams/{team}/apps/{app}/edit",
  *     "delete-form" = "/teams/{team}/apps/{app}/delete",
  *     "analytics"  = "/teams/{team}/apps/{app}/analytics",
+ *     "api-keys"  = "/teams/{team}/apps/{app}/api-keys",
  *     "add-api-key-form" = "/teams/{team}/apps/{app}/api-keys/add",
  *     "delete-api-key-form" = "/teams/{team}/apps/{app}/api-keys/{consumer_key}/delete",
  *     "revoke-api-key-form" = "/teams/{team}/apps/{app}/api-keys/{consumer_key}/revoke",

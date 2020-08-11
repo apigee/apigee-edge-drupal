@@ -55,12 +55,15 @@ class RoboFile extends \Robo\Tasks
       ->mkdir('artifacts/phpcs')
       ->mkdir('artifacts/phpmd')
       ->mkdir('artifacts/phpmetrics')
+      ->mkdir('artifacts/d9')
       ->mkdir('/tmp/artifacts/phpunit')
       ->mkdir('/tmp/artifacts/phpmd')
       ->run();
 
     $this->taskFilesystemStack()
       ->chown('/tmp/artifacts', 'www-data', TRUE)
+      ->copy('modules/apigee_edge/.circleci/d9.sh', '/var/www/html/d9.sh')
+      ->chmod('/var/www/html/d9.sh', 0777)
       ->run();
   }
 
@@ -95,6 +98,7 @@ class RoboFile extends \Robo\Tasks
   public function addModules(array $modules)
   {
     $config = json_decode(file_get_contents('composer.json'));
+    $config->extra->{"merge-plugin"}->{"ignore-duplicates"} = TRUE;
 
     foreach ($modules as $module) {
       list($module,) = explode(':', $module);
@@ -172,7 +176,11 @@ class RoboFile extends \Robo\Tasks
     // on it fails for the first time.
     $this->taskFilesystemStack()->remove('composer.lock')->run();
 
-    $this->taskDeleteDir('vendor/')->run();
+    // Remove all core files and vendor.
+    $this->taskFilesystemStack()
+      ->taskDeleteDir('core')
+      ->taskDeleteDir('vendor')
+      ->run();
 
     // Composer often runs out of memory when installing drupal.
     $this->taskComposerInstall('php -d memory_limit=-1 /usr/local/bin/composer')
@@ -196,6 +204,8 @@ class RoboFile extends \Robo\Tasks
       ->run();
 
     // Add composer version info to an artifact file.
+    $this->taskExec('composer show')
+      ->run();
     $this->taskExec('composer show > /tmp/artifacts/composer-show.txt')
       ->run();
   }
@@ -401,22 +411,47 @@ class RoboFile extends \Robo\Tasks
   }
 
   /**
+   * Set the Drupal core version.
+   *
+   * @param int $drupalCoreVersion
+   *   The major version of Drupal required.
+   */
+  public function drupalVersion($drupalCoreVersion)
+  {
+    $config = json_decode(file_get_contents('composer.json'));
+
+    unset($config->require->{"drupal/core"});
+
+    switch ($drupalCoreVersion) {
+      case '9':
+        $config->require->{"drupal/core-recommended"} = '^9';
+        $config->require->{"drupal/core-dev"} = '^9';
+
+        break;
+
+      case '8':
+        $config->require->{"drupal/core-recommended"} = '~8';
+        $config->require->{"drupal/core-dev"} = '~8';
+
+        // Add rules for testing apigee_edge_actions (only for D8).
+        $config->require->{"drupal/rules"} = "3.0.0-alpha5";
+
+        // We require Drupal drush and console for some tests.
+        $config->require->{"drupal/console"} = "~1.0";
+
+      default:
+        break;
+    }
+
+    file_put_contents('composer.json', json_encode($config, JSON_PRETTY_PRINT));
+  }
+
+  /**
    * Adds modules to the merge section.
    */
   public function configureModuleDependencies()
   {
     $config = json_decode(file_get_contents('composer.json'));
-
-    // The Drupal core image might need updating. Request the newest stable.
-    unset($config->require->{"drupal/core"});
-    $config->require->{"drupal/core-recommended"} = "~8.8";
-
-    // Add rules for testing apigee_edge_actions.
-    $config->require->{"drupal/rules"} = "3.0.0-alpha5";
-
-    // We require Drupal console and drush for some tests.
-    $config->require->{"drupal/console"} = "~1.0";
-    $config->require->{"drush/drush"} = "^9.7";
 
     // If you require core, you must not replace it.
     unset($config->replace);
@@ -433,10 +468,23 @@ class RoboFile extends \Robo\Tasks
     }
     $config->extra->{"merge-plugin"}->include = array_values($config->extra->{"merge-plugin"}->include);
 
-    // Add dependencies for phpunit tests.
-    $config->require->{"drupal/core-dev"} = "~8.8";
-
     file_put_contents('composer.json', json_encode($config, JSON_PRETTY_PRINT));
+  }
+
+  /**
+   * Perform extra tasks per Drupal core version.
+   *
+   * @param int $drupalCoreVersion
+   *   The major version of Drupal required.
+   */
+  public function doExtra($drupalCoreVersion) {
+    if ($drupalCoreVersion > 8) {
+
+      // Delete D8 only modules.
+      $this->taskFilesystemStack()
+        ->taskDeleteDir('modules/apigee_edge/modules/apigee_edge_actions')
+        ->run();
+    }
   }
 
 }
