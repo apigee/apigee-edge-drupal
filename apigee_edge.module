@@ -165,6 +165,37 @@ function template_preprocess_apigee_entity(array &$variables) {
 }
 
 /**
+ * Prepares variables for Apigee app entity templates.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - elements: An array of elements to display in view mode.
+ */
+function template_preprocess_apigee_entity__app(array &$variables) {
+  /** @var \Drupal\apigee_edge\Entity\AppInterface $app */
+  $app = $variables['entity'];
+
+  // Add link to add keys.
+  if($app->access('update') && $app->hasLinkTemplate('add-credential-form')) {
+    $variables['content']['add_keys'] = Link::fromTextAndUrl(t('Add key'), $app->toUrl('add-credential-form', [
+      'attributes' => [
+        'data-dialog-type' => 'modal',
+        'data-dialog-options' => json_encode([
+          'width' => 500,
+          'height' => 250,
+          'draggable' => FALSE,
+          'autoResize' => FALSE,
+        ]),
+        'class' => [
+          'use-ajax',
+          'button',
+        ],
+      ],
+    ]))->toRenderable();
+  }
+}
+
+/**
  * Implements hook_theme_suggestions_HOOK().
  */
 function apigee_edge_theme_suggestions_apigee_entity(array $variables) {
@@ -1146,12 +1177,12 @@ function template_preprocess_app_credential(array &$variables) {
   // Helpful $content variable for templates.
   $variables['content'] = $normalized;
 
-  // Add operations credentials.
-  $variables['operations'] = [
-    '#type' => 'operations',
-  ];
-
   if ($app->access('update')) {
+    // Add operations credentials.
+    $variables['operations'] = [
+      '#type' => 'operations',
+    ];
+
     if ($credential->getStatus() === AppCredentialInterface::STATUS_APPROVED && $app->hasLinkTemplate('revoke-credential-form')) {
       $variables['operations']['#links']['revoke'] = [
         'title' => t('Revoke'),
@@ -1159,6 +1190,7 @@ function template_preprocess_app_credential(array &$variables) {
           ->setRouteParameter('consumer_key', $credential->getConsumerKey()),
       ];
     }
+
     if ($app->hasLinkTemplate('delete-credential-form')) {
       $variables['operations']['#links']['delete'] = [
         'title' => t('Delete'),

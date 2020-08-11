@@ -252,7 +252,7 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
     if ($entity_type->hasLinkTemplate('add-credential-form')) {
       $route = new Route($entity_type->getLinkTemplate('add-credential-form'));
       $route->setDefault('_form', DeveloperAppCredentialAddForm::class);
-      $route->setDefault('_title', 'Add credentials');
+      $route->setDefault('_title', 'Add key');
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureUserParameter($route);
       $route->setRequirement('_app_access_check_by_app_name', 'update');

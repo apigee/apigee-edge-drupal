@@ -95,9 +95,15 @@ abstract class AppCredentialAddFormBase extends FormBase {
       '#value' => $this->getAppOwner(),
     ];
 
+    $form['message'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'h3',
+      '#value' => $this->t('Do you really want to create a new API key for this app?'),
+    ];
+
     $form['expiry'] = [
       '#type' => 'select',
-      '#title' => $this->t('Expiry'),
+      '#title' => $this->t('Set an expiry date'),
       '#required' => TRUE,
       '#options' => [
         'never' => $this->t('Never'),
@@ -118,16 +124,16 @@ abstract class AppCredentialAddFormBase extends FormBase {
 
     $form['actions'] = [
       '#type' => 'actions',
-      'submit' => [
-        '#type' => 'submit',
-        '#value' => $this->t('Confirm'),
-        '#button_type' => 'primary',
-      ],
       'cancel' => [
         '#type' => 'link',
         '#title' => $this->t('Cancel'),
         '#attributes' => ['class' => ['button']],
         '#url' => $this->getRedirectUrl(),
+      ],
+      'submit' => [
+        '#type' => 'submit',
+        '#value' => $this->t('Confirm'),
+        '#button_type' => 'primary',
       ],
     ];
 

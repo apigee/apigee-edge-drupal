@@ -199,7 +199,7 @@ class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->drupalGet($path);
-    $this->assertSession()->pageTextContains('Add credentials');
+    $this->assertSession()->pageTextContains('Add key');
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->stack->queueMockResponse([
       'api_product' => [
@@ -243,7 +243,7 @@ class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->drupalGet($path);
-    $this->assertSession()->pageTextContains('Add credentials');
+    $this->assertSession()->pageTextContains('Add key');
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->stack->queueMockResponse([
       'api_product' => [
