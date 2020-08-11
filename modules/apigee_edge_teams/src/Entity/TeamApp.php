@@ -52,7 +52,6 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *       "analytics" = "Drupal\apigee_edge_teams\Form\TeamAppAnalyticsForm",
  *       "generate_credential" = "Drupal\apigee_edge_teams\Form\TeamAppCredentialGenerateForm",
  *       "delete_credential" = "Drupal\apigee_edge_teams\Form\TeamAppDeleteCredentialForm",
- *       "approve_credential" = "Drupal\apigee_edge_teams\Form\TeamAppCredentialApproveForm",
  *       "revoke_credential" = "Drupal\apigee_edge_teams\Form\TeamAppCredentialRevokeForm",
  *     },
  *     "list_builder" = "Drupal\apigee_edge_teams\Entity\ListBuilder\TeamAppListBuilder",
@@ -72,7 +71,6 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "analytics"  = "/teams/{team}/apps/{app}/analytics",
  *     "generate-credential-form" = "/teams/{team}/apps/{app}/credentials/generate",
  *     "delete-credential-form" = "/teams/{team}/apps/{app}/credentials/{consumer_key}/delete",
- *     "approve-credential-form" = "/teams/{team}/apps/{app}/credentials/{consumer_key}/approve",
  *     "revoke-credential-form" = "/teams/{team}/apps/{app}/credentials/{consumer_key}/revoke",
  *   },
  *   entity_keys = {

@@ -75,10 +75,6 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
       $collection->add("entity.{$entity_type_id}.delete_credential_form", $delete_credential_form);
     }
 
-    if ($approve_credential_form = $this->getApproveCredentialRoute($entity_type)) {
-      $collection->add("entity.{$entity_type_id}.approve_credential_form", $approve_credential_form);
-    }
-
     if ($revoke_credential_form = $this->getRevokeCredentialRoute($entity_type)) {
       $collection->add("entity.{$entity_type_id}.revoke_credential_form", $revoke_credential_form);
     }
@@ -277,26 +273,6 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
     if ($entity_type->hasLinkTemplate('delete-credential-form')) {
       $route = new Route($entity_type->getLinkTemplate('delete-credential-form'));
       $route->setDefault('_form', DeveloperAppCredentialDeleteForm::class);
-      $route->setDefault('entity_type_id', $entity_type->id());
-      $this->ensureUserParameter($route);
-      $route->setRequirement('_app_access_check_by_app_name', 'update');
-      return $route;
-    }
-  }
-
-  /**
-   * Gets the approve-credential-form route for a developer app.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type.
-   *
-   * @return \Symfony\Component\Routing\Route|null
-   *   The generated route, if available.
-   */
-  protected function getApproveCredentialRoute(EntityTypeInterface $entity_type) {
-    if ($entity_type->hasLinkTemplate('approve-credential-form')) {
-      $route = new Route($entity_type->getLinkTemplate('approve-credential-form'));
-      $route->setDefault('_form', DeveloperAppCredentialApproveForm::class);
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureUserParameter($route);
       $route->setRequirement('_app_access_check_by_app_name', 'update');

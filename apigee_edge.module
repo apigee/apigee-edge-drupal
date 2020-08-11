@@ -1159,13 +1159,6 @@ function template_preprocess_app_credential(array &$variables) {
           ->setRouteParameter('consumer_key', $credential->getConsumerKey()),
       ];
     }
-    if ($credential->getStatus() === AppCredentialInterface::STATUS_REVOKED && $app->hasLinkTemplate('approve-credential-form')) {
-      $variables['operations']['#links']['approve'] = [
-        'title' => t('Approve'),
-        'url' => $app->toUrl('approve-credential-form')
-          ->setRouteParameter('consumer_key', $credential->getConsumerKey()),
-      ];
-    }
     if ($app->hasLinkTemplate('delete-credential-form')) {
       $variables['operations']['#links']['delete'] = [
         'title' => t('Delete'),

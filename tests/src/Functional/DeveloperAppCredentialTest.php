@@ -177,7 +177,6 @@ class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalGet($this->developerApp->toUrl('canonical-by-developer'));
     $this->assertSession()->elementContains('css', '.app-credential:first-child .dropbutton .revoke.dropbutton-action', 'Revoke');
     $this->assertSession()->elementContains('css', '.app-credential:first-child .dropbutton .delete.dropbutton-action', 'Delete');
-    $this->assertSession()->elementContains('css', '.app-credential:nth-child(2) .dropbutton .approve.dropbutton-action', 'Approve');
   }
 
   /**
@@ -245,40 +244,6 @@ class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalPostForm(NULL, [], 'Revoke');
     $this->assertSession()->pageTextContains('Credential with consumer key ' . static::$CONSUMER_KEY . ' revoked from ' . static::$APP_NAME . '.');
     $this->assertSession()->elementContains('css', '.app-credential .label-status', 'Revoked');
-  }
-
-  /**
-   * Test app credential approve action.
-   *
-   * @throws \Behat\Mink\Exception\ResponseTextException
-   * @throws \Drupal\Core\Entity\EntityMalformedException
-   */
-  public function testAppCredentialApprove() {
-    $credentials = [
-      [
-        "apiProducts" => $this->apiProducts,
-        "consumerKey" => static::$CONSUMER_KEY,
-        "consumerSecret" => $this->randomMachineName(),
-        "status" => AppCredentialInterface::STATUS_REVOKED,
-      ]
-    ];
-    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
-    $path = $this->developerApp->toUrl('approve-credential-form')
-      ->setRouteParameter('consumer_key', static::$CONSUMER_KEY);
-    $this->drupalGet($path);
-    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
-    $this->stack->queueMockResponse('no_content');
-    $this->queueDeveloperAppResponse($this->developerApp, 200, [
-      [
-        "apiProducts" => $this->apiProducts,
-        "consumerKey" => static::$CONSUMER_KEY,
-        "consumerSecret" => $this->randomMachineName(),
-        "status" => AppCredentialInterface::STATUS_APPROVED,
-      ],
-    ]);
-    $this->drupalPostForm(NULL, [], 'Approve');
-    $this->assertSession()->pageTextContains('Credential with consumer key ' . static::$CONSUMER_KEY . ' approved for ' . static::$APP_NAME . '.');
-    $this->assertSession()->elementContains('css', '.app-credential .label-status', 'Approved');
   }
 
   /**
