@@ -165,37 +165,6 @@ function template_preprocess_apigee_entity(array &$variables) {
 }
 
 /**
- * Prepares variables for Apigee app entity templates.
- *
- * @param array $variables
- *   An associative array containing:
- *   - elements: An array of elements to display in view mode.
- */
-function template_preprocess_apigee_entity__app(array &$variables) {
-  /** @var \Drupal\apigee_edge\Entity\AppInterface $app */
-  $app = $variables['entity'];
-
-  // Add link to add keys.
-  if($app->access('add_api_key') && $app->hasLinkTemplate('add-api-key-form')) {
-    $variables['content']['add_keys'] = Link::fromTextAndUrl(t('Add key'), $app->toUrl('add-api-key-form', [
-      'attributes' => [
-        'data-dialog-type' => 'modal',
-        'data-dialog-options' => json_encode([
-          'width' => 500,
-          'height' => 250,
-          'draggable' => FALSE,
-          'autoResize' => FALSE,
-        ]),
-        'class' => [
-          'use-ajax',
-          'button',
-        ],
-      ],
-    ]))->toRenderable();
-  }
-}
-
-/**
  * Implements hook_theme_suggestions_HOOK().
  */
 function apigee_edge_theme_suggestions_apigee_entity(array $variables) {
@@ -414,7 +383,7 @@ function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityV
         '#type' => 'container',
       ];
       foreach ($entity->getCredentials() as $credential) {
-        $build['credentials'][] = [
+        $build['credentials'][$credential->getStatus()][] = [
           '#type' => 'app_credential',
           '#credential' => $credential,
           '#app_name' => $entity->getName(),
@@ -425,6 +394,36 @@ function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityV
           ],
         ] + $defaults;
       }
+
+      // Hide revoked credentials in a collapsible section.
+      if (!empty($build['credentials'][AppCredentialInterface::STATUS_REVOKED])) {
+        $revoked_credentials = $build['credentials'][AppCredentialInterface::STATUS_REVOKED];
+        $build['credentials'][AppCredentialInterface::STATUS_REVOKED] = [
+          '#type' => 'details',
+          '#title' => t('Revoked keys'),
+          '#weight' => 100,
+          'credentials' => $revoked_credentials,
+        ];
+      }
+    }
+
+    // Add link to add keys.
+    if($entity->access('add_api_key') && $entity->hasLinkTemplate('add-api-key-form')) {
+      $build['content']['add_keys'] = Link::fromTextAndUrl(t('Add key'), $entity->toUrl('add-api-key-form', [
+        'attributes' => [
+          'data-dialog-type' => 'modal',
+          'data-dialog-options' => json_encode([
+            'width' => 500,
+            'height' => 250,
+            'draggable' => FALSE,
+            'autoResize' => FALSE,
+          ]),
+          'class' => [
+            'use-ajax',
+            'button',
+          ],
+        ],
+      ]))->toRenderable();
     }
   }
 }
@@ -1194,7 +1193,7 @@ function template_preprocess_app_credential(array &$variables) {
 
   // Helpful $content variable for templates.
   $variables['content'] = $normalized;
-  
+
   // Add operations.
   $variables['operations'] = [
     '#type' => 'operations',
