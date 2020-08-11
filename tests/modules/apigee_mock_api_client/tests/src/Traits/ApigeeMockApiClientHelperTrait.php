@@ -339,8 +339,8 @@ trait ApigeeMockApiClientHelperTrait {
           'status' => $app->getStatus(),
           'displayName' => $app->getDisplayName(),
           'developerId' => $app->getDeveloperId(),
-          'credentials' => $credentials,
         ],
+        'credentials' => $credentials,
       ],
     ]);
   }

@@ -32,7 +32,7 @@
   "lastModifiedBy" : "{{ app.lastModifiedBy|default('foo@example.com') }}",
   "scopes" : [ ],
   "credentials" : [
-    {% for credential in app.credentials %}
+    {% for credential in credentials %}
       {% include 'credential.json.twig' with {'credential': credential} %}{{ loop.last ? '' : ',' }}
     {% endfor %}
   ]
