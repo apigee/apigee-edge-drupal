@@ -21,7 +21,6 @@ namespace Drupal\apigee_edge\Form;
 
 use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
 use Apigee\Edge\Structure\CredentialProductInterface;
-use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\Core\Form\FormBase;
@@ -29,9 +28,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 
 /**
- * Provides app credential add base form.
+ * Provides app API key add base form.
  */
-abstract class AppCredentialAddFormBase extends FormBase {
+abstract class AppApiKeyAddFormBase extends FormBase {
 
   /**
    * The app entity.
@@ -44,7 +43,7 @@ abstract class AppCredentialAddFormBase extends FormBase {
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'apigee_edge_app_credential_add_form';
+    return 'apigee_edge_app_api_key_add_form';
   }
 
   /**
@@ -56,7 +55,7 @@ abstract class AppCredentialAddFormBase extends FormBase {
    *   The name of an app.
    *
    * @return \Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface
-   *   The app credential controller.
+   *   The app api-key controller.
    */
   abstract protected function appCredentialController(string $owner, string $app_name) : AppCredentialControllerInterface;
 
@@ -182,22 +181,22 @@ abstract class AppCredentialAddFormBase extends FormBase {
     try {
       $this->appCredentialController($this->app->getAppOwner(), $this->app->getName())
         ->generate($selected_products, $this->app->getAttributes(), $this->app->getCallbackUrl() ?? "", [], $expires_in);
-      $this->messenger()->addStatus($this->t('New credential added to @app.', $args));
+      $this->messenger()->addStatus($this->t('New API key added to @app.', $args));
       $form_state->setRedirectUrl($this->getRedirectUrl());
     }
     catch (\Exception $exception) {
-      $this->messenger()->addError($this->t('Failed to add credential for @app.', $args));
+      $this->messenger()->addError($this->t('Failed to add API key for @app.', $args));
     }
   }
 
   /**
-   * Helper to find api products based on the recently active credential.
+   * Helper to find API products based on the recently active API key.
    *
    * @param \Drupal\apigee_edge\Entity\AppInterface $app
    *   The app entity.
    *
    * @return \Apigee\Edge\Structure\CredentialProductInterface[]|array
-   *   An array of api products.
+   *   An array of API products.
    */
   protected function getApiProductsForApp(AppInterface $app): array {
     $approved_credentials = array_filter($app->getCredentials(), function (AppCredentialInterface $credential) {

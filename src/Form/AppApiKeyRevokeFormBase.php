@@ -23,15 +23,15 @@ use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Provides revoke confirmation base form for app credential.
+ * Provides revoke confirmation base form for app API key.
  */
-abstract class AppCredentialRevokeFormBase extends AppCredentialConfirmFormBase {
+abstract class AppApiKeyRevokeFormBase extends AppApiKeyConfirmFormBase {
 
   /**
    * {@inheritdoc}
    */
   public function getQuestion() {
-    return $this->t('Are you sure that you want to revoke the credential with consumer key %key?', [
+    return $this->t('Are you sure that you want to revoke the API key with consumer key %key?', [
       '%key' => $this->consumerKey,
     ]);
   }
@@ -54,7 +54,7 @@ abstract class AppCredentialRevokeFormBase extends AppCredentialConfirmFormBase 
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'apigee_edge_app_credential_revoke_form';
+    return 'apigee_edge_app_api_key_revoke_form';
   }
 
   /**
@@ -68,10 +68,10 @@ abstract class AppCredentialRevokeFormBase extends AppCredentialConfirmFormBase 
 
     try {
       $this->appCredentialController($this->app->getAppOwner(), $this->app->getName())->setStatus($this->consumerKey, AppCredentialControllerInterface::STATUS_REVOKE);
-      $this->messenger()->addStatus($this->t('Credential with consumer key %key revoked from @app.', $args));
+      $this->messenger()->addStatus($this->t('API key with consumer key %key revoked from @app.', $args));
     }
     catch (\Exception $exception) {
-      $this->messenger()->addError($this->t('Failed to revoke credential with consumer key %key from @app.', $args));
+      $this->messenger()->addError($this->t('Failed to revoke API key with consumer key %key from @app.', $args));
     }
 
     $form_state->setRedirectUrl($this->getCancelUrl());

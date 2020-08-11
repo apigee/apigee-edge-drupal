@@ -27,9 +27,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * Provides a base confirmation form for app credential.
+ * Provides a base confirmation form for app API key.
  */
-abstract class AppCredentialConfirmFormBase extends ConfirmFormBase {
+abstract class AppApiKeyConfirmFormBase extends ConfirmFormBase {
 
   /**
    * The app entity.

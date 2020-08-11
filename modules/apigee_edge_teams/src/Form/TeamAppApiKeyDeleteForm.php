@@ -17,13 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Form;
+namespace Drupal\apigee_edge_teams\Form;
+
+use Drupal\apigee_edge\Form\AppApiKeyDeleteFormBase;
 
 /**
- * Provides delete confirmation form for developer app credential.
+ * Provides delete confirmation form for team app API key.
  */
-class DeveloperAppCredentialDeleteForm extends AppCredentialDeleteFormBase {
+class TeamAppApiKeyDeleteForm extends AppApiKeyDeleteFormBase {
 
-  use DeveloperAppCredentialFormTrait;
+  use TeamAppApiKeyFormTrait;
 
 }

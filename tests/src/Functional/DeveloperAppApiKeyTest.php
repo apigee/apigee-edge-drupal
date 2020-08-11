@@ -27,12 +27,12 @@ use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 
 /**
- * Developer app credential test.
+ * Developer app API key test.
  *
  * @group apigee_edge
  * @group apigee_edge_developer_app
  */
-class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
+class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
 
   /**
    * The consumer key to use for tests.
@@ -155,12 +155,12 @@ class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
-   * Tests app credential operations.
+   * Tests app API key operations.
    *
    * @throws \Behat\Mink\Exception\ElementHtmlException
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function testAppCredentialOperations() {
+  public function testAppApiKeyOperations() {
     $this->queueDeveloperAppResponse($this->developerApp, 200, [
       [
         "consumerKey" => static::$CONSUMER_KEY,
@@ -179,11 +179,11 @@ class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
-   * Tests add credential with one initial credential.
+   * Tests add API key when app has only one existing key.
    *
-   * @throws \Drupal\Core\Entity\EntityMalformedException
+   * @throws \Exception
    */
-  public function testAppCredentialAddSingle() {
+  public function testAppApiKeyAddSingle() {
     $credentials = [
       [
         // Use one api product.
@@ -195,7 +195,7 @@ class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
     ];
     $this->queueDeveloperAppResponse($this->developerApp);
     $this->addOrganizationMatchedResponse();
-    $path = $this->developerApp->toUrl('add-credential-form');
+    $path = $this->developerApp->toUrl('add-api-key-form');
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->drupalGet($path);
@@ -210,16 +210,16 @@ class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
       'expiry' => 'date',
       'expiry_date' => "07/20/2030",
     ], 'Confirm');
-    $this->assertSession()->pageTextContains('New credential added to ' . static::$APP_NAME . '.');
+    $this->assertSession()->pageTextContains('New API key added to ' . static::$APP_NAME . '.');
     $this->assertSession()->elementContains('css', '.app-credential .api-product-list-row', 'API One');
   }
 
   /**
-   * Tests add credential with multiple credentials.
+   * Tests add API key when app has multiple keys.
    *
-   * @throws \Drupal\Core\Entity\EntityMalformedException
+   * @throws \Exception
    */
-  public function testAppCredentialAdd() {
+  public function testAppApiKeyAddMutiple() {
     // Start with two credentials with different issuedAt dates and different products.
     $credentials = [
       [
@@ -239,7 +239,7 @@ class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
     ];
     $this->queueDeveloperAppResponse($this->developerApp);
     $this->addOrganizationMatchedResponse();
-    $path = $this->developerApp->toUrl('add-credential-form');
+    $path = $this->developerApp->toUrl('add-api-key-form');
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->drupalGet($path);
@@ -259,17 +259,17 @@ class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
       'expiry' => 'date',
       'expiry_date' => "07/20/2030",
     ], 'Confirm');
-    $this->assertSession()->pageTextContains('New credential added to ' . static::$APP_NAME . '.');
+    $this->assertSession()->pageTextContains('New API key added to ' . static::$APP_NAME . '.');
     $this->assertSession()->elementContains('css', '.app-credential:last-child .api-product-list-row', 'API Two');
   }
 
   /**
-   * Test app credential revoke action.
+   * Test app API key revoke action.
    *
    * @throws \Behat\Mink\Exception\ResponseTextException
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function testAppCredentialRevoke() {
+  public function testAppApiKeyRevoke() {
     $credentials = [
       [
         "consumerKey" => static::$CONSUMER_KEY,
@@ -278,7 +278,7 @@ class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
       ]
     ];
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
-    $path = $this->developerApp->toUrl('revoke-credential-form')
+    $path = $this->developerApp->toUrl('revoke-api-key-form')
       ->setRouteParameter('consumer_key', static::$CONSUMER_KEY);
     $this->drupalGet($path);
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
@@ -291,16 +291,16 @@ class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
       ],
     ]);
     $this->drupalPostForm(NULL, [], 'Revoke');
-    $this->assertSession()->pageTextContains('Credential with consumer key ' . static::$CONSUMER_KEY . ' revoked from ' . static::$APP_NAME . '.');
+    $this->assertSession()->pageTextContains('API key with consumer key ' . static::$CONSUMER_KEY . ' revoked from ' . static::$APP_NAME . '.');
   }
 
   /**
-   * Test app credential delete action.
+   * Test app API key delete action.
    *
    * @throws \Behat\Mink\Exception\ResponseTextException
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function testAppCredentialDelete() {
+  public function testAppApiKeyDelete() {
     $credentials = [
       [
         "consumerKey" => static::$CONSUMER_KEY,
@@ -309,14 +309,14 @@ class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
       ]
     ];
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
-    $path = $this->developerApp->toUrl('delete-credential-form')
+    $path = $this->developerApp->toUrl('delete-api-key-form')
       ->setRouteParameter('consumer_key', static::$CONSUMER_KEY);
     $this->drupalGet($path);
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->queueDeveloperAppResponse($this->developerApp, 200);
     $this->stack->queueMockResponse('no_content');
     $this->drupalPostForm(NULL, [], 'Delete');
-    $this->assertSession()->pageTextContains('Credential with consumer key ' . static::$CONSUMER_KEY . ' deleted from ' . static::$APP_NAME . '.');
+    $this->assertSession()->pageTextContains('API key with consumer key ' . static::$CONSUMER_KEY . ' deleted from ' . static::$APP_NAME . '.');
   }
 
 }

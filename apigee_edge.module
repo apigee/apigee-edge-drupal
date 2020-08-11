@@ -176,8 +176,8 @@ function template_preprocess_apigee_entity__app(array &$variables) {
   $app = $variables['entity'];
 
   // Add link to add keys.
-  if($app->access('update') && $app->hasLinkTemplate('add-credential-form')) {
-    $variables['content']['add_keys'] = Link::fromTextAndUrl(t('Add key'), $app->toUrl('add-credential-form', [
+  if($app->access('update') && $app->hasLinkTemplate('add-api-key-form')) {
+    $variables['content']['add_keys'] = Link::fromTextAndUrl(t('Add key'), $app->toUrl('add-api-key-form', [
       'attributes' => [
         'data-dialog-type' => 'modal',
         'data-dialog-options' => json_encode([
@@ -1178,23 +1178,23 @@ function template_preprocess_app_credential(array &$variables) {
   $variables['content'] = $normalized;
 
   if ($app->access('update')) {
-    // Add operations credentials.
+    // Add operations.
     $variables['operations'] = [
       '#type' => 'operations',
     ];
 
-    if ($credential->getStatus() === AppCredentialInterface::STATUS_APPROVED && $app->hasLinkTemplate('revoke-credential-form')) {
+    if ($credential->getStatus() === AppCredentialInterface::STATUS_APPROVED && $app->hasLinkTemplate('revoke-api-key-form')) {
       $variables['operations']['#links']['revoke'] = [
         'title' => t('Revoke'),
-        'url' => $app->toUrl('revoke-credential-form')
+        'url' => $app->toUrl('revoke-api-key-form')
           ->setRouteParameter('consumer_key', $credential->getConsumerKey()),
       ];
     }
 
-    if ($app->hasLinkTemplate('delete-credential-form')) {
+    if ($app->hasLinkTemplate('delete-api-key-form')) {
       $variables['operations']['#links']['delete'] = [
         'title' => t('Delete'),
-        'url' => $app->toUrl('delete-credential-form')
+        'url' => $app->toUrl('delete-api-key-form')
           ->setRouteParameter('consumer_key', $credential->getConsumerKey()),
       ];
     }

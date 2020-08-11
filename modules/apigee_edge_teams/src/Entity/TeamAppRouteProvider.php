@@ -23,9 +23,9 @@ namespace Drupal\apigee_edge_teams\Entity;
 use Drupal\apigee_edge\Entity\AppRouteProvider;
 use Drupal\apigee_edge\Entity\AppTitleProvider;
 use Drupal\apigee_edge_teams\Entity\ListBuilder\TeamAppListByTeam;
-use Drupal\apigee_edge_teams\Form\TeamAppCredentialDeleteForm;
-use Drupal\apigee_edge_teams\Form\TeamAppCredentialAddForm;
-use Drupal\apigee_edge_teams\Form\TeamAppCredentialRevokeForm;
+use Drupal\apigee_edge_teams\Form\TeamAppApiKeyDeleteForm;
+use Drupal\apigee_edge_teams\Form\TeamAppApiKeyAddForm;
+use Drupal\apigee_edge_teams\Form\TeamAppApiKeyRevokeForm;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Symfony\Component\Routing\Route;
 
@@ -56,16 +56,16 @@ class TeamAppRouteProvider extends AppRouteProvider {
       $collection->add("entity.{$entity_type_id}.collection_by_team", $collection_by_team);
     }
 
-    if ($add_credential_form = $this->getAddCredentialRoute($entity_type)) {
-      $collection->add("entity.{$entity_type_id}.add_credential_form", $add_credential_form);
+    if ($add_api_key_form = $this->getAddApiKeyRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.add_api_key_form", $add_api_key_form);
     }
 
-    if ($delete_credential_form = $this->getDeleteCredentialRoute($entity_type)) {
-      $collection->add("entity.{$entity_type_id}.delete_credential_form", $delete_credential_form);
+    if ($delete_api_key_form = $this->getDeleteApiKeyRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.delete_api_key_form", $delete_api_key_form);
     }
 
-    if ($revoke_credential_form = $this->getRevokeCredentialRoute($entity_type)) {
-      $collection->add("entity.{$entity_type_id}.revoke_credential_form", $revoke_credential_form);
+    if ($revoke_api_key_form = $this->getRevokeApiKeyRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.revoke_api_key_form", $revoke_api_key_form);
     }
 
     return $collection;
@@ -134,7 +134,7 @@ class TeamAppRouteProvider extends AppRouteProvider {
   }
 
   /**
-   * Gets the add-credential-form route for a team app.
+   * Gets the add-api-key-form route for a team app.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type.
@@ -142,10 +142,10 @@ class TeamAppRouteProvider extends AppRouteProvider {
    * @return \Symfony\Component\Routing\Route|null
    *   The generated route, if available.
    */
-  protected function getAddCredentialRoute(EntityTypeInterface $entity_type) {
-    if ($entity_type->hasLinkTemplate('add-credential-form')) {
-      $route = new Route($entity_type->getLinkTemplate('add-credential-form'));
-      $route->setDefault('_form', TeamAppCredentialAddForm::class);
+  protected function getAddApiKeyRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('add-api-key-form')) {
+      $route = new Route($entity_type->getLinkTemplate('add-api-key-form'));
+      $route->setDefault('_form', TeamAppApiKeyAddForm::class);
       $route->setDefault('_title', 'Add key');
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureTeamParameter($route);
@@ -155,7 +155,7 @@ class TeamAppRouteProvider extends AppRouteProvider {
   }
 
   /**
-   * Gets the delete-credential-form route for a team app.
+   * Gets the delete-api-key-form route for a team app.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type.
@@ -163,10 +163,10 @@ class TeamAppRouteProvider extends AppRouteProvider {
    * @return \Symfony\Component\Routing\Route|null
    *   The generated route, if available.
    */
-  protected function getDeleteCredentialRoute(EntityTypeInterface $entity_type) {
-    if ($entity_type->hasLinkTemplate('delete-credential-form')) {
-      $route = new Route($entity_type->getLinkTemplate('delete-credential-form'));
-      $route->setDefault('_form', TeamAppCredentialDeleteForm::class);
+  protected function getDeleteApiKeyRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('delete-api-key-form')) {
+      $route = new Route($entity_type->getLinkTemplate('delete-api-key-form'));
+      $route->setDefault('_form', TeamAppApiKeyDeleteForm::class);
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureTeamParameter($route);
       $route->setRequirement('_app_access_check_by_app_name', 'update');
@@ -175,7 +175,7 @@ class TeamAppRouteProvider extends AppRouteProvider {
   }
 
   /**
-   * Gets the revoke-credential-form route for a team app.
+   * Gets the revoke-api-key-form route for a team app.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type.
@@ -183,10 +183,10 @@ class TeamAppRouteProvider extends AppRouteProvider {
    * @return \Symfony\Component\Routing\Route|null
    *   The generated route, if available.
    */
-  protected function getRevokeCredentialRoute(EntityTypeInterface $entity_type) {
-    if ($entity_type->hasLinkTemplate('revoke-credential-form')) {
-      $route = new Route($entity_type->getLinkTemplate('revoke-credential-form'));
-      $route->setDefault('_form', TeamAppCredentialRevokeForm::class);
+  protected function getRevokeApiKeyRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('revoke-api-key-form')) {
+      $route = new Route($entity_type->getLinkTemplate('revoke-api-key-form'));
+      $route->setDefault('_form', TeamAppApiKeyRevokeForm::class);
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureTeamParameter($route);
       $route->setRequirement('_app_access_check_by_app_name', 'update');

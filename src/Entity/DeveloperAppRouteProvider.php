@@ -24,10 +24,9 @@ use Drupal\apigee_edge\Access\AppsPageAccessCheck;
 use Drupal\apigee_edge\Controller\DeveloperAppViewControllerForDeveloper;
 use Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilderForDeveloper;
 use Drupal\apigee_edge\Form\DeveloperAppAnalyticsFormForDeveloper;
-use Drupal\apigee_edge\Form\DeveloperAppCredentialApproveForm;
-use Drupal\apigee_edge\Form\DeveloperAppCredentialDeleteForm;
-use Drupal\apigee_edge\Form\DeveloperAppCredentialAddForm;
-use Drupal\apigee_edge\Form\DeveloperAppCredentialRevokeForm;
+use Drupal\apigee_edge\Form\DeveloperAppApiKeyDeleteForm;
+use Drupal\apigee_edge\Form\DeveloperAppApiKeyAddForm;
+use Drupal\apigee_edge\Form\DeveloperAppApiKeyRevokeForm;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Symfony\Component\Routing\Route;
 
@@ -67,16 +66,16 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
       $collection->add("entity.{$entity_type_id}.analytics_for_developer", $analytics_for_developer);
     }
 
-    if ($add_credential_form = $this->getAddCredentialRoute($entity_type)) {
-      $collection->add("entity.{$entity_type_id}.add_credential_form", $add_credential_form);
+    if ($add_api_key_form = $this->getAddApiKeyRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.add_api_key_form", $add_api_key_form);
     }
 
-    if ($delete_credential_form = $this->getDeleteCredentialRoute($entity_type)) {
-      $collection->add("entity.{$entity_type_id}.delete_credential_form", $delete_credential_form);
+    if ($delete_api_key_form = $this->getDeleteApiKeyRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.delete_api_key_form", $delete_api_key_form);
     }
 
-    if ($revoke_credential_form = $this->getRevokeCredentialRoute($entity_type)) {
-      $collection->add("entity.{$entity_type_id}.revoke_credential_form", $revoke_credential_form);
+    if ($revoke_api_key_form = $this->getRevokeApiKeyRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.revoke_api_key_form", $revoke_api_key_form);
     }
 
     return $collection;
@@ -240,7 +239,7 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
   }
 
   /**
-   * Gets the add-credential-form route for a developer app.
+   * Gets the add-api-key-form route for a developer app.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type.
@@ -248,10 +247,10 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
    * @return \Symfony\Component\Routing\Route|null
    *   The generated route, if available.
    */
-  protected function getAddCredentialRoute(EntityTypeInterface $entity_type) {
-    if ($entity_type->hasLinkTemplate('add-credential-form')) {
-      $route = new Route($entity_type->getLinkTemplate('add-credential-form'));
-      $route->setDefault('_form', DeveloperAppCredentialAddForm::class);
+  protected function getAddApiKeyRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('add-api-key-form')) {
+      $route = new Route($entity_type->getLinkTemplate('add-api-key-form'));
+      $route->setDefault('_form', DeveloperAppApiKeyAddForm::class);
       $route->setDefault('_title', 'Add key');
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureUserParameter($route);
@@ -261,7 +260,7 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
   }
 
   /**
-   * Gets the delete-credential-form route for a developer app.
+   * Gets the delete-api-key-form route for a developer app.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type.
@@ -269,10 +268,10 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
    * @return \Symfony\Component\Routing\Route|null
    *   The generated route, if available.
    */
-  protected function getDeleteCredentialRoute(EntityTypeInterface $entity_type) {
-    if ($entity_type->hasLinkTemplate('delete-credential-form')) {
-      $route = new Route($entity_type->getLinkTemplate('delete-credential-form'));
-      $route->setDefault('_form', DeveloperAppCredentialDeleteForm::class);
+  protected function getDeleteApiKeyRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('delete-api-key-form')) {
+      $route = new Route($entity_type->getLinkTemplate('delete-api-key-form'));
+      $route->setDefault('_form', DeveloperAppApiKeyDeleteForm::class);
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureUserParameter($route);
       $route->setRequirement('_app_access_check_by_app_name', 'update');
@@ -281,7 +280,7 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
   }
 
   /**
-   * Gets the revoke-credential-form route for a developer app.
+   * Gets the revoke-api-key-form route for a developer app.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type.
@@ -289,10 +288,10 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
    * @return \Symfony\Component\Routing\Route|null
    *   The generated route, if available.
    */
-  protected function getRevokeCredentialRoute(EntityTypeInterface $entity_type) {
-    if ($entity_type->hasLinkTemplate('revoke-credential-form')) {
-      $route = new Route($entity_type->getLinkTemplate('revoke-credential-form'));
-      $route->setDefault('_form', DeveloperAppCredentialRevokeForm::class);
+  protected function getRevokeApiKeyRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('revoke-api-key-form')) {
+      $route = new Route($entity_type->getLinkTemplate('revoke-api-key-form'));
+      $route->setDefault('_form', DeveloperAppApiKeyRevokeForm::class);
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureUserParameter($route);
       $route->setRequirement('_app_access_check_by_app_name', 'update');

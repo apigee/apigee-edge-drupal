@@ -22,15 +22,15 @@ namespace Drupal\apigee_edge\Form;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Provides delete confirmation base form for app credential.
+ * Provides delete confirmation base form for app API key.
  */
-abstract class AppCredentialDeleteFormBase extends AppCredentialConfirmFormBase {
+abstract class AppApiKeyDeleteFormBase extends AppApiKeyConfirmFormBase {
 
   /**
    * {@inheritdoc}
    */
   public function getQuestion() {
-    return $this->t('Are you sure that you want to delete the credential with consumer key %key from @app?', [
+    return $this->t('Are you sure that you want to delete the API key with consumer key %key from @app?', [
       '%key' => $this->consumerKey,
       '@app' => $this->app->label(),
     ]);
@@ -47,7 +47,7 @@ abstract class AppCredentialDeleteFormBase extends AppCredentialConfirmFormBase 
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'apigee_edge_app_credential_delete_form';
+    return 'apigee_edge_app_api_key_delete_form';
   }
 
   /**
@@ -61,10 +61,10 @@ abstract class AppCredentialDeleteFormBase extends AppCredentialConfirmFormBase 
 
     try {
       $this->appCredentialController($this->app->getAppOwner(), $this->app->getName())->delete($this->consumerKey);
-      $this->messenger()->addStatus($this->t('Credential with consumer key %key deleted from @app.', $args));
+      $this->messenger()->addStatus($this->t('API key with consumer key %key deleted from @app.', $args));
     }
     catch (\Exception $exception) {
-      $this->messenger()->addError($this->t('Failed to delete credential with consumer key %key from @app.', $args));
+      $this->messenger()->addError($this->t('Failed to delete API key with consumer key %key from @app.', $args));
     }
 
     $form_state->setRedirectUrl($this->getCancelUrl());
