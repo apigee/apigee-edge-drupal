@@ -160,11 +160,15 @@ abstract class AppCredentialAddFormBase extends FormBase {
     $expiry = $form_state->getValue('expiry');
     $expiry_date = $form_state->getValue('expiry_date');
     $expires_in = $expiry === 'date' ? (strtotime($expiry_date) - time()) * 1000 : -1;
+    $selected_products = [];
 
     // Find products from the most recent
-    $selected_products = array_map(function (CredentialProductInterface $api_product) {
-      return $api_product->getApiproduct();
-    }, $this->getApiProductsForApp($this->app));
+    $api_products = $this->getApiProductsForApp($this->app);
+    if (count($api_products)) {
+      $selected_products = array_map(function (CredentialProductInterface $api_product) {
+        return $api_product->getApiproduct();
+      }, $api_products);
+    }
 
     $args = [
       '@app' => $this->app->label(),
@@ -200,7 +204,7 @@ abstract class AppCredentialAddFormBase extends FormBase {
       return $a->getIssuedAt() < $b->getIssuedAt();
     });
 
-    return $approved_credentials[0]->getApiProducts();
+    return count($approved_credentials) ? $approved_credentials[0]->getApiProducts() : [];
   }
 
 }

@@ -20,6 +20,7 @@
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Apigee\Edge\Api\Management\Entity\App;
+use Apigee\Edge\Api\Management\Entity\AppCredential;
 use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
@@ -125,33 +126,39 @@ class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
 
     $this->apiProducts = [$productOne, $productTwo];
 
+    // Add default credentials to the app.
+//    $this->queueDeveloperAppResponse($this->developerApp);
+//    /** @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerInterface $dacc */
+//    $dacc = $this->container->get('apigee_edge.controller.developer_app_credential_factory')->developerAppCredentialController($this->developerApp->getDeveloperId(), $this->developerApp->getName());
+//    $dacc->generate(['api_one'], $this->developerApp->getAttributes(), (string) $this->developerApp->getCallbackUrl(), $this->developerApp->getScopes(), 60 * 60 * 1000);
+
     $this->drupalLogin($this->account);
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
-    try {
-      if ($this->developer !== NULL) {
-        $this->developer->delete();
-      }
-    }
-    catch (\Exception $exception) {
-      $this->logException($exception);
-    }
-    try {
-      if ($this->apiProducts !== NULL) {
-        foreach ($this->apiProducts as $product) {
-          $product->delete();
-        }
-      }
-    }
-    catch (\Exception $exception) {
-      $this->logException($exception);
-    }
-    parent::tearDown();
-  }
+//  protected function tearDown() {
+//    try {
+//      if ($this->developer !== NULL) {
+//        $this->developer->delete();
+//      }
+//    }
+//    catch (\Exception $exception) {
+//      $this->logException($exception);
+//    }
+//    try {
+//      if ($this->apiProducts !== NULL) {
+//        foreach ($this->apiProducts as $product) {
+//          $product->delete();
+//        }
+//      }
+//    }
+//    catch (\Exception $exception) {
+//      $this->logException($exception);
+//    }
+//    parent::tearDown();
+//  }
 
   /**
    * Tests app credential operations.
@@ -162,13 +169,11 @@ class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
   public function testAppCredentialOperations() {
     $this->queueDeveloperAppResponse($this->developerApp, 200, [
       [
-        "apiProducts" => $this->apiProducts,
         "consumerKey" => static::$CONSUMER_KEY,
         "consumerSecret" => $this->randomMachineName(),
         "status" => AppCredentialInterface::STATUS_APPROVED,
       ],
       [
-        "apiProducts" => $this->apiProducts,
         "consumerKey" => $this->randomMachineName(),
         "consumerSecret" => $this->randomMachineName(),
         "status" => AppCredentialInterface::STATUS_REVOKED,
@@ -180,36 +185,88 @@ class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
-   * Tests credential generation.
+   * Tests add credential with one initial credential.
    *
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function testAppCredentialGenerate() {
+  public function testAppCredentialAddSingle() {
+    $credentials = [
+      [
+        // Use one api product.
+        "apiProducts" => [$this->apiProducts[0]],
+        "consumerKey" => static::$CONSUMER_KEY,
+        "consumerSecret" => $this->randomMachineName(),
+        "status" => AppCredentialInterface::STATUS_APPROVED,
+      ]
+    ];
     $this->queueDeveloperAppResponse($this->developerApp);
     $this->addOrganizationMatchedResponse();
-    $this->stack->queueMockResponse([
-      'get_api_products' => [
-        'products' => $this->apiProducts,
-        'expand' => TRUE,
-      ],
-    ]);
-    $path = $this->developerApp->toUrl('generate-credential-form');
+    $path = $this->developerApp->toUrl('add-credential-form');
+    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
+    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->drupalGet($path);
-    $this->assertSession()->pageTextContains('Generate credentials');
+    $this->assertSession()->pageTextContains('Add credentials');
+    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->stack->queueMockResponse([
-      'get_api_products' => [
-        'products' => $this->apiProducts,
-        'expand' => TRUE,
+      'api_product' => [
+        'product' => $this->apiProducts[0],
       ],
     ]);
-    $this->queueDeveloperAppResponse($this->developerApp);
-    $this->queueDeveloperAppResponse($this->developerApp);
     $this->drupalPostForm(NULL, [
       'expiry' => 'date',
       'expiry_date' => "07/20/2030",
-      "api_products[{$this->apiProducts[0]->getName()}]" => $this->apiProducts[0]->getName(),
-    ], 'Generate credential');
-    $this->assertSession()->pageTextContains('New credential generated for ' . static::$APP_NAME . '.');
+    ], 'Confirm');
+    $this->assertSession()->pageTextContains('New credential added to ' . static::$APP_NAME . '.');
+    $this->assertSession()->elementContains('css', '.app-credential .api-product-list-row', 'API One');
+  }
+
+  /**
+   * Tests add credential with multiple credentials.
+   *
+   * @throws \Drupal\Core\Entity\EntityMalformedException
+   */
+  public function testAppCredentialAdd() {
+    // Start with two credentials with different issuedAt dates and different products.
+    $credentials = [
+      [
+        "apiProducts" => [$this->apiProducts[0]],
+        "consumerKey" => static::$CONSUMER_KEY,
+        "consumerSecret" => $this->randomMachineName(),
+        "status" => AppCredentialInterface::STATUS_APPROVED,
+        "issuedAt" => 1594973277149,
+      ],
+      [
+        "apiProducts" => [$this->apiProducts[1]],
+        "consumerKey" => static::$CONSUMER_KEY,
+        "consumerSecret" => $this->randomMachineName(),
+        "status" => AppCredentialInterface::STATUS_APPROVED,
+        "issuedAt" => 1594973277300,
+      ]
+    ];
+    $this->queueDeveloperAppResponse($this->developerApp);
+    $this->addOrganizationMatchedResponse();
+    $path = $this->developerApp->toUrl('add-credential-form');
+    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
+    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
+    $this->drupalGet($path);
+    $this->assertSession()->pageTextContains('Add credentials');
+    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
+    $this->stack->queueMockResponse([
+      'api_product' => [
+        'product' => $this->apiProducts[0],
+      ],
+    ]);
+    $this->stack->queueMockResponse([
+      'api_product' => [
+        'product' => $this->apiProducts[1],
+      ],
+    ]);
+    $this->drupalPostForm(NULL, [
+      'expiry' => 'date',
+      'expiry_date' => "07/20/2030",
+    ], 'Confirm');
+    $this->assertSession()->pageTextContains('New credential added to ' . static::$APP_NAME . '.');
+    $this->assertSession()->elementContains('css', '.app-credential:last-child .api-product-list-row', 'API Two');
   }
 
   /**
@@ -221,7 +278,6 @@ class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
   public function testAppCredentialRevoke() {
     $credentials = [
       [
-        "apiProducts" => $this->apiProducts,
         "consumerKey" => static::$CONSUMER_KEY,
         "consumerSecret" => $this->randomMachineName(),
         "status" => AppCredentialInterface::STATUS_APPROVED,
@@ -235,7 +291,6 @@ class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
     $this->stack->queueMockResponse('no_content');
     $this->queueDeveloperAppResponse($this->developerApp, 200, [
       [
-        "apiProducts" => $this->apiProducts,
         "consumerKey" => static::$CONSUMER_KEY,
         "consumerSecret" => $this->randomMachineName(),
         "status" => AppCredentialInterface::STATUS_REVOKED,
@@ -243,7 +298,6 @@ class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
     ]);
     $this->drupalPostForm(NULL, [], 'Revoke');
     $this->assertSession()->pageTextContains('Credential with consumer key ' . static::$CONSUMER_KEY . ' revoked from ' . static::$APP_NAME . '.');
-    $this->assertSession()->elementContains('css', '.app-credential .label-status', 'Revoked');
   }
 
   /**
@@ -255,7 +309,6 @@ class DeveloperAppCredentialTest extends ApigeeEdgeFunctionalTestBase {
   public function testAppCredentialDelete() {
     $credentials = [
       [
-        "apiProducts" => $this->apiProducts,
         "consumerKey" => static::$CONSUMER_KEY,
         "consumerSecret" => $this->randomMachineName(),
         "status" => AppCredentialInterface::STATUS_APPROVED
