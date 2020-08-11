@@ -24,7 +24,7 @@ use Drupal\apigee_edge\Entity\AppRouteProvider;
 use Drupal\apigee_edge\Entity\AppTitleProvider;
 use Drupal\apigee_edge_teams\Entity\ListBuilder\TeamAppListByTeam;
 use Drupal\apigee_edge_teams\Form\TeamAppCredentialDeleteForm;
-use Drupal\apigee_edge_teams\Form\TeamAppCredentialGenerateForm;
+use Drupal\apigee_edge_teams\Form\TeamAppCredentialAddForm;
 use Drupal\apigee_edge_teams\Form\TeamAppCredentialRevokeForm;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Symfony\Component\Routing\Route;
@@ -56,8 +56,8 @@ class TeamAppRouteProvider extends AppRouteProvider {
       $collection->add("entity.{$entity_type_id}.collection_by_team", $collection_by_team);
     }
 
-    if ($generate_credential_form = $this->getGenerateCredentialRoute($entity_type)) {
-      $collection->add("entity.{$entity_type_id}.generate_credential_form", $generate_credential_form);
+    if ($add_credential_form = $this->getAddCredentialRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.add_credential_form", $add_credential_form);
     }
 
     if ($delete_credential_form = $this->getDeleteCredentialRoute($entity_type)) {
@@ -134,7 +134,7 @@ class TeamAppRouteProvider extends AppRouteProvider {
   }
 
   /**
-   * Gets the generate-credential-form route for a team app.
+   * Gets the add-credential-form route for a team app.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type.
@@ -142,11 +142,11 @@ class TeamAppRouteProvider extends AppRouteProvider {
    * @return \Symfony\Component\Routing\Route|null
    *   The generated route, if available.
    */
-  protected function getGenerateCredentialRoute(EntityTypeInterface $entity_type) {
-    if ($entity_type->hasLinkTemplate('generate-credential-form')) {
-      $route = new Route($entity_type->getLinkTemplate('generate-credential-form'));
-      $route->setDefault('_form', TeamAppCredentialGenerateForm::class);
-      $route->setDefault('_title', 'Generate credentials');
+  protected function getAddCredentialRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('add-credential-form')) {
+      $route = new Route($entity_type->getLinkTemplate('add-credential-form'));
+      $route->setDefault('_form', TeamAppCredentialAddForm::class);
+      $route->setDefault('_title', 'Add credentials');
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureTeamParameter($route);
       $route->setRequirement('_app_access_check_by_app_name', 'update');

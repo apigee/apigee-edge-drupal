@@ -19,19 +19,19 @@
 
 namespace Drupal\apigee_edge\Form;
 
+use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
+use Apigee\Edge\Structure\CredentialProductInterface;
+use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
-use Drupal\apigee_edge\Entity\Form\ApiProductSelectionFormTrait;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 
 /**
- * Provides app credential generate base form.
+ * Provides app credential add base form.
  */
-abstract class AppCredentialGenerateFormBase extends FormBase {
-
-  use ApiProductSelectionFormTrait;
+abstract class AppCredentialAddFormBase extends FormBase {
 
   /**
    * The app entity.
@@ -44,7 +44,7 @@ abstract class AppCredentialGenerateFormBase extends FormBase {
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'apigee_edge_app_credential_generate_form';
+    return 'apigee_edge_app_credential_add_form';
   }
 
   /**
@@ -116,13 +116,11 @@ abstract class AppCredentialGenerateFormBase extends FormBase {
       ],
     ];
 
-    $form['api_products'] = $this->apiProductsFormElement($form, $form_state);
-
     $form['actions'] = [
       '#type' => 'actions',
       'submit' => [
         '#type' => 'submit',
-        '#value' => $this->t('Generate credential'),
+        '#value' => $this->t('Confirm'),
         '#button_type' => 'primary',
       ],
       'cancel' => [
@@ -159,10 +157,14 @@ abstract class AppCredentialGenerateFormBase extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $selected_products = array_values(array_filter((array) $form_state->getValue('api_products')));
     $expiry = $form_state->getValue('expiry');
     $expiry_date = $form_state->getValue('expiry_date');
     $expires_in = $expiry === 'date' ? (strtotime($expiry_date) - time()) * 1000 : -1;
+
+    // Find products from the most recent
+    $selected_products = array_map(function (CredentialProductInterface $api_product) {
+      return $api_product->getApiproduct();
+    }, $this->getApiProductsForApp($this->app));
 
     $args = [
       '@app' => $this->app->label(),
@@ -171,12 +173,34 @@ abstract class AppCredentialGenerateFormBase extends FormBase {
     try {
       $this->appCredentialController($this->app->getAppOwner(), $this->app->getName())
         ->generate($selected_products, $this->app->getAttributes(), $this->app->getCallbackUrl() ?? "", [], $expires_in);
-      $this->messenger()->addStatus($this->t('New credential generated for @app.', $args));
+      $this->messenger()->addStatus($this->t('New credential added to @app.', $args));
       $form_state->setRedirectUrl($this->getRedirectUrl());
     }
     catch (\Exception $exception) {
-      $this->messenger()->addError($this->t('Failed to generate credential for @app.', $args));
+      $this->messenger()->addError($this->t('Failed to add credential for @app.', $args));
     }
+  }
+
+  /**
+   * Helper to find api products based on the recently active credential.
+   *
+   * @param \Drupal\apigee_edge\Entity\AppInterface $app
+   *   The app entity.
+   *
+   * @return \Apigee\Edge\Structure\CredentialProductInterface[]|array
+   *   An array of api products.
+   */
+  protected function getApiProductsForApp(AppInterface $app): array {
+    $approved_credentials = array_filter($app->getCredentials(), function (AppCredentialInterface $credential) {
+      return $credential->getStatus() === AppCredentialInterface::STATUS_APPROVED;
+    });
+
+    // Find the recently active one.
+    usort($approved_credentials, function(AppCredentialInterface $a, AppCredentialInterface $b) {
+      return $a->getIssuedAt() < $b->getIssuedAt();
+    });
+
+    return $approved_credentials[0]->getApiProducts();
   }
 
 }

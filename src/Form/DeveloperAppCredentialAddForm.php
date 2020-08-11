@@ -17,35 +17,41 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge_teams\Form;
+namespace Drupal\apigee_edge\Form;
 
 use Drupal\apigee_edge\Entity\AppInterface;
-use Drupal\apigee_edge\Form\AppCredentialGenerateFormBase;
-use Drupal\apigee_edge_teams\Entity\Form\TeamAppFormTrait;
-use Drupal\apigee_edge_teams\Entity\TeamInterface;
+use Drupal\apigee_edge\Entity\Form\DeveloperAppFormTrait;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\user\UserInterface;
 
 /**
- * Provides credential generate form for team app.
+ * Provides credential add form for developer app.
  */
-class TeamAppCredentialGenerateForm extends AppCredentialGenerateFormBase {
+class DeveloperAppCredentialAddForm extends AppCredentialAddFormBase {
 
-  use TeamAppFormTrait, TeamAppCredentialFormTrait;
+  use DeveloperAppFormTrait, DeveloperAppCredentialFormTrait;
 
   /**
-   * The team from route.
+   * The user from route.
    *
-   * @var \Drupal\apigee_edge_teams\Entity\TeamInterface
+   * @var \Drupal\user\UserInterface
    */
-  protected $team;
+  protected $user;
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?AppInterface $app = NULL, ?TeamInterface $team = NULL) {
-    $this->team = $team;
+  public function buildForm(array $form, FormStateInterface $form_state, ?AppInterface $app = NULL, ?UserInterface $user = NULL) {
+    $this->user = $user;
     return parent::buildForm($form, $form_state, $app);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getAppOwner(): string {
+    return $this->user->getEmail();
   }
 
   /**
@@ -53,13 +59,6 @@ class TeamAppCredentialGenerateForm extends AppCredentialGenerateFormBase {
    */
   protected function getRedirectUrl(): Url {
     return $this->getCancelUrl();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getAppOwner(): string {
-    return $this->team->id();
   }
 
 }
