@@ -69,6 +69,8 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
 
     if ($api_keys = $this->getApiKeyRouteDeveloperApp($entity_type)) {
       $collection->add("entity.{$entity_type_id}.api_keys", $api_keys);
+    }
+
     if ($add_api_key_form = $this->getAddApiKeyRoute($entity_type)) {
       $collection->add("entity.{$entity_type_id}.add_api_key_form", $add_api_key_form);
     }

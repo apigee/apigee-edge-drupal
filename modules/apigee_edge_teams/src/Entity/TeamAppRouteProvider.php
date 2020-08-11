@@ -59,6 +59,8 @@ class TeamAppRouteProvider extends AppRouteProvider {
 
     if ($api_keys = $this->getTeamApiKeysRoute($entity_type)) {
       $collection->add("entity.{$entity_type_id}.api_keys", $api_keys);
+    }
+
     if ($add_api_key_form = $this->getAddApiKeyRoute($entity_type)) {
       $collection->add("entity.{$entity_type_id}.add_api_key_form", $add_api_key_form);
     }
@@ -153,6 +155,18 @@ class TeamAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_title_callback', AppTitleProvider::class . '::title');
       $this->ensureTeamParameter($route);
       $route->setRequirement('_app_access_check_by_app_name', 'view');
+    }
+  }
+
+  /**
+   * Gets the add-api-key-form route for a team app.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   *
+   * @return \Symfony\Component\Routing\Route|null
+   *   The generated route, if available.
+   */
   protected function getAddApiKeyRoute(EntityTypeInterface $entity_type) {
     if ($entity_type->hasLinkTemplate('add-api-key-form')) {
       $route = new Route($entity_type->getLinkTemplate('add-api-key-form'));
