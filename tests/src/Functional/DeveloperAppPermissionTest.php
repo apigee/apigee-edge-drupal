@@ -125,8 +125,7 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
 
     $this->entityType = $this->container->get('entity_type.manager')->getDefinition('developer_app');
 
-    // Skip api key routes.
-    // This is tested separately with different permissions.
+    // Skip api key routes. These are tested separately.
     $links = array_filter($this->entityType->get('links'), function ($path) {
       return strpos($path, '{consumer_key}') === FALSE;
     });

@@ -22,6 +22,7 @@ namespace Drupal\Tests\apigee_edge_teams\Functional;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Route;
 
 /**
  * Teams module access test.
@@ -222,6 +223,11 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
         $this->teamAppEntityRoutes[$id] = $route;
       }
     }
+
+    // Skip api key routes. These are tested separately.
+    $this->teamAppEntityRoutes = array_filter($this->teamAppEntityRoutes, function (Route $route) {
+      return strpos($route->getPath(), '{consumer_key}') === FALSE;
+    });
 
     $this->team = $this->teamStorage->create([
       'name' => mb_strtolower($this->getRandomGenerator()->name()),

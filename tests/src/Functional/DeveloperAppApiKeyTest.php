@@ -87,7 +87,11 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
   protected function setUp() {
     parent::setUp();
 
-    $this->account = $this->createAccount();
+    $this->account = $this->createAccount([
+      'add_api_key own developer_app',
+      'revoke_api_key own developer_app',
+      'delete_api_key own developer_app',
+    ]);
     $this->queueDeveloperResponse($this->account);
     $this->developer = Developer::load($this->account->getEmail());
 
