@@ -267,11 +267,13 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         $input_values['client_id'] = '';
         $input_values['client_secret'] = '';
       }
-      // Remove unneeded values if on a Public or Private instance.
       else {
+        // Remove unneeded values if on a Public or Private instance.
         $input_values['account_json_key'] = '';
-        // If password field is empty we just skip it and preserve initial password.
-        if (empty($input_values['password'])) {
+
+        // If password field is empty we just skip it and preserve the initial
+        // password if there is one already.
+        if (empty($input_values['password']) && !empty($form_state->get('key_value')['current'])) {
           $values = $this->getFormDefaultValues($form_state);
           if (!empty($values['password'])) {
             $input_values['password'] = $values['password'];
