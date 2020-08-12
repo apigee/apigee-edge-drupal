@@ -23,6 +23,7 @@ use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
 use Apigee\Edge\Structure\CredentialProductInterface;
 use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
@@ -183,6 +184,7 @@ abstract class AppApiKeyAddFormBase extends FormBase {
     try {
       $this->appCredentialController($this->app->getAppOwner(), $this->app->getName())
         ->generate($selected_products, $this->app->getAttributes(), $this->app->getCallbackUrl() ?? "", [], $expires_in);
+      Cache::invalidateTags($this->app->getCacheTags());
       $this->messenger()->addStatus($this->t('New API key added to @app.', $args));
       $form_state->setRedirectUrl($this->getRedirectUrl());
     }

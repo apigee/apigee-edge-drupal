@@ -20,6 +20,7 @@
 namespace Drupal\apigee_edge\Form;
 
 use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
@@ -68,6 +69,7 @@ abstract class AppApiKeyRevokeFormBase extends AppApiKeyConfirmFormBase {
 
     try {
       $this->appCredentialController($this->app->getAppOwner(), $this->app->getName())->setStatus($this->consumerKey, AppCredentialControllerInterface::STATUS_REVOKE);
+      Cache::invalidateTags($this->app->getCacheTags());
       $this->messenger()->addStatus($this->t('API key %key revoked from @app.', $args));
     }
     catch (\Exception $exception) {

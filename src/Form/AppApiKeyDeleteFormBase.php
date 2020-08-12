@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge\Form;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
@@ -60,6 +61,7 @@ abstract class AppApiKeyDeleteFormBase extends AppApiKeyConfirmFormBase {
 
     try {
       $this->appCredentialController($this->app->getAppOwner(), $this->app->getName())->delete($this->consumerKey);
+      Cache::invalidateTags($this->app->getCacheTags());
       $this->messenger()->addStatus($this->t('API key %key deleted from @app.', $args));
     }
     catch (\Exception $exception) {
