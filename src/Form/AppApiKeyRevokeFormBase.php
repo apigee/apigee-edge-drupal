@@ -31,7 +31,7 @@ abstract class AppApiKeyRevokeFormBase extends AppApiKeyConfirmFormBase {
    * {@inheritdoc}
    */
   public function getQuestion() {
-    return $this->t('Are you sure that you want to revoke the API key with consumer key %key?', [
+    return $this->t('Are you sure that you want to revoke the API key %key?', [
       '%key' => $this->consumerKey,
     ]);
   }
@@ -68,10 +68,10 @@ abstract class AppApiKeyRevokeFormBase extends AppApiKeyConfirmFormBase {
 
     try {
       $this->appCredentialController($this->app->getAppOwner(), $this->app->getName())->setStatus($this->consumerKey, AppCredentialControllerInterface::STATUS_REVOKE);
-      $this->messenger()->addStatus($this->t('API key with consumer key %key revoked from @app.', $args));
+      $this->messenger()->addStatus($this->t('API key %key revoked from @app.', $args));
     }
     catch (\Exception $exception) {
-      $this->messenger()->addError($this->t('Failed to revoke API key with consumer key %key from @app.', $args));
+      $this->messenger()->addError($this->t('Failed to revoke API key %key from @app.', $args));
     }
 
     $form_state->setRedirectUrl($this->getCancelUrl());

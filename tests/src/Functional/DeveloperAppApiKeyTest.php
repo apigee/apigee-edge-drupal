@@ -20,7 +20,6 @@
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Apigee\Edge\Api\Management\Entity\App;
-use Apigee\Edge\Api\Management\Entity\AppCredential;
 use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
@@ -295,7 +294,7 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
       ],
     ]);
     $this->drupalPostForm(NULL, [], 'Revoke');
-    $this->assertSession()->pageTextContains('API key with consumer key ' . static::$CONSUMER_KEY . ' revoked from ' . static::$APP_NAME . '.');
+    $this->assertSession()->pageTextContains('API key ' . static::$CONSUMER_KEY . ' revoked from ' . static::$APP_NAME . '.');
   }
 
   /**
@@ -320,7 +319,7 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
     $this->queueDeveloperAppResponse($this->developerApp, 200);
     $this->stack->queueMockResponse('no_content');
     $this->drupalPostForm(NULL, [], 'Delete');
-    $this->assertSession()->pageTextContains('API key with consumer key ' . static::$CONSUMER_KEY . ' deleted from ' . static::$APP_NAME . '.');
+    $this->assertSession()->pageTextContains('API key ' . static::$CONSUMER_KEY . ' deleted from ' . static::$APP_NAME . '.');
   }
 
 }

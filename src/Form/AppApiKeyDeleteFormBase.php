@@ -30,9 +30,8 @@ abstract class AppApiKeyDeleteFormBase extends AppApiKeyConfirmFormBase {
    * {@inheritdoc}
    */
   public function getQuestion() {
-    return $this->t('Are you sure that you want to delete the API key with consumer key %key from @app?', [
+    return $this->t('Are you sure that you want to delete the API key %key?', [
       '%key' => $this->consumerKey,
-      '@app' => $this->app->label(),
     ]);
   }
 
@@ -61,10 +60,10 @@ abstract class AppApiKeyDeleteFormBase extends AppApiKeyConfirmFormBase {
 
     try {
       $this->appCredentialController($this->app->getAppOwner(), $this->app->getName())->delete($this->consumerKey);
-      $this->messenger()->addStatus($this->t('API key with consumer key %key deleted from @app.', $args));
+      $this->messenger()->addStatus($this->t('API key %key deleted from @app.', $args));
     }
     catch (\Exception $exception) {
-      $this->messenger()->addError($this->t('Failed to delete API key with consumer key %key from @app.', $args));
+      $this->messenger()->addError($this->t('Failed to delete API key %key from @app.', $args));
     }
 
     $form_state->setRedirectUrl($this->getCancelUrl());
