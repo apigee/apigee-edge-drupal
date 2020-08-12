@@ -151,6 +151,7 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
     'team_app_update' => ['edit_form'],
     'team_app_delete' => ['delete_form'],
     'team_app_analytics' => ['analytics'],
+    'team_app_add_api_key' => ['add-api-key-form'],
   ];
 
   /**
