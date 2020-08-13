@@ -136,9 +136,20 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function tearDown() {
+    $this->stack->reset();
     try {
-      if ($this->developer !== NULL) {
-        $this->developer->delete();
+      if ($this->account) {
+        $this->queueDeveloperResponse($this->account);
+        $developer = \Drupal::entityTypeManager()
+          ->getStorage('developer')
+          ->create([
+            'email' => $this->account->getEmail(),
+          ]);
+        $developer->delete();
+      }
+
+      if ($this->developerApp) {
+        $this->developerApp->delete();
       }
     }
     catch (\Exception $exception) {
