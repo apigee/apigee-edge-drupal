@@ -250,15 +250,15 @@ class AppListBuilderTest extends KernelTestBase {
     ];
 
     $revoked_credential = [
-      "consumerKey" => $this->randomString(),
-      "consumerSecret" => $this->randomString(),
+      "consumerKey" => $this->randomMachineName(),
+      "consumerSecret" => $this->randomMachineName(),
       "status" => AppCredentialInterface::STATUS_REVOKED,
       'expiresAt' => ($this->container->get('datetime.time')->getRequestTime() + 24 * 60 * 60) * 1000,
     ];
 
     $expired_credential = [
-      "consumerKey" => $this->randomString(),
-      "consumerSecret" => $this->randomString(),
+      "consumerKey" => $this->randomMachineName(),
+      "consumerSecret" => $this->randomMachineName(),
       "status" => AppCredentialInterface::STATUS_REVOKED,
       'expiresAt' => ($this->container->get('datetime.time')->getRequestTime() - 24 * 60 * 60) * 1000,
     ];
