@@ -493,7 +493,7 @@ function apigee_edge_api_product_access(EntityInterface $entity, $operation, Acc
  */
 function apigee_edge_entity_access(EntityInterface $entity, $operation, AccountInterface $account) {
   if (!$entity->getEntityType()->entityClassImplements(AppInterface::class) || !in_array($operation, ['revoke_api_key', 'delete_api_key'])) {
-    return;
+    return AccessResult::neutral();
   }
 
   /** @var \Drupal\apigee_edge\Entity\AppInterface $entity **/
@@ -503,7 +503,7 @@ function apigee_edge_entity_access(EntityInterface $entity, $operation, AccountI
   });
 
   // Prevent revoking/deleting the only active key.
-  if (count($approved_credentials) === 1) {
+  if (count($approved_credentials) <= 1) {
     $action = $operation === "revoke_api_key" ? "revoke" : "delete";
     return AccessResult::forbidden("You cannot $action the only active key.");
   }

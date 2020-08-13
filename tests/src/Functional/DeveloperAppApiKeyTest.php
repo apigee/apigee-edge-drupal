@@ -173,6 +173,11 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
       [
         "consumerKey" => $this->randomMachineName(),
         "consumerSecret" => $this->randomMachineName(),
+        "status" => AppCredentialInterface::STATUS_APPROVED,
+      ],
+      [
+        "consumerKey" => $this->randomMachineName(),
+        "consumerSecret" => $this->randomMachineName(),
         "status" => AppCredentialInterface::STATUS_REVOKED,
       ],
     ]);
@@ -278,6 +283,11 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
         "consumerKey" => static::$CONSUMER_KEY,
         "consumerSecret" => $this->randomMachineName(),
         "status" => AppCredentialInterface::STATUS_APPROVED,
+      ],
+      [
+        "consumerKey" => $this->randomMachineName(),
+        "consumerSecret" => $this->randomMachineName(),
+        "status" => AppCredentialInterface::STATUS_APPROVED,
       ]
     ];
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
@@ -286,15 +296,22 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalGet($path);
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->stack->queueMockResponse('no_content');
-    $this->queueDeveloperAppResponse($this->developerApp, 200, [
+    $credentials[0]['status'] = AppCredentialInterface::STATUS_REVOKED;
+    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
+    $this->drupalPostForm(NULL, [], 'Revoke');
+    $this->assertSession()->pageTextContains('API key ' . static::$CONSUMER_KEY . ' revoked from ' . static::$APP_NAME . '.');
+
+    // Access denied for the only active key.
+    $credentials = [
       [
         "consumerKey" => static::$CONSUMER_KEY,
         "consumerSecret" => $this->randomMachineName(),
-        "status" => AppCredentialInterface::STATUS_REVOKED,
+        "status" => AppCredentialInterface::STATUS_APPROVED,
       ],
-    ]);
-    $this->drupalPostForm(NULL, [], 'Revoke');
-    $this->assertSession()->pageTextContains('API key ' . static::$CONSUMER_KEY . ' revoked from ' . static::$APP_NAME . '.');
+    ];
+    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
+    $this->drupalGet($path);
+    $this->assertSession()->pageTextContains('Access denied');
   }
 
   /**
@@ -308,18 +325,37 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
       [
         "consumerKey" => static::$CONSUMER_KEY,
         "consumerSecret" => $this->randomMachineName(),
-        "status" => AppCredentialInterface::STATUS_APPROVED
-      ]
+        "status" => AppCredentialInterface::STATUS_APPROVED,
+      ],
+      [
+        "consumerKey" => $this->randomMachineName(),
+        "consumerSecret" => $this->randomMachineName(),
+        "status" => AppCredentialInterface::STATUS_APPROVED,
+      ],
     ];
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $path = $this->developerApp->toUrl('delete-api-key-form')
       ->setRouteParameter('consumer_key', static::$CONSUMER_KEY);
     $this->drupalGet($path);
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
-    $this->queueDeveloperAppResponse($this->developerApp, 200);
+    unset($credentials[0]);
+    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
+    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->stack->queueMockResponse('no_content');
     $this->drupalPostForm(NULL, [], 'Delete');
     $this->assertSession()->pageTextContains('API key ' . static::$CONSUMER_KEY . ' deleted from ' . static::$APP_NAME . '.');
+
+    // Access denied for the only active key.
+    $credentials = [
+      [
+        "consumerKey" => static::$CONSUMER_KEY,
+        "consumerSecret" => $this->randomMachineName(),
+        "status" => AppCredentialInterface::STATUS_APPROVED,
+      ],
+    ];
+    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
+    $this->drupalGet($path);
+    $this->assertSession()->pageTextContains('Access denied');
   }
 
 }

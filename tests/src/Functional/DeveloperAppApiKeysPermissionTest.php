@@ -138,13 +138,18 @@ class DeveloperAppApiKeysPermissionTest extends ApigeeEdgeFunctionalTestBase {
         "consumerKey" => static::$CONSUMER_KEY,
         "consumerSecret" => $this->randomMachineName(),
         "status" => AppCredentialInterface::STATUS_APPROVED,
+      ],
+      [
+        "consumerKey" => $this->randomMachineName(),
+        "consumerSecret" => $this->randomMachineName(),
+        "status" => AppCredentialInterface::STATUS_APPROVED,
       ]
     ];
+
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->addOrganizationMatchedResponse();
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
-
     $this->drupalLogin($this->account);
 
     // Add API key.
@@ -164,6 +169,10 @@ class DeveloperAppApiKeysPermissionTest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalGet($delete_url);
     $this->assertSession()->pageTextContains('Access denied');
 
+    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
+    $this->addOrganizationMatchedResponse();
+    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
+    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->drupalLogin($this->admin);
 
     // Add API key.
