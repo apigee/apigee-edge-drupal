@@ -77,6 +77,7 @@ final class DefaultTeamPermissionsProvider implements DynamicTeamPermissionProvi
           'add_api_key' => $this->t('Add API key to any Team Apps'),
           'revoke_api_key' => $this->t('Revoke API key from any Team Apps'),
           'delete_api_key' => $this->t('Delete API key from any Team Apps'),
+          'edit_api_products' => $this->t('Edit API products for any Team Apps'),
         ],
       ],
       'api_product' => [

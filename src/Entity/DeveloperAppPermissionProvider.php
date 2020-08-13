@@ -73,6 +73,11 @@ class DeveloperAppPermissionProvider extends EdgeEntityPermissionProviderBase {
         '@type' => $entity_type->getPluralLabel(),
       ]),
     ];
+    $permissions["edit_api_products {$entity_type_id}"] = [
+      'title' => $this->t('Edit API products for @type', [
+        '@type' => $entity_type->getPluralLabel(),
+      ]),
+    ];
 
     return $permissions;
   }
