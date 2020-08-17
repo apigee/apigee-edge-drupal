@@ -21,7 +21,6 @@
 namespace Drupal\apigee_edge_teams\Form;
 
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
-use Drupal\apigee_edge_teams\Entity\TeamInvitation;
 use Drupal\apigee_edge_teams\Entity\TeamRole;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
@@ -40,6 +39,8 @@ class AddTeamMembersForm extends TeamMembersFormBase {
    * The team membership manager service.
    *
    * @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface
+   *
+   * @deprecated in apigee_edge_teams:8.x-1.12 and is removed from apigee_edge_teams:2.x
    */
   protected $teamMembershipManager;
 
@@ -47,6 +48,8 @@ class AddTeamMembersForm extends TeamMembersFormBase {
    * The user storage.
    *
    * @var \Drupal\user\UserStorageInterface
+   *
+   * @deprecated in apigee_edge_teams:8.x-1.12 and is removed from apigee_edge_teams:2.x
    */
   protected $userStorage;
 
@@ -154,6 +157,8 @@ class AddTeamMembersForm extends TeamMembersFormBase {
    * @return array
    *   An array containing a first array of user accounts, and a second array of
    *   emails that have no account on the system.
+   *
+   * @deprecated in apigee_edge_teams:8.x-1.12 and is removed from apigee_edge_teams:2.x
    */
   protected function getAccountsFromEmails(string $emails): array {
     $developerEmails = [];
@@ -177,13 +182,13 @@ class AddTeamMembersForm extends TeamMembersFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    // Create an invitation for each email.
     $emails = array_map('trim', explode(',', $form_state->getValue('developers', '')));
     $selected_roles = $this->filterSelectedRoles($form_state->getValue('team_roles', []));
 
     // Add default member role.
     $selected_roles = [TeamRoleInterface::TEAM_MEMBER_ROLE => TeamRoleInterface::TEAM_MEMBER_ROLE] + $selected_roles;
 
+    // Create an invitation for each email.
     foreach ($emails as $email) {
       $this->invitationStorage->create([
         'team' => ['target_id' => $this->team->id()],
@@ -203,103 +208,9 @@ class AddTeamMembersForm extends TeamMembersFormBase {
     $this->messenger()->addStatus($this->formatPlural(count($emails),
       $this->t('The following developer has been invited to @team: @developers', $context),
       $this->t('The following developers have been invited to @team: @developers', $context
-      )));
+    )));
+
     $form_state->setRedirectUrl($this->team->toUrl('members'));
-
-    // Collect user accounts from submitted values.
-    [$developerAccounts, $notFound] = $this->getAccountsFromEmails($form_state->getValue('developers', ''));
-
-    if ($notFound) {
-      $this->messenger()->addWarning($this->t("Could not add developers to the @team because they don't yet have an account: @devs", [
-        '@team' => mb_strtolower($this->team->getEntityType()->getSingularLabel()),
-        '@devs' => implode(', ', $notFound),
-      ]));
-    }
-
-    if (empty($developerAccounts)) {
-      return;
-    }
-
-    // Collect email addresses.
-    /** @var array $developer_emails */
-    $developer_emails = array_reduce($developerAccounts, function ($carry, UserInterface $item) {
-      $carry[$item->id()] = $item->getEmail();
-      return $carry;
-    }, []);
-
-    $context = [
-      '@developers' => implode(', ', $developer_emails),
-      '@team' => mb_strtolower($this->team->getEntityType()->getSingularLabel()),
-      '%team_id' => $this->team->id(),
-    ];
-
-    $success = FALSE;
-    try {
-      $this->teamMembershipManager->addMembers($this->team->id(), $developer_emails);
-      $success = TRUE;
-    }
-    catch (\Exception $exception) {
-      $context += Error::decodeException($exception);
-      // The error message returned by Apigee Edge is not really useful if
-      // multiple developers selected therefore we should not display that to
-      // the user.
-      $this->messenger()->addError($this->formatPlural(count($developer_emails),
-        $this->t('Failed to add developer to the @team: @developers', $context),
-        $this->t('Failed to add developers to the @team: @developers', $context
-        )));
-      $logger->error('Failed to add developers to %team_id team. Developers: @developers. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
-    }
-
-    if ($success) {
-      $this->messenger()->addStatus($this->formatPlural(count($developer_emails),
-        $this->t('Developer successfully added to the @team: @developers', $context),
-        $this->t('Developers successfully added to the @team: @developers', $context
-        )));
-      $form_state->setRedirectUrl($this->team->toUrl('members'));
-
-      if (($selected_roles = $this->filterSelectedRoles($form_state->getValue('team_roles', [])))) {
-        /** @var \Drupal\user\UserInterface[] $users */
-        $users = $this->userStorage->loadByProperties(['mail' => $developer_emails]);
-        foreach ($users as $user) {
-          $unsuccessful_message = $this->t('Selected roles could not be saved for %user developer.', [
-            '%user' => $user->label(),
-          ]);
-          /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface $team_member_roles */
-          $team_member_roles = $this->teamMemberRoleStorage->loadByDeveloperAndTeam($user, $this->team);
-          if ($team_member_roles !== NULL) {
-            // It could happen the a developer got removed from a team (company)
-            // outside of Drupal therefore its team member role entity
-            // has not been deleted.
-            // @see \Drupal\apigee_edge_teams\TeamMembershipManager::removeMembers()
-            try {
-              $team_member_roles->delete();
-            }
-            catch (\Exception $exception) {
-              $context += [
-                '%developer' => $user->getEmail(),
-                '%roles' => implode(', ', array_map(function (TeamRole $role) {
-                  return $role->label();
-                }, $team_member_roles->getTeamRoles())),
-                'link' => $this->team->toLink($this->t('Members'), 'members')->toString(),
-              ];
-              $context += Error::decodeException($exception);
-              $logger->error('Integrity check: %developer developer had a team member role entity with "%roles" team roles for %team_id team when it was added to the team. These roles could not been deleted automatically. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
-              $this->messenger()->addWarning($unsuccessful_message);
-              // Do not add new team roles to a developer existing team roles
-              // that could not be deleted. Those must be manually reviewed.
-              continue;
-            }
-          }
-
-          try {
-            $this->teamMemberRoleStorage->addTeamRoles($user, $this->team, $selected_roles);
-          }
-          catch (\Exception $exception) {
-            $this->messenger()->addWarning($unsuccessful_message);
-          }
-        }
-      }
-    }
   }
 
 }
