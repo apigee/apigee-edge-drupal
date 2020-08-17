@@ -18,37 +18,38 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge_teams\Entity\Form;
+namespace Drupal\apigee_edge_teams\Event;
 
-use Drupal\apigee_edge_teams\Entity\TeamInterface;
-use Drupal\Core\Entity\ContentEntityConfirmFormBase;
-use Drupal\Core\Form\FormStateInterface;
+use Drupal\apigee_edge_teams\Entity\TeamInvitationInterface;
+use Symfony\Component\EventDispatcher\Event;
 
 /**
- * Provides a base class for updating status for a team_invitation.
+ * Defines the team_invitation event.
  */
-abstract class TeamInvitationUpdateStatusFormBase extends ContentEntityConfirmFormBase {
+class TeamInvitationEvent extends Event implements TeamInvitationEventInterface {
 
   /**
-   * The team.
+   * The team_invitation entity.
    *
-   * @var \Drupal\apigee_edge_teams\Entity\TeamInterface
+   * @var \Drupal\apigee_edge_teams\Entity\TeamInvitationInterface
    */
-  protected $team;
+  protected $teamInvitation;
 
   /**
-   * {@inheritdoc}
+   * TeamInvitationEvent constructor.
+   *
+   * @param \Drupal\apigee_edge_teams\Entity\TeamInvitationInterface $team_invitation
+   *   The team invitation.
    */
-  public function getCancelUrl() {
-    return $this->team->toUrl('members');
+  public function __construct(TeamInvitationInterface $team_invitation) {
+    $this->teamInvitation = $team_invitation;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, TeamInterface $team = NULL) {
-    $this->team = $team;
-    return parent::buildForm($form, $form_state);
+  public function getTeamInvitation(): TeamInvitationInterface {
+    return $this->teamInvitation;
   }
 
 }

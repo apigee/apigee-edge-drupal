@@ -23,6 +23,9 @@ namespace Drupal\apigee_edge_teams\Entity\ListBuilder;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
 
+/**
+ * List builder handler for team_invitation.
+ */
 class TeamInvitationListBuilder extends EntityListBuilder {
 
   /**

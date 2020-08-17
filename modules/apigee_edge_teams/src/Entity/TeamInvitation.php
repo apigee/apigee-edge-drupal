@@ -24,6 +24,7 @@ use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Defines the team invitation entity.
@@ -40,6 +41,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   ),
  *   handlers = {
  *     "list_builder" = "Drupal\apigee_edge_teams\Entity\ListBuilder\TeamInvitationListBuilder",
+ *     "storage" = "Drupal\apigee_edge_teams\Entity\Storage\TeamInvitationStorage",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "views_data" = "Drupal\apigee_edge_teams\TeamInvitationViewsData",
  *     "access" = "Drupal\apigee_edge_teams\Entity\TeamInvitationAccessControlHandler",
@@ -68,6 +70,8 @@ use Drupal\Core\Entity\EntityTypeInterface;
  * )
  */
 class TeamInvitation extends ContentEntityBase implements TeamInvitationInterface {
+
+  use StringTranslationTrait;
 
   /**
    * {@inheritdoc}
@@ -230,7 +234,7 @@ class TeamInvitation extends ContentEntityBase implements TeamInvitationInterfac
 
     // Set a default label.
     if ($this->get('label')->isEmpty()) {
-      $this->setLabel(t('Invitation to join @team as @roles.', [
+      $this->setLabel($this->t('Invitation to join @team as @roles.', [
         '@team' => $this->getTeam()->label(),
         '@roles' => implode(', ', array_map(function (TeamRoleInterface $team_role) {
           return $team_role->label();

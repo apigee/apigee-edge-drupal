@@ -32,9 +32,19 @@ class TeamInvitationDeleteForm extends ContentEntityDeleteForm {
   /**
    * The team.
    *
-   * @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team;
+   * @var \Drupal\apigee_edge_teams\Entity\TeamInterface
    */
   protected $team;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getQuestion() {
+    return $this->t('Are you sure you want to delete the @entity-type for %recipient?', [
+      '@entity-type' => $this->getEntity()->getEntityType()->getSingularLabel(),
+      '%recipient' => $this->getEntity()->getRecipient(),
+    ]);
+  }
 
   /**
    * {@inheritdoc}
@@ -50,4 +60,5 @@ class TeamInvitationDeleteForm extends ContentEntityDeleteForm {
     $this->team = $team;
     return parent::buildForm($form, $form_state);
   }
+
 }

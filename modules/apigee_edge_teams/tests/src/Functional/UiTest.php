@@ -194,11 +194,11 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
     // Add the other user as a member to the team.
     $this->clickLink('Members');
     $this->assertSession()->pageTextContains($this->account->getAccountName());
-    $this->clickLink('Add members');
+    $this->clickLink('Invite members');
     $anotherEmail = $this->randomMachineName(10) . '@example.com';
     $this->submitForm([
       'developers' => "{$this->otherAccount->getEmail()}, $anotherEmail",
-    ], 'Add members');
+    ], 'Invite members');
     $this->assertSession()->pageTextContains($this->account->getAccountName());
     $this->assertSession()->pageTextContains($this->otherAccount->getAccountName());
     $this->assertSession()->pageTextContains('successfully added to the team: ' . $this->otherAccount->getEmail());

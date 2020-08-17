@@ -51,6 +51,7 @@ interface TeamInvitationInterface extends ContentEntityInterface {
    * Returns the label for this invitation.
    *
    * @return string
+   *   The label.
    */
   public function getLabel(): string;
 

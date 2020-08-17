@@ -6,7 +6,7 @@ dependencies:
     - options
     - user
 _core:
-  default_config_hash: 4hUMjbBTrl8ZRIJ0h_U1iUbf73RLYJ19XkISYORIaVg
+  default_config_hash: QmokYfalgC8DywwqWQWMxIkYTOP-uf-Q2oLO_tnYIvg
 id: team_invitations
 label: 'Team invitations'
 module: views
@@ -299,7 +299,49 @@ display:
           destination: true
           entity_type: team_invitation
           plugin_id: entity_operations
-      filters: {  }
+      filters:
+        status:
+          id: status
+          table: team_invitation
+          field: status
+          relationship: none
+          group_type: group
+          admin_label: ''
+          operator: in
+          value:
+            - '0'
+          group: 1
+          exposed: false
+          expose:
+            operator_id: ''
+            label: ''
+            description: ''
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: ''
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          entity_type: team_invitation
+          entity_field: status
+          plugin_id: team_invitation_status
       sorts: {  }
       title: Invitations
       header:
@@ -390,6 +432,22 @@ display:
     display_options:
       display_extenders: {  }
       display_description: ''
+      empty:
+        area:
+          id: area
+          table: views
+          field: area
+          relationship: none
+          group_type: group
+          admin_label: ''
+          empty: true
+          tokenize: false
+          content:
+            value: 'No pending invitations.'
+            format: basic_html
+          plugin_id: text
+      defaults:
+        empty: false
     cache_metadata:
       max-age: -1
       contexts:
@@ -689,8 +747,50 @@ display:
           distinct: false
           replica: false
           query_comment: ''
-          query_tags: null
-      filters: {  }
+          query_tags: { }
+      filters:
+        status:
+          id: status
+          table: team_invitation
+          field: status
+          relationship: none
+          group_type: group
+          admin_label: ''
+          operator: in
+          value:
+            - '0'
+          group: 1
+          exposed: false
+          expose:
+            operator_id: ''
+            label: ''
+            description: ''
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: ''
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          entity_type: team_invitation
+          entity_field: status
+          plugin_id: team_invitation_status
       filter_groups:
         operator: AND
         groups:

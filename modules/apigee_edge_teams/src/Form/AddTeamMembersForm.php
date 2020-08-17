@@ -180,6 +180,10 @@ class AddTeamMembersForm extends TeamMembersFormBase {
     // Create an invitation for each email.
     $emails = array_map('trim', explode(',', $form_state->getValue('developers', '')));
     $selected_roles = $this->filterSelectedRoles($form_state->getValue('team_roles', []));
+
+    // Add default member role.
+    $selected_roles = [TeamRoleInterface::TEAM_MEMBER_ROLE => TeamRoleInterface::TEAM_MEMBER_ROLE] + $selected_roles;
+
     foreach ($emails as $email) {
       $this->invitationStorage->create([
         'team' => ['target_id' => $this->team->id()],
@@ -201,7 +205,6 @@ class AddTeamMembersForm extends TeamMembersFormBase {
       $this->t('The following developers have been invited to @team: @developers', $context
       )));
     $form_state->setRedirectUrl($this->team->toUrl('members'));
-
 
     // Collect user accounts from submitted values.
     [$developerAccounts, $notFound] = $this->getAccountsFromEmails($form_state->getValue('developers', ''));

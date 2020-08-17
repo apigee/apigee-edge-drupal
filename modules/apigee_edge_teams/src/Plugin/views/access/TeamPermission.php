@@ -99,9 +99,6 @@ class TeamPermission extends AccessPluginBase {
       return FALSE;
     }
 
-
-    dump($this->displayHandler->options);
-
     return in_array($this->options['permission'], $this->teamPermissionHandler->getDeveloperPermissionsByTeam($team, $account));
   }
 
