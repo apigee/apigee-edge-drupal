@@ -146,7 +146,7 @@ abstract class AppEditForm extends AppForm {
           '#title' => $api_product_def->getPluralLabel(),
           '#required' => TRUE,
           '#options' => $credential_product_options,
-          '#disabled' => $this->canEditApiProducts(),
+          '#disabled' => !$this->canEditApiProducts(),
         ];
 
         if ($is_multiple_selection) {
