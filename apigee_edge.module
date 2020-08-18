@@ -382,6 +382,7 @@ function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityV
       $build['credentials'] = [
         '#type' => 'container',
       ];
+      $index = 0;
       foreach ($entity->getCredentials() as $credential) {
         $build['credentials'][$credential->getStatus()][] = [
           '#type' => 'app_credential',
@@ -391,8 +392,12 @@ function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityV
           '#app' => $entity,
           '#attributes' => [
             'class' => 'items--inline',
+            'data-app' => $entity->getName(),
+            'data-team' => isset($team_app_name) ? $team_app_name : '',
+            'data-app-container-index' => $index,
           ],
         ] + $defaults;
+        $index++;
       }
 
       // Hide revoked credentials in a collapsible section.
@@ -1123,14 +1128,10 @@ function template_preprocess_app_credential(array &$variables) {
     '#type' => 'container',
     '#attributes' => [
       'class' => 'wrapper--primary app-details-wrapper',
-      'data-app' => $variables['elements']['#app_name'],
     ],
   ];
 
-  if (!empty($variables['elements']['#team_app_name'])) {
-    $variables['primary_wrapper']['#attributes']['data-team'] = $variables['elements']['#team_app_name'];
-  }
-
+  $index = 0;
   foreach ($properties_in_primary as $property => $def) {
     $variables['primary_wrapper'][$property] = [
       '#type' => 'container',
@@ -1174,6 +1175,7 @@ function template_preprocess_app_credential(array &$variables) {
         '#attributes' => [
           'class' => 'secret',
           'data-secret-type' => $property,
+          'data-app-index' => $index,
         ],
         '#value' => '',
       ];
@@ -1194,6 +1196,7 @@ function template_preprocess_app_credential(array &$variables) {
         '#markup' => Xss::filter($value),
       ];
     }
+    $index++;
   }
 
   $variables['secondary_wrapper'] = [

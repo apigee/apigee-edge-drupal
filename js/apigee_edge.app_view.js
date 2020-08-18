@@ -32,7 +32,7 @@
   Drupal.apigeeEdgeDetails = {
     editActions: function (context, settings) {
       var secrets = $('.secret', context);
-      var appElWrapper = '.app-details-wrapper';
+      var appElWrapper = '.app-credential';
       var showHideEl = 'a.secret-show-hide';
       var pClass = 'processing';
       var loader = '<img src="' + drupalSettings.path.baseUrl + 'core/misc/throbber-active.gif" border="0" />';
@@ -54,8 +54,8 @@
             $(this).parent().parent(),
             $wrapper.data('team'),
             $wrapper.data('app'),
-            $wrapper.closest('fieldset').parent().find('fieldset').index($(this).closest('fieldset')),
-            $wrapper.find(showHideEl).index(this)
+            $wrapper.data('app-container-index'),
+            $(this).closest('.secret').data('app-index')
           );
         }
       });
@@ -81,7 +81,7 @@
    */
   function callEndpoint(teamApp,  app, callback) {
     var endpoint = drupalSettings.path.baseUrl + 'user/' + drupalSettings.currentUser + '/apps/' + app + '/api-keys';
-    if (teamApp !== undefined) {
+    if (teamApp !== undefined && teamApp !== 0 && teamApp !== '') {
       endpoint = drupalSettings.path.baseUrl + 'teams/' + teamApp + '/apps/' + app + '/api-keys';
     }
     $.get(endpoint, function(data) {
