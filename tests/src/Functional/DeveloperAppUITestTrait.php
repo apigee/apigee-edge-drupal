@@ -213,7 +213,10 @@ trait DeveloperAppUITestTrait {
 
     $this->postCreateAppForm($data, $account);
 
-    $app = $this->loadDeveloperApp($name);
+    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
+    $developer = Developer::load($account->getEmail());
+
+    $app = $this->loadDeveloperApp($name, $developer);
 
     $this->assertSession()->linkByHrefExists("/user/{$account->id()}/apps/{$app->getName()}/edit?destination=/user/{$account->id()}/apps");
     $this->assertSession()->linkByHrefExists("/user/{$account->id()}/apps/{$app->getName()}/delete?destination=/user/{$account->id()}/apps");
@@ -226,8 +229,6 @@ trait DeveloperAppUITestTrait {
       $afterCreate($name);
     }
 
-    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
-    $developer = Developer::load($account->getEmail());
     /** @var \Drupal\apigee_edge\Entity\Storage\DeveloperAppStorageInterface $storage */
     $storage = \Drupal::entityTypeManager()->getStorage('developer_app');
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
@@ -333,17 +334,32 @@ trait DeveloperAppUITestTrait {
    *
    * @param string $name
    *   Name of the developer app.
+   * @param \Drupal\apigee_edge\Entity\Developer $developer
+   *   The developer the app belongs to.
    *
    * @return \Drupal\apigee_edge\Entity\DeveloperAppInterface|null
    *   Loaded developer app or null if not found.
    */
-  protected function loadDeveloperApp(string $name): ?DeveloperAppInterface {
+  protected function loadDeveloperApp(string $name, Developer $developer = NULL): ?DeveloperAppInterface {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp[] $apps */
-    $apps = DeveloperApp::loadMultiple();
 
-    foreach ($apps as $app) {
-      if ($app->getName() === $name) {
-        return $app;
+    if ($developer) {
+      $storage = \Drupal::entityTypeManager()->getStorage('developer_app');
+      $results_ids = $storage
+        ->getQuery()
+        ->condition('developerId', $developer->uuid())
+        ->condition('name', $name)
+        ->execute();
+
+      return $results_ids ? $storage->load(reset($results_ids)) : NULL;
+    }
+    else {
+      $apps = DeveloperApp::loadMultiple();
+
+      foreach ($apps as $app) {
+        if ($app->getName() === $name) {
+          return $app;
+        }
       }
     }
 
@@ -357,7 +373,7 @@ trait DeveloperAppUITestTrait {
    *   Array of breadcrumb links.
    */
   protected function getBreadcrumbLinks(): array {
-    return $this->xpath('//nav[@class="breadcrumb"]/ol/li/a');
+    return $this->xpath('//nav[@role="navigation"]/ol/li/a');
   }
 
 }

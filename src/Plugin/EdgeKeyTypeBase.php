@@ -78,9 +78,11 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
    */
   public function getEndpointType(KeyInterface $key): string {
     if ($this->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC) {
+      /* @phpstan-ignore-next-line */
       return EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_DEFAULT;
     }
 
+    /* @phpstan-ignore-next-line */
     return EdgeKeyTypeInterface::EDGE_ENDPOINT_TYPE_CUSTOM;
   }
 

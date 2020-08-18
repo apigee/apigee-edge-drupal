@@ -23,6 +23,7 @@ namespace Drupal\apigee_edge_teams\Entity;
 use Drupal\apigee_edge\Entity\AppRouteProvider;
 use Drupal\apigee_edge\Entity\AppTitleProvider;
 use Drupal\apigee_edge_teams\Entity\ListBuilder\TeamAppListByTeam;
+use Drupal\apigee_edge_teams\Controller\TeamAppKeysController;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Symfony\Component\Routing\Route;
 
@@ -51,6 +52,10 @@ class TeamAppRouteProvider extends AppRouteProvider {
 
     if ($collection_by_team = $this->getCollectionRouteByTeam($entity_type)) {
       $collection->add("entity.{$entity_type_id}.collection_by_team", $collection_by_team);
+    }
+
+    if ($api_keys = $this->getTeamApiKeysRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.api_keys", $api_keys);
     }
 
     return $collection;
@@ -114,6 +119,26 @@ class TeamAppRouteProvider extends AppRouteProvider {
       $route->setDefault('_title_callback', TeamAppListByTeam::class . '::pageTitle');
       $this->ensureTeamParameter($route);
       $route->setRequirement('_apigee_edge_teams_team_app_list_by_team_access', 'TRUE');
+      return $route;
+    }
+  }
+
+  /**
+   * Gets APpi Keys for team app.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   *
+   * @return \Symfony\Component\Routing\Route|null
+   *   The generated route, if available.
+   */
+  protected function getTeamApiKeysRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('api-keys')) {
+      $route = new Route($entity_type->getLinkTemplate('api-keys'));
+      $route->setDefault('_controller', TeamAppKeysController::class . '::teamAppKeys');
+      $route->setDefault('_title_callback', AppTitleProvider::class . '::title');
+      $this->ensureTeamParameter($route);
+      $route->setRequirement('_app_access_check_by_app_name', 'view');
       return $route;
     }
   }

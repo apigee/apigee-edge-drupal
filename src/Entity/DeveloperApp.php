@@ -75,6 +75,7 @@ use Drupal\user\UserInterface;
  *     "edit-form-for-developer" = "/user/{user}/apps/{app}/edit",
  *     "delete-form-for-developer" = "/user/{user}/apps/{app}/delete",
  *     "analytics-for-developer" = "/user/{user}/apps/{app}/analytics",
+ *     "api-keys" = "/user/{user}/apps/{app}/api-keys",
  *   },
  *   entity_keys = {
  *     "id" = "appId",
