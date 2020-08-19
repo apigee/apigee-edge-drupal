@@ -197,6 +197,12 @@ function template_preprocess_apigee_entity_list(array &$variables) {
   foreach (Element::children($variables['elements']) as $key) {
     $variables['content'][$key] = $variables['elements'][$key];
   }
+
+  // Use a common preprocess for all apps.
+  if ($entity instanceof AppInterface) {
+    apigee_edge_apigee_entity__app($variables);
+    return;
+  }
 }
 
 /**
@@ -1687,4 +1693,50 @@ function _apigee_edge_is_sync_in_progress(): bool {
 function apigee_edge_cache_flush() {
   // If OAuth token file does not exist this does not do anything.
   \Drupal::service('apigee_edge.authentication.oauth_token_storage')->removeToken();
+}
+
+/**
+ * Implements template_preprocess_apigee_entity__app().
+ */
+function apigee_edge_apigee_entity__app(array &$variables) {
+  /** @var \Drupal\apigee_edge\Entity\AppInterface $app */
+  $app = $variables['entity'];
+
+  // Add local tasks on the app canonical route as additional tabs.
+  $variables['additional_tabs'] = [];
+
+  switch ($app->getEntityTypeId()) {
+    case 'team_app':
+      $canonical_route_name = 'entity.team_app.canonical';
+      $route_parameters = [
+        'team' => $app->getAppOwner(),
+        'app' => $app->getName(),
+      ];
+      break;
+
+    default:
+      $canonical_route_name = "entity.{$app->getEntityTypeId()}.canonical_by_" . str_replace('_app', '', $app->getEntityTypeId());
+      $route_parameters = [
+        'user' => $app->getOwnerId(),
+        'app' => $app->getName(),
+      ];
+      break;
+  }
+
+  if ($tasks = Drupal::service('plugin.manager.menu.local_task')->getLocalTasks($canonical_route_name)) {
+    foreach ($tasks['tabs'] as $tab) {
+      $link = $tab['#link'];
+
+      /** @var \Drupal\Core\Url $url */
+      $url = $link['url'];
+      if ($url->getRouteName() !== $canonical_route_name) {
+        $url->setRouteParameters($route_parameters);
+
+        $variables['additional_tabs'][] = [
+          'title' => $link['title'],
+          'url' => $url,
+        ];
+      }
+    }
+  }
 }

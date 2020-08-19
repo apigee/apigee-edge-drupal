@@ -123,7 +123,7 @@ abstract class AppEditForm extends AppForm {
 
         $form['credential'][$credential->getConsumerKey()] = [
           '#type' => 'fieldset',
-          '#title' => $rendered_credential_status . $this->t('Credential'),
+          '#title' => $rendered_credential_status,
           '#collapsible' => FALSE,
         ];
 
