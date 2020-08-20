@@ -150,9 +150,9 @@ class CacheTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $this->assertSession()->pageTextNotContains($credentials[0]->getConsumerSecret());
 
     // Until clicking the "show" buttons.
-    $this->click('button.secret__toggle');
+    $this->click('button.secret__toggle span');
     $this->assertSession()->assertWaitOnAjaxRequest(30000);
-    $this->click('button.secret__toggle');
+    $this->click('button.secret__toggle span');
     $this->assertSession()->assertWaitOnAjaxRequest(30000);
     $this->assertSession()->pageTextContainsOnce($credentials[0]->getConsumerKey());
     $this->assertSession()->pageTextContainsOnce($credentials[0]->getConsumerSecret());
