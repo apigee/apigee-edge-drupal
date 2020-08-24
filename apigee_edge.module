@@ -414,7 +414,7 @@ function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityV
 
     // Add link to add keys.
     if($entity->access('add_api_key') && $entity->hasLinkTemplate('add-api-key-form')) {
-      $build['content']['add_keys'] = Link::fromTextAndUrl(t('Add key'), $entity->toUrl('add-api-key-form', [
+      $build['add_keys'] = Link::fromTextAndUrl(t('Add key'), $entity->toUrl('add-api-key-form', [
         'attributes' => [
           'data-dialog-type' => 'modal',
           'data-dialog-options' => json_encode([
