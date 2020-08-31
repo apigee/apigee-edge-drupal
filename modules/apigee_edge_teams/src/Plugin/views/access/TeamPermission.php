@@ -70,6 +70,7 @@ class TeamPermission extends AccessPluginBase {
    * @param \Drupal\apigee_edge_teams\TeamPermissionHandlerInterface $team_permission_handler
    *   The team permission handler.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The route match.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, TeamPermissionHandlerInterface $team_permission_handler, RouteMatchInterface $route_match) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
@@ -137,6 +138,9 @@ class TeamPermission extends AccessPluginBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function summaryTitle() {
     $permissions = $this->teamPermissionHandler->getPermissions();
     if (isset($permissions[$this->options['permission']])) {

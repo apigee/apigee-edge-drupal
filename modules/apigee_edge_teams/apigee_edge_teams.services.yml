@@ -85,7 +85,7 @@ services:
 
   apigee_edge_teams.event_subscriber.team_invitation_event_subscriber:
     class: Drupal\apigee_edge_teams\EventSubscriber\TeamInvitationSubscriber
-    arguments: ['@logger.channel.apigee_edge_teams', '@apigee_edge_teams.team_membership_manager', '@entity_type.manager']
+    arguments: ['@logger.channel.apigee_edge_teams', '@entity_type.manager', '@apigee_edge_teams.team_membership_manager', '@plugin.manager.mail', '@language_manager']
     tags:
       - { name: event_subscriber }
 

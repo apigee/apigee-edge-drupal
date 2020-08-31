@@ -20,17 +20,16 @@
 
 namespace Drupal\apigee_edge_teams\EventSubscriber;
 
-use Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorageInterface;
-use Drupal\apigee_edge_teams\Entity\TeamMemberRole;
-use Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface;
+use Drupal\apigee_edge_teams\Entity\TeamRole;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\apigee_edge_teams\Event\TeamInvitationEventInterface;
 use Drupal\apigee_edge_teams\Event\TeamInvitationEvents;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
+use Drupal\Core\Mail\MailManagerInterface;
 use Drupal\Core\Utility\Error;
-use Drupal\user\UserStorageInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -67,28 +66,83 @@ class TeamInvitationSubscriber implements EventSubscriberInterface {
   protected $teamMemberRoleStorage;
 
   /**
+   * The mail service.
+   *
+   * @var \Drupal\Core\Mail\MailManagerInterface
+   */
+  protected $mailManager;
+
+  /**
+   * The language manager.
+   *
+   * @var \Drupal\Core\Language\LanguageManagerInterface
+   */
+  protected $languageManager;
+
+  /**
    * TeamInvitationSubscriber constructor.
    *
    * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
    *   The logger channel.
-   * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
-   *   The team membership manager.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
+   *   The team membership manager.
+   * @param \Drupal\Core\Mail\MailManagerInterface $mail_manager
+   *   The mail service.
+   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   *   The language manager.
    */
-  public function __construct(LoggerChannelInterface $logger, TeamMembershipManagerInterface $team_membership_manager, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(LoggerChannelInterface $logger, EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager, MailManagerInterface $mail_manager, LanguageManagerInterface $language_manager) {
     $this->logger = $logger;
     $this->teamMembershipManager = $team_membership_manager;
     $this->entityTypeManager = $entity_type_manager;
     $this->teamMemberRoleStorage = $this->entityTypeManager->getStorage('team_member_role');
+    $this->mailManager = $mail_manager;
+    $this->languageManager = $language_manager;
   }
 
   /**
    * {@inheritdoc}
    */
   public static function getSubscribedEvents() {
+    $events[TeamInvitationEvents::CREATED][] = 'onCreated';
     $events[TeamInvitationEvents::ACCEPTED][] = 'onAccepted';
     return $events;
+  }
+
+  /**
+   * Callback for on created event.
+   *
+   * @param \Drupal\apigee_edge_teams\Event\TeamInvitationEventInterface $event
+   *   The event.
+   */
+  public function onCreated(TeamInvitationEventInterface $event) {
+    $team_invitation = $event->getTeamInvitation();
+    if (!$team_invitation->isPending()) {
+      return;
+    }
+
+    $email = $team_invitation->getRecipient();
+    $langcode = $this->languageManager->getDefaultLanguage()->getId();
+
+    $params = [
+      'team_invitation' => $team_invitation,
+      'user' => NULL,
+    ];
+
+    /** @var \Drupal\user\UserInterface $user */
+    $user = user_load_by_mail($email);
+    if ($user) {
+      $langcode = $user->getPreferredLangcode();
+      $params['user'] = $user;
+    }
+
+    // Send email notification.
+    $message = $this->mailManager->mail('apigee_edge_teams', 'team_invitation_created', $email, $langcode, $params);
+    if ($message['result']) {
+      $this->logger->notice('Successfully sent invitation email to %recipient', ['%recipient' => $email]);
+    }
   }
 
   /**
@@ -129,6 +183,14 @@ class TeamInvitationSubscriber implements EventSubscriberInterface {
       }, $team_invitation->getTeamRoles());
 
       $user = user_load_by_mail($team_invitation->getRecipient());
+
+      if (!$user) {
+        $this->logger->error('Developer with email %email not found.', [
+          '%email' => $team_invitation->getRecipient(),
+        ]);
+        return;
+      }
+
       /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface $team_member_roles */
       $team_member_roles = $this->teamMemberRoleStorage->loadByDeveloperAndTeam($user, $team);
       if ($team_member_roles !== NULL) {

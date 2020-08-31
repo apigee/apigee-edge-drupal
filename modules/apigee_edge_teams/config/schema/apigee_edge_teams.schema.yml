@@ -14,6 +14,12 @@ apigee_edge_teams.team_settings:
       type: sequence
       sequence:
         type: string
+    team_invitation_email_existing:
+      type: 'mail'
+      label: 'Team invitation email for existing users'
+    team_invitation_email_new:
+      type: 'mail'
+      label: 'Team invitation email for new users'
 
 apigee_edge_teams.team_app_settings:
   type: config_object

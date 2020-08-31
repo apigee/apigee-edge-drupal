@@ -25,6 +25,11 @@ apigee_edge_teams.settings.team.cache:
   title: 'Caching'
   base_route: apigee_edge_teams.settings.team
 
+apigee_edge_teams.settings.team.team_invitation:
+  route_name: apigee_edge_teams.settings.team.team_invitation
+  title: 'Team invitation'
+  base_route: apigee_edge_teams.settings.team
+
 apigee_edge_teams.settings.team_app.alias:
   route_name: apigee_edge_teams.settings.team_app
   title: 'Alias'
