@@ -31,7 +31,7 @@ use Drupal\Tests\apigee_edge_actions\Kernel\ApigeeEdgeActionsRulesKernelTestBase
  * @group apigee_edge_actions
  * @group apigee_edge_actions_kernel
  */
-class SystemMailToUsersOfRoleTest extends ApigeeEdgeActionsRulesKernelTestBase {
+class SystemEmailToUsersOfRoleTest extends ApigeeEdgeActionsRulesKernelTestBase {
 
   /**
    * Tests sending email to role event.
