@@ -43,7 +43,7 @@ class DeveloperAppApiKeysPermissionTest extends ApigeeEdgeFunctionalTestBase {
    *
    * @var string
    */
-  public static $CONSUMER_KEY = "dMHy6YlXjGerx7uyZocwP0LOEQgcUSEp";
+  protected $consumer_key;
 
   /**
    * A member account.
@@ -79,6 +79,8 @@ class DeveloperAppApiKeysPermissionTest extends ApigeeEdgeFunctionalTestBase {
   protected function setUp() {
     parent::setUp();
 
+    $this->addOrganizationMatchedResponse();
+
     $this->account = $this->createAccount([
       'add_api_key own developer_app',
     ]);
@@ -87,6 +89,8 @@ class DeveloperAppApiKeysPermissionTest extends ApigeeEdgeFunctionalTestBase {
       'add_api_key any developer_app',
       'revoke_api_key any developer_app',
       'delete_api_key any developer_app',
+      'view any developer_app',
+      'update any developer_app',
     ]);
 
     $this->queueDeveloperResponse($this->account);
@@ -100,6 +104,18 @@ class DeveloperAppApiKeysPermissionTest extends ApigeeEdgeFunctionalTestBase {
     $this->developerApp->setOwner($this->account);
     $this->queueDeveloperAppResponse($this->developerApp);
     $this->developerApp->save();
+
+    if ($keys = $this->developerApp->getCredentials()) {
+      $credential = reset($keys);
+      $this->consumer_key = $credential->getConsumerKey();
+      $apiProduct = $this->createProduct();
+
+      /* @var \Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface $appCredentialController */
+      $appCredentialController = \Drupal::service('apigee_edge.controller.developer_app_credential_factory')
+        ->developerAppCredentialController($this->developerApp->getAppOwner(), $this->developerApp->getName());
+      $appCredentialController->addProducts($this->consumer_key, [$apiProduct->getName()]);
+    }
+
   }
 
   /**
@@ -133,23 +149,26 @@ class DeveloperAppApiKeysPermissionTest extends ApigeeEdgeFunctionalTestBase {
    * Tests permissions for API key routes.
    */
   public function testPermissions() {
-    $credentials = [
-      [
-        "consumerKey" => static::$CONSUMER_KEY,
-        "consumerSecret" => $this->randomMachineName(),
-        "status" => AppCredentialInterface::STATUS_APPROVED,
-      ],
-      [
-        "consumerKey" => $this->randomMachineName(),
-        "consumerSecret" => $this->randomMachineName(),
-        "status" => AppCredentialInterface::STATUS_APPROVED,
-      ]
-    ];
+    if (empty($this->consumer_key)) {
+      $this->consumer_key = $this->randomMachineName(32);
+      $credentials = [
+        [
+          "consumerKey" => $this->consumer_key,
+          "consumerSecret" => $this->randomMachineName(),
+          "status" => AppCredentialInterface::STATUS_APPROVED,
+          "apiProducts" => [
+            ["name" => $this->randomMachineName()],
+          ],
+        ],
+      ];
+      $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
+      $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
+      $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
+      $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
+      $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
+      $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
+    }
 
-    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
-    $this->addOrganizationMatchedResponse();
-    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
-    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->drupalLogin($this->account);
 
     // Add API key.
@@ -159,20 +178,16 @@ class DeveloperAppApiKeysPermissionTest extends ApigeeEdgeFunctionalTestBase {
 
     // Revoke API key.
     $revoke_url = $this->developerApp->toUrl('revoke-api-key-form')
-      ->setRouteParameter('consumer_key', static::$CONSUMER_KEY);
+      ->setRouteParameter('consumer_key', $this->consumer_key);
     $this->drupalGet($revoke_url);
     $this->assertSession()->pageTextContains('Access denied');
 
     // Delete API key.
     $delete_url = $this->developerApp->toUrl('delete-api-key-form')
-      ->setRouteParameter('consumer_key', static::$CONSUMER_KEY);
+      ->setRouteParameter('consumer_key', $this->consumer_key);
     $this->drupalGet($delete_url);
     $this->assertSession()->pageTextContains('Access denied');
 
-    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
-    $this->addOrganizationMatchedResponse();
-    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
-    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->drupalLogin($this->admin);
 
     // Add API key.
@@ -180,17 +195,41 @@ class DeveloperAppApiKeysPermissionTest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalGet($add_url);
     $this->assertSession()->pageTextContains('Add key');
 
+    if (!$this->integration_enabled) {
+      $this->stack->queueMockResponse([
+        'api-product' => [
+          'product' => [
+            'name' => $credentials[0]['apiProducts'][0]['name'],
+          ],
+        ],
+      ]);
+    }
+
+    $this->submitForm([], 'Confirm');
+    $this->assertSession()->pageTextContains('New API key added');
+
+    if (!$this->integration_enabled) {
+      $credentials[] = [
+        "consumerKey" => $this->randomMachineName(32),
+        "consumerSecret" => $this->randomMachineName(),
+        "status" => AppCredentialInterface::STATUS_APPROVED,
+      ];
+
+      $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
+      $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
+    }
+
     // Revoke API key.
     $revoke_url = $this->developerApp->toUrl('revoke-api-key-form')
-      ->setRouteParameter('consumer_key', static::$CONSUMER_KEY);
+      ->setRouteParameter('consumer_key', $this->consumer_key);
     $this->drupalGet($revoke_url);
-    $this->assertSession()->pageTextContains('Are you sure that you want to revoke the API key ' . static::$CONSUMER_KEY . '?');
+    $this->assertSession()->pageTextContains('Are you sure that you want to revoke the API key ' . $this->consumer_key . '?');
 
     // Delete API key.
     $delete_url = $this->developerApp->toUrl('delete-api-key-form')
-      ->setRouteParameter('consumer_key', static::$CONSUMER_KEY);
+      ->setRouteParameter('consumer_key', $this->consumer_key);
     $this->drupalGet($delete_url);
-    $this->assertSession()->pageTextContains('Are you sure that you want to delete the API key ' . static::$CONSUMER_KEY . '?');
+    $this->assertSession()->pageTextContains('Are you sure that you want to delete the API key ' . $this->consumer_key . '?');
   }
 
 }
