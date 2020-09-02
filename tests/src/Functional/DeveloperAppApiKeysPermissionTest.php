@@ -74,6 +74,13 @@ class DeveloperAppApiKeysPermissionTest extends ApigeeEdgeFunctionalTestBase {
   protected $developerApp;
 
   /**
+   * The developer app.
+   *
+   * @var \Drupal\apigee_edge\Entity\ApiProduct
+   */
+  protected $apiProduct;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp() {
@@ -108,12 +115,12 @@ class DeveloperAppApiKeysPermissionTest extends ApigeeEdgeFunctionalTestBase {
     if ($keys = $this->developerApp->getCredentials()) {
       $credential = reset($keys);
       $this->consumer_key = $credential->getConsumerKey();
-      $apiProduct = $this->createProduct();
+      $this->apiProduct = $this->createProduct();
 
       /* @var \Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface $appCredentialController */
       $appCredentialController = \Drupal::service('apigee_edge.controller.developer_app_credential_factory')
         ->developerAppCredentialController($this->developerApp->getAppOwner(), $this->developerApp->getName());
-      $appCredentialController->addProducts($this->consumer_key, [$apiProduct->getName()]);
+      $appCredentialController->addProducts($this->consumer_key, [$this->apiProduct->getName()]);
     }
 
   }
@@ -125,7 +132,6 @@ class DeveloperAppApiKeysPermissionTest extends ApigeeEdgeFunctionalTestBase {
     $this->stack->reset();
     try {
       if ($this->account) {
-        $this->queueDeveloperResponse($this->account);
         $developer = \Drupal::entityTypeManager()
           ->getStorage('developer')
           ->create([
@@ -136,6 +142,10 @@ class DeveloperAppApiKeysPermissionTest extends ApigeeEdgeFunctionalTestBase {
 
       if ($this->developerApp) {
         $this->developerApp->delete();
+      }
+
+      if ($this->apiProduct) {
+        $this->apiProduct->delete();
       }
     }
     catch (\Exception $exception) {

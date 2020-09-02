@@ -22,6 +22,7 @@ namespace Drupal\Tests\apigee_edge\Functional;
 use Apigee\Edge\Api\Management\Entity\App;
 use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
 use Drupal\apigee_edge\Entity\ApiProduct;
+use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 
@@ -38,14 +39,7 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
    *
    * @var string
    */
-  public static $CONSUMER_KEY = "dMHy6YlXjGerx7uyZocwP0LOEQgcUSEp";
-
-  /**
-   * The app name.
-   *
-   * @var string
-   */
-  public static $APP_NAME = "New App";
+  protected $consumer_key;
 
   /**
    * {@inheritdoc}
@@ -81,10 +75,19 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
   protected $apiProducts;
 
   /**
+   * The AppCredentialController service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface
+   */
+  protected $appCredentialController;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp() {
     parent::setUp();
+
+    $this->appCredentialController = \Drupal::service('apigee_edge.controller.developer_app_credential_factory');
 
     $this->account = $this->createAccount([
       'add_api_key own developer_app',
@@ -95,7 +98,7 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
     $this->developer = Developer::load($this->account->getEmail());
 
     $this->developerApp = DeveloperApp::create([
-      'name' => static::$APP_NAME,
+      'name' => $this->randomMachineName(),
       'status' => App::STATUS_APPROVED,
       'developerId' => $this->developer->getDeveloperId(),
     ]);
@@ -129,6 +132,13 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
 
     $this->apiProducts = [$productOne, $productTwo];
 
+    if ($keys = $this->developerApp->getCredentials()) {
+      $credential = reset($keys);
+      $this->consumer_key = $credential->getConsumerKey();
+    }
+
+    $this->addOrganizationMatchedResponse();
+
     $this->drupalLogin($this->account);
   }
 
@@ -139,7 +149,6 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
     $this->stack->reset();
     try {
       if ($this->account) {
-        $this->queueDeveloperResponse($this->account);
         $developer = \Drupal::entityTypeManager()
           ->getStorage('developer')
           ->create([
@@ -175,23 +184,34 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function testAppApiKeyOperations() {
-    $this->queueDeveloperAppResponse($this->developerApp, 200, [
-      [
-        "consumerKey" => static::$CONSUMER_KEY,
-        "consumerSecret" => $this->randomMachineName(),
-        "status" => AppCredentialInterface::STATUS_APPROVED,
-      ],
-      [
-        "consumerKey" => $this->randomMachineName(),
-        "consumerSecret" => $this->randomMachineName(),
-        "status" => AppCredentialInterface::STATUS_APPROVED,
-      ],
-      [
-        "consumerKey" => $this->randomMachineName(),
-        "consumerSecret" => $this->randomMachineName(),
-        "status" => AppCredentialInterface::STATUS_REVOKED,
-      ],
-    ]);
+    if (empty($this->consumer_key)) {
+      $this->consumer_key = $this->randomMachineName(32);
+
+      $credentials = [
+        [
+          "consumerKey" => $this->consumer_key,
+          "consumerSecret" => $this->randomMachineName(),
+          "status" => AppCredentialInterface::STATUS_APPROVED,
+        ],
+        [
+          "consumerKey" => $this->randomMachineName(),
+          "consumerSecret" => $this->randomMachineName(),
+          "status" => AppCredentialInterface::STATUS_APPROVED,
+        ],
+        [
+          "consumerKey" => $this->randomMachineName(),
+          "consumerSecret" => $this->randomMachineName(),
+          "status" => AppCredentialInterface::STATUS_REVOKED,
+        ],
+      ];
+      $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
+    }
+    else {
+      $credController = $this->appCredentialController->developerAppCredentialController($this->developerApp->getAppOwner(), $this->developerApp->getName());
+      $credController->create($this->randomMachineName(), $this->randomMachineName());
+      $credController->create($this->randomMachineName(), $this->randomMachineName());
+    }
+
     $this->drupalGet($this->developerApp->toUrl('canonical-by-developer'));
     $this->assertSession()->elementContains('css', '.app-credential:first-child .dropbutton', 'Revoke');
     $this->assertSession()->elementContains('css', '.app-credential:first-child .dropbutton', 'Delete');
@@ -203,18 +223,28 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
    * @throws \Exception
    */
   public function testAppApiKeyAddSingle() {
-    $credentials = [
-      [
-        // Use one api product.
-        "apiProducts" => [$this->apiProducts[0]],
-        "consumerKey" => static::$CONSUMER_KEY,
-        "consumerSecret" => $this->randomMachineName(),
-        "status" => AppCredentialInterface::STATUS_APPROVED,
-      ]
-    ];
-    $this->queueDeveloperAppResponse($this->developerApp);
-    $this->addOrganizationMatchedResponse();
+    $credentials = [];
+    if (empty($this->consumer_key)) {
+      $this->consumer_key = $this->randomMachineName(32);
+
+      $credentials = [
+        [
+          // Use one api product.
+          "apiProducts" => [$this->apiProducts[0]],
+          "consumerKey" => $this->consumer_key,
+          "consumerSecret" => $this->randomMachineName(),
+          "status" => AppCredentialInterface::STATUS_APPROVED,
+        ],
+      ];
+    }
+    else {
+      $credController = $this->appCredentialController->developerAppCredentialController($this->developerApp->getAppOwner(), $this->developerApp->getName());
+      $credController->addProducts($this->consumer_key, [$this->apiProducts[0]->getName()]);
+    }
+
     $path = $this->developerApp->toUrl('add-api-key-form');
+
+    $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->drupalGet($path);
@@ -229,7 +259,7 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
       'expiry' => 'date',
       'expiry_date' => "07/20/2030",
     ], 'Confirm');
-    $this->assertSession()->pageTextContains('New API key added to ' . static::$APP_NAME . '.');
+    $this->assertSession()->pageTextContains('New API key added to ' . $this->developerApp->getName() . '.');
     $this->assertSession()->elementContains('css', '.app-credential .api-product-list-row', 'API One');
   }
 
@@ -238,26 +268,36 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
    *
    * @throws \Exception
    */
-  public function testAppApiKeyAddMutiple() {
+  public function testAppApiKeyAddMultiple() {
     // Start with two credentials with different issuedAt dates and different products.
-    $credentials = [
-      [
-        "apiProducts" => [$this->apiProducts[0]],
-        "consumerKey" => static::$CONSUMER_KEY,
-        "consumerSecret" => $this->randomMachineName(),
-        "status" => AppCredentialInterface::STATUS_APPROVED,
-        "issuedAt" => 1594973277149,
-      ],
-      [
-        "apiProducts" => [$this->apiProducts[1]],
-        "consumerKey" => static::$CONSUMER_KEY,
-        "consumerSecret" => $this->randomMachineName(),
-        "status" => AppCredentialInterface::STATUS_APPROVED,
-        "issuedAt" => 1594973277300,
-      ]
-    ];
+    $credentials = [];
+    if (empty($this->consumer_key)) {
+      $this->consumer_key = $this->randomMachineName(32);
+
+      $credentials = [
+        [
+          "apiProducts" => [$this->apiProducts[0]],
+          "consumerKey" => $this->consumer_key,
+          "consumerSecret" => $this->randomMachineName(),
+          "status" => AppCredentialInterface::STATUS_APPROVED,
+          "issuedAt" => 1594973277149,
+        ],
+        [
+          "apiProducts" => [$this->apiProducts[1]],
+          "consumerKey" => $this->randomMachineName(32),
+          "consumerSecret" => $this->randomMachineName(),
+          "status" => AppCredentialInterface::STATUS_APPROVED,
+          "issuedAt" => 1594973277300,
+        ]
+      ];
+    }
+    else {
+      $credController = $this->appCredentialController->developerAppCredentialController($this->developerApp->getAppOwner(), $this->developerApp->getName());
+      $credController->addProducts($this->consumer_key, [$this->apiProducts[0]->getName()]);
+      $credController->generate([$this->apiProducts[1]->getName()], $this->developerApp->getAttributes(), '');
+    }
+
     $this->queueDeveloperAppResponse($this->developerApp);
-    $this->addOrganizationMatchedResponse();
     $path = $this->developerApp->toUrl('add-api-key-form');
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
@@ -278,7 +318,7 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
       'expiry' => 'date',
       'expiry_date' => "07/20/2030",
     ], 'Confirm');
-    $this->assertSession()->pageTextContains('New API key added to ' . static::$APP_NAME . '.');
+    $this->assertSession()->pageTextContains('New API key added to ' . $this->developerApp->getName() . '.');
     $this->assertSession()->elementContains('css', '.app-credential:last-child .api-product-list-row', 'API Two');
   }
 
@@ -289,33 +329,43 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function testAppApiKeyRevoke() {
-    $credentials = [
-      [
-        "consumerKey" => static::$CONSUMER_KEY,
-        "consumerSecret" => $this->randomMachineName(),
-        "status" => AppCredentialInterface::STATUS_APPROVED,
-      ],
-      [
-        "consumerKey" => $this->randomMachineName(),
-        "consumerSecret" => $this->randomMachineName(),
-        "status" => AppCredentialInterface::STATUS_APPROVED,
-      ]
-    ];
+    $credentials = [];
+    if (empty($this->consumer_key)) {
+      $this->consumer_key = $this->randomMachineName(32);
+
+      $credentials = [
+        [
+          "consumerKey" => $this->consumer_key,
+          "consumerSecret" => $this->randomMachineName(),
+          "status" => AppCredentialInterface::STATUS_APPROVED,
+        ],
+        [
+          "consumerKey" => $this->randomMachineName(),
+          "consumerSecret" => $this->randomMachineName(),
+          "status" => AppCredentialInterface::STATUS_APPROVED,
+        ]
+      ];
+    }
+    else {
+      $credController = $this->appCredentialController->developerAppCredentialController($this->developerApp->getAppOwner(), $this->developerApp->getName());
+      $credController->create($this->randomMachineName(), $this->randomMachineName());
+    }
+
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $path = $this->developerApp->toUrl('revoke-api-key-form')
-      ->setRouteParameter('consumer_key', static::$CONSUMER_KEY);
+      ->setRouteParameter('consumer_key', $this->consumer_key);
     $this->drupalGet($path);
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->stack->queueMockResponse('no_content');
-    $credentials[0]['status'] = AppCredentialInterface::STATUS_REVOKED;
+
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->drupalPostForm(NULL, [], 'Revoke');
-    $this->assertSession()->pageTextContains('API key ' . static::$CONSUMER_KEY . ' revoked from ' . static::$APP_NAME . '.');
+    $this->assertSession()->pageTextContains('API key ' . $this->consumer_key . ' revoked from ' . $this->developerApp->getName() . '.');
 
     // Access denied for the only active key.
     $credentials = [
       [
-        "consumerKey" => static::$CONSUMER_KEY,
+        "consumerKey" => $this->consumer_key,
         "consumerSecret" => $this->randomMachineName(),
         "status" => AppCredentialInterface::STATUS_APPROVED,
       ],
@@ -332,21 +382,31 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function testAppApiKeyDelete() {
-    $credentials = [
-      [
-        "consumerKey" => static::$CONSUMER_KEY,
-        "consumerSecret" => $this->randomMachineName(),
-        "status" => AppCredentialInterface::STATUS_APPROVED,
-      ],
-      [
-        "consumerKey" => $this->randomMachineName(),
-        "consumerSecret" => $this->randomMachineName(),
-        "status" => AppCredentialInterface::STATUS_APPROVED,
-      ],
-    ];
+    $credentials = [];
+    if (empty($this->consumer_key)) {
+      $this->consumer_key = $this->randomMachineName(32);
+
+      $credentials = [
+        [
+          "consumerKey" => $this->consumer_key,
+          "consumerSecret" => $this->randomMachineName(),
+          "status" => AppCredentialInterface::STATUS_APPROVED,
+        ],
+        [
+          "consumerKey" => $this->randomMachineName(),
+          "consumerSecret" => $this->randomMachineName(),
+          "status" => AppCredentialInterface::STATUS_APPROVED,
+        ],
+      ];
+    }
+    else {
+      $credController = $this->appCredentialController->developerAppCredentialController($this->developerApp->getAppOwner(), $this->developerApp->getName());
+      $credController->create($this->randomMachineName(), $this->randomMachineName());
+    }
+
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $path = $this->developerApp->toUrl('delete-api-key-form')
-      ->setRouteParameter('consumer_key', static::$CONSUMER_KEY);
+      ->setRouteParameter('consumer_key', $this->consumer_key);
     $this->drupalGet($path);
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     unset($credentials[0]);
@@ -354,12 +414,12 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->stack->queueMockResponse('no_content');
     $this->drupalPostForm(NULL, [], 'Delete');
-    $this->assertSession()->pageTextContains('API key ' . static::$CONSUMER_KEY . ' deleted from ' . static::$APP_NAME . '.');
+    $this->assertSession()->pageTextContains('API key ' . $this->consumer_key . ' deleted from ' . $this->developerApp->getName() . '.');
 
     // Access denied for the only active key.
     $credentials = [
       [
-        "consumerKey" => static::$CONSUMER_KEY,
+        "consumerKey" => $this->consumer_key,
         "consumerSecret" => $this->randomMachineName(),
         "status" => AppCredentialInterface::STATUS_APPROVED,
       ],
