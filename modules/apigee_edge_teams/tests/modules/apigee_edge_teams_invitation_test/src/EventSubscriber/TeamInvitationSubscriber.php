@@ -37,7 +37,6 @@ class TeamInvitationSubscriber implements EventSubscriberInterface {
     $events[TeamInvitationEvents::CREATED][] = 'onCreated';
     $events[TeamInvitationEvents::DECLINED][] = 'onDeclined';
     $events[TeamInvitationEvents::ACCEPTED][] = 'onAccepted';
-    $events[TeamInvitationEvents::CANCELLED][] = 'onCancelled';
     return $events;
   }
 
@@ -74,18 +73,6 @@ class TeamInvitationSubscriber implements EventSubscriberInterface {
   public function onAccepted(TeamInvitationEventInterface $event) {
     $team_invitation = $event->getTeamInvitation();
     $team_invitation->setLabel("ACCEPTED")
-      ->save();
-  }
-
-  /**
-   * Callback for on cancelled event.
-   *
-   * @param \Drupal\apigee_edge_teams\Event\TeamInvitationEventInterface $event
-   *   The event.
-   */
-  public function onCancelled(TeamInvitationEventInterface $event) {
-    $team_invitation = $event->getTeamInvitation();
-    $team_invitation->setLabel("CANCELLED")
       ->save();
   }
 

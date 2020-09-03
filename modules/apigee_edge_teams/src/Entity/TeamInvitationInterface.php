@@ -43,11 +43,6 @@ interface TeamInvitationInterface extends ContentEntityInterface {
   const STATUS_DECLINED = 2;
 
   /**
-   * Invitation is cancelled.
-   */
-  const STATUS_CANCELLED = -1;
-
-  /**
    * Returns the label for this invitation.
    *
    * @return string
@@ -165,13 +160,5 @@ interface TeamInvitationInterface extends ContentEntityInterface {
    *   TRUE if declined. FALSE otherwise.
    */
   public function isDeclined(): bool;
-
-  /**
-   * Returns TRUE if the invitation is cancelled.
-   *
-   * @return bool
-   *   TRUE if cancelled. FALSE otherwise.
-   */
-  public function isCancelled(): bool;
 
 }

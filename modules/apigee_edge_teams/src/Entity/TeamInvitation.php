@@ -97,7 +97,6 @@ class TeamInvitation extends ContentEntityBase implements TeamInvitationInterfac
         TeamInvitationInterface::STATUS_PENDING => t('Pending'),
         TeamInvitationInterface::STATUS_ACCEPTED => t('Accepted'),
         TeamInvitationInterface::STATUS_DECLINED => t('Declined'),
-        TeamInvitationInterface::STATUS_CANCELLED => t('Cancelled'),
       ])
       ->setRequired(TRUE);
 
@@ -217,13 +216,6 @@ class TeamInvitation extends ContentEntityBase implements TeamInvitationInterfac
    */
   public function isDeclined(): bool {
     return $this->getStatus() === TeamInvitationInterface::STATUS_DECLINED;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isCancelled(): bool {
-    return $this->getStatus() === TeamInvitationInterface::STATUS_CANCELLED;
   }
 
   /**

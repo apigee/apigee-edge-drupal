@@ -101,11 +101,6 @@ class TeamInvitationEventsTest extends KernelTestBase {
     $team_invitation->setStatus(TeamInvitationInterface::STATUS_ACCEPTED)->save();
     $this->assertSame("ACCEPTED", $team_invitation->getLabel());
     $this->assertTrue($team_invitation->isAccepted());
-
-    // Cancelled.
-    $team_invitation->setStatus(TeamInvitationInterface::STATUS_CANCELLED)->save();
-    $this->assertSame("CANCELLED", $team_invitation->getLabel());
-    $this->assertTrue($team_invitation->isCancelled());
   }
 
 }
