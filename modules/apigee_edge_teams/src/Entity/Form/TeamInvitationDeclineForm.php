@@ -55,6 +55,8 @@ class TeamInvitationDeclineForm extends TeamInvitationUpdateStatusFormBase {
     $this->messenger()->addMessage($this->t('You have declined the invitation to join the %label team.', [
       '%label' => $this->entity->getTeam()->label(),
     ]));
+
+    $form_state->setRedirect('<front>');
   }
 
 }
