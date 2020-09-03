@@ -121,12 +121,22 @@ class TeamInvitationStorage extends SqlContentEntityStorage implements TeamInvit
         if (!$original->isAccepted() && $entity->isAccepted()) {
           $this->eventDispatcher->dispatch(TeamInvitationEvents::ACCEPTED, new TeamInvitationEvent($entity));
         }
-
-        if (!$original->isCancelled() && $entity->isCancelled()) {
-          $this->eventDispatcher->dispatch(TeamInvitationEvents::CANCELLED, new TeamInvitationEvent($entity));
-        }
         break;
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function loadByRecipient(string $email, ?string $team_id = NULL): array {
+    $query = $this->getQuery()->condition('recipient', $email);
+
+    if ($team_id) {
+      $query->condition('team', $team_id);
+    }
+
+    $ids = $query->execute();
+    return $this->loadMultiple(array_values($ids));
   }
 
 }

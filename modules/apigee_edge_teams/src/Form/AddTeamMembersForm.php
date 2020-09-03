@@ -21,13 +21,11 @@
 namespace Drupal\apigee_edge_teams\Form;
 
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
-use Drupal\apigee_edge_teams\Entity\TeamRole;
+use Drupal\apigee_edge_teams\Entity\TeamInvitationInterface;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Utility\Error;
-use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -39,8 +37,6 @@ class AddTeamMembersForm extends TeamMembersFormBase {
    * The team membership manager service.
    *
    * @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface
-   *
-   * @deprecated in apigee_edge_teams:8.x-1.12 and is removed from apigee_edge_teams:2.x
    */
   protected $teamMembershipManager;
 
@@ -56,9 +52,9 @@ class AddTeamMembersForm extends TeamMembersFormBase {
   /**
    * The team invitation storage.
    *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
+   * @var \Drupal\apigee_edge_teams\Entity\Storage\TeamInvitationStorageInterface
    */
-  protected $invitationStorage;
+  protected $teamInvitationStorage;
 
   /**
    * AddTeamMemberForms constructor.
@@ -73,7 +69,7 @@ class AddTeamMembersForm extends TeamMembersFormBase {
 
     $this->teamMembershipManager = $team_membership_manager;
     $this->userStorage = $entity_type_manager->getStorage('user');
-    $this->invitationStorage = $entity_type_manager->getStorage('team_invitation');
+    $this->teamInvitationStorage = $entity_type_manager->getStorage('team_invitation');
   }
 
   /**
@@ -181,6 +177,44 @@ class AddTeamMembersForm extends TeamMembersFormBase {
   /**
    * {@inheritdoc}
    */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    $emails = array_map('trim', explode(',', $form_state->getValue('developers', '')));
+    $members = $this->teamMembershipManager->getMembers($this->team->id());
+    $already_members = array_unique(array_intersect($emails, $members));
+
+    // Validate existing members.
+    if (count($already_members)) {
+      $form_state->setErrorByName('developers', $this->formatPlural(count($already_members), 'The following developer is already a member of the team: %developers.', 'The following developers are already members of the team: %developers.', [
+        '%developers' => implode(', ', $already_members),
+      ]));
+    }
+
+    // Validate pending invitations.
+    $invites = array_diff($emails, $members);
+    $has_invitation = [];
+    foreach ($invites as $invite) {
+      $pending_invitations = array_filter($this->teamInvitationStorage->loadByRecipient($invite), function (TeamInvitationInterface $team_invitation) {
+        return $team_invitation->isPending();
+      });
+
+      if (count($pending_invitations)) {
+        $has_invitation[] = $invite;
+      }
+    }
+
+    $has_invitation = array_unique($has_invitation);
+    if (count($has_invitation)) {
+      $form_state->setErrorByName('developers', $this->formatPlural(count($has_invitation), 'The following developer has already been invited to the team: %developers. To re-invite them, please delete the pending invitation and try again.', 'The following developers have already been invited to the team: %developers. To re-invite them, please delete the pending invitations and try again.', [
+        '%developers' => implode(', ', $has_invitation),
+      ]));
+    }
+
+    parent::validateForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $emails = array_map('trim', explode(',', $form_state->getValue('developers', '')));
     $selected_roles = $this->filterSelectedRoles($form_state->getValue('team_roles', []));
@@ -190,7 +224,7 @@ class AddTeamMembersForm extends TeamMembersFormBase {
 
     // Create an invitation for each email.
     foreach ($emails as $email) {
-      $this->invitationStorage->create([
+      $this->teamInvitationStorage->create([
         'team' => ['target_id' => $this->team->id()],
         'team_roles' => array_values(array_map(function (string $role) {
           return ['target_id' => $role];

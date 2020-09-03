@@ -27,4 +27,17 @@ use Drupal\Core\Entity\EntityStorageInterface;
  */
 interface TeamInvitationStorageInterface extends EntityStorageInterface {
 
+  /**
+   * Returns all team_invitation entities for the provided email and team id.
+   *
+   * @param string $email
+   *   The email address.
+   * @param string|null $team_id
+   *   The team id.
+   *
+   * @return array
+   *   An array of team_invitation entities for this email address.
+   */
+  public function loadByRecipient(string $email, ?string $team_id = NULL): array;
+
 }
