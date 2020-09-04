@@ -8,3 +8,4 @@ permissions:
   - team_manage_members
   - team_app_delete
   - team_app_update
+  - team_invitation_administer
