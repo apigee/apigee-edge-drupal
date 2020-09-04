@@ -27,7 +27,7 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Provides a base class for updating status for a team_invitation.
  */
-abstract class TeamInvitationUpdateStatusFormBase extends ContentEntityConfirmFormBase {
+abstract class TeamInvitationFormBase extends ContentEntityConfirmFormBase {
 
   /**
    * The team.

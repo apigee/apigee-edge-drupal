@@ -50,6 +50,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
  *       "delete" = "Drupal\apigee_edge_teams\Entity\Form\TeamInvitationDeleteForm",
  *       "accept" = "Drupal\apigee_edge_teams\Entity\Form\TeamInvitationAcceptForm",
  *       "decline" = "Drupal\apigee_edge_teams\Entity\Form\TeamInvitationDeclineForm",
+ *       "resend" = "Drupal\apigee_edge_teams\Entity\Form\TeamInvitationResendForm",
  *     },
  *     "route_provider" = {
  *        "html" = "Drupal\apigee_edge_teams\Entity\TeamInvitationRouteProvider",
@@ -66,6 +67,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
  *     "delete-form" = "/teams/{team}/invitations/{team_invitation}/delete",
  *     "accept-form" = "/teams/{team}/invitations/{team_invitation}/accept",
  *     "decline-form" = "/teams/{team}/invitations/{team_invitation}/decline",
+ *     "resend-form" = "/teams/{team}/invitations/{team_invitation}/resend",
  *   },
  * )
  */
@@ -237,7 +239,7 @@ class TeamInvitation extends ContentEntityBase implements TeamInvitationInterfac
 
     // Set a default label.
     if ($this->get('label')->isEmpty()) {
-      $this->setLabel($this->t('Invitation to join @team as @roles.', [
+      $this->setLabel($this->t('Invitation to join @team as @roles', [
         '@team' => $this->getTeam()->label(),
         '@roles' => implode(', ', array_map(function (TeamRoleInterface $team_role) {
           return $team_role->label();

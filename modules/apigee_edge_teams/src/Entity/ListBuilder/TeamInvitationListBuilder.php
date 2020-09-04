@@ -51,6 +51,14 @@ class TeamInvitationListBuilder extends EntityListBuilder {
       ];
     }
 
+    if ($entity->access('resend') && $entity->hasLinkTemplate('resend-form')) {
+      $operations['resend'] = [
+        'title' => $this->t('Resend'),
+        'weight' => 100,
+        'url' => $this->ensureDestination($entity->toUrl('resend-form'))->setRouteParameter('team', $entity->getTeam()->id()),
+      ];
+    }
+
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInvitationInterface $entity */
     if ($entity->access('delete') && $entity->hasLinkTemplate('delete-form')) {
       $operations['delete'] = [

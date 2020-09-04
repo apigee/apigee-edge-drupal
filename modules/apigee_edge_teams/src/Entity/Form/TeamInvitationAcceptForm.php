@@ -26,7 +26,7 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Provides the accept form for team_invitation.
  */
-class TeamInvitationAcceptForm extends TeamInvitationUpdateStatusFormBase {
+class TeamInvitationAcceptForm extends TeamInvitationFormBase {
 
   /**
    * {@inheritdoc}

@@ -47,4 +47,13 @@ class TeamInvitationTitleProvider extends EntityController implements TeamInvita
     }
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function resendTitle(RouteMatchInterface $route_match, EntityInterface $_entity = NULL) {
+    if ($entity = $this->doGetEntity($route_match, $_entity)) {
+      return $this->t('Resend %label', ['%label' => $entity->label()]);
+    }
+  }
+
 }

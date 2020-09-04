@@ -24,11 +24,10 @@ use Drupal\apigee_edge_teams\Entity\TeamRole;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\apigee_edge_teams\Event\TeamInvitationEventInterface;
 use Drupal\apigee_edge_teams\Event\TeamInvitationEvents;
+use Drupal\apigee_edge_teams\TeamInvitationNotifierInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
-use Drupal\Core\Mail\MailManagerInterface;
 use Drupal\Core\Utility\Error;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -66,18 +65,11 @@ class TeamInvitationSubscriber implements EventSubscriberInterface {
   protected $teamMemberRoleStorage;
 
   /**
-   * The mail service.
+   * The team_invitation notifier service.
    *
-   * @var \Drupal\Core\Mail\MailManagerInterface
+   * @var \Drupal\apigee_edge_teams\TeamInvitationNotifierInterface
    */
-  protected $mailManager;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
+  protected $teamInvitationNotifier;
 
   /**
    * TeamInvitationSubscriber constructor.
@@ -88,18 +80,15 @@ class TeamInvitationSubscriber implements EventSubscriberInterface {
    *   The entity type manager.
    * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
    *   The team membership manager.
-   * @param \Drupal\Core\Mail\MailManagerInterface $mail_manager
-   *   The mail service.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
-   *   The language manager.
+   * @param \Drupal\apigee_edge_teams\TeamInvitationNotifierInterface $team_invitation_notifier
+   *   The team_invitation notifier service.
    */
-  public function __construct(LoggerChannelInterface $logger, EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager, MailManagerInterface $mail_manager, LanguageManagerInterface $language_manager) {
+  public function __construct(LoggerChannelInterface $logger, EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager, TeamInvitationNotifierInterface $team_invitation_notifier) {
     $this->logger = $logger;
     $this->teamMembershipManager = $team_membership_manager;
     $this->entityTypeManager = $entity_type_manager;
     $this->teamMemberRoleStorage = $this->entityTypeManager->getStorage('team_member_role');
-    $this->mailManager = $mail_manager;
-    $this->languageManager = $language_manager;
+    $this->teamInvitationNotifier = $team_invitation_notifier;
   }
 
   /**
@@ -123,25 +112,8 @@ class TeamInvitationSubscriber implements EventSubscriberInterface {
       return;
     }
 
-    $email = $team_invitation->getRecipient();
-    $langcode = $this->languageManager->getDefaultLanguage()->getId();
-
-    $params = [
-      'team_invitation' => $team_invitation,
-      'user' => NULL,
-    ];
-
-    /** @var \Drupal\user\UserInterface $user */
-    $user = user_load_by_mail($email);
-    if ($user) {
-      $langcode = $user->getPreferredLangcode();
-      $params['user'] = $user;
-    }
-
-    // Send email notification.
-    $message = $this->mailManager->mail('apigee_edge_teams', 'team_invitation_created', $email, $langcode, $params);
-    if ($message['result']) {
-      $this->logger->notice('Successfully sent invitation email to %recipient', ['%recipient' => $email]);
+    if ($this->teamInvitationNotifier->sendNotificationsFor($team_invitation)) {
+      $this->logger->notice('Successfully sent invitation email to %recipient.', ['%recipient' => $team_invitation->getRecipient()]);
     }
   }
 
@@ -182,6 +154,7 @@ class TeamInvitationSubscriber implements EventSubscriberInterface {
         return $team_member_role->id();
       }, $team_invitation->getTeamRoles());
 
+      /** @var \Drupal\user\UserInterface $user */
       $user = user_load_by_mail($team_invitation->getRecipient());
 
       if (!$user) {

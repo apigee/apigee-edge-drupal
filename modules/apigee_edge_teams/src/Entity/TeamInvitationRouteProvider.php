@@ -50,6 +50,10 @@ class TeamInvitationRouteProvider extends DefaultHtmlRouteProvider {
       $collection->add("entity.{$entity_type_id}.decline_form", $decline_form);
     }
 
+    if ($resend_form = $this->getResentFormRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.resend_form", $resend_form);
+    }
+
     return $collection;
   }
 
@@ -71,6 +75,28 @@ class TeamInvitationRouteProvider extends DefaultHtmlRouteProvider {
       $route->setDefault('entity_type_id', $entity_type_id);
       $this->ensureTeamParameter($route);
       $route->setRequirement('_entity_access', "{$entity_type_id}.delete");
+      return $route;
+    }
+  }
+
+  /**
+   * Gets the notify-form route for team_invitation.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   *
+   * @return \Symfony\Component\Routing\Route|null
+   *   The generated route, if available.
+   */
+  protected function getResentFormRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('resend-form')) {
+      $entity_type_id = $entity_type->id();
+      $route = new Route($entity_type->getLinkTemplate('resend-form'));
+      $route->setDefault('_entity_form', "{$entity_type_id}.resend");
+      $route->setDefault('_title_callback', TeamInvitationTitleProvider::class . '::resendTitle');
+      $route->setDefault('entity_type_id', $entity_type_id);
+      $this->ensureTeamParameter($route);
+      $route->setRequirement('_entity_access', "{$entity_type_id}.resend");
       return $route;
     }
   }

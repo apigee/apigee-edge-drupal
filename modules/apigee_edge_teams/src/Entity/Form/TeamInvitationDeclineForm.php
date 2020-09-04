@@ -26,7 +26,7 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Provides the decline form for team_invitation.
  */
-class TeamInvitationDeclineForm extends TeamInvitationUpdateStatusFormBase {
+class TeamInvitationDeclineForm extends TeamInvitationFormBase {
 
   /**
    * {@inheritdoc}
