@@ -75,10 +75,16 @@ function apigee_edge_teams_install() {
   }
 }
 
+
 /**
  * Enable views dependency and configure team invitation emails.
  */
-function apigee_edge_teams_update_8101() {
+function apigee_edge_teams_update_8701() {
+  // Install 'team_invitation' entity.
+  \Drupal::entityTypeManager()->clearCachedDefinitions();
+  $entity_definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  $entity_definition_update_manager->installEntityType($entity_definition_update_manager->getEntityType('team_invitation'));
+
   // Install 'views' module.
   \Drupal::service('module_installer')->install(['views']);
 
@@ -95,9 +101,24 @@ function apigee_edge_teams_update_8101() {
 }
 
 /**
- * Assign accept/decline team invitations permissions to authenticated users.
+ * Assign "team_invitation_administer" permission to team administrators.
  */
-function apigee_edge_teams_update_8102() {
+function apigee_edge_teams_update_8702() {
+  $role = 'admin';
+  $permissions = [
+    'team_invitation_administer',
+  ];
+  /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamRoleStorageInterface $storage */
+  $storage = Drupal::entityTypeManager()->getStorage('team_role');
+  /** @var \Drupal\apigee_edge_teams\Entity\TeamRoleInterface $admin_role */
+  $admin_role = $storage->load($role);
+  $storage->changePermissions($role, $admin_role->getPermissions() + array_combine($permissions, $permissions));
+}
+
+/**
+ * Assign accept and decline team invitations permissions to authenticated users.
+ */
+function apigee_edge_teams_update_8703() {
   if (\Drupal::moduleHandler()->moduleExists('user')) {
     $authenticated_user_permissions = [
       'accept own team invitation',
