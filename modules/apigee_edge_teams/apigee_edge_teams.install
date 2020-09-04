@@ -77,13 +77,13 @@ function apigee_edge_teams_install() {
 
 
 /**
- * Enable views dependency and configure team invitation emails.
+ * Install team_invitation entity, dependencies and config.
  */
 function apigee_edge_teams_update_8701() {
   // Install 'team_invitation' entity.
   \Drupal::entityTypeManager()->clearCachedDefinitions();
   $entity_definition_update_manager = \Drupal::entityDefinitionUpdateManager();
-  $entity_definition_update_manager->installEntityType($entity_definition_update_manager->getEntityType('team_invitation'));
+  $entity_definition_update_manager->installEntityType(\Drupal::entityTypeManager()->getDefinition('team_invitation'));
 
   // Install 'views' module.
   \Drupal::service('module_installer')->install(['views']);
