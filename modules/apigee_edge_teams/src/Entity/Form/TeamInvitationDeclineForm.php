@@ -56,7 +56,7 @@ class TeamInvitationDeclineForm extends TeamInvitationUpdateStatusFormBase {
       '%label' => $this->entity->getTeam()->label(),
     ]));
 
-    $form_state->setRedirect('<front>');
+    $form_state->setRedirect('entity.team.collection');
   }
 
 }

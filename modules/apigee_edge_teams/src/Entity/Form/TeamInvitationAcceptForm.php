@@ -34,7 +34,7 @@ class TeamInvitationAcceptForm extends TeamInvitationUpdateStatusFormBase {
   public function getQuestion() {
     return $this->t('Are you sure you want to join the %label team?', [
       '%label' => $this->entity->getTeam()->label(),
-    ]);;
+    ]);
   }
 
   /**
@@ -55,6 +55,8 @@ class TeamInvitationAcceptForm extends TeamInvitationUpdateStatusFormBase {
     $this->messenger()->addMessage($this->t('You have accepted the invitation to join the %label team.', [
       '%label' => $this->entity->getTeam()->label(),
     ]));
+
+    $form_state->setRedirect('entity.team.collection');
   }
 
 }
