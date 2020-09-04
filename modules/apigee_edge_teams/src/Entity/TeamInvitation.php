@@ -119,6 +119,10 @@ class TeamInvitation extends ContentEntityBase implements TeamInvitationInterfac
       ->setDefaultValue('')
       ->setRequired(TRUE);
 
+    $fields['created'] = BaseFieldDefinition::create('created')
+      ->setLabel(t('Created'))
+      ->setDescription(t('The created time for the invitation.'));
+
     return $fields;
   }
 
@@ -195,6 +199,13 @@ class TeamInvitation extends ContentEntityBase implements TeamInvitationInterfac
   public function setTeamRoles(array $team_roles): TeamInvitationInterface {
     $this->set('team_roles', $team_roles);
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCreatedTime(): int {
+    return $this->get('created')->value;
   }
 
   /**

@@ -138,6 +138,14 @@ interface TeamInvitationInterface extends ContentEntityInterface {
   public function setRecipient(string $email): self;
 
   /**
+   * Returns the creation date for an invitation.
+   *
+   * @return int
+   *   Timestamp for the invitation creation date.
+   */
+  public function getCreatedTime(): int;
+
+  /**
    * Returns TRUE if the invitation is pending.
    *
    * @return bool
