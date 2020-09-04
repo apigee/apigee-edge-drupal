@@ -60,17 +60,6 @@ class TeamInvitationPermissionProvider extends EntityPermissionProvider {
       'restrict access' => TRUE,
     ];
 
-    $permissions['delete own team invitation'] = [
-      'title' => $this->t('Delete own team invitation'),
-      'provider' => 'apigee_edge_teams',
-    ];
-
-    $permissions['delete any team invitation'] = [
-      'title' => $this->t('Delete any team invitation'),
-      'provider' => 'apigee_edge_teams',
-      'restrict access' => TRUE,
-    ];
-
     return $permissions;
   }
 
