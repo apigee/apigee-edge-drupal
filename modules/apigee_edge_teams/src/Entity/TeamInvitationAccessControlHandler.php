@@ -89,12 +89,12 @@ final class TeamInvitationAccessControlHandler extends EntityAccessControlHandle
         ->cachePerUser();
     }
 
-    // Access allowed if user can administer team invitations for team or if
-    // user has permissions to administer all team invitations.
+    // Access allowed if user delete own or any team invitations.
     if ($operation === 'delete') {
-      return AccessResult::allowedIf(in_array('team_invitation_administer', $this->teamPermissionHandler->getDeveloperPermissionsByTeam($entity->getTeam(), $account)))
-        ->orIf(AccessResult::allowedIfHasPermission($account, 'administer team invitations'))
-        ->addCacheableDependency($entity);
+      return AccessResult::allowedIf($account->getEmail() == $entity->getRecipient())
+        ->andIf(AccessResult::allowedIfHasPermissions($account, ['delete own team invitation', 'delete any team invitation'], 'OR'))
+        ->addCacheableDependency($entity)
+        ->cachePerUser();
     }
 
     return parent::checkAccess($entity, $operation, $account);

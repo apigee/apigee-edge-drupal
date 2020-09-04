@@ -93,11 +93,15 @@ function apigee_edge_teams_update_8701() {
   $config_storage = \Drupal::service('config.storage');
   $module_path = drupal_get_path('module', 'apigee_edge_teams');
   $source = new FileStorage("$module_path/config/install");
-  $new_config = $source->read('apigee_edge_teams.team_settings');
-  $config = $config_storage->read('apigee_edge_teams.team_settings');
-  $config['team_invitation_email_existing'] = $new_config['team_invitation_email_existing'];
-  $config['team_invitation_email_new'] = $new_config['team_invitation_email_new'];
-  $config_storage->write('apigee_edge_teams.team_settings', $config);
+
+  $new_team_settings = $source->read('apigee_edge_teams.team_settings');
+  $team_settings = $config_storage->read('apigee_edge_teams.team_settings');
+  $team_settings['team_invitation_email_existing'] = $new_team_settings['team_invitation_email_existing'];
+  $team_settings['team_invitation_email_new'] = $new_team_settings['team_invitation_email_new'];
+  $config_storage->write('apigee_edge_teams.team_settings', $team_settings);
+
+  $team_invitations_view = $source->read('views.view.team_invitations');
+  $config_storage->write('views.view.team_invitations', $team_invitations_view);
 }
 
 /**

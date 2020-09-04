@@ -95,6 +95,10 @@ class TeamPermission extends AccessPluginBase {
    * {@inheritdoc}
    */
   public function access(AccountInterface $account) {
+    if ((int) $account->id() === 1) {
+      return TRUE;
+    }
+
     $team = $this->routeMatch->getParameter('team');
     if (!$team) {
       return FALSE;

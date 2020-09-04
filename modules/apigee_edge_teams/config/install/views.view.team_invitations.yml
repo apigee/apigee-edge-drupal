@@ -5,8 +5,6 @@ dependencies:
     - apigee_edge_teams
     - options
     - user
-_core:
-  default_config_hash: QmokYfalgC8DywwqWQWMxIkYTOP-uf-Q2oLO_tnYIvg
 id: team_invitations
 label: 'Team invitations'
 module: views
