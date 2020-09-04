@@ -38,6 +38,7 @@ class TeamInvitationStatusFilter extends InOperator {
       TeamInvitationInterface::STATUS_PENDING => $this->t('Pending'),
       TeamInvitationInterface::STATUS_ACCEPTED => $this->t('Accepted'),
       TeamInvitationInterface::STATUS_DECLINED => $this->t('Declined'),
+      TeamInvitationInterface::STATUS_EXPIRED => $this->t('Expired'),
     ];
 
     return $this->valueOptions;

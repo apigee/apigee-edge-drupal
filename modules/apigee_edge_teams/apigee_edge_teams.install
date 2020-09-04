@@ -89,15 +89,20 @@ function apigee_edge_teams_update_8701() {
   \Drupal::service('module_installer')->install(['views']);
 
   // Install new config.
+  $settings_to_sync = [
+    'team_invitation_expiry',
+    'team_invitation_email_existing',
+    'team_invitation_email_new',
+  ];
   /** @var \Drupal\Core\Config\StorageInterface $config_storage */
   $config_storage = \Drupal::service('config.storage');
   $module_path = drupal_get_path('module', 'apigee_edge_teams');
   $source = new FileStorage("$module_path/config/install");
-
   $new_team_settings = $source->read('apigee_edge_teams.team_settings');
   $team_settings = $config_storage->read('apigee_edge_teams.team_settings');
-  $team_settings['team_invitation_email_existing'] = $new_team_settings['team_invitation_email_existing'];
-  $team_settings['team_invitation_email_new'] = $new_team_settings['team_invitation_email_new'];
+  foreach ($settings_to_sync as $setting) {
+    $team_settings[$setting] = $new_team_settings[$setting];
+  }
   $config_storage->write('apigee_edge_teams.team_settings', $team_settings);
 
   $team_invitations_view = $source->read('views.view.team_invitations');

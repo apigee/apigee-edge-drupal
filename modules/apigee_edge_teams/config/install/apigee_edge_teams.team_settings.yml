@@ -5,6 +5,7 @@ cache_expiration: 900
 non_member_team_apps_visible_api_products:
   - public
   - private
+team_invitation_expiry: 7
 team_invitation_email_existing:
   subject: '[[site:name]] You have been invited to join the [team_invitation:team_name] team'
   body: "Hi [user:display-name\r\n\r\nYou have been invited to join the [team_invitation:team_name] team.\r\n\r\nUse the following links to accept or decline the invitation:\r\n\r\n- Accept invitation: [team_invitation:url_accept]\r\n- Decline invitation: [team_invitation:url_decline]\r\n\r\n--  [site:name] team"

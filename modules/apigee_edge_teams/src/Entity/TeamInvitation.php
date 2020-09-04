@@ -99,6 +99,7 @@ class TeamInvitation extends ContentEntityBase implements TeamInvitationInterfac
         TeamInvitationInterface::STATUS_PENDING => t('Pending'),
         TeamInvitationInterface::STATUS_ACCEPTED => t('Accepted'),
         TeamInvitationInterface::STATUS_DECLINED => t('Declined'),
+        TeamInvitationInterface::STATUS_EXPIRED => t('Expired'),
       ])
       ->setRequired(TRUE);
 
@@ -124,6 +125,10 @@ class TeamInvitation extends ContentEntityBase implements TeamInvitationInterfac
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Created'))
       ->setDescription(t('The created time for the invitation.'));
+
+    $fields['expiry'] = BaseFieldDefinition::create('timestamp')
+      ->setLabel(t('Expiry'))
+      ->setDescription(t('The expiry time for the invitation.'));
 
     return $fields;
   }
@@ -213,6 +218,28 @@ class TeamInvitation extends ContentEntityBase implements TeamInvitationInterfac
   /**
    * {@inheritdoc}
    */
+  public function setExpiryTime(int $expiry_time): TeamInvitationInterface {
+    $this->set('expiry', $expiry_time);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getExpiryTime(): int {
+    return $this->get('expiry')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isExpired(): bool {
+    return $this->getStatus() === TeamInvitationInterface::STATUS_EXPIRED || $this->getExpiryTime() < \Drupal::time()->getCurrentTime();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function isPending(): bool {
     return $this->getStatus() === TeamInvitationInterface::STATUS_PENDING;
   }
@@ -245,6 +272,12 @@ class TeamInvitation extends ContentEntityBase implements TeamInvitationInterfac
           return $team_role->label();
         }, $this->getTeamRoles()))
       ]));
+    }
+
+    // Set the expiry date.
+    if ($this->get('expiry')->isEmpty()) {
+      $days = \Drupal::config('apigee_edge_teams.team_settings')->get('team_invitation_expiry');
+      $this->setExpiryTime($this->getCreatedTime() + (24 * 60 * 60 * (int) $days));
     }
   }
 

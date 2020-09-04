@@ -235,13 +235,12 @@ class AddTeamMembersForm extends TeamMembersFormBase {
 
     $context = [
       '@developers' => implode(', ', $emails),
-      '@team' => mb_strtolower($this->team->getEntityType()->getSingularLabel()),
-      '%team_id' => $this->team->id(),
+      '@team' => $this->team->label(),
     ];
 
     $this->messenger()->addStatus($this->formatPlural(count($emails),
-      $this->t('The following developer has been invited to @team: @developers', $context),
-      $this->t('The following developers have been invited to @team: @developers', $context
+      $this->t('The following developer has been invited to the @team team: @developers.', $context),
+      $this->t('The following developers have been invited to the @team team: @developers.', $context
     )));
 
     $form_state->setRedirectUrl($this->team->toUrl('members'));

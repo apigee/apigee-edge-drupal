@@ -94,8 +94,11 @@ class TeamInvitationResendForm extends TeamInvitationFormBase {
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInvitationInterface $team_invitation */
     $team_invitation = $this->entity;
 
-    // Reset the status.
-    $team_invitation->setStatus(TeamInvitationInterface::STATUS_PENDING)->save();
+    // Reset the status and the expiry date.
+    $team_invitation->setStatus(TeamInvitationInterface::STATUS_PENDING);
+    $days = $this->config('apigee_edge_teams.team_settings')->get('team_invitation_expiry');
+    $team_invitation->setExpiryTime($this->time->getCurrentTime() + (24 * 60 * 60 * (int) $days));
+    $team_invitation->save();
 
     if ($this->teamInvitationNotifier->sendNotificationsFor($team_invitation)) {
       $this->messenger()->addMessage($this->t('The invitation to join the @team team has been resent to %recipient.', [

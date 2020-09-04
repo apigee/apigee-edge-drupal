@@ -36,7 +36,7 @@ class TeamInvitationViewsData extends EntityViewsData {
     // Set the filter for status field.
     $data['team_invitation']['status']['filter']['id'] = 'team_invitation_status';
 
-    // Provide relationsip to user table via mail.
+    // Provide relationship to user table via mail.
     $data['team_invitation']['recipient']['relationship']['id'] = 'standard';
     $data['team_invitation']['recipient']['relationship']['base'] = 'users_field_data';
     $data['team_invitation']['recipient']['relationship']['base field'] = 'mail';

@@ -28,6 +28,11 @@ use Drupal\Core\Entity\ContentEntityInterface;
 interface TeamInvitationInterface extends ContentEntityInterface {
 
   /**
+   * Invitation is expired.
+   */
+  const STATUS_EXPIRED = -1;
+
+  /**
    * Invitation is sent and pending.
    */
   const STATUS_PENDING = 0;
@@ -144,6 +149,33 @@ interface TeamInvitationInterface extends ContentEntityInterface {
    *   Timestamp for the invitation creation date.
    */
   public function getCreatedTime(): int;
+
+  /**
+   * Sets the expiry time of the invitation.
+   *
+   * @param int $expiry_time
+   *   The expiry time.
+   *
+   * @return \Drupal\apigee_edge_teams\Entity\TeamInvitationInterface
+   *   The invitation.
+   */
+  public function setExpiryTime(int $expiry_time): self;
+
+  /**
+   * Returns the expiry time for an invitation.
+   *
+   * @return int
+   *   Timestamp for the invitation expiry date.
+   */
+  public function getExpiryTime(): int;
+
+  /**
+   * Returns TRUE if the invitation is expired.
+   *
+   * @return bool
+   *   TRUE if expired. FALSE otherwise.
+   */
+  public function isExpired(): bool;
 
   /**
    * Returns TRUE if the invitation is pending.
