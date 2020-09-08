@@ -23,6 +23,7 @@ namespace Drupal\apigee_edge_teams\Entity\Form;
 use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\apigee_edge\Entity\Form\AppEditForm;
 use Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface;
+use Drupal\apigee_edge_teams\TeamPermissionHandlerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
@@ -45,6 +46,13 @@ class TeamAppEditForm extends AppEditForm {
   protected $appCredentialControllerFactory;
 
   /**
+   * The team permission handler.
+   *
+   * @var \Drupal\apigee_edge_teams\TeamPermissionHandlerInterface
+   */
+  protected $teamPermissionHandler;
+
+  /**
    * Constructs TeamAppEditForm.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -53,10 +61,16 @@ class TeamAppEditForm extends AppEditForm {
    *   The renderer service.
    * @param \Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface $app_credential_controller_factory
    *   The team app credential controller factory.
+   * @param \Drupal\apigee_edge_teams\TeamPermissionHandlerInterface $team_permission_handler
+   *   The team permission handler.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, TeamAppCredentialControllerFactoryInterface $app_credential_controller_factory) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, TeamAppCredentialControllerFactoryInterface $app_credential_controller_factory, TeamPermissionHandlerInterface $team_permission_handler = NULL) {
+    if (!$team_permission_handler) {
+      $team_permission_handler = \Drupal::service('apigee_edge_teams.team_permissions');
+    }
     parent::__construct($entity_type_manager, $renderer);
     $this->appCredentialControllerFactory = $app_credential_controller_factory;
+    $this->teamPermissionHandler = $team_permission_handler;
   }
 
   /**
@@ -66,7 +80,8 @@ class TeamAppEditForm extends AppEditForm {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('renderer'),
-      $container->get('apigee_edge_teams.controller.team_app_credential_controller_factory')
+      $container->get('apigee_edge_teams.controller.team_app_credential_controller_factory'),
+      $container->get('apigee_edge_teams.team_permissions')
     );
   }
 
@@ -97,6 +112,17 @@ class TeamAppEditForm extends AppEditForm {
       return $entity->toUrl('collection-by-team');
     }
     return parent::getRedirectUrl();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function canEditApiProducts(): bool {
+    if (($team_name = $this->entity->getAppOwner()) && $team = $this->entityTypeManager->getStorage('team')->load($team_name)) {
+      return in_array('team_app_edit_api_products', $this->teamPermissionHandler->getDeveloperPermissionsByTeam($team, $this->currentUser()));
+    }
+
+    return parent::canEditApiProducts();
   }
 
 }

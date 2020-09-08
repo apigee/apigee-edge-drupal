@@ -95,6 +95,9 @@ function apigee_edge_install() {
       'update own developer_app',
       'delete own developer_app',
       'analytics own developer_app',
+      'add_api_key own developer_app',
+      'revoke_api_key own developer_app',
+      'edit_api_products developer_app',
     ];
     user_role_grant_permissions(RoleInterface::AUTHENTICATED_ID, $authenticated_user_permissions);
   }
@@ -258,3 +261,16 @@ function apigee_edge_update_8102() {
   $last_installed_schema_repository->setLastInstalledFieldStorageDefinitions($entity_type_id, $original_storage_definitions);
 }
 
+/**
+ * Assign the "add_api_key own developer_app" permission to authenticated users.
+ */
+function apigee_edge_update_8103() {
+  if (\Drupal::moduleHandler()->moduleExists('user')) {
+    $authenticated_user_permissions = [
+      'add_api_key own developer_app',
+      'revoke_api_key own developer_app',
+      'edit_api_products developer_app',
+    ];
+    user_role_grant_permissions(RoleInterface::AUTHENTICATED_ID, $authenticated_user_permissions);
+  }
+}

@@ -59,3 +59,20 @@ function apigee_edge_teams_requirements($phase) {
 
   return $requirements;
 }
+
+/**
+ * Assign "add_api_key", "revoke_api_key" and "edit_api_products" permissions to team administrators.
+ */
+function apigee_edge_teams_update_8701() {
+  $role = 'admin';
+  $api_key_permissions = [
+    'team_app_add_api_key',
+    'team_app_edit_api_products',
+    'team_app_revoke_api_key',
+  ];
+  /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamRoleStorageInterface $storage */
+  $storage = Drupal::entityTypeManager()->getStorage('team_role');
+  /** @var \Drupal\apigee_edge_teams\Entity\TeamRoleInterface $admin_role */
+  $admin_role = $storage->load($role);
+  $storage->changePermissions($role, $admin_role->getPermissions() + array_combine($api_key_permissions, $api_key_permissions));
+}

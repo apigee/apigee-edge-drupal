@@ -61,6 +61,7 @@ trait DeveloperAppUITestTrait {
     'view own developer_app',
     'update own developer_app',
     'delete own developer_app',
+    'edit_api_products developer_app'
   ];
 
   /**

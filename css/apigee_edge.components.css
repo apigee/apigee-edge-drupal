@@ -45,6 +45,11 @@
   vertical-align: super;
 }
 
+/* This fixes the ui datepicker position when displayed in a modal. */
+.ui-datepicker {
+  z-index: 1500 !important;
+}
+
 @media screen and (min-width: 768px) {
   .apigee-edge--form .form-checkboxes .form-item {
     width: 49%;

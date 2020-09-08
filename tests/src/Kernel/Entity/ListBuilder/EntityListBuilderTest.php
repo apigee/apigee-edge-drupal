@@ -23,6 +23,7 @@ namespace Drupal\Tests\apigee_edge\Kernel\Entity\ListBuilder;
 use Drupal\Core\Entity\Entity\EntityViewMode;
 use Drupal\Core\Url;
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\apigee_edge\Kernel\ApigeeEdgeKernelTestTrait;
 use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\user\Entity\User;
@@ -36,7 +37,7 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class EntityListBuilderTest extends KernelTestBase {
 
-  use ApigeeMockApiClientHelperTrait, UserCreationTrait;
+  use ApigeeMockApiClientHelperTrait, ApigeeEdgeKernelTestTrait, UserCreationTrait;
 
   /**
    * Indicates this test class is mock API client ready.

@@ -43,6 +43,41 @@ class DeveloperAppPermissionProvider extends EdgeEntityPermissionProviderBase {
         '@type' => $entity_type->getPluralLabel(),
       ]),
     ];
+    $permissions["add_api_key own {$entity_type_id}"] = [
+      'title' => $this->t('Add API key to own @type', [
+        '@type' => $entity_type->getPluralLabel(),
+      ]),
+    ];
+    $permissions["add_api_key any {$entity_type_id}"] = [
+      'title' => $this->t('Add API key to any @type', [
+        '@type' => $entity_type->getPluralLabel(),
+      ]),
+    ];
+    $permissions["revoke_api_key own {$entity_type_id}"] = [
+      'title' => $this->t('Revoke API key from own @type', [
+        '@type' => $entity_type->getPluralLabel(),
+      ]),
+    ];
+    $permissions["revoke_api_key any {$entity_type_id}"] = [
+      'title' => $this->t('Revoke API key from any @type', [
+        '@type' => $entity_type->getPluralLabel(),
+      ]),
+    ];
+    $permissions["delete_api_key own {$entity_type_id}"] = [
+      'title' => $this->t('Delete API key from own @type', [
+        '@type' => $entity_type->getPluralLabel(),
+      ]),
+    ];
+    $permissions["delete_api_key any {$entity_type_id}"] = [
+      'title' => $this->t('Delete API key from any @type', [
+        '@type' => $entity_type->getPluralLabel(),
+      ]),
+    ];
+    $permissions["edit_api_products {$entity_type_id}"] = [
+      'title' => $this->t('Edit API products for @type', [
+        '@type' => $entity_type->getPluralLabel(),
+      ]),
+    ];
 
     return $permissions;
   }

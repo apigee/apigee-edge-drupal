@@ -326,8 +326,10 @@ trait ApigeeMockApiClientHelperTrait {
    *   The app.
    * @param int $response_code
    *   Response code, defaults to 200.
+   * @param array $credentials
+   *   An array of app credentials.
    */
-  protected function queueDeveloperAppResponse(DeveloperAppInterface $app, $response_code = 200) {
+  protected function queueDeveloperAppResponse(DeveloperAppInterface $app, $response_code = 200, array $credentials = []) {
     $this->stack->queueMockResponse([
       'get_developer_app' => [
         'status_code' => $response_code,
@@ -338,6 +340,7 @@ trait ApigeeMockApiClientHelperTrait {
           'displayName' => $app->getDisplayName(),
           'developerId' => $app->getDeveloperId(),
         ],
+        'credentials' => $credentials,
       ],
     ]);
   }
