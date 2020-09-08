@@ -72,6 +72,7 @@ abstract class AppEditForm extends AppForm {
    */
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
+    $form['#cache']['contexts'][] = 'user.permissions';
 
     /** @var \Drupal\apigee_edge\Entity\AppInterface $app */
     $app = $this->entity;
@@ -145,6 +146,7 @@ abstract class AppEditForm extends AppForm {
           '#title' => $api_product_def->getPluralLabel(),
           '#required' => TRUE,
           '#options' => $credential_product_options,
+          '#disabled' => !$this->canEditApiProducts(),
         ];
 
         if ($is_multiple_selection) {
@@ -250,6 +252,17 @@ abstract class AppEditForm extends AppForm {
     }
 
     return empty($results) || !in_array(FALSE, $results);
+  }
+
+  /**
+   * Access check for editing API products.
+   *
+   * @return bool
+   *   TRUE if current user can edit API products. FALSE otherwise.
+   */
+  protected function canEditApiProducts(): bool {
+    return $this->currentUser()->hasPermission('bypass api product access control')
+      || $this->currentUser()->hasPermission("edit_api_products {$this->entity->getEntityTypeId()}");
   }
 
 }

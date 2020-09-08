@@ -35,6 +35,7 @@ class AppCredentialElement extends RenderElement {
   public function getInfo() {
     return [
       '#credential' => NULL,
+      '#app' => NULL,
       '#theme' => 'app_credential',
     ];
   }

@@ -22,6 +22,7 @@ namespace Drupal\Tests\apigee_edge_teams\Functional;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Route;
 
 /**
  * Teams module access test.
@@ -145,11 +146,12 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
       'member.edit',
       'member.remove',
     ],
-    'team_app_view' => ['canonical', 'collection_by_team'],
+    'team_app_view' => ['canonical', 'collection_by_team', 'api_keys'],
     'team_app_create' => ['add_form_for_team'],
     'team_app_update' => ['edit_form'],
     'team_app_delete' => ['delete_form'],
     'team_app_analytics' => ['analytics'],
+    'team_app_add_api_key' => ['add_api_key_form'],
   ];
 
   /**
@@ -222,6 +224,11 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
         $this->teamAppEntityRoutes[$id] = $route;
       }
     }
+
+    // Skip api key routes. These are tested separately.
+    $this->teamAppEntityRoutes = array_filter($this->teamAppEntityRoutes, function (Route $route) {
+      return strpos($route->getPath(), '{consumer_key}') === FALSE;
+    });
 
     $this->team = $this->teamStorage->create([
       'name' => mb_strtolower($this->getRandomGenerator()->name()),

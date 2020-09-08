@@ -228,14 +228,22 @@ class TeamMembersList extends ControllerBase {
    */
   protected function getOperations(string $member, TeamInterface $team) {
     $operations = [];
-    $operations['edit'] = [
-      'title' => $this->t('Edit'),
-      'url' => Url::fromRoute('entity.team.member.edit', ['team' => $team->id(), 'developer' => $member], ['query' => ['destination' => $team->toUrl('members')->toString()]]),
-    ];
-    $operations['remove'] = [
-      'title' => $this->t('Remove'),
-      'url' => Url::fromRoute('entity.team.member.remove', ['team' => $team->id(), 'developer' => $member], ['query' => ['destination' => $team->toUrl('members')->toString()]]),
-    ];
+
+    $url = Url::fromRoute('entity.team.member.edit', ['team' => $team->id(), 'developer' => $member], ['query' => ['destination' => $team->toUrl('members')->toString()]]);
+    if ($url->access()) {
+      $operations['edit'] = [
+        'title' => $this->t('Edit'),
+        'url' => $url,
+      ];
+    }
+
+    $url = Url::fromRoute('entity.team.member.remove', ['team' => $team->id(), 'developer' => $member], ['query' => ['destination' => $team->toUrl('members')->toString()]]);
+    if ($url->access()) {
+      $operations['remove'] = [
+        'title' => $this->t('Remove'),
+        'url' => $url,
+      ];
+    }
 
     return $operations;
   }

@@ -47,15 +47,22 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
     'delete own developer_app' => ['delete-form', 'delete-form-for-developer'],
     'update any developer_app' => ['edit-form', 'edit-form-for-developer'],
     'update own developer_app' => ['edit-form', 'edit-form-for-developer'],
-    'view any developer_app' => ['canonical', 'canonical-by-developer'],
+    'view any developer_app' => [
+      'canonical',
+      'canonical-by-developer',
+      'api-keys'
+    ],
     'view own developer_app' => [
       'canonical',
       'canonical-by-developer',
       'collection-by-developer',
+      'api-keys'
     ],
     'analytics any developer_app' => ['analytics', 'analytics-for-developer'],
     'analytics own developer_app' => ['analytics', 'analytics-for-developer'],
     'access developer_app overview' => ['collection'],
+    'add_api_key own developer_app' => ['add-api-key-form'],
+    'add_api_key any developer_app' => ['add-api-key-form'],
     // We leave this empty because we add entity links to this data set
     // later.
     self::ADMINISTER_PERMISSION => [],
@@ -117,7 +124,12 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
     parent::setUp();
 
     $this->entityType = $this->container->get('entity_type.manager')->getDefinition('developer_app');
-    $this->entityRoutes = array_keys($this->entityType->get('links'));
+
+    // Skip api key routes. These are tested separately.
+    $links = array_filter($this->entityType->get('links'), function ($path) {
+      return strpos($path, '{consumer_key}') === FALSE;
+    });
+    $this->entityRoutes = array_keys($links);
 
     $this->revokeDefaultAuthUserPermissions();
 

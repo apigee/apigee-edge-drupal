@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\apigee_edge\Functional;
+namespace Drupal\Tests\apigee_edge\FunctionalJavascript;
 
 use Apigee\Edge\Api\Management\Controller\DeveloperAppController;
 use Apigee\Edge\Api\Management\Entity\App;
@@ -32,7 +32,7 @@ use Drupal\Core\Url;
  * @group apigee_edge_developer
  * @group apigee_edge_developer_app
  */
-class CacheTest extends ApigeeEdgeFunctionalTestBase {
+class CacheTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
   /**
    * The Drupal user that belongs to the developer app's developer.
@@ -139,14 +139,23 @@ class CacheTest extends ApigeeEdgeFunctionalTestBase {
     $credentials = $loadedApp->getCredentials();
     // But they still available in the Drupal entity.
     $this->assertNotEmpty($credentials, 'The credentials property is not empty.');
-    // And visible on the UI.
+
+    // They should not be visible on the UI.
     /** @var \Apigee\Edge\Api\Management\Entity\AppCredential[] $credentials */
     $this->drupalGet(Url::fromRoute('entity.developer_app.canonical_by_developer', [
       'user' => $this->account->id(),
       'app' => $this->developerApp->getName(),
     ]));
-    $this->assertSession()->pageTextContains($credentials[0]->getConsumerKey());
-    $this->assertSession()->pageTextContains($credentials[0]->getConsumerSecret());
+    $this->assertSession()->pageTextNotContains($credentials[0]->getConsumerKey());
+    $this->assertSession()->pageTextNotContains($credentials[0]->getConsumerSecret());
+
+    // Until clicking the "show" buttons.
+    $this->clickLink('Show');
+    $this->assertSession()->assertWaitOnAjaxRequest(30000);
+    $this->clickLink('Show');
+    $this->assertSession()->assertWaitOnAjaxRequest(30000);
+    $this->assertSession()->pageTextContainsOnce($credentials[0]->getConsumerKey());
+    $this->assertSession()->pageTextContainsOnce($credentials[0]->getConsumerSecret());
   }
 
   /**
