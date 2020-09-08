@@ -105,7 +105,8 @@ function apigee_edge_teams_update_8701() {
   }
   $config_storage->write('apigee_edge_teams.team_settings', $team_settings);
 
-  $team_invitations_view = $source->read('views.view.team_invitations');
+  $optional = new FileStorage("$module_path/config/optional");
+  $team_invitations_view = $optional->read('views.view.team_invitations');
   $config_storage->write('views.view.team_invitations', $team_invitations_view);
 }
 
