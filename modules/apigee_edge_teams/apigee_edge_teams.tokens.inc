@@ -51,6 +51,11 @@ function apigee_edge_teams_token_info_alter(&$info) {
       'description' => t('A url to register an account with a redirect to accept the team invitation.'),
       'type' => 'team_invitation',
     ];
+    $info['tokens']['team_invitation']['expiry_days'] = [
+      'name' => t('Expiry days'),
+      'description' => t('The expiry days for the team invitation.'),
+      'type' => 'team_invitation',
+    ];
   }
 }
 
@@ -84,6 +89,10 @@ function apigee_edge_teams_tokens($type, $tokens, array $data, array $options, B
       case "url_register":
         $query = ['destination' => $team_invitation->toUrl('accept-form')->setRouteParameter('team', $team->id())->toString()];
         $replacements[$original] = Url::fromRoute('user.register', [], ['query' => $query, 'absolute' => TRUE])->toString();
+        break;
+
+      case "expiry_days":
+        $replacements[$original] = Drupal::config('apigee_edge_teams.team_settings')->get('team_invitation_expiry_days');
         break;
     }
   }

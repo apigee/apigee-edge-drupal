@@ -276,7 +276,7 @@ class TeamInvitation extends ContentEntityBase implements TeamInvitationInterfac
 
     // Set the expiry date.
     if ($this->get('expiry')->isEmpty()) {
-      $days = \Drupal::config('apigee_edge_teams.team_settings')->get('team_invitation_expiry');
+      $days = \Drupal::config('apigee_edge_teams.team_settings')->get('team_invitation_expiry_days');
       $this->setExpiryTime($this->getCreatedTime() + (24 * 60 * 60 * (int) $days));
     }
   }

@@ -96,7 +96,7 @@ class TeamInvitationResendForm extends TeamInvitationFormBase {
 
     // Reset the status and the expiry date.
     $team_invitation->setStatus(TeamInvitationInterface::STATUS_PENDING);
-    $days = $this->config('apigee_edge_teams.team_settings')->get('team_invitation_expiry');
+    $days = $this->config('apigee_edge_teams.team_settings')->get('team_invitation_expiry_days');
     $team_invitation->setExpiryTime($this->time->getCurrentTime() + (24 * 60 * 60 * (int) $days));
     $team_invitation->save();
 

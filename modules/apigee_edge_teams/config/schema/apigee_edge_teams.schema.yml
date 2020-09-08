@@ -14,7 +14,7 @@ apigee_edge_teams.team_settings:
       type: sequence
       sequence:
         type: string
-    team_invitation_expiry:
+    team_invitation_expiry_days:
       type: int
       label: 'Number of days for team invitation expiry'
     team_invitation_email_existing:
