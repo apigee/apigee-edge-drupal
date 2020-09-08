@@ -6,7 +6,7 @@
     "require": {
         "php": ">=7.1",
         "drupal/apigee_edge": "*",
-        "drupal/rules": "3.0.0-alpha5"
+        "drupal/rules": "3.0.0-alpha6"
     },
     "config": {
         "sort-packages": true
