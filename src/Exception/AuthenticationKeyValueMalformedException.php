@@ -2,8 +2,6 @@
 
 namespace Drupal\apigee_edge\Exception;
 
-use Throwable;
-
 /**
  * Defines an exception for when a key value is malformed.
  */
@@ -30,7 +28,7 @@ class AuthenticationKeyValueMalformedException extends AuthenticationKeyExceptio
    * @param \Throwable|null $previous
    *   Previous exception.
    */
-  public function __construct($problematic_field, $message = 'Apigee Edge API authentication key is malformed or not readable.', $code = 0, Throwable $previous = NULL) {
+  public function __construct($problematic_field, $message = 'Apigee Edge API authentication key is malformed or not readable.', $code = 0, \Throwable $previous = NULL) {
     $this->problematicField = $problematic_field;
     $message = strtr($message, ['@field' => $problematic_field]);
     parent::__construct($message, $code, $previous);

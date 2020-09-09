@@ -471,8 +471,10 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
       ->save();
     \Drupal::entityTypeManager()->clearCachedDefinitions();
 
-    $this->products[] = $product1 = $this->createProduct();;
-    $this->products[] = $product2 = $this->createProduct();
+    $product1 = $this->createProduct();
+    $product2 = $this->createProduct();
+    $this->products[] = $product1;
+    $this->products[] = $product2;
     $app = $this->createDeveloperApp(['name' => $this->randomMachineName(), 'displayName' => $this->randomString()], $this->account, [$product1->id(), $product2->id()]);
     $app_edit_url = $app->toUrl('edit-form-for-developer');
 
@@ -506,7 +508,8 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
       ->save();
 
     $callback_url = $this->randomMachineName();
-    $this->products[] = $product = $this->createProduct();;
+    $product = $this->createProduct();
+    $this->products[] = $product;
     $app = $this->createDeveloperApp([
       'name' => $callback_url,
       'displayName' => $this->randomString(),
