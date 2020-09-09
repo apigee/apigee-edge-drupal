@@ -1766,3 +1766,19 @@ function apigee_edge_cache_flush() {
   // If OAuth token file does not exist this does not do anything.
   \Drupal::service('apigee_edge.authentication.oauth_token_storage')->removeToken();
 }
+
+/**
+ * Gets the title of app listing page.
+ *
+ * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+ *   The title of the page.
+ */
+function apigee_edge_app_listing_page_title(): TranslatableMarkup {
+  $args['@apps'] = \Drupal::entityTypeManager()
+    ->getDefinition('developer_app')->getCollectionLabel();
+  $title = t('@apps', $args);
+  // Modules and themes can alter the title.
+  \Drupal::moduleHandler()->alter('apigee_edge_app_listing_page_title', $title);
+
+  return $title;
+}

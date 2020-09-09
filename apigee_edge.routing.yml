@@ -179,7 +179,7 @@ apigee_edge.user.apps:
   path: '/user/apps'
   defaults:
     _controller: '\Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilderForDeveloper::appsPage'
-    _title: 'Apps'
+    _title_callback: '\Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilderForDeveloper::pageTitle'
   requirements:
     _permission: 'view own developer_app'
 
