@@ -44,8 +44,6 @@ class AddTeamMembersForm extends TeamMembersFormBase {
    * The user storage.
    *
    * @var \Drupal\user\UserStorageInterface
-   *
-   * @deprecated in apigee_edge_teams:8.x-1.12 and is removed from apigee_edge_teams:2.x.
    */
   protected $userStorage;
 
