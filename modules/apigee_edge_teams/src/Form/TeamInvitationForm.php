@@ -76,7 +76,7 @@ class TeamInvitationForm extends ConfigFormBase {
       '#rows' => 10,
       '#required' => TRUE,
       '#default_value' => $config->get('team_invitation_email_existing.body'),
-      '#description' => $this->t('Available tokens: [user:display-name], [site:name], [site:url], [team_invitation:team_name], [team_invitation:url_accept] and [team_invitation:url_decline].'),
+      '#description' => $this->t('Available tokens: [user:display-name], [site:name], [site:url], [team_invitation:team_name], [team_invitation:url_accept], [team_invitation:url_decline] and [team_invitation:expiry_days]'),
     ];
 
     $form['email_for_new_users'] = [
