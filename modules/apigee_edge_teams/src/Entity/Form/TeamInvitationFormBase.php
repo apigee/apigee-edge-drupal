@@ -30,6 +30,8 @@ use Drupal\Core\Form\FormStateInterface;
 abstract class TeamInvitationFormBase extends ContentEntityConfirmFormBase {
 
   /**
+   * The team_invitaion entity.
+   *
    * @var \Drupal\apigee_edge_teams\Entity\TeamInvitationInterface
    */
   protected $entity;

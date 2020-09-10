@@ -157,7 +157,7 @@ class TeamInvitationStorage extends SqlContentEntityStorage implements TeamInvit
    */
   public function getInvitationsToExpire(): array {
     $query = $this->getQuery()->condition('expiry', $this->time->getCurrentTime(), '<')
-    ->condition('status', TeamInvitationInterface::STATUS_PENDING);
+      ->condition('status', TeamInvitationInterface::STATUS_PENDING);
 
     $ids = $query->execute();
     return $this->loadMultiple(array_values($ids));
