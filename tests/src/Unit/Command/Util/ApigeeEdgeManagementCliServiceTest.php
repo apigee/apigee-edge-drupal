@@ -31,7 +31,6 @@ use GuzzleHttp\Exception\TransferException;
 use GuzzleHttp\Psr7\Response;
 use Prophecy\Argument;
 use Psr\Http\Message\RequestInterface;
-use ReflectionClass;
 use Symfony\Component\Console\Style\StyleInterface;
 
 /**
@@ -479,7 +478,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
 
     // Make method under test not private.
     $apigee_edge_management_cli_service = new ApigeeEdgeManagementCliService($this->httpClient->reveal());
-    $apigee_edge_management_cli_service_reflection = new ReflectionClass($apigee_edge_management_cli_service);
+    $apigee_edge_management_cli_service_reflection = new \ReflectionClass($apigee_edge_management_cli_service);
     $method_set_default_permissions = $apigee_edge_management_cli_service_reflection->getMethod('setDefaultPermissions');
     $method_set_default_permissions->setAccessible(TRUE);
 
