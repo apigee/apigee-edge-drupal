@@ -23,15 +23,15 @@ namespace Drupal\apigee_edge_actions\Plugin\RulesAction;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Mail\MailManagerInterface;
-use Drupal\rules\Plugin\RulesAction\SystemMailToUsersOfRole as RulesSystemMailToUsersOfRole;
+use Drupal\rules\Plugin\RulesAction\SystemEmailToUsersOfRole as RulesSystemMailToUsersOfRole;
 use Drupal\user\RoleStorageInterface;
 use Drupal\user\UserStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Overrides Rules SystemMailToUsersOfRole to fix parameter upcasting.
+ * Overrides Rules SystemEmailToUsersOfRole to fix parameter upcasting.
  */
-class SystemMailToUsersOfRole extends RulesSystemMailToUsersOfRole {
+class SystemEmailToUsersOfRole extends RulesSystemMailToUsersOfRole {
 
   /**
    * The user storage service.
@@ -41,7 +41,7 @@ class SystemMailToUsersOfRole extends RulesSystemMailToUsersOfRole {
   protected $roleStorage;
 
   /**
-   * SystemMailToUsersOfRole constructor.
+   * SystemEmailToUsersOfRole constructor.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.

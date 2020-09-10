@@ -61,6 +61,7 @@ trait DeveloperAppUITestTrait {
     'view own developer_app',
     'update own developer_app',
     'delete own developer_app',
+    'edit_api_products developer_app'
   ];
 
   /**
@@ -373,7 +374,7 @@ trait DeveloperAppUITestTrait {
    *   Array of breadcrumb links.
    */
   protected function getBreadcrumbLinks(): array {
-    return $this->xpath('//nav[@class="breadcrumb"]/ol/li/a');
+    return $this->xpath('//nav[@role="navigation"]/ol/li/a');
   }
 
 }

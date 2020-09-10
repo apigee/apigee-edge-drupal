@@ -382,17 +382,53 @@ function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityV
       $build['credentials'] = [
         '#type' => 'container',
       ];
+      $index = 0;
       foreach ($entity->getCredentials() as $credential) {
-        $build['credentials'][] = [
+        $build['credentials'][$credential->getStatus()][] = [
           '#type' => 'app_credential',
           '#credential' => $credential,
           '#app_name' => $entity->getName(),
           '#team_app_name' => isset($team_app_name) ? $team_app_name : '',
+          '#app' => $entity,
           '#attributes' => [
             'class' => 'items--inline',
+            'data-app' => $entity->getName(),
+            'data-team' => isset($team_app_name) ? $team_app_name : '',
+            'data-app-container-index' => $index,
           ],
         ] + $defaults;
+        $index++;
       }
+
+      // Hide revoked credentials in a collapsible section.
+      if (!empty($build['credentials'][AppCredentialInterface::STATUS_REVOKED])) {
+        $revoked_credentials = $build['credentials'][AppCredentialInterface::STATUS_REVOKED];
+        $build['credentials'][AppCredentialInterface::STATUS_REVOKED] = [
+          '#type' => 'details',
+          '#title' => t('Revoked keys (@count)', ['@count' => count($revoked_credentials)]),
+          '#weight' => 100,
+          'credentials' => $revoked_credentials,
+        ];
+      }
+    }
+
+    // Add link to add keys.
+    if($entity->access('add_api_key') && $entity->hasLinkTemplate('add-api-key-form')) {
+      $build['add_keys'] = Link::fromTextAndUrl(t('Add key'), $entity->toUrl('add-api-key-form', [
+        'attributes' => [
+          'data-dialog-type' => 'modal',
+          'data-dialog-options' => json_encode([
+            'width' => 500,
+            'height' => 250,
+            'draggable' => FALSE,
+            'autoResize' => FALSE,
+          ]),
+          'class' => [
+            'use-ajax',
+            'button',
+          ],
+        ],
+      ]))->toRenderable();
     }
   }
 }
@@ -455,6 +491,27 @@ function apigee_edge_api_product_access(EntityInterface $entity, $operation, Acc
   // If the API product gets updated it should not have any effect this
   // access control so we did not add $entity as a dependency to the result.
   return $result->cachePerUser()->addCacheTags(['config:' . $config_name]);
+}
+
+/**
+ * Implements hook_entity_access().
+ */
+function apigee_edge_entity_access(EntityInterface $entity, $operation, AccountInterface $account) {
+  if (!$entity->getEntityType()->entityClassImplements(AppInterface::class) || !in_array($operation, ['revoke_api_key', 'delete_api_key'])) {
+    return AccessResult::neutral();
+  }
+
+  /** @var \Drupal\apigee_edge\Entity\AppInterface $entity **/
+
+  $approved_credentials = array_filter($entity->getCredentials(), function (AppCredentialInterface $credential) {
+    return $credential->getStatus() === AppCredentialInterface::STATUS_APPROVED;
+  });
+
+  // Prevent revoking/deleting the only active key.
+  if (count($approved_credentials) <= 1) {
+    $action = $operation === "revoke_api_key" ? "revoke" : "delete";
+    return AccessResult::forbidden("You cannot $action the only active key.");
+  }
 }
 
 /**
@@ -1031,6 +1088,8 @@ function template_preprocess_app_credential_product_list(array &$variables) {
 function template_preprocess_app_credential(array &$variables) {
   /** @var \Apigee\Edge\Api\Management\Entity\AppCredentialInterface $credential */
   $credential = $variables['elements']['#credential'];
+  /** @var \Drupal\apigee_edge\Entity\AppInterface $app */
+  $app = $variables['elements']['#app'];
   /** @var \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter */
   $dateFormatter = Drupal::service('date.formatter');
   $serializer = new AppCredentialSerializer();
@@ -1069,14 +1128,10 @@ function template_preprocess_app_credential(array &$variables) {
     '#type' => 'container',
     '#attributes' => [
       'class' => 'wrapper--primary app-details-wrapper',
-      'data-app' => $variables['elements']['#app_name'],
     ],
   ];
 
-  if (!empty($variables['elements']['#team_app_name'])) {
-    $variables['primary_wrapper']['#attributes']['data-team'] = $variables['elements']['#team_app_name'];
-  }
-
+  $index = 0;
   foreach ($properties_in_primary as $property => $def) {
     $variables['primary_wrapper'][$property] = [
       '#type' => 'container',
@@ -1120,6 +1175,7 @@ function template_preprocess_app_credential(array &$variables) {
         '#attributes' => [
           'class' => 'secret',
           'data-secret-type' => $property,
+          'data-app-index' => $index,
         ],
         '#value' => '',
       ];
@@ -1140,6 +1196,7 @@ function template_preprocess_app_credential(array &$variables) {
         '#markup' => Xss::filter($value),
       ];
     }
+    $index++;
   }
 
   $variables['secondary_wrapper'] = [
@@ -1160,6 +1217,27 @@ function template_preprocess_app_credential(array &$variables) {
 
   // Helpful $content variable for templates.
   $variables['content'] = $normalized;
+
+  // Add operations.
+  $variables['operations'] = [
+    '#type' => 'operations',
+  ];
+
+  if ($credential->getStatus() === AppCredentialInterface::STATUS_APPROVED && $app->access('revoke_api_key') && $app->hasLinkTemplate('revoke-api-key-form')) {
+    $variables['operations']['#links']['revoke'] = [
+      'title' => t('Revoke'),
+      'url' => $app->toUrl('revoke-api-key-form')
+        ->setRouteParameter('consumer_key', $credential->getConsumerKey()),
+    ];
+  }
+
+  if ($app->access('delete_api_key') && $app->hasLinkTemplate('delete-api-key-form')) {
+    $variables['operations']['#links']['delete'] = [
+      'title' => t('Delete'),
+      'url' => $app->toUrl('delete-api-key-form')
+        ->setRouteParameter('consumer_key', $credential->getConsumerKey()),
+    ];
+  }
 }
 
 /**
@@ -1687,4 +1765,20 @@ function _apigee_edge_is_sync_in_progress(): bool {
 function apigee_edge_cache_flush() {
   // If OAuth token file does not exist this does not do anything.
   \Drupal::service('apigee_edge.authentication.oauth_token_storage')->removeToken();
+}
+
+/**
+ * Gets the title of app listing page.
+ *
+ * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+ *   The title of the page.
+ */
+function apigee_edge_app_listing_page_title(): TranslatableMarkup {
+  $args['@apps'] = \Drupal::entityTypeManager()
+    ->getDefinition('developer_app')->getCollectionLabel();
+  $title = t('@apps', $args);
+  // Modules and themes can alter the title.
+  \Drupal::moduleHandler()->alter('apigee_edge_app_listing_page_title', $title);
+
+  return $title;
 }

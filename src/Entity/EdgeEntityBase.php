@@ -161,4 +161,22 @@ abstract class EdgeEntityBase extends EntityBase implements EdgeEntityInterface 
     return FALSE;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getTranslation($langcode) {
+    if ($langcode == $this->language()->getId()) {
+      return $this;
+    }
+
+    throw new \InvalidArgumentException("Invalid translation language ($langcode) specified.");
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasTranslation($langcode) {
+    return $langcode == $this->language()->getId();
+  }
+
 }
