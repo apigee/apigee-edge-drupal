@@ -31,10 +31,15 @@ class TeamInvitationDeclineForm extends TeamInvitationFormBase {
   /**
    * {@inheritdoc}
    */
+  protected $handleExpired = TRUE;
+
+  /**
+   * {@inheritdoc}
+   */
   public function getQuestion() {
     return $this->t('Are you sure you want to decline the invitation to join the %label team?', [
       '%label' => $this->entity->getTeam()->label(),
-    ]);;
+    ]);
   }
 
   /**

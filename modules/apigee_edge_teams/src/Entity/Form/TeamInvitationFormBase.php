@@ -61,7 +61,7 @@ abstract class TeamInvitationFormBase extends ContentEntityConfirmFormBase {
   public function buildForm(array $form, FormStateInterface $form_state, TeamInterface $team = NULL) {
     $this->team = $team;
 
-    if ($this->entity->isExpired()) {
+    if ($this->handleExpired && $this->entity->isExpired()) {
       return [
         '#theme' => 'status_messages',
         '#message_list' => [

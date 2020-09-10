@@ -101,7 +101,7 @@ class TeamInvitationResendForm extends TeamInvitationFormBase {
     $team_invitation->save();
 
     if ($this->teamInvitationNotifier->sendNotificationsFor($team_invitation)) {
-      $this->messenger()->addMessage($this->t('The invitation to join the @team team has been resent to %recipient.', [
+      $this->messenger()->addMessage($this->t('The invitation to join the %team team has been resent to %recipient.', [
         '%team' => $team_invitation->getTeam()->label(),
         '%recipient' => $team_invitation->getRecipient(),
       ]));

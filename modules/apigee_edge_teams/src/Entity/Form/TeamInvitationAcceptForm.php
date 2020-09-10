@@ -31,6 +31,11 @@ class TeamInvitationAcceptForm extends TeamInvitationFormBase {
   /**
    * {@inheritdoc}
    */
+  protected $handleExpired = TRUE;
+
+  /**
+   * {@inheritdoc}
+   */
   public function getQuestion() {
     return $this->t('Are you sure you want to join the %label team?', [
       '%label' => $this->entity->getTeam()->label(),

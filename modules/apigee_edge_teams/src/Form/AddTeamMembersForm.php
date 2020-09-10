@@ -204,7 +204,7 @@ class AddTeamMembersForm extends TeamMembersFormBase {
 
     $has_invitation = array_unique($has_invitation);
     if (count($has_invitation)) {
-      $form_state->setErrorByName('developers', $this->formatPlural(count($has_invitation), 'The following developer has already been invited to the team: %developers. To re-invite them, please delete the pending invitation and try again.', 'The following developers have already been invited to the team: %developers. To re-invite them, please delete the pending invitations and try again.', [
+      $form_state->setErrorByName('developers', $this->formatPlural(count($has_invitation), 'The following developer has already been invited to the team: %developers.', 'The following developers have already been invited to the team: %developers.', [
         '%developers' => implode(', ', $has_invitation),
       ]));
     }
