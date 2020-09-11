@@ -67,6 +67,14 @@ class ConnectionConfigForm extends ConfigFormBase {
       '#required' => TRUE,
     ];
 
+    $form['http_proxy'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('HTTP client proxy'),
+      '#description' => $this->t('Leave empty unless an HTTP proxy is needed to connect to Apigee Edge.'),
+      '#default_value' => $this->config('apigee_edge.client')->get('http_client_proxy'),
+      '#required' => FALSE,
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -77,6 +85,7 @@ class ConnectionConfigForm extends ConfigFormBase {
     $this->config('apigee_edge.client')
       ->set('http_client_connect_timeout', $form_state->getValue('connect_timeout'))
       ->set('http_client_timeout', $form_state->getValue('request_timeout'))
+      ->set('http_client_proxy', trim($form_state->getValue('http_proxy')))
       ->save();
     parent::submitForm($form, $form_state);
   }

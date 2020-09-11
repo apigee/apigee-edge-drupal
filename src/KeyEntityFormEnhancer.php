@@ -24,7 +24,6 @@ use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\HybridOauth2AuthenticationException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
-use DomainException;
 use Drupal\apigee_edge\Exception\AuthenticationKeyException;
 use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
@@ -478,7 +477,7 @@ final class KeyEntityFormEnhancer {
       ]);
 
       // Invalid key / OpenSSL unable to sign data.
-      if ($exception->getPrevious() && $exception->getPrevious() instanceof DomainException) {
+      if ($exception->getPrevious() && $exception->getPrevious() instanceof \DomainException) {
         $suggestion = $this->t('@fail_text The private key in the GCP service account key JSON is invalid.', [
           '@fail_text' => $fail_text,
         ]);

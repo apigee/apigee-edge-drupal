@@ -18,5 +18,9 @@
   <rule ref="Drupal.NamingConventions.ValidVariableName.LowerCamelName">
     <severity>0</severity>
   </rule>
+  <!-- Ignore long array declaration lines. -->
+  <rule ref="Drupal.Arrays.Array.LongLineDeclaration">
+    <severity>0</severity>
+  </rule>
 
 </ruleset>
