@@ -130,6 +130,14 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
       '#default_value' => $team->id(),
     ];
 
+    $form['add_current_admin'] = [
+      '#type' => 'checkbox',
+      '#default_value' => 0,
+      '#title' => $this->t('Add yourself as administrator'),
+      '#description' => $this->t('If checked, adds currently logged in user as team administrator.'),
+      '#weight' => 10,
+    ];
+
     return $form;
   }
 
@@ -186,9 +194,10 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
     $team = $this->entity;
     $was_new = $team->isNew();
+    $add_current_admin = $form_state->getValue('add_current_admin') ?? $form_state->getValue('add_current_admin');
     $result = parent::save($form, $form_state);
 
-    if ($was_new) {
+    if ($was_new && $add_current_admin) {
       try {
         $this->teamMembershipManager->addMembers($team->id(), [$this->currentUser->getEmail()]);
 
