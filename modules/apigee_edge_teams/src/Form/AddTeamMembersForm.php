@@ -152,7 +152,9 @@ class AddTeamMembersForm extends TeamMembersFormBase {
    *   An array containing a first array of user accounts, and a second array of
    *   emails that have no account on the system.
    *
-   * @deprecated in apigee_edge_teams:8.x-1.12 and is removed from apigee_edge_teams:2.x
+   * @deprecated in apigee_edge_teams:8.x-1.12 and is removed from apigee_edge_teams:2.x. No replacement.
+   *
+   * @see https://github.com/apigee/apigee-edge-drupal/pull/474
    */
   protected function getAccountsFromEmails(string $emails): array {
     $developerEmails = [];
