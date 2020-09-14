@@ -201,7 +201,7 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
     ], 'Invite members');
     $this->assertSession()->pageTextContains($this->account->getAccountName());
     $this->assertSession()->pageTextContains($this->otherAccount->getAccountName());
-    $this->assertSession()->pageTextContains('successfully added to the team: ' . $this->otherAccount->getEmail());
+    $this->assertSession()->pageTextContains("The following developer has been invited to the {$team_modified_display_name} team: {$this->otherAccount->getEmail()}.");
     $this->assertSession()->pageTextContains('Could not add developers to the team because they don\'t yet have an account: ' . $anotherEmail);
 
     // Team members have access to every team app and membership operations.
