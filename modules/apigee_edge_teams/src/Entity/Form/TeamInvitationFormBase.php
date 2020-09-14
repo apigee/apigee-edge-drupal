@@ -60,6 +60,13 @@ abstract class TeamInvitationFormBase extends ContentEntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
+  public function getCancelText() {
+   return $this->t('Not now');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function buildForm(array $form, FormStateInterface $form_state, TeamInterface $team = NULL) {
     $this->team = $team;
 
