@@ -52,7 +52,7 @@ class ResponseTemplateLoader extends \Twig_Loader_Filesystem {
   /**
    * {@inheritdoc}
    */
-  protected function findTemplate($name, $throw = true) {
+  protected function findTemplate($name, $throw = TRUE) {
     $name = str_replace('_', '-', $name);
 
     if (strpos($name, '.twig') === FALSE) {
