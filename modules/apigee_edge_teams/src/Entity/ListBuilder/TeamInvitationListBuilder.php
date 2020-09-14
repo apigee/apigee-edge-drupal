@@ -62,7 +62,7 @@ class TeamInvitationListBuilder extends EntityListBuilder {
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInvitationInterface $entity */
     if ($entity->access('delete') && $entity->hasLinkTemplate('delete-form')) {
       $operations['delete'] = [
-        'title' => $this->t('Delete'),
+        'title' => $this->t('Revoke'),
         'weight' => 100,
         'url' => $this->ensureDestination($entity->toUrl('delete-form'))->setRouteParameter('team', $entity->getTeam()->id()),
       ];

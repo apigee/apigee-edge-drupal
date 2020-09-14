@@ -40,7 +40,7 @@ class TeamInvitationDeleteForm extends ContentEntityDeleteForm {
    * {@inheritdoc}
    */
   public function getQuestion() {
-    return $this->t('Are you sure you want to delete the @entity-type for %recipient?', [
+    return $this->t('Are you sure you want to revoke the @entity-type for %recipient?', [
       '@entity-type' => $this->getEntity()->getEntityType()->getSingularLabel(),
       '%recipient' => $this->getEntity()->getRecipient(),
     ]);
