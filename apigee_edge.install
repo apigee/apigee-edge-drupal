@@ -71,7 +71,7 @@ function apigee_edge_requirements($phase) {
     $auth_config = \Drupal::config('apigee_edge.auth');
     if ($key = $auth_config->get('active_key')) {
       $key_repository = \Drupal::service('key.repository')->getKey($key);
-      if ($key_repository && $key_repository->getKeyProvider()->getPluginId()) {
+      if ($key_repository && $key_repository->getKeyProvider()->getPluginId() === "config") {
         $requirements['apigee_edge_insecure_config_key_provider'] = [
           'title' => t('Apigee Edge'),
           'description' => t('Edge connection settings are stored in Drupal’s configuration system, which is not designed to store sensitive information. When installing Kickstart for uses other than local development, we highly recommend changing the Apigee Edge connection key provider to a more secure storage location. <a href="https://www.drupal.org/docs/8/modules/apigee-developer-portal-kickstart/apigee-kickstart-faqs#s-during-installation-a-warning-is-displayed-that-the-apigee-edge-connection-key-provider-is-not-considered-secure-what-should-i-do" target="_blank">Learn more.</a>'),
