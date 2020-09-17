@@ -51,9 +51,13 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
    */
   public function getAuthenticationType(KeyInterface $key): string {
     if ($this->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
-      return EdgeKeyTypeInterface::EDGE_AUTH_TYPE_JWT;
+      if ($this->useGcpDefaultServiceAccount($key)) {
+        return EdgeKeyTypeInterface::EDGE_AUTH_TYPE_DEFAULT_GCE_SERVICE_ACCOUNT;
+      }
+      else {
+        return EdgeKeyTypeInterface::EDGE_AUTH_TYPE_JWT;
+      }
     }
-
     if (!isset($key->getKeyValues()['auth_type'])) {
       throw new AuthenticationKeyValueMalformedException('auth_type');
     }
@@ -164,6 +168,13 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
       throw new AuthenticationKeyValueMalformedException('account_json_key');
     }
     return $json;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function useGcpDefaultServiceAccount(KeyInterface $key): bool {
+    return !empty($key->getKeyValues()['gcp_hosted']);
   }
 
 }

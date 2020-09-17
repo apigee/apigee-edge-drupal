@@ -20,69 +20,70 @@
 
 namespace Drupal\apigee_edge\Connector;
 
-use Apigee\Edge\Api\Management\Controller\OrganizationController;
-use Apigee\Edge\Api\Management\Entity\Organization;
 use Apigee\Edge\ClientInterface;
+use Apigee\Edge\Exception\HybridOauth2AuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\AbstractOauth;
-use Apigee\Edge\HttpClient\Plugin\Authentication\NullAuthentication;
 use Apigee\Edge\HttpClient\Plugin\Authentication\OauthTokenStorageInterface;
-use Drupal;
-use Drupal\apigee_edge\SDKConnectorInterface;
-use Http\Message\Authentication\Bearer;
+use GuzzleHttp\Exception\ConnectException;
 use Http\Message\Authentication\Header;
 
 /**
  * Decorator for Hybrid authentication plugin.
  */
-class GceServiceAccountAuthentication extends AbstractOauth
-{
-  private const DEFAULT_GCE_AUTH_SERVER = "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token";
-  static private $token;
+class GceServiceAccountAuthentication extends AbstractOauth {
 
-  public function __construct(OauthTokenStorageInterface $tokenStorage)
-  {
-    parent::__construct($tokenStorage, DEFAULT_GCE_AUTH_SERVER);
+  public const DEFAULT_GCE_AUTH_SERVER = "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token";
+
+  /**
+   * GceServiceAccountAuthentication constructor.
+   *
+   * @param \Apigee\Edge\HttpClient\Plugin\Authentication\OauthTokenStorageInterface $tokenStorage
+   *   Storage where access token gets saved.
+   */
+  public function __construct(OauthTokenStorageInterface $tokenStorage) {
+    parent::__construct($tokenStorage, static::DEFAULT_GCE_AUTH_SERVER);
   }
 
   /**
-   * @inheritDoc
+   * Get access token from the GCE Service account.
    */
-  protected function getAccessToken(): void
-  {
-    $this->tokenStorage->saveToken(static::fetchTokenFromGceEndpoint());
+  protected function getAccessToken(): void {
+    try {
+      $response = $this->authClient()->get("");
+      $decoded_token = json_decode((string) $response->getBody(), TRUE);
+      $this->tokenStorage->saveToken($decoded_token);
+    }
+    catch (Exception $e) {
+      throw new HybridOauth2AuthenticationException($e->getMessage(), $e->getCode(), $e);
+    }
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function authClient(): ClientInterface
-  {
-    return null;
-  }
-  private static function fetchTokenFromGceEndpoint(): ClientInterface
-  {
-    if(empty(static::$token)) {
-      /** @var SDKConnectorInterface $sdk_connector */
-      $sdk_connector = Drupal::service('apigee_edge.sdk_connector');
-      $client = $sdk_connector->buildClient(new Header("Metadata-Flavor", "Google"), DEFAULT_GCE_AUTH_SERVER);
-      $response = $client->get("");
-      static::$token = json_decode((string)$response->getBody(), true);
-    }
-    return static::$token;
+  protected function authClient(): ClientInterface {
+    /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
+    $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
+    return $sdk_connector->buildClient(new Header("Metadata-Flavor", "Google"), static::DEFAULT_GCE_AUTH_SERVER);
   }
 
-  public static function getOrganization(): ?Organization
-  {
-      $token = static::fetchTokenFromGceEndpoint();
-      /** @var SDKConnectorInterface $sdk_connector */
-      $sdk_connector = Drupal::service('apigee_edge.sdk_connector');
-      $client = $sdk_connector->buildClient(new Bearer($token->access_token), ClientInterface::HYBRID_ENDPOINT);
-      $org_controller = new OrganizationController($client);
-      /** @var Organization[] $orgs */
-      $orgs = $org_controller->getEntities();
-      if(!empty($orgs)) {
-        return reset($orgs);
-      }
-      return null;
+  /**
+   * Validate if the GCE Auth Server URL is reachable.
+   *
+   * This is only available on GCP.
+   *
+   * @return bool
+   *   If GCE Service Account authentication is available.
+   */
+  public static function isAvailable(): bool {
+    try {
+      $client = \Drupal::httpClient();
+      $client->get(static::DEFAULT_GCE_AUTH_SERVER, ['headers' => ["Metadata-Flavor" => "Google"]]);
+      return TRUE;
+    }
+    catch (ConnectException $e) {
+      return FALSE;
+    }
   }
+
 }
