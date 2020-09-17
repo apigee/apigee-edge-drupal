@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge\Plugin\KeyType;
 
+use Drupal\apigee_edge\Connector\GceServiceAccountAuthentication;
 use Drupal\apigee_edge\Connector\HybridAuthentication;
 use Drupal\apigee_edge\OauthAuthentication;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeBase;
@@ -130,12 +131,13 @@ class ApigeeAuthKeyType extends EdgeKeyTypeBase {
    */
   public function getAuthenticationMethod(KeyInterface $key): Authentication {
     $values = $key->getKeyValues();
-
     if ($this->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
       $account_key = $this->getAccountKey($key);
       return new HybridAuthentication($account_key['client_email'], $account_key['private_key'], \Drupal::service('apigee_edge.authentication.oauth_token_storage'));
     }
-
+    elseif ($this->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_NG_SAAS) {
+      return new GceServiceAccountAuthentication(\Drupal::service('apigee_edge.authentication.oauth_token_storage'));
+    }
     elseif ($values['auth_type'] === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH) {
       // Use Oauth authentication.
       return new OauthAuthentication($this->getUsername($key), $this->getPassword($key), \Drupal::service('apigee_edge.authentication.oauth_token_storage'), NULL, $this->getClientId($key), $this->getClientSecret($key), NULL, $this->getAuthorizationServer($key));

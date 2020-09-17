@@ -48,6 +48,12 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
    */
   public const INSTANCE_TYPE_HYBRID = 'hybrid';
   /**
+   * Apigee instance on GCP
+   *
+   * @var string
+   */
+  public const INSTANCE_TYPE_NG_SAAS = 'ngsaas';
+  /**
    * ID of the basic authentication method.
    *
    * @var string

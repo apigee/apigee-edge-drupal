@@ -20,8 +20,13 @@
 namespace Drupal\apigee_edge\Plugin\KeyInput;
 
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
+use Drupal\apigee_edge\Connector\GceServiceAccountAuthentication;
+use Drupal\apigee_edge\Entity\Controller\OrganizationController;
+use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
+use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Serialization\Json;
+use Drupal\Core\Form\FormState;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\key\Plugin\KeyInputBase;
 
@@ -54,7 +59,9 @@ class ApigeeAuthKeyInput extends KeyInputBase {
     $state_for_hybrid = [
       ':input[name="key_input_settings[instance_type]"]' => ['value' => EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID],
     ];
-
+    $state_for_ngsaas = [
+      ':input[name="key_input_settings[instance_type]"]' => ['value' => EdgeKeyTypeInterface::INSTANCE_TYPE_NG_SAAS],
+    ];
     $form['instance_type'] = [
       '#type' => 'radios',
       '#title' => $this->t('Apigee instance type'),
@@ -66,8 +73,20 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC => $this->t('Public Cloud'),
         EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE => $this->t('Private Cloud'),
         EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID => $this->t('Hybrid Cloud'),
+        EdgeKeyTypeInterface::INSTANCE_TYPE_NG_SAAS => $this->t('NG SAAS'),
       ],
       '#default_value' => $values['instance_type'] ?? 'public',
+      '#ajax' => [
+        'callback' => '::getDefaultOrg', // don't forget :: when calling a class method.
+        //'callback' => [$this, 'myAjaxCallback'], //alternative notation
+        'disable-refocus' => FALSE, // Or TRUE to prevent re-focusing on the triggering element.
+        'event' => 'change',
+        'wrapper' => 'edit-organization-field', // This element is updated with this AJAX callback.
+        'progress' => [
+          'type' => 'throbber',
+          'message' => $this->t('Auto populating the organization'),
+        ],
+      ]
     ];
     $form['auth_type'] = [
       '#type' => 'select',
@@ -88,9 +107,14 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#type' => 'textfield',
       '#title' => $this->t('Organization'),
       '#description' => $this->t('Name of the organization on Apigee Edge. Changing this value could make your site stop working.'),
-      '#required' => TRUE,
       '#default_value' => $values['organization'] ?? '',
       '#attributes' => ['autocomplete' => 'off'],
+      '#states' => [
+        'visible' => [$state_for_public, $state_for_private, $state_for_hybrid],
+        'required' => [$state_for_public, $state_for_private, $state_for_hybrid],
+      ],
+      '#prefix' => '<div id="edit-organization-field">',
+      '#suffix' => '</div>',
     ];
     $form['username'] = [
       '#type' => 'textfield',
@@ -257,7 +281,8 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       }
 
       // Remove unneeded values if on a Hybrid instance.
-      if ($instance_type == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+      if ($instance_type == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID
+        || $instance_type == EdgeKeyTypeInterface::INSTANCE_TYPE_NG_SAAS) {
         $input_values['auth_type'] = '';
         $input_values['username'] = '';
         $input_values['password'] = '';
@@ -266,6 +291,9 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         $input_values['authorization_server'] = '';
         $input_values['client_id'] = '';
         $input_values['client_secret'] = '';
+        if($instance_type == EdgeKeyTypeInterface::INSTANCE_TYPE_NG_SAAS) {
+          $input_values['account_json_key'] = '';
+        }
       }
       else {
         // Remove unneeded values if on a Public or Private instance.
@@ -316,5 +344,12 @@ class ApigeeAuthKeyInput extends KeyInputBase {
     $values['authorization_server_type'] = empty($values['authorization_server']) ? 'default' : 'custom';
     return $values;
   }
+  public function getDefaultOrg(array &$form, FormStateInterface $form_state){
+    $input_values = $form_state->getUserInput()['key_input_settings'];
 
+    if ($input_values['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_NG_SAAS) {
+      $form['organization']['#value'] = GceServiceAccountAuthentication::getOrganization()->getName();
+    }
+    return $form['organization'];
+  }
 }
