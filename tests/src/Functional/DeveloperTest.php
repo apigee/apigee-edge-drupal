@@ -416,7 +416,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     // too.
     $this->stack->queueMockResponse('get_not_found');
     $loaded = $this->developerStorage->loadUnchanged($test_user['email']);
-    $this->assertFalse($loaded, 'Developer does not exists anymore.');
+    $this->assertEmpty($loaded, 'Developer does not exists anymore.');
   }
 
   /**

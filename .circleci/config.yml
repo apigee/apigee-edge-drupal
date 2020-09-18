@@ -246,7 +246,7 @@ workflows:
           name: update-dependencies-<< matrix.core-version >>
           matrix:
             parameters:
-              core-version: [8]
+              core-version: [8, 9]
       - run-code-sniffer:
           requires:
             - update-dependencies-8
@@ -257,21 +257,21 @@ workflows:
           name: run-unit-kernel-tests-<< matrix.core-version >>
           matrix:
             parameters:
-              core-version: [8]
+              core-version: [8, 9]
           requires:
             - update-dependencies-<< matrix.core-version >>
       - run-functional-tests:
           name: run-functional-tests-<< matrix.core-version >>
           matrix:
             parameters:
-              core-version: [8]
+              core-version: [8, 9]
           requires:
             - update-dependencies-<< matrix.core-version >>
       - run-functional-js-tests:
           name: run-functional-js-tests-<< matrix.core-version >>
           matrix:
             parameters:
-              core-version: [8]
+              core-version: [8, 9]
           requires:
             - update-dependencies-<< matrix.core-version >>
 #      - run-code-coverage:
