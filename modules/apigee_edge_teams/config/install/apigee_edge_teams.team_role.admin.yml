@@ -11,4 +11,3 @@ permissions:
   - team_app_add_api_key
   - team_app_edit_api_products
   - team_app_revoke_api_key
-  - team_invitation_administer

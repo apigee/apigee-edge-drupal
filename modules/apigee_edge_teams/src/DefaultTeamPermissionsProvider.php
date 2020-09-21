@@ -62,7 +62,7 @@ final class DefaultTeamPermissionsProvider implements DynamicTeamPermissionProvi
         'permissions' => [
           'manage_members' => [
             'label' => $this->t('Manage team members'),
-            'description' => $this->t('Add/remove team members.'),
+            'description' => $this->t('Add/remove team members and administer permissions.'),
           ],
         ],
       ],
@@ -86,12 +86,6 @@ final class DefaultTeamPermissionsProvider implements DynamicTeamPermissionProvi
           'access_public' => $this->t('View and assign public API products to team apps'),
           'access_private' => $this->t('View and assign private API products to team apps'),
           'access_internal' => $this->t('View and assign internal API products to team apps'),
-        ],
-      ],
-      'team_invitation' => [
-        'label' => $this->t('Team invitations'),
-        'permissions' => [
-          'administer' => $this->t('Administer team invitations')
         ],
       ],
     ];

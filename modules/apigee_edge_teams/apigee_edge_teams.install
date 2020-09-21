@@ -128,24 +128,9 @@ function apigee_edge_teams_update_8702() {
 }
 
 /**
- * Assign "team_invitation_administer" permission to team administrators.
- */
-function apigee_edge_teams_update_8703() {
-  $role = 'admin';
-  $permissions = [
-    'team_invitation_administer',
-  ];
-  /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamRoleStorageInterface $storage */
-  $storage = Drupal::entityTypeManager()->getStorage('team_role');
-  /** @var \Drupal\apigee_edge_teams\Entity\TeamRoleInterface $admin_role */
-  $admin_role = $storage->load($role);
-  $storage->changePermissions($role, $admin_role->getPermissions() + array_combine($permissions, $permissions));
-}
-
-/**
  * Assign accept and decline team invitations permissions to authenticated users.
  */
-function apigee_edge_teams_update_8704() {
+function apigee_edge_teams_update_8703() {
   if (\Drupal::moduleHandler()->moduleExists('user')) {
     $authenticated_user_permissions = [
       'accept own team invitation',
