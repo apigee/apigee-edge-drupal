@@ -21,11 +21,12 @@
 namespace Drupal\apigee_edge_teams\Entity;
 
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\user\EntityOwnerInterface;
 
 /**
  * Provides an interface for defining invitation entities.
  */
-interface TeamInvitationInterface extends ContentEntityInterface {
+interface TeamInvitationInterface extends ContentEntityInterface, EntityOwnerInterface {
 
   /**
    * Invitation is expired.

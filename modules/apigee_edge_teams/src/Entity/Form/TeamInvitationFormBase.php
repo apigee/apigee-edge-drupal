@@ -61,7 +61,7 @@ abstract class TeamInvitationFormBase extends ContentEntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function getCancelText() {
-   return $this->t('Not now');
+    return $this->t('Not now');
   }
 
   /**

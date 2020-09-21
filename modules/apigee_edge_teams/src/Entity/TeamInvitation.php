@@ -25,6 +25,8 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\user\EntityOwnerTrait;
+use Drupal\user\UserInterface;
 
 /**
  * Defines the team invitation entity.
@@ -61,7 +63,8 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
  *   admin_permission = "administer team invitations",
  *   entity_keys = {
  *     "id" = "uuid",
- *     "label" = "label"
+ *     "label" = "label",
+ *     "owner" = "uid",
  *   },
  *   links = {
  *     "delete-form" = "/teams/{team}/invitations/{team_invitation}/delete",
@@ -74,16 +77,21 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 class TeamInvitation extends ContentEntityBase implements TeamInvitationInterface {
 
   use StringTranslationTrait;
+  use EntityOwnerTrait;
 
   /**
    * {@inheritdoc}
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = parent::baseFieldDefinitions($entity_type);
+    $fields += static::ownerBaseFieldDefinitions($entity_type);
 
     $fields[$entity_type->getKey('id')] = BaseFieldDefinition::create('uuid')
       ->setLabel(t('UUID'))
       ->setReadOnly(TRUE);
+
+    $fields['uid']
+      ->setDescription(t('The team invitation author.'));
 
     $fields['label'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Label'))
