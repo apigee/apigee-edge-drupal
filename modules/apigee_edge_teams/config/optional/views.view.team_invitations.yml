@@ -719,6 +719,11 @@ display:
           plugin_id: text
       defaults:
         empty: false
+        access: false
+      access:
+        type: team_permission
+        options:
+          permission: team_manage_members
     cache_metadata:
       max-age: -1
       contexts:
@@ -737,7 +742,7 @@ display:
       path: user/%user/team-invitations
       menu:
         type: tab
-        title: 'Team Invitations'
+        title: Invitations
         description: ''
         expanded: false
         parent: ''
@@ -1142,7 +1147,7 @@ display:
             format: basic_html
           plugin_id: text
       header: {  }
-      title: 'Team invitations'
+      title: Invitations
       query:
         type: views_query
         options:
