@@ -75,8 +75,9 @@ abstract class TeamInvitationFormBase extends ContentEntityConfirmFormBase {
         '#theme' => 'status_messages',
         '#message_list' => [
           'warning' => [
-            $this->t('This invitation to join %team team has expired. Please request a new one.', [
+            $this->t('This invitation to join %team @team has expired. Please request a new one.', [
               '%team' => $this->team->label(),
+              '@team' => mb_strtolower($this->entity->getTeam()->getEntityType()->getSingularLabel()),
             ]),
           ],
         ],

@@ -76,7 +76,7 @@ class TeamInvitationForm extends ConfigFormBase {
       '#rows' => 10,
       '#required' => TRUE,
       '#default_value' => $config->get('team_invitation_email_existing.body'),
-      '#description' => $this->t('Available tokens: [user:display-name], [site:name], [site:url], [team_invitation:team_name], [team_invitation:url_accept], [team_invitation:url_decline], [team_invitation:uid:entity:display-name], and [team_invitation:expiry_days]'),
+      '#description' => $this->t('Available tokens: [user:display-name], [site:name], [site:url], [team_invitation:team_name], [team_invitation:url_accept], [team_invitation:url_decline], [team_invitation:uid:entity:display-name] (the display name of the user who sent the invitation) and [team_invitation:expiry_days]'),
     ];
 
     $form['email_for_new_users'] = [
@@ -98,7 +98,7 @@ class TeamInvitationForm extends ConfigFormBase {
       '#rows' => 10,
       '#required' => TRUE,
       '#default_value' => $config->get('team_invitation_email_new.body'),
-      '#description' => $this->t('Available tokens: [site:name], [site:url], [team_invitation:team_name], [team_invitation:url_register], [team_invitation:url_accept], [team_invitation:url_decline], [team_invitation:uid:entity:display-name] and [team_invitation:expiry_days].'),
+      '#description' => $this->t('Available tokens: [site:name], [site:url], [team_invitation:team_name], [team_invitation:url_register], [team_invitation:url_accept], [team_invitation:url_decline], [team_invitation:uid:entity:display-name] (the display name of the user who sent the invitation) and [team_invitation:expiry_days].'),
     ];
 
     return parent::buildForm($form, $form_state);

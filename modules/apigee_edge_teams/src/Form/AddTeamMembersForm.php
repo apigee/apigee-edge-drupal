@@ -184,8 +184,9 @@ class AddTeamMembersForm extends TeamMembersFormBase {
 
     // Validate existing members.
     if (count($already_members)) {
-      $form_state->setErrorByName('developers', $this->formatPlural(count($already_members), 'The following developer is already a member of the team: %developers.', 'The following developers are already members of the team: %developers.', [
+      $form_state->setErrorByName('developers', $this->formatPlural(count($already_members), 'The following developer is already a member of the @team: %developers.', 'The following developers are already members of the @team: %developers.', [
         '%developers' => implode(', ', $already_members),
+        '@team' => mb_strtolower($this->team->getEntityType()->getSingularLabel()),
       ]));
     }
 
@@ -204,8 +205,9 @@ class AddTeamMembersForm extends TeamMembersFormBase {
 
     $has_invitation = array_unique($has_invitation);
     if (count($has_invitation)) {
-      $form_state->setErrorByName('developers', $this->formatPlural(count($has_invitation), 'The following developer has already been invited to the team: %developers.', 'The following developers have already been invited to the team: %developers.', [
+      $form_state->setErrorByName('developers', $this->formatPlural(count($has_invitation), 'The following developer has already been invited to the @team: %developers.', 'The following developers have already been invited to the @team: %developers.', [
         '%developers' => implode(', ', $has_invitation),
+        '@team' => mb_strtolower($this->team->getEntityType()->getSingularLabel()),
       ]));
     }
 
@@ -236,11 +238,12 @@ class AddTeamMembersForm extends TeamMembersFormBase {
     $context = [
       '@developers' => implode(', ', $emails),
       '@team' => $this->team->label(),
+      '@team_label' => mb_strtolower($this->team->getEntityType()->getSingularLabel()),
     ];
 
     $this->messenger()->addStatus($this->formatPlural(count($emails),
-      $this->t('The following developer has been invited to the @team team: @developers.', $context),
-      $this->t('The following developers have been invited to the @team team: @developers.', $context
+      $this->t('The following developer has been invited to the @team @team_label: @developers.', $context),
+      $this->t('The following developers have been invited to the @team @team_label: @developers.', $context
     )));
 
     $form_state->setRedirectUrl($this->team->toUrl('members'));
