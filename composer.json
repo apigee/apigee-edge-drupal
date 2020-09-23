@@ -20,9 +20,10 @@
         "drupal/core-dev": "^8.7 || ^9",
         "drupal/drupal-extension": "master-dev",
         "drush/drush": "^9.0 || ^10.0",
+        "mglaman/drupal-check": "^1.1",
         "phpmd/phpmd": "2.8.2",
         "phpmetrics/phpmetrics": "^2.5",
-        "mglaman/drupal-check": "^1.1"
+        "phpstan/phpstan": "0.12.42"
     },
     "suggest": {
         "drupal/console": "Needed only to run tests in Drupal 8."
