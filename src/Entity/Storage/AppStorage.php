@@ -95,6 +95,30 @@ abstract class AppStorage extends AttributesAwareFieldableEdgeEntityStorageBase 
   }
 
   /**
+   * Load app by UUID.
+   *
+   * This function is more efficient than loadUnchanged(), because it does not
+   * need to cover the case when loading is done by App name.
+   *
+   * @param string $uuid
+   *   App UUID.
+   *
+   * @return \Drupal\apigee_edge\Entity\AppInterface|null
+   *   The unchanged entity, or NULL if the entity cannot be loaded.
+   *
+   * @TODO: this method should be also available in the AppStorageInterface, but
+   *   that would be a breaking change, so we can only add that in the next
+   *   major version of the module.
+   */
+  public function loadUnchangedByUuid(string $uuid): ?AppInterface {
+    // Clear the app controller's cache if it has one.
+    if ($this->appController instanceof EntityCacheAwareControllerInterface) {
+      $this->appController->entityCache()->removeEntities([$uuid]);
+    }
+    return parent::loadUnchanged($uuid);
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function initFieldValues(FieldableEdgeEntityInterface $entity, array $values = [], array $field_names = []) {
