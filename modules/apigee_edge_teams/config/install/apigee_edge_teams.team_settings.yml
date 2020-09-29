@@ -5,3 +5,10 @@ cache_expiration: 900
 non_member_team_apps_visible_api_products:
   - public
   - private
+team_invitation_expiry_days: 7
+team_invitation_email_existing:
+  subject: '[[site:name]] You have been invited to join the [team_invitation:team_name] team'
+  body: "Hi [user:display-name],\r\n\r\nYou have been invited to join the [team_invitation:team_name] team on [site:name] by [team_invitation:uid:entity:display-name].\r\n\r\nUse the following links to accept or decline the invitation:\r\n\r\n- Accept invitation: [team_invitation:url_accept]\r\n- Decline invitation: [team_invitation:url_decline]\r\n\r\nThis invitation will expire in [team_invitation:expiry_days] days.\r\n\r\n-- [site:name]"
+team_invitation_email_new:
+  subject: '[[site:name]] You have been invited to join the [team_invitation:team_name] team'
+  body: "Hi,\r\n\r\nYou have been invited to join the [team_invitation:team_name] team on [site:name] by [team_invitation:uid:entity:display-name].\r\n\r\nUse the link below to create an account and join the [team_invitation:team_name] team.\r\n\r\n[team_invitation:url_register]\r\n\r\nThis invitation will expire in [team_invitation:expiry_days] days.\r\n\r\n-- [site:name]"

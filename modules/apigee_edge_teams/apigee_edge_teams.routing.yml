@@ -31,6 +31,14 @@ apigee_edge_teams.settings.team.permissions:
   requirements:
     _permission: 'administer team'
 
+apigee_edge_teams.settings.team.team_invitation:
+  path: '/admin/config/apigee-edge/team-settings/invitation'
+  defaults:
+    _form: '\Drupal\apigee_edge_teams\Form\TeamInvitationForm'
+    _title: 'Team invitation'
+  requirements:
+    _permission: 'administer team_invitation'
+
 apigee_edge_teams.settings.team_app:
   path: '/admin/config/apigee-edge/app-settings/team-apps'
   defaults:

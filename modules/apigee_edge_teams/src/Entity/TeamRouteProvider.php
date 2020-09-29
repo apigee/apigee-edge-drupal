@@ -130,7 +130,7 @@ class TeamRouteProvider extends EdgeEntityRouteProvider {
     if ($entity_type->hasLinkTemplate('add-members')) {
       $route = new Route($entity_type->getLinkTemplate('add-members'));
       $route->setDefault('_form', AddTeamMembersForm::class);
-      $route->setDefault('_title', 'Add members');
+      $route->setDefault('_title', 'Invite members');
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureTeamParameter($route);
       $route->setRequirement('_apigee_edge_teams_manage_team_access', 'TRUE');
