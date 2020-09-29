@@ -108,11 +108,6 @@ class EdgeEntityRemoveProductEventTest extends ApigeeEdgeActionsRulesKernelTestB
         'product' => $api_product,
       ],
     ]);
-    $this->stack->queueMockResponse([
-      'get_developer_apps' => [
-        'apps' => [$developer_app]
-      ],
-    ]);
     $app_credential_controller->deleteApiProduct($consumer_key, $api_product->id());
 
     $this->assertLogsContains("Event apigee_edge_actions_entity_remove_product:developer_app was dispatched.");

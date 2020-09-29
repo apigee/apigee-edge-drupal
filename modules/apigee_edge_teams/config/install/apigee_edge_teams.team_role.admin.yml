@@ -8,3 +8,6 @@ permissions:
   - team_manage_members
   - team_app_delete
   - team_app_update
+  - team_app_add_api_key
+  - team_app_edit_api_products
+  - team_app_revoke_api_key

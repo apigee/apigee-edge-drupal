@@ -30,6 +30,13 @@ abstract class ApigeeEdgeFunctionalJavascriptTestBase extends WebDriverTestBase 
   use ApigeeEdgeFunctionalTestTrait;
 
   /**
+   * For tests relying on no markup at all or at least no core markup.
+   *
+   * @var string
+   */
+  protected $defaultTheme = 'stark';
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp() {

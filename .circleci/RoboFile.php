@@ -47,6 +47,11 @@ class RoboFile extends \Robo\Tasks
     $config = json_decode(file_get_contents('composer.json'));
     $config->extra->{"enable-patching"} = 'true';
     $config->extra->{"patches"} = new \stdClass();
+    $config->extra->{"drupal-scaffold"} = new \stdClass();
+    $config->extra->{"drupal-scaffold"}->{"locations"} = (object) [
+      'web-root' => '.',
+    ];
+
     file_put_contents('composer.json', json_encode($config));
 
     // Create a directory for our artifacts.
@@ -424,17 +429,19 @@ class RoboFile extends \Robo\Tasks
 
     switch ($drupalCoreVersion) {
       case '9':
+        $config->require->{"drupal/core-composer-scaffold"} = '^9';
         $config->require->{"drupal/core-recommended"} = '^9';
         $config->require->{"drupal/core-dev"} = '^9';
 
         break;
 
       case '8':
+        $config->require->{"drupal/core-composer-scaffold"} = '~8';
         $config->require->{"drupal/core-recommended"} = '~8';
         $config->require->{"drupal/core-dev"} = '~8';
 
         // Add rules for testing apigee_edge_actions (only for D8).
-        $config->require->{"drupal/rules"} = "3.0.0-alpha5";
+        $config->require->{"drupal/rules"} = "3.0.0-alpha6";
 
         // We require Drupal drush and console for some tests.
         $config->require->{"drupal/console"} = "~1.0";

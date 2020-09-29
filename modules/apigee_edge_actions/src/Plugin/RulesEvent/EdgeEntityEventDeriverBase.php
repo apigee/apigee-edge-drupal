@@ -108,7 +108,7 @@ abstract class EdgeEntityEventDeriverBase extends DeriverBase implements EdgeEnt
         'label' => $this->getLabel($entity_type),
         'category' => $entity_type->getLabel(),
         'entity_type_id' => $entity_type->id(),
-        'context' => $this->getContext($entity_type),
+        'context_definitions' => $this->getContext($entity_type),
       ] + $base_plugin_definition;
     }
 

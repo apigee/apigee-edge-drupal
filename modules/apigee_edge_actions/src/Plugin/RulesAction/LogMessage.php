@@ -34,15 +34,15 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   id = "apigee_edge_actions_log_message",
  *   label = @Translation("Log a message"),
  *   category = @Translation("Apigee"),
- *   context = {
+ *   context_definitions = {
  *     "message" = @ContextDefinition("string",
  *       label = @Translation("Message")
  *     ),
- *    "level" = @ContextDefinition("string",
- *      label = @Translation("Level"),
- *      description = @Translation("Specify a log level. Example: notice, error, info, warning or debug"),
- *      default_value = "notice"
- *    )
+ *     "level" = @ContextDefinition("string",
+ *       label = @Translation("Level"),
+ *       description = @Translation("Specify a log level. Example: notice, error, info, warning or debug"),
+ *       default_value = "notice"
+ *     )
  *   }
  * )
  */

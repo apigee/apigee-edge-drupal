@@ -35,6 +35,11 @@ use Drupal\Tests\apigee_edge\FunctionalJavascript\ApigeeEdgeFunctionalJavascript
 class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
   /**
+   * {@inheritdoc}
+   */
+  protected $defaultTheme = 'classy';
+
+  /**
    * Valid username.
    *
    * @var string

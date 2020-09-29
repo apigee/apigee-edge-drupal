@@ -25,6 +25,9 @@ use Drupal\apigee_edge\Controller\DeveloperAppViewControllerForDeveloper;
 use Drupal\apigee_edge\Controller\DeveloperAppKeysController;
 use Drupal\apigee_edge\Entity\ListBuilder\DeveloperAppListBuilderForDeveloper;
 use Drupal\apigee_edge\Form\DeveloperAppAnalyticsFormForDeveloper;
+use Drupal\apigee_edge\Form\DeveloperAppApiKeyDeleteForm;
+use Drupal\apigee_edge\Form\DeveloperAppApiKeyAddForm;
+use Drupal\apigee_edge\Form\DeveloperAppApiKeyRevokeForm;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Symfony\Component\Routing\Route;
 
@@ -66,6 +69,18 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
 
     if ($api_keys = $this->getApiKeyRouteDeveloperApp($entity_type)) {
       $collection->add("entity.{$entity_type_id}.api_keys", $api_keys);
+    }
+
+    if ($add_api_key_form = $this->getAddApiKeyRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.add_api_key_form", $add_api_key_form);
+    }
+
+    if ($delete_api_key_form = $this->getDeleteApiKeyRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.delete_api_key_form", $delete_api_key_form);
+    }
+
+    if ($revoke_api_key_form = $this->getRevokeApiKeyRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.revoke_api_key_form", $revoke_api_key_form);
     }
 
     return $collection;
@@ -224,6 +239,67 @@ class DeveloperAppRouteProvider extends AppRouteProvider {
       $route->setDefault('entity_type_id', $entity_type->id());
       $this->ensureUserParameter($route);
       $route->setRequirement('_app_access_check_by_app_name', 'analytics');
+      return $route;
+    }
+  }
+
+  /**
+   * Gets the add-api-key-form route for a developer app.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   *
+   * @return \Symfony\Component\Routing\Route|null
+   *   The generated route, if available.
+   */
+  protected function getAddApiKeyRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('add-api-key-form')) {
+      $route = new Route($entity_type->getLinkTemplate('add-api-key-form'));
+      $route->setDefault('_form', DeveloperAppApiKeyAddForm::class);
+      $route->setDefault('_title', 'Add key');
+      $route->setDefault('entity_type_id', $entity_type->id());
+      $this->ensureUserParameter($route);
+      $route->setRequirement('_app_access_check_by_app_name', 'add_api_key');
+      return $route;
+    }
+  }
+
+  /**
+   * Gets the delete-api-key-form route for a developer app.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   *
+   * @return \Symfony\Component\Routing\Route|null
+   *   The generated route, if available.
+   */
+  protected function getDeleteApiKeyRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('delete-api-key-form')) {
+      $route = new Route($entity_type->getLinkTemplate('delete-api-key-form'));
+      $route->setDefault('_form', DeveloperAppApiKeyDeleteForm::class);
+      $route->setDefault('entity_type_id', $entity_type->id());
+      $this->ensureUserParameter($route);
+      $route->setRequirement('_app_access_check_by_app_name', 'delete_api_key');
+      return $route;
+    }
+  }
+
+  /**
+   * Gets the revoke-api-key-form route for a developer app.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   *
+   * @return \Symfony\Component\Routing\Route|null
+   *   The generated route, if available.
+   */
+  protected function getRevokeApiKeyRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('revoke-api-key-form')) {
+      $route = new Route($entity_type->getLinkTemplate('revoke-api-key-form'));
+      $route->setDefault('_form', DeveloperAppApiKeyRevokeForm::class);
+      $route->setDefault('entity_type_id', $entity_type->id());
+      $this->ensureUserParameter($route);
+      $route->setRequirement('_app_access_check_by_app_name', 'revoke_api_key');
       return $route;
     }
   }
