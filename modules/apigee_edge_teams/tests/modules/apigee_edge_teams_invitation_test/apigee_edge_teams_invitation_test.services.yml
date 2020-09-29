@@ -1,0 +1,5 @@
+services:
+  apigee_edge_teams_invitation_test.event_subscriber.team_invitation_subscriber:
+    class: \Drupal\apigee_edge_teams_invitation_test\EventSubscriber\TeamInvitationSubscriber
+    tags:
+      - { name: event_subscriber }

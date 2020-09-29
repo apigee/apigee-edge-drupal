@@ -20,7 +20,9 @@
  */
 
 use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
+use Drupal\apigee_edge_teams\Entity\TeamInvitationInterface;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
+use Drupal\Component\Render\PlainTextOutput;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Breadcrumb\Breadcrumb;
 use Drupal\Core\Entity\EntityInterface;
@@ -239,5 +241,38 @@ function apigee_edge_teams_help($route_name, RouteMatchInterface $route_match) {
         ':permissions' => Url::fromRoute('apigee_edge_teams.settings.team.permissions')->toString(),
         ':member' => $member_role->label(),
       ]) . '</p>';
+  }
+}
+
+/**
+ * Implements hook_mail().
+ */
+function apigee_edge_teams_mail($key, &$message, $params) {
+  $token_service = \Drupal::token();
+  $config = \Drupal::config('apigee_edge_teams.team_settings');
+
+  switch ($key) {
+    case 'team_invitation_created':
+      $template = empty($params['user']) ? 'new' : 'existing';
+      $message['subject'] = PlainTextOutput::renderFromHtml($token_service->replace($config->get("team_invitation_email_$template.subject"), $params));
+      $message['body'][] = $token_service->replace($config->get("team_invitation_email_$template.body"), $params);
+      break;
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function apigee_edge_teams_cron() {
+  /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamInvitationStorageInterface $storage */
+  $storage = Drupal::entityTypeManager()->getStorage('team_invitation');
+  $team_invitations = $storage->getInvitationsToExpire();
+  if (!count($team_invitations)) {
+    return;
+  }
+
+  // Update status for expired invitations.
+  foreach ($team_invitations as $team_invitation) {
+    $team_invitation->setStatus(TeamInvitationInterface::STATUS_EXPIRED)->save();
   }
 }

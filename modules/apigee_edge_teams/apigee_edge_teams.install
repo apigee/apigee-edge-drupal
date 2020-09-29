@@ -19,6 +19,8 @@
  */
 
 use Apigee\Edge\Utility\OrganizationFeatures;
+use Drupal\Core\Config\FileStorage;
+use Drupal\user\RoleInterface;
 
 /**
  * @file
@@ -61,6 +63,20 @@ function apigee_edge_teams_requirements($phase) {
 }
 
 /**
+ * Implements hook_install().
+ */
+function apigee_edge_teams_install() {
+  if (\Drupal::moduleHandler()->moduleExists('user')) {
+    $authenticated_user_permissions = [
+      'accept own team invitation',
+      'decline own team invitation',
+    ];
+    user_role_grant_permissions(RoleInterface::AUTHENTICATED_ID, $authenticated_user_permissions);
+  }
+}
+
+
+/**
  * Assign "add_api_key", "revoke_api_key" and "edit_api_products" permissions to team administrators.
  */
 function apigee_edge_teams_update_8701() {
@@ -75,4 +91,51 @@ function apigee_edge_teams_update_8701() {
   /** @var \Drupal\apigee_edge_teams\Entity\TeamRoleInterface $admin_role */
   $admin_role = $storage->load($role);
   $storage->changePermissions($role, $admin_role->getPermissions() + array_combine($api_key_permissions, $api_key_permissions));
+}
+
+/**
+ * Install team_invitation entity, dependencies and config.
+ */
+function apigee_edge_teams_update_8702() {
+  // Install 'team_invitation' entity.
+  \Drupal::entityTypeManager()->clearCachedDefinitions();
+  $entity_definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  $entity_definition_update_manager->installEntityType(\Drupal::entityTypeManager()->getDefinition('team_invitation'));
+
+  // Install 'views' module.
+  \Drupal::service('module_installer')->install(['views']);
+
+  // Install new config.
+  $settings_to_sync = [
+    'team_invitation_expiry_days',
+    'team_invitation_email_existing',
+    'team_invitation_email_new',
+  ];
+  /** @var \Drupal\Core\Config\StorageInterface $config_storage */
+  $config_storage = \Drupal::service('config.storage');
+  $module_path = drupal_get_path('module', 'apigee_edge_teams');
+  $source = new FileStorage("$module_path/config/install");
+  $new_team_settings = $source->read('apigee_edge_teams.team_settings');
+  $team_settings = $config_storage->read('apigee_edge_teams.team_settings');
+  foreach ($settings_to_sync as $setting) {
+    $team_settings[$setting] = $new_team_settings[$setting];
+  }
+  $config_storage->write('apigee_edge_teams.team_settings', $team_settings);
+
+  $optional = new FileStorage("$module_path/config/optional");
+  $team_invitations_view = $optional->read('views.view.team_invitations');
+  $config_storage->write('views.view.team_invitations', $team_invitations_view);
+}
+
+/**
+ * Assign accept and decline team invitations permissions to authenticated users.
+ */
+function apigee_edge_teams_update_8703() {
+  if (\Drupal::moduleHandler()->moduleExists('user')) {
+    $authenticated_user_permissions = [
+      'accept own team invitation',
+      'decline own team invitation',
+    ];
+    user_role_grant_permissions(RoleInterface::AUTHENTICATED_ID, $authenticated_user_permissions);
+  }
 }

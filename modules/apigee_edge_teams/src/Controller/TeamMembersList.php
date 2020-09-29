@@ -29,6 +29,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Url;
 use Drupal\user\UserInterface;
+use Drupal\views\Views;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -132,6 +133,13 @@ class TeamMembersList extends ControllerBase {
     // The list is ordered in the same order as the API returns the members.
     foreach ($members as $member) {
       $build['table']['#rows'][$member] = $this->buildRow($member, $users_by_mail, $team_member_roles_by_mail, $team);
+    }
+
+    // Add invitations.
+    if ($invitation_view = Views::getView('team_invitations')) {
+      $build['invitations'] = $invitation_view->buildRenderable('team', [
+        'team' => $team->id(),
+      ]);
     }
 
     return $build;
