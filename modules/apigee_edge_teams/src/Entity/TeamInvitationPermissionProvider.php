@@ -33,7 +33,7 @@ class TeamInvitationPermissionProvider extends EntityPermissionProvider {
    */
   public function buildPermissions(EntityTypeInterface $entity_type) {
     $permissions['administer team_invitation'] = [
-      'title' => $this->t('Administer team invitations'),
+      'title' => $this->t('Administer team invitation settings'),
       'provider' => 'apigee_edge_teams',
       'restrict access' => TRUE,
     ];
