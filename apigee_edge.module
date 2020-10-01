@@ -134,17 +134,17 @@ function apigee_edge_theme() {
     'status_property' => [
       'render element' => 'element',
     ],
-    'secret' => [
+    'apigee_secret' => [
       'render element' => 'elements',
-      'base hook' => 'secret',
+      'base hook' => 'apigee_secret',
     ],
   ];
 }
 
 /**
- * Preprocess variables for the secret element template.
+ * Preprocess variables for the apigee_secret element template.
  */
-function template_preprocess_secret(&$variables) {
+function template_preprocess_apigee_secret(&$variables) {
   $variables['value'] = [
     '#markup' => $variables['elements']['#value'],
   ];
@@ -1184,7 +1184,7 @@ function template_preprocess_app_credential(array &$variables) {
     if (in_array($property, $secret_properties)) {
       // Render the consumerKey and the consumerSecret as secret fields.
       $variables['primary_wrapper'][$property]['value'] = [
-        '#type' => 'secret',
+        '#type' => 'apigee_secret',
       ];
     }
     elseif ($def['value_type'] === 'status') {

@@ -48,7 +48,7 @@ apigee_edge.status_property:
     theme:
       css/apigee_edge.status_property.css: {}
 
-secret:
+apigee_edge.secret:
   version: 1.0
   css:
     theme:
