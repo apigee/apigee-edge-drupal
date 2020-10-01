@@ -147,6 +147,8 @@ abstract class AppAnalyticsFormBase extends FormBase {
         'error_count' => $this->t('Error count'),
       ],
       '#default_value' => 'total_response_time',
+      '#title' => t('Metrics'),
+      '#title_display' => 'invisible'
     ];
 
     $form['controls']['since'] = [
@@ -178,6 +180,8 @@ abstract class AppAnalyticsFormBase extends FormBase {
         '2w' => $this->t('Last 2 Weeks'),
         'custom' => $this->t('Custom range'),
       ],
+      '#title' => t('Date range'),
+      '#title_display' => 'invisible'
     ];
 
     $form['controls']['submit'] = [
