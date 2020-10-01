@@ -1,6 +1,6 @@
 apigee_edge_teams.team.add_members:
   route_name: entity.team.add_members
-  title: 'Add members'
+  title: 'Invite members'
   appears_on:
     - 'entity.team.members'
 

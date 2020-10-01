@@ -62,7 +62,7 @@ final class DefaultTeamPermissionsProvider implements DynamicTeamPermissionProvi
         'permissions' => [
           'manage_members' => [
             'label' => $this->t('Manage team members'),
-            'description' => $this->t('Add/remove team members.'),
+            'description' => $this->t('Add/remove team members and administer permissions.'),
           ],
         ],
       ],
