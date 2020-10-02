@@ -1788,6 +1788,7 @@ function apigee_edge_app_listing_page_title(): TranslatableMarkup {
  */
 function apigee_edge_preprocess_fieldset(&$variables) {
 
+  // @todo This is a temporary fix for core issue #3174459.
   if ($variables['required'] == true) {
     if ($variables['attributes']['required']) {
       unset($variables['attributes']['required']);
