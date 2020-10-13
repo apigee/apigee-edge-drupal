@@ -24,6 +24,7 @@ use Apigee\Edge\Api\Management\Entity\AppCredential;
 use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
 use Apigee\Edge\Structure\CredentialProduct;
 use Drupal\apigee_edge\Entity\AppInterface;
+use Drupal\apigee_edge\Entity\AppWarningsCheckerInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
@@ -71,6 +72,13 @@ class AppListBuilder extends EdgeEntityListBuilder {
   protected $configFactory;
 
   /**
+   * The app warnings checker.
+   *
+   * @var \Drupal\apigee_edge\Entity\AppWarningsCheckerInterface
+   */
+  protected $appWarningsChecker;
+
+  /**
    * AppListBuilder constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -84,12 +92,17 @@ class AppListBuilder extends EdgeEntityListBuilder {
    *   The request stack object.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface|null $config_factory
    *   The config factory.
+   * @param \Drupal\apigee_edge\Entity\AppWarningsCheckerInterface $app_warnings_checker
+   *   The app warnings checker service.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, RequestStack $request_stack, TimeInterface $time, ConfigFactoryInterface $config_factory = NULL) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, RequestStack $request_stack, TimeInterface $time, ConfigFactoryInterface $config_factory = NULL, AppWarningsCheckerInterface $app_warnings_checker = NULL) {
     if (!$config_factory) {
       $config_factory = \Drupal::service('config.factory');
+    }
+    if (!$app_warnings_checker) {
+      $app_warnings_checker = \Drupal::service('apigee_edge.entity.app_warnings_checker');
     }
 
     parent::__construct($entity_type, $entity_type_manager, $config_factory);
@@ -97,6 +110,7 @@ class AppListBuilder extends EdgeEntityListBuilder {
     $this->entityTypeManager = $entity_type_manager;
     $this->requestStack = $request_stack;
     $this->time = $time;
+    $this->appWarningsChecker = $app_warnings_checker;
   }
 
   /**
@@ -349,58 +363,7 @@ class AppListBuilder extends EdgeEntityListBuilder {
    *   credentials and revoked or pending API products in a credential.
    */
   protected function checkAppCredentialWarnings(AppInterface $app): array {
-    $warnings = [];
-    $warnings['revokedCred'] = FALSE;
-    $warnings['revokedOrPendingCredProduct'] = FALSE;
-    $warnings['expiredCred'] = FALSE;
-    $revoked_credentials = [];
-
-    foreach ($app->getCredentials() as $credential) {
-      // Check for revoked credentials.
-      if ($credential->getStatus() === AppCredentialInterface::STATUS_REVOKED) {
-        $revoked_credentials[] = $credential;
-        continue;
-      }
-
-      // Check for expired credentials.
-      if (($expired_date = $credential->getExpiresAt()) && $this->time->getRequestTime() - $expired_date->getTimestamp() > 0) {
-        $warnings['expiredCred'] = $this->t('At least one of the credentials associated with this @app is expired.', [
-          '@app' => mb_strtolower($this->entityType->getSingularLabel()),
-        ]);
-      }
-
-      // Check status of API products for credential.
-      foreach ($credential->getApiProducts() as $cred_product) {
-        if ($cred_product->getStatus() == CredentialProduct::STATUS_REVOKED || $cred_product->getStatus() == CredentialProduct::STATUS_PENDING) {
-          $args = [
-            '@app' => mb_strtolower($this->entityType->getSingularLabel()),
-            '@api_product' => mb_strtolower($this->entityTypeManager->getDefinition('api_product')
-              ->getSingularLabel()),
-            '@status' => $cred_product->getStatus() == CredentialProduct::STATUS_REVOKED ? $this->t('revoked') : $this->t('pending'),
-          ];
-          if (count($app->getCredentials()) === 1) {
-            /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $apiProduct */
-            $api_product = $this->entityTypeManager->getStorage('api_product')
-              ->load($cred_product->getApiproduct());
-            $args['%name'] = $api_product->label();
-            $warnings['revokedOrPendingCredProduct'] = $this->t('%name @api_product associated with this @app is in @status status.', $args);
-          }
-          else {
-            $warnings['revokedOrPendingCredProduct'] = $this->t('At least one @api_product associated with one of the credentials of this @app is in @status status.', $args);
-          }
-          break;
-        }
-      }
-    }
-
-    // If all credentials are revoked, show a warning.
-    if (count($app->getCredentials()) === count($revoked_credentials)) {
-      $warnings['revokedCred'] = $this->t('All credentials associated with this @app are in revoked status.', [
-        '@app' => mb_strtolower($this->entityType->getSingularLabel()),
-      ]);
-    }
-
-    return $warnings;
+    return $this->appWarningsChecker->getWarnings($app);
   }
 
   /**

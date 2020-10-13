@@ -106,6 +106,10 @@ services:
     class: Drupal\apigee_edge\Entity\Controller\Cache\DeveloperAppNameCacheFactory
     arguments: ['@apigee_edge.entity.controller.cache.app_name_cache_by_owner_factory', '@entity_type.manager', '@email.validator']
 
+  apigee_edge.entity.app_warnings_checker:
+    class: Drupal\apigee_edge\Entity\AppWarningsChecker
+    arguments: ['@entity_type.manager', '@datetime.time']
+
   apigee_edge.cache.memory_cache_factory:
     class: Drupal\apigee_edge\MemoryCacheFactory
 
