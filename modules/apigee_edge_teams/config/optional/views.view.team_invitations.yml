@@ -721,9 +721,8 @@ display:
         empty: false
         access: false
       access:
-        type: team_permission
-        options:
-          permission: team_manage_members
+        type: none
+        options: {  }
     cache_metadata:
       max-age: -1
       contexts:
