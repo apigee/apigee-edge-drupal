@@ -354,6 +354,7 @@ function apigee_edge_entity_extra_field_info() {
       $extra[$definition->id()][$definition->id()]['display']['warnings'] = [
         'label' => new TranslatableMarkup('Warnings'),
         'description' => new TranslatableMarkup('Displays app warnings'),
+        'weight' => -100,
         'visible' => TRUE,
       ];
     }
