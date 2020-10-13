@@ -353,8 +353,15 @@ class AppListBuilder extends EdgeEntityListBuilder {
     $warnings['revokedCred'] = FALSE;
     $warnings['revokedOrPendingCredProduct'] = FALSE;
     $warnings['expiredCred'] = FALSE;
+    $revoked_credentials = [];
 
     foreach ($app->getCredentials() as $credential) {
+      // Check for revoked credentials.
+      if ($credential->getStatus() === AppCredentialInterface::STATUS_REVOKED) {
+        $revoked_credentials[] = $credential;
+        continue;
+      }
+
       // Check for expired credentials.
       if (($expired_date = $credential->getExpiresAt()) && $this->time->getRequestTime() - $expired_date->getTimestamp() > 0) {
         $warnings['expiredCred'] = $this->t('At least one of the credentials associated with this @app is expired.', [
@@ -363,30 +370,34 @@ class AppListBuilder extends EdgeEntityListBuilder {
       }
 
       // Check status of API products for credential.
-      // We only check for approved credential.
-      if ($credential->getStatus() === AppCredentialInterface::STATUS_APPROVED) {
-        foreach ($credential->getApiProducts() as $cred_product) {
-          if ($cred_product->getStatus() == CredentialProduct::STATUS_REVOKED || $cred_product->getStatus() == CredentialProduct::STATUS_PENDING) {
-            $args = [
-              '@app' => mb_strtolower($this->entityType->getSingularLabel()),
-              '@api_product' => mb_strtolower($this->entityTypeManager->getDefinition('api_product')
-                ->getSingularLabel()),
-              '@status' => $cred_product->getStatus() == CredentialProduct::STATUS_REVOKED ? $this->t('revoked') : $this->t('pending'),
-            ];
-            if (count($app->getCredentials()) === 1) {
-              /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $apiProduct */
-              $api_product = $this->entityTypeManager->getStorage('api_product')
-                ->load($cred_product->getApiproduct());
-              $args['%name'] = $api_product->label();
-              $warnings['revokedOrPendingCredProduct'] = $this->t('%name @api_product associated with this @app is in @status status.', $args);
-            }
-            else {
-              $warnings['revokedOrPendingCredProduct'] = $this->t('At least one @api_product associated with one of the credentials of this @app is in @status status.', $args);
-            }
-            break;
+      foreach ($credential->getApiProducts() as $cred_product) {
+        if ($cred_product->getStatus() == CredentialProduct::STATUS_REVOKED || $cred_product->getStatus() == CredentialProduct::STATUS_PENDING) {
+          $args = [
+            '@app' => mb_strtolower($this->entityType->getSingularLabel()),
+            '@api_product' => mb_strtolower($this->entityTypeManager->getDefinition('api_product')
+              ->getSingularLabel()),
+            '@status' => $cred_product->getStatus() == CredentialProduct::STATUS_REVOKED ? $this->t('revoked') : $this->t('pending'),
+          ];
+          if (count($app->getCredentials()) === 1) {
+            /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $apiProduct */
+            $api_product = $this->entityTypeManager->getStorage('api_product')
+              ->load($cred_product->getApiproduct());
+            $args['%name'] = $api_product->label();
+            $warnings['revokedOrPendingCredProduct'] = $this->t('%name @api_product associated with this @app is in @status status.', $args);
           }
+          else {
+            $warnings['revokedOrPendingCredProduct'] = $this->t('At least one @api_product associated with one of the credentials of this @app is in @status status.', $args);
+          }
+          break;
         }
       }
+    }
+
+    // If all credentials are revoked, show a warning.
+    if (count($app->getCredentials()) === count($revoked_credentials)) {
+      $warnings['revokedCred'] = $this->t('All credentials associated with this @app are in revoked status.', [
+        '@app' => mb_strtolower($this->entityType->getSingularLabel()),
+      ]);
     }
 
     return $warnings;

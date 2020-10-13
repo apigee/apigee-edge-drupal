@@ -92,7 +92,14 @@ class AppListBuilderTest extends KernelTestBase {
    *
    * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface
    */
-  protected $approvedAppWithRevokedCredential;
+  protected $approvedAppWithOneRevokedCredential;
+
+  /**
+   * An approved DeveloperApp entity with all credentials revoked.
+   *
+   * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface
+   */
+  protected $approvedAppWithAllRevokedCredential;
 
   /**
    * A revoked DeveloperApp entity with at least one credential revoked.
@@ -152,15 +159,25 @@ class AppListBuilderTest extends KernelTestBase {
     $this->queueDeveloperAppResponse($this->approvedAppWithApprovedCredential);
     $this->approvedAppWithApprovedCredential->save();
 
-    // Approved app with revoked credential.
-    $this->approvedAppWithRevokedCredential = DeveloperApp::create([
+    // Approved app with one revoked credential.
+    $this->approvedAppWithOneRevokedCredential = DeveloperApp::create([
       'name' => $this->randomMachineName(),
       'status' => App::STATUS_APPROVED,
       'developerId' => $this->developer->getDeveloperId(),
     ]);
-    $this->approvedAppWithRevokedCredential->setOwner($this->account);
-    $this->queueDeveloperAppResponse($this->approvedAppWithRevokedCredential);
-    $this->approvedAppWithRevokedCredential->save();
+    $this->approvedAppWithOneRevokedCredential->setOwner($this->account);
+    $this->queueDeveloperAppResponse($this->approvedAppWithOneRevokedCredential);
+    $this->approvedAppWithOneRevokedCredential->save();
+
+    // Approved app with all credentials revoked.
+    $this->approvedAppWithAllRevokedCredential = DeveloperApp::create([
+      'name' => $this->randomMachineName(),
+      'status' => App::STATUS_APPROVED,
+      'developerId' => $this->developer->getDeveloperId(),
+    ]);
+    $this->approvedAppWithAllRevokedCredential->setOwner($this->account);
+    $this->queueDeveloperAppResponse($this->approvedAppWithAllRevokedCredential);
+    $this->approvedAppWithAllRevokedCredential->save();
 
     // Revoked app with revoked credential.
     $this->revokedAppWithRevokedCredential = DeveloperApp::create([
@@ -213,8 +230,12 @@ class AppListBuilderTest extends KernelTestBase {
         $this->approvedAppWithApprovedCredential->delete();
       }
 
-      if ($this->approvedAppWithRevokedCredential) {
-        $this->approvedAppWithRevokedCredential->delete();
+      if ($this->approvedAppWithOneRevokedCredential) {
+        $this->approvedAppWithOneRevokedCredential->delete();
+      }
+
+      if ($this->approvedAppWithAllRevokedCredential) {
+        $this->approvedAppWithAllRevokedCredential->delete();
       }
 
       if ($this->revokedAppWithRevokedCredential) {
@@ -259,7 +280,7 @@ class AppListBuilderTest extends KernelTestBase {
     $expired_credential = [
       "consumerKey" => $this->randomMachineName(),
       "consumerSecret" => $this->randomMachineName(),
-      "status" => AppCredentialInterface::STATUS_REVOKED,
+      "status" => AppCredentialInterface::STATUS_APPROVED,
       'expiresAt' => ($this->container->get('datetime.time')->getRequestTime() - 24 * 60 * 60) * 1000,
     ];
 
@@ -267,7 +288,7 @@ class AppListBuilderTest extends KernelTestBase {
       'get_developer_apps_with_credentials' => [
         'apps' => [
           $this->approvedAppWithApprovedCredential,
-          $this->approvedAppWithRevokedCredential,
+          $this->approvedAppWithOneRevokedCredential,
           $this->revokedAppWithRevokedCredential,
           $this->approvedAppWithExpiredCredential,
           $this->revokedAppWithExpiredCredential,
@@ -276,7 +297,11 @@ class AppListBuilderTest extends KernelTestBase {
           $this->approvedAppWithApprovedCredential->id() => [
             $approved_credential,
           ],
-          $this->approvedAppWithRevokedCredential->id() => [
+          $this->approvedAppWithOneRevokedCredential->id() => [
+            $approved_credential,
+            $revoked_credential,
+          ],
+          $this->approvedAppWithAllRevokedCredential->id() => [
             $revoked_credential,
           ],
           $this->revokedAppWithRevokedCredential->id() => [
@@ -298,8 +323,13 @@ class AppListBuilderTest extends KernelTestBase {
     // No warnings for approved app.
     $this->assertEmpty($build['table']['#rows'][$this->getStatusRowKey($this->approvedAppWithApprovedCredential)]['data']);
 
-    // No warnings to approved app with revoked credentials.
-    $this->assertEmpty($build['table']['#rows'][$this->getStatusRowKey($this->approvedAppWithRevokedCredential)]['data']);
+    // No warnings to approved app with one revoked credentials.
+    $this->assertEmpty($build['table']['#rows'][$this->getStatusRowKey($this->approvedAppWithOneRevokedCredential)]['data']);
+
+    // One warning for approved app with all credentials revoked.
+    $warnings = $build['table']['#rows'][$this->getStatusRowKey($this->approvedAppWithAllRevokedCredential)]['data'];
+    $this->assertCount(1, $warnings);
+    $this->assertEqual('All credentials associated with this app are in revoked status.', (string) $warnings['info']['data']['#items'][0]);
 
     // No warnings to revoked app with revoked credentials.
     $this->assertEmpty($build['table']['#rows'][$this->getStatusRowKey($this->revokedAppWithRevokedCredential)]['data']);
