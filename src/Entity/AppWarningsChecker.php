@@ -108,7 +108,7 @@ class AppWarningsChecker implements AppWarningsCheckerInterface {
 
     // If all credentials are revoked, show a warning.
     if (count($app->getCredentials()) === count($revoked_credentials)) {
-      $warnings['revokedCred'] = $this->t('All credentials associated with this @app are in revoked status.', $args);
+      $warnings['revokedCred'] = $this->t('No valid credentials associated with this @app.', $args);
     }
 
     return $warnings;
