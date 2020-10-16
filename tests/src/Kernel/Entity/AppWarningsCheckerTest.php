@@ -23,12 +23,11 @@ namespace Drupal\Tests\apigee_edge\Kernel\Entity;
 use Apigee\Edge\Api\Management\Entity\App;
 use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
 use Drupal\apigee_edge\Entity\ApiProduct;
-use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
-use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\apigee_edge\Kernel\ApigeeEdgeKernelTestTrait;
+use Drupal\Tests\apigee_edge\Traits\CredsUtilsTrait;
 use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\user\Entity\User;
@@ -42,7 +41,7 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class AppWarningsCheckerTest extends KernelTestBase {
 
-  use ApigeeMockApiClientHelperTrait, ApigeeEdgeKernelTestTrait, UserCreationTrait;
+  use ApigeeMockApiClientHelperTrait, ApigeeEdgeKernelTestTrait, UserCreationTrait, CredsUtilsTrait;
 
   /**
    * Indicates this test class is mock API client ready.
@@ -123,13 +122,6 @@ class AppWarningsCheckerTest extends KernelTestBase {
    * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface
    */
   protected $revokedAppWithExpiredCredential;
-
-  /**
-   * API product to test.
-   *
-   * @var \Drupal\apigee_edge\Entity\ApiProductInterface
-   */
-  protected $apiProduct;
 
   /**
    * {@inheritdoc}
@@ -397,54 +389,6 @@ class AppWarningsCheckerTest extends KernelTestBase {
     $warnings = array_filter($app_warnings_checker->getWarnings($this->revokedAppWithExpiredCredential));
     $this->assertCount(1, $warnings);
     $this->assertEqual('At least one of the credentials associated with this app is expired.', (string) $warnings['expiredCred']);
-  }
-
-  /**
-   * Returns the developer app credential controller.
-   *
-   * @param string $owner
-   *   The developer id (UUID), email address or team (company) name.
-   * @param string $app_name
-   *   The name of an app.
-   *
-   * @return \Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface
-   *   The app credential controller.
-   */
-  protected function getAppCredentialController(string $owner, string $app_name): AppCredentialControllerInterface {
-    return \Drupal::service('apigee_edge.controller.developer_app_credential_factory')->developerAppCredentialController($owner, $app_name);
-  }
-
-  /**
-   * Perform an operation on the given credential (by index) of the app.
-   *
-   * @param \Drupal\apigee_edge\Entity\DeveloperAppInterface $app
-   *   The app.
-   * @param string $op
-   *   The operation to perform (revoke,  delete, generate).
-   * @param int $cred_index
-   *   The index of the credential (only applies to revoke/delete operations).
-   * @param int $expires_in
-   *   The milliseconds from now that the cred should expire (only applies for
-   *   generate operation). Defaults to "-1" (never).
-   */
-  protected function operationOnCredential(DeveloperAppInterface $app, $op = 'revoke', $cred_index = 0, $expires_in = -1) {
-    $controller = $this->getAppCredentialController($app->getAppOwner(), $app->getName());
-
-    if ($op == 'generate') {
-      $controller->generate([$this->apiProduct->id()], $app->getAttributes(), '', [], $expires_in);
-      return;
-    }
-
-    $key = $app
-      ->getCredentials()[$cred_index]
-      ->getConsumerKey();
-
-    if ($op == 'revoke') {
-      $controller->setStatus($key, AppCredentialControllerInterface::STATUS_REVOKE);
-    }
-    elseif ($op == 'delete') {
-      $controller->delete($key);
-    }
   }
 
 }
