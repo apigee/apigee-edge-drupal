@@ -23,7 +23,6 @@ use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use Drupal\apigee_edge\Connector\GceServiceAccountAuthentication;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Component\Serialization\Json;
-use Drupal\Core\Form\FormState;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\key\Plugin\KeyInputBase;
 
@@ -125,8 +124,8 @@ class ApigeeAuthKeyInput extends KeyInputBase {
     }
 
     $state_for_not_gcp_hosted = [];
-
-    if (GceServiceAccountAuthentication::isAvailable()) {
+    $gceServiceAccountAuth = new GceServiceAccountAuthentication(\Drupal::service('apigee_edge.authentication.oauth_token_storage'));
+    if ($gceServiceAccountAuth->isAvailable()) {
       $form['gcp_hosted'] = [
         '#type' => 'checkbox',
         '#title' => $this->t('Use the default service account if this portal is hosted on GCP'),
