@@ -246,30 +246,6 @@ function template_preprocess_status_property(array &$variables) {
 }
 
 /**
- * Implements hook_system_breadcrumb_alter().
- */
-function apigee_edge_system_breadcrumb_alter(Breadcrumb &$breadcrumb, RouteMatchInterface $route_match, array $context) {
-  // Remove breadcrumb cache from every path under "/user" to let
-  // CreateAppForDeveloperBreadcrumbBuilder build breadcrumb properly on the
-  // add developer app for developer page.
-  if (preg_match('/^\/user.*/', $route_match->getRouteObject()->getPath())) {
-    $breadcrumb->mergeCacheMaxAge(0);
-  }
-  if ($route_match->getRouteName() === 'entity.developer_app.add_form_for_developer') {
-    $collection_route_by_developer_name = 'entity.developer_app.collection_by_developer';
-    /** @var \Drupal\Core\Controller\TitleResolverInterface $title_resolver */
-    $title_resolver = \Drupal::service('title_resolver');
-    /** @var \Drupal\Core\Routing\RouteProviderInterface $route_provider */
-    $route_provider = \Drupal::service('router.route_provider');
-    $breadcrumb->addLink(Link::createFromRoute(
-      $title_resolver->getTitle(\Drupal::requestStack()->getCurrentRequest(), $route_provider->getRouteByName($collection_route_by_developer_name)),
-      $collection_route_by_developer_name,
-      ['user' => $route_match->getParameter('user')->id()]
-    ));
-  }
-}
-
-/**
  * Implements hook_entity_base_field_info().
  */
 function apigee_edge_entity_base_field_info(EntityTypeInterface $entity_type) {
