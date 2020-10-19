@@ -74,7 +74,7 @@ use Drupal\user\UserInterface;
  *     "analytics" = "/developer-apps/{developer_app}/analytics",
  *     "canonical-by-developer" = "/user/{user}/apps/{app}",
  *     "collection-by-developer" = "/user/{user}/apps",
- *     "add-form-for-developer" = "/user/{user}/create-app",
+ *     "add-form-for-developer" = "/user/{user}/apps/add",
  *     "edit-form-for-developer" = "/user/{user}/apps/{app}/edit",
  *     "delete-form-for-developer" = "/user/{user}/apps/{app}/delete",
  *     "analytics-for-developer" = "/user/{user}/apps/{app}/analytics",
