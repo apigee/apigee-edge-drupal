@@ -61,7 +61,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "edit-form" = "/teams/{team}/edit",
  *     "delete-form" = "/teams/{team}/delete",
  *     "members" = "/teams/{team}/members",
- *     "add-members" = "/teams/{team}/add-members",
+ *     "add-members" = "/teams/{team}/members/add",
  *   },
  *   entity_keys = {
  *     "id" = "name",
