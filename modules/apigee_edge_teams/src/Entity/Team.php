@@ -57,7 +57,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   links = {
  *     "collection" = "/teams",
  *     "canonical" = "/teams/{team}",
- *     "add-form" = "/add-team",
+ *     "add-form" = "/teams/add",
  *     "edit-form" = "/teams/{team}/edit",
  *     "delete-form" = "/teams/{team}/delete",
  *     "members" = "/teams/{team}/members",
