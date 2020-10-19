@@ -88,8 +88,8 @@ class AppWarningsChecker implements AppWarningsCheckerInterface {
       // Check status of API products for credential.
       foreach ($credential->getApiProducts() as $cred_product) {
         if ($cred_product->getStatus() == CredentialProduct::STATUS_REVOKED || $cred_product->getStatus() == CredentialProduct::STATUS_PENDING) {
-          $args['@api_product'] = mb_strtolower($this->entityTypeManager->getDefinition('api_product')
-            ->getSingularLabel());
+          $args['@api_product'] = $this->entityTypeManager->getDefinition('api_product')
+            ->getSingularLabel();
           $args['@status'] = $cred_product->getStatus() == CredentialProduct::STATUS_REVOKED ? $this->t('revoked') : $this->t('pending');
           if (count($app->getCredentials()) === 1) {
             /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $apiProduct */
