@@ -94,7 +94,7 @@ final class TeamInvitationAccessControlHandler extends EntityAccessControlHandle
     // Note: This is handled at team level permissions.
     if ($operation === 'delete' || $operation === "resend") {
       return AccessResult::allowedIf(in_array('team_manage_members', $this->teamPermissionHandler->getDeveloperPermissionsByTeam($entity->getTeam(), $account)))
-        ->orIf(AccessResult::allowedIfHasPermission($account, 'administer team invitations'))
+        ->orIf(AccessResult::allowedIfHasPermissions($account, ['administer team', 'manage team members'], 'OR'))
         ->addCacheableDependency($entity)
         ->cachePerUser();
     }
