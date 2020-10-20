@@ -27,6 +27,7 @@ use Drupal\apigee_edge\OauthTokenFileStorage;
 use Drupal\Core\Installer\InstallerKernel;
 use Drupal\Core\Url;
 use Drupal\user\RoleInterface;
+use Drupal\views\Views;
 
 /**
  * Implements hook_requirements().
@@ -274,3 +275,23 @@ function apigee_edge_update_8103() {
     user_role_grant_permissions(RoleInterface::AUTHENTICATED_ID, $authenticated_user_permissions);
   }
 }
+
+/**
+ * Remove the "Manage team members and invitations" access for the Team invitations view.
+ */
+function apigee_edge_update_8104() {
+  /** @var \Drupal\views\ViewExecutable $view */
+  $view = Views::getView('team_invitations');
+  $view->setDisplay('team');
+  $access = $view->getDisplay()->getOption('access');
+  if (empty($access['type']) || $access['type'] !== "team_permission") {
+    return;
+  }
+
+  $view->getDisplay()->setOption('access', [
+    'type' => 'none',
+    'options' => [],
+  ]);
+  $view->save();
+}
+
