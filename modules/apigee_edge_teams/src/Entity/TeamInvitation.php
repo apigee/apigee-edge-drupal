@@ -60,7 +60,7 @@ use Drupal\user\UserInterface;
  *   },
  *   base_table = "team_invitation",
  *   data_table = "team_invitation_field_data",
- *   admin_permission = "administer team invitations",
+ *   admin_permission = "manage team members",
  *   entity_keys = {
  *     "id" = "uuid",
  *     "label" = "label",
