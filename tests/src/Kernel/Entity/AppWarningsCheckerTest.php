@@ -18,15 +18,13 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\apigee_edge\Kernel\Entity\ListBuilder;
+namespace Drupal\Tests\apigee_edge\Kernel\Entity;
 
 use Apigee\Edge\Api\Management\Entity\App;
 use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
 use Drupal\apigee_edge\Entity\ApiProduct;
-use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
-use Drupal\Component\Utility\Html;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\apigee_edge\Kernel\ApigeeEdgeKernelTestTrait;
 use Drupal\Tests\apigee_edge\Traits\CredsUtilsTrait;
@@ -36,12 +34,12 @@ use Drupal\user\Entity\User;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Tests the AppListBuilder.
+ * Tests the AppWarningsChecker.
  *
  * @group apigee_edge
  * @group apigee_edge_kernel
  */
-class AppListBuilderTest extends KernelTestBase {
+class AppWarningsCheckerTest extends KernelTestBase {
 
   use ApigeeMockApiClientHelperTrait, ApigeeEdgeKernelTestTrait, UserCreationTrait, CredsUtilsTrait;
 
@@ -154,7 +152,7 @@ class AppListBuilderTest extends KernelTestBase {
 
     // Approved App.
     $this->approvedAppWithApprovedCredential = DeveloperApp::create([
-      'name' => $this->randomMachineName(),
+      'name' => 'Approved App with approved credential',
       'status' => App::STATUS_APPROVED,
       'developerId' => $this->developer->getDeveloperId(),
     ]);
@@ -252,6 +250,11 @@ class AppListBuilderTest extends KernelTestBase {
       if ($this->revokedAppWithExpiredCredential) {
         $this->revokedAppWithExpiredCredential->delete();
       }
+
+      if ($this->apiProduct) {
+        $this->apiProduct->delete();
+      }
+
     }
     catch (\Exception $exception) {
       $this->logException($exception);
@@ -262,10 +265,14 @@ class AppListBuilderTest extends KernelTestBase {
 
   /**
    * Test app warnings.
+   *
+   * @covers \Drupal\apigee_edge\Entity\AppWarningsChecker::getWarnings
    */
-  public function testAppWarnings() {
+  public function testGetWarnings() {
     /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager */
     $entity_type_manager = $this->container->get('entity_type.manager');
+    /** @var \Drupal\apigee_edge\Entity\AppWarningsCheckerInterface $app_warnings_checker */
+    $app_warnings_checker = $this->container->get('apigee_edge.entity.app_warnings_checker');
 
     if ($this->integration_enabled) {
       $this->apiProduct = ApiProduct::create([
@@ -355,48 +362,33 @@ class AppListBuilderTest extends KernelTestBase {
           ],
         ],
       ]);
+
+      $entity_type_manager->getStorage('developer_app')->loadMultiple();
     }
 
-    $build = $entity_type_manager->getListBuilder(static::ENTITY_TYPE)->render();
-
     // No warnings for approved app.
-    $this->assertEmpty($build['table']['#rows'][$this->getStatusRowKey($this->approvedAppWithApprovedCredential)]['data']);
+    $this->assertEmpty(array_filter($app_warnings_checker->getWarnings($this->approvedAppWithApprovedCredential)));
 
     // No warnings to approved app with one revoked credentials.
-    $this->assertEmpty($build['table']['#rows'][$this->getStatusRowKey($this->approvedAppWithOneRevokedCredential)]['data']);
+    $this->assertEmpty(array_filter($app_warnings_checker->getWarnings($this->approvedAppWithOneRevokedCredential)));
 
     // One warning for approved app with all credentials revoked.
-    $warnings = $build['table']['#rows'][$this->getStatusRowKey($this->approvedAppWithAllRevokedCredential)]['data'];
+    $warnings = array_filter($app_warnings_checker->getWarnings($this->approvedAppWithAllRevokedCredential));
     $this->assertCount(1, $warnings);
-    $this->assertEqual('No valid credentials associated with this app.', (string) $warnings['info']['data']['#items'][0]);
+    $this->assertEqual('No valid credentials associated with this app.', (string) $warnings['revokedCred']);
 
     // No warnings to revoked app with revoked credentials.
-    $this->assertEmpty($build['table']['#rows'][$this->getStatusRowKey($this->revokedAppWithRevokedCredential)]['data']);
+    $this->assertEmpty(array_filter($app_warnings_checker->getWarnings($this->revokedAppWithRevokedCredential)));
 
     // One warning for approved app with expired credentials.
-    $warnings = $build['table']['#rows'][$this->getStatusRowKey($this->approvedAppWithExpiredCredential)]['data'];
+    $warnings = array_filter($app_warnings_checker->getWarnings($this->approvedAppWithExpiredCredential));
     $this->assertCount(1, $warnings);
-    $this->assertEqual('At least one of the credentials associated with this app is expired.', (string) $warnings['info']['data']['#items'][0]);
+    $this->assertEqual('At least one of the credentials associated with this app is expired.', (string) $warnings['expiredCred']);
 
-    // No warnings for revoked app with expired credentials.
-    // Note: \Drupal\apigee_edge\Entity\AppWarningsChecker::getWarnings will
-    // return warnings for this but it is not shown in the UI.
-    $this->assertEmpty($build['table']['#rows'][$this->getStatusRowKey($this->revokedAppWithExpiredCredential)]['data']);
-  }
-
-  /**
-   * Helper to get the status row key for an app.
-   *
-   * @param \Drupal\apigee_edge\Entity\AppInterface $app
-   *   The app entity.
-   * @param string $key
-   *   The key: warning or info.
-   *
-   * @return string
-   *   The status row key.
-   */
-  protected function getStatusRowKey(AppInterface $app, $key = "warning"): string {
-    return Html::getId($app->getAppId()) . '-' . $key;
+    // One warning for revoked app with expired credentials.
+    $warnings = array_filter($app_warnings_checker->getWarnings($this->revokedAppWithExpiredCredential));
+    $this->assertCount(1, $warnings);
+    $this->assertEqual('At least one of the credentials associated with this app is expired.', (string) $warnings['expiredCred']);
   }
 
 }

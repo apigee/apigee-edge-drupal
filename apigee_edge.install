@@ -274,3 +274,27 @@ function apigee_edge_update_8103() {
     user_role_grant_permissions(RoleInterface::AUTHENTICATED_ID, $authenticated_user_permissions);
   }
 }
+
+/**
+ * Enable warnings field in default app view displays.
+ */
+function apigee_edge_update_8104() {
+  foreach (['developer_app', 'team_app'] as $entity_type_id) {
+    if (!\Drupal::entityTypeManager()->getDefinition($entity_type_id, FALSE)) {
+      continue;
+    }
+
+    /** @var \Drupal\Core\Entity\EntityDisplayRepository $entity_display_repository */
+    $entity_display_repository = \Drupal::service('entity_display.repository');
+    $entity_view_display = $entity_display_repository->getViewDisplay($entity_type_id, $entity_type_id);
+
+    if ($entity_view_display->getComponent('warnings')) {
+      continue;
+    }
+
+    $entity_view_display->setComponent('warnings', [
+      'region' => 'content',
+      'weight' => -100,
+    ])->save();
+  }
+}
