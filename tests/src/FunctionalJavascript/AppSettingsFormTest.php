@@ -86,7 +86,7 @@ class AppSettingsFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $web_assert->assertWaitOnAjaxRequest();
     $this->createScreenshot("AppSettingsFormTest-" . __FUNCTION__);
     $product_list = $this->getSession()->getPage()->find('css', '#default-api-product-multiple fieldset');
-    $this->assertTrue($product_list->hasAttribute('required'));
+    $this->assertTrue($product_list->hasClass('required'));
     $this->getSession()->getPage()->pressButton('edit-submit');
     $this->assertSession()->pageTextContains('Default API Products field is required.');
     $this->getSession()->getPage()->checkField("default_api_product_multiple[{$this->defaultApiProduct->getName()}]");

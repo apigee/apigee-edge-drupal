@@ -130,6 +130,13 @@ class AppSettingsForm extends ConfigFormBase {
       '#open' => TRUE,
     ];
 
+    $form['api_product']['multiple_products'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Allow multiple products'),
+      '#description' => $this->t('Allow users to select multiple products.'),
+      '#default_value' => $common_app_settings->get('multiple_products'),
+    ];
+
     $form['api_product']['display_as_select'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Display the API Product widget as a select box (instead of checkboxes/radios)'),
@@ -198,6 +205,7 @@ class AppSettingsForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->config('apigee_edge.common_app_settings')
+      ->set('multiple_products', $form_state->getValue('multiple_products'))
       ->set('display_as_select', $form_state->getValue('display_as_select'))
       ->set('user_select', $form_state->getValue('user_select'))
       ->set('default_products', array_values(array_filter($form_state->getValue('default_api_product_multiple'))))

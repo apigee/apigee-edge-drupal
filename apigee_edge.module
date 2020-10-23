@@ -351,6 +351,12 @@ function apigee_edge_entity_extra_field_info() {
         'weight' => 100,
         'visible' => TRUE,
       ];
+      $extra[$definition->id()][$definition->id()]['display']['warnings'] = [
+        'label' => new TranslatableMarkup('Warnings'),
+        'description' => new TranslatableMarkup('Displays app warnings'),
+        'weight' => -100,
+        'visible' => TRUE,
+      ];
     }
   }
   return $extra;
@@ -442,6 +448,20 @@ function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityV
           ],
         ],
       ]))->toRenderable();
+    }
+  }
+
+  if ($display->getComponent('warnings')) {
+    /** @var \Drupal\apigee_edge\Entity\AppWarningsCheckerInterface $app_warnings_checker */
+    $app_warnings_checker = \Drupal::service('apigee_edge.entity.app_warnings_checker');
+    $warnings = array_filter($app_warnings_checker->getWarnings($entity));
+    if (count($warnings)) {
+      $build['warnings'] = [
+        '#theme' => 'status_messages',
+        '#message_list' => [
+          'warning' => $warnings,
+        ],
+      ];
     }
   }
 }
@@ -1788,4 +1808,21 @@ function apigee_edge_app_listing_page_title(): TranslatableMarkup {
   \Drupal::moduleHandler()->alter('apigee_edge_app_listing_page_title', $title);
 
   return $title;
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function apigee_edge_preprocess_fieldset(&$variables) {
+
+  // @todo This is a temporary fix for core issue #3174459.
+  if ($variables['required'] == true) {
+    if ($variables['attributes']['required']) {
+      unset($variables['attributes']['required']);
+    }
+
+    if ($variables['attributes']['aria-required']) {
+      unset($variables['attributes']['aria-required']);
+    }
+  }
 }
