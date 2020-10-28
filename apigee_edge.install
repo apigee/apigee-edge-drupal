@@ -84,15 +84,20 @@ function apigee_edge_requirements($phase) {
       }
 
       // Warning message in status report if using basic auth.
-      if ($key && $key->getKeyType() instanceof EdgeKeyTypeInterface &&
-        $key->getKeyType()->getAuthenticationType($key) === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC) {
-        $requirements['apigee_edge_http_basic_auth'] = [
-          'title' => t('Apigee Edge'),
-          'description' => t('Apigee Edge HTTP basic authentication will be deprecated. Please choose another authentication method. Visit the <a href=":url">Apigee Edge general settings</a> page to get more information.', [
-            ':url' => Url::fromRoute('apigee_edge.settings', ['destination' => 'admin/reports/status'])->toString(),
-          ]),
-          'severity' => REQUIREMENT_WARNING,
-        ];
+      try {
+        if ($key && $key->getKeyType() instanceof EdgeKeyTypeInterface &&
+          $key->getKeyType()->getAuthenticationType($key) === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC) {
+          $requirements['apigee_edge_http_basic_auth'] = [
+            'title' => t('Apigee Edge'),
+            'description' => t('Apigee Edge HTTP basic authentication will be deprecated. Please choose another authentication method. Visit the <a href=":url">Apigee Edge general settings</a> page to get more information.', [
+              ':url' => Url::fromRoute('apigee_edge.settings', ['destination' => 'admin/reports/status'])->toString(),
+            ]),
+            'severity' => REQUIREMENT_WARNING,
+          ];
+        }
+      }
+      catch (Exception $e) {
+        // Do nothing.
       }
     }
   }
