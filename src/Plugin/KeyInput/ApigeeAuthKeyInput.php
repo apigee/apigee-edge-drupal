@@ -45,6 +45,10 @@ class ApigeeAuthKeyInput extends KeyInputBase {
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $values = $this->getFormDefaultValues($form_state);
 
+    if (!empty($values['auth_type']) && $values['auth_type'] == EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC) {
+      $this->messenger()->addWarning($this->t('HTTP basic authentication will be deprecated. Please choose another authentication method.'));
+    }
+
     $state_for_public = [
       ':input[name="key_input_settings[instance_type]"]' => ['value' => EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC],
     ];
@@ -76,9 +80,9 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#required' => TRUE,
       '#options' => [
         EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH => $this->t('OAuth'),
-        EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC => $this->t('HTTP basic'),
+        EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC => $this->t('HTTP basic (deprecated)'),
       ],
-      '#default_value' => $values['auth_type'] ?? EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC,
+      '#default_value' => $values['auth_type'] ?? EdgeKeyTypeInterface::EDGE_AUTH_TYPE_OAUTH,
       '#states' => [
         'visible' => [$state_for_public, $state_for_private],
         'required' => [$state_for_public, $state_for_private],
