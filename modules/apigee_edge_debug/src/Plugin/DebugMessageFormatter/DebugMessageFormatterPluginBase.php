@@ -128,6 +128,20 @@ abstract class DebugMessageFormatterPluginBase extends PluginBase implements Con
   public function formatResponse(ResponseInterface $response, RequestInterface $request): string {
     if ($this->removeCredentials) {
       $request = $request->withoutHeader('Authorization');
+      $masks = [
+        'consumerKey' => '***consumer-key***',
+        'consumerSecret' => '***consumer-secret***',
+      ];
+      $json = json_decode((string) $response->getBody(), TRUE);
+      if (json_last_error() === JSON_ERROR_NONE) {
+        array_walk_recursive($json, function (&$value, $key) use ($masks) {
+          if (isset($masks[$key])) {
+            $value = $masks[$key];
+          }
+        });
+        $response = $response->withBody(Psr7\stream_for(json_encode((object) $json, JSON_PRETTY_PRINT)));
+      }
+
       if ($request->getMethod() === 'POST' && $request->getUri()->getPath() === '/oauth/token') {
         $json = json_decode((string) $response->getBody(), TRUE);
         if (json_last_error() === JSON_ERROR_NONE) {
