@@ -24,6 +24,7 @@
  */
 
 use Drupal\apigee_edge\OauthTokenFileStorage;
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Core\Installer\InstallerKernel;
 use Drupal\Core\Url;
 use Drupal\user\RoleInterface;
@@ -68,16 +69,35 @@ function apigee_edge_requirements($phase) {
         'severity' => REQUIREMENT_WARNING,
       ];
     }
-    // Warning message in status report if insecure Configuration Key provider is being used.
+
     $auth_config = \Drupal::config('apigee_edge.auth');
-    if ($key = $auth_config->get('active_key')) {
-      $key_repository = \Drupal::service('key.repository')->getKey($key);
-      if ($key_repository && $key_repository->getKeyProvider()->getPluginId() === "config") {
+    if ($key_id = $auth_config->get('active_key')) {
+
+      // Warning message if insecure Configuration Key provider is being used.
+      $key = \Drupal::service('key.repository')->getKey($key_id);
+      if ($key && $key->getKeyProvider()->getPluginId() === "config") {
         $requirements['apigee_edge_insecure_config_key_provider'] = [
           'title' => t('Apigee Edge'),
           'description' => t('Edge connection settings are stored in Drupal’s configuration system, which is not designed to store sensitive information. When installing Kickstart for uses other than local development, we highly recommend changing the Apigee Edge connection key provider to a more secure storage location. <a href="https://www.drupal.org/docs/8/modules/apigee-developer-portal-kickstart/apigee-kickstart-faqs#s-during-installation-a-warning-is-displayed-that-the-apigee-edge-connection-key-provider-is-not-considered-secure-what-should-i-do" target="_blank">Learn more.</a>'),
           'severity' => REQUIREMENT_WARNING,
         ];
+      }
+
+      // Warning message in status report if using basic auth.
+      try {
+        if ($key && $key->getKeyType() instanceof EdgeKeyTypeInterface &&
+          $key->getKeyType()->getAuthenticationType($key) === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC) {
+          $requirements['apigee_edge_http_basic_auth'] = [
+            'title' => t('Apigee Edge'),
+            'description' => t('Apigee Edge HTTP basic authentication will be deprecated. Please choose another authentication method. Visit the <a href=":url">Apigee Edge general settings</a> page to get more information.', [
+              ':url' => Url::fromRoute('apigee_edge.settings', ['destination' => 'admin/reports/status'])->toString(),
+            ]),
+            'severity' => REQUIREMENT_WARNING,
+          ];
+        }
+      }
+      catch (Exception $e) {
+        // Do nothing.
       }
     }
   }
