@@ -187,6 +187,11 @@ function apigee_edge_teams_preprocess(&$variables, $hook) {
     return;
   }
 
+  $team = \Drupal::routeMatch()->getParameter('team');
+  if (!$team || $team->getStatus() !== TeamInterface::STATUS_INACTIVE) {
+    return;
+  }
+
   // If a team is inactive, for the local tasks and local actions, set the url
   // to <none>.
   $variables['link']['#url'] = Url::fromRoute('<none>', [], [
