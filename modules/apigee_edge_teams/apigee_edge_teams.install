@@ -21,6 +21,7 @@
 use Apigee\Edge\Utility\OrganizationFeatures;
 use Drupal\Core\Config\FileStorage;
 use Drupal\user\RoleInterface;
+use Drupal\views\Views;
 
 /**
  * @file
@@ -137,5 +138,24 @@ function apigee_edge_teams_update_8703() {
       'decline own team invitation',
     ];
     user_role_grant_permissions(RoleInterface::AUTHENTICATED_ID, $authenticated_user_permissions);
+  }
+}
+
+/**
+ * Remove the "Manage team members and invitations" access for the Team invitations view.
+ */
+function apigee_edge_teams_update_8704() {
+  if ($view = Views::getView('team_invitations')) {
+    $view->setDisplay('team');
+    $access = $view->getDisplay()->getOption('access');
+    if (empty($access['type']) || $access['type'] !== "team_permission") {
+      return;
+    }
+
+    $view->getDisplay()->setOption('access', [
+      'type' => 'none',
+      'options' => [],
+    ]);
+    $view->save();
   }
 }
