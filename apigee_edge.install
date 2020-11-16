@@ -28,7 +28,6 @@ use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Core\Installer\InstallerKernel;
 use Drupal\Core\Url;
 use Drupal\user\RoleInterface;
-use Drupal\views\Views;
 
 /**
  * Implements hook_requirements().
@@ -321,20 +320,7 @@ function apigee_edge_update_8104() {
 }
 
 /**
- * Remove the "Manage team members and invitations" access for the Team invitations view.
+ * Deprecated update function.
  */
 function apigee_edge_update_8105() {
-  /** @var \Drupal\views\ViewExecutable $view */
-  $view = Views::getView('team_invitations');
-  $view->setDisplay('team');
-  $access = $view->getDisplay()->getOption('access');
-  if (empty($access['type']) || $access['type'] !== "team_permission") {
-    return;
-  }
-
-  $view->getDisplay()->setOption('access', [
-    'type' => 'none',
-    'options' => [],
-  ]);
-  $view->save();
 }
