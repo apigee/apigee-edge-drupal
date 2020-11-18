@@ -20,8 +20,10 @@
  */
 
 use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
+use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\apigee_edge_teams\Entity\TeamInvitationInterface;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
+use Drupal\apigee_edge_teams\EventSubscriber\TeamInactiveStatusSubscriber;
 use Drupal\Component\Render\PlainTextOutput;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Breadcrumb\Breadcrumb;
@@ -168,6 +170,58 @@ function apigee_edge_teams_system_breadcrumb_alter(Breadcrumb &$breadcrumb, Rout
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
     $team = $route_match->getParameter('team');
     $breadcrumb->addLink(Link::createFromRoute($team_app_entity_def->getPluralLabel(), 'entity.team_app.collection_by_team', ['team' => $team->id()]));
+  }
+}
+
+/**
+ * Implements hook_preprocess().
+ */
+function apigee_edge_teams_preprocess(&$variables, $hook) {
+  if (!in_array($hook, ['menu_local_action', 'menu_local_task'])) {
+    return;
+  }
+
+  /** @var \Drupal\Core\Url $url */
+  $url = $variables['link']['#url'];
+  if (!in_array($url->getRouteName(), TeamInactiveStatusSubscriber::getDisabledRoutes())) {
+    return;
+  }
+
+  $team = \Drupal::routeMatch()->getParameter('team');
+  if (!$team || $team->getStatus() !== TeamInterface::STATUS_INACTIVE) {
+    return;
+  }
+
+  // If a team is inactive, for the local tasks and local actions, set the url
+  // to <none>.
+  $variables['link']['#url'] = Url::fromRoute('<none>', [], [
+    'absolute' => TRUE,
+  ]);
+    // Add a title attribute.
+  $variables['link']['#options']['attributes']['title'] = t('This @team is inactive.', [
+    '@team' => \Drupal::entityTypeManager()->getDefinition('team')->getSingularLabel(),
+  ]);
+  // Add a disabled class.
+  $variables['link']['#options']['attributes']['class'][] = 'team-disabled-action';
+  $variables['#attached']['library'][] = 'apigee_edge_teams/disabled_action';
+}
+
+/**
+ * Implements hook_entity_operation_alter().
+ */
+function apigee_edge_teams_entity_operation_alter(array &$operations, EntityInterface $entity) {
+  foreach ($operations as $key => $operation) {
+    if (!in_array($operation['url']->getRouteName(), TeamInactiveStatusSubscriber::getDisabledRoutes())) {
+      continue;
+    }
+
+    $team = \Drupal::routeMatch()->getParameter('team');
+    if (!$team || $team->getStatus() !== TeamInterface::STATUS_INACTIVE) {
+      continue;
+    }
+
+    // Remove the entity operation if the team is inactive.
+    unset($operations[$key]);
   }
 }
 

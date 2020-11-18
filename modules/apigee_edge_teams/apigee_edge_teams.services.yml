@@ -93,6 +93,16 @@ services:
     class: Drupal\apigee_edge_teams\TeamInvitationNotifierEmail
     arguments: ['@plugin.manager.mail', '@language_manager']
 
+  apigee_edge_teams.team_inactive_status_subscriber:
+    class: Drupal\apigee_edge_teams\EventSubscriber\TeamInactiveStatusSubscriber
+    arguments:
+      - '@class_resolver'
+      - '@current_route_match'
+      - '%main_content_renderers%'
+      - '@current_user'
+    tags:
+      - { name: event_subscriber }
+
   route.subscriber.apigee_edge_teams.team_app_by_name:
     class: Drupal\apigee_edge_teams\Routing\TeamAppByNameRouteAlterSubscriber
     tags:

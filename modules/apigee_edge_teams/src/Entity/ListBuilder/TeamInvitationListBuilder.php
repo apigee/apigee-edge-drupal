@@ -31,9 +31,9 @@ class TeamInvitationListBuilder extends EntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function getOperations(EntityInterface $entity) {
+  public function getDefaultOperations(EntityInterface $entity) {
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInvitationInterface $entity */
-    $operations = [];
+    $operations = parent::getDefaultOperations($entity);
 
     if ($entity->isPending() && $entity->access('accept') && $entity->hasLinkTemplate('accept-form')) {
       $operations['accept'] = [

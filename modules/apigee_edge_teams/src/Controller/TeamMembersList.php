@@ -27,6 +27,7 @@ use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Url;
 use Drupal\user\UserInterface;
 use Drupal\views\Views;
@@ -52,20 +53,36 @@ class TeamMembersList extends ControllerBase {
   protected $defaultRoles = [];
 
   /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface|null
+   */
+  protected $moduleHandler;
+
+  /**
    * TeamMembersList constructor.
    *
    * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
    *   The team membership manager service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface|null $module_handler
+   *   The module handler.
    */
-  public function __construct(TeamMembershipManagerInterface $team_membership_manager, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(TeamMembershipManagerInterface $team_membership_manager, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler = NULL) {
+    if (!$module_handler) {
+      @trigger_error('Calling ' . __METHOD__ . ' without the $module_handler is deprecated in apigee_edge:8-x-1.19 and is required before apigee_edge:8.x-2.0. See https://github.com/apigee/apigee-edge-drupal/pull/518.', E_USER_DEPRECATED);
+      $module_handler = \Drupal::moduleHandler();
+    }
+
     $this->teamMembershipManager = $team_membership_manager;
     $this->entityTypeManager = $entity_type_manager;
 
     if ($role = $this->entityTypeManager()->getStorage('team_role')->load(TeamRoleInterface::TEAM_MEMBER_ROLE)) {
       $this->defaultRoles = [$role->id() => $role->label()];
     }
+
+    $this->moduleHandler = $module_handler;
   }
 
   /**
@@ -74,7 +91,8 @@ class TeamMembersList extends ControllerBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('apigee_edge_teams.team_membership_manager'),
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('module_handler')
     );
   }
 
@@ -252,6 +270,9 @@ class TeamMembersList extends ControllerBase {
         'url' => $url,
       ];
     }
+
+    // Allow modules to alter operations.
+    $this->moduleHandler->alter('entity_operation', $operations, $team);
 
     return $operations;
   }
