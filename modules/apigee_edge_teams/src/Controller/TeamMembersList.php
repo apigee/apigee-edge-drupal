@@ -91,7 +91,8 @@ class TeamMembersList extends ControllerBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('apigee_edge_teams.team_membership_manager'),
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('module_handler')
     );
   }
 
