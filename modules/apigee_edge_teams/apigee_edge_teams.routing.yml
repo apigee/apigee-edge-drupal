@@ -71,3 +71,50 @@ apigee_edge_teams.settings.team_app.cache:
     _title: 'Caching'
   requirements:
     _permission: 'administer team'
+
+apigee_edge_teams.redirect.team.add_form:
+  path: '/add-team'
+  defaults:
+    _controller: '\Drupal\apigee_edge_teams\Controller\TeamRedirectController::manageRedirect'
+  requirements:
+    _permission: 'access content'
+
+apigee_edge_teams.redirect.team_app.collection:
+  path: '/team-apps'
+  defaults:
+    _controller: '\Drupal\apigee_edge_teams\Controller\TeamRedirectController::manageRedirect'
+  requirements:
+    _permission: 'access content'
+
+apigee_edge_teams.redirect.team.add-members:
+  path: '/teams/{team}/add-members'
+  defaults:
+    _controller: '\Drupal\apigee_edge_teams\Controller\TeamRedirectController::manageRedirect'
+  options:
+    parameters:
+      team:
+        type: entity:team
+  requirements:
+    _permission: 'access content'
+
+apigee_edge_teams.redirect.team_app.add-form-for-team:
+  path: '/teams/{team}/apps/add'
+  defaults:
+    _controller: '\Drupal\apigee_edge_teams\Controller\TeamRedirectController::manageRedirect'
+  options:
+    parameters:
+      team:
+        type: entity:team
+  requirements:
+    _permission: 'access content'
+
+apigee_edge_teams.redirect.team_app.add-form:
+  path: '/teams/{team}/create-app'
+  defaults:
+    _controller: '\Drupal\apigee_edge_teams\Controller\TeamRedirectController::manageRedirect'
+  options:
+    parameters:
+      team:
+        type: entity:team
+  requirements:
+    _permission: 'access content'
