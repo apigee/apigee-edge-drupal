@@ -194,7 +194,7 @@ class AddTeamMembersForm extends TeamMembersFormBase {
     $invites = array_diff($emails, $members);
     $has_invitation = [];
     foreach ($invites as $invite) {
-      $pending_invitations = array_filter($this->teamInvitationStorage->loadByRecipient($invite), function (TeamInvitationInterface $team_invitation) {
+      $pending_invitations = array_filter($this->teamInvitationStorage->loadByRecipient($invite, $this->team->id()), function (TeamInvitationInterface $team_invitation) {
         return $team_invitation->isPending();
       });
 
