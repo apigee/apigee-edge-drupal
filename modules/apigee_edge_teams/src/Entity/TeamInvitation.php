@@ -289,4 +289,14 @@ class TeamInvitation extends ContentEntityBase implements TeamInvitationInterfac
     }
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheTags() {
+    if ($this->getTeam()) {
+      $this->cacheTags = array_merge($this->cacheTags, $this->getTeam()->getCacheTags());
+    }
+    return parent::getCacheTags();
+  }
+
 }
