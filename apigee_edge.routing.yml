@@ -194,7 +194,7 @@ apigee_edge.export_analytics.csv:
 apigee_edge.redirect.developer_app.add_form_for_developer:
   path: '/user/{entity_slug}/create-app'
   defaults:
-    _controller: '\Drupal\apigee_edge\Controller\redirectController::manageRedirect'
+    _controller: '\Drupal\apigee_edge\Controller\RedirectController::manageRedirect'
     redirect_route: 'entity.developer_app.add_form_for_developer'
   options:
     parameters:
