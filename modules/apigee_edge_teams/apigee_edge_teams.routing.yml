@@ -75,42 +75,47 @@ apigee_edge_teams.settings.team_app.cache:
 apigee_edge_teams.redirect.team.add_form:
   path: '/add-team'
   defaults:
-    _controller: '\Drupal\apigee_edge_teams\Controller\TeamRedirectController::manageRedirect'
+    _controller: '\Drupal\apigee_edge\Controller\redirectController::manageRedirect'
+    route: 'entity.team.add_form'
   requirements:
     _permission: 'access content'
 
 apigee_edge_teams.redirect.team_app.collection:
   path: '/team-apps'
   defaults:
-    _controller: '\Drupal\apigee_edge_teams\Controller\TeamRedirectController::manageRedirect'
+    _controller: '\Drupal\apigee_edge\Controller\redirectController::manageRedirect'
+    route: 'entity.team_app.collection'
   requirements:
     _permission: 'access content'
 
-apigee_edge_teams.redirect.team_app.add-form:
+apigee_edge_teams.redirect.team_app.add_form:
   path: '/team-apps/add'
   defaults:
-    _controller: '\Drupal\apigee_edge_teams\Controller\TeamRedirectController::manageRedirect'
+    _controller: '\Drupal\apigee_edge\Controller\redirectController::manageRedirect'
+    route: 'entity.team_app.add_form'
   requirements:
     _permission: 'access content'
 
-apigee_edge_teams.redirect.team.add-members:
-  path: '/teams/{team}/add-members'
+apigee_edge_teams.redirect.team.add_members:
+  path: '/teams/{entity}/add-members'
   defaults:
-    _controller: '\Drupal\apigee_edge_teams\Controller\TeamRedirectController::manageRedirect'
+    _controller: '\Drupal\apigee_edge\Controller\redirectController::manageRedirect'
+    route: 'entity.team.add_members'
   options:
     parameters:
-      team:
+      entity:
         type: entity:team
   requirements:
     _permission: 'access content'
 
-apigee_edge_teams.redirect.team_app.add-form-for-team:
-  path: '/teams/{team}/create-app'
+apigee_edge_teams.redirect.team_app.add_form_for_team:
+  path: '/teams/{entity}/create-app'
   defaults:
-    _controller: '\Drupal\apigee_edge_teams\Controller\TeamRedirectController::manageRedirect'
+    _controller: '\Drupal\apigee_edge\Controller\redirectController::manageRedirect'
+    route: 'entity.team_app.add_form_for_team'
   options:
     parameters:
-      team:
+      entity:
         type: entity:team
   requirements:
     _permission: 'access content'
