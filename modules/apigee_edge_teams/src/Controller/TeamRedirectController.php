@@ -50,9 +50,9 @@ class TeamRedirectController extends ControllerBase {
     $paths_to_redirect = [
       'entity.team.add_form' => '/add-team',
       'entity.team_app.collection' => '/team-apps',
+      'entity.team_app.add_form' => '/team-apps/add',
       'entity.team.add_members' => $this->processTeamString('/teams/@team/add-members'),
-      'entity.team_app.add_form_for_team' => $this->processTeamString('/teams/@team/apps/add'),
-      'entity.team_app.add_form' => $this->processTeamString('/teams/@team/create-app'),
+      'entity.team_app.add_form_for_team' => $this->processTeamString('/teams/@team/create-app'),
     ];
 
     $current_path = \Drupal::service('path.current')->getPath();
