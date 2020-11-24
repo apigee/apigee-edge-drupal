@@ -192,13 +192,13 @@ apigee_edge.export_analytics.csv:
     _custom_access: '\Drupal\apigee_edge\Controller\ExportAnalyticsController::access'
 
 apigee_edge.redirect.developer_app.add_form_for_developer:
-  path: '/user/{entity}/create-app'
+  path: '/user/{entity_slug}/create-app'
   defaults:
     _controller: '\Drupal\apigee_edge\Controller\redirectController::manageRedirect'
-    route: 'entity.developer_app.add_form_for_developer'
+    redirect_route: 'entity.developer_app.add_form_for_developer'
   options:
     parameters:
-      entity:
+      entity_slug:
         type: entity:user
   requirements:
     _permission: 'access content'

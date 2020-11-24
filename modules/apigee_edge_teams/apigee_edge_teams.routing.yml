@@ -76,7 +76,7 @@ apigee_edge_teams.redirect.team.add_form:
   path: '/add-team'
   defaults:
     _controller: '\Drupal\apigee_edge\Controller\redirectController::manageRedirect'
-    route: 'entity.team.add_form'
+    redirect_route: 'entity.team.add_form'
   requirements:
     _permission: 'access content'
 
@@ -84,7 +84,7 @@ apigee_edge_teams.redirect.team_app.collection:
   path: '/team-apps'
   defaults:
     _controller: '\Drupal\apigee_edge\Controller\redirectController::manageRedirect'
-    route: 'entity.team_app.collection'
+    redirect_route: 'entity.team_app.collection'
   requirements:
     _permission: 'access content'
 
@@ -92,30 +92,30 @@ apigee_edge_teams.redirect.team_app.add_form:
   path: '/team-apps/add'
   defaults:
     _controller: '\Drupal\apigee_edge\Controller\redirectController::manageRedirect'
-    route: 'entity.team_app.add_form'
+    redirect_route: 'entity.team_app.add_form'
   requirements:
     _permission: 'access content'
 
 apigee_edge_teams.redirect.team.add_members:
-  path: '/teams/{entity}/add-members'
+  path: '/teams/{entity_slug}/add-members'
   defaults:
     _controller: '\Drupal\apigee_edge\Controller\redirectController::manageRedirect'
-    route: 'entity.team.add_members'
+    redirect_route: 'entity.team.add_members'
   options:
     parameters:
-      entity:
+      entity_slug:
         type: entity:team
   requirements:
     _permission: 'access content'
 
 apigee_edge_teams.redirect.team_app.add_form_for_team:
-  path: '/teams/{entity}/create-app'
+  path: '/teams/{entity_slug}/create-app'
   defaults:
     _controller: '\Drupal\apigee_edge\Controller\redirectController::manageRedirect'
-    route: 'entity.team_app.add_form_for_team'
+    redirect_route: 'entity.team_app.add_form_for_team'
   options:
     parameters:
-      entity:
+      entity_slug:
         type: entity:team
   requirements:
     _permission: 'access content'
