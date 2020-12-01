@@ -109,4 +109,5 @@ class RedirectController extends ControllerBase {
     }
     return AccessResult::forbidden('Entity is missing from route.');
   }
+
 }
