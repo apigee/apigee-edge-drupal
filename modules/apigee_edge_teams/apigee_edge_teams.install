@@ -159,3 +159,23 @@ function apigee_edge_teams_update_8704() {
     $view->save();
   }
 }
+
+/**
+ * Set disable_sql_rewrite to false for Team invitations view.
+ */
+function apigee_edge_teams_update_8705() {
+  /** @var \Drupal\views\ViewExecutable $view */
+  if ($view = Views::getView('team_invitations')) {
+    $view->setDisplay('user');
+    $query = $view->getDisplay()->getOption('query');
+    if (empty($query['options']['disable_sql_rewrite']) || $query['options']['disable_sql_rewrite'] === FALSE) {
+      return;
+    }
+
+    $query['options']['disable_sql_rewrite'] = FALSE;
+    $view->getDisplay()->setOption('query', $query);
+    $view->save();
+  }
+}
+
+
