@@ -106,7 +106,7 @@ apigee_edge_teams.redirect.team.add_members:
       entity_slug:
         type: entity:team
   requirements:
-    _permission: 'access content'
+    _permission: 'manage team members'
 
 apigee_edge_teams.redirect.team_app.add_form_for_team:
   path: '/teams/{entity_slug}/create-app'
@@ -118,4 +118,4 @@ apigee_edge_teams.redirect.team_app.add_form_for_team:
       entity_slug:
         type: entity:team
   requirements:
-    _permission: 'access content'
+    _permission: 'manage team apps'
