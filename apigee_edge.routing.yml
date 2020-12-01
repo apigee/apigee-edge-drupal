@@ -196,9 +196,10 @@ apigee_edge.redirect.developer_app.add_form_for_developer:
   defaults:
     _controller: '\Drupal\apigee_edge\Controller\RedirectController::manageRedirect'
     redirect_route: 'entity.developer_app.add_form_for_developer'
+    access_type: 'user'
   options:
     parameters:
       entity_slug:
         type: entity:user
   requirements:
-    _permission: 'access content'
+    _custom_access: '\Drupal\apigee_edge\Controller\RedirectController::createDeveloperAppAccess'

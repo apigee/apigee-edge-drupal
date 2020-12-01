@@ -2,8 +2,12 @@
 
 namespace Drupal\apigee_edge\Controller;
 
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityBase;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
 
 /**
  * Controller to redirect changed paths.
@@ -80,4 +84,29 @@ class RedirectController extends ControllerBase {
 
   }
 
+  /**
+   * Grant access to "apigee_edge.redirect.developer_app.add_form_for_developer".
+   *
+   * @param mixed $entity_slug
+   *   Entity slug from input.
+   * @param string $access_type
+   *   Route parameter defined as defined in routing.yml.
+   * @param string $redirect_route
+   *   Route parameter defined as defined in routing.yml.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The route match.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The currently logged in account.
+   *
+   * @return \Drupal\Core\Access\AccessResultInterface
+   *   The access result.
+   */
+  public function createDeveloperAppAccess($entity_slug, string $access_type, string $redirect_route, RouteMatchInterface $route_match, AccountInterface $account) {
+    if ($entity_slug != NULL) {
+      $this->setEntityId($entity_slug);
+      $url = Url::fromRoute($redirect_route, [$access_type => $this->entity_id]);
+      return $url->access($account) ? AccessResult::allowed() : AccessResult::forbidden();
+    }
+    return AccessResult::forbidden('Entity is missing from route.');
+  }
 }
