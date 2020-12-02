@@ -71,6 +71,12 @@ final class TeamInvitationAccessControlHandler extends EntityAccessControlHandle
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInvitation $entity */
     $account = $this->prepareUser($account);
 
+    // Check if team exists.
+    if (!$entity->getTeam()) {
+      return AccessResult::forbidden('Team does not exist.')
+        ->addCacheableDependency($entity);
+    }
+
     // Access is allowed if the user can accept invitation and the invitation
     // is pending.
     if ($entity->isPending() && $operation === 'accept') {
