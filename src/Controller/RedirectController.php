@@ -101,7 +101,7 @@ class RedirectController extends ControllerBase {
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access result.
    */
-  public function createDeveloperAppAccess(string $redirect_route, RouteMatchInterface $route_match, AccountInterface $account, $entity_slug = NULL, $access_type = NULL) {
+  public function checkRedirectRouteAccess(string $redirect_route, RouteMatchInterface $route_match, AccountInterface $account, $entity_slug = NULL, $access_type = NULL) {
     if ($redirect_route != NULL) {
       $url = Url::fromRoute($redirect_route);
 

@@ -202,4 +202,4 @@ apigee_edge.redirect.developer_app.add_form_for_developer:
       entity_slug:
         type: entity:user
   requirements:
-    _custom_access: '\Drupal\apigee_edge\Controller\RedirectController::createDeveloperAppAccess'
+    _custom_access: '\Drupal\apigee_edge\Controller\RedirectController::checkRedirectRouteAccess'
