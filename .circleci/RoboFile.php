@@ -470,9 +470,9 @@ class RoboFile extends \Robo\Tasks
         break;
 
       case '8':
-        $config->require->{"drupal/core-composer-scaffold"} = '~8';
-        $config->require->{"drupal/core-recommended"} = '~8';
-        $config->require->{"drupal/core-dev"} = '~8';
+        $config->require->{"drupal/core-composer-scaffold"} = '^8.9@stable';
+        $config->require->{"drupal/core-recommended"} = '^8.9@stable';
+        $config->require->{"drupal/core-dev"} = '^8.9';
 
         // Add rules for testing apigee_edge_actions (only for D8).
         $config->require->{"drupal/rules"} = "3.0.0-alpha6";
