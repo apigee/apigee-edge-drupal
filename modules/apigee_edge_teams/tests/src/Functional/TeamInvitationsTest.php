@@ -152,15 +152,24 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
       $this->teamA,
       $this->teamB,
     ];
+    $companies = [
+      $this->teamA->decorated(),
+      $this->teamB->decorated(),
+    ];
 
+    $inCache = FALSE;
     foreach ($teams as $team) {
-      $this->queueCompanyResponse($team->decorated());
+      if (!$inCache) {
+        $this->queueCompanyResponse($team->decorated());
+      }
       $this->drupalGet(Url::fromRoute('entity.team.add_members', [
         'team' => $team->id(),
       ]));
       $this->assertSession()->pageTextContains('Invite members');
 
       $this->queueDevsInCompanyResponse([]);
+      $this->queueCompaniesResponse($companies);
+      $this->queueCompaniesResponse($companies);
       $this->submitForm([
         'developers' => $this->accountUser->getEmail(),
       ], 'Invite members');
@@ -171,6 +180,7 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
         '@team_label' => mb_strtolower($team->getEntityType()->getSingularLabel()),
       ]);
       $this->assertSession()->pageTextContains($successMessage);
+      $inCache = TRUE;
     }
   }
 
@@ -187,6 +197,10 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
     $teams = [
       $this->teamA,
       $this->teamB,
+    ];
+    $companies = [
+      $this->teamA->decorated(),
+      $this->teamB->decorated(),
     ];
 
     // Invite user to both teams.
@@ -206,6 +220,8 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
     $invitationsUrl = Url::fromRoute('view.team_invitations.user', [
       'user' => $this->accountUser->id(),
     ]);
+
+    $this->queueCompaniesResponse($companies);
     $this->drupalGet($invitationsUrl);
     foreach ($teams as $team) {
       $this->assertSession()->pageTextContains('Invitation to join ' . $team->label());
@@ -215,6 +231,7 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
     $this->queueCompanyResponse($this->teamA->decorated());
     $teamALabel = $this->teamA->label();
     $this->teamA->delete();
+    $this->queueCompaniesResponse($companies);
     $this->queueCompanyResponse($this->teamB->decorated());
     $this->drupalGet($invitationsUrl);
     $this->assertSession()->pageTextNotContains('Invitation to join ' . $teamALabel);
