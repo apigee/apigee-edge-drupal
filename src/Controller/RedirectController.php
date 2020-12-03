@@ -85,29 +85,37 @@ class RedirectController extends ControllerBase {
   }
 
   /**
-   * Grant access to "apigee_edge.redirect.developer_app.add_form_for_developer".
+   * Grant access to legacy routes.
    *
-   * @param mixed $entity_slug
-   *   Entity slug from input.
-   * @param string $access_type
-   *   Route parameter defined as defined in routing.yml.
    * @param string $redirect_route
    *   Route parameter defined as defined in routing.yml.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The route match.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The currently logged in account.
+   * @param mixed $entity_slug
+   *   Entity slug from input.
+   * @param string|null $access_type
+   *   Route parameter defined as defined in routing.yml.
    *
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access result.
    */
-  public function createDeveloperAppAccess($entity_slug, string $access_type, string $redirect_route, RouteMatchInterface $route_match, AccountInterface $account) {
-    if ($entity_slug != NULL) {
-      $this->setEntityId($entity_slug);
-      $url = Url::fromRoute($redirect_route, [$access_type => $this->entity_id]);
+  public function createDeveloperAppAccess(string $redirect_route, RouteMatchInterface $route_match, AccountInterface $account, $entity_slug = NULL, $access_type = NULL) {
+    if ($redirect_route != NULL) {
+      $url = Url::fromRoute($redirect_route);
+
+      if ($entity_slug != NULL) {
+        $this->setEntityId($entity_slug);
+        $url = Url::fromRoute($redirect_route, [$access_type => $this->entity_id]);
+      }
+
       return $url->access($account) ? AccessResult::allowed() : AccessResult::forbidden();
     }
-    return AccessResult::forbidden('Entity is missing from route.');
+
+    else {
+      return AccessResult::forbidden('Parameter is missing from route.');
+    }
   }
 
 }
