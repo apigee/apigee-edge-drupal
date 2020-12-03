@@ -57,11 +57,11 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   links = {
  *     "collection" = "/teams",
  *     "canonical" = "/teams/{team}",
- *     "add-form" = "/add-team",
+ *     "add-form" = "/teams/add",
  *     "edit-form" = "/teams/{team}/edit",
  *     "delete-form" = "/teams/{team}/delete",
  *     "members" = "/teams/{team}/members",
- *     "add-members" = "/teams/{team}/add-members",
+ *     "add-members" = "/teams/{team}/members/add",
  *   },
  *   entity_keys = {
  *     "id" = "name",
