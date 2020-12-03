@@ -153,6 +153,18 @@ function apigee_edge_teams_developer_delete(EntityInterface $entity) {
 }
 
 /**
+ * Implements hook_ENTITY_TYPE_delete().
+ */
+function apigee_edge_teams_team_delete(EntityInterface $entity) {
+  // Delete all invitations from this team.
+  /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamStorageInterface $storage */
+  $storage = \Drupal::entityTypeManager()->getStorage('team_invitation');
+  if ($invitations = $storage->loadByProperties(['team' => $entity->id()])) {
+    $storage->delete($invitations);
+  }
+}
+
+/**
  * Implements hook_system_breadcrumb_alter().
  */
 function apigee_edge_teams_system_breadcrumb_alter(Breadcrumb &$breadcrumb, RouteMatchInterface $route_match, array $context) {

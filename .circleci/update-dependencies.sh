@@ -5,6 +5,7 @@ cp modules/apigee_edge/.circleci/RoboFile.php ./
 
 robo setup:skeleton
 robo add:modules $1
+robo add:dependencies-from modules/$1/composer.json
 robo drupal:version $2
 robo configure:module-dependencies
 robo update:dependencies
