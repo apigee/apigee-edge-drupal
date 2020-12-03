@@ -19,6 +19,7 @@
 
 namespace Drupal\Tests\apigee_edge_teams\Functional;
 
+use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\Core\Url;
 use Drupal\views\Views;
@@ -34,20 +35,19 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
+  protected static $mock_api_client_ready = TRUE;
+
+  /**
+   * {@inheritdoc}
+   */
   protected static $modules = [
     'user',
     'options',
     'datetime',
     'views',
     'apigee_edge_teams',
+    'apigee_mock_api_client',
   ];
-
-  /**
-   * The team entity storage.
-   *
-   * @var \Drupal\apigee_edge_teams\Entity\Storage\TeamStorageInterface
-   */
-  protected $teamStorage;
 
   /**
    * Admin user.
@@ -83,28 +83,32 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
   protected function setUp() {
     parent::setUp();
 
-    $this->teamStorage = $this->container->get('entity_type.manager')->getStorage('team');
+    $this->addOrganizationMatchedResponse();
 
-    $this->teamA = $this->teamStorage->create([
-      'name' => mb_strtolower($this->getRandomGenerator()->name()),
-    ]);
-    $this->teamA->save();
-
-    $this->teamB = $this->teamStorage->create([
-      'name' => mb_strtolower($this->getRandomGenerator()->name()),
-    ]);
-    $this->teamB->save();
+    $this->teamA = $this->createTeam();
+    $this->teamB = $this->createTeam();
 
     $this->accountAdmin = $this->createAccount(['administer team']);
     $this->accountUser = $this->createAccount([
       'accept own team invitation',
     ]);
+
+    if (!$this->integration_enabled) {
+      $this->queueDeveloperResponse($this->accountAdmin);
+      Developer::load($this->accountAdmin->getEmail());
+      $this->queueDeveloperResponse($this->accountUser);
+      Developer::load($this->accountUser->getEmail());
+    }
   }
 
   /**
    * {@inheritdoc}
    */
   protected function tearDown() {
+    if (!$this->integration_enabled) {
+      return;
+    }
+
     $teams = [
       $this->teamA,
       $this->teamB,
@@ -150,11 +154,13 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
     ];
 
     foreach ($teams as $team) {
+      $this->queueCompanyResponse($team->decorated());
       $this->drupalGet(Url::fromRoute('entity.team.add_members', [
         'team' => $team->id(),
       ]));
       $this->assertSession()->pageTextContains('Invite members');
 
+      $this->queueDevsInCompanyResponse([]);
       $this->submitForm([
         'developers' => $this->accountUser->getEmail(),
       ], 'Invite members');
@@ -176,7 +182,7 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
     $this->assertNotNull(Views::getView('team_invitations'));
 
     /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamInvitationStorageInterface $teamInvitationStorage */
-    $teamInvitationStorage = $this->container->get('entity_type.manager')->getStorage('team_invitation');
+    $teamInvitationStorage = $this->entityTypeManager->getStorage('team_invitation');
     $selected_roles = [TeamRoleInterface::TEAM_MEMBER_ROLE => TeamRoleInterface::TEAM_MEMBER_ROLE];
     $teams = [
       $this->teamA,
@@ -185,6 +191,7 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
 
     // Invite user to both teams.
     foreach ($teams as $team) {
+      $this->queueCompanyResponse($team->decorated());
       $teamInvitationStorage->create([
         'team' => ['target_id' => $team->id()],
         'team_roles' => array_values(array_map(function (string $role) {
@@ -205,9 +212,12 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
     }
 
     // Delete a team and ensure related team invitation was deleted too.
+    $this->queueCompanyResponse($this->teamA->decorated());
+    $teamALabel = $this->teamA->label();
     $this->teamA->delete();
+    $this->queueCompanyResponse($this->teamB->decorated());
     $this->drupalGet($invitationsUrl);
-    $this->assertSession()->pageTextNotContains('Invitation to join ' . $this->teamA->label());
+    $this->assertSession()->pageTextNotContains('Invitation to join ' . $teamALabel);
     $this->assertSession()->pageTextContains('Invitation to join ' . $this->teamB->label());
   }
 
