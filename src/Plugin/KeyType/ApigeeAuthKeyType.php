@@ -82,6 +82,10 @@ use Http\Message\Authentication\BasicAuth;
  *       "account_json_key" = {
  *         "label" = @Translation("Account JSON key"),
  *         "required" = false
+ *       },
+ *       "gcp_hosted" = {
+ *         "label" = @Translation("Use default service account if hosted on GCP"),
+ *         "required" = false
  *       }
  *     }
  *   }
