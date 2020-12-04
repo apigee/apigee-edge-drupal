@@ -249,7 +249,7 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
     $this->assertSession()->pageTextContains('No performance data is available for the criteria you supplied.');
 
     // Login with the default user, the created team app should be visible on
-    // the team app administer collection page (/teams/apps).
+    // the team app administer collection page (/team-apps).
     $this->drupalLogin($this->account);
     $this->drupalGet(Url::fromRoute('entity.team_app.collection'));
     $this->assertSession()->linkExists($team_modified_display_name);
