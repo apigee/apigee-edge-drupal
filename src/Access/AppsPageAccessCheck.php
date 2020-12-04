@@ -54,7 +54,7 @@ class AppsPageAccessCheck implements AccessInterface {
   }
 
   /**
-   * Grant access to the user/[uid]/apps/add page.
+   * Grant access to the user/[uid]/create-apps page.
    *
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The parametrized route.
