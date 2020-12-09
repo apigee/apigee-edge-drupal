@@ -45,6 +45,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "permission_provider" = "Drupal\apigee_edge_teams\Entity\TeamPermissionProvider",
  *     "access" = "Drupal\apigee_edge_teams\Entity\TeamAccessHandler",
  *     "list_builder" = "Drupal\apigee_edge_teams\Entity\ListBuilder\TeamListBuilder",
+ *     "view_builder" = "Drupal\apigee_edge_teams\Entity\TeamViewBuilder",
  *     "form" = {
  *        "default" = "Drupal\apigee_edge_teams\Entity\Form\TeamForm",
  *        "add" = "Drupal\apigee_edge_teams\Entity\Form\TeamForm",
