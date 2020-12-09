@@ -20,6 +20,7 @@
 namespace Drupal\apigee_edge\Plugin\KeyInput;
 
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
+use Drupal\apigee_edge\Connector\GceServiceAccountAuthentication;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
@@ -92,9 +93,11 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#type' => 'textfield',
       '#title' => $this->t('Organization'),
       '#description' => $this->t('Name of the organization on Apigee Edge. Changing this value could make your site stop working.'),
-      '#required' => TRUE,
       '#default_value' => $values['organization'] ?? '',
+      '#required' => TRUE,
       '#attributes' => ['autocomplete' => 'off'],
+      '#prefix' => '<div id="edit-organization-field">',
+      '#suffix' => '</div>',
     ];
     $form['username'] = [
       '#type' => 'textfield',
@@ -123,6 +126,24 @@ class ApigeeAuthKeyInput extends KeyInputBase {
     if (empty($values['organization'])) {
       $form['password']['#states']['required'] = [$state_for_public, $state_for_private];
     }
+
+    $state_for_not_gcp_hosted = [];
+    $gceServiceAccountAuth = new GceServiceAccountAuthentication(\Drupal::service('apigee_edge.authentication.oauth_token_storage'));
+    if ($gceServiceAccountAuth->isAvailable()) {
+      $form['gcp_hosted'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Use the default service account if this portal is hosted on GCP'),
+        '#description' => $this->t("Please ensure you have added 'Apigee Developer Administrator' role to the default compute engine service account hosting this portal."),
+        '#default_value' => $values['gcp_hosted'] ?? TRUE,
+        '#states' => [
+          'visible' => $state_for_hybrid,
+        ],
+      ];
+      $state_for_not_gcp_hosted = [
+        ':input[name="key_input_settings[gcp_hosted]"]' => ['checked' => FALSE],
+      ];
+    }
+
     $form['account_json_key'] = [
       '#type' => 'textarea',
       '#title' => $this->t('GCP service account key'),
@@ -130,8 +151,8 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       '#default_value' => $values['account_json_key'] ?? '',
       '#rows' => '8',
       '#states' => [
-        'visible' => $state_for_hybrid,
-        'required' => $state_for_hybrid,
+        'visible' => $state_for_hybrid + $state_for_not_gcp_hosted,
+        'required' => $state_for_hybrid + $state_for_not_gcp_hosted,
       ],
     ];
     $form['endpoint'] = [
@@ -232,8 +253,8 @@ class ApigeeAuthKeyInput extends KeyInputBase {
    */
   public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
     $input_values = $form_state->getUserInput()['key_input_settings'];
-
-    if ($input_values['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+    if ($input_values['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID &&
+      empty($input_values['gcp_hosted'])) {
       $account_key = $input_values['account_json_key'] ?? '';
       $json = json_decode($account_key, TRUE);
       if (empty($json['private_key']) || empty($json['client_email'])) {
@@ -270,11 +291,16 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         $input_values['authorization_server'] = '';
         $input_values['client_id'] = '';
         $input_values['client_secret'] = '';
+        if (!empty($input_values['gcp_hosted'])) {
+          $input_values['account_json_key'] = '';
+        }
       }
       else {
         // Remove unneeded values if on a Public or Private instance.
         $input_values['account_json_key'] = '';
-
+        if (!empty($input_values['gcp_hosted'])) {
+          unset($input_values['gcp_hosted']);
+        }
         // If password field is empty we just skip it and preserve the initial
         // password if there is one already.
         if (empty($input_values['password']) && !empty($form_state->get('key_value')['current'])) {
