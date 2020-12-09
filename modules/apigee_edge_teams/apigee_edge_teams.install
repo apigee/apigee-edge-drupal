@@ -19,6 +19,9 @@
  */
 
 use Apigee\Edge\Utility\OrganizationFeatures;
+use Drupal\Core\Config\FileStorage;
+use Drupal\user\RoleInterface;
+use Drupal\views\Views;
 
 /**
  * @file
@@ -61,6 +64,20 @@ function apigee_edge_teams_requirements($phase) {
 }
 
 /**
+ * Implements hook_install().
+ */
+function apigee_edge_teams_install() {
+  if (\Drupal::moduleHandler()->moduleExists('user')) {
+    $authenticated_user_permissions = [
+      'accept own team invitation',
+      'decline own team invitation',
+    ];
+    user_role_grant_permissions(RoleInterface::AUTHENTICATED_ID, $authenticated_user_permissions);
+  }
+}
+
+
+/**
  * Assign "add_api_key", "revoke_api_key" and "edit_api_products" permissions to team administrators.
  */
 function apigee_edge_teams_update_8701() {
@@ -76,3 +93,89 @@ function apigee_edge_teams_update_8701() {
   $admin_role = $storage->load($role);
   $storage->changePermissions($role, $admin_role->getPermissions() + array_combine($api_key_permissions, $api_key_permissions));
 }
+
+/**
+ * Install team_invitation entity, dependencies and config.
+ */
+function apigee_edge_teams_update_8702() {
+  // Install 'team_invitation' entity.
+  \Drupal::entityTypeManager()->clearCachedDefinitions();
+  $entity_definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  $entity_definition_update_manager->installEntityType(\Drupal::entityTypeManager()->getDefinition('team_invitation'));
+
+  // Install 'views' module.
+  \Drupal::service('module_installer')->install(['views']);
+
+  // Install new config.
+  $settings_to_sync = [
+    'team_invitation_expiry_days',
+    'team_invitation_email_existing',
+    'team_invitation_email_new',
+  ];
+  /** @var \Drupal\Core\Config\StorageInterface $config_storage */
+  $config_storage = \Drupal::service('config.storage');
+  $module_path = drupal_get_path('module', 'apigee_edge_teams');
+  $source = new FileStorage("$module_path/config/install");
+  $new_team_settings = $source->read('apigee_edge_teams.team_settings');
+  $team_settings = $config_storage->read('apigee_edge_teams.team_settings');
+  foreach ($settings_to_sync as $setting) {
+    $team_settings[$setting] = $new_team_settings[$setting];
+  }
+  $config_storage->write('apigee_edge_teams.team_settings', $team_settings);
+
+  $optional = new FileStorage("$module_path/config/optional");
+  $team_invitations_view = $optional->read('views.view.team_invitations');
+  $config_storage->write('views.view.team_invitations', $team_invitations_view);
+}
+
+/**
+ * Assign accept and decline team invitations permissions to authenticated users.
+ */
+function apigee_edge_teams_update_8703() {
+  if (\Drupal::moduleHandler()->moduleExists('user')) {
+    $authenticated_user_permissions = [
+      'accept own team invitation',
+      'decline own team invitation',
+    ];
+    user_role_grant_permissions(RoleInterface::AUTHENTICATED_ID, $authenticated_user_permissions);
+  }
+}
+
+/**
+ * Remove the "Manage team members and invitations" access for the Team invitations view.
+ */
+function apigee_edge_teams_update_8704() {
+  if ($view = Views::getView('team_invitations')) {
+    $view->setDisplay('team');
+    $access = $view->getDisplay()->getOption('access');
+    if (empty($access['type']) || $access['type'] !== "team_permission") {
+      return;
+    }
+
+    $view->getDisplay()->setOption('access', [
+      'type' => 'none',
+      'options' => [],
+    ]);
+    $view->save();
+  }
+}
+
+/**
+ * Set disable_sql_rewrite to false for Team invitations view.
+ */
+function apigee_edge_teams_update_8705() {
+  /** @var \Drupal\views\ViewExecutable $view */
+  if ($view = Views::getView('team_invitations')) {
+    $view->setDisplay('user');
+    $query = $view->getDisplay()->getOption('query');
+    if (empty($query['options']['disable_sql_rewrite']) || $query['options']['disable_sql_rewrite'] === FALSE) {
+      return;
+    }
+
+    $query['options']['disable_sql_rewrite'] = FALSE;
+    $view->getDisplay()->setOption('query', $query);
+    $view->save();
+  }
+}
+
+

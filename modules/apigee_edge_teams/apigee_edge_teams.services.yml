@@ -83,6 +83,32 @@ services:
     tags:
       - { name: event_subscriber }
 
+  apigee_edge_teams.event_subscriber.team_invitation_event_subscriber:
+    class: Drupal\apigee_edge_teams\EventSubscriber\TeamInvitationSubscriber
+    arguments: ['@logger.channel.apigee_edge_teams', '@entity_type.manager', '@apigee_edge_teams.team_membership_manager', '@apigee_edge_teams.team_invitation_notifier.email']
+    tags:
+      - { name: event_subscriber }
+
+  apigee_edge_teams.team_invitation_notifier.email:
+    class: Drupal\apigee_edge_teams\TeamInvitationNotifierEmail
+    arguments: ['@plugin.manager.mail', '@language_manager']
+
+  apigee_edge_teams.team_inactive_status_subscriber:
+    class: Drupal\apigee_edge_teams\EventSubscriber\TeamInactiveStatusSubscriber
+    arguments:
+      - '@class_resolver'
+      - '@current_route_match'
+      - '%main_content_renderers%'
+      - '@current_user'
+    tags:
+      - { name: event_subscriber }
+
+  apigee_edge_teams.team_invitation_query_access_subscriber:
+    class: Drupal\apigee_edge_teams\EventSubscriber\TeamInvitationQueryAccessSubscriber
+    arguments: ['@entity_type.manager']
+    tags:
+      - { name: event_subscriber }
+
   route.subscriber.apigee_edge_teams.team_app_by_name:
     class: Drupal\apigee_edge_teams\Routing\TeamAppByNameRouteAlterSubscriber
     tags:

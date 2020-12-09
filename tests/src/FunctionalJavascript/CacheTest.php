@@ -150,9 +150,25 @@ class CacheTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $this->assertSession()->pageTextNotContains($credentials[0]->getConsumerSecret());
 
     // Until clicking the "show" buttons.
-    $this->clickLink('Show');
+    $this->clickLink('Show key', 0);
     $this->assertSession()->assertWaitOnAjaxRequest(30000);
-    $this->clickLink('Show');
+    $this->clickLink('Show key', 1);
+    $this->assertSession()->assertWaitOnAjaxRequest(30000);
+    $this->assertSession()->pageTextContainsOnce($credentials[0]->getConsumerKey());
+    $this->assertSession()->pageTextContainsOnce($credentials[0]->getConsumerSecret());
+
+    // Hide keys.
+    $this->clickLink('Hide key', 0);
+    $this->assertSession()->assertWaitOnAjaxRequest(30000);
+    $this->clickLink('Hide key', 1);
+    $this->assertSession()->assertWaitOnAjaxRequest(30000);
+    $this->assertSession()->pageTextNotContains($credentials[0]->getConsumerKey());
+    $this->assertSession()->pageTextNotContains($credentials[0]->getConsumerSecret());
+
+    // And show again (make sure show/hide functionality works).
+    $this->clickLink('Show key', 0);
+    $this->assertSession()->assertWaitOnAjaxRequest(30000);
+    $this->clickLink('Show key', 1);
     $this->assertSession()->assertWaitOnAjaxRequest(30000);
     $this->assertSession()->pageTextContainsOnce($credentials[0]->getConsumerKey());
     $this->assertSession()->pageTextContainsOnce($credentials[0]->getConsumerSecret());

@@ -14,6 +14,15 @@ apigee_edge_teams.team_settings:
       type: sequence
       sequence:
         type: string
+    team_invitation_expiry_days:
+      type: integer
+      label: 'Number of days for team invitation expiry'
+    team_invitation_email_existing:
+      type: 'mail'
+      label: 'Team invitation email for existing users'
+    team_invitation_email_new:
+      type: 'mail'
+      label: 'Team invitation email for new users'
 
 apigee_edge_teams.team_app_settings:
   type: config_object
@@ -83,3 +92,6 @@ entity_reference_selection.apigee_edge_teams:team_members:
     include_anonymous:
       type: boolean
       label: 'Include the anonymous user in the matched entities.'
+
+views.filter.team_invitation_status:
+  type: views.filter.in_operator

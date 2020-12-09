@@ -16,3 +16,9 @@ switcher:
   css:
     theme:
       css/apigee_edge_teams.switcher.css: {}
+
+disabled_action:
+  version: VERSION
+  css:
+    theme:
+      css/apigee_edge_teams.disabled_action.css: {}

@@ -20,7 +20,11 @@
  */
 
 use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
+use Drupal\apigee_edge_teams\Entity\TeamInterface;
+use Drupal\apigee_edge_teams\Entity\TeamInvitationInterface;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
+use Drupal\apigee_edge_teams\EventSubscriber\TeamInactiveStatusSubscriber;
+use Drupal\Component\Render\PlainTextOutput;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Breadcrumb\Breadcrumb;
 use Drupal\Core\Entity\EntityInterface;
@@ -149,6 +153,18 @@ function apigee_edge_teams_developer_delete(EntityInterface $entity) {
 }
 
 /**
+ * Implements hook_ENTITY_TYPE_delete().
+ */
+function apigee_edge_teams_team_delete(EntityInterface $entity) {
+  // Delete all invitations from this team.
+  /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamStorageInterface $storage */
+  $storage = \Drupal::entityTypeManager()->getStorage('team_invitation');
+  if ($invitations = $storage->loadByProperties(['team' => $entity->id()])) {
+    $storage->delete($invitations);
+  }
+}
+
+/**
  * Implements hook_system_breadcrumb_alter().
  */
 function apigee_edge_teams_system_breadcrumb_alter(Breadcrumb &$breadcrumb, RouteMatchInterface $route_match, array $context) {
@@ -166,6 +182,58 @@ function apigee_edge_teams_system_breadcrumb_alter(Breadcrumb &$breadcrumb, Rout
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
     $team = $route_match->getParameter('team');
     $breadcrumb->addLink(Link::createFromRoute($team_app_entity_def->getPluralLabel(), 'entity.team_app.collection_by_team', ['team' => $team->id()]));
+  }
+}
+
+/**
+ * Implements hook_preprocess().
+ */
+function apigee_edge_teams_preprocess(&$variables, $hook) {
+  if (!in_array($hook, ['menu_local_action', 'menu_local_task'])) {
+    return;
+  }
+
+  /** @var \Drupal\Core\Url $url */
+  $url = $variables['link']['#url'];
+  if (!in_array($url->getRouteName(), TeamInactiveStatusSubscriber::getDisabledRoutes())) {
+    return;
+  }
+
+  $team = \Drupal::routeMatch()->getParameter('team');
+  if (!$team || $team->getStatus() !== TeamInterface::STATUS_INACTIVE) {
+    return;
+  }
+
+  // If a team is inactive, for the local tasks and local actions, set the url
+  // to <none>.
+  $variables['link']['#url'] = Url::fromRoute('<none>', [], [
+    'absolute' => TRUE,
+  ]);
+    // Add a title attribute.
+  $variables['link']['#options']['attributes']['title'] = t('This @team is inactive.', [
+    '@team' => \Drupal::entityTypeManager()->getDefinition('team')->getSingularLabel(),
+  ]);
+  // Add a disabled class.
+  $variables['link']['#options']['attributes']['class'][] = 'team-disabled-action';
+  $variables['#attached']['library'][] = 'apigee_edge_teams/disabled_action';
+}
+
+/**
+ * Implements hook_entity_operation_alter().
+ */
+function apigee_edge_teams_entity_operation_alter(array &$operations, EntityInterface $entity) {
+  foreach ($operations as $key => $operation) {
+    if (!in_array($operation['url']->getRouteName(), TeamInactiveStatusSubscriber::getDisabledRoutes())) {
+      continue;
+    }
+
+    $team = \Drupal::routeMatch()->getParameter('team');
+    if (!$team || $team->getStatus() !== TeamInterface::STATUS_INACTIVE) {
+      continue;
+    }
+
+    // Remove the entity operation if the team is inactive.
+    unset($operations[$key]);
   }
 }
 
@@ -239,5 +307,38 @@ function apigee_edge_teams_help($route_name, RouteMatchInterface $route_match) {
         ':permissions' => Url::fromRoute('apigee_edge_teams.settings.team.permissions')->toString(),
         ':member' => $member_role->label(),
       ]) . '</p>';
+  }
+}
+
+/**
+ * Implements hook_mail().
+ */
+function apigee_edge_teams_mail($key, &$message, $params) {
+  $token_service = \Drupal::token();
+  $config = \Drupal::config('apigee_edge_teams.team_settings');
+
+  switch ($key) {
+    case 'team_invitation_created':
+      $template = empty($params['user']) ? 'new' : 'existing';
+      $message['subject'] = PlainTextOutput::renderFromHtml($token_service->replace($config->get("team_invitation_email_$template.subject"), $params));
+      $message['body'][] = $token_service->replace($config->get("team_invitation_email_$template.body"), $params);
+      break;
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function apigee_edge_teams_cron() {
+  /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamInvitationStorageInterface $storage */
+  $storage = Drupal::entityTypeManager()->getStorage('team_invitation');
+  $team_invitations = $storage->getInvitationsToExpire();
+  if (!count($team_invitations)) {
+    return;
+  }
+
+  // Update status for expired invitations.
+  foreach ($team_invitations as $team_invitation) {
+    $team_invitation->setStatus(TeamInvitationInterface::STATUS_EXPIRED)->save();
   }
 }

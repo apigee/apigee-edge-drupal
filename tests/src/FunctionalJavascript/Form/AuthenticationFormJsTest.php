@@ -35,6 +35,11 @@ use Drupal\Tests\apigee_edge\FunctionalJavascript\ApigeeEdgeFunctionalJavascript
 class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
   /**
+   * {@inheritdoc}
+   */
+  protected $defaultTheme = 'classy';
+
+  /**
    * Valid username.
    *
    * @var string
@@ -281,11 +286,14 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $visitFormAsAdmin();
 
     // Make sure the default fields are visible and empty.
-    $web_assert->fieldValueEquals('Authentication type', 'basic');
+    $web_assert->fieldValueEquals('Authentication type', 'oauth');
     $web_assert->fieldValueEquals('Username', '');
     $web_assert->fieldValueEquals('Password', '');
     $web_assert->fieldValueEquals('Organization', '');
     $web_assert->fieldValueEquals('Apigee Edge endpoint', '');
+
+    // Select basic auth.
+    $page->selectFieldOption('key_input_settings[auth_type]', EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC);
 
     // Make sure the oauth fields are hidden.
     $this->assertFalse($this->cssSelect('input[name="key_input_settings[authorization_server]"]')[0]->isVisible());
@@ -343,6 +351,7 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $page->fillField('Username', $this->username);
     $page->fillField('Password', $this->password);
     $page->fillField('Organization', $this->organization);
+    $page->selectFieldOption('key_input_settings[auth_type]', EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC);
 
     // Test invalid password.
     $random_pass = $this->randomString();

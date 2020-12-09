@@ -52,14 +52,14 @@ class ResponseTemplateLoader extends \Twig_Loader_Filesystem {
   /**
    * {@inheritdoc}
    */
-  protected function normalizeName($name) {
-    $name = str_replace('_', '-', parent::normalizeName($name));
+  protected function findTemplate($name, $throw = TRUE) {
+    $name = str_replace('_', '-', $name);
 
     if (strpos($name, '.twig') === FALSE) {
       $name = "{$name}.json.twig";
     }
 
-    return $name;
+    return parent::findTemplate($name, $throw);
   }
 
 }

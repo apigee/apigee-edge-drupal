@@ -22,15 +22,18 @@ namespace Drupal\Tests\apigee_edge\Kernel\Entity\ListBuilder;
 
 use Apigee\Edge\Api\Management\Entity\App;
 use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
+use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\Component\Utility\Html;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\apigee_edge\Kernel\ApigeeEdgeKernelTestTrait;
+use Drupal\Tests\apigee_edge\Traits\CredsUtilsTrait;
 use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\user\Entity\User;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Tests the AppListBuilder.
@@ -40,7 +43,7 @@ use Drupal\user\Entity\User;
  */
 class AppListBuilderTest extends KernelTestBase {
 
-  use ApigeeMockApiClientHelperTrait, ApigeeEdgeKernelTestTrait, UserCreationTrait;
+  use ApigeeMockApiClientHelperTrait, ApigeeEdgeKernelTestTrait, UserCreationTrait, CredsUtilsTrait;
 
   /**
    * Indicates this test class is mock API client ready.
@@ -63,7 +66,7 @@ class AppListBuilderTest extends KernelTestBase {
     'apigee_mock_api_client',
     'key',
     'user',
-    'options'
+    'options',
   ];
 
   /**
@@ -92,7 +95,14 @@ class AppListBuilderTest extends KernelTestBase {
    *
    * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface
    */
-  protected $approvedAppWithRevokedCredential;
+  protected $approvedAppWithOneRevokedCredential;
+
+  /**
+   * An approved DeveloperApp entity with all credentials revoked.
+   *
+   * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface
+   */
+  protected $approvedAppWithAllRevokedCredential;
 
   /**
    * A revoked DeveloperApp entity with at least one credential revoked.
@@ -152,15 +162,25 @@ class AppListBuilderTest extends KernelTestBase {
     $this->queueDeveloperAppResponse($this->approvedAppWithApprovedCredential);
     $this->approvedAppWithApprovedCredential->save();
 
-    // Approved app with revoked credential.
-    $this->approvedAppWithRevokedCredential = DeveloperApp::create([
+    // Approved app with one revoked credential.
+    $this->approvedAppWithOneRevokedCredential = DeveloperApp::create([
       'name' => $this->randomMachineName(),
       'status' => App::STATUS_APPROVED,
       'developerId' => $this->developer->getDeveloperId(),
     ]);
-    $this->approvedAppWithRevokedCredential->setOwner($this->account);
-    $this->queueDeveloperAppResponse($this->approvedAppWithRevokedCredential);
-    $this->approvedAppWithRevokedCredential->save();
+    $this->approvedAppWithOneRevokedCredential->setOwner($this->account);
+    $this->queueDeveloperAppResponse($this->approvedAppWithOneRevokedCredential);
+    $this->approvedAppWithOneRevokedCredential->save();
+
+    // Approved app with all credentials revoked.
+    $this->approvedAppWithAllRevokedCredential = DeveloperApp::create([
+      'name' => $this->randomMachineName(),
+      'status' => App::STATUS_APPROVED,
+      'developerId' => $this->developer->getDeveloperId(),
+    ]);
+    $this->approvedAppWithAllRevokedCredential->setOwner($this->account);
+    $this->queueDeveloperAppResponse($this->approvedAppWithAllRevokedCredential);
+    $this->approvedAppWithAllRevokedCredential->save();
 
     // Revoked app with revoked credential.
     $this->revokedAppWithRevokedCredential = DeveloperApp::create([
@@ -213,8 +233,12 @@ class AppListBuilderTest extends KernelTestBase {
         $this->approvedAppWithApprovedCredential->delete();
       }
 
-      if ($this->approvedAppWithRevokedCredential) {
-        $this->approvedAppWithRevokedCredential->delete();
+      if ($this->approvedAppWithOneRevokedCredential) {
+        $this->approvedAppWithOneRevokedCredential->delete();
+      }
+
+      if ($this->approvedAppWithAllRevokedCredential) {
+        $this->approvedAppWithAllRevokedCredential->delete();
       }
 
       if ($this->revokedAppWithRevokedCredential) {
@@ -242,64 +266,109 @@ class AppListBuilderTest extends KernelTestBase {
   public function testAppWarnings() {
     /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager */
     $entity_type_manager = $this->container->get('entity_type.manager');
-    $approved_credential = [
-      "consumerKey" => $this->randomMachineName(),
-      "consumerSecret" => $this->randomMachineName(),
-      "status" => AppCredentialInterface::STATUS_APPROVED,
-      'expiresAt' => ($this->container->get('datetime.time')->getRequestTime() + 24 * 60 * 60) * 1000,
-    ];
 
-    $revoked_credential = [
-      "consumerKey" => $this->randomMachineName(),
-      "consumerSecret" => $this->randomMachineName(),
-      "status" => AppCredentialInterface::STATUS_REVOKED,
-      'expiresAt' => ($this->container->get('datetime.time')->getRequestTime() + 24 * 60 * 60) * 1000,
-    ];
+    if ($this->integration_enabled) {
+      $this->apiProduct = ApiProduct::create([
+        'name' => $this->randomMachineName(),
+        'displayName' => $this->randomMachineName(),
+        'approvalType' => ApiProduct::APPROVAL_TYPE_AUTO,
+      ]);
+      $this->apiProduct->save();
 
-    $expired_credential = [
-      "consumerKey" => $this->randomMachineName(),
-      "consumerSecret" => $this->randomMachineName(),
-      "status" => AppCredentialInterface::STATUS_REVOKED,
-      'expiresAt' => ($this->container->get('datetime.time')->getRequestTime() - 24 * 60 * 60) * 1000,
-    ];
+      // Revoke old credential and create a new valid one.
+      $this->operationOnCredential($this->approvedAppWithOneRevokedCredential, 'revoke', 0);
+      $this->operationOnCredential($this->approvedAppWithOneRevokedCredential, 'generate');
 
-    $this->stack->queueMockResponse([
-      'get_developer_apps_with_credentials' => [
-        'apps' => [
-          $this->approvedAppWithApprovedCredential,
-          $this->approvedAppWithRevokedCredential,
-          $this->revokedAppWithRevokedCredential,
-          $this->approvedAppWithExpiredCredential,
-          $this->revokedAppWithExpiredCredential,
+      // Revoke old credential.
+      $this->operationOnCredential($this->approvedAppWithAllRevokedCredential, 'revoke', 0);
+
+      // Revoke old credential.
+      $this->operationOnCredential($this->revokedAppWithRevokedCredential, 'revoke', 0);
+      $this->operationOnCredential($this->revokedAppWithRevokedCredential, 'generate');
+
+      // Create a new cred that will expire in 5 seconds, delete old.
+      $this->operationOnCredential($this->approvedAppWithExpiredCredential, 'delete', 0);
+      $this->operationOnCredential($this->approvedAppWithExpiredCredential, 'generate', 0, 5 * 1000);
+
+      // Create a new cred that will expire in 5 seconds, delete old.
+      $this->operationOnCredential($this->revokedAppWithExpiredCredential, 'delete', 0);
+      $this->operationOnCredential($this->revokedAppWithExpiredCredential, 'generate', 0, 5 * 1000);
+
+      // Wait a bit and reset "request time" to make sure credentials
+      // are considered expired.
+      sleep(6);
+      $request = Request::create('/', 'GET');
+      $this->container->get('http_kernel')->handle($request);
+    }
+    else {
+      $approved_credential = [
+        "consumerKey" => $this->randomMachineName(),
+        "consumerSecret" => $this->randomMachineName(),
+        "status" => AppCredentialInterface::STATUS_APPROVED,
+        'expiresAt' => ($this->container->get('datetime.time')->getRequestTime() + 24 * 60 * 60) * 1000,
+      ];
+
+      $revoked_credential = [
+        "consumerKey" => $this->randomMachineName(),
+        "consumerSecret" => $this->randomMachineName(),
+        "status" => AppCredentialInterface::STATUS_REVOKED,
+        'expiresAt' => ($this->container->get('datetime.time')->getRequestTime() + 24 * 60 * 60) * 1000,
+      ];
+
+      $expired_credential = [
+        "consumerKey" => $this->randomMachineName(),
+        "consumerSecret" => $this->randomMachineName(),
+        "status" => AppCredentialInterface::STATUS_APPROVED,
+        'expiresAt' => ($this->container->get('datetime.time')->getRequestTime() - 24 * 60 * 60) * 1000,
+      ];
+
+      $this->stack->queueMockResponse([
+        'get_developer_apps_with_credentials' => [
+          'apps' => [
+            $this->approvedAppWithApprovedCredential,
+            $this->approvedAppWithOneRevokedCredential,
+            $this->revokedAppWithRevokedCredential,
+            $this->approvedAppWithExpiredCredential,
+            $this->revokedAppWithExpiredCredential,
+          ],
+          'credentials' => [
+            $this->approvedAppWithApprovedCredential->id() => [
+              $approved_credential,
+            ],
+            $this->approvedAppWithOneRevokedCredential->id() => [
+              $approved_credential,
+              $revoked_credential,
+            ],
+            $this->approvedAppWithAllRevokedCredential->id() => [
+              $revoked_credential,
+            ],
+            $this->revokedAppWithRevokedCredential->id() => [
+              $approved_credential,
+              $revoked_credential,
+            ],
+            $this->approvedAppWithExpiredCredential->id() => [
+              $expired_credential,
+            ],
+            $this->revokedAppWithExpiredCredential->id() => [
+              $expired_credential,
+            ],
+          ],
         ],
-        'credentials' => [
-          $this->approvedAppWithApprovedCredential->id() => [
-            $approved_credential,
-          ],
-          $this->approvedAppWithRevokedCredential->id() => [
-            $revoked_credential,
-          ],
-          $this->revokedAppWithRevokedCredential->id() => [
-            $approved_credential,
-            $revoked_credential,
-          ],
-          $this->approvedAppWithExpiredCredential->id() => [
-            $expired_credential,
-          ],
-          $this->revokedAppWithExpiredCredential->id() => [
-            $expired_credential,
-          ],
-        ],
-      ],
-    ]);
+      ]);
+    }
 
     $build = $entity_type_manager->getListBuilder(static::ENTITY_TYPE)->render();
 
     // No warnings for approved app.
     $this->assertEmpty($build['table']['#rows'][$this->getStatusRowKey($this->approvedAppWithApprovedCredential)]['data']);
 
-    // No warnings to approved app with revoked credentials.
-    $this->assertEmpty($build['table']['#rows'][$this->getStatusRowKey($this->approvedAppWithRevokedCredential)]['data']);
+    // No warnings to approved app with one revoked credentials.
+    $this->assertEmpty($build['table']['#rows'][$this->getStatusRowKey($this->approvedAppWithOneRevokedCredential)]['data']);
+
+    // One warning for approved app with all credentials revoked.
+    $warnings = $build['table']['#rows'][$this->getStatusRowKey($this->approvedAppWithAllRevokedCredential)]['data'];
+    $this->assertCount(1, $warnings);
+    $this->assertEqual('No valid credentials associated with this app.', (string) $warnings['info']['data']['#items'][0]);
 
     // No warnings to revoked app with revoked credentials.
     $this->assertEmpty($build['table']['#rows'][$this->getStatusRowKey($this->revokedAppWithRevokedCredential)]['data']);
@@ -310,6 +379,8 @@ class AppListBuilderTest extends KernelTestBase {
     $this->assertEqual('At least one of the credentials associated with this app is expired.', (string) $warnings['info']['data']['#items'][0]);
 
     // No warnings for revoked app with expired credentials.
+    // Note: \Drupal\apigee_edge\Entity\AppWarningsChecker::getWarnings will
+    // return warnings for this but it is not shown in the UI.
     $this->assertEmpty($build['table']['#rows'][$this->getStatusRowKey($this->revokedAppWithExpiredCredential)]['data']);
   }
 

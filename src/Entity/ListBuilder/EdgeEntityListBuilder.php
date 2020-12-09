@@ -88,7 +88,7 @@ class EdgeEntityListBuilder extends EntityListBuilder {
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
     return new static(
       $entity_type,
-      $container->get('entity.manager'),
+      $container->get('entity_type.manager'),
       $container->get('config.factory')
     );
   }

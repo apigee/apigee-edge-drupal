@@ -6,7 +6,8 @@ type: module
 core_version_requirement: ^8 || ^9
 
 dependencies:
-- apigee_edge:apigee_edge
+  - apigee_edge:apigee_edge
+  - drupal:views
 
 configure: apigee_edge_teams.settings.team
 

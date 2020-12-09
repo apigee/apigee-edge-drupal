@@ -47,6 +47,11 @@ class RoboFile extends \Robo\Tasks
     $config = json_decode(file_get_contents('composer.json'));
     $config->extra->{"enable-patching"} = 'true';
     $config->extra->{"patches"} = new \stdClass();
+    unset($config->require->{"wikimedia/composer-merge-plugin"});
+    $config->extra->{"drupal-scaffold"} = new \stdClass();
+    $config->extra->{"drupal-scaffold"}->{"locations"} = (object) [
+      'web-root' => '.',
+    ];
 
     file_put_contents('composer.json', json_encode($config));
 
@@ -107,6 +112,38 @@ class RoboFile extends \Robo\Tasks
       $base = isset($config->extra->{"patches"}) ?  (array)$config->extra->{"patches"} : [];
       $config->extra->{"patches"} = (object)array_merge($base,
         (array)$this->getPatches($module));
+    }
+
+    file_put_contents('composer.json', json_encode($config));
+  }
+
+  /**
+   * Adds another composer.json requires and requires-dev to this project.
+   *
+   * @param string $composerFilePath
+   *   Path to the composer.json file to merge.
+   */
+  public function addDependenciesFrom(string $composerFilePath)
+  {
+    $config = json_decode(file_get_contents('composer.json'));
+    $additional = json_decode(file_get_contents($composerFilePath));
+
+    if (!empty($additional->require)) {
+      foreach ($additional->require as $key => $value) {
+        if (!isset($config->require->{$key})) {
+          $config->require->{$key} = $value;
+        }
+      }
+    }
+    if (!empty($additional->{"require-dev"})) {
+      foreach ($additional->{"require-dev"} as $key => $value) {
+        if (!isset($config->{"require-dev"}->{$key})) {
+          if (!isset($config->{"require-dev"})) {
+            $config->{"require-dev"} = new \stdClass();
+          }
+          $config->{"require-dev"}->{$key} = $value;
+        }
+      }
     }
 
     file_put_contents('composer.json', json_encode($config));
@@ -425,14 +462,30 @@ class RoboFile extends \Robo\Tasks
 
     switch ($drupalCoreVersion) {
       case '9':
-        $config->require->{"drupal/core-recommended"} = '^9';
-        $config->require->{"drupal/core-dev"} = '^9';
+        $config->require->{"drupal/core-composer-scaffold"} = '^9.1@stable';
+        $config->require->{"drupal/core-recommended"} = '^9.1@stable';
+        $config->require->{"drupal/core-dev"} = '^9.1';
+        $config->require->{"phpspec/prophecy-phpunit"} = '^2';
+
+        /**
+         * Allow tests to run against PHP Unit ^9.
+         *
+         * @todo Remove once the following issue has been fixed in a stable
+         * release from Drupal Core.
+         *
+         * @see https://www.drupal.org/project/drupal/issues/3186443
+         */
+        if (!isset($config->extra->{"patches"}->{"drupal/core"})) {
+          $config->extra->{"patches"}->{"drupal/core"} = new \stdClass();
+        }
+        $config->extra->{"patches"}->{"drupal/core"}->{"PHPUnit 9.5 Call to undefined method ::getAnnotations()"} = 'https://www.drupal.org/files/issues/2020-12-04/3186443-1.patch';
 
         break;
 
       case '8':
-        $config->require->{"drupal/core-recommended"} = '~8';
-        $config->require->{"drupal/core-dev"} = '~8';
+        $config->require->{"drupal/core-composer-scaffold"} = '^8.9@stable';
+        $config->require->{"drupal/core-recommended"} = '^8.9@stable';
+        $config->require->{"drupal/core-dev"} = '^8.9';
 
         // Add rules for testing apigee_edge_actions (only for D8).
         $config->require->{"drupal/rules"} = "3.0.0-alpha6";

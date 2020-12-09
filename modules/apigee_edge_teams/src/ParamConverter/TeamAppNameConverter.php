@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge_teams\ParamConverter;
 
+use Drupal\apigee_edge\Entity\Storage\AppStorage;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\ParamConverter\ParamConverterInterface;
@@ -84,7 +85,12 @@ final class TeamAppNameConverter implements ParamConverterInterface {
         // Load the entity directly from Apigee Edge if needed.
         // @see \Drupal\apigee_edge\ParamConverter\ApigeeEdgeLoadUnchangedEntity
         if (!empty($defaults['_route_object']->getOption('apigee_edge_load_unchanged_entity'))) {
-          $entity = $app_storage->loadUnchanged($app_id);
+          if ($app_storage instanceof AppStorage) {
+            $entity = $app_storage->loadUnchangedByUuid($app_id);
+          }
+          else {
+            $entity = $app_storage->loadUnchanged($app_id);
+          }
         }
         else {
           $entity = $app_storage->load($app_id);
