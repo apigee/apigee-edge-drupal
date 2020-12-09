@@ -324,3 +324,15 @@ function apigee_edge_update_8104() {
  */
 function apigee_edge_update_8105() {
 }
+
+/**
+ * Update the default environment config for app analytics.
+ */
+function apigee_edge_update_8106() {
+  $config_factory = \Drupal::configFactory();
+
+  $app_settings = $config_factory->getEditable('apigee_edge.common_app_settings');
+  $app_settings
+    ->set('analytics_available_environments', [$app_settings->get('analytics_environment')])
+    ->save(TRUE);
+}
