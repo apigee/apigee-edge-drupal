@@ -49,6 +49,10 @@ apigee_edge.common_app_settings:
       type: sequence
       sequence:
         type: string
+    analytics_available_environments:
+      type: sequence
+      sequence:
+        type: string
     analytics_environment:
       type: string
     callback_url_pattern:
