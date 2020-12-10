@@ -100,6 +100,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
         'metric' => 'min_response_time',
         'since' => $since->sub(new \DateInterval('P3D'))->getTimestamp(),
         'until' => $until->sub(new \DateInterval('P2D'))->getTimestamp(),
+        'environment' => 'prod',
       ],
     ];
   }
@@ -221,6 +222,19 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
     ]);
     $this->assertAnalyticsPage();
     $this->assertSession()->pageTextContains('Invalid URL query parameters.');
+
+    // Invalid environment parameters in the URL query.
+    $this->queueAppAnalyticsStackedResponse();
+    $this->drupalGet($path, [
+      'query' => [
+        'metric' => 'min_response_time',
+        'since' => (new DrupalDateTime())->getTimestamp(),
+        'until' => (new DrupalDateTime())->getTimestamp(),
+        'environment' => $this->randomMachineName(),
+      ],
+    ]);
+    $this->assertAnalyticsPage();
+    $this->assertSession()->pageTextContains('Invalid parameter environment in the URL.');
   }
 
   /**
