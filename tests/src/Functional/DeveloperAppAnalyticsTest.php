@@ -176,6 +176,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
         'metric' => 'message_count',
         'since' => $since_in_the_future->getTimestamp(),
         'until' => $until->getTimestamp(),
+        'environment' => 'prod',
       ],
     ]);
     $this->assertAnalyticsPage();
@@ -189,6 +190,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
         'metric' => 'message_count',
         'since' => $since_in_the_future->getTimestamp(),
         'until' => $until->add(new \DateInterval('P4D'))->getTimestamp(),
+        'environment' => 'prod',
       ],
     ]);
     $this->assertAnalyticsPage();
@@ -201,6 +203,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
         'metric' => $this->randomMachineName(),
         'since' => $this->randomMachineName(),
         'until' => $this->randomMachineName(),
+        'environment' => 'prod',
       ],
     ]);
     $this->assertAnalyticsPage();
@@ -213,6 +216,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
         'metric' => 'min_response_time',
         'since' => $this->randomMachineName(),
         'until' => $this->randomMachineName(),
+        'environment' => 'prod',
       ],
     ]);
     $this->assertAnalyticsPage();
