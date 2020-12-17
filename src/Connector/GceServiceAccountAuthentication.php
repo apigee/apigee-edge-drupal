@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge\Connector;
 
 use Apigee\Edge\ClientInterface;
 use Apigee\Edge\HttpClient\Plugin\Authentication\GceServiceAccount;
+use Drupal\apigee_edge\Entity\Controller\OrganizationController;
 
 /**
  * Decorator for Hybrid authentication plugin.
@@ -35,6 +36,14 @@ class GceServiceAccountAuthentication extends GceServiceAccount {
     /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
     $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
     return $sdk_connector->buildClient($this->getAuthHeader(), $this->getAuthServer());
+  }
+  public function getAuthorizedOrganizations()
+  {
+    /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
+    $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
+    $client = $sdk_connector->buildClient($this,  ClientInterface::HYBRID_ENDPOINT );
+    $controller = new \Apigee\Edge\Api\Management\Controller\OrganizationController($client);
+    return $controller->getEntities();
   }
 
 }

@@ -19,12 +19,16 @@
 
 namespace Drupal\apigee_edge\Plugin\KeyInput;
 
+use Apigee\Edge\Api\Management\Entity\OrganizationInterface;
+use Apigee\Edge\ClientInterface;
+use Apigee\Edge\Denormalizer\ObjectDenormalizer;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use Drupal\apigee_edge\Connector\GceServiceAccountAuthentication;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\key\Plugin\KeyInputBase;
+use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 
 /**
  * Apigee Edge authentication credentials input text fields.
@@ -72,7 +76,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE => $this->t('Private Cloud'),
         EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID => $this->t('Hybrid Cloud'),
       ],
-      '#default_value' => $values['instance_type'] ?? 'public',
+      '#default_value' => $values['instance_type'] ?? EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC,
     ];
     $form['auth_type'] = [
       '#type' => 'select',
@@ -134,7 +138,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         '#type' => 'checkbox',
         '#title' => $this->t('Use the default service account if this portal is hosted on GCP'),
         '#description' => $this->t("Please ensure you have added 'Apigee Developer Administrator' role to the default compute engine service account hosting this portal."),
-        '#default_value' => $values['gcp_hosted'] ?? TRUE,
+        '#default_value' => $values['gcp_hosted'] ?? FALSE,
         '#states' => [
           'visible' => $state_for_hybrid,
         ],
@@ -142,6 +146,16 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       $state_for_not_gcp_hosted = [
         ':input[name="key_input_settings[gcp_hosted]"]' => ['checked' => FALSE],
       ];
+      if (empty($form['organization']['#default_value'])) {
+        $organizations = $gceServiceAccountAuth->getAuthorizedOrganizations();
+        $organization = array_pop($organizations);
+        if ($organization) {
+          $form['gcp_hosted']['#default_value'] = TRUE;
+          $form['instance_type']['#default_value'] = EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID;
+          $form['organization']['#default_value'] = $organization->getName();
+          \Drupal::messenger()->addWarning("Apigee configuration has been auto detected. Please save this configuration. \n You may change this configuration to connect to a different Apigee organization.");
+        }
+      }
     }
 
     $form['account_json_key'] = [

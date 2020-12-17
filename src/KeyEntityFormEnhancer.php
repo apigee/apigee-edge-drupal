@@ -256,7 +256,13 @@ final class KeyEntityFormEnhancer {
             [
               ':input[name="key_input_settings[instance_type]"]' => ['value' => EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID],
               ':input[name="key_input_settings[organization]"]' => ['empty' => FALSE],
+              ':input[name="key_input_settings[gcp_hosted]"]' => ['checked' => FALSE],
               ':input[name="key_input_settings[account_json_key]"]' => ['empty' => FALSE],
+            ],
+            [
+              ':input[name="key_input_settings[instance_type]"]' => ['value' => EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID],
+              ':input[name="key_input_settings[organization]"]' => ['empty' => FALSE],
+              ':input[name="key_input_settings[gcp_hosted]"]' => ['checked' => TRUE],
             ],
           ],
         ],
