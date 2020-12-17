@@ -43,7 +43,7 @@ class GceServiceAccountAuthentication extends GceServiceAccount {
    *
    * @return \Apigee\Edge\Api\Management\Entity\OrganizationInterface[]
    */
-  public function getAuthorizedOrganizations() {
+  public function getAuthorizedOrganizations(): array {
     /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
     $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
     $client = $sdk_connector->buildClient($this, ClientInterface::HYBRID_ENDPOINT);
