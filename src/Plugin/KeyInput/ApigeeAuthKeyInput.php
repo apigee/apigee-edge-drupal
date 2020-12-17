@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Google Inc.
+ * Copyright 2020 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License version 2 as published by the
@@ -19,16 +19,12 @@
 
 namespace Drupal\apigee_edge\Plugin\KeyInput;
 
-use Apigee\Edge\Api\Management\Entity\OrganizationInterface;
-use Apigee\Edge\ClientInterface;
-use Apigee\Edge\Denormalizer\ObjectDenormalizer;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use Drupal\apigee_edge\Connector\GceServiceAccountAuthentication;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\key\Plugin\KeyInputBase;
-use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 
 /**
  * Apigee Edge authentication credentials input text fields.
