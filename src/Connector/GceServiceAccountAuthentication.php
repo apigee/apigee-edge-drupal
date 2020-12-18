@@ -42,6 +42,7 @@ class GceServiceAccountAuthentication extends GceServiceAccount {
    * Returns the list of all Organizations available to the service account.
    *
    * @return \Apigee\Edge\Api\Management\Entity\OrganizationInterface[]
+   *   Returns the list of organizations the service account can access.
    */
   public function getAuthorizedOrganizations(): array {
     /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
