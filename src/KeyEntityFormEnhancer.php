@@ -348,7 +348,7 @@ final class KeyEntityFormEnhancer {
     catch (\Exception $exception) {
       watchdog_exception('apigee_edge', $exception);
 
-      $form_state->setError($form, $this->t('@suggestion Error message: %response', [
+      \Drupal::messenger()->addError($this->t('@suggestion Error message: %response', [
         '@suggestion' => $this->createSuggestion($exception, $test_key),
         '%response' => $exception->getMessage(),
       ]));
