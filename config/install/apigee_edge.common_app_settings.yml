@@ -4,6 +4,8 @@ user_select: true
 multiple_products: true
 default_products: []
 analytics_environment: prod
+analytics_available_environments:
+  - prod
 callback_url_pattern: '^https?:\/\/.*$'
 callback_url_pattern_error_message: 'The Callback URL must start with http:// or https://'
 callback_url_description: 'External site to which a consumer of this app is redirected to log in when using three-legged OAuth.'

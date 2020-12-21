@@ -100,6 +100,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
         'metric' => 'min_response_time',
         'since' => $since->sub(new \DateInterval('P3D'))->getTimestamp(),
         'until' => $until->sub(new \DateInterval('P2D'))->getTimestamp(),
+        'environment' => 'prod',
       ],
     ];
   }
@@ -176,6 +177,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
         'metric' => 'message_count',
         'since' => $since_in_the_future->getTimestamp(),
         'until' => $until->getTimestamp(),
+        'environment' => 'prod',
       ],
     ]);
     $this->assertAnalyticsPage();
@@ -189,6 +191,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
         'metric' => 'message_count',
         'since' => $since_in_the_future->getTimestamp(),
         'until' => $until->add(new \DateInterval('P4D'))->getTimestamp(),
+        'environment' => 'prod',
       ],
     ]);
     $this->assertAnalyticsPage();
@@ -201,6 +204,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
         'metric' => $this->randomMachineName(),
         'since' => $this->randomMachineName(),
         'until' => $this->randomMachineName(),
+        'environment' => 'prod',
       ],
     ]);
     $this->assertAnalyticsPage();
@@ -213,10 +217,24 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
         'metric' => 'min_response_time',
         'since' => $this->randomMachineName(),
         'until' => $this->randomMachineName(),
+        'environment' => 'prod',
       ],
     ]);
     $this->assertAnalyticsPage();
     $this->assertSession()->pageTextContains('Invalid URL query parameters.');
+
+    // Invalid environment parameters in the URL query.
+    $this->queueAppAnalyticsStackedResponse();
+    $this->drupalGet($path, [
+      'query' => [
+        'metric' => 'min_response_time',
+        'since' => (new DrupalDateTime())->getTimestamp(),
+        'until' => (new DrupalDateTime())->getTimestamp(),
+        'environment' => $this->randomMachineName(),
+      ],
+    ]);
+    $this->assertAnalyticsPage();
+    $this->assertSession()->pageTextContains('Invalid parameter environment in the URL.');
   }
 
   /**

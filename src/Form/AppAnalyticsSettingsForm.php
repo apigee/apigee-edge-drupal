@@ -89,9 +89,18 @@ class AppAnalyticsSettingsForm extends ConfigFormBase {
       '#collapsible' => FALSE,
     ];
 
+    $form['label']['available_environments'] = [
+      '#type' => 'checkboxes',
+      '#required' => TRUE,
+      '#title' => $this->t('Which environments should be displayed on the form to query analytics data?'),
+      '#default_value' => $this->config('apigee_edge.common_app_settings')->get('analytics_available_environments') ?: [],
+      '#options' => array_combine($environments, $environments),
+    ];
+
     $form['label']['environment'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Environments'),
+      '#type' => 'select',
+      '#required' => TRUE,
+      '#title' => $this->t('Which environment should be selected by default?'),
       '#default_value' => $this->config('apigee_edge.common_app_settings')->get('analytics_environment'),
       '#options' => array_combine($environments, $environments),
     ];
@@ -102,9 +111,21 @@ class AppAnalyticsSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    parent::validateForm($form, $form_state);
+
+    if (!in_array($form_state->getValue('environment'), array_values(array_filter($form_state->getValue('available_environments'))))) {
+      $form_state->setError($form['label']['environment'], $this->t('The selected default environment is not available on the form.'));
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->config('apigee_edge.common_app_settings')
       ->set('analytics_environment', $form_state->getValue('environment'))
+      ->set('analytics_available_environments', array_values(array_filter($form_state->getValue('available_environments'))))
       ->save();
     parent::submitForm($form, $form_state);
   }
