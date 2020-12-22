@@ -29,11 +29,11 @@
  */
 function apigee_edge_debug_requirements($phase) {
   $requirements = [];
-  if ($phase == 'runtime') {
+  if ($phase === 'runtime') {
     $requirements['apigee_debug'] = [
-      'title' => t('Apigee Edge debug'),
-      'value' => t('Apigee Edge debug module is enabled.'),
-      'description' => t("It's recommended to disable this module on production sites."),
+      'title' => t('Apigee Edge Debug'),
+      'value' => t('Apigee Edge Debug module is enabled.'),
+      'description' => t('It is recommended to disable this module on production sites.'),
       'severity' => REQUIREMENT_WARNING,
     ];
   }
