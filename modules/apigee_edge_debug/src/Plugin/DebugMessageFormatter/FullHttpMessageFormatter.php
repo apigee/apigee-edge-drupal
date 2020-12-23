@@ -41,7 +41,7 @@ class FullHttpMessageFormatter extends DebugMessageFormatterPluginBase {
    *
    * @var int
    */
-  private $maxBodyLength = null;
+  private $maxBodyLength = NULL;
 
   /**
    * The original full HTTP message formatter.
