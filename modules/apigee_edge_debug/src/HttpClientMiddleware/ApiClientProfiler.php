@@ -116,14 +116,14 @@ class ApiClientProfiler {
             return;
           }
           $context = [
-            'request_formatted' => $formatter->formatRequest($request_clone),
+            'request_formatted' => ">>>>>>>>\n" . $formatter->formatRequest($request_clone),
             'stats' => $formatter->formatStats($stats),
           ];
           if ($stats->hasResponse()) {
             // Do not modify the original response object in the subsequent
             // calls.
             $response_clone = clone $stats->getResponse();
-            $context['response_formatted'] = $formatter->formatResponse($response_clone, $request_clone);
+            $context['response_formatted'] = "<<<<<<<<\n" . $formatter->formatResponse($response_clone, $request_clone);
             if ($stats->getResponse()->getStatusCode() >= 400) {
               $level = LogLevel::WARNING;
             }
