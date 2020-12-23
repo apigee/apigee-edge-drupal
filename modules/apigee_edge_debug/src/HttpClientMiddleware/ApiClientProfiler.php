@@ -115,8 +115,10 @@ class ApiClientProfiler {
           if (!$request_clone->hasHeader(SDKConnector::HEADER)) {
             return;
           }
+		  $debugMessageTitle = explode("\n", trim($formatter->formatRequest($request_clone)));
+		  $debugMessageTitle = str_replace('/v1/organizations/***organization***', '', $debugMessageTitle[0]);
           $context = [
-            'request_formatted' => ">>>>>>>>\n" . $formatter->formatRequest($request_clone),
+            'request_formatted' => $debugMessageTitle . "\n>>>>>>>>\n" . $formatter->formatRequest($request_clone),
             'stats' => $formatter->formatStats($stats),
           ];
           if ($stats->hasResponse()) {
