@@ -34,7 +34,13 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
 
   use EntityUtilsTrait;
   use FieldUiTestTrait;
-
+ 
+  /**
+   * {@inheritdoc}
+   */
+  protected static $modules = [
+    'field_ui',
+  ];
   /**
    * The team entity storage.
    *
