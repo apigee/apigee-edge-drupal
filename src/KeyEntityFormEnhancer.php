@@ -348,7 +348,7 @@ final class KeyEntityFormEnhancer {
     catch (\Exception $exception) {
       watchdog_exception('apigee_edge', $exception);
 
-      \Drupal::messenger()->addError($this->t('@suggestion Error message: %response', [
+      $form_state->setError($form, $this->t('@suggestion Error message: %response', [
         '@suggestion' => $this->createSuggestion($exception, $test_key),
         '%response' => $exception->getMessage(),
       ]));
@@ -361,7 +361,10 @@ final class KeyEntityFormEnhancer {
       // still not clear the submitted value.
       // \Drupal\apigee_edge\Plugin\KeyInput\ApigeeAuthKeyInput::buildConfigurationForm()
       // does not get called in this case.
-      if ($test_key_type->getInstanceType($test_key) != EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+      $is_provider_env = ($test_key && $test_key->getKeyProvider()->getPluginId() === 'env');
+      $is_provider_file = ($test_key && $test_key->getKeyProvider()->getPluginId() === 'file');
+
+      if (($test_key_type->getInstanceType($test_key) != EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) && !$is_provider_env && !$is_provider_file) {
         $form['settings']['input_section']['key_input_settings']['password']['#attributes']['value'] = $test_key_type->getPassword($test_key);
       }
     }
