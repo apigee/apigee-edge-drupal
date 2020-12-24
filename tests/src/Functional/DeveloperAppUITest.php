@@ -44,7 +44,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   protected static $modules = [
     'field_ui',
   ];
-  
+
   /**
    * {@inheritdoc}
    */
