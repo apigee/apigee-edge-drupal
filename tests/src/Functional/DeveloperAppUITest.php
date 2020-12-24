@@ -37,7 +37,12 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   use EntityUtilsTrait;
 
   protected const DUPLICATE_MACHINE_NAME = 'The machine-readable name is already in use. It must be unique.';
-
+  /**
+   * {@inheritdoc}
+   */
+  protected static $modules = [
+    'field_ui',
+  ];
   /**
    * {@inheritdoc}
    */
