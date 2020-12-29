@@ -81,7 +81,7 @@ class AppAnalyticsSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $environments = $this->environmentController->getEntityIds();
+    $environments = array_diff($this->environmentController->getEntityIds(), ['portal']);
 
     $form['label'] = [
       '#type' => 'fieldset',
