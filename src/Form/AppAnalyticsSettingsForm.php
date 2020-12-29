@@ -81,6 +81,9 @@ class AppAnalyticsSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    // Portal environment is for internal use with integrated portals and
+    // is not an actual environment for customers use.
+    // To reduce confusion portal environment is hidden from configuration.
     $environments = array_diff($this->environmentController->getEntityIds(), ['portal']);
 
     $form['label'] = [
