@@ -141,6 +141,18 @@ class ApiClientProfiler {
             }
             $context['error'] = $error;
           }
+
+          // if devel kint module is enabled and the user has devel kint permission
+          $user = \Drupal::currentUser();
+          if(\Drupal::moduleHandler()->moduleExists('kint') && $user->hasPermission('access kint')){
+            \Drupal::messenger()->addStatus(t('<h3>Edge Calls</h3>'));
+            $rest_call = [];
+            $rest_call['Request'] = isset($context['request_formatted']) ? $context['request_formatted'] : '';
+            $rest_call['Response'] = isset($context['response_formatted']) ? $context['response_formatted'] : '';
+            $rest_call['Exception'] = isset($context['error']) ? $context['error'] : '';
+            $rest_call['Time Elapsed'] = isset($context['stats']) ? $context['stats'] : '';
+            ksm($rest_call);
+          }
           $logger->log($level, $log_format, $context);
           $next($stats);
         };
