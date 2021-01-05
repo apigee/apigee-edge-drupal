@@ -142,9 +142,9 @@ class ApiClientProfiler {
             $context['error'] = $error;
           }
 
-          // if devel kint module is enabled and the user has devel kint permission
+          // If devel kint module is enabled and the user has devel kint permission.
           $user = \Drupal::currentUser();
-          if(\Drupal::moduleHandler()->moduleExists('kint') && $user->hasPermission('access kint')){
+          if (\Drupal::moduleHandler()->moduleExists('kint') && $user->hasPermission('access kint')) {
             \Drupal::messenger()->addStatus(t('<h3>Edge Calls</h3>'));
             $rest_call = [];
             $rest_call['Request'] = isset($context['request_formatted']) ? $context['request_formatted'] : '';
