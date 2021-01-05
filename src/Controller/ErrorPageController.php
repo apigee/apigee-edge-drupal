@@ -57,7 +57,7 @@ class ErrorPageController extends ControllerBase {
     $build['content'] = [
       '#type' => 'processed_text',
       '#format' => $this->configFactory->get('apigee_edge.error_page')->get('error_page_content.format'),
-      '#text' => $this->configFactory->get('apigee_edge.error_page')->get('error_page_content.value'),
+      '#text' => $this->t($this->configFactory->get('apigee_edge.error_page')->get('error_page_content.value')),
     ];
     return $build;
   }
