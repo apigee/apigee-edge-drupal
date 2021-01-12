@@ -22,3 +22,9 @@ services:
     arguments: ['@config.factory', '@logger.channel.apigee_edge_debug', '@plugin.manager.apigee_edge_debug.debug_message_formatter']
     tags:
       - { name: http_client_middleware }
+
+  apigee_edge_debug.devel_client_profiler:
+    class: Drupal\apigee_edge_debug\HttpClientMiddleware\DevelKintApiClientProfiler
+    arguments: ['@config.factory', '@plugin.manager.apigee_edge_debug.debug_message_formatter', '@current_user', '@module_handler', '@messenger']
+    tags:
+      - { name: http_client_middleware }

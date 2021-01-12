@@ -23,23 +23,32 @@ namespace Drupal\apigee_edge_debug\HttpClientMiddleware;
 use Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager;
 use Drupal\apigee_edge_debug\SDKConnector;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Messenger\MessengerInterface;
 use GuzzleHttp\RequestOptions;
 use GuzzleHttp\TransferStats;
 use Psr\Http\Message\RequestInterface;
-use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
 /**
  * Http client middleware that profiles Apigee Edge API calls.
  */
-class ApiClientProfiler {
+class DevelKintApiClientProfiler {
 
   /**
-   * A logger instance.
+   * The currently logged-in user.
    *
-   * @var \Psr\Log\LoggerInterface
+   * @var \Drupal\Core\Session\AccountInterface
    */
-  private $logger;
+  private $currentUser;
+
+  /**
+   * The messenger service.
+   *
+   * @var \Drupal\Core\Messenger\MessengerInterface
+   */
+  private $messenger;
 
   /**
    * The debug message formatter plugin.
@@ -49,23 +58,27 @@ class ApiClientProfiler {
   private $formatter;
 
   /**
-   * The format of the log entry.
+   * The module handler.
    *
-   * @var string
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface|null
    */
-  private $logFormat;
+  private $moduleHandler;
 
   /**
-   * ApiClientProfiler constructor.
+   * DevelKintApiClientProfiler constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   Config factory.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   Logger.
    * @param \Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager $debug_message_formatter_plugin
    *   Debug message formatter plugin manager.
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
+   *   The currently logged-in user.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler service.
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger service.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, LoggerInterface $logger, DebugMessageFormatterPluginManager $debug_message_formatter_plugin) {
+  public function __construct(ConfigFactoryInterface $config_factory, DebugMessageFormatterPluginManager $debug_message_formatter_plugin, AccountInterface $currentUser, ModuleHandlerInterface $module_handler, MessengerInterface $messenger) {
     // On module install, this constructor is called earlier than
     // the module's configuration would have been imported to the database.
     // In that case the $formatterPluginId is missing and it causes fatal
@@ -74,8 +87,9 @@ class ApiClientProfiler {
     if ($formatter_plugin_id) {
       $this->formatter = $debug_message_formatter_plugin->createInstance($formatter_plugin_id);
     }
-    $this->logFormat = $config_factory->get('apigee_edge_debug.settings')->get('log_message_format');
-    $this->logger = $logger;
+    $this->currentUser = $currentUser;
+    $this->moduleHandler = $module_handler;
+    $this->messenger = $messenger;
   }
 
   /**
@@ -93,20 +107,9 @@ class ApiClientProfiler {
     return function ($handler) {
       return function (RequestInterface $request, array $options) use ($handler) {
 
-        // If this request already has an on_stats callback do not override
-        // it. Store it and call it after ours.
-        if (isset($options[RequestOptions::ON_STATS])) {
-          $next = $options[RequestOptions::ON_STATS];
-        }
-        else {
-          $next = function (TransferStats $stats) {};
-        }
-
-        $logger = $this->logger;
         $formatter = $this->formatter;
-        $log_format = $this->logFormat;
 
-        $options[RequestOptions::ON_STATS] = function (TransferStats $stats) use ($request, $next, $logger, $formatter, $log_format) {
+        $options[RequestOptions::ON_STATS] = function (TransferStats $stats) use ($request, $formatter) {
           // Do not modify the original request object in the subsequent calls.
           $request_clone = clone $request;
           $level = LogLevel::DEBUG;
@@ -141,8 +144,17 @@ class ApiClientProfiler {
             }
             $context['error'] = $error;
           }
-          $logger->log($level, $log_format, $context);
-          $next($stats);
+          // If devel kint module is enabled and the user has devel kint permission.
+          if ($this->moduleHandler->moduleExists('kint') && $this->currentUser->hasPermission('access kint')) {
+            $this->messenger->addStatus(t('<h3>Edge Calls</h3>'));
+            $rest_call = [];
+            $rest_call['Request'] = isset($context['request_formatted']) ? $context['request_formatted'] : '';
+            $rest_call['Response'] = isset($context['response_formatted']) ? $context['response_formatted'] : '';
+            $rest_call['Severity'] = isset($level) ? $level : '';
+            $rest_call['Exception'] = isset($context['error']) ? $context['error'] : '';
+            $rest_call['Time Elapsed'] = isset($context['stats']) ? $context['stats'] : '';
+            ksm($rest_call);
+          }
         };
 
         return $handler($request, $options);
