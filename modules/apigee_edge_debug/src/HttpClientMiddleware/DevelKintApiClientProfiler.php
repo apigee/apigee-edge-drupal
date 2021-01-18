@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Google Inc.
+ * Copyright 2021 Google Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,7 +34,7 @@ use Psr\Log\LogLevel;
 /**
  * Http client middleware that profiles Apigee Edge API calls.
  */
-class DevelKintApiClientProfiler {
+final class DevelKintApiClientProfiler {
 
   /**
    * The currently logged-in user.
@@ -96,67 +96,55 @@ class DevelKintApiClientProfiler {
    * {@inheritdoc}
    */
   public function __invoke() {
-    // If the formatter has been initialized yet then do nothing.
-    if (!$this->formatter) {
-      return function ($handler) {
-        return function (RequestInterface $request, array $options) use ($handler) {
-          return $handler($request, $options);
-        };
-      };
-    }
     return function ($handler) {
       return function (RequestInterface $request, array $options) use ($handler) {
-
-        $formatter = $this->formatter;
-
-        $options[RequestOptions::ON_STATS] = function (TransferStats $stats) use ($request, $formatter) {
-          // Do not modify the original request object in the subsequent calls.
-          $request_clone = clone $request;
-          $level = LogLevel::DEBUG;
-          // Do not log this request if it has not been made by the Apigee Edge
-          // SDK connector.
-          if (!$request_clone->hasHeader(SDKConnector::HEADER)) {
-            return;
+        // If devel kint module is enabled and the user has devel kint permission.
+        if ($this->moduleHandler->moduleExists('kint') && $this->currentUser->hasPermission('access kint')) {
+          // If the formatter has been initialized yet then do nothing.
+          if (!$this->formatter) {
+            return $handler($request, $options);
           }
-          $context = [
-            'request_formatted' => $formatter->formatRequest($request_clone),
-            'stats' => $formatter->formatStats($stats),
-          ];
-          if ($stats->hasResponse()) {
-            // Do not modify the original response object in the subsequent
-            // calls.
-            $response_clone = clone $stats->getResponse();
-            $context['response_formatted'] = $formatter->formatResponse($response_clone, $request_clone);
-            if ($stats->getResponse()->getStatusCode() >= 400) {
-              $level = LogLevel::WARNING;
-            }
+          $formatter = $this->formatter;
+          $rest_call = [];
+          if (isset($options[RequestOptions::ON_STATS])) {
+            $next = $options[RequestOptions::ON_STATS];
           }
           else {
-            $level = LogLevel::ERROR;
-            $error = $stats->getHandlerErrorData();
-            if (is_object($error)) {
-              if (method_exists($error, '__toString')) {
-                $error = (string) $error;
-              }
-              else {
-                $error = json_encode($error);
+            $next = function (TransferStats $stats) {};
+          }
+          $options[RequestOptions::ON_STATS] = function (TransferStats $stats) use ($request, $next, $formatter) {
+            $this->messenger->addStatus(t('<h3>Edge Calls</h3>'));
+            $level = LogLevel::DEBUG;
+            // Do not modify the original request object in the subsequent calls.
+            $request_clone = clone $request;
+            $rest_call['Request'] = $formatter->formatRequest($request_clone);
+            if ($stats->hasResponse()) {
+              // Do not modify the original response object in the subsequent calls.
+              $response_clone = clone $stats->getResponse();
+              $rest_call['Response'] = $formatter->formatResponse($response_clone, $request_clone);
+              if ($stats->getResponse()->getStatusCode() >= 400) {
+                $level = LogLevel::WARNING;
               }
             }
-            $context['error'] = $error;
-          }
-          // If devel kint module is enabled and the user has devel kint permission.
-          if ($this->moduleHandler->moduleExists('kint') && $this->currentUser->hasPermission('access kint')) {
-            $this->messenger->addStatus(t('<h3>Edge Calls</h3>'));
-            $rest_call = [];
-            $rest_call['Request'] = isset($context['request_formatted']) ? $context['request_formatted'] : '';
-            $rest_call['Response'] = isset($context['response_formatted']) ? $context['response_formatted'] : '';
+            else {
+              $level = LogLevel::ERROR;
+              $error = $stats->getHandlerErrorData();
+              if (is_object($error)) {
+                if (method_exists($error, '__toString')) {
+                  $error = (string) $error;
+                }
+                else {
+                  $error = json_encode($error);
+                }
+              }
+              $rest_call['Error'] = $error;
+            }
+            $next($stats);
+            $rest_call['Time Elapsed'] = $formatter->formatStats($stats);
             $rest_call['Severity'] = isset($level) ? $level : '';
-            $rest_call['Exception'] = isset($context['error']) ? $context['error'] : '';
-            $rest_call['Time Elapsed'] = isset($context['stats']) ? $context['stats'] : '';
             ksm($rest_call);
-          }
-        };
-
+          };
+        }
         return $handler($request, $options);
       };
     };
