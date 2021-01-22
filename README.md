@@ -1,16 +1,16 @@
 # Apigee Edge Drupal module
 
-The Apigee Edge module enables you to integrate Drupal 8 with Apigee Edge:
+The Apigee Edge module enables you to integrate Drupal 9 or Drupal 8 with Apigee:
 
-* Users that register or are added to the Drupal site will be added as developers in Apigee Edge.
-* Click on "Apps" in user menu to get keys for the APIs exposed in Apigee Edge.
+* Users that register or are added to the Drupal site will be added as developers in Apigee.
+* Click on "Apps" in user menu to get keys for the APIs exposed in Apigee.
 
 This module includes the following submodules:
 * __API product RBAC:__ enables administrators to configure access permissions to API products.
 * __Debug:__ enables administrators to configure and manage Apigee debug logs.
 * __Teams:__ enables developers to be organized into teams.
 
-For more details read the [Apigee Edge module documentation](https://www.drupal.org/docs/8/modules/apigee-edge).
+For more details read the [Apigee module documentation](https://www.drupal.org/docs/8/modules/apigee-edge).
 
 ## Support for Apigee Hybrid Cloud: Beta Release
 
@@ -80,4 +80,4 @@ Development is coordinated in our [GitHub repository](https://github.com/apigee/
 
 ## Support
 
-This project, which integrates Drupal 8 with Apigee Edge, is supported by Google.
+This project, which integrates Drupal 9 & 8 with Apigee Edge, is supported by Google.
