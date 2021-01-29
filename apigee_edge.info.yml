@@ -8,7 +8,6 @@ core_version_requirement: ^8.7.7 || ^9
 dependencies:
   - drupal:file
   - drupal:user
-  - drupal:field_ui
   - entity:entity
   - drupal:filter
   - drupal:options

@@ -55,6 +55,7 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
   protected static $modules = [
     'link',
     'block',
+    'field_ui',
   ];
 
   /**
