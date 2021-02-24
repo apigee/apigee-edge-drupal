@@ -68,9 +68,9 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       ]),
       '#required' => TRUE,
       '#options' => [
-        EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC => $this->t('Public Cloud'),
-        EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE => $this->t('Private Cloud'),
-        EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID => $this->t('Hybrid Cloud'),
+        EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC => $this->t('Apigee Edge (Endpoint: https://api.enterprise.apigee.com/v1)'),
+        EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID => $this->t('Apigee X (Endpoint: https://apigee.googleapis.com/v1)'),
+        EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE => $this->t('Private cloud (Custom endpoint)'),
       ],
       '#default_value' => $values['instance_type'] ?? 'public',
     ];
