@@ -317,6 +317,10 @@ class ApigeeAuthKeyInput extends KeyInputBase {
 
     // Reset values to just `key_value`.
     $form_state->setValues(['key_value' => Json::encode(array_filter($input_values))]);
+
+    // Based on type of organization, cache needs to clear.
+    drupal_flush_all_caches();
+
     return parent::processSubmittedKeyValue($form_state);
   }
 
