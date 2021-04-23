@@ -79,11 +79,13 @@ function apigee_edge_teams_tokens($type, $tokens, array $data, array $options, B
         break;
 
       case "url_accept":
-        $replacements[$original] = $team_invitation->toUrl('accept-form', ['absolute' => TRUE])->setRouteParameter('team', $team->id())->toString();
+        $query = ['destination' => $team_invitation->toUrl('accept-form')->setRouteParameter('team', $team->id())->toString()];
+        $replacements[$original] = Url::fromRoute('user.login', [], ['query' => $query, 'absolute' => TRUE])->toString();
         break;
 
       case "url_decline":
-        $replacements[$original] = $team_invitation->toUrl('decline-form', ['absolute' => TRUE])->setRouteParameter('team', $team->id())->toString();
+        $query = ['destination' => $team_invitation->toUrl('decline-form')->setRouteParameter('team', $team->id())->toString()];
+        $replacements[$original] = Url::fromRoute('user.login', [], ['query' => $query, 'absolute' => TRUE])->toString();
         break;
 
       case "url_register":
