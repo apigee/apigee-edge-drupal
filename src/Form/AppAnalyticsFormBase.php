@@ -157,13 +157,13 @@ abstract class AppAnalyticsFormBase extends FormBase {
     $form['controls']['metrics'] = [
       '#type' => 'select',
       '#options' => [
-        'total_response_time' => $this->t('Average response time'),
-        'max_response_time' => $this->t('Max response time'),
-        'min_response_time' => $this->t('Min response time'),
-        'message_count' => $this->t('Message count'),
-        'error_count' => $this->t('Error count'),
+        'avg(total_response_time)' => $this->t('Average response time'),
+        'max(total_response_time)' => $this->t('Max response time'),
+        'min(total_response_time)' => $this->t('Min response time'),
+        'sum(message_count)' => $this->t('Message count'),
+        'sum(is_error)' => $this->t('Error count'),
       ],
-      '#default_value' => 'total_response_time',
+      '#default_value' => 'avg(total_response_time)',
       '#title' => t('Metrics'),
       '#title_display' => 'invisible'
     ];
