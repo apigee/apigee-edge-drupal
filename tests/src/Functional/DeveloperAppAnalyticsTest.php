@@ -97,7 +97,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
     $until = new DrupalDateTime();
     $this->queryParameters = [
       'query' => [
-        'metric' => 'min_response_time',
+        'metric' => 'min(total_response_time)',
         'since' => $since->sub(new \DateInterval('P3D'))->getTimestamp(),
         'until' => $until->sub(new \DateInterval('P2D'))->getTimestamp(),
         'environment' => 'prod',
@@ -174,7 +174,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
     $this->queueAppAnalyticsStackedResponse();
     $this->drupalGet($path, [
       'query' => [
-        'metric' => 'message_count',
+        'metric' => 'sum(message_count)',
         'since' => $since_in_the_future->getTimestamp(),
         'until' => $until->getTimestamp(),
         'environment' => 'prod',
@@ -188,7 +188,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
     $this->queueAppAnalyticsStackedResponse();
     $this->drupalGet($path, [
       'query' => [
-        'metric' => 'message_count',
+        'metric' => 'sum(message_count)',
         'since' => $since_in_the_future->getTimestamp(),
         'until' => $until->add(new \DateInterval('P4D'))->getTimestamp(),
         'environment' => 'prod',
@@ -214,7 +214,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
     $this->queueAppAnalyticsStackedResponse();
     $this->drupalGet($path, [
       'query' => [
-        'metric' => 'min_response_time',
+        'metric' => 'min(total_response_time)',
         'since' => $this->randomMachineName(),
         'until' => $this->randomMachineName(),
         'environment' => 'prod',
@@ -227,7 +227,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
     $this->queueAppAnalyticsStackedResponse();
     $this->drupalGet($path, [
       'query' => [
-        'metric' => 'min_response_time',
+        'metric' => 'min(total_response_time)',
         'since' => (new DrupalDateTime())->getTimestamp(),
         'until' => (new DrupalDateTime())->getTimestamp(),
         'environment' => $this->randomMachineName(),
