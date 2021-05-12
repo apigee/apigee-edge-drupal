@@ -98,6 +98,13 @@ final class CompanyMembershipObjectCache implements CompanyMembershipObjectCache
    * {@inheritdoc}
    */
   public function saveMembership(string $company, CompanyMembership $membership): void {
+    $expiration = $this->persistentCacheExpiration;
+
+    // Do not save in cache, if expiration is set to 0.
+    if (0 === $expiration) {
+      return;
+    }
+
     // Tag company membership cache entries with members' (developers') email
     // addresses for easier cache invalidation when a developer gets removed.
     $tags = [];
@@ -105,7 +112,6 @@ final class CompanyMembershipObjectCache implements CompanyMembershipObjectCache
       $tags[] = "developer:{$developer_email}";
     }
     $this->memoryCache->set($company, $membership, CacheBackendInterface::CACHE_PERMANENT, $tags);
-    $expiration = $this->persistentCacheExpiration;
     if ($expiration !== CacheBackendInterface::CACHE_PERMANENT) {
       $expiration = $this->systemTime->getCurrentTime() + $expiration;
     }

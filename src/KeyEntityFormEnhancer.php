@@ -344,6 +344,9 @@ final class KeyEntityFormEnhancer {
       // Test the connection.
       $this->connector->testConnection($test_key);
       $this->messenger()->addStatus($this->t('Connection successful.'));
+
+      // Based on type of organization, cache needs to clear.
+      drupal_flush_all_caches();
     }
     catch (\Exception $exception) {
       watchdog_exception('apigee_edge', $exception);
