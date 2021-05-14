@@ -90,7 +90,7 @@ function apigee_edge_teams_update_8701() {
   $storage = Drupal::entityTypeManager()->getStorage('team_role');
   /** @var \Drupal\apigee_edge_teams\Entity\TeamRoleInterface $admin_role */
   $admin_role = $storage->load($role);
-  $storage->changePermissions($role, $admin_role->getPermissions() + array_combine($api_key_permissions, $api_key_permissions));
+  $storage->changePermissions($role, array_combine($admin_role->getPermissions(), $admin_role->getPermissions()) + array_combine($api_key_permissions, $api_key_permissions));
 }
 
 /**
