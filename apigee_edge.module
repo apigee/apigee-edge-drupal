@@ -702,6 +702,8 @@ function apigee_edge_form_user_form_alter(&$form, FormStateInterface $form_state
   // Apigee Edge.
   $form['account']['mail']['#required'] = TRUE;
   $user = \Drupal::currentUser();
+  // The email field should be disabled since users should not edit it.
+  $form['account']['mail']['#attributes'] = array('readonly' => 'readonly');
   // Make the same information available here as on user_register_form.
   // @see \Drupal\user\RegisterForm::form()
   $form['administer_users'] = [
