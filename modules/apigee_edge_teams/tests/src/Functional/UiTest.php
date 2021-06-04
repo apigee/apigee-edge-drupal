@@ -36,6 +36,13 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
   use FieldUiTestTrait;
 
   /**
+   * {@inheritdoc}
+   */
+  protected static $modules = [
+    'field_ui',
+  ];
+
+  /**
    * The team entity storage.
    *
    * @var \Drupal\apigee_edge_teams\Entity\Storage\TeamStorageInterface

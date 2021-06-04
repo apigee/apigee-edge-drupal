@@ -1,9 +1,9 @@
 # Apigee Edge Drupal module
 
-The Apigee Edge module enables you to integrate Drupal 8 with Apigee Edge:
+The Apigee Edge module enables you to integrate Drupal 9 or Drupal 8 with Apigee:
 
-* Users that register or are added to the Drupal site will be added as developers in Apigee Edge.
-* Click on "Apps" in user menu to get keys for the APIs exposed in Apigee Edge.
+* Users that register or are added to the Drupal site will be added as developers in Apigee.
+* Click on "Apps" in user menu to get keys for the APIs exposed in Apigee.
 
 This module includes the following submodules:
 * __API product RBAC:__ enables administrators to configure access permissions to API products.
@@ -44,12 +44,12 @@ Please note that Team APIs and Monetization APIs are not currently supported on 
 
 ## Notes
 
-* If you do not configure the connection between Drupal and Apigee Edge, you will not be able to register developers on
+* If you do not configure the connection between Drupal and Apigee, you will not be able to register developers on
   the site and may cause other issues with Drupal core functions. If you do not plan to configure the connection between
-  Drupal and Apigee Edge, you should uninstall the Apigee Edge module.
-* When you first install the module, existing users in the Drupal site may not have a developer account in Apigee Edge.
+  Drupal and Apigee, you should uninstall the Apigee Edge module.
+* When you first install the module, existing users in the Drupal site may not have a developer account in Apigee.
   You can run [developer synchronization](https://www.drupal.org/docs/8/modules/apigee-edge/synchronize-developers-with-apigee-edge)
-  to make sure Drupal users and Apigee Edge developers are synchronized.
+  to make sure Drupal users and Apigee developers are synchronized.
 
 ## Applying Patches
 
@@ -65,7 +65,7 @@ has to be enabled in Drupal's composer.json.
 for drupal/core has to be set in Drupal's composer.json.
 
 You can find the currently required patches, if any, in the Apigee Edge module's [composer.json](https://github.com/apigee/apigee-edge-drupal/blob/8.x-1.x/composer.json)
-and in the Apigee Edge PHP API Client's [composer.json](https://github.com/apigee/apigee-client-php/blob/2.x/composer.json).
+and in the Apigee PHP API Client's [composer.json](https://github.com/apigee/apigee-client-php/blob/2.x/composer.json).
 
 **If you do not have all required patches applied in your Drupal installation you may experience some problems with the
 Apigee Edge module.**
@@ -80,4 +80,4 @@ Development is coordinated in our [GitHub repository](https://github.com/apigee/
 
 ## Support
 
-This project, which integrates Drupal 8 with Apigee Edge, is supported by Google.
+This project, which integrates Drupal 9 & 8 with Apigee, is supported by Google.

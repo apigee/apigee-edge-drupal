@@ -35,6 +35,7 @@ class ConfigurationPermissionTest extends ApigeeEdgeFunctionalTestBase {
    */
   protected static $modules = [
     'block',
+    'field_ui',
   ];
 
   /**

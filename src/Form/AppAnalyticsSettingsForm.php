@@ -81,7 +81,12 @@ class AppAnalyticsSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    // Portal environment is for internal use with integrated portals and
+    // is not an actual environment for customers use.
+    // To reduce confusion portal environment is hidden from configuration.
     $environments = $this->environmentController->getEntityIds();
+    $environments = array_combine($environments, $environments);
+    unset($environments['portal']);
 
     $form['label'] = [
       '#type' => 'fieldset',
@@ -94,7 +99,7 @@ class AppAnalyticsSettingsForm extends ConfigFormBase {
       '#required' => TRUE,
       '#title' => $this->t('Which environments should be displayed on the form to query analytics data?'),
       '#default_value' => $this->config('apigee_edge.common_app_settings')->get('analytics_available_environments') ?: [],
-      '#options' => array_combine($environments, $environments),
+      '#options' => $environments,
     ];
 
     $form['label']['environment'] = [
@@ -102,7 +107,7 @@ class AppAnalyticsSettingsForm extends ConfigFormBase {
       '#required' => TRUE,
       '#title' => $this->t('Which environment should be selected by default?'),
       '#default_value' => $this->config('apigee_edge.common_app_settings')->get('analytics_environment'),
-      '#options' => array_combine($environments, $environments),
+      '#options' => $environments,
     ];
 
     return parent::buildForm($form, $form_state);

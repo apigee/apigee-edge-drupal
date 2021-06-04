@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Copyright 2018 Google Inc.
+ * Copyright 2021 Google Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,13 +20,21 @@
  */
 
 /**
- * Module file for Apigee Edge API Product RBAC tests.
+ * Install, update and uninstall functions for Apigee Edge Debug.
  */
 
 /**
- * Implements hook_entity_type_build().
+ * Implements hook_requirements().
  */
-function apigee_edge_apiproduct_rbac_test_entity_type_build(array &$entity_types) {
-  /** @var \Drupal\Core\Entity\EntityTypeInterface[] $entity_types */
-  $entity_types['api_product']->setStorageClass('Drupal\apigee_edge_apiproduct_rbac_test\ApiProductStorage');
+function apigee_edge_debug_requirements($phase) {
+  $requirements = [];
+  if ($phase === 'runtime') {
+    $requirements['apigee_debug'] = [
+      'title' => t('Apigee Edge Debug'),
+      'value' => t('Apigee Edge Debug module is enabled.'),
+      'description' => t('It is recommended to disable this module on production sites.'),
+      'severity' => REQUIREMENT_WARNING,
+    ];
+  }
+  return $requirements;
 }

@@ -41,7 +41,7 @@ class FullHttpMessageFormatter extends DebugMessageFormatterPluginBase {
    *
    * @var int
    */
-  private $maxBodyLength = 10000;
+  private $maxBodyLength = NULL;
 
   /**
    * The original full HTTP message formatter.
@@ -76,7 +76,7 @@ class FullHttpMessageFormatter extends DebugMessageFormatterPluginBase {
    * {@inheritdoc}
    */
   public function formatResponse(ResponseInterface $response, RequestInterface $request): string {
-    return sprintf("Response body got truncated to %d characters.\n\n%s", $this->maxBodyLength, parent::formatResponse($response, $request));
+    return parent::formatResponse($response, $request);
   }
 
 }
