@@ -103,6 +103,13 @@ class UserDeveloperConverter implements UserDeveloperConverterInterface {
     foreach (static::DEVELOPER_PROP_USER_BASE_FIELD_MAP as $developer_prop => $base_field) {
       $setter = 'set' . ucfirst($developer_prop);
       $getter = 'get' . ucfirst($developer_prop);
+
+      // Default value for firstname lastname if null.
+      if ($user->get($base_field)->value === NULL && ($base_field === "first_name" || $base_field === "last_name")) {
+        $base_field_value = $developer->{$getter}() !== NULL ? $developer->{$getter}() : ucfirst($developer_prop);
+        $user->set($base_field, $base_field_value);
+      }
+
       if ($user->get($base_field)->value !== $developer->{$getter}()) {
         $developer->{$setter}($user->get($base_field)->value);
         $successful_changes++;
