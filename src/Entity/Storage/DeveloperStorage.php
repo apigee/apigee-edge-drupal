@@ -147,6 +147,12 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
    */
   protected function doSave($id, EntityInterface $entity) {
     /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $entity */
+    // We are enforcing email addresses over developer ids
+    // (UUIDs) when we are updating user profile.
+    // @see https://github.com/apigee/apigee-edge-drupal/issues/594
+    if (!$entity->isNew()) {
+      $entity->decorated()->setDeveloperId($entity->decorated()->getEmail());
+    }
     $developer_status = $entity->getStatus();
     $result = parent::doSave($id, $entity);
 
