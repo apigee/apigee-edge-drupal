@@ -1371,6 +1371,14 @@ function apigee_edge_user_presave(UserInterface $account) {
           $logger->error("Unable to save @developer developer's developer id on user.", $context);
         }
       }
+      elseif ($previous->getEdgeErrorCode() === Developer::APIGEE_EDGE_ERROR_CODE_DEVELOPER_EMAIL_MISMATCH) {
+        // Apigee X and hybrid runtime versions 1.5.0 and 1.5.1 a call to change the developer's email address will not work so need
+        // to prevent user email update on drupal as well.
+        // @see https://github.com/apigee/apigee-client-php/issues/153
+        // @see https://github.com/apigee/apigee-edge-drupal/issues/587
+        \Drupal::messenger()->addMessage(t($previous->getMessage()), 'error');
+        throw new \Exception(t($previous->getMessage()));
+      }
     }
     else {
       $context += Error::decodeException($exception);
