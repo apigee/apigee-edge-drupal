@@ -1378,8 +1378,7 @@ function apigee_edge_user_presave(UserInterface $account) {
         // Drupal as well.
         // @see https://github.com/apigee/apigee-client-php/issues/153
         // @see https://github.com/apigee/apigee-edge-drupal/issues/587
-        \Drupal::messenger()->addMessage("Unable to update developer's profile.", 'error');
-        throw new DeveloperUpdateFailedException($account->getEmail(), $exception);
+        throw new DeveloperUpdateFailedException($account->getEmail(), "Developer @email profile cannot be updated. " . $previous->getMessage());
       }
     }
     else {

@@ -24,14 +24,14 @@ use Apigee\Edge\Exception\ApiException;
 /**
  * This exception is thrown when the developer profile update fails.
  */
-class DeveloperUpdateFailedException extends ApiException implements ApigeeEdgeExceptionInterface {
+final class DeveloperUpdateFailedException extends ApiException implements ApigeeEdgeExceptionInterface {
 
   /**
    * Email address of the developer.
    *
    * @var string
    */
-  protected $email;
+  private $email;
 
   /**
    * DeveloperUpdateFailedException constructor.
