@@ -31,6 +31,7 @@ use Drupal\apigee_edge\Element\StatusPropertyElement;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Entity\Developer;
+use Drupal\apigee_edge\Exception\DeveloperUpdateFailedException;
 use Drupal\apigee_edge\Exception\UserDeveloperConversionNoStorageFormatterFoundException;
 use Drupal\apigee_edge\Exception\UserDeveloperConversionUserFieldDoesNotExistException;
 use Drupal\apigee_edge\Form\DeveloperSettingsForm;
@@ -1370,6 +1371,14 @@ function apigee_edge_user_presave(UserInterface $account) {
         else {
           $logger->error("Unable to save @developer developer's developer id on user.", $context);
         }
+      }
+      elseif ($previous->getEdgeErrorCode() === Developer::APIGEE_HYBRID_ERROR_CODE_DEVELOPER_EMAIL_MISMATCH) {
+        // Apigee X and Hybrid runtime v1.5.0 and v1.5.1 a call to change the developer's
+        // email address will not work so need to prevent user email update on
+        // Drupal as well.
+        // @see https://github.com/apigee/apigee-client-php/issues/153
+        // @see https://github.com/apigee/apigee-edge-drupal/issues/587
+        throw new DeveloperUpdateFailedException($account->getEmail(), "Developer @email profile cannot be updated. " . $previous->getMessage());
       }
     }
     else {
