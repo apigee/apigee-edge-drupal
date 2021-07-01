@@ -66,6 +66,13 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
   const APIGEE_EDGE_ERROR_CODE_DEVELOPER_DOES_NOT_EXISTS = 'developer.service.DeveloperDoesNotExist';
 
   /**
+   * Resource name in the url doesnot match with the name in the request payload.
+   *
+   * @var string
+   */
+  const APIGEE_HYBRID_ERROR_CODE_DEVELOPER_EMAIL_MISMATCH = 'rest.interceptor.name_mismatch';
+
+  /**
    * The decorated SDK entity.
    *
    * @var \Apigee\Edge\Api\Management\Entity\Developer
