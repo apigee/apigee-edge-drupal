@@ -157,15 +157,15 @@ class ApigeeAuthKeyInput extends KeyInputBase {
     ];
     $form['endpoint'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Apigee Edge endpoint'),
-      '#description' => $this->t('Apigee Edge endpoint where the API calls are being sent. For a Private Cloud installation it is in the form: %form_a or %form_b.', [
+      '#title' => $this->t('Apigee endpoint'),
+      '#description' => $this->t('Apigee endpoint where the API calls are being sent. For a Private Cloud installation it is in the form: %form_a or %form_b.', [
         '%form_a' => 'http://ms_IP_or_DNS:8080/v1',
         '%form_b' => 'https://ms_IP_or_DNS:TLSport/v1',
       ]),
       '#default_value' => $values['endpoint'] ?? '',
       '#attributes' => ['autocomplete' => 'off'],
       '#states' => [
-        'visible' => $state_for_private,
+        'visible' => [$state_for_private, $state_for_hybrid + $state_for_not_gcp_hosted],
         'required' => $state_for_private,
       ],
     ];
@@ -286,7 +286,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         $input_values['auth_type'] = '';
         $input_values['username'] = '';
         $input_values['password'] = '';
-        $input_values['endpoint'] = '';
+        // $input_values['endpoint'] = '';
         $input_values['authorization_server_type'] = '';
         $input_values['authorization_server'] = '';
         $input_values['client_id'] = '';
