@@ -290,7 +290,7 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $web_assert->fieldValueEquals('Username', '');
     $web_assert->fieldValueEquals('Password', '');
     $web_assert->fieldValueEquals('Organization', '');
-    $web_assert->fieldValueEquals('Apigee Edge endpoint', '');
+    $web_assert->fieldValueEquals('Apigee endpoint', '');
 
     // Select basic auth.
     $page->selectFieldOption('key_input_settings[auth_type]', EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC);
@@ -383,11 +383,11 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     // Test invalid endpoint.
     $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE);
     $invalid_domain = "{$this->randomGenerator->word(16)}.example.com";
-    $page->fillField('Apigee Edge endpoint', "http://{$invalid_domain}/");
+    $page->fillField('Apigee endpoint', "http://{$invalid_domain}/");
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given endpoint (http://{$invalid_domain}/) is incorrect or something is wrong with the connection. Error message: ");
     $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"endpoint\": \"http:\/\/{$invalid_domain}\/\"");
-    $web_assert->fieldValueEquals('Apigee Edge endpoint', "http://{$invalid_domain}/");
-    $page->fillField('Apigee Edge endpoint', '');
+    $web_assert->fieldValueEquals('Apigee endpoint', "http://{$invalid_domain}/");
+    $page->fillField('Apigee endpoint', '');
     $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC);
 
     // Test another invalid endpoint scenario:
@@ -397,12 +397,12 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     if (static::$mock_api_client_ready && !$this->integration_enabled) {
       $invalid_endpoint = 'enterprise.apigee.com/platform/orgname';
       $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE);
-      $page->fillField('Apigee Edge endpoint', "https://{$invalid_endpoint}/");
+      $page->fillField('Apigee endpoint', "https://{$invalid_endpoint}/");
       $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given endpoint (https://{$invalid_endpoint}/) is incorrect or something is wrong with the connection. Error message: ");
       $invalid_endpoint_escaped = str_replace('/', '\/', $invalid_endpoint);
       $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"endpoint\": \"https:\/\/{$invalid_endpoint_escaped}\/\"");
-      $web_assert->fieldValueEquals('Apigee Edge endpoint', "https://{$invalid_endpoint}/");
-      $page->fillField('Apigee Edge endpoint', '');
+      $web_assert->fieldValueEquals('Apigee endpoint', "https://{$invalid_endpoint}/");
+      $page->fillField('Apigee endpoint', '');
       $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC);
     }
 

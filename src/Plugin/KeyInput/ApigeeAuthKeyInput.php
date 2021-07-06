@@ -286,7 +286,6 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         $input_values['auth_type'] = '';
         $input_values['username'] = '';
         $input_values['password'] = '';
-        // $input_values['endpoint'] = '';
         $input_values['authorization_server_type'] = '';
         $input_values['authorization_server'] = '';
         $input_values['client_id'] = '';
