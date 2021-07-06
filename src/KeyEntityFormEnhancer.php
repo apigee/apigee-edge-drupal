@@ -524,8 +524,8 @@ final class KeyEntityFormEnhancer {
           if ($curl_exception->getHandlerContext()['errno'] === CURLE_OPERATION_TIMEDOUT) {
             $suggestion = $this->t('@fail_text The connection timeout threshold (%connect_timeout) or the request timeout (%timeout) is too low or something is wrong with the connection.', [
               '@fail_text' => $fail_text,
-              '%connect_timeout' => $this->config('apigee_edge.client')->get('http_client_connect_timeout'),
-              '%timeout' => $this->config('apigee_edge.client')->get('http_client_timeout'),
+              '%connect_timeout' => $this->configFactory->get('apigee_edge.client')->get('http_client_connect_timeout'),
+              '%timeout' => $this->configFactory->get('apigee_edge.client')->get('http_client_timeout'),
             ]);
           }
           // The remote host was not resolved (authorization server).
@@ -577,8 +577,8 @@ final class KeyEntityFormEnhancer {
           if ($curl_exception->getHandlerContext()['errno'] === CURLE_OPERATION_TIMEDOUT) {
             $suggestion = $this->t('@fail_text The connection timeout threshold (%connect_timeout) or the request timeout (%timeout) is too low or something is wrong with the connection.', [
               '@fail_text' => $fail_text,
-              '%connect_timeout' => $this->config('apigee_edge.client')->get('http_client_connect_timeout'),
-              '%timeout' => $this->config('apigee_edge.client')->get('http_client_timeout'),
+              '%connect_timeout' => $this->configFactory->get('apigee_edge.client')->get('http_client_connect_timeout'),
+              '%timeout' => $this->configFactory->get('apigee_edge.client')->get('http_client_timeout'),
             ]);
           }
           // The remote host was not resolved (endpoint).
