@@ -38,6 +38,12 @@
             "services": {
                 "drush.services.yml": "^9"
             }
+        },
+        "patches": {
+            "apigee/apigee-client-php": {
+                "Fix for a bug": "https://patch-diff.githubusercontent.com/raw/apigee/apigee-client-php/pull/164.diff"
+            }
         }
+
     }
 }

@@ -21,13 +21,13 @@
 namespace Drupal\apigee_edge\Connector;
 
 use Apigee\Edge\ClientInterface;
-use Apigee\Edge\HttpClient\Plugin\Authentication\HybridOauth2;
+use Apigee\Edge\HttpClient\Plugin\Authentication\ApigeeOnGcpOauth2;
 use Apigee\Edge\HttpClient\Plugin\Authentication\NullAuthentication;
 
 /**
  * Decorator for Hybrid authentication plugin.
  */
-class HybridAuthentication extends HybridOauth2 {
+class HybridAuthentication extends ApigeeOnGcpOauth2 {
 
   /**
    * {@inheritdoc}
