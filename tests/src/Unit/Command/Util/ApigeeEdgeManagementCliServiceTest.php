@@ -153,7 +153,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
       ->shouldBeCalledTimes(1)
       ->willReturn('{ "name": "' . $this->org . '" }');
     $this->httpClient
-      ->get(Argument::exact(ApigeeClientInterface::DEFAULT_ENDPOINT . '/o/' . $this->org), Argument::type('array'))
+      ->get(Argument::exact(ApigeeClientInterface::EDGE_ENDPOINT . '/o/' . $this->org), Argument::type('array'))
       ->shouldBeCalledTimes(1)
       ->willReturn($response_org->reveal());
 
@@ -163,17 +163,17 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
     $response_role->getStatusCode()->willReturn(404);
     $exception = new ClientException('Forbidden', $request_role->reveal(), $response_role->reveal());
     $this->httpClient
-      ->get(Argument::exact(ApigeeClientInterface::DEFAULT_ENDPOINT . '/o/' . $this->org . '/userroles/' . ApigeeEdgeManagementCliServiceInterface::DEFAULT_ROLE_NAME), Argument::type('array'))
+      ->get(Argument::exact(ApigeeClientInterface::EDGE_ENDPOINT . '/o/' . $this->org . '/userroles/' . ApigeeEdgeManagementCliServiceInterface::DEFAULT_ROLE_NAME), Argument::type('array'))
       ->willThrow($exception);
 
     // The role should be created.
     $this->httpClient
-      ->post(Argument::exact(ApigeeClientInterface::DEFAULT_ENDPOINT . '/o/' . $this->org . '/userroles'), Argument::type('array'))
+      ->post(Argument::exact(ApigeeClientInterface::EDGE_ENDPOINT . '/o/' . $this->org . '/userroles'), Argument::type('array'))
       ->shouldBeCalledTimes(1);
 
     // The permissions should be set.
     $this->httpClient
-      ->post(Argument::exact(ApigeeClientInterface::DEFAULT_ENDPOINT . '/o/' . $this->org . '/userroles/' . ApigeeEdgeManagementCliServiceInterface::DEFAULT_ROLE_NAME . '/permissions'), Argument::type('array'))
+      ->post(Argument::exact(ApigeeClientInterface::EDGE_ENDPOINT . '/o/' . $this->org . '/userroles/' . ApigeeEdgeManagementCliServiceInterface::DEFAULT_ROLE_NAME . '/permissions'), Argument::type('array'))
       ->shouldBeCalledTimes(12);
 
     $apigee_edge_management_cli_service = new ApigeeEdgeManagementCliService($this->httpClient->reveal());

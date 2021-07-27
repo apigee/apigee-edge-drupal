@@ -21,7 +21,7 @@
 namespace Drupal\apigee_edge;
 
 use Apigee\Edge\Exception\ApiRequestException;
-use Apigee\Edge\Exception\HybridOauth2AuthenticationException;
+use Apigee\Edge\Exception\ApigeeOnGcpOauth2AuthenticationException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use Drupal\apigee_edge\Exception\AuthenticationKeyException;
@@ -475,7 +475,7 @@ final class KeyEntityFormEnhancer {
       ]);
     }
 
-    elseif ($exception instanceof HybridOauth2AuthenticationException) {
+    elseif ($exception instanceof ApigeeOnGcpOauth2AuthenticationException) {
       $fail_text = $this->t('Failed to connect to the authorization server.');
       // General error message.
       $suggestion = $this->t('@fail_text Check the debug information below for more details.', [
