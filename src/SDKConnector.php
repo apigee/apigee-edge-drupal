@@ -266,7 +266,7 @@ class SDKConnector implements SDKConnectorInterface {
         $m10_module_info = $m10_module_info['name'] . '/' . $m10_module_info['version'];
       }
 
-      self::$userAgentPrefix = $edge_module_info . '~' . $m10_module_info . '~Drupal/' . \Drupal::VERSION;
+      self::$userAgentPrefix = $edge_module_info . '; ' . $m10_module_info . '; Drupal/' . \Drupal::VERSION;
     }
 
     return self::$userAgentPrefix;
