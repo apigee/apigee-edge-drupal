@@ -250,23 +250,10 @@ class SDKConnector implements SDKConnectorInterface {
    */
   protected function userAgentPrefix(): string {
     if (NULL === self::$userAgentPrefix) {
+      $userAgent = \Drupal::moduleHandler()->invokeAll('user_agent_string_alter');
+      $userAgent = implode('; ', $userAgent);
 
-      $edge_module_info = $this->infoParser->parse($this->moduleHandler->getModule('apigee_edge')->getPathname());
-      if (!isset($edge_module_info['version'])) {
-        $edge_module_info['version'] = '8.x-1.x-dev';
-      }
-      $edge_module_info = $edge_module_info['name'] . '/' . $edge_module_info['version'];
-
-      $m10_module_info = '';
-      if ($this->moduleHandler->moduleExists('apigee_m10n')) {
-        $m10_module_info = $this->infoParser->parse($this->moduleHandler->getModule('apigee_m10n')->getPathname());
-        if (!isset($m10_module_info['version'])) {
-          $m10_module_info['version'] = '8.x-1.x-dev';
-        }
-        $m10_module_info = $m10_module_info['name'] . '/' . $m10_module_info['version'];
-      }
-
-      self::$userAgentPrefix = $edge_module_info . '; ' . $m10_module_info . '; Drupal/' . \Drupal::VERSION;
+      self::$userAgentPrefix = $userAgent . '; Drupal/' . \Drupal::VERSION;
     }
 
     return self::$userAgentPrefix;

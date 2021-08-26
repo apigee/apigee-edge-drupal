@@ -46,6 +46,8 @@ use Drupal\Core\Breadcrumb\Breadcrumb;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Extension\InfoParser;
+use Drupal\Core\Extension\InfoParserInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
@@ -267,6 +269,21 @@ function apigee_edge_system_breadcrumb_alter(Breadcrumb &$breadcrumb, RouteMatch
       ['user' => $route_match->getParameter('user')->id()]
     ));
   }
+}
+
+/**
+ * Implements hook_apigee_edge_user_agent_string_alter().
+ */
+function apigee_edge_user_agent_string_alter() {
+    $infoParser = new InfoParser();
+    $edge_module_info = $infoParser->parse(\Drupal::service('module_handler')->getModule('apigee_edge')->getPathname());
+
+    if (!isset($edge_module_info['version'])) {
+      $edge_module_info['version'] = '8.x-1.x-dev';
+    }
+    $edge_module_info = $edge_module_info['name'] . '/' . $edge_module_info['version'];
+
+    return $edge_module_info;
 }
 
 /**
