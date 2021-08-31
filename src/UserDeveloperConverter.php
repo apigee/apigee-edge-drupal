@@ -90,9 +90,12 @@ class UserDeveloperConverter implements UserDeveloperConverterInterface {
    */
   public function convertUser(UserInterface $user): UserToDeveloperConversionResult {
     $problems = [];
+    $developer = NULL;
     $successful_changes = 0;
     $email = isset($user->original) ? $user->original->getEmail() : $user->getEmail();
-    $developer = $this->entityTypeManager->getStorage('developer')->load($email);
+    if ($email) {
+      $developer = $this->entityTypeManager->getStorage('developer')->load($email);
+    }
     if (!$developer) {
       /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
       $developer = $this->entityTypeManager->getStorage('developer')->create([]);
