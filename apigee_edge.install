@@ -84,7 +84,8 @@ function apigee_edge_requirements($phase) {
       // Warning message in status report if using basic auth.
       try {
         if ($key && $key->getKeyType() instanceof EdgeKeyTypeInterface &&
-          $key->getKeyType()->getAuthenticationType($key) === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC) {
+          $key->getKeyType()->getAuthenticationType($key) === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC &&
+          $key->getKeyType()->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC) {
           $requirements['apigee_edge_http_basic_auth'] = [
             'title' => t('Apigee Edge'),
             'description' => t('Apigee Edge HTTP basic authentication will be deprecated. Please choose another authentication method. Visit the <a href=":url">Apigee Edge general settings</a> page to get more information.', [
