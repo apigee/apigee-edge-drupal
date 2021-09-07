@@ -62,7 +62,7 @@ class ApigeeEdgeManagementCliService implements ApigeeEdgeManagementCliServiceIn
 
     // Set default base URL if var is null or empty string.
     if (empty($base_url)) {
-      $base_url = ApigeeClientInterface::DEFAULT_ENDPOINT;
+      $base_url = ApigeeClientInterface::EDGE_ENDPOINT;
     }
     else {
       // Validate it is a valid URL.

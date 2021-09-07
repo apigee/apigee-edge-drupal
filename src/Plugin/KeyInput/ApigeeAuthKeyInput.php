@@ -46,7 +46,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $values = $this->getFormDefaultValues($form_state);
 
-    if (!empty($values['auth_type']) && $values['auth_type'] == EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC) {
+    if (!empty($values['auth_type']) && $values['auth_type'] == EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC  && !empty($values['instance_type']) && $values['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC) {
       $this->messenger()->addWarning($this->t('HTTP basic authentication will be deprecated. Please choose another authentication method.'));
     }
 
@@ -89,6 +89,9 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         'required' => [$state_for_public, $state_for_private],
       ],
     ];
+    if (!empty($values['instance_type']) && EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE === $values['instance_type']) {
+      $form['auth_type']['#options'][EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC] = $this->t('HTTP basic');
+    }
     $form['organization'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Organization'),
