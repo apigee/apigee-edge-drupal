@@ -1318,9 +1318,10 @@ function apigee_edge_user_presave(UserInterface $account) {
     $developer = $result->getDeveloper();
     $developer->save();
 
-    // Check if monetization service exist , if yes call 'default_billingType' hook.
-    $moduleHandler = \Drupal::service('module_handler');
-    if (\Drupal::hasService('apigee_m10n.monetization') && \Drupal::service('apigee_m10n.monetization')->isOrganizationApigeeXorHybrid()) {
+    // Check if apigee_m10n_add_credit module enabled and org is ApigeeX
+    // if yes call 'default_billingType' hook.
+    if (\Drupal::moduleHandler()->moduleExists('apigee_m10n_add_credit') && \Drupal::service('apigee_m10n.monetization')->isOrganizationApigeeXorHybrid()) {
+      $moduleHandler = \Drupal::service('module_handler');
       $moduleHandler->alter('default_billingType', $developer);
     }
   }
