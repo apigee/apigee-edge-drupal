@@ -37,5 +37,11 @@ function hook_apigee_edge_app_listing_page_title_alter(\Drupal\Core\StringTransl
 }
 
 /**
+ * Alters the user agent string.
+ */
+function hook_user_agent_string_alter() {
+}
+
+/**
  * @} End of "addtogroup hooks".
  */
