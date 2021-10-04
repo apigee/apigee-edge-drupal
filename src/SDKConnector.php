@@ -250,8 +250,16 @@ class SDKConnector implements SDKConnectorInterface {
    */
   protected function userAgentPrefix(): string {
     if (NULL === self::$userAgentPrefix) {
-      $userAgent = \Drupal::moduleHandler()->invokeAll('user_agent_string_alter');
-      $userAgent = implode('; ', $userAgent);
+      // apigee_edge module info.
+      $edge_module_info = $this->infoParser->parse($this->moduleHandler->getModule('apigee_edge')->getPathname());
+      if (!isset($edge_module_info['version'])) {
+        $edge_module_info['version'] = '2.x-dev';
+      }
+      $user_agent[] = $edge_module_info['name'] . '/' . $edge_module_info['version'];
+
+      // Get info from other modules.
+      $userAgent = \Drupal::moduleHandler()->invokeAll('apigee_edge_user_agent_string', [&$user_agent]);
+      $userAgent = !empty($userAgent) ? implode('; ', $userAgent) : implode('; ', $user_agent);
 
       self::$userAgentPrefix = $userAgent . '; Drupal/' . \Drupal::VERSION;
     }
