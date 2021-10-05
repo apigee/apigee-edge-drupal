@@ -37,16 +37,12 @@ function hook_apigee_edge_app_listing_page_title_alter(\Drupal\Core\StringTransl
 }
 
 /**
- * Build user agent string.
+ * Extends the default user-agent information sent by the API client.
  *
- * @param array $user_agent
- *   The user agent string data.
- *
- * @return string
- *   A string with module info.
+ * @param array $user_agent_parts
+ *   The user agent string.
  */
-function hook_apigee_edge_user_agent_string(array &$user_agent) {
-  return $user_agent;
+function hook_apigee_edge_user_agent_string_alter(array &$user_agent_parts): void {
 }
 
 /**
