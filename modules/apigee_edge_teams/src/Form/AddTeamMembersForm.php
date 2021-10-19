@@ -143,38 +143,6 @@ class AddTeamMembersForm extends TeamMembersFormBase {
   }
 
   /**
-   * Return an array of user UIDs given a list of emails.
-   *
-   * @param string $emails
-   *   The emails, comma separated.
-   *
-   * @return array
-   *   An array containing a first array of user accounts, and a second array of
-   *   emails that have no account on the system.
-   *
-   * @deprecated in apigee_edge_teams:8.x-1.12 and is removed from apigee_edge_teams:2.x. No replacement.
-   *
-   * @see https://github.com/apigee/apigee-edge-drupal/pull/474
-   */
-  protected function getAccountsFromEmails(string $emails): array {
-    $developerEmails = [];
-    $notFound = [];
-
-    $emails = array_map('trim', explode(',', $emails));
-
-    foreach ($emails as $email) {
-      if ($account = user_load_by_mail($email)) {
-        $developerEmails[$email] = $account;
-      }
-      else {
-        $notFound[] = $email;
-      }
-    }
-
-    return [$developerEmails, $notFound];
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
