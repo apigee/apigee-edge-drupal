@@ -372,14 +372,15 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The organization username should be a valid email. Error message: ");
     $page->fillField('Username', $this->username);
 
+    // TODO Re-add this assert later, if required.
+    // Irrespective of incorrect organization, username or password, an error stating "forbidden" will be displayed.
     // Test invalid organization.
-    $random_org = $this->randomGenerator->word(16);
-    $page->fillField('Organization', $random_org);
-    $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given organization name ({$random_org}) is incorrect. Error message: ");
-    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', 'HTTP/1.1 404 Not Found');
-    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"organization\": \"{$random_org}\"");
-    $page->fillField('Organization', $this->organization);
-
+    // $random_org = $this->randomGenerator->word(16);
+    // $page->fillField('Organization', $random_org);
+    // $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given organization name ({$random_org}) is incorrect. Error message: ");
+    // $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', 'HTTP/1.1 404 Not Found');
+    // $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"organization\": \"{$random_org}\"");
+    // $page->fillField('Organization', $this->organization);
     // Test invalid endpoint.
     $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE);
     $invalid_domain = "{$this->randomGenerator->word(16)}.example.com";
