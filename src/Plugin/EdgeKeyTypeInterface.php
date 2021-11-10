@@ -69,29 +69,6 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
   const EDGE_AUTH_TYPE_JWT = 'jwt';
 
   const EDGE_AUTH_TYPE_DEFAULT_GCE_SERVICE_ACCOUNT = 'gce-service-account';
-  /**
-   * The endpoint type for default.
-   *
-   * @var string
-   *
-   * @deprecated in apigee_edge:8.x-1.2 and is removed from
-   * apigee_edge:8.x-2.0. Check for endpoint type instead.
-   *
-   * @see EdgeKeyTypeInterface::getEndpointType().
-   */
-  const EDGE_ENDPOINT_TYPE_DEFAULT = 'default';
-
-  /**
-   * The endpoint type for custom.
-   *
-   * @var string
-   *
-   * @deprecated in apigee_edge:8.x-1.2 and is removed from
-   * apigee_edge:8.x-2.0. Check for endpoint type instead.
-   *
-   * @see EdgeKeyTypeInterface::getEndpointType().
-   */
-  const EDGE_ENDPOINT_TYPE_CUSTOM = 'custom';
 
   /**
    * Gets the authentication type.
@@ -125,24 +102,6 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
    *   The instance type, either `public`, `private` or `hybrid`.
    */
   public function getInstanceType(KeyInterface $key): string;
-
-  /**
-   * Gets the API endpoint type (default or custom).
-   *
-   * It returns "default" on a public cloud instance, otherwise "custom".
-   *
-   * @param \Drupal\key\KeyInterface $key
-   *   The key entity.
-   *
-   * @return string
-   *   The API endpoint type.
-   *
-   * @deprecated in apigee_edge:8.x-1.2 and is removed from
-   * apigee_edge:8.x-2.0. Use getInstanceType() instead.
-   *
-   * @see https://github.com/apigee/apigee-edge-drupal/issues/268
-   */
-  public function getEndpointType(KeyInterface $key): string;
 
   /**
    * Gets the API organization.
