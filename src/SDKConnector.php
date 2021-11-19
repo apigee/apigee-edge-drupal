@@ -250,13 +250,10 @@ class SDKConnector implements SDKConnectorInterface {
    */
   protected function userAgentPrefix(): string {
     if (NULL === self::$userAgentPrefix) {
-      $module_info = $this->infoParser->parse($this->moduleHandler->getModule('apigee_edge')->getPathname());
-      if (!isset($module_info['version'])) {
-        $module_info['version'] = '8.x-1.x-dev';
-      }
-      // TODO Change "DevPortal" to "Drupal module" later. It has been added for
-      // Apigee's convenience this way.
-      self::$userAgentPrefix = $module_info['name'] . ' DevPortal ' . $module_info['version'];
+      $userAgent = \Drupal::moduleHandler()->invokeAll('user_agent_string_alter');
+      $userAgent = implode('; ', $userAgent);
+
+      self::$userAgentPrefix = $userAgent . '; Drupal/' . \Drupal::VERSION;
     }
 
     return self::$userAgentPrefix;

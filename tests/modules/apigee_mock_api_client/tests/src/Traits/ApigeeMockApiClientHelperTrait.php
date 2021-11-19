@@ -23,6 +23,8 @@ use Apigee\Edge\Api\Management\Entity\App;
 use Apigee\Edge\Api\Management\Entity\Company;
 use Apigee\Edge\Api\Management\Entity\Organization;
 use Apigee\MockClient\Generator\ApigeeSdkEntitySource;
+use Apigee\Edge\Structure\AddonsConfig;
+use Apigee\Edge\Structure\MonetizationConfig;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
@@ -114,6 +116,34 @@ trait ApigeeMockApiClientHelperTrait {
     $organizationName = $organizationName ?: $this->sdkConnector->getOrganization();
 
     $organization = new Organization(['name' => $organizationName]);
+    $this->stack->on(
+      new RequestMatcher("/v1/organizations/{$organization->id()}$", NULL, [
+        'GET',
+      ]),
+      $this->mockResponseFactory->generateResponse(new ApigeeSdkEntitySource($organization))
+    );
+  }
+
+  /**
+   * Add matched org response for Apigee X.
+   *
+   * @param string $organizationName
+   *   The organization name, or empty to use the default from the credentials.
+   * @param string $runtimeType
+   *   The organization runtime Type.
+   */
+  protected function addApigeexOrganizationMatchedResponse($organizationName = '', $runtimeType = 'CLOUD') {
+    $organizationName = $organizationName ?: $this->sdkConnector->getOrganization();
+    $organization = new Organization([
+      'name'          => $organizationName,
+      'runtimeType'   => $runtimeType,
+      'addonsConfig'  => new AddonsConfig([
+        'monetizationConfig' => new MonetizationConfig([
+          'enabled' => 'true'
+        ])
+      ])
+    ]);
+
     $this->stack->on(
       new RequestMatcher("/v1/organizations/{$organization->id()}$", NULL, [
         'GET',

@@ -84,7 +84,8 @@ function apigee_edge_requirements($phase) {
       // Warning message in status report if using basic auth.
       try {
         if ($key && $key->getKeyType() instanceof EdgeKeyTypeInterface &&
-          $key->getKeyType()->getAuthenticationType($key) === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC) {
+          $key->getKeyType()->getAuthenticationType($key) === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC &&
+          $key->getKeyType()->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC) {
           $requirements['apigee_edge_http_basic_auth'] = [
             'title' => t('Apigee Edge'),
             'description' => t('Apigee Edge HTTP basic authentication will be deprecated. Please choose another authentication method. Visit the <a href=":url">Apigee Edge general settings</a> page to get more information.', [
@@ -334,4 +335,16 @@ function apigee_edge_update_8106() {
   $app_settings
     ->set('analytics_available_environments', [$app_settings->get('analytics_environment')])
     ->save(TRUE);
+}
+
+/**
+ * Remove OAuth token data file.
+ */
+function apigee_edge_update_8107() {
+  // Replaced unserialize with Json function.
+  // We do not want the serialize data so deleting the file.
+  $storage = \Drupal::service('apigee_edge.authentication.oauth_token_storage');
+  if ($storage instanceof OauthTokenFileStorage) {
+    $storage->removeTokenFile();
+  }
 }
