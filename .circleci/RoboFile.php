@@ -489,6 +489,8 @@ class RoboFile extends \Robo\Tasks
 
         // Add rules for testing apigee_edge_actions (only for D8).
         $config->require->{"drupal/rules"} = "3.0.0-alpha6";
+        // Add typed_data beta1 as dev version of typed_data is not compatible with D8.
+        $config->require->{"drupal/typed_data"} = "1.0.0-beta1 as 1.x-dev";
 
         // We require Drupal drush and console for some tests.
         $config->require->{"drupal/console"} = "~1.0";
