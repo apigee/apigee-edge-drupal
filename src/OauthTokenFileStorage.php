@@ -20,6 +20,7 @@
 namespace Drupal\apigee_edge;
 
 use Drupal\apigee_edge\Exception\OauthTokenStorageException;
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\File\FileSystemInterface;
@@ -171,7 +172,7 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
     try {
       $this->checkRequirements();
       // Write the obfuscated token data to a private file.
-      $this->fileSystem->saveData(base64_encode(serialize($data)), $this->tokenFilePath, FileSystemInterface::EXISTS_REPLACE);
+      $this->fileSystem->saveData(base64_encode(Json::encode($data)), $this->tokenFilePath, FileSystemInterface::EXISTS_REPLACE);
     }
     catch (FileException $e) {
       $this->logger->critical('Error saving OAuth token file.');
@@ -263,7 +264,7 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
     $data = [];
     // Get the token data from the file store.
     if (file_exists($this->tokenFilePath) && ($raw_data = file_get_contents($this->tokenFilePath))) {
-      $data = unserialize(base64_decode($raw_data));
+      $data = Json::decode(base64_decode($raw_data));
     }
     return is_array($data) ? $data : [];
   }
