@@ -51,7 +51,7 @@ class ErrorHandlerTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->prefix = $this->randomMachineName();

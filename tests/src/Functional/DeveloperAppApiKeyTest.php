@@ -84,7 +84,7 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->appCredentialController = \Drupal::service('apigee_edge.controller.developer_app_credential_factory');
@@ -145,7 +145,7 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     $this->stack->reset();
     try {
       if ($this->account) {

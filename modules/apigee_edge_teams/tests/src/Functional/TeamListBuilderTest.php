@@ -110,7 +110,7 @@ class TeamListBuilderTest extends ApigeeEdgeTeamsFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->addOrganizationMatchedResponse();
@@ -142,7 +142,7 @@ class TeamListBuilderTest extends ApigeeEdgeTeamsFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     try {
       $this->teamStorage->delete([$this->teamA, $this->teamB]);
       $this->account->delete();

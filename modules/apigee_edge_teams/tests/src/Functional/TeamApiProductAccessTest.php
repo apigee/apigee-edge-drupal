@@ -116,7 +116,7 @@ class TeamApiProductAccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->apiProductStorage = $this->container->get('entity_type.manager')->getStorage('api_product');
@@ -165,7 +165,7 @@ class TeamApiProductAccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     try {
       if ($this->team !== NULL) {
         $this->teamStorage->delete([$this->team]);

@@ -98,7 +98,7 @@ class ApigeeEdgeManagementCliServiceTest extends KernelTestBase implements Servi
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installSchema('system', ['sequences']);
@@ -133,7 +133,7 @@ class ApigeeEdgeManagementCliServiceTest extends KernelTestBase implements Servi
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     $url = $this->endpoint . '/o/' . $this->organization . '/userroles/' . self::TEST_ROLE_NAME;
     try {
       $this->stack->queueMockResponse('get_not_found');

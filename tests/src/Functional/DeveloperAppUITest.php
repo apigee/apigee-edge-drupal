@@ -48,7 +48,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     // We can not override self::$modules in this trait because that would
@@ -71,7 +71,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     try {
       if ($this->account !== NULL) {
         $this->account->delete();
