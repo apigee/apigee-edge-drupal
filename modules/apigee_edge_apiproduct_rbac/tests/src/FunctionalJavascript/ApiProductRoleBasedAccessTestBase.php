@@ -53,7 +53,7 @@ abstract class ApiProductRoleBasedAccessTestBase extends ApiProductAccessTest {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->users[self::USER_WITH_ADMIN_PERM] = $this->createAccount(['administer apigee edge']);

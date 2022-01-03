@@ -71,7 +71,7 @@ class TestFrameworkKernelTest extends KernelTestBase {
    *
    * @throws \Exception
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installConfig(['apigee_edge']);
@@ -268,7 +268,7 @@ class TestFrameworkKernelTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     if ($this->integration_enabled && !empty($this->developers)) {
       foreach ($this->developers as $developer) {
         $developer->delete();

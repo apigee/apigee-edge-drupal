@@ -80,7 +80,7 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->addOrganizationMatchedResponse();
@@ -104,7 +104,7 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     if (!$this->integration_enabled) {
       return;
     }

@@ -56,7 +56,7 @@ class MockIntegrationToggleKernelTest extends KernelTestBase {
    *
    * @throws \Exception
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installConfig(['apigee_edge']);

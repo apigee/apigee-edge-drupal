@@ -65,7 +65,7 @@ class CacheTest extends ApigeeEdgeFunctionalJavascriptTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     $this->account = $this->createAccount([
       'create developer_app',
@@ -92,7 +92,7 @@ class CacheTest extends ApigeeEdgeFunctionalJavascriptTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     if ($this->developer !== NULL) {
       try {
         $this->developer->delete();
