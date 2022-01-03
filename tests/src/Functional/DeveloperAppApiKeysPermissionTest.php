@@ -83,7 +83,7 @@ class DeveloperAppApiKeysPermissionTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->addOrganizationMatchedResponse();
@@ -128,7 +128,7 @@ class DeveloperAppApiKeysPermissionTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     $this->stack->reset();
     try {
       if ($this->account) {

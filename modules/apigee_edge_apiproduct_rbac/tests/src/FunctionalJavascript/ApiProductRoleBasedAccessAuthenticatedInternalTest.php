@@ -38,7 +38,7 @@ class ApiProductRoleBasedAccessAuthenticatedInternalTest extends ApiProductRoleB
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     $this->ridCombinations = $this->calculateRidCombinations([AccountInterface::ANONYMOUS_ROLE, AccountInterface::AUTHENTICATED_ROLE]);
   }

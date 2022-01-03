@@ -85,7 +85,7 @@ class ManageTeamAppsApiProductAccessTest extends ApigeeEdgeFunctionalJavascriptT
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     // Users with manage team apps permissions can see private API products.
     $this->config('apigee_edge_teams.team_settings')->set('non_member_team_apps_visible_api_products', ['private'])->save();
@@ -159,7 +159,7 @@ class ManageTeamAppsApiProductAccessTest extends ApigeeEdgeFunctionalJavascriptT
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     if ($this->account !== NULL) {
       try {
         $this->account->delete();

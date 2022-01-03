@@ -94,7 +94,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     // Allow visitor account creation with administrative approval.
     $user_settings = $this->config('user.settings');
@@ -106,7 +106,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     $this->stack->reset();
     try {
       if ($this->developer !== NULL) {

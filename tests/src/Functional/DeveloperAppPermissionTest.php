@@ -120,7 +120,7 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->entityType = $this->container->get('entity_type.manager')->getDefinition('developer_app');
@@ -165,7 +165,7 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     try {
       if ($this->otherAccount !== NULL) {
         $this->otherAccount->delete();

@@ -70,7 +70,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->account = $this->createAccount([
@@ -108,7 +108,7 @@ class DeveloperAppAnalyticsTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     try {
       if ($this->developer !== NULL) {
         $this->developer->delete();

@@ -84,7 +84,7 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     // Save valid credentials for later use.
     /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $test_key_type */
