@@ -49,7 +49,7 @@ class EdgeEntityRemoveMemberEventTest extends ApigeeEdgeActionsRulesKernelTestBa
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installEntitySchema('team_member_role');

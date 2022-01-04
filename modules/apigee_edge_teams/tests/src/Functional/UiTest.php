@@ -87,7 +87,7 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->teamStorage = $this->container->get('entity_type.manager')->getStorage('team');
@@ -109,7 +109,7 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     if ($this->account !== NULL) {
       try {
         $this->account->delete();

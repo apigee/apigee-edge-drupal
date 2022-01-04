@@ -67,7 +67,7 @@ class DeveloperAppCredentialEventTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installExtraModules(['apigee_edge_test_app_keys']);
@@ -94,7 +94,7 @@ class DeveloperAppCredentialEventTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     try {
       if ($this->developer !== NULL) {
         $this->developer->delete();

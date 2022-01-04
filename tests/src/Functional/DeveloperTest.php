@@ -94,7 +94,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     // Allow visitor account creation with administrative approval.
     $user_settings = $this->config('user.settings');
@@ -106,7 +106,7 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     $this->stack->reset();
     try {
       if ($this->developer !== NULL) {
@@ -378,7 +378,12 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $formdata = [
       'user_cancel_method' => 'user_cancel_block',
     ];
-    $this->drupalPostForm($account->toUrl('cancel-form')->toString(), $formdata, 'Cancel account');
+    if (floatval(\Drupal::VERSION) >= 9.3) {
+      $this->drupalPostForm($account->toUrl('cancel-form')->toString(), $formdata, 'Confirm');
+    }
+    else {
+      $this->drupalPostForm($account->toUrl('cancel-form')->toString(), $formdata, 'Cancel account');
+    }
 
     $this->developerCreatedByAdmin = $this->developerStorage->load($test_user['email']);
     $this->assertNotEmpty($this->developerCreatedByAdmin);
@@ -400,7 +405,12 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $formdata = [
       'user_cancel_method' => 'user_cancel_block_unpublish',
     ];
-    $this->drupalPostForm($account->toUrl('cancel-form')->toString(), $formdata, 'Cancel account');
+    if (floatval(\Drupal::VERSION) >= 9.3) {
+      $this->drupalPostForm($account->toUrl('cancel-form')->toString(), $formdata, 'Confirm');
+    }
+    else {
+      $this->drupalPostForm($account->toUrl('cancel-form')->toString(), $formdata, 'Cancel account');
+    }
 
     $this->developerCreatedByAdmin = $this->developerStorage->load($test_user['email']);
     $this->assertNotEmpty($this->developerCreatedByAdmin);
@@ -410,7 +420,13 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $formdata = [
       'user_cancel_method' => 'user_cancel_delete',
     ];
-    $this->drupalPostForm($account->toUrl('cancel-form')->toString(), $formdata, 'Cancel account');
+
+    if (floatval(\Drupal::VERSION) >= 9.3) {
+      $this->drupalPostForm($account->toUrl('cancel-form')->toString(), $formdata, 'Confirm');
+    }
+    else {
+      $this->drupalPostForm($account->toUrl('cancel-form')->toString(), $formdata, 'Cancel account');
+    }
 
     // Ensure that entity static cache is also invalidated in this scope
     // too.

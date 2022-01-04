@@ -59,7 +59,7 @@ namespace Drupal\Tests\apigee_edge\Unit\Commands {
     /**
      * {@inheritdoc}
      */
-    protected function setUp() {
+    protected function setUp(): void {
       parent::setUp();
       $this->cliService = $this->prophesize(CliServiceInterface::class);
       $this->apigeeEdgeCommands = new ApigeeEdgeCommands($this->cliService->reveal());

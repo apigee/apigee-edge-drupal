@@ -96,7 +96,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalJavascriptTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->roleStorage = $this->container->get('entity_type.manager')->getStorage('user_role');
@@ -130,7 +130,7 @@ class ApiProductAccessTest extends ApigeeEdgeFunctionalJavascriptTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     /** @var \Drupal\Core\Entity\EntityInterface[] $entities */
     $entities = array_merge($this->users, $this->apiProducts);
     foreach ($entities as $entity) {

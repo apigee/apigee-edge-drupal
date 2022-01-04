@@ -96,7 +96,7 @@ namespace Drupal\Tests\apigee_edge\Unit\Command {
     /**
      * {@inheritdoc}
      */
-    protected function setUp() {
+    protected function setUp(): void {
       if (!class_exists('Drupal\Console\Core\Command\Command')) {
         $this->markTestSkipped('Skipping because Drupal Console is not installed.');
       }

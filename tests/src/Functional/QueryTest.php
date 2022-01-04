@@ -88,7 +88,7 @@ class QueryTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     $this->developerStorage = $this->container->get('entity_type.manager')->getStorage('developer');
     $this->developerAppStorage = $this->container->get('entity_type.manager')->getStorage('developer_app');
@@ -106,7 +106,7 @@ class QueryTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     foreach ($this->edgeDevelopers as $developer) {
       try {
         if ($developer !== NULL) {

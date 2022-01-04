@@ -61,7 +61,7 @@ class UserCreateTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installSchema('system', ['sequences']);
@@ -74,7 +74,7 @@ class UserCreateTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     $this->stack->reset();
     try {
       if ($this->account) {
