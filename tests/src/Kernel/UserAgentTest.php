@@ -49,11 +49,8 @@ class UserAgentTest extends KernelTestBase {
    * {@inheritdoc}
    */
   protected static $modules = [
-    'user',
+    'file',
     'system',
-    'apigee_edge',
-    'key',
-    'apigee_mock_api_client',
   ];
 
   /**
@@ -61,6 +58,10 @@ class UserAgentTest extends KernelTestBase {
    */
   protected function setUp() {
     parent::setUp();
+
+    // Install the user module.
+    \Drupal::service('module_installer')->install(['user', 'apigee_edge']);
+    \Drupal::service('module_installer')->install(['user', 'apigee_m10n']);
 
     // apigee_edge module info.
     $infoParser = new InfoParser();
@@ -76,9 +77,6 @@ class UserAgentTest extends KernelTestBase {
    * @throws \Exception
    */
   public function testUserAgent() {
-    // Installing the monetization module.
-    \Drupal::service('module_installer')->install(['apigee_m10n']);
-
     $user_agent_parts[] = $this->edgeModuleInfo['name'] . '/' . $this->edgeModuleInfo['version'];
     $user_agent_parts[] = 'Drupal/' . \Drupal::VERSION;
 
@@ -94,6 +92,9 @@ class UserAgentTest extends KernelTestBase {
    * @throws \Exception
    */
   public function testUserAgentWithoutMonetization() {
+    // Uninstalling the monetization module.
+    \Drupal::service('module_installer')->uninstall(['apigee_m10n']);
+
     $user_agent_parts[] = $this->edgeModuleInfo['name'] . '/' . $this->edgeModuleInfo['version'];
     $user_agent_parts[] = 'Drupal/' . \Drupal::VERSION;
 
