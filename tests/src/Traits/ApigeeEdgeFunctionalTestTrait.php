@@ -244,7 +244,7 @@ trait ApigeeEdgeFunctionalTestTrait {
    *   Name of the link.
    */
   protected function clickLinkProperly(string $name) {
-    list($path, $query) = $this->findLink($name);
+    [$path, $query] = $this->findLink($name);
     $this->drupalGet(static::fixUrl($path), [
       'query' => $query,
     ]);
