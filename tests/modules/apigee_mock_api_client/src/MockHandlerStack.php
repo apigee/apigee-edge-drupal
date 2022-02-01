@@ -103,13 +103,11 @@ class MockHandlerStack extends MockHandler {
       $id = !is_array($item) ? $item : $index;
       // Body text can have elements replaced in it for certain values.
       $context = is_array($item) ? $item : [];
-      $context['org_name'] = isset($context['org_name']) ? $context['org_name'] : $org_name;
+      $context['org_name'] = $context['org_name'] ?? $org_name;
 
       // Add the default headers if headers aren't defined in the response
       // catalog.
-      $headers = isset($this->responses[$id]['headers']) ? $this->responses[$id]['headers'] : [
-        'content-type' => 'application/json;charset=utf-8',
-      ];
+      $headers = $this->responses[$id]['headers'] ?? ['content-type' => 'application/json;charset=utf-8'];
       // Set the default status code.
       $status_code = !empty($this->responses[$id]['status_code']) ? $this->responses[$id]['status_code'] : 200;
       $status_code = !empty($context['status_code']) ? $context['status_code'] : $status_code;

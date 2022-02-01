@@ -236,7 +236,7 @@ class TeamAppRouteProvider extends AppRouteProvider {
       // Default access check must be replaced.
       // @see \Drupal\apigee_edge\Access\AppAccessCheckByAppName
       $requirements = $route->getRequirements();
-      list(, $operation) = explode('.', $requirements['_entity_access']);
+      [, $operation] = explode('.', $requirements['_entity_access']);
       $requirements['_app_access_check_by_app_name'] = $operation;
       unset($requirements['_entity_access']);
       $route->setRequirements($requirements);

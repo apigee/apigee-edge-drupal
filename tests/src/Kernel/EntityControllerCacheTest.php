@@ -180,7 +180,7 @@ class EntityControllerCacheTest extends KernelTestBase {
         'developerId' => $developer->getDeveloperId(),
       ]);
     }
-    list($developer_app_1, $developer_app_2) = array_values($developer_apps);
+    [$developer_app_1, $developer_app_2] = array_values($developer_apps);
 
     $cache_by_email = $developer_app_cache_factory->getAppCache($developer->getEmail());
     $cache_by_id = $developer_app_cache_factory->getAppCache($developer->getDeveloperId());

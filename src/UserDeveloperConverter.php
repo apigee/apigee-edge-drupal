@@ -109,7 +109,7 @@ class UserDeveloperConverter implements UserDeveloperConverterInterface {
 
       // Default value for firstname lastname if null.
       if ($user->get($base_field)->value === NULL && ($base_field === "first_name" || $base_field === "last_name")) {
-        $base_field_value = $developer->{$getter}() !== NULL ? $developer->{$getter}() : ucfirst($developer_prop);
+        $base_field_value = $developer->{$getter}() ?? ucfirst($developer_prop);
         $user->set($base_field, $base_field_value);
       }
 
