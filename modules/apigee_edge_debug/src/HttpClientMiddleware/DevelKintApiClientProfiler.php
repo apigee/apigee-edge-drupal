@@ -141,7 +141,7 @@ final class DevelKintApiClientProfiler {
             }
             $next($stats);
             $rest_call['Time Elapsed'] = $formatter->formatStats($stats);
-            $rest_call['Severity'] = isset($level) ? $level : '';
+            $rest_call['Severity'] = $level ?? '';
             ksm($rest_call);
           };
         }
