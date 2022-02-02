@@ -60,7 +60,7 @@ class DeveloperEmailUniqueValidator extends ConstraintValidator implements Conta
    * {@inheritdoc}
    */
   public function validate($items, Constraint $constraint) {
-    if (in_array($items->value, static::$whitelist)) {
+    if (empty($items->value) || in_array($items->value, static::$whitelist)) {
       return;
     }
     /** @var \Drupal\Core\Entity\EntityInterface $entity */
