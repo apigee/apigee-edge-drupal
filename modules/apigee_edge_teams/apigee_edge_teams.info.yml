@@ -8,6 +8,7 @@ core_version_requirement: ^8 || ^9
 dependencies:
   - apigee_edge:apigee_edge
   - drupal:views
+  - drupal:datetime
 
 configure: apigee_edge_teams.settings.team
 
