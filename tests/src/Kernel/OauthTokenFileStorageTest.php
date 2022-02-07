@@ -20,6 +20,7 @@
 namespace Drupal\Tests\apigee_edge\Kernel;
 
 use Drupal\apigee_edge\Exception\OauthTokenStorageException;
+use Drupal\Component\Serialization\Json;
 use Drupal\apigee_edge\OauthTokenFileStorage;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\File\FileSystemInterface;
@@ -154,7 +155,7 @@ class OauthTokenFileStorageTest extends KernelTestBase {
     $storage->saveToken($this->testTokenData);
 
     // Load raw token data.
-    $stored_token = unserialize(base64_decode(file_get_contents($this->tokenFileUri())));
+    $stored_token = Json::decode(base64_decode(file_get_contents($this->tokenFileUri())));
 
     // Test token values.
     $this->assertSame($this->testTokenData['access_token'], $stored_token['access_token']);
@@ -176,12 +177,12 @@ class OauthTokenFileStorageTest extends KernelTestBase {
     $access_token = $storage->getAccessToken();
 
     // Load raw token data.
-    $stored_token = unserialize(base64_decode(file_get_contents($this->tokenFileUri())));
+    $stored_token = Json::decode(base64_decode(file_get_contents($this->tokenFileUri())));
 
     // Create a new access token and write it to file.
     $stored_token['access_token'] = mb_strtolower($this->randomMachineName(32));
     \Drupal::service('file_system')->saveData(
-      base64_encode(serialize($stored_token)),
+      base64_encode(Json::encode($stored_token)),
       $this->tokenFileUri(), FileSystemInterface::EXISTS_REPLACE);
 
     // Make sure the cached version is still returned.

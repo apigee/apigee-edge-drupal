@@ -106,7 +106,7 @@ class TeamInactiveStatusSubscriber implements EventSubscriberInterface {
         '#theme' => 'status_messages',
         '#message_list' => [
           'error' => [
-            $this->t('The %team_name @team is inactive. This operation is now allowed.', [
+            $this->t('The %team_name @team is inactive. This operation is not allowed.', [
               '%team_name' => $team->label(),
               '@team' => $team->getEntityType()->getSingularLabel(),
             ]),

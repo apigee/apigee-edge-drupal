@@ -49,7 +49,7 @@ class EmailTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     try {
       if ($this->developer !== NULL) {
 

@@ -487,15 +487,15 @@ class RoboFile extends \Robo\Tasks
         $config->require->{"drupal/core-recommended"} = '^8.9@stable';
         $config->require->{"drupal/core-dev"} = '^8.9';
 
-        // Add rules for testing apigee_edge_actions (only for D8).
-        $config->require->{"drupal/rules"} = "3.0.0-alpha6";
-
         // We require Drupal drush and console for some tests.
         $config->require->{"drupal/console"} = "~1.0";
 
       default:
         break;
     }
+
+    // Add rules for testing apigee_edge_actions.
+    $config->require->{"drupal/rules"} = "3.0.0-alpha7";
 
     file_put_contents('composer.json', json_encode($config, JSON_PRETTY_PRINT));
   }

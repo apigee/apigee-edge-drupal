@@ -36,7 +36,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalJavascriptTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     $this->products[] = $this->createProduct();
     $this->account = $this->createAccount(static::$permissions);
@@ -46,7 +46,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalJavascriptTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     try {
       if ($this->account !== NULL) {
         $this->account->delete();

@@ -8,7 +8,7 @@ then
 fi
 
 # Install dependencies and configure phpcs
-vendor/bin/phpcs --config-set installed_paths vendor/drupal/coder/coder_sniffer
+vendor/bin/phpcs --config-set installed_paths vendor/drupal/coder/coder_sniffer,vendor/sirbrillig/phpcs-variable-analysis,vendor/slevomat/coding-standard
 
 vendor/bin/phpmd modules/$1/src html cleancode,codesize,design,unusedcode --ignore-violations-on-exit --reportfile artifacts/phpmd/index.html
 vendor/bin/phpmetrics --extensions=php,inc,module --report-html=artifacts/phpmetrics --git modules/$1

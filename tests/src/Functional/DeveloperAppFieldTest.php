@@ -73,7 +73,7 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->drupalPlaceBlock('system_breadcrumb_block');
@@ -102,7 +102,7 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     try {
       if ($this->account !== NULL) {
         $this->account->delete();
@@ -386,6 +386,11 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
        * {@inheritdoc}
        */
       public function restore(EntityInterface $entity) {}
+
+      /**
+       * {@inheritdoc}
+       */
+      public function getEntityClass(?string $bundle = NULL): string {}
 
     });
 

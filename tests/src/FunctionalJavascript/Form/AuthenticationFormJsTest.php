@@ -84,7 +84,7 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     // Save valid credentials for later use.
     /** @var \Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface $test_key_type */
@@ -372,8 +372,8 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The organization username should be a valid email. Error message: ");
     $page->fillField('Username', $this->username);
 
-    // TODO Re-add this assert later, if required.
-    // Irrespective of incorrect organization, username or password, an error stating "forbidden" will be displayed.
+    // TODO Re-add this assert later, if requires.
+    // Irrespective of incorrect organization, username or password it will say Forbidden.
     // Test invalid organization.
     // $random_org = $this->randomGenerator->word(16);
     // $page->fillField('Organization', $random_org);
