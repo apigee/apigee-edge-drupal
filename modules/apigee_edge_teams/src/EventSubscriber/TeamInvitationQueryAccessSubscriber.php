@@ -66,7 +66,14 @@ class TeamInvitationQueryAccessSubscriber implements EventSubscriberInterface {
     // We query team from storage instead of check for a null team field because
     // the team might have been deleted on the remote server.
     $team_ids = array_keys($this->entityTypeManager->getStorage('team')->loadMultiple());
-    $event->getConditions()->addCondition('team', $team_ids);
+    if ($team_ids) {
+      $event->getConditions()->addCondition('team', $team_ids);
+    }
+    else {
+      // When no teams could be loaded from the storage, no invitation should be
+      // returned at all.
+      $event->getConditions()->alwaysFalse();
+    }
   }
 
 }
