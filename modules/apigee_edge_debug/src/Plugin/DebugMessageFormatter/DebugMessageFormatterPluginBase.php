@@ -155,7 +155,7 @@ abstract class DebugMessageFormatterPluginBase extends PluginBase implements Con
         }
       }
     }
-    return $this->getFormatter()->formatResponseForRequest($response);
+    return $this->getFormatter()->formatResponseForRequest($response, $request);
   }
 
   /**
