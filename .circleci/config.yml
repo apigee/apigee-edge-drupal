@@ -198,6 +198,8 @@ code_coverage: &code_coverage
 d9_check: &d9_check
   <<: *defaults
   steps:
+    - run: rm -rf /var/www/html/core
+
     - attach_workspace:
         at: /var/www/html
 
