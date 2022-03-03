@@ -253,9 +253,9 @@ workflows:
       - run-code-sniffer:
           requires:
             - update-dependencies-9
-#      - run-d9-check:
-#          requires:
-#            - update-dependencies-9
+      - run-d9-check:
+          requires:
+            - update-dependencies-9
       - run-unit-kernel-tests:
           name: run-unit-kernel-tests-<< matrix.core-version >>
           matrix:
