@@ -206,7 +206,8 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
     ]);
 
     // Team members have access to every team app and membership operations.
-    $this->drupalPostForm(Url::fromRoute('apigee_edge_teams.settings.team.permissions'), [
+    $this->drupalGet(Url::fromRoute('apigee_edge_teams.settings.team.permissions'));
+    $this->submitForm([
       'member[team_manage_members]' => TRUE,
       'member[team_app_create]' => TRUE,
       'member[team_app_update]' => TRUE,

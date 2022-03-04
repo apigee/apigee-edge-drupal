@@ -479,11 +479,11 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
    *   Whether to expect success or a validation error.
    */
   protected function submitBaseFieldConfigForm(bool $description_required = FALSE, bool $callback_url_required = FALSE, bool $expect_success = TRUE) {
-    $this->drupalPostForm(Url::fromRoute('entity.developer_app.field_ui_fields'), [
+    $this->drupalGet(Url::fromRoute('entity.developer_app.field_ui_fields'));
+    $this->submitForm([
       'table[description][required]' => $description_required,
       'table[callbackUrl][required]' => $callback_url_required,
     ], 'Save');
-
     if ($expect_success) {
       $this->assertSession()->pageTextContains('Field settings have been saved successfully.');
     }
@@ -506,7 +506,8 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
     foreach ($region_overrides as $field => $region) {
       $edit["fields[{$field}][region]"] = $region;
     }
-    $this->drupalPostForm(Url::fromRoute('entity.entity_form_display.developer_app.default'), $edit, 'Save');
+    $this->drupalGet(Url::fromRoute('entity.entity_form_display.developer_app.default'));
+    $this->submitForm($edit, 'Save');
 
     if ($expect_success) {
       $this->assertSession()->pageTextContains('Your settings have been saved.');
@@ -528,7 +529,8 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
     foreach ($region_overrides as $field => $region) {
       $edit["fields[{$field}][region]"] = $region;
     }
-    $this->drupalPostForm(Url::fromRoute('entity.entity_view_display.developer_app.default'), $edit, 'Save');
+    $this->drupalGet(Url::fromRoute('entity.entity_view_display.developer_app.default'));
+    $this->submitForm($edit, 'Save');
 
     $this->assertSession()->pageTextContains('Your settings have been saved.');
   }

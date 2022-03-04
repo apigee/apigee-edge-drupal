@@ -177,7 +177,8 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
 
     // Try to register with incorrect API credentials.
     $this->invalidateKey();
-    $this->drupalPostForm(Url::fromRoute('user.register'), $formdata, 'Create new account');
+    $this->drupalGet(Url::fromRoute('user.register'));
+    $this->submitForm($formdata, 'Create new account');
     $this->assertSession()->pageTextContains(self::USER_REGISTRATION_UNAVAILABLE);
 
     // Try to register with correct API credentials.
@@ -205,7 +206,8 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $this->stack->queueMockResponse('get_not_found');
     $this->queueDeveloperResponse($account, 201);
 
-    $this->drupalPostForm(Url::fromRoute('user.register'), $formdata, 'Create new account');
+    $this->drupalGet(Url::fromRoute('user.register'));
+    $this->submitForm($formdata, 'Create new account');
 
     /** @var \Drupal\user\Entity\User $account */
     $account = user_load_by_mail($test_user['email']);
@@ -226,7 +228,8 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $this->assertEqual($this->developerRegistered->getAttributeValue('IS_MOCK_CLIENT'), !$this->integration_enabled);
 
     $this->drupalLogin($this->rootUser);
-    $this->drupalPostForm(Url::fromRoute('entity.user.edit_form', ['user' => $account->id()]), ['status' => '1'], 'Save');
+    $this->drupalGet(Url::fromRoute('entity.user.edit_form', ['user' => $account->id()]));
+    $this->submitForm(['status' => '1'], 'Save');
 
     // Ensure status change was saved.
     $this->entityTypeManager->getStorage('user')->resetCache();
@@ -275,7 +278,8 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
 
     // Try to register with incorrect API credentials.
     $this->invalidateKey();
-    $this->drupalPostForm(Url::fromRoute('user.admin_create'), $formdata, 'Create new account');
+    $this->drupalGet(Url::fromRoute('user.admin_create'));
+    $this->submitForm($formdata, 'Create new account');
     $this->assertSession()->pageTextContains(self::USER_REGISTRATION_UNAVAILABLE);
 
     // Try to register with correct API credentials.
@@ -297,7 +301,8 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $this->stack->queueMockResponse('get_not_found');
     $this->queueDeveloperResponse($account, 201);
 
-    $this->drupalPostForm(Url::fromRoute('user.admin_create'), $formdata, 'Create new account');
+    $this->drupalGet(Url::fromRoute('user.admin_create'));
+    $this->submitForm($formdata, 'Create new account');
 
     /** @var \Drupal\user\Entity\User $account */
     $account = user_load_by_mail($test_user['email']);
@@ -325,7 +330,8 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     $formdata['last_name[0][value]'] = $test_user['last_name'];
     $formdata['status'] = $test_user['status'];
 
-    $this->drupalPostForm(Url::fromRoute('entity.user.edit_form', ['user' => $account->id()]), $formdata, 'Save');
+    $this->drupalGet(Url::fromRoute('entity.user.edit_form', ['user' => $account->id()]));
+    $this->submitForm($formdata, 'Save');
 
     // Flush user entity cache to ensure the updated user gets loaded.
     // (Especially in apigee_edge_developer_app_storage_load().)
@@ -373,16 +379,19 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
       'status' => $test_user['status'],
     ];
 
-    $this->drupalPostForm(Url::fromRoute('entity.user.edit_form', ['user' => $account->id()]), $formdata, 'Save');
+    $this->drupalGet(Url::fromRoute('entity.user.edit_form', ['user' => $account->id()]));
+    $this->submitForm($formdata, 'Save');
 
     $formdata = [
       'user_cancel_method' => 'user_cancel_block',
     ];
     if (floatval(\Drupal::VERSION) >= 9.3) {
-      $this->drupalPostForm($account->toUrl('cancel-form')->toString(), $formdata, 'Confirm');
+      $this->drupalGet($account->toUrl('cancel-form')->toString());
+      $this->submitForm($formdata, 'Confirm');
     }
     else {
-      $this->drupalPostForm($account->toUrl('cancel-form')->toString(), $formdata, 'Cancel account');
+      $this->drupalGet($account->toUrl('cancel-form')->toString());
+      $this->submitForm($formdata, 'Cancel account');
     }
 
     $this->developerCreatedByAdmin = $this->developerStorage->load($test_user['email']);
@@ -400,16 +409,19 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
       'pass[pass2]' => $test_user['password'],
       'status' => $test_user['status'],
     ];
-    $this->drupalPostForm(Url::fromRoute('entity.user.edit_form', ['user' => $account->id()]), $formdata, 'Save');
+    $this->drupalGet(Url::fromRoute('entity.user.edit_form', ['user' => $account->id()]));
+    $this->submitForm($formdata, 'Save');
 
     $formdata = [
       'user_cancel_method' => 'user_cancel_block_unpublish',
     ];
     if (floatval(\Drupal::VERSION) >= 9.3) {
-      $this->drupalPostForm($account->toUrl('cancel-form')->toString(), $formdata, 'Confirm');
+      $this->drupalGet($account->toUrl('cancel-form')->toString());
+      $this->submitForm($formdata, 'Confirm');
     }
     else {
-      $this->drupalPostForm($account->toUrl('cancel-form')->toString(), $formdata, 'Cancel account');
+      $this->drupalGet($account->toUrl('cancel-form')->toString());
+      $this->submitForm($formdata, 'Cancel account');
     }
 
     $this->developerCreatedByAdmin = $this->developerStorage->load($test_user['email']);
@@ -422,10 +434,12 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
     ];
 
     if (floatval(\Drupal::VERSION) >= 9.3) {
-      $this->drupalPostForm($account->toUrl('cancel-form')->toString(), $formdata, 'Confirm');
+      $this->drupalGet($account->toUrl('cancel-form')->toString());
+      $this->submitForm($formdata, 'Confirm');
     }
     else {
-      $this->drupalPostForm($account->toUrl('cancel-form')->toString(), $formdata, 'Cancel account');
+      $this->drupalGet($account->toUrl('cancel-form')->toString());
+      $this->submitForm($formdata, 'Cancel account');
     }
 
     // Ensure that entity static cache is also invalidated in this scope

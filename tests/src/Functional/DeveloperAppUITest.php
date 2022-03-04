@@ -252,7 +252,8 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   public function testCreateAppWithModifiedCredentialLifetime() {
     $url = Url::fromRoute('apigee_edge.settings.developer_app.credentials');
     // Change credential lifetime to 10 days from 0.
-    $this->drupalPostForm($url, [
+    $this->drupalGet($url);
+    $this->submitForm([
       'credential_lifetime' => 10,
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('The configuration options have been saved.');
@@ -270,7 +271,8 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->pageTextMatches('/1 week (2|3) days hence/');
 
     // Change credential lifetime to 0 (Never) days from 10.
-    $this->drupalPostForm($url, [
+    $this->drupalGet($url);
+    $this->submitForm([
       'credential_lifetime' => 0,
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('The configuration options have been saved.');
@@ -331,7 +333,10 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
    * Creates an app with a single product and then removes the product.
    */
   public function testAppCrudSingleProductChange() {
-    $this->submitAdminForm(['display_as_select' => TRUE, 'multiple_products' => FALSE]);
+    $this->submitAdminForm([
+      'display_as_select' => TRUE,
+      'multiple_products' => FALSE
+    ]);
     $this->products[] = $this->createProduct();
 
     $this->assertAppCrud(
@@ -493,7 +498,10 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $product2 = $this->createProduct();
     $this->products[] = $product1;
     $this->products[] = $product2;
-    $app = $this->createDeveloperApp(['name' => $this->randomMachineName(), 'displayName' => $this->randomString()], $this->account, [$product1->id(), $product2->id()]);
+    $app = $this->createDeveloperApp([
+      'name' => $this->randomMachineName(),
+      'displayName' => $this->randomString()
+    ], $this->account, [$product1->id(), $product2->id()]);
     $app_edit_url = $app->toUrl('edit-form-for-developer');
 
     $this->drupalGet($app_settings_url);
@@ -538,11 +546,18 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalGet($app_edit_url);
     // Also test field description.
     $this->assertSession()->pageTextContains($description);
-    $this->drupalPostForm($app_edit_url, [], 'Save');
+    $this->drupalGet($app_edit_url);
+    $this->submitForm([], 'Save');
     $this->assertSession()->pageTextContains("The URL {$callback_url} is not valid.");
-    $this->drupalPostForm($app_edit_url, ['callbackUrl[0][value]' => 'http://example.com'], 'Save');
+    $this->drupalGet($app_edit_url);
+    $this->submitForm([
+      'callbackUrl[0][value]' => 'http://example.com'
+    ], 'Save');
     $this->assertSession()->pageTextContains("Callback URL field is not in the right format.");
-    $this->drupalPostForm($app_edit_url, ['callbackUrl[0][value]' => 'https://example.com'], 'Save');
+    $this->drupalGet($app_edit_url);
+    $this->submitForm([
+      'callbackUrl[0][value]' => 'https://example.com'
+    ], 'Save');
     $this->assertSession()->pageTextContains('App has been successfully updated.');
     $this->assertSession()->pageTextContains('https://example.com');
   }
@@ -582,8 +597,14 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalGet($app_edit_form_for_developer_url);
     $this->assertSession()->fieldValueEquals('callbackUrl[0][value]', $callback_url);
 
-    $this->drupalPostForm(Url::fromRoute('entity.entity_view_display.developer_app.default'), ['fields[callbackUrl][region]' => 'hidden'], 'Save');
-    $this->drupalPostForm(Url::fromRoute('entity.entity_form_display.developer_app.default'), ['fields[callbackUrl][region]' => 'hidden'], 'Save');
+    $this->drupalGet(Url::fromRoute('entity.entity_view_display.developer_app.default'));
+    $this->submitForm([
+      'fields[callbackUrl][region]' => 'hidden'
+    ], 'Save');
+    $this->drupalGet(Url::fromRoute('entity.entity_form_display.developer_app.default'));
+    $this->submitForm([
+      'fields[callbackUrl][region]' => 'hidden'
+    ], 'Save');
 
     $this->drupalGet($app_view_url);
     $this->assertSession()->pageTextNotContains($callback_url_warning_msg);

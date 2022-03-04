@@ -102,14 +102,16 @@ class EmailTest extends ApigeeEdgeFunctionalTestBase {
     // Stack developer response.
     $this->queueDeveloperResponseFromDeveloper($this->developer);
 
-    $this->drupalPostForm(Url::fromRoute('entity.user.edit_form', ['user' => $account->id()]), [
+    $this->drupalGet(Url::fromRoute('entity.user.edit_form', ['user' => $account->id()]));
+    $this->submitForm([
       'mail' => $this->developer->getEmail(),
       'current_pass' => $account->passRaw,
     ], 'Save');
     $this->assertSession()->pageTextContains('This email address already exists in our system. You can register a new account if you would like to use it on the Developer Portal.');
 
     $this->drupalLogin($this->rootUser);
-    $this->drupalPostForm(Url::fromRoute('entity.user.edit_form', ['user' => $account->id()]), [
+    $this->drupalGet(Url::fromRoute('entity.user.edit_form', ['user' => $account->id()]));
+    $this->submitForm([
       'mail' => $this->developer->getEmail(),
     ], 'Save');
     $this->assertSession()->pageTextContains('This email address already belongs to a developer on Apigee Edge.');
@@ -131,25 +133,29 @@ class EmailTest extends ApigeeEdgeFunctionalTestBase {
     // Display only an error message to the user.
     $this->drupalLogin($this->rootUser);
     $error_message = trim($this->getRandomGenerator()->paragraphs(1));
-    $this->drupalPostForm($developer_settings_path, [
+    $this->drupalGet($developer_settings_path);
+    $this->submitForm([
       'verification_action' => DeveloperSettingsForm::VERIFICATION_ACTION_DISPLAY_ERROR_ONLY,
       'display_only_error_message_content[value]' => $error_message,
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('The configuration options have been saved.');
     $this->drupalLogout();
 
-    $this->drupalPostForm($user_register_path, $edit, 'Create new account');
+    $this->drupalGet($user_register_path);
+    $this->submitForm($edit, 'Create new account');
     $this->assertSession()->pageTextContains($error_message);
 
     // Display an error message and send a verification email to the user.
     $this->drupalLogin($this->rootUser);
-    $this->drupalPostForm($developer_settings_path, [
+    $this->drupalGet($developer_settings_path);
+    $this->submitForm([
       'verification_action' => DeveloperSettingsForm::VERIFICATION_ACTION_VERIFY_EMAIL,
     ], 'Save configuration');
     $this->assertSession()->pageTextContains('The configuration options have been saved.');
     $this->drupalLogout();
 
-    $this->drupalPostForm($user_register_path, $edit, 'Create new account');
+    $this->drupalGet($user_register_path);
+    $this->submitForm($edit, 'Create new account');
     $this->assertSession()->pageTextContains("This email address already exists in our system. We have sent you an verification email to {$this->developer->getEmail()}.");
 
     $this->assertMail('id', 'apigee_edge_developer_email_verification');
@@ -160,7 +166,8 @@ class EmailTest extends ApigeeEdgeFunctionalTestBase {
     preg_match('%https?://[^/]+/user/register\?[^/\s]+%', $mail['body'], $matches);
     $link = $matches[0];
 
-    $this->drupalPostForm($link, $edit, 'Create new account');
+    $this->drupalGet($link);
+    $this->submitForm($edit, 'Create new account');
     $this->assertSession()->pageTextContains('A welcome message with further instructions has been sent to your email address.');
   }
 
