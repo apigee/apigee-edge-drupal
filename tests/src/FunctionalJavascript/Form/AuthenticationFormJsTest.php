@@ -329,7 +329,7 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $web_assert->elementNotExists('css', 'details[data-drupal-selector="edit-debug"]');
     // Make sure the token file has not been left behind.
     $token_file_path = $this->container->get('file_system')->realpath(OauthTokenFileStorage::DEFAULT_DIRECTORY . '/oauth.dat');
-    $this->assertFileNotExists($token_file_path);
+    $this->assertFileDoesNotExist($token_file_path);
 
     // Switch back to basic auth.
     $this->cssSelect('select[name="key_input_settings[auth_type]"]')[0]->setValue('basic');

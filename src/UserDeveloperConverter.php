@@ -180,7 +180,7 @@ class UserDeveloperConverter implements UserDeveloperConverterInterface {
     if (!$user) {
       // Initialize new user object with minimum data.
       $user = $user_storage->create([
-        'pass' => user_password(),
+        'pass' => \Drupal::service('password_generator')->generate(),
       ]);
       // Suppress invalid email validation errors.
       DeveloperEmailUniqueValidator::whitelist($developer->id());
