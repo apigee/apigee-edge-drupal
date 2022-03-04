@@ -39,7 +39,7 @@ defaults: &defaults
   parameters:
     core-version:
       type: integer
-      default: 8
+      default: 9
 
 # YAML does not support merging of lists. That means we can't have a default
 # 'steps' configuration, though we can have defaults for individual step
@@ -198,6 +198,8 @@ code_coverage: &code_coverage
 d9_check: &d9_check
   <<: *defaults
   steps:
+    - run: rm -rf /var/www/html/core
+
     - attach_workspace:
         at: /var/www/html
 
@@ -249,32 +251,32 @@ workflows:
           name: update-dependencies-<< matrix.core-version >>
           matrix:
             parameters:
-              core-version: [8, 9]
+              core-version: [9]
       - run-code-sniffer:
           requires:
-            - update-dependencies-8
+            - update-dependencies-9
       - run-d9-check:
           requires:
-            - update-dependencies-8
+            - update-dependencies-9
       - run-unit-kernel-tests:
           name: run-unit-kernel-tests-<< matrix.core-version >>
           matrix:
             parameters:
-              core-version: [8, 9]
+              core-version: [9]
           requires:
             - update-dependencies-<< matrix.core-version >>
       - run-functional-tests:
           name: run-functional-tests-<< matrix.core-version >>
           matrix:
             parameters:
-              core-version: [8, 9]
+              core-version: [9]
           requires:
             - update-dependencies-<< matrix.core-version >>
       - run-functional-js-tests:
           name: run-functional-js-tests-<< matrix.core-version >>
           matrix:
             parameters:
-              core-version: [8, 9]
+              core-version: [9]
           requires:
             - update-dependencies-<< matrix.core-version >>
 #      - run-code-coverage:
