@@ -113,7 +113,7 @@ function apigee_edge_teams_update_8702() {
   ];
   /** @var \Drupal\Core\Config\StorageInterface $config_storage */
   $config_storage = \Drupal::service('config.storage');
-  $module_path = drupal_get_path('module', 'apigee_edge_teams');
+  $module_path = \Drupal::service('extension.list.module')->getPath('apigee_edge_teams');
   $source = new FileStorage("$module_path/config/install");
   $new_team_settings = $source->read('apigee_edge_teams.team_settings');
   $team_settings = $config_storage->read('apigee_edge_teams.team_settings');

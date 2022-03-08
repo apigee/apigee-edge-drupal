@@ -107,7 +107,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->elementContains('css', 'title', $type->getPluralLabel());
 
     // Assert link to "Apps" is changed.
-    $this->assertLink($type->getPluralLabel());
+    $this->assertSession()->linkExists($type->getPluralLabel());
   }
 
   /**
