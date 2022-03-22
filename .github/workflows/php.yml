@@ -2,7 +2,7 @@ name: test_and_lint
 
 on:
   push:
-    branches: [ * ]
+    branches: [ 2.x, github-action ]
   pull_request:
     branches: [ 2.x ]
 
