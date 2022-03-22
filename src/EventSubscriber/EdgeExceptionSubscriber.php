@@ -118,11 +118,11 @@ final class EdgeExceptionSubscriber implements EventSubscriberInterface {
   /**
    * Displays the Edge connection error page.
    *
-   * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent|\Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent $event
+   * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The exception event.
    */
-  public function onException($event) {
-    $exception = ($event instanceof ExceptionEvent) ? $event->getThrowable() : $event->getException();
+  public function onException(ExceptionEvent $event) {
+    $exception = $event->getThrowable();
     if ($exception instanceof ApiException || $exception->getPrevious() instanceof ApiException) {
       $context = Error::decodeException($exception);
       $this->logger->critical('@message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
