@@ -20,7 +20,7 @@
 
 namespace Drupal\apigee_edge\Event;
 
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * Triggered when an Apigee Edge entity's field config UI gets built.

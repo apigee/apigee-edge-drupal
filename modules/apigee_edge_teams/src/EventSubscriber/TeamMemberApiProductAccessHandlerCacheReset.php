@@ -26,7 +26,7 @@ use Drupal\apigee_edge\Event\AppCredentialDeleteApiProductEvent;
 use Drupal\apigee_edge\Event\AppCredentialDeleteEvent;
 use Drupal\apigee_edge\Event\AppCredentialGenerateEvent;
 use Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandlerInterface;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -67,7 +67,7 @@ final class TeamMemberApiProductAccessHandlerCacheReset implements EventSubscrib
   /**
    * Clears API product entity access cache.
    *
-   * @param \Symfony\Component\EventDispatcher\Event $event
+   * @param \Symfony\Contracts\EventDispatcher\Event $event
    *   Event that triggered this subscriber.
    */
   public function clearApiProductCache(Event $event): void {

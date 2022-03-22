@@ -28,7 +28,7 @@ use Drupal\Component\Plugin\Exception\PluginException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Session\AccountInterface;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -121,7 +121,7 @@ class AppCredentialEventSubscriber implements EventSubscriberInterface {
    *
    * @param string $rules_event_name
    *   The name of the rules event.
-   * @param \Symfony\Component\EventDispatcher\Event $event
+   * @param \Symfony\Contracts\EventDispatcher\Event $event
    *   The api credential event.
    * @param array $api_products
    *   An array of api products.
