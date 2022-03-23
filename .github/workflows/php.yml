@@ -67,19 +67,22 @@ jobs:
         if [ "${{ github.event_name }}" == 'pull_request' ]; then
           echo ::set-output name=VERSION_ALIAS::dev-"${{ github.sha }}"
         else
-          echo ::set-output name=VERSION_ALIAS::2.x-dev
+          echo ::set-output name=VERSION_ALIAS::dev-2.x
         fi
       id: branch_alias
     - name: "require apigee_edge"
       run: |
         cd ~/drupal
-        COMPOSER_MEMORY_LIMIT=-1 composer require drupal/apigee_edge "${{ steps.branch_alias.outputs.VERSION_ALIAS }} as 2.1.99"  --with-all-dependencies
+        composer config repositories.forked-apigee_edge vcs https://github.com/apigee/apigee-edge-drupal
+        composer require drupal/apigee_edge:${{ steps.branch_alias.outputs.VERSION_ALIAS }} --with-all-dependencies
 
-    - name: "Install dependencies"
-      run: "composer update --no-progress --prefer-dist"
+#        COMPOSER_MEMORY_LIMIT=-1 composer require drupal/apigee_edge "${{ steps.branch_alias.outputs.VERSION_ALIAS }} as 2.1.99"  --with-all-dependencies
+
+#     - name: "Install dependencies"
+#       run: "composer update --no-progress --prefer-dist"
 
     - name: "PHPCS"
-      run: "php vendor/bin/phpcs src"
+      run: "php vendor/bin/phpcs --standard=modules/contrib/apigee_edge/phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors"
     - name: "PHPStan"
       run: "php vendor/bin/phpstan analyze"
     - name: "PHPUnit"
