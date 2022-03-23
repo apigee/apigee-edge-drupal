@@ -52,7 +52,7 @@ jobs:
       with:
         version: ${{ matrix.drupal }}
         path: ~/drupal
-    - name: "Allow plugins"
+    - name: "Allow plugins and dev dependencies"
       run: |
         cd ~/drupal
         composer config --no-plugins allow-plugins.composer/installers true
@@ -60,9 +60,8 @@ jobs:
         composer config --no-plugins allow-plugins.drupal/core-project-message true
         composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
         composer config minimum-stability dev
-        
-    - name: "Add phpspec/prophecy-phpunit"
-      run: "composer require phpspec/prophecy-phpunit:^2 --dev --no-update"
+        composer require squizlabs/php_codesniffer --dev --no-update
+        composer require phpstan/phpstan --dev --no-update
 
     - name: "set the version alias for self"
       run: |
