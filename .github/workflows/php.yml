@@ -82,9 +82,13 @@ jobs:
 #       run: "composer update --no-progress --prefer-dist"
 
     - name: "PHPCS"
-      run: "php bin/phpcs --standard=modules/contrib/apigee_edge/phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors"
-    - name: "PHPStan"
-      run: "php vendor/bin/phpstan analyze"
+      run: |
+        cd ~/drupal
+        vendor/bin/phpcs --standard=modules/contrib/apigee_edge/phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors
+#     - name: "PHPStan"
+#       run: "php vendor/bin/phpstan analyze"
     - name: "PHPUnit"
-      run: "php vendor/bin/phpunit --debug"
+      run: |
+        cd ~/drupal
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge
 
