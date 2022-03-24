@@ -1,4 +1,8 @@
 name: test_and_lint
+env:
+  MYSQL_ROOT_PASSWORD: drupal
+  SIMPLETEST_DB: "mysql://drupal:drupal@mariadb:3306/drupal"
+  SIMPLETEST_BASE_URL: "http://127.0.0.1:8080"
 
 on:
   push:
@@ -19,6 +23,17 @@ jobs:
           - "7.4"
         drupal-core:
           - "9.2.x"
+
+    services:
+      mariadb:
+        image: mariadb:10.5
+        env:
+          MYSQL_USER: drupal
+          MYSQL_PASSWORD: drupal
+          MYSQL_DATABASE: drupal
+          MYSQL_ROOT_PASSWORD: drupal
+        ports:
+          - 3306:3306
 #         include:
 #           - php-version: "8.0"
 #             drupal: "9.3.x"
@@ -76,18 +91,20 @@ jobs:
         composer config minimum-stability dev
         composer require wikimedia/composer-merge-plugin
         composer config --json extra.merge-plugin.require '["modules/contrib/apigee_edge/composer.json"]'
+        composer require drupal/rules:3.0.0-alpha7
         composer update --with-all-dependencies
 
     - name: "PHPCS"
       run: |
-        cd drupal/
+        cd drupal
         cp modules/contrib/apigee_edge/phpcs.xml.dist .
         vendor/bin/phpcs --standard=./phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors
 #     - name: "PHPStan"
 #       run: "php vendor/bin/phpstan analyze"
     - name: "PHPUnit"
       run: |
-        cd ~/drupal
+        cd drupal
+        composer require --dev phpspec/prophecy-phpunit:^2
         cp modules/contrib/apigee_edge/phpunit.core.xml.dist .
-        vendor/bin/phpunit -c core --verbose --color --group apigee_edge
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge_kernel
 
