@@ -84,7 +84,7 @@ jobs:
     - name: "PHPCS"
       run: |
         cd ~/drupal
-        vendor/bin/phpcs --standard=modules/contrib/apigee_edge/phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors
+        vendor/bin/phpcs --standard=web/modules/contrib/apigee_edge/phpcs.xml.dist web/modules/contrib/apigee_edge -p -s -n --colors
 #     - name: "PHPStan"
 #       run: "php vendor/bin/phpstan analyze"
     - name: "PHPUnit"
