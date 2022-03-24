@@ -81,7 +81,7 @@ jobs:
     - name: apigee_edge dependencies
       run: |
         cd ~/drupal
-        cp $GITHUB_WORKSPACE web/modules/contrib/apigee_edge
+        cp -r $GITHUB_WORKSPACE web/modules/contrib/apigee_edge
         composer config --json extra.merge-plugin.require '["web/modules/contrib/apigee_edge/composer.json"]'
         composer update -W
 #        composer config repositories.0 path $GITHUB_WORKSPACE
