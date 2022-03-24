@@ -17,27 +17,27 @@ jobs:
         experimental: [false]
         php-version:
           - "7.4"
-        drupal:
-          - "^9.0"
+        drupal-core:
+          - "9.2.x"
 #         include:
 #           - php-version: "8.0"
-#             drupal: "^9.0"
+#             drupal: "9.3.x"
 #             experimental: true
 #           - php-version: "8.1"
 #             drupal: "10.0.x-dev"
 #             experimental: true
 
     steps:
-    - uses: actions/checkout@v2
+#    - uses: actions/checkout@v2
 
-    - name: Cache Composer packages
-      id: composer-cache
-      uses: actions/cache@v2
-      with:
-        path: vendor
-        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-php-${{ matrix.php-version }}
+#    - name: Cache Composer packages
+#      id: composer-cache
+#      uses: actions/cache@v2
+#      with:
+#        path: vendor
+#        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+#        restore-keys: |
+#          ${{ runner.os }}-php-${{ matrix.php-version }}
 
     - name: "Install PHP"
       uses: "shivammathur/setup-php@v2"
@@ -47,14 +47,25 @@ jobs:
         tools: composer:v2
         extensions: dom, curl, libxml, mbstring, zip, pdo, mysql, pdo_mysql, bcmath, gd, exif, iconv, opcache, imagick
 
-    - name: Setup Drupal
-      uses: bluehorndigital/setup-drupal@v1.0.3
+    - name: Checkout Drupal core
+      run: |
+        git clone --depth 1 --branch ${{ matrix.drupal-core }} http://git.drupal.org/project/drupal.git/ drupal
+        mkdir -p drupal/modules/contrib/apigee_edge
+ 
+    - name: Checkout apigee_edge module
+      uses: actions/checkout@v3.0.0
       with:
-        version: ${{ matrix.drupal }}
-        path: ~/drupal
+        path: drupal/modules/contrib/apigee_edge
+
+#    - name: Setup Drupal
+#      uses: bluehorndigital/setup-drupal@v1.0.3
+#      with:
+#        version: ${{ matrix.drupal }}
+#        path: ~/drupal
+
     - name: "Allow plugins and dev dependencies"
       run: |
-        cd ~/drupal
+        cd drupal
         composer config --no-plugins allow-plugins.composer/installers true
         composer config --no-plugins allow-plugins.drupal/core-composer-scaffold true
         composer config --no-plugins allow-plugins.drupal/core-project-message true
@@ -63,48 +74,19 @@ jobs:
         composer config minimum-stability dev
         composer require squizlabs/php_codesniffer --dev --no-update
         composer require wikimedia/composer-merge-plugin --no-update
-        
-#    - name: "set the version alias for self"
-#      run: |
-#        if [ "${{ github.event_name }}" == 'pull_request' ]; then
-#          echo ::set-output name=VERSION_ALIAS::dev-"${{ github.sha }}"
-#        else
-#          echo ::set-output name=VERSION_ALIAS::2.x-dev
-#        fi
-#      id: branch_alias
-
-    - name: Checkout apigee_edge module
-      uses: actions/checkout@v3.0.0
-
-
-    - name: apigee_edge dependencies
-      run: |
-        cd ~/drupal/web/modules
-        mkdir contrib
-        cd contrib
-        cp -r $GITHUB_WORKSPACE .
-        mv apigee-edge-drupal apigee_edge
-        cd ~/drupal
-        composer config --json extra.merge-plugin.require '["web/modules/contrib/apigee_edge/composer.json"]'
-        composer update -W
-#        composer config repositories.0 path $GITHUB_WORKSPACE
-#        # composer config repositories.forked-apigee_edge vcs https://github.com/apigee/apigee-edge-drupal
-#        # composer require drupal/apigee_edge "${{ steps.branch_alias.outputs.VERSION_ALIAS }} as 2.1.99" --with-all-dependencies
-#        composer require drupal/apigee_edge --with-all-dependencies
-
-#        COMPOSER_MEMORY_LIMIT=-1 composer require drupal/apigee_edge "${{ steps.branch_alias.outputs.VERSION_ALIAS }} as 2.1.99"  --with-all-dependencies
-#     - name: "Install dependencies"
-#       run: "composer update --no-progress --prefer-dist"
+        composer config --json extra.merge-plugin.require '["modules/contrib/apigee_edge/composer.json"]'
+        composer update --with-all-dependencies
 
     - name: "PHPCS"
       run: |
-        cd ~/drupal/
-        cp web/modules/contrib/apigee_edge/phpcs.xml.dist .
-        vendor/bin/phpcs --standard=./phpcs.xml.dist web/modules/contrib/apigee_edge -p -s -n --colors
+        cd drupal/
+        cp modules/contrib/apigee_edge/phpcs.xml.dist .
+        vendor/bin/phpcs --standard=./phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors
 #     - name: "PHPStan"
 #       run: "php vendor/bin/phpstan analyze"
     - name: "PHPUnit"
       run: |
         cd ~/drupal
+        cp modules/contrib/apigee_edge/phpunit.core.xml.dist .
         vendor/bin/phpunit -c core --verbose --color --group apigee_edge
 
