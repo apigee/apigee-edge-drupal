@@ -85,6 +85,7 @@ jobs:
         cd contrib
         cp -r $GITHUB_WORKSPACE .
         mv apigee-edge-drupal apigee_edge
+        cd ~/drupal
         composer config --json extra.merge-plugin.require '["web/modules/contrib/apigee_edge/composer.json"]'
         composer update -W
 #        composer config repositories.0 path $GITHUB_WORKSPACE
