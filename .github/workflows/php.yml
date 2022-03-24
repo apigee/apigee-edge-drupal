@@ -74,8 +74,10 @@ jobs:
     - name: "require apigee_edge"
       run: |
         cd ~/drupal
-        composer config repositories.forked-apigee_edge vcs https://github.com/apigee/apigee-edge-drupal
-        composer require drupal/apigee_edge "${{ steps.branch_alias.outputs.VERSION_ALIAS }} as 2.1.99" --with-all-dependencies
+        composer config repositories.0 path $GITHUB_WORKSPACE
+        # composer config repositories.forked-apigee_edge vcs https://github.com/apigee/apigee-edge-drupal
+        # composer require drupal/apigee_edge "${{ steps.branch_alias.outputs.VERSION_ALIAS }} as 2.1.99" --with-all-dependencies
+        composer require drupal/apigee_edge --with-all-dependencies
 
 #        COMPOSER_MEMORY_LIMIT=-1 composer require drupal/apigee_edge "${{ steps.branch_alias.outputs.VERSION_ALIAS }} as 2.1.99"  --with-all-dependencies
 #     - name: "Install dependencies"
