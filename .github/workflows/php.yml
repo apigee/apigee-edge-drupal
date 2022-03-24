@@ -74,7 +74,7 @@ jobs:
         composer config --no-plugins allow-plugins.composer/package-versions-deprecated true
         composer config --no-plugins allow-plugins.cweagans/composer-patches true
         composer config minimum-stability dev
-        composer require wikimedia/composer-merge-plugin --no-update
+        composer require wikimedia/composer-merge-plugin
         composer config --json extra.merge-plugin.require '["modules/contrib/apigee_edge/composer.json"]'
         composer update --with-all-dependencies
 
