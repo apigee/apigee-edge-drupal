@@ -75,14 +75,14 @@ jobs:
 #      id: branch_alias
 
     - name: Checkout apigee_edge module
-      uses: actions/checkout@v2
-      with:
-        path: ~/drupal/web/modules/contrib/apigee_edge
+      uses: actions/checkout@v3.0.0
+
 
     - name: apigee_edge dependencies
       run: |
         cd ~/drupal
-        composer config --json extra.merge-plugin.include '["web/modules/contrib/apigee_edge/composer.json"]'
+        cp $GITHUB_WORKSPACE web/modules/contrib/apigee_edge
+        composer config --json extra.merge-plugin.require '["web/modules/contrib/apigee_edge/composer.json"]'
         composer update -W
 #        composer config repositories.0 path $GITHUB_WORKSPACE
 #        # composer config repositories.forked-apigee_edge vcs https://github.com/apigee/apigee-edge-drupal
