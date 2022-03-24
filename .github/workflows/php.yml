@@ -80,8 +80,11 @@ jobs:
 
     - name: apigee_edge dependencies
       run: |
-        cd ~/drupal
-        cp -r $GITHUB_WORKSPACE web/modules/contrib/apigee_edge
+        cd ~/drupal/web/modules
+        mkdir contrib
+        cd contrib
+        cp -r $GITHUB_WORKSPACE .
+        mv apigee-edge-drupal apigee_edge
         composer config --json extra.merge-plugin.require '["web/modules/contrib/apigee_edge/composer.json"]'
         composer update -W
 #        composer config repositories.0 path $GITHUB_WORKSPACE
@@ -95,7 +98,7 @@ jobs:
 
     - name: "PHPCS"
       run: |
-        cd ~/drupal
+        cd ~/drupal/
         cp web/modules/contrib/apigee_edge/phpcs.xml.dist .
         vendor/bin/phpcs --standard=./phpcs.xml.dist web/modules/contrib/apigee_edge -p -s -n --colors
 #     - name: "PHPStan"
