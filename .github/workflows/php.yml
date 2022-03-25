@@ -1,9 +1,10 @@
 name: test_and_lint
 env:
-  MYSQL_ROOT_PASSWORD: drupal
+  #  MYSQL_ROOT_PASSWORD: drupal
   SIMPLETEST_DB: "sqlite://localhost/test.sqlite"
   SIMPLETEST_DB2: "mysql://drupal:drupal@localhost:3306/drupal"
   SIMPLETEST_BASE_URL: "http://127.0.0.1:80"
+  
   APIGEE_EDGE_AUTH_TYPE: "${{ secrets.APIGEE_EDGE_AUTH_TYPE }}"
   APIGEE_EDGE_ORGANIZATION: ${{ secrets.APIGEE_EDGE_ORGANIZATION }}
   APIGEE_EDGE_USERNAME: ${{ secrets.APIGEE_EDGE_USERNAME }}
@@ -33,16 +34,16 @@ jobs:
         drupal-core:
           - "9.2.x"
 
-    services:
-      mariadb:
-        image: mariadb:10.5
-        env:
-          MYSQL_USER: drupal
-          MYSQL_PASSWORD: drupal
-          MYSQL_DATABASE: drupal
-          MYSQL_ROOT_PASSWORD: drupal
-        ports:
-          - 3306:3306
+#    services:
+#      mariadb:
+#        image: mariadb:10.5
+#        env:
+#          MYSQL_USER: drupal
+#          MYSQL_PASSWORD: drupal
+#          MYSQL_DATABASE: drupal
+#          MYSQL_ROOT_PASSWORD: drupal
+#        ports:
+#          - 3306:3306
 #         include:
 #           - php-version: "8.0"
 #             drupal: "9.3.x"
@@ -114,6 +115,6 @@ jobs:
       run: |
         cd drupal
         composer require --dev phpspec/prophecy-phpunit:^2
-        cp modules/contrib/apigee_edge/phpunit.core.xml.dist core/phpunit.core.xml
+        #        cp modules/contrib/apigee_edge/phpunit.core.xml.dist core/phpunit.core.xml
         vendor/bin/phpunit -c core --verbose --color --group apigee_edge_kernel
 
