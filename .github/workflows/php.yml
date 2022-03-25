@@ -94,5 +94,5 @@ jobs:
       run: |
         cd drupal
         composer require --dev phpspec/prophecy-phpunit:^2
-        vendor/bin/phpunit -c core --verbose --color --group apigee_edge_kernel
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge_kernel --testsuite kernel
 
