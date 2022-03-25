@@ -4,7 +4,7 @@ env:
   SIMPLETEST_DB: "sqlite://localhost/test.sqlite"
   SIMPLETEST_DB2: "mysql://drupal:drupal@localhost:3306/drupal"
   SIMPLETEST_BASE_URL: "http://127.0.0.1:80"
-  APIGEE_EDGE_AUTH_TYPE: ${{ secrets.APIGEE_EDGE_AUTH_TYPE }}
+  APIGEE_EDGE_AUTH_TYPE: "${{ secrets.APIGEE_EDGE_AUTH_TYPE }}"
   APIGEE_EDGE_ORGANIZATION: ${{ secrets.APIGEE_EDGE_ORGANIZATION }}
   APIGEE_EDGE_USERNAME: ${{ secrets.APIGEE_EDGE_USERNAME }}
   APIGEE_EDGE_PASSWORD: ${{ secrets.APIGEE_EDGE_PASSWORD }}
