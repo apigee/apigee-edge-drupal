@@ -1,8 +1,8 @@
 name: test_and_lint
 env:
   MYSQL_ROOT_PASSWORD: drupal
-  SIMPLETEST_DB: "mysql://drupal:drupal@mariadb:3306/drupal"
-  SIMPLETEST_BASE_URL: "http://127.0.0.1:8080"
+  SIMPLETEST_DB: "mysql://drupal:drupal@localhost:3306/drupal"
+  SIMPLETEST_BASE_URL: "http://127.0.0.1:80"
 
 on:
   push:
