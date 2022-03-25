@@ -106,6 +106,6 @@ jobs:
       run: |
         cd drupal
         composer require --dev phpspec/prophecy-phpunit:^2
-        cp modules/contrib/apigee_edge/phpunit.core.xml.dist .
+        cp modules/contrib/apigee_edge/phpunit.core.xml.dist core/phpunit.core.xml
         vendor/bin/phpunit -c core --verbose --color --group apigee_edge_kernel
 
