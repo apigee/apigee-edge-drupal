@@ -1,9 +1,7 @@
 name: test_and_lint
 env:
-  #  MYSQL_ROOT_PASSWORD: drupal
   SIMPLETEST_DB: "sqlite://localhost/test.sqlite"
-  SIMPLETEST_BASE_URL: "http://localhost"
-  
+  SIMPLETEST_BASE_URL: "http://localhost"  
   APIGEE_EDGE_AUTH_TYPE: ${{ secrets.APIGEE_EDGE_AUTH_TYPE }}
   APIGEE_EDGE_ORGANIZATION: ${{ secrets.APIGEE_EDGE_ORGANIZATION }}
   APIGEE_EDGE_USERNAME: ${{ secrets.APIGEE_EDGE_USERNAME }}
@@ -32,7 +30,6 @@ jobs:
           - "7.4"
         drupal-core:
           - "9.1.x"
-
 #         include:
 #           - php-version: "8.0"
 #             drupal: "9.3.x"
@@ -61,12 +58,6 @@ jobs:
       with:
         path: drupal/modules/contrib/apigee_edge
 
-#    - name: Setup Drupal
-#      uses: bluehorndigital/setup-drupal@v1.0.3
-#      with:
-#        version: ${{ matrix.drupal }}
-#        path: ~/drupal
-
     - name: "Allow plugins and dev dependencies"
       run: |
         cd drupal
@@ -82,17 +73,25 @@ jobs:
         composer require wikimedia/composer-merge-plugin
         composer config --json extra.merge-plugin.require '["modules/contrib/apigee_edge/composer.json"]'
         composer update --with-all-dependencies
+        composer require --dev phpspec/prophecy-phpunit:^2
 
-    - name: "PHPCS"
-      run: |
-        cd drupal
-        cp modules/contrib/apigee_edge/phpcs.xml.dist .
-        vendor/bin/phpcs --standard=./phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors
+#    - name: "PHPCS"
+#      run: |
+#        cd drupal
+#        cp modules/contrib/apigee_edge/phpcs.xml.dist .
+#        vendor/bin/phpcs --standard=./phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors
+
 #     - name: "PHPStan"
 #       run: "php vendor/bin/phpstan analyze"
-    - name: "PHPUnit"
+
+    - name: "PHPUnit unit"
       run: |
         cd drupal
-        composer require --dev phpspec/prophecy-phpunit:^2
-        vendor/bin/phpunit -c core --verbose --color --group apigee_edge_kernel --testsuite kernel
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge_kernel --testsuite unit
+
+
+#    - name: "PHPUnit kernel"
+#      run: |
+#        cd drupal
+#        vendor/bin/phpunit -c core --verbose --color --group apigee_edge_kernel --testsuite kernel
 
