@@ -34,16 +34,6 @@ jobs:
         drupal-core:
           - "9.2.x"
 
-#    services:
-#      mariadb:
-#        image: mariadb:10.5
-#        env:
-#          MYSQL_USER: drupal
-#          MYSQL_PASSWORD: drupal
-#          MYSQL_DATABASE: drupal
-#          MYSQL_ROOT_PASSWORD: drupal
-#        ports:
-#          - 3306:3306
 #         include:
 #           - php-version: "8.0"
 #             drupal: "9.3.x"
@@ -53,16 +43,6 @@ jobs:
 #             experimental: true
 
     steps:
-#    - uses: actions/checkout@v2
-
-#    - name: Cache Composer packages
-#      id: composer-cache
-#      uses: actions/cache@v2
-#      with:
-#        path: vendor
-#        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-#        restore-keys: |
-#          ${{ runner.os }}-php-${{ matrix.php-version }}
 
     - name: "Install PHP"
       uses: "shivammathur/setup-php@v2"
@@ -114,6 +94,8 @@ jobs:
     - name: "PHPUnit"
       run: |
         cd drupal
+        echo APIGEE_EDGE_AUTH_TYPE
+        echo ${{ secrets.APIGEE_EDGE_AUTH_TYPE }}
         composer require --dev phpspec/prophecy-phpunit:^2
         #        cp modules/contrib/apigee_edge/phpunit.core.xml.dist core/phpunit.core.xml
         vendor/bin/phpunit -c core --verbose --color --group apigee_edge_kernel
