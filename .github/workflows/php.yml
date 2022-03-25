@@ -87,11 +87,11 @@ jobs:
     - name: "PHPUnit unit"
       run: |
         cd drupal
-        vendor/bin/phpunit -c core --verbose --color --group apigee_edge_kernel --testsuite unit
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit
 
 
 #    - name: "PHPUnit kernel"
 #      run: |
 #        cd drupal
-#        vendor/bin/phpunit -c core --verbose --color --group apigee_edge_kernel --testsuite kernel
+#        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite kernel
 
