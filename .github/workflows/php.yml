@@ -1,7 +1,8 @@
 name: test_and_lint
 env:
   MYSQL_ROOT_PASSWORD: drupal
-  SIMPLETEST_DB: "mysql://drupal:drupal@localhost:3306/drupal"
+  SIMPLETEST_DB: "sqlite://localhost/test.sqlite"
+  SIMPLETEST_DB2: "mysql://drupal:drupal@localhost:3306/drupal"
   SIMPLETEST_BASE_URL: "http://127.0.0.1:80"
 
 on:
