@@ -404,7 +404,8 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
     // Create roles for every team membership level permission.
     $this->drupalLogin($this->rootUser);
     foreach (array_keys(self::TEAM_MEMBER_PERMISSION_MATRIX) as $permission) {
-      $this->drupalPostForm(Url::fromRoute('entity.team_role.add_form'), [
+      $this->drupalGet(Url::fromRoute('entity.team_role.add_form'));
+      $this->submitForm([
         'label' => $permission,
         'id' => $permission,
       ], 'Save');
@@ -677,7 +678,8 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
       $permission_changes["{$role_name}[{$permission}]"] = in_array($permission, $permissions);
     }
 
-    $this->drupalPostForm(Url::fromRoute('apigee_edge_teams.settings.team.permissions'), $permission_changes, 'Save permissions');
+    $this->drupalGet(Url::fromRoute('apigee_edge_teams.settings.team.permissions'));
+    $this->submitForm($permission_changes, 'Save permissions');
     // Dump permission configuration to the HTML output.
     $this->drupalGet(Url::fromRoute('apigee_edge_teams.settings.team.permissions'));
     // Because changes made on the UI therefore _this_ instance of the team role

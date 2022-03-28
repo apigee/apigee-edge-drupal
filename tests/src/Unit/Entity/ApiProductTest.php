@@ -51,7 +51,7 @@ class ApiProductTest extends UnitTestCase {
     $proxies_expected = ['proxy1', 'proxy2'];
     $this->apiProduct->setProxies(...$proxies_expected);
     $proxies_actual = $this->apiProduct->getProxies();
-    $this->assertArrayEquals($proxies_expected, $proxies_actual);
+    $this->assertEquals($proxies_expected, $proxies_actual);
 
   }
 
@@ -62,7 +62,7 @@ class ApiProductTest extends UnitTestCase {
     $scopes_expected = ['scope1', 'scope2'];
     $this->apiProduct->setScopes(...$scopes_expected);
     $scopes_actual = $this->apiProduct->getScopes();
-    $this->assertArrayEquals($scopes_expected, $scopes_actual);
+    $this->assertEquals($scopes_expected, $scopes_actual);
 
   }
 
@@ -73,7 +73,7 @@ class ApiProductTest extends UnitTestCase {
     $environments_expected = ['environment1', 'environment2'];
     $this->apiProduct->setEnvironments(...$environments_expected);
     $environments_actual = $this->apiProduct->getEnvironments();
-    $this->assertArrayEquals($environments_expected, $environments_actual);
+    $this->assertEquals($environments_expected, $environments_actual);
   }
 
 }

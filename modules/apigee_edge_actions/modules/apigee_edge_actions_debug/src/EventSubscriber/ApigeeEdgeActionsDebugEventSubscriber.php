@@ -22,7 +22,7 @@ namespace Drupal\apigee_edge_actions_debug\EventSubscriber;
 
 use Drupal\apigee_edge_actions\Event\ApigeeEdgeActionsEventInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -50,7 +50,7 @@ class ApigeeEdgeActionsDebugEventSubscriber implements EventSubscriberInterface 
   /**
    * Responds to rules events.
    *
-   * @param \Symfony\Component\EventDispatcher\Event $event
+   * @param \Symfony\Contracts\EventDispatcher\Event $event
    *   The event object.
    * @param string $event_name
    *   The event name.

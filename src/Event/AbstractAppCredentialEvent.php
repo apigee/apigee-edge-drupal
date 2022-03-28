@@ -21,7 +21,7 @@
 namespace Drupal\apigee_edge\Event;
 
 use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * Base class for app credential create, generate and add products events.

@@ -98,7 +98,7 @@ class TeamViewBuilderTest extends KernelTestBase {
     $entity_type_manager = $this->container->get('entity_type.manager');
     $build = $entity_type_manager->getViewBuilder(static::ENTITY_TYPE)->view($this->entity);
 
-    static::assertEqual(900, $build['#cache']['max-age']);
+    static::assertEquals(900, $build['#cache']['max-age']);
 
     // Update the cache setting.
     $this->config('apigee_edge_teams.team_settings')
@@ -106,7 +106,7 @@ class TeamViewBuilderTest extends KernelTestBase {
       ->save();
 
     $build = $entity_type_manager->getViewBuilder(static::ENTITY_TYPE)->view($this->entity);
-    static::assertEqual(0, $build['#cache']['max-age']);
+    static::assertEquals(0, $build['#cache']['max-age']);
   }
 
 }

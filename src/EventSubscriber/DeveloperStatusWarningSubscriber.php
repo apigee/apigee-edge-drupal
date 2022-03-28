@@ -29,7 +29,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
 use Drupal\Core\Url;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
+use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
@@ -92,10 +92,10 @@ final class DeveloperStatusWarningSubscriber implements EventSubscriberInterface
   /**
    * Display's a warning message if developer's status is inactive.
    *
-   * @param \Symfony\Component\HttpKernel\Event\FilterResponseEvent $event
+   * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
    *   The event to process.
    */
-  public function onRespond(FilterResponseEvent $event) {
+  public function onRespond(ResponseEvent $event) {
     // Anonymous user's does not have access to these routes.
     if ($this->currentUser->isAuthenticated() && strpos($this->routeMatch->getRouteName(), 'entity.developer_app.') === 0) {
       $developer_storage = $this->entityTypeManager->getStorage('developer');

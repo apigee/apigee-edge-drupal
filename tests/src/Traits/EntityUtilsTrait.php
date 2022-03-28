@@ -37,7 +37,8 @@ trait EntityUtilsTrait {
   protected function changeEntityAliasesAndValidate(string $entity_type_id, string $entity_settings_route_name) {
     $singular = $this->getRandomGenerator()->word(8);
     $plural = $this->getRandomGenerator()->word(8);
-    $this->drupalPostForm(Url::fromRoute($entity_settings_route_name), [
+    $this->drupalGet(Url::fromRoute($entity_settings_route_name));
+    $this->submitForm([
       'entity_label_singular' => $singular,
       'entity_label_plural' => $plural,
     ], 'Save configuration');
