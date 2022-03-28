@@ -84,10 +84,10 @@ jobs:
 #     - name: "PHPStan"
 #       run: "php vendor/bin/phpstan analyze"
 
-    - name: "PHPUnit unit"
-      run: |
-        cd drupal
-        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit
+#    - name: "PHPUnit unit"
+#      run: |
+#        cd drupal
+#        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit
 
     - name: "PHPUnit kernel"
       run: |
@@ -95,19 +95,38 @@ jobs:
         rm -rf modules/contrib/apigee_edge/modules/apigee_edge_actions
         vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite kernel
 
-    - name: "Install Chrome browser"
-      run: |
-       sudo apt-get install --yes gnupg2 apt-transport-https && \
-       wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add - && \
-       sudo sh -c 'echo "deb https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' && \
-       sudo apt-get update && \
-       sudo apt-get install --yes google-chrome-unstable
+    - uses: nanasess/setup-chromedriver@v1
+      with:
+        # Optional: do not specify to match Chrome's version
+        chromedriver-version: '88.0.4324.96'
+    - run: |
+        export DISPLAY=:99
+        chromedriver --url-base=/wd/hub &
+        sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
+
+#    - name: "Install Chrome browser"
+#      run: |
+#       sudo apt-get install --yes gnupg2 apt-transport-https && \
+#       wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add - && \
+#       sudo sh -c 'echo "deb https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' && \
+#       sudo apt-get update && \
+#       sudo apt-get install --yes google-chrome-unstable
 
     - name: "PHPUnit functional"
       run: |
+        nohup php -S localhost:80 -t drupal/ > phpd.log 2>&1 &
         cd drupal
-        sudo apache2-foreground&
+        # sudo apache2-foreground&
         # sed -ri -e \'s!/var/www/html/web! ${{ env.GITHUB_WORKSPACE }}/drupal/web!g\' /etc/apache2/sites-available/*.conf /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
         # sudo sed -i 's/var\/www\/html/var\/www\/html\/drupal9\/web/' /etc/apache2/sites-enabled/000-default.conf
         vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional
+
+    - name: "PHPUnit functional javascript"
+      run: |
+        # nohup php -S localhost:80 -t drupal/ > phpd.log 2>&1 &
+        cd drupal
+        # sudo apache2-foreground&
+        # sed -ri -e \'s!/var/www/html/web! ${{ env.GITHUB_WORKSPACE }}/drupal/web!g\' /etc/apache2/sites-available/*.conf /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+        # sudo sed -i 's/var\/www\/html/var\/www\/html\/drupal9\/web/' /etc/apache2/sites-enabled/000-default.conf
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional-javascript
 
