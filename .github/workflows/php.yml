@@ -29,7 +29,7 @@ jobs:
         php-version:
           - "7.4"
         drupal-core:
-          - "9.1.x"
+          - "9.2.13"
 #         include:
 #           - php-version: "8.0"
 #             drupal: "9.3.x"
