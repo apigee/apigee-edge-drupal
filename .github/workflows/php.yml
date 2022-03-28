@@ -74,20 +74,21 @@ jobs:
         composer config --json extra.merge-plugin.require '["modules/contrib/apigee_edge/composer.json"]'
         composer update --with-all-dependencies
         composer require --dev phpspec/prophecy-phpunit:^2
+        nohup php -S localhost:80 -t ./ > phpd.log 2>&1 &
 
-#    - name: "PHPCS"
-#      run: |
-#        cd drupal
-#        cp modules/contrib/apigee_edge/phpcs.xml.dist .
-#        vendor/bin/phpcs --standard=./phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors
+    - name: "PHPCS"
+      run: |
+        cd drupal
+        cp modules/contrib/apigee_edge/phpcs.xml.dist .
+        vendor/bin/phpcs --standard=./phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors
 
-#     - name: "PHPStan"
-#       run: "php vendor/bin/phpstan analyze"
+    - name: "PHPStan"
+      run: "php vendor/bin/phpstan analyze"
 
-#    - name: "PHPUnit unit"
-#      run: |
-#        cd drupal
-#        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit
+    - name: "PHPUnit unit"
+      run: |
+        cd drupal
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit
 
     - name: "PHPUnit kernel"
       run: |
@@ -112,14 +113,13 @@ jobs:
 #       sudo apt-get update && \
 #       sudo apt-get install --yes google-chrome-unstable
 
-    - name: "PHPUnit functional"
-      run: |
-        nohup php -S localhost:80 -t drupal/ > phpd.log 2>&1 &
-        cd drupal
-        # sudo apache2-foreground&
-        # sed -ri -e \'s!/var/www/html/web! ${{ env.GITHUB_WORKSPACE }}/drupal/web!g\' /etc/apache2/sites-available/*.conf /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-        # sudo sed -i 's/var\/www\/html/var\/www\/html\/drupal9\/web/' /etc/apache2/sites-enabled/000-default.conf
-        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional
+#    - name: "PHPUnit functional"
+#      run: |
+#        cd drupal
+#        # sudo apache2-foreground&
+#        # sed -ri -e \'s!/var/www/html/web! ${{ env.GITHUB_WORKSPACE }}/drupal/web!g\' /etc/apache2/sites-available/*.conf /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+#        # sudo sed -i 's/var\/www\/html/var\/www\/html\/drupal9\/web/' /etc/apache2/sites-enabled/000-default.conf
+#        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional --stop-on-failure
 
     - name: "PHPUnit functional javascript"
       run: |
@@ -128,5 +128,5 @@ jobs:
         # sudo apache2-foreground&
         # sed -ri -e \'s!/var/www/html/web! ${{ env.GITHUB_WORKSPACE }}/drupal/web!g\' /etc/apache2/sites-available/*.conf /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
         # sudo sed -i 's/var\/www\/html/var\/www\/html\/drupal9\/web/' /etc/apache2/sites-enabled/000-default.conf
-        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional-javascript
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional-javascript --stop-on-failure
 
