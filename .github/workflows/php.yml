@@ -89,9 +89,14 @@ jobs:
         cd drupal
         vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit
 
+    - name: "PHPUnit kernel"
+      run: |
+        cd drupal
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite kernel
 
-#    - name: "PHPUnit kernel"
-#      run: |
-#        cd drupal
-#        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite kernel
+
+    - name: "PHPUnit functional"
+      run: |
+        cd drupal
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional
 
