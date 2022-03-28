@@ -95,9 +95,19 @@ jobs:
 #        rm -rf modules/contrib/apigee_edge/modules/apigee_edge_actions
 #        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite kernel
 
+    - name: "Install Chrome browser"
+      run: |
+       apt-get install --yes gnupg2 apt-transport-https && \
+       wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add - && \
+       sh -c 'echo "deb https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' && \
+       apt-get update && \
+       apt-get install --yes google-chrome-unstable
 
     - name: "PHPUnit functional"
       run: |
         cd drupal
+        apache2-foreground&
+        # sed -ri -e \'s!/var/www/html/web! ${{ env.GITHUB_WORKSPACE }}/drupal/web!g\' /etc/apache2/sites-available/*.conf /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+        # sudo sed -i 's/var\/www\/html/var\/www\/html\/drupal9\/web/' /etc/apache2/sites-enabled/000-default.conf
         vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional
 
