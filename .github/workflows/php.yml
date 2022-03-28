@@ -76,14 +76,14 @@ jobs:
         composer require --dev phpspec/prophecy-phpunit:^2
         nohup php -S localhost:80 -t ./ > phpd.log 2>&1 &
 
-#    - name: "PHPCS"
-#      run: |
-#        cd drupal
-#        cp modules/contrib/apigee_edge/phpcs.xml.dist .
-#        vendor/bin/phpcs --standard=./phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors
+    - name: "PHPCS"
+      run: |
+        cd drupal
+        cp modules/contrib/apigee_edge/phpcs.xml.dist .
+        vendor/bin/phpcs --standard=./phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors
 
-    - name: "PHPStan"
-      run: "php vendor/bin/phpstan analyze"
+#    - name: "PHPStan"
+#      run: "php vendor/bin/phpstan analyze"
 
     - name: "PHPUnit unit"
       run: |
