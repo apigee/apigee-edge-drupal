@@ -9,7 +9,7 @@ env:
   APIGEE_EDGE_INSTANCE_TYPE: ${{ secrets.APIGEE_EDGE_INSTANCE_TYPE }}
   APIGEE_INTEGRATION_ENABLE: ${{ secrets.APIGEE_INTEGRATION_ENABLE }}
   APIGEE_EDGE_ENDPOINT: ${{ secrets.APIGEE_EDGE_ENDPOINT }}
-
+  SYMFONY_DEPRECATIONS_HELPER: "disabled"
 
 on:
   push:
@@ -84,16 +84,16 @@ jobs:
 #     - name: "PHPStan"
 #       run: "php vendor/bin/phpstan analyze"
 
-#    - name: "PHPUnit unit"
-#      run: |
-#        cd drupal
-#        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit
+    - name: "PHPUnit unit"
+      run: |
+        cd drupal
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit
 
-#    - name: "PHPUnit kernel"
-#      run: |
-#        cd drupal
-#        rm -rf modules/contrib/apigee_edge/modules/apigee_edge_actions
-#        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite kernel
+    - name: "PHPUnit kernel"
+      run: |
+        cd drupal
+        rm -rf modules/contrib/apigee_edge/modules/apigee_edge_actions
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite kernel
 
     - name: "Install Chrome browser"
       run: |
