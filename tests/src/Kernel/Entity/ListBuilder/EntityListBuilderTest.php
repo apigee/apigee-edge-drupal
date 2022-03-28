@@ -187,7 +187,7 @@ class EntityListBuilderTest extends KernelTestBase {
     $this->queueDeveloperResponse($this->account);
     /** @var \Drupal\Core\Render\HtmlResponse $response */
     $response = $this->container->get('http_kernel')->handle($request);
-    $this->assertEqual($response->getCacheableMetadata()->getCacheMaxAge(), 900);
+    $this->assertEquals($response->getCacheableMetadata()->getCacheMaxAge(), 900);
 
     // Update the config.
     $config = $this->config('apigee_edge.' . static::ENTITY_TYPE . '_settings');
@@ -202,7 +202,7 @@ class EntityListBuilderTest extends KernelTestBase {
     $this->queueDeveloperResponse($this->account);
     /** @var \Drupal\Core\Render\HtmlResponse $response */
     $response = $this->container->get('http_kernel')->handle($request);
-    $this->assertEqual($response->getCacheableMetadata()->getCacheMaxAge(), 100);
+    $this->assertEquals($response->getCacheableMetadata()->getCacheMaxAge(), 100);
   }
 
 }

@@ -129,7 +129,7 @@ class TestFrameworkKernelTest extends KernelTestBase {
     $org_controller = $this->container->get('apigee_edge.controller.organization');
     $org = $org_controller->load($org_name);
 
-    $this->assertEqual($org->getName(), $org_name);
+    $this->assertEquals($org->getName(), $org_name);
   }
 
   /**
@@ -157,9 +157,9 @@ class TestFrameworkKernelTest extends KernelTestBase {
     /** @var \Drupal\apigee_edge\Entity\Developer $developer */
     $developer = $developerStorage->load($test_user['mail']);
 
-    $this->assertEqual($developer->getEmail(), $test_user['mail']);
+    $this->assertEquals($developer->getEmail(), $test_user['mail']);
     // Attribute is set by mock twig template.
-    $this->assertEqual($developer->getAttributeValue('IS_MOCK_CLIENT'), 1);
+    $this->assertEquals($developer->getAttributeValue('IS_MOCK_CLIENT'), 1);
   }
 
   /**
@@ -201,7 +201,7 @@ class TestFrameworkKernelTest extends KernelTestBase {
     $this->queueDeveloperResponseFromDeveloper($developer);
     $loaded_developer = $developerStorage->load($developer->getEmail());
     $this->assertInstanceOf(Developer::class, $loaded_developer);
-    $this->assertEqual($loaded_developer->getEmail(), $developer->getEmail());
+    $this->assertEquals($loaded_developer->getEmail(), $developer->getEmail());
 
     // This line is what actually tests that the mock is not used since the mock template sets this attribute.
     $this->assertEmpty($developer->getAttributeValue('IS_MOCK_CLIENT'));
@@ -260,9 +260,9 @@ class TestFrameworkKernelTest extends KernelTestBase {
     /** @var \Drupal\apigee_edge\Entity\Developer $developer */
     $developer = $developerStorage->load($test_user['mail']);
 
-    $this->assertEqual($developer->getEmail(), $test_user['mail']);
+    $this->assertEquals($developer->getEmail(), $test_user['mail']);
     // Attribute is set by mock twig template.
-    $this->assertEqual($developer->getAttributeValue('IS_MOCK_CLIENT'), 1);
+    $this->assertEquals($developer->getAttributeValue('IS_MOCK_CLIENT'), 1);
   }
 
   /**

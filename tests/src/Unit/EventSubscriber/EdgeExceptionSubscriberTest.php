@@ -33,7 +33,7 @@ use Prophecy\Argument;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
+use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 
 /**
  * Test EdgeExceptionSubscriber.
@@ -133,17 +133,10 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
     $this->routeMatch = $this->prophesize(RouteMatchInterface::class);
 
     // Drupal 9 / Symfony 4.x and up.
-    if (class_exists('\Symfony\Component\HttpKernel\Event\ExceptionEvent')) {
-      $this->getResponseForExceptionEvent = $this->prophesize('\Symfony\Component\HttpKernel\Event\ExceptionEvent');
-      $this->getResponseForExceptionEvent->getThrowable()
-        ->willReturn($this->exception);
-    }
-    // Drupal 8.
-    else {
-      $this->getResponseForExceptionEvent = $this->prophesize(GetResponseForExceptionEvent::class);
-      $this->getResponseForExceptionEvent->getException()
-        ->willReturn($this->exception);
-    }
+    $this->getResponseForExceptionEvent = $this->prophesize(ExceptionEvent::class);
+    $this->getResponseForExceptionEvent->getThrowable()
+      ->willReturn($this->exception);
+
     $this->getResponseForExceptionEvent->getRequest()
       ->willReturn(new Request());
     $this->getResponseForExceptionEvent->setResponse(Argument::any())

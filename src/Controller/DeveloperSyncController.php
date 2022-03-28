@@ -80,7 +80,7 @@ class DeveloperSyncController extends ControllerBase {
    *   Job tag.
    */
   protected static function generateTag(string $type): string {
-    return "developer_sync_{$type}_" . user_password();
+    return "developer_sync_{$type}_" . \Drupal::service('password_generator')->generate();
   }
 
   /**
