@@ -84,14 +84,15 @@ jobs:
 #     - name: "PHPStan"
 #       run: "php vendor/bin/phpstan analyze"
 
-    - name: "PHPUnit unit"
-      run: |
-        cd drupal
-        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit
+#    - name: "PHPUnit unit"
+#      run: |
+#        cd drupal
+#        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit
 
     - name: "PHPUnit kernel"
       run: |
         cd drupal
+        rm -rf modules/apigee_edge/modules/apigee_edge_actions
         vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite kernel
 
 
