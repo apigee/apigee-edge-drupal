@@ -347,4 +347,14 @@ class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterfa
     ]);
   }
 
+  /**
+   * @return string|null
+   *
+   * This is here because the jsonapi module relies on a uuid to build end points and breaks if one is not present.
+   * Creating a real UUID for this entity type is not possible as entity data is stored on Apigee.
+   */
+  public function uuid() {
+    return $this->id();
+  }
+
 }
