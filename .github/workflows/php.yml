@@ -1,7 +1,7 @@
 name: test_and_lint
 env:
   SIMPLETEST_DB: "sqlite://localhost/test.sqlite"
-  SIMPLETEST_BASE_URL: "http://localhost"  
+  SIMPLETEST_BASE_URL: "http://127.0.0.1:8000"  
   APIGEE_EDGE_AUTH_TYPE: ${{ secrets.APIGEE_EDGE_AUTH_TYPE }}
   APIGEE_EDGE_ORGANIZATION: ${{ secrets.APIGEE_EDGE_ORGANIZATION }}
   APIGEE_EDGE_USERNAME: ${{ secrets.APIGEE_EDGE_USERNAME }}
@@ -10,7 +10,10 @@ env:
   APIGEE_INTEGRATION_ENABLE: ${{ secrets.APIGEE_INTEGRATION_ENABLE }}
   APIGEE_EDGE_ENDPOINT: ${{ secrets.APIGEE_EDGE_ENDPOINT }}
   SYMFONY_DEPRECATIONS_HELPER: "disabled"
-
+  BROWSERTEST_OUTPUT_DIRECTORY: "sites/simpletest/browser_output"
+  BROWSERTEST_OUTPUT_BASE_URL: ""
+  MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu","--headless", "--no-sandbox", "--disable-dev-shm-usage"]}}, "http://chrome:9515"]'
+  
 on:
   push:
     branches: [ 2.x, github-action ]
@@ -74,7 +77,8 @@ jobs:
         composer config --json extra.merge-plugin.require '["modules/contrib/apigee_edge/composer.json"]'
         composer update --with-all-dependencies
         composer require --dev phpspec/prophecy-phpunit:^2
-        nohup php -S localhost:80 -t ./ > phpd.log 2>&1 &
+        # nohup php -S localhost:80 -t ./ > phpd.log 2>&1 &
+        vendor/bin/drush rs 8000 &
 
     - name: "PHPCS"
       run: |
@@ -96,6 +100,9 @@ jobs:
         rm -rf modules/contrib/apigee_edge/modules/apigee_edge_actions
         vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite kernel
 
+     
+
+
     - uses: nanasess/setup-chromedriver@v1
       with:
         # Optional: do not specify to match Chrome's version
@@ -113,13 +120,13 @@ jobs:
 #       sudo apt-get update && \
 #       sudo apt-get install --yes google-chrome-unstable
 
-#    - name: "PHPUnit functional"
-#      run: |
-#        cd drupal
-#        # sudo apache2-foreground&
-#        # sed -ri -e \'s!/var/www/html/web! ${{ env.GITHUB_WORKSPACE }}/drupal/web!g\' /etc/apache2/sites-available/*.conf /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-#        # sudo sed -i 's/var\/www\/html/var\/www\/html\/drupal9\/web/' /etc/apache2/sites-enabled/000-default.conf
-#        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional --stop-on-failure
+    - name: "PHPUnit functional"
+      run: |
+        cd drupal
+        # sudo apache2-foreground&
+        # sed -ri -e \'s!/var/www/html/web! ${{ env.GITHUB_WORKSPACE }}/drupal/web!g\' /etc/apache2/sites-available/*.conf /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+        # sudo sed -i 's/var\/www\/html/var\/www\/html\/drupal9\/web/' /etc/apache2/sites-enabled/000-default.conf
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional --stop-on-failure
 
     - name: "PHPUnit functional javascript"
       run: |
