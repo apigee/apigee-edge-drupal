@@ -75,7 +75,7 @@ jobs:
         composer require drupal/rules:3.0.0-alpha7
         composer require wikimedia/composer-merge-plugin
         composer config --json extra.merge-plugin.require '["modules/contrib/apigee_edge/composer.json"]'
-        composer require "drush/drush ^10.0"
+        composer require drush/drush
         composer update --with-all-dependencies
         composer require --dev phpspec/prophecy-phpunit:^2
 
