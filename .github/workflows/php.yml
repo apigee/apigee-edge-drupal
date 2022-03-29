@@ -82,7 +82,7 @@ jobs:
     # Install drupal using minimal installation profile and enable the module.
     - name: Install Drupal
       run: |
-        cd $DRUPAL_ROOT    
+        cd drupal   
         php -d sendmail_path=$(which true); vendor/bin/drush --yes -v site-install minimal --db-url="$SIMPLETEST_DB"
         vendor/bin/drush en $DRUPAL_MODULE_NAME -y
         vendor/bin/drush rs 8000 &
