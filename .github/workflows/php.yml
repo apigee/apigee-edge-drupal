@@ -12,7 +12,7 @@ env:
   SYMFONY_DEPRECATIONS_HELPER: "disabled"
   BROWSERTEST_OUTPUT_DIRECTORY: "sites/simpletest/browser_output"
   BROWSERTEST_OUTPUT_BASE_URL: ""
-  MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu","--headless", "--no-sandbox", "--disable-dev-shm-usage"]}}, "http://127.0.0.1:9515"]'
+  MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu","--headless", "--no-sandbox", "--disable-dev-shm-usage"]}}, "http://127.0.0.1:4444"]'
   
 on:
   push:
@@ -106,7 +106,7 @@ jobs:
       run: |
         cd drupal
         rm -rf modules/contrib/apigee_edge/modules/apigee_edge_actions
-        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite kernel
+#        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite kernel
 
     - uses: nanasess/setup-chromedriver@v1
       with:
