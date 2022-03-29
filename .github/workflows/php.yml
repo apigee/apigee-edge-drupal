@@ -78,6 +78,13 @@ jobs:
         composer update --with-all-dependencies
         composer require --dev phpspec/prophecy-phpunit:^2
         # nohup php -S localhost:80 -t ./ > phpd.log 2>&1 &
+
+    # Install drupal using minimal installation profile and enable the module.
+    - name: Install Drupal
+      run: |
+        cd $DRUPAL_ROOT    
+        php -d sendmail_path=$(which true); vendor/bin/drush --yes -v site-install minimal --db-url="$SIMPLETEST_DB"
+        vendor/bin/drush en $DRUPAL_MODULE_NAME -y
         vendor/bin/drush rs 8000 &
 
     - name: "PHPCS"
