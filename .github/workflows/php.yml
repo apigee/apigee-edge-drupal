@@ -33,10 +33,10 @@ jobs:
           - "7.4"
         drupal-core:
           - "9.2.x"
-#         include:
-#           - php-version: "8.0"
-#             drupal: "9.3.x"
-#             experimental: true
+        include:
+         - php-version: "8.0"
+           drupal: "9.3.x"
+           experimental: true
 #           - php-version: "8.1"
 #             drupal: "10.0.x-dev"
 #             experimental: true
@@ -88,25 +88,25 @@ jobs:
         vendor/bin/drush en $DRUPAL_MODULE_NAME -y
         vendor/bin/drush rs 8000 &
 
-#    - name: "PHPCS"
-#      run: |
-#        cd drupal
-#        cp modules/contrib/apigee_edge/phpcs.xml.dist .
-#        vendor/bin/phpcs --standard=./phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors
+    - name: "PHPCS"
+      run: |
+        cd drupal
+        cp modules/contrib/apigee_edge/phpcs.xml.dist .
+        vendor/bin/phpcs --standard=./phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors
 
 ##    - name: "PHPStan"
 ##      run: "php vendor/bin/phpstan analyze"
 
-#    - name: "PHPUnit unit"
-#      run: |
-#        cd drupal
-#        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit
+    - name: "PHPUnit unit"
+      run: |
+        cd drupal
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit
 
     - name: "PHPUnit kernel"
       run: |
         cd drupal
         rm -rf modules/contrib/apigee_edge/modules/apigee_edge_actions
-#        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite kernel
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite kernel
 
     - uses: nanasess/setup-chromedriver@v1
 
@@ -115,10 +115,10 @@ jobs:
         chromedriver --url-base=/wd/hub &
         sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
 
-#    - name: "PHPUnit functional"
-#      run: |
-#        cd drupal
-#        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional --stop-on-failure
+    - name: "PHPUnit functional"
+      run: |
+        cd drupal
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional --stop-on-failure
 
     - name: "PHPUnit functional javascript"
       run: |
