@@ -25,7 +25,7 @@ jobs:
 
     runs-on: ubuntu-latest
     
-    name: "Tests | PHP ${{ matrix.php-version }} | Drupal ${{ matrix.drupal }}"
+    name: "Tests | PHP ${{ matrix.php-version }} | Drupal ${{ matrix.drupal-core }}"
     strategy:
       matrix:
         experimental: [false]
@@ -33,10 +33,10 @@ jobs:
           - "7.4"
         drupal-core:
           - "9.2.x"
-          - "9.4.x"
-#        include:
-#         - php-version: "8.0"
-#           drupal: "9.3.x"
+#          - "9.4.x"
+        include:
+         - php-version: "8.0"
+           drupal: "9.3.x"
 #           experimental: true
 #           - php-version: "8.1"
 #             drupal: "10.0.x-dev"
