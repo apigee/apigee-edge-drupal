@@ -33,10 +33,11 @@ jobs:
           - "7.4"
         drupal-core:
           - "9.2.x"
-        include:
-         - php-version: "8.0"
-           drupal: "9.3.x"
-           experimental: true
+          - "9.4.x"
+#        include:
+#         - php-version: "8.0"
+#           drupal: "9.3.x"
+#           experimental: true
 #           - php-version: "8.1"
 #             drupal: "10.0.x-dev"
 #             experimental: true
