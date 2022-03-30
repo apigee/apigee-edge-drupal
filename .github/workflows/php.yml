@@ -53,7 +53,7 @@ jobs:
 
     - name: Checkout Drupal core
       run: |
-        git clone --depth 1 --branch ${{ matrix.drupal-core }} http://git.drupal.org/project/drupal.git/ drupal
+        git clone --depth 1 --branch ${{ matrix.drupal-core }} https://git.drupalcode.org/project/drupal.git drupal
         mkdir -p drupal/modules/contrib/apigee_edge
         mkdir -p drupal/sites/simpletest/browser_output
   
