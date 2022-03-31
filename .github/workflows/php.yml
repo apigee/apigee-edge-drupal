@@ -78,8 +78,8 @@ jobs:
         composer require drupal/rules:3.0.0-alpha7
         composer require wikimedia/composer-merge-plugin
         composer config --json extra.merge-plugin.require '["modules/contrib/apigee_edge/composer.json"]'
-        composer require --dev phpspec/prophecy-phpunit:^2 --no-install
         composer update --with-all-dependencies --ignore-platform-req=php
+        composer require --dev phpspec/prophecy-phpunit:^2 --ignore-platform-req=php
 
     # Install drupal using minimal installation profile and enable the module.
     - name: Install Drupal
