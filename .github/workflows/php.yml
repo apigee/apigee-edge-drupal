@@ -27,6 +27,7 @@ jobs:
     
     name: "PHP ${{ matrix.php-version }} | Drupal ${{ matrix.drupal-core }}"
     strategy:
+      fail-fast: false
       matrix:
         experimental: [false]
         php-version:
@@ -119,10 +120,12 @@ jobs:
     - name: "PHPUnit functional"
       run: |
         cd drupal
-        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional --stop-on-failure
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional 
+        # --stop-on-failure
 
     - name: "PHPUnit functional javascript"
       run: |
         cd drupal
-        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional-javascript --stop-on-failure
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional-javascript 
+        # --stop-on-failure
 
