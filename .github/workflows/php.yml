@@ -74,12 +74,11 @@ jobs:
         composer config --no-plugins allow-plugins.composer/package-versions-deprecated true
         composer config --no-plugins allow-plugins.cweagans/composer-patches true
         composer require --dev drush/drush
-        composer config --unset platform
         composer config minimum-stability dev
         composer require drupal/rules:3.0.0-alpha7
         composer require wikimedia/composer-merge-plugin
         composer config --json extra.merge-plugin.require '["modules/contrib/apigee_edge/composer.json"]'
-        composer update --with-all-dependencies
+        composer update --with-all-dependencies --ignore-platform-req
         composer require --dev phpspec/prophecy-phpunit:^2
 
     # Install drupal using minimal installation profile and enable the module.
