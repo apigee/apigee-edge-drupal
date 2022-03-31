@@ -1,6 +1,6 @@
 name: test_and_lint
 env:
-  SIMPLETEST_DB: "sqlite://localhost/test.sqlite"
+  SIMPLETEST_DB: "sqlite://localhost//tmp/test.sqlite"
   SIMPLETEST_BASE_URL: "http://127.0.0.1:8000"  
   APIGEE_EDGE_AUTH_TYPE: ${{ secrets.APIGEE_EDGE_AUTH_TYPE }}
   APIGEE_EDGE_ORGANIZATION: ${{ secrets.APIGEE_EDGE_ORGANIZATION }}
@@ -16,7 +16,7 @@ env:
   
 on:
   push:
-    branches: [ 2.x, github-action ]
+
   pull_request:
     branches: [ 2.x ]
 
@@ -32,13 +32,11 @@ jobs:
         experimental: [false]
         php-version:
           - "7.4"
+          - "8.0"
         drupal-core:
-          - "9.2.x"
-#          - "9.4.x"
-        include:
-         - php-version: "8.0"
-           drupal-core: "9.3.x"
-#           experimental: true
+          # Should update the following as the minimum supported version from Drupal.org
+          - "9.2.16"
+#        include:
 #           - php-version: "8.1"
 #             drupal-core: "10.0.x-dev"
 #             experimental: true
@@ -96,9 +94,6 @@ jobs:
         cp modules/contrib/apigee_edge/phpcs.xml.dist .
         vendor/bin/phpcs --standard=./phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors
 
-##    - name: "PHPStan"
-##      run: "php vendor/bin/phpstan analyze"
-
     - name: "PHPUnit unit"
       run: |
         cd drupal
@@ -117,15 +112,13 @@ jobs:
         chromedriver --url-base=/wd/hub &
         sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
 
-    - name: "PHPUnit functional"
-      run: |
-        cd drupal
-        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional 
-        # --stop-on-failure
-
     - name: "PHPUnit functional javascript"
       run: |
         cd drupal
-        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional-javascript 
-        # --stop-on-failure
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional-javascript --stop-on-failure
+
+    - name: "PHPUnit functional"
+      run: |
+        cd drupal
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional --stop-on-failure
 
