@@ -4,9 +4,9 @@
     "type": "drupal-module",
     "description": "Apigee Edge for Drupal.",
     "require": {
-        "php": ">=7.1 || ^8.0",
+        "php": ">=7.1",
         "ext-json": "*",
-        "apigee/apigee-client-php": "^2.0.13",
+        "apigee/apigee-client-php": "^2.0.14",
         "drupal/core": "^9.2.13",
         "drupal/entity": "^1.0",
         "drupal/key": "^1.8",
