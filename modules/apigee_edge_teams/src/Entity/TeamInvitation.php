@@ -299,4 +299,14 @@ class TeamInvitation extends ContentEntityBase implements TeamInvitationInterfac
     return parent::getCacheTags();
   }
 
+  /**
+   * @return string|null
+   *
+   * This is here because the jsonapi module relies on a uuid to build end points and breaks if one is not present.
+   *
+   */
+  public function uuid() {
+    return $this->id();
+  }
+
 }

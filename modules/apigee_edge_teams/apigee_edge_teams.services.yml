@@ -130,3 +130,12 @@ services:
     arguments: ['@entity_type.manager', '@logger.channel.apigee_edge_teams']
     tags:
       - { name: paramconverter }
+
+  paramconverter.apigee_edge_teams.entity_uuid:
+    parent: paramconverter.entity
+    class: Drupal\apigee_edge_teams\ParamConverter\InvitationsEntityUuidConverter
+    calls:
+      - [setLanguageManager, ['@language_manager']]
+    tags:
+      # Priority 10, to ensure it runs before @paramconverter.entity.
+      - { name: paramconverter, priority: 11 }
