@@ -99,7 +99,8 @@ trait DeveloperAppUITestTrait {
     $this->config('apigee_edge.common_app_settings')
       ->set('multiple_products', $multiple_products)
       ->save();
-    $this->drupalPostForm($url, $data, 'Save configuration');
+    $this->drupalGet($url);
+    $this->submitForm($data, 'Save configuration');
   }
 
   /**
@@ -115,14 +116,11 @@ trait DeveloperAppUITestTrait {
       $account = $this->account;
     }
 
-    $this->drupalPostForm(
-      Url::fromRoute(
+    $this->drupalGet(Url::fromRoute(
         'entity.developer_app.add_form_for_developer', [
           'user' => $account->id(),
-        ]),
-      $data,
-      'Add app'
-    );
+        ]));
+    $this->submitForm($data, 'Add app');
   }
 
   /**
@@ -140,7 +138,8 @@ trait DeveloperAppUITestTrait {
       $account = $this->account;
     }
 
-    $this->drupalPostForm("/user/{$account->id()}/apps/{$app_name}/edit", $data, 'Save');
+    $this->drupalGet("/user/{$account->id()}/apps/{$app_name}/edit");
+    $this->submitForm($data, 'Save');
   }
 
   /**

@@ -208,7 +208,8 @@ class CacheTest extends ApigeeEdgeFunctionalJavascriptTestBase {
       "values:developer_app:{$this->developerApp->id()}",
       "app_names:developer_app:{$this->developer->uuid()}:{$this->developerApp->getName()}",
     ], function () {
-      $this->drupalPostForm(Url::fromRoute('entity.user.edit_form', ['user' => $this->account->id()]), [
+      $this->drupalGet(Url::fromRoute('entity.user.edit_form', ['user' => $this->account->id()]));
+      $this->submitForm([
         'first_name[0][value]' => $this->randomMachineName(),
         'last_name[0][value]' => $this->randomMachineName(),
       ], 'Save');

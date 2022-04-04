@@ -87,7 +87,8 @@ abstract class ApiProductRoleBasedAccessTestBase extends ApiProductAccessTest {
       }
     }
     $this->drupalLogin($this->users[self::USER_WITH_ADMIN_PERM]);
-    $this->drupalPostForm(Url::fromRoute('apigee_edge.settings.developer.api_product_access'), $post, 'Save configuration');
+    $this->drupalGet(Url::fromRoute('apigee_edge.settings.developer.api_product_access'));
+    $this->submitForm($post, 'Save configuration');
     $this->drupalLogout();
   }
 

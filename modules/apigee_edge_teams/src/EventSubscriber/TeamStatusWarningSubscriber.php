@@ -29,7 +29,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
-use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
+use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
@@ -94,10 +94,10 @@ class TeamStatusWarningSubscriber implements EventSubscriberInterface {
   /**
    * Display's a warning message if team's status is inactive.
    *
-   * @param \Symfony\Component\HttpKernel\Event\FilterResponseEvent $event
+   * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
    *   The event to process.
    */
-  public function onRespond(FilterResponseEvent $event) {
+  public function onRespond(ResponseEvent $event) {
     // Anonymous user's does not have access to these routes.
     if ($this->currentUser->isAuthenticated() && strpos($this->routeMatch->getRouteName(), 'entity.team_app.') === 0) {
       // Team is available in most of the team app routes as a route parameter.

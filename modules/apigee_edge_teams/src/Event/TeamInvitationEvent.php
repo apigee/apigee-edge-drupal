@@ -21,7 +21,7 @@
 namespace Drupal\apigee_edge_teams\Event;
 
 use Drupal\apigee_edge_teams\Entity\TeamInvitationInterface;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * Defines the team_invitation event.

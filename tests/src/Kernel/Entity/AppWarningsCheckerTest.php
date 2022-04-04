@@ -375,7 +375,7 @@ class AppWarningsCheckerTest extends KernelTestBase {
     // One warning for approved app with all credentials revoked.
     $warnings = array_filter($app_warnings_checker->getWarnings($this->approvedAppWithAllRevokedCredential));
     $this->assertCount(1, $warnings);
-    $this->assertEqual('No valid credentials associated with this app.', (string) $warnings['revokedCred']);
+    $this->assertEquals('No valid credentials associated with this app.', (string) $warnings['revokedCred']);
 
     // No warnings to revoked app with revoked credentials.
     $this->assertEmpty(array_filter($app_warnings_checker->getWarnings($this->revokedAppWithRevokedCredential)));
@@ -383,12 +383,12 @@ class AppWarningsCheckerTest extends KernelTestBase {
     // One warning for approved app with expired credentials.
     $warnings = array_filter($app_warnings_checker->getWarnings($this->approvedAppWithExpiredCredential));
     $this->assertCount(1, $warnings);
-    $this->assertEqual('At least one of the credentials associated with this app is expired.', (string) $warnings['expiredCred']);
+    $this->assertEquals('At least one of the credentials associated with this app is expired.', (string) $warnings['expiredCred']);
 
     // One warning for revoked app with expired credentials.
     $warnings = array_filter($app_warnings_checker->getWarnings($this->revokedAppWithExpiredCredential));
     $this->assertCount(1, $warnings);
-    $this->assertEqual('At least one of the credentials associated with this app is expired.', (string) $warnings['expiredCred']);
+    $this->assertEquals('At least one of the credentials associated with this app is expired.', (string) $warnings['expiredCred']);
   }
 
 }

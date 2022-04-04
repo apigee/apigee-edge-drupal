@@ -23,7 +23,7 @@ namespace Drupal\apigee_edge_debug\Plugin\DebugMessageFormatter;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\PluginBase;
-use GuzzleHttp\Psr7;
+use GuzzleHttp\Psr7\Utils;
 use GuzzleHttp\TransferStats;
 use Http\Message\Formatter;
 use Psr\Http\Message\RequestInterface;
@@ -101,7 +101,7 @@ abstract class DebugMessageFormatterPluginBase extends PluginBase implements Con
         $body = preg_replace('/(.*mfa_token=)([^\&]+)(.*)/', '$1***mfa-token***$3', $body);
         $body = preg_replace('/(.*username=)([^\&]+)(.*)/', '$1***username***$3', $body);
         $body = preg_replace('/(.*password=)([^\&]+)(.*)/', '$1***password***$3', $body);
-        $request = $request->withBody(Psr7\stream_for($body));
+        $request = $request->withBody(Utils::streamFor($body));
       }
     }
     if ($this->maskOrganization) {
@@ -139,7 +139,7 @@ abstract class DebugMessageFormatterPluginBase extends PluginBase implements Con
             $value = $masks[$key];
           }
         });
-        $response = $response->withBody(Psr7\stream_for(json_encode((object) $json, JSON_PRETTY_PRINT)));
+        $response = $response->withBody(Utils::streamFor(json_encode((object) $json, JSON_PRETTY_PRINT)));
       }
 
       if ($request->getMethod() === 'POST' && $request->getUri()->getPath() === '/oauth/token') {
@@ -151,7 +151,7 @@ abstract class DebugMessageFormatterPluginBase extends PluginBase implements Con
           if (isset($json['refresh_token'])) {
             $json['refresh_token'] = '***refresh-token***';
           }
-          $response = $response->withBody(Psr7\stream_for(json_encode((object) $json)));
+          $response = $response->withBody(Utils::streamFor(json_encode((object) $json)));
         }
       }
     }

@@ -255,7 +255,7 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
         'product' => $this->apiProducts[0],
       ],
     ]);
-    $this->drupalPostForm(NULL, [
+    $this->submitForm([
       'expiry' => 'date',
       'expiry_date' => "07/20/2030",
     ], 'Confirm');
@@ -314,7 +314,7 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
         'product' => $this->apiProducts[1],
       ],
     ]);
-    $this->drupalPostForm(NULL, [
+    $this->submitForm([
       'expiry' => 'date',
       'expiry_date' => "07/20/2030",
     ], 'Confirm');
@@ -359,7 +359,7 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
     $this->stack->queueMockResponse('no_content');
 
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
-    $this->drupalPostForm(NULL, [], 'Revoke');
+    $this->submitForm([], 'Revoke');
     $this->assertSession()->pageTextContains('API key ' . $this->consumer_key . ' revoked from ' . $this->developerApp->getName() . '.');
 
     // Access denied for the only active key.
@@ -413,7 +413,7 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->queueDeveloperAppResponse($this->developerApp, 200, $credentials);
     $this->stack->queueMockResponse('no_content');
-    $this->drupalPostForm(NULL, [], 'Delete');
+    $this->submitForm([], 'Delete');
     $this->assertSession()->pageTextContains('API key ' . $this->consumer_key . ' deleted from ' . $this->developerApp->getName() . '.');
 
     // Access denied for the only active key.

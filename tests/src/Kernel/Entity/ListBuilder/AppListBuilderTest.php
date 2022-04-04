@@ -368,7 +368,7 @@ class AppListBuilderTest extends KernelTestBase {
     // One warning for approved app with all credentials revoked.
     $warnings = $build['table']['#rows'][$this->getStatusRowKey($this->approvedAppWithAllRevokedCredential)]['data'];
     $this->assertCount(1, $warnings);
-    $this->assertEqual('No valid credentials associated with this app.', (string) $warnings['info']['data']['#items'][0]);
+    $this->assertEquals('No valid credentials associated with this app.', (string) $warnings['info']['data']['#items'][0]);
 
     // No warnings to revoked app with revoked credentials.
     $this->assertEmpty($build['table']['#rows'][$this->getStatusRowKey($this->revokedAppWithRevokedCredential)]['data']);
@@ -376,7 +376,7 @@ class AppListBuilderTest extends KernelTestBase {
     // One warning for approved app with expired credentials.
     $warnings = $build['table']['#rows'][$this->getStatusRowKey($this->approvedAppWithExpiredCredential)]['data'];
     $this->assertCount(1, $warnings);
-    $this->assertEqual('At least one of the credentials associated with this app is expired.', (string) $warnings['info']['data']['#items'][0]);
+    $this->assertEquals('At least one of the credentials associated with this app is expired.', (string) $warnings['info']['data']['#items'][0]);
 
     // No warnings for revoked app with expired credentials.
     // Note: \Drupal\apigee_edge\Entity\AppWarningsChecker::getWarnings will
