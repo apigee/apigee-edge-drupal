@@ -265,10 +265,10 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
   protected function sortPermissions(array $all_permissions = []) {
     uasort($all_permissions, function (TeamPermission $permission_a, TeamPermission $permission_b) {
       if ($permission_a->getCategory() == $permission_b->getCategory()) {
-        return $permission_a->getLabel() > $permission_b->getLabel();
+        return $permission_a->getLabel() <=> $permission_b->getLabel();
       }
       else {
-        return $permission_a->getCategory() > $permission_b->getCategory();
+        return $permission_a->getCategory() <=> $permission_b->getCategory();
       }
     });
     return $all_permissions;
