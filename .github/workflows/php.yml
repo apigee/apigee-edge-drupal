@@ -16,9 +16,7 @@ env:
   
 on:
   push:
-
-  pull_request:
-    branches: [ 2.x ]
+  pull_request_target:
 
 jobs:
   build:
