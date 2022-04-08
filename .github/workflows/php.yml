@@ -1,0 +1,122 @@
+name: test_and_lint
+env:
+  SIMPLETEST_DB: "sqlite://localhost//tmp/test.sqlite"
+  SIMPLETEST_BASE_URL: "http://127.0.0.1:8000"  
+  APIGEE_EDGE_AUTH_TYPE: ${{ secrets.APIGEE_EDGE_AUTH_TYPE }}
+  APIGEE_EDGE_ORGANIZATION: ${{ secrets.APIGEE_EDGE_ORGANIZATION }}
+  APIGEE_EDGE_USERNAME: ${{ secrets.APIGEE_EDGE_USERNAME }}
+  APIGEE_EDGE_PASSWORD: ${{ secrets.APIGEE_EDGE_PASSWORD }}
+  APIGEE_EDGE_INSTANCE_TYPE: ${{ secrets.APIGEE_EDGE_INSTANCE_TYPE }}
+  APIGEE_INTEGRATION_ENABLE: ${{ secrets.APIGEE_INTEGRATION_ENABLE }}
+  APIGEE_EDGE_ENDPOINT: ${{ secrets.APIGEE_EDGE_ENDPOINT }}
+  SYMFONY_DEPRECATIONS_HELPER: "disabled"
+  BROWSERTEST_OUTPUT_DIRECTORY: "sites/simpletest/browser_output"
+  BROWSERTEST_OUTPUT_BASE_URL: ""
+  MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", { "chromeOptions": { "w3c": false } }, "http://127.0.0.1:9515/wd/hub"]'
+  
+on:
+  push:
+  pull_request_target:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    name: "PHP ${{ matrix.php-version }} | Drupal ${{ matrix.drupal-core }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        experimental: [false]
+        php-version:
+          - "7.4"
+          - "8.0"
+        drupal-core:
+          # Should update the following as the minimum supported version from Drupal.org
+          - "9.2.x"
+#        include:
+#           - php-version: "8.1"
+#             drupal-core: "10.0.x-dev"
+#             experimental: true
+
+    steps:
+
+    - name: "Install PHP"
+      uses: "shivammathur/setup-php@v2"
+      with:
+        coverage: "none"
+        php-version: "${{ matrix.php-version }}"
+        tools: composer:v2
+        extensions: dom, curl, libxml, mbstring, zip, pdo, mysql, pdo_mysql, bcmath, gd, exif, iconv, opcache, imagick
+
+    - name: Checkout Drupal core
+      run: |
+        git clone --depth 1 --branch ${{ matrix.drupal-core }} https://github.com/drupal/drupal.git drupal
+        mkdir -p drupal/modules/contrib/apigee_edge
+        mkdir -p drupal/sites/simpletest/browser_output
+  
+    - name: Checkout apigee_edge module
+      uses: actions/checkout@v3.0.0
+      with:
+        path: drupal/modules/contrib/apigee_edge
+
+    - name: "Allow plugins and dev dependencies"
+      run: |
+        cd drupal
+        composer config --no-plugins allow-plugins.composer/installers true
+        composer config --no-plugins allow-plugins.drupal/core-composer-scaffold true
+        composer config --no-plugins allow-plugins.drupal/core-project-message true
+        composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+        composer config --no-plugins allow-plugins.wikimedia/composer-merge-plugin true
+        composer config --no-plugins allow-plugins.composer/package-versions-deprecated true
+        composer config --no-plugins allow-plugins.cweagans/composer-patches true
+        composer require --dev drush/drush
+        composer config minimum-stability dev
+        composer require drupal/rules:3.0.0-alpha7
+        composer require wikimedia/composer-merge-plugin
+        composer config --json extra.merge-plugin.require '["modules/contrib/apigee_edge/composer.json"]'
+        composer update --with-all-dependencies --ignore-platform-req=php
+        composer require --dev phpspec/prophecy-phpunit:^2 --ignore-platform-req=php
+
+    # Install drupal using minimal installation profile and enable the module.
+    - name: Install Drupal
+      run: |
+        cd drupal   
+        php -d sendmail_path=$(which true); vendor/bin/drush --yes -v site-install minimal --db-url="$SIMPLETEST_DB"
+        vendor/bin/drush en $DRUPAL_MODULE_NAME -y
+        vendor/bin/drush rs 8000 &
+
+    - name: "PHPCS"
+      run: |
+        cd drupal
+        cp modules/contrib/apigee_edge/phpcs.xml.dist .
+        vendor/bin/phpcs --standard=./phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors
+
+    - name: "PHPUnit unit"
+      run: |
+        cd drupal
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit
+
+    - name: "PHPUnit kernel"
+      run: |
+        cd drupal
+        rm -rf modules/contrib/apigee_edge/modules/apigee_edge_actions
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite kernel
+
+    - uses: nanasess/setup-chromedriver@v1
+
+    - run: |
+        export DISPLAY=:99
+        chromedriver --url-base=/wd/hub &
+        sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
+
+    - name: "PHPUnit functional javascript"
+      run: |
+        cd drupal
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional-javascript --stop-on-failure
+
+    - name: "PHPUnit functional"
+      run: |
+        cd drupal
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional --stop-on-failure
+
