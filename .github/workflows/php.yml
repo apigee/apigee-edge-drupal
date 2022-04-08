@@ -84,7 +84,7 @@ jobs:
       run: |
         cd drupal   
         php -d sendmail_path=$(which true); vendor/bin/drush --yes -v site-install minimal --db-url="$SIMPLETEST_DB"
-        vendor/bin/drush en $DRUPAL_MODULE_NAME -y
+        vendor/bin/drush en apigee_edge -y
         vendor/bin/drush rs 8000 &
 
     - name: "PHPCS"
