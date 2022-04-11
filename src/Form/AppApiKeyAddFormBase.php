@@ -209,7 +209,7 @@ abstract class AppApiKeyAddFormBase extends FormBase {
 
     // Find the recently active one.
     usort($approved_credentials, function (AppCredentialInterface $a, AppCredentialInterface $b) {
-      return $a->getIssuedAt() < $b->getIssuedAt();
+      return $b->getIssuedAt() <=> $a->getIssuedAt();
     });
 
     return count($approved_credentials) ? $approved_credentials[0]->getApiProducts() : [];
