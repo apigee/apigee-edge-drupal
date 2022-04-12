@@ -101,7 +101,6 @@ jobs:
     - name: "PHPUnit kernel"
       run: |
         cd drupal
-        rm -rf modules/contrib/apigee_edge/modules/apigee_edge_actions
         vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite kernel
 
     - uses: nanasess/setup-chromedriver@v1
