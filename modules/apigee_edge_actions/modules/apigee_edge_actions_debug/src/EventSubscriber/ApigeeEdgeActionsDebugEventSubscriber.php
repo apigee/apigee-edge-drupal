@@ -21,8 +21,8 @@
 namespace Drupal\apigee_edge_actions_debug\EventSubscriber;
 
 use Drupal\apigee_edge_actions\Event\ApigeeEdgeActionsEventInterface;
+use Drupal\apigee_edge_actions\Event\EdgeEntityEventEdge;
 use Drupal\Core\Logger\LoggerChannelInterface;
-use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -50,12 +50,12 @@ class ApigeeEdgeActionsDebugEventSubscriber implements EventSubscriberInterface 
   /**
    * Responds to rules events.
    *
-   * @param \Symfony\Contracts\EventDispatcher\Event $event
+   * @param \Drupal\apigee_edge_actions\Event\EdgeEntityEventEdge $event
    *   The event object.
    * @param string $event_name
    *   The event name.
    */
-  public function onRulesEvent(Event $event, $event_name) {
+  public function onRulesEvent(EdgeEntityEventEdge $event, $event_name) {
     // Log the dispatched event.
     if ($event instanceof ApigeeEdgeActionsEventInterface) {
       $this->logger->notice("Event $event_name was dispatched.");

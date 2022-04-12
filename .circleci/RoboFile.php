@@ -523,20 +523,4 @@ class RoboFile extends \Robo\Tasks
     file_put_contents('composer.json', json_encode($config, JSON_PRETTY_PRINT));
   }
 
-  /**
-   * Perform extra tasks per Drupal core version.
-   *
-   * @param int $drupalCoreVersion
-   *   The major version of Drupal required.
-   */
-  public function doExtra($drupalCoreVersion) {
-    if ($drupalCoreVersion > 8) {
-
-      // Delete D8 only modules.
-      $this->taskFilesystemStack()
-        ->taskDeleteDir('modules/apigee_edge/modules/apigee_edge_actions')
-        ->run();
-    }
-  }
-
 }
