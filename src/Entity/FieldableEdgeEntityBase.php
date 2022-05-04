@@ -532,7 +532,7 @@ abstract class FieldableEdgeEntityBase extends EdgeEntityBase implements Fieldab
   /**
    * {@inheritdoc}
    */
-  public function getIterator() {
+  public function getIterator(): \Traversable {
     return new \ArrayIterator($this->getFields());
   }
 
