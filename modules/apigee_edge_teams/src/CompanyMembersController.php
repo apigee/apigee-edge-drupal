@@ -92,7 +92,7 @@ final class CompanyMembersController implements CompanyMembersControllerInterfac
     $membership = $this->companyMembershipObjectCache->getMembership($this->company);
     if ($membership === NULL) {
       $membership = $this->decorated()->getMembers();
-      $this->companyMembershipObjectCache->saveMembership($this->company, $membership); 
+      $this->companyMembershipObjectCache->saveMembership($this->company, $membership);
     }
 
     return $membership;
