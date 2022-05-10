@@ -68,12 +68,12 @@ class TeamInvitationForm extends ConfigFormBase {
       '#title' => $this
         ->t('Disable email notification for existing users and auto approve'),
       '#default_value' => $config->get('team_invitation_email_existing.disable_notification'),
-      ];
+    ];
 
     $form['email_for_existing_users']['team_invitation_email_existing_subject'] = [
       '#title' => $this->t('Subject'),
       '#type' => 'textfield',
-      '#states'=> [
+      '#states' => [
         'required' => [
           ':input[name="disable_notification"]' => ['checked' => FALSE],
         ],
@@ -85,7 +85,7 @@ class TeamInvitationForm extends ConfigFormBase {
       '#title' => $this->t('Body'),
       '#type' => 'textarea',
       '#rows' => 10,
-      '#states'=> [
+      '#states' => [
         'required' => [
           ':input[name="disable_notification"]' => ['checked' => FALSE],
         ],
@@ -134,7 +134,7 @@ class TeamInvitationForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->configFactory->getEditable('apigee_edge_teams.team_settings')
-      ->set('team_invitation_expiry_days', $form_state->getValue(['team_invitation_expiry_days']))      
+      ->set('team_invitation_expiry_days', $form_state->getValue(['team_invitation_expiry_days']))
       ->set('team_invitation_email_existing.disable_notification', $form_state->getValue(['disable_notification']))
       ->set('team_invitation_email_existing.subject', $form_state->getValue(['team_invitation_email_existing_subject']))
       ->set('team_invitation_email_existing.body', $form_state->getValue(['team_invitation_email_existing_body']))
