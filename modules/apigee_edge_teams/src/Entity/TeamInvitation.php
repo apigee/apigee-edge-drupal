@@ -277,7 +277,7 @@ class TeamInvitation extends ContentEntityBase implements TeamInvitationInterfac
     /** @var \Drupal\user\UserInterface $user */
     $user = user_load_by_mail($this->getRecipient());
 
-    if ($user && $config->get('team_invitation_email_existing.disable_notification')) {
+    if ($user && $config->get('team_invitation_auto_approve')) {
       $this->setStatus(TeamInvitationInterface::STATUS_ACCEPTED);
     }
 
