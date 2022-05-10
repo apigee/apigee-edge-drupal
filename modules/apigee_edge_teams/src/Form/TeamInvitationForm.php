@@ -63,10 +63,21 @@ class TeamInvitationForm extends ConfigFormBase {
       '#collapsible' => FALSE,
     ];
 
+    $form['email_for_existing_users']['disable_notification'] = [
+      '#type' => 'checkbox',
+      '#title' => $this
+        ->t('Disable email notification for existing users and auto approve'),
+      '#default_value' => $config->get('team_invitation_email_existing.disable_notification'),
+      ];
+
     $form['email_for_existing_users']['team_invitation_email_existing_subject'] = [
       '#title' => $this->t('Subject'),
       '#type' => 'textfield',
-      '#required' => TRUE,
+      '#states'=> [
+        'required' => [
+          ':input[name="disable_notification"]' => ['checked' => FALSE],
+        ],
+      ],
       '#default_value' => $config->get('team_invitation_email_existing.subject'),
     ];
 
@@ -74,7 +85,11 @@ class TeamInvitationForm extends ConfigFormBase {
       '#title' => $this->t('Body'),
       '#type' => 'textarea',
       '#rows' => 10,
-      '#required' => TRUE,
+      '#states'=> [
+        'required' => [
+          ':input[name="disable_notification"]' => ['checked' => FALSE],
+        ],
+      ],
       '#default_value' => $config->get('team_invitation_email_existing.body'),
       '#description' => $this->t('Available tokens: [user:display-name], [site:name], [site:url], [team_invitation:team_name], [team_invitation:url_accept], [team_invitation:url_decline], [team_invitation:uid:entity:display-name] (the display name of the user who sent the invitation) and [team_invitation:expiry_days]'),
     ];
@@ -119,7 +134,8 @@ class TeamInvitationForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->configFactory->getEditable('apigee_edge_teams.team_settings')
-      ->set('team_invitation_expiry_days', $form_state->getValue(['team_invitation_expiry_days']))
+      ->set('team_invitation_expiry_days', $form_state->getValue(['team_invitation_expiry_days']))      
+      ->set('team_invitation_email_existing.disable_notification', $form_state->getValue(['disable_notification']))
       ->set('team_invitation_email_existing.subject', $form_state->getValue(['team_invitation_email_existing_subject']))
       ->set('team_invitation_email_existing.body', $form_state->getValue(['team_invitation_email_existing_body']))
       ->set('team_invitation_email_new.subject', $form_state->getValue(['team_invitation_email_new_subject']))
