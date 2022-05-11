@@ -97,7 +97,7 @@ final class DeveloperStatusWarningSubscriber implements EventSubscriberInterface
    */
   public function onRespond(ResponseEvent $event) {
     // Anonymous user's does not have access to these routes.
-    if ($this->currentUser->isAuthenticated() && strpos($this->routeMatch->getRouteName(), 'entity.developer_app.') === 0) {
+    if ($this->currentUser->isAuthenticated() && strpos(($this->routeMatch->getRouteName() ?? ''), 'entity.developer_app.') === 0) {
       $developer_storage = $this->entityTypeManager->getStorage('developer');
       /** @var \Drupal\apigee_edge\Entity\DeveloperInterface|NULL $developer */
       $developer = NULL;
