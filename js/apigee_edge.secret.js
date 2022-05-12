@@ -19,7 +19,7 @@
  * @file
  * Script for the Secret element.
  */
- (function ($, Drupal, drupalSettings) {
+(function ($, Drupal, drupalSettings) {
 
   'use strict';
 
