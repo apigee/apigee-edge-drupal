@@ -43,6 +43,7 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
    * {@inheritdoc}
    */
   public function unserialize($value) {
+    $value = $value ?? '';
     return Json::decode($value);
   }
 
