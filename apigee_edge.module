@@ -1064,9 +1064,6 @@ function template_preprocess_app_credential_product_list(array &$variables) {
   $variables['#api_product_entities'] = $allProducts = ApiProduct::loadMultiple($cred_product_ids);
   $variables += ['content' => []];
   foreach ($cred_products as $product) {
-    if (!$allProducts[$product->getApiproduct()]->access('view label')) {
-      continue;
-    }
     $value = '';
     $indicator_status = '';
     switch ($product->getStatus()) {
