@@ -89,12 +89,13 @@ final class CompanyMembersController implements CompanyMembersControllerInterfac
    * {@inheritdoc}
    */
   public function getMembers(): CompanyMembership {
-    if ($this->companyMembershipObjectCache->getMembership($this->company) === NULL) {
+    $membership = $this->companyMembershipObjectCache->getMembership($this->company);
+    if ($membership === NULL) {
       $membership = $this->decorated()->getMembers();
       $this->companyMembershipObjectCache->saveMembership($this->company, $membership);
     }
 
-    return $this->companyMembershipObjectCache->getMembership($this->company);
+    return $membership;
   }
 
   /**
