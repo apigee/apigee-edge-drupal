@@ -447,6 +447,8 @@ function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityV
           ],
         ],
       ]))->toRenderable();
+     
+     $build['#attached']['library'][] = 'core/drupal.dialog.ajax';
     }
   }
 
