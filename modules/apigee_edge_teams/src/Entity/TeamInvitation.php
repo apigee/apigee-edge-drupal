@@ -272,6 +272,15 @@ class TeamInvitation extends ContentEntityBase implements TeamInvitationInterfac
   public function preSave(EntityStorageInterface $storage) {
     parent::preSave($storage);
 
+    $config = \Drupal::config('apigee_edge_teams.team_settings');
+
+    /** @var \Drupal\user\UserInterface $user */
+    $user = user_load_by_mail($this->getRecipient());
+
+    if ($user && $config->get('team_invitation_auto_approve')) {
+      $this->setStatus(TeamInvitationInterface::STATUS_ACCEPTED);
+    }
+
     // Set a default label.
     if ($this->get('label')->isEmpty()) {
       $this->setLabel($this->t('Invitation to join @team as @roles', [
@@ -284,7 +293,7 @@ class TeamInvitation extends ContentEntityBase implements TeamInvitationInterfac
 
     // Set the expiry date.
     if ($this->get('expiry')->isEmpty()) {
-      $days = \Drupal::config('apigee_edge_teams.team_settings')->get('team_invitation_expiry_days');
+      $days = $config->get('team_invitation_expiry_days');
       $this->setExpiryTime($this->getCreatedTime() + (24 * 60 * 60 * (int) $days));
     }
   }
