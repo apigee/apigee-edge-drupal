@@ -46,7 +46,7 @@ class TeamAppKeysController extends DeveloperAppKeysController {
         $payload = $this->getAppKeys($app_storage->load($app_id));
       }
     }
-    return new JsonResponse($payload);
+    return new JsonResponse($payload, 200, ['Cache-Control' => 'must-understand, no-store']);
   }
 
 }
