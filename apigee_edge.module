@@ -411,8 +411,7 @@ function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityV
           '#app' => $entity,
           '#attributes' => [
             'class' => 'items--inline',
-            'data-app' => $entity->getName(),
-            'data-team' => isset($team_app_name) ? $team_app_name : '',
+            'data-app-keys-url' => $entity->toUrl('api-keys', ['absolute' => TRUE])->toString(FALSE),
             'data-app-container-index' => $index,
           ],
         ] + $defaults;
@@ -448,6 +447,8 @@ function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityV
           ],
         ],
       ]))->toRenderable();
+     
+     $build['#attached']['library'][] = 'core/drupal.dialog.ajax';
     }
   }
 

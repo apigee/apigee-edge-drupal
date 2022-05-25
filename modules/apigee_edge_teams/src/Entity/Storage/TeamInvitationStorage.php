@@ -113,7 +113,12 @@ class TeamInvitationStorage extends SqlContentEntityStorage implements TeamInvit
 
     switch ($hook) {
       case 'insert':
-        $this->eventDispatcher->dispatch(TeamInvitationEvents::CREATED, new TeamInvitationEvent($entity));
+        if ($entity->isAccepted()) {
+          $this->eventDispatcher->dispatch(TeamInvitationEvents::ACCEPTED, new TeamInvitationEvent($entity));
+        }
+        else {
+          $this->eventDispatcher->dispatch(TeamInvitationEvents::CREATED, new TeamInvitationEvent($entity));
+        }
         break;
 
       case 'update':

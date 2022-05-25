@@ -57,16 +57,33 @@ class TeamInvitationForm extends ConfigFormBase {
       '#default_value' => $config->get('team_invitation_expiry_days'),
     ];
 
+    $form['team_invitation_auto_approve'] = [
+      '#type' => 'checkbox',
+      '#title' => $this
+        ->t('Auto approve team membership for existing user'),
+      '#default_value' => $config->get('team_invitation_auto_approve'),
+      '#description' => $this->t('A user will be added automatically and email notification will not be sent to existing users. New users will get a site signup email.'),
+    ];
+
     $form['email_for_existing_users'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Invitation email for existing users'),
       '#collapsible' => FALSE,
+      '#states' => [
+        'visible' => [
+          ':input[name="team_invitation_auto_approve"]' => ['checked' => FALSE],
+        ],
+      ],
     ];
 
     $form['email_for_existing_users']['team_invitation_email_existing_subject'] = [
       '#title' => $this->t('Subject'),
       '#type' => 'textfield',
-      '#required' => TRUE,
+      '#states' => [
+        'required' => [
+          ':input[name="team_invitation_auto_approve"]' => ['checked' => FALSE],
+        ],
+      ],
       '#default_value' => $config->get('team_invitation_email_existing.subject'),
     ];
 
@@ -74,7 +91,11 @@ class TeamInvitationForm extends ConfigFormBase {
       '#title' => $this->t('Body'),
       '#type' => 'textarea',
       '#rows' => 10,
-      '#required' => TRUE,
+      '#states' => [
+        'required' => [
+          ':input[name="team_invitation_auto_approve"]' => ['checked' => FALSE],
+        ],
+      ],
       '#default_value' => $config->get('team_invitation_email_existing.body'),
       '#description' => $this->t('Available tokens: [user:display-name], [site:name], [site:url], [team_invitation:team_name], [team_invitation:url_accept], [team_invitation:url_decline], [team_invitation:uid:entity:display-name] (the display name of the user who sent the invitation) and [team_invitation:expiry_days]'),
     ];
@@ -120,6 +141,7 @@ class TeamInvitationForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->configFactory->getEditable('apigee_edge_teams.team_settings')
       ->set('team_invitation_expiry_days', $form_state->getValue(['team_invitation_expiry_days']))
+      ->set('team_invitation_auto_approve', $form_state->getValue(['team_invitation_auto_approve']))
       ->set('team_invitation_email_existing.subject', $form_state->getValue(['team_invitation_email_existing_subject']))
       ->set('team_invitation_email_existing.body', $form_state->getValue(['team_invitation_email_existing_body']))
       ->set('team_invitation_email_new.subject', $form_state->getValue(['team_invitation_email_new_subject']))
