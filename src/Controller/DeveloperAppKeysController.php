@@ -76,7 +76,7 @@ class DeveloperAppKeysController extends ControllerBase {
         }
       }
     }
-    return new JsonResponse($payload);
+    return new JsonResponse($payload, 200, ['Cache-Control' => 'must-understand, no-store']);
   }
 
   /**
