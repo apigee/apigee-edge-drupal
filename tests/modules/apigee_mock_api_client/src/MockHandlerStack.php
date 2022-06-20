@@ -25,6 +25,7 @@ use Apigee\MockClient\GuzzleHttp\MockHandler;
 use Apigee\MockClient\MockStorageInterface;
 use Apigee\MockClient\ResponseFactoryInterface;
 use GuzzleHttp\Psr7\Response;
+use Twig\Environment;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -66,7 +67,7 @@ class MockHandlerStack extends MockHandler {
    * @param \Twig\Environment $twig
    *   The twig environment used in the response generator.
    */
-  public function __construct(MockStorageInterface $storage, ResponseFactoryInterface $response_factory, \Twig\Environment $twig) {
+  public function __construct(MockStorageInterface $storage, ResponseFactoryInterface $response_factory, Environment $twig) {
     parent::__construct($storage);
 
     $this->responseFactory = $response_factory;

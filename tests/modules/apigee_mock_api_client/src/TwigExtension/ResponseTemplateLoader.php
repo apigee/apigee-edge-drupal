@@ -21,11 +21,11 @@
 namespace Drupal\apigee_mock_api_client\TwigExtension;
 
 use Drupal\Core\Extension\ModuleHandlerInterface;
-
+use Twig\Loader\FilesystemLoader;
 /**
  * Loads templates from the response-templates folder of a module.
  */
-class ResponseTemplateLoader extends \Twig\Loader\FilesystemLoader {
+class ResponseTemplateLoader extends FilesystemLoader {
 
   /**
    * Constructs a new FilesystemLoader object.
