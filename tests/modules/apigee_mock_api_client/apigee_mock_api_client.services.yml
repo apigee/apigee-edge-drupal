@@ -31,7 +31,7 @@ services:
     arguments: ['@http_handler_stack', '@apigee_mock_api_client.mock_http_handler_stack', '@state']
 
   apigee_mock_api_client_twig:
-    class: \Twig_Environment
+    class: \Twig\Environment
     arguments: ['@apigee_mock_api_client_twig_json.loader']
 
   apigee_mock_api_client_twig_json.loader:

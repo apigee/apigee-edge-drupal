@@ -25,7 +25,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 /**
  * Loads templates from the response-templates folder of a module.
  */
-class ResponseTemplateLoader extends \Twig_Loader_Filesystem {
+class ResponseTemplateLoader extends \Twig\Loader\FilesystemLoader {
 
   /**
    * Constructs a new FilesystemLoader object.

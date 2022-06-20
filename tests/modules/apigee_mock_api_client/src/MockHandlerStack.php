@@ -52,7 +52,7 @@ class MockHandlerStack extends MockHandler {
   /**
    * The twig environment used in the response generator.
    *
-   * @var \Twig_Environment
+   * @var \Twig\Environment
    */
   protected $twig;
 
@@ -63,10 +63,10 @@ class MockHandlerStack extends MockHandler {
    *   Mock storage.
    * @param \Apigee\MockClient\ResponseFactoryInterface $response_factory
    *   The response factory.
-   * @param \Twig_Environment $twig
+   * @param \Twig\Environment $twig
    *   The twig environment used in the response generator.
    */
-  public function __construct(MockStorageInterface $storage, ResponseFactoryInterface $response_factory, \Twig_Environment $twig) {
+  public function __construct(MockStorageInterface $storage, ResponseFactoryInterface $response_factory, \Twig\Environment $twig) {
     parent::__construct($storage);
 
     $this->responseFactory = $response_factory;
