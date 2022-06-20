@@ -64,7 +64,7 @@ class OauthTokenFileStorageTest extends KernelTestBase {
    *
    * @throws \Exception
    */
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
 
     $this->testTokenData = [
