@@ -37,7 +37,7 @@ class EdgeEntityAddProductEventTest extends ApigeeEdgeActionsRulesKernelTestBase
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'apigee_edge_actions',
     'apigee_edge_actions_debug',
     'apigee_edge',

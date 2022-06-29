@@ -77,7 +77,7 @@ class TeamInvitationNotifierEmail implements TeamInvitationNotifierInterface {
 
     // Send email notification.
     $message = $this->mailManager->mail('apigee_edge_teams', 'team_invitation_created', $email, $langcode, $params);
-    return $message['result'];
+    return $message['result'] ?? FALSE;
   }
 
 }

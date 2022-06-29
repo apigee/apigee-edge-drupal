@@ -99,6 +99,11 @@ jobs:
         cp modules/contrib/apigee_edge/phpcs.xml.dist .
         vendor/bin/phpcs --standard=./phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors
 
+    - name: "Drupal check"
+      run: |
+        cd drupal
+        vendor/bin/drupal-check modules/contrib/apigee_edge
+
     - name: "PHPUnit unit"
       run: |
         cd drupal
