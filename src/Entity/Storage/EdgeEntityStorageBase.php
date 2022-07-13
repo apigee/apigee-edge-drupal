@@ -335,10 +335,16 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
   protected function invokeStorageLoadHook(array &$entities) {
     if (!empty($entities)) {
       // Call hook_entity_storage_load().
-      $this->moduleHandler()->invokeAll('entity_storage_load', [$entities, $this->entityTypeId]);
+      $this->moduleHandler()->invokeAll(
+        'entity_storage_load',
+        [$entities, $this->entityTypeId]
+      );
 
       // Call hook_TYPE_storage_load().
-      $this->moduleHandler()->invokeAll($this->entityTypeId . '_storage_load', [$entities]);
+      $this->moduleHandler()->invokeAll(
+        $this->entityTypeId . '_storage_load',
+        [$entities]
+      );
     }
   }
 
