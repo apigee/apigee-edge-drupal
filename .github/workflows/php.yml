@@ -18,7 +18,7 @@ on:
   push:
   pull_request_target:
   schedule:
-    - cron: '45 10 * * *'  
+    - cron: '15 * * * *'  
 
 jobs:
   build:
@@ -50,7 +50,7 @@ jobs:
     steps:
 
     - name: Enable deprecations check for nightly build
-      if: github.event.schedule == '45 10 * * *'
+      if: github.event.schedule == '15 * * * *'
       run: |
         echo "Enable deprecations check for nightly build"
         echo "SYMFONY_DEPRECATIONS_HELPER='max[direct]=0'" >> $GITHUB_ENV
