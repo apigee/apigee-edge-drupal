@@ -50,10 +50,10 @@ jobs:
     steps:
 
     - name: Enable deprecations check for nightly build
-      if: github.event.schedule != '*/15 * * * *'
+      if: github.event.schedule == '*/15 * * * *'
       run: |
         echo "Enable deprecations check for nightly build"
-        echo "${{ github.event }}"
+        echo "${{ github.event_name }}"
         echo "SYMFONY_DEPRECATIONS_HELPER=''" >> $GITHUB_ENV
 
     - name: "Install PHP"
@@ -66,6 +66,7 @@ jobs:
 
     - name: Checkout Drupal core
       run: |
+        echo "${{ github.event_name }}"
         git clone --depth 1 --branch ${{ matrix.drupal-core }} https://github.com/drupal/drupal.git drupal
         mkdir -p drupal/modules/contrib/apigee_edge
         mkdir -p drupal/sites/simpletest/browser_output
