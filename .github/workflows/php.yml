@@ -17,6 +17,8 @@ env:
 on:
   push:
   pull_request_target:
+  schedule:
+    - cron: '40 9 * * *'  
 
 jobs:
   build:
@@ -46,6 +48,12 @@ jobs:
 #             experimental: true
 
     steps:
+
+    - name: Enable deprecations check for nightly build
+      if: github.event.schedule == '40 9 * * *'
+      run: |
+        echo "Enable deprecations check for nightly build"
+        echo "SYMFONY_DEPRECATIONS_HELPER='max[direct]=0'" >> $GITHUB_ENV
 
     - name: "Install PHP"
       uses: "shivammathur/setup-php@v2"
