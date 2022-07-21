@@ -53,7 +53,7 @@ jobs:
       if: github.event.schedule != '*/15 * * * *'
       run: |
         echo "Enable deprecations check for nightly build"
-        echo ${{ github.event.schedule }}
+        echo "${{ github.event }}"
         echo "SYMFONY_DEPRECATIONS_HELPER=''" >> $GITHUB_ENV
 
     - name: "Install PHP"
