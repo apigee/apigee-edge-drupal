@@ -9,7 +9,6 @@ env:
   APIGEE_EDGE_INSTANCE_TYPE: ${{ secrets.APIGEE_EDGE_INSTANCE_TYPE }}
   APIGEE_INTEGRATION_ENABLE: ${{ secrets.APIGEE_INTEGRATION_ENABLE }}
   APIGEE_EDGE_ENDPOINT: ${{ secrets.APIGEE_EDGE_ENDPOINT }}
-  SYMFONY_DEPRECATIONS_HELPER: "disabled"
   BROWSERTEST_OUTPUT_DIRECTORY: "sites/simpletest/browser_output"
   BROWSERTEST_OUTPUT_BASE_URL: ""
   MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", { "chromeOptions": { "w3c": false } }, "http://127.0.0.1:9515/wd/hub"]'
@@ -49,12 +48,11 @@ jobs:
 
     steps:
 
-    - name: Enable deprecations check for nightly build
-      if: github.event.schedule == '*/15 * * * *'
+    - name: Disable deprecations check except nightly build
+      if: github.event_name != 'schedule'
       run: |
-        echo "Enable deprecations check for nightly build"
-        echo "${{ github.event_name }}"
-        echo "SYMFONY_DEPRECATIONS_HELPER=''" >> $GITHUB_ENV
+        echo "Disable deprecations check for nightly build"
+        echo "SYMFONY_DEPRECATIONS_HELPER='disabled'" >> $GITHUB_ENV
 
     - name: "Install PHP"
       uses: "shivammathur/setup-php@v2"
@@ -66,7 +64,6 @@ jobs:
 
     - name: Checkout Drupal core
       run: |
-        echo "${{ github.event_name }}"
         git clone --depth 1 --branch ${{ matrix.drupal-core }} https://github.com/drupal/drupal.git drupal
         mkdir -p drupal/modules/contrib/apigee_edge
         mkdir -p drupal/sites/simpletest/browser_output
