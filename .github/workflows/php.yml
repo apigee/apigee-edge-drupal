@@ -17,7 +17,7 @@ on:
   push:
   pull_request_target:
   schedule:
-    - cron: '*/15 * * * *'  
+    - cron: '45 * * * *'  
 
 jobs:
   build:
