@@ -17,7 +17,7 @@ on:
   push:
   pull_request_target:
   schedule:
-    - cron: '50 08 * * *'  
+    - cron: '00 01 * * *'  
 
 jobs:
   build:
@@ -30,13 +30,13 @@ jobs:
       matrix:
         experimental: [false]
         php-version:
-          #- "7.4"
-          #- "8.0"
+          - "7.4"
+          - "8.0"
           - "8.1"
         drupal-core:
           # Should update the following as the minimum supported version from Drupal.org
-          #- "9.2.x"
-          #- "9.3.x"
+          - "9.2.x"
+          - "9.3.x"
           - "9.4.x"
         exclude:
            - php-version: "8.1"
