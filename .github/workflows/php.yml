@@ -48,10 +48,10 @@ jobs:
 
     steps:
 
-    - name: Disable deprecations check except nightly build
+    - name: Disable deprecations check for PR
       if: github.event_name != 'schedule'
       run: |
-        echo "Disable deprecations check for nightly build"
+        echo "Disable deprecations check"
         echo "SYMFONY_DEPRECATIONS_HELPER='disabled'" >> $GITHUB_ENV
 
     - name: "Install PHP"
