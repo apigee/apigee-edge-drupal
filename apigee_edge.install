@@ -39,6 +39,7 @@ function apigee_edge_requirements($phase) {
     if (!InstallerKernel::installationAttempted()) {
       $missing_mails = \Drupal::entityQuery('user')
         ->notExists('mail')
+        ->accessCheck(TRUE)
         ->condition('uid', '0', '<>')
         ->execute();
       if (!empty($missing_mails)) {
