@@ -1670,7 +1670,7 @@ function apigee_edge_developer_app_storage_load(array $entities) {
   // anyway but one by one. With this we warm up the user entity cache and
   // User::load() will return all users from cache.
   $userStorage = \Drupal::entityTypeManager()->getStorage('user');
-  $uids = $userStorage->getQuery()->condition('mail', $dev_id_mail_map, 'IN')->execute();
+  $uids = $userStorage->getQuery()->accessCheck(TRUE)->condition('mail', $dev_id_mail_map, 'IN')->execute();
   $users = $userStorage->loadMultiple($uids);
 
   if ($dev_id_mail_map) {
