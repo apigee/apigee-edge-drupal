@@ -155,7 +155,7 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
     $credential = $this->decorated()->delete($consumer_key);
     $this->eventDispatcher->dispatch(
       new AppCredentialDeleteEvent($this->getAppType(), $this->owner, $this->appName, $credential),
-      AppCredentialDeleteEvent::EVENT_NAME  
+      AppCredentialDeleteEvent::EVENT_NAME
     );
     // By removing app from cache we force reload the credentials as well.
     $this->appCacheByOwner->removeEntities([$this->appName]);
