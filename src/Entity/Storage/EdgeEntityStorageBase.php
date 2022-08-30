@@ -231,7 +231,7 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
    *   The Drupal entity that decorates the SDK entity.
    */
   protected function createNewInstance(SdkEntityInterface $sdk_entity): DrupalEdgeEntityInterface {
-    $rc = new \ReflectionClass($this->entityClass);
+    $rc = new \ReflectionClass($this->getEntityClass());
     $rm = $rc->getMethod('createFrom');
     return $rm->invoke(NULL, $sdk_entity);
   }
