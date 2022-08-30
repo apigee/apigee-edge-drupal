@@ -116,5 +116,5 @@ function _apigee_edge_actions_dispatch_entity_event(EntityInterface $entity, str
 
   /** @var \Drupal\apigee_edge\Entity\EdgeEntityInterface $entity */
   Drupal::service('event_dispatcher')
-    ->dispatch($dispatched_event_name, new EdgeEntityEventEdge($entity, $arguments));
+    ->dispatch(new EdgeEntityEventEdge($entity, $arguments), $dispatched_event_name);
 }

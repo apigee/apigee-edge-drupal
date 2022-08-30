@@ -150,12 +150,12 @@ class AppCredentialEventSubscriber implements EventSubscriberInterface {
         $api_product = $this->entityTypeManger
           ->getStorage('api_product')
           ->load($product);
-        $this->eventDispatcher->dispatch($rules_event_name, new EdgeEntityEventEdge($app, [
+        $this->eventDispatcher->dispatch(new EdgeEntityEventEdge($app, [
           $app_type => $app,
           'developer' => $developer,
           'api_product_name' => $api_product->getName(),
           'api_product_display_name' => $api_product->getDisplayName(),
-        ]));
+        ]), $rules_event_name);
       }
     }
     catch (PluginException $exception) {

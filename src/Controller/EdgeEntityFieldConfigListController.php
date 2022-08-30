@@ -63,7 +63,7 @@ class EdgeEntityFieldConfigListController extends FieldConfigListController {
   public function listing($entity_type_id = NULL, $bundle = NULL, RouteMatchInterface $route_match = NULL) {
     $page = parent::listing($entity_type_id, $bundle, $route_match);
     $event = new EdgeEntityFieldConfigListAlterEvent($entity_type_id, $page);
-    $this->eventDispatcher->dispatch(EdgeEntityFieldConfigListAlterEvent::EVENT_NAME, $event);
+    $this->eventDispatcher->dispatch($event, EdgeEntityFieldConfigListAlterEvent::EVENT_NAME);
     return $event->getPage();
   }
 
