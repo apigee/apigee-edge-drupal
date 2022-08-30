@@ -177,10 +177,10 @@ class TeamMembershipManager implements TeamMembershipManagerInterface {
 
     // Dispatch an event for each developer.
     foreach ($developers as $developer) {
-      $this->eventDispatcher->dispatch($event, new EdgeEntityEventEdge($team, [
+      $this->eventDispatcher->dispatch(new EdgeEntityEventEdge($team, [
         'team' => $team,
         'member' => $users_by_mail[$developer],
-      ]));
+      ]), $event);
     }
   }
 
