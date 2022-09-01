@@ -35,7 +35,6 @@ jobs:
           - "8.1"
         drupal-core:
           # Should update the following as the minimum supported version from Drupal.org
-          - "9.2.x"
           - "9.3.x"
           - "9.4.x"
         exclude:
