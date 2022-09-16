@@ -1293,14 +1293,16 @@ function apigee_edge_user_presave(UserInterface $account) {
   // :\"basic\",\"organization\":\"ORGANIZATION\",\"username\":\"USERNAME\"
   // ,\"password\":\"PASSWORD"}' --key-type=apigee_auth -y`
   // to create a key after drush si.
-  $state = \Drupal::state();
-  if ($state->get('is_non_interactive')) {
-    // Clear the state.
-    $state->set('is_non_interactive', FALSE);
+  /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
+  $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
+  try {
+    $sdk_connector->testConnection();
+  }
+  catch (\Exception $exception) {
     $context = [
       '@developer' => $account->getEmail()
     ];
-    $logger->warning("Could not create developer entity: @developer on Apigee Edge/X. Missing Apigee server configuration.", $context);
+    $logger->warning("Could not create developer entity: @developer on Apigee Edge/X, because there was no connection to Apigee Edge.", $context);
     return;
   }
 
