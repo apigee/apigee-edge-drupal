@@ -1283,12 +1283,34 @@ function apigee_edge_user_presave(UserInterface $account) {
     return;
   }
 
+  /** @var \Drupal\Core\Logger\LoggerChannelInterface $logger */
+  $logger = \Drupal::service('logger.channel.apigee_edge');
+
+  // If installation is through drush si, then avoid creating developer
+  // entity on Apigee because Apigee config is empty.
+  // since drush si cannot set default values for the form.
+  // Use `drush key-save apigee_edge_connection_default '{\"auth_type\"
+  // :\"basic\",\"organization\":\"ORGANIZATION\",\"username\":\"USERNAME\"
+  // ,\"password\":\"PASSWORD"}' --key-type=apigee_auth -y`
+  // to create a key after drush si.
+  /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
+  $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
+  try {
+    $sdk_connector->testConnection();
+  }
+  catch (\Exception $exception) {
+    $context = [
+      '@developer' => $account->getEmail()
+    ];
+    $logger->warning("Could not create developer entity: @developer on Apigee Edge/X, because there was no connection to Apigee Edge.", $context);
+    return;
+  }
+
   /** @var \Drupal\apigee_edge\UserDeveloperConverterInterface $user_developer */
   $user_developer = \Drupal::service('apigee_edge.converter.user_developer');
   /** @var \Drupal\apigee_edge\FieldAttributeConverterInterface $field_to_attribute */
   $field_to_attribute = \Drupal::service('apigee_edge.converter.field_attribute');
-  /** @var \Drupal\Core\Logger\LoggerChannelInterface $logger */
-  $logger = \Drupal::service('logger.channel.apigee_edge');
+
   try {
     /** @var \Drupal\apigee_edge\Entity\Developer $developer */
     $result = $user_developer->convertUser($account);
