@@ -73,11 +73,15 @@
   <!-- Filter for coverage reports. -->
   <filter>
     <whitelist processUncoveredFilesFromWhitelist="true">
-      <directory>../modules/apigee_edge</directory>
+      <directory>../modules/contrib/apigee_edge</directory>
       <!-- By definition test classes have no tests. -->
       <exclude>
-        <directory>../modules/apigee_edge/tests</directory>
-        <directory>../modules/apigee_edge/test_modules</directory>
+        <directory>../modules/contrib/apigee_edge/tests</directory>
+        <directory>../modules/contrib/apigee_edge/modules/apigee_edge_actions/tests</directory>
+        <directory>../modules/contrib/apigee_edge/modules/apigee_edge_apiproduct_rbac/tests</directory>
+        <directory>../modules/contrib/apigee_edge/modules/apigee_edge_debug/tests</directory>
+        <directory>../modules/contrib/apigee_edge/modules/apigee_edge_teams/tests</directory>
+        <directory>../modules/contrib/apigee_edge/test_modules</directory>
       </exclude>
     </whitelist>
   </filter>
