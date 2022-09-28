@@ -12,7 +12,7 @@ env:
   BROWSERTEST_OUTPUT_DIRECTORY: "sites/simpletest/browser_output"
   BROWSERTEST_OUTPUT_BASE_URL: ""
   MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", { "chromeOptions": { "w3c": false } }, "http://127.0.0.1:9515/wd/hub"]'
-  
+
 on:
   push:
   pull_request_target:
@@ -28,7 +28,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        experimental: [false]
         php-version:
           - "7.4"
           - "8.0"
@@ -37,10 +36,6 @@ jobs:
           # Should update the following as the minimum supported version from Drupal.org
           - "9.3.x"
           - "9.4.x"
-#        include:
-#           - php-version: "8.1"
-#             drupal-core: "10.0.x-dev"
-#             experimental: true
 
     steps:
 
@@ -53,7 +48,7 @@ jobs:
     - name: "Install PHP"
       uses: "shivammathur/setup-php@v2"
       with:
-        coverage: "none"
+        coverage: "xdebug"
         php-version: "${{ matrix.php-version }}"
         tools: composer:v2
         extensions: dom, curl, libxml, mbstring, zip, pdo, mysql, pdo_mysql, bcmath, gd, exif, iconv, opcache, imagick
@@ -64,6 +59,19 @@ jobs:
         mkdir -p drupal/modules/contrib/apigee_edge
         mkdir -p drupal/sites/simpletest/browser_output
   
+    - name: Get composer cache directory
+      id: composercache
+      run: |
+        cd drupal
+        echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+    - name: Cache composer dependencies
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.composercache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
+
     - name: Checkout apigee_edge module
       uses: actions/checkout@v3.0.0
       with:
@@ -85,8 +93,12 @@ jobs:
         composer require wikimedia/composer-merge-plugin
         composer config --json extra.merge-plugin.require '["modules/contrib/apigee_edge/composer.json"]'
         composer config platform.php ${{ matrix.php-version }}
+        composer config --json extra.patches."drupal/core" '{ "Support entities that are neither content nor config entities": "https://www.drupal.org/files/issues/2020-12-02/3042467-50.patch"}'
         composer update --with-all-dependencies
         composer require --dev phpspec/prophecy-phpunit:^2
+        composer config --no-plugins allow-plugins.drupal/console-extend-plugin true
+        composer require --dev drupal/console --with-dependencies
+
 
     # Install drupal using minimal installation profile and enable the module.
     - name: Install Drupal
@@ -107,16 +119,6 @@ jobs:
         cd drupal
         vendor/bin/drupal-check modules/contrib/apigee_edge
 
-    - name: "PHPUnit unit"
-      run: |
-        cd drupal
-        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit
-
-    - name: "PHPUnit kernel"
-      run: |
-        cd drupal
-        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite kernel
-
     - uses: nanasess/setup-chromedriver@v1
 
     - run: |
@@ -124,13 +126,31 @@ jobs:
         chromedriver --url-base=/wd/hub &
         sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
 
-    - name: "PHPUnit functional javascript"
+    - name: "Run PHPUnit tests"
+      if: ${{ matrix.drupal-core != '9.4.x' || matrix.php-version != '8.1' }}
       run: |
         cd drupal
-        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional-javascript --stop-on-failure
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit,kernel,functional,functional-javascript modules/contrib/apigee_edge
 
-    - name: "PHPUnit functional"
+    - name: "Run PHPUnit tests with Code Coverage"
+      if: ${{ matrix.drupal-core == '9.4.x' && matrix.php-version == '8.1' }}
       run: |
         cd drupal
-        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite functional --stop-on-failure
+        cp modules/contrib/apigee_edge/phpunit.core.xml.dist core/phpunit.xml
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit,kernel,functional,functional-javascript --debug --coverage-clover /tmp/coverage.xml modules/contrib/apigee_edge
 
+    - name: Artifacts
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: browser-output-${{ matrix.php-version }}-${{ matrix.drupal-core }}-artifact
+        path: drupal/sites/simpletest/browser_output/*
+
+    - name: Upload coverage to Codecov
+      if: ${{ matrix.drupal-core == '9.4.x' && matrix.php-version == '8.1' }}
+      uses: codecov/codecov-action@v3
+      with:
+        files: /tmp/coverage.xml
+        name: codecov-umbrella
+        fail_ci_if_error: true
+        verbose: true
