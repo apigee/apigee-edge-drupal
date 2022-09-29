@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge_teams\Entity;
 
+use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Entity\EntityHandlerInterface;
@@ -42,16 +43,26 @@ final class TeamAccessHandler extends EntityAccessControlHandler implements Enti
   private $developerStorage;
 
   /**
+   * The team membership manager service.
+   *
+   * @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface
+   */
+  private $teamMembershipManager;
+
+  /**
    * TeamAccessHandler constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
+   *   The team membership manager service.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager) {
     parent::__construct($entity_type);
     $this->developerStorage = $entity_type_manager->getStorage('developer');
+    $this->teamMembershipManager = $team_membership_manager;
   }
 
   /**
@@ -60,7 +71,8 @@ final class TeamAccessHandler extends EntityAccessControlHandler implements Enti
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
     return new static(
       $entity_type,
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('apigee_edge_teams.team_membership_manager')
     );
   }
 
@@ -86,7 +98,22 @@ final class TeamAccessHandler extends EntityAccessControlHandler implements Enti
           // (Reminder, anonymous user can not be member of a team.
           /** @var \Drupal\apigee_edge\Entity\DeveloperInterface|null $developer */
           $developer = $this->developerStorage->load($account->getEmail());
+          $developer_team_access = FALSE;
           if ($developer && in_array($entity->id(), $developer->getCompanies())) {
+            $developer_team_access = TRUE;
+          }
+          else {
+            // Check if current developer is a member of the team and has the permision
+            // to view more than 100 teams.
+            if ($account->hasPermission('view extensive team list')) {
+              $team_members = $this->teamMembershipManager->getMembers($entity->id());
+              if (in_array($account->getEmail(), $team_members)) {
+                $developer_team_access = TRUE;
+              }
+            }
+          }
+
+          if ($developer_team_access == TRUE) {
             $result = AccessResult::allowed();
             // Ensure that access is evaluated again when the team or the
             // developer entity changes.
