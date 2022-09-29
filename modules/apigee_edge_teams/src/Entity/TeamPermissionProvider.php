@@ -82,9 +82,9 @@ final class TeamPermissionProvider implements EntityPermissionProviderInterface 
       'description' => $this->t('The permission will have performance impact,
         should give only to the users who are facing known limiation
         of listing 100 @type.', [
-        '@type' => $plural_label,
-      ]),
-    ];
+          '@type' => $plural_label,
+        ]),
+      ];
 
     foreach ($permissions as $name => $permission) {
       $permissions[$name]['provider'] = $entity_type->getProvider();
