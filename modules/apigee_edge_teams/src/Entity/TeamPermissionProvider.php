@@ -84,7 +84,7 @@ final class TeamPermissionProvider implements EntityPermissionProviderInterface 
         of listing 100 @type.', [
           '@type' => $plural_label,
         ]),
-      ];
+    ];
 
     foreach ($permissions as $name => $permission) {
       $permissions[$name]['provider'] = $entity_type->getProvider();
