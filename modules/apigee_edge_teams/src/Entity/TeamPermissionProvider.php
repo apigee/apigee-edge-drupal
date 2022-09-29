@@ -80,7 +80,7 @@ final class TeamPermissionProvider implements EntityPermissionProviderInterface 
         '@type' => $plural_label,
       ]),
       'description' => $this->t('The permission will have performance impact,
-        should give only to the users who are facing known limiation
+        should give only to the users who are facing known limitations
         of listing 100 @type.', [
           '@type' => $plural_label,
         ]),
