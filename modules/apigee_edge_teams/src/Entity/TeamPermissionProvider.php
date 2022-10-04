@@ -79,9 +79,8 @@ final class TeamPermissionProvider implements EntityPermissionProviderInterface 
       'title' => $this->t('View extensive @type list', [
         '@type' => $plural_label,
       ]),
-      'description' => $this->t('The permission will have performance impact,
-        should give only to the users who are facing known limitations
-        of listing 100 @type.', [
+      'description' => $this->t('This permission will have performance impact.
+        This permission should be given to users who belong to more than 100 @type.', [
           '@type' => $plural_label,
         ]),
     ];
