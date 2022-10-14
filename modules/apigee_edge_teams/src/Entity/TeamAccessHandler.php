@@ -98,14 +98,17 @@ final class TeamAccessHandler extends EntityAccessControlHandler implements Enti
           // (Reminder, anonymous user can not be member of a team.
           /** @var \Drupal\apigee_edge\Entity\DeveloperInterface|null $developer */
           $developer = $this->developerStorage->load($account->getEmail());
+          $developer_team_ids = $developer->getCompanies();
           $developer_team_access = FALSE;
-          if ($developer && in_array($entity->id(), $developer->getCompanies())) {
+
+          if ($developer && in_array($entity->id(), $developer_team_ids)) {
             $developer_team_access = TRUE;
           }
           else {
             // Check if current developer is a member of the team and has the permision
             // to view more than 100 teams.
-            if ($account->hasPermission('view extensive team list')) {
+            // Should not run for developer with less than 100 teams.
+            if ($account->hasPermission('view extensive team list') && (count($developer_team_ids) > 100)) {
               $team_members = $this->teamMembershipManager->getMembers($entity->id());
               if (in_array($account->getEmail(), $team_members)) {
                 $developer_team_access = TRUE;
@@ -113,7 +116,7 @@ final class TeamAccessHandler extends EntityAccessControlHandler implements Enti
             }
           }
 
-          if ($developer_team_access == TRUE) {
+          if ($developer_team_access === TRUE) {
             $result = AccessResult::allowed();
             // Ensure that access is evaluated again when the team or the
             // developer entity changes.
