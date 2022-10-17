@@ -75,6 +75,16 @@ final class TeamPermissionProvider implements EntityPermissionProviderInterface 
       ]),
     ];
 
+    $permissions["view extensive team list"] = [
+      'title' => $this->t('View extensive @type list', [
+        '@type' => $plural_label,
+      ]),
+      'description' => $this->t('This permission will have performance impact.
+        This permission should be given to users who belong to more than 100 @type.', [
+          '@type' => $plural_label,
+        ]),
+    ];
+
     foreach ($permissions as $name => $permission) {
       $permissions[$name]['provider'] = $entity_type->getProvider();
       // TranslatableMarkup objects don't sort properly.

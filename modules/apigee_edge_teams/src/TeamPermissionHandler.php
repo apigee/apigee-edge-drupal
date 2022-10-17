@@ -148,6 +148,7 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
       throw new InvalidArgumentException('Anonymous user can not be member of a team.');
     }
 
+    $developer_team_access = FALSE;
     $permissions = [];
     try {
       $developer_team_ids = $this->teamMembershipManager->getTeams($account->getEmail());
@@ -158,6 +159,20 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
     // Only add team membership based permissions to the list if the developer
     // is still member of the team in Apigee Edge.
     if (in_array($team->id(), $developer_team_ids)) {
+      $developer_team_access = TRUE;
+    }
+    else {
+      // Check if current developer is a member of the team and has the permision
+      // to view more than 100 teams.
+      if ($account->hasPermission('view extensive team list') && (count($developer_team_ids) > 100)) {
+        $team_members = $this->teamMembershipManager->getMembers($team->id());
+        if (in_array($account->getEmail(), $team_members)) {
+          $developer_team_access = TRUE;
+        }
+      }
+    }
+
+    if ($developer_team_access === TRUE) {
       /** @var \Drupal\apigee_edge_teams\Entity\TeamRoleInterface $member_role */
       $member_role = $this->entityTypeManager->getStorage('team_role')->load(TeamRoleInterface::TEAM_MEMBER_ROLE);
       $permissions += $member_role->getPermissions();
