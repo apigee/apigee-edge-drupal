@@ -76,7 +76,7 @@ apigee_edge_teams.settings.team_member.sync:
   path: '/admin/config/apigee-edge/app-settings/team-settings/sync'
   defaults:
     _form: '\Drupal\apigee_edge_teams\Form\TeamMemberSyncForm'
-    _title: 'Team Memeber Synchronization'
+    _title: 'Team Member Synchronization'
   requirements:
     _permission: 'administer team'
 
