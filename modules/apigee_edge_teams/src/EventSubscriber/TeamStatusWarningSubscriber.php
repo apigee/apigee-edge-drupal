@@ -99,25 +99,30 @@ class TeamStatusWarningSubscriber implements EventSubscriberInterface {
    */
   public function onRespond(ResponseEvent $event) {
     // Anonymous user's does not have access to these routes.
-    if ($this->currentUser->isAuthenticated() && strpos($this->routeMatch->getRouteName(), 'entity.team_app.') === 0) {
-      // Team is available in most of the team app routes as a route parameter.
-      /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface|NULL $team */
-      $team = $this->routeMatch->getParameter('team');
+    $route_name = $this->routeMatch->getRouteName();
+    if (!is_null($route_name)) {
 
-      if ($team === NULL) {
-        /** @var \Drupal\apigee_edge_teams\Entity\TeamAppInterface $app */
-        $app = $this->routeMatch->getParameter('team_app') ?? $this->routeMatch->getParameter('app');
-        if ($app) {
-          $team = $this->entityTypeManager->getStorage('team')->load($app->getCompanyName());
+      if ($this->currentUser->isAuthenticated() && strpos($route_name, 'entity.team_app.') === 0) {
+        // Team is available in most of the team app routes as a route parameter.
+        /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface|NULL $team */
+        $team = $this->routeMatch->getParameter('team');
+
+        if ($team === NULL) {
+          /** @var \Drupal\apigee_edge_teams\Entity\TeamAppInterface $app */
+          $app = $this->routeMatch->getParameter('team_app') ?? $this->routeMatch->getParameter('app');
+          if ($app) {
+            $team = $this->entityTypeManager->getStorage('team')->load($app->getCompanyName());
+          }
+        }
+
+        if ($team && $team->getStatus() === TeamInterface::STATUS_INACTIVE) {
+          $this->messenger->addWarning($this->t('This @team has inactive status so @team members will not be able to use @team_app credentials until the @team gets activated. Please contact support for further assistance.', [
+            '@team' => mb_strtolower($this->entityTypeManager->getDefinition('team')->getSingularLabel()),
+            '@team_app' => mb_strtolower($this->entityTypeManager->getDefinition('team_app')->getSingularLabel()),
+          ]));
         }
       }
 
-      if ($team && $team->getStatus() === TeamInterface::STATUS_INACTIVE) {
-        $this->messenger->addWarning($this->t('This @team has inactive status so @team members will not be able to use @team_app credentials until the @team gets activated. Please contact support for further assistance.', [
-          '@team' => mb_strtolower($this->entityTypeManager->getDefinition('team')->getSingularLabel()),
-          '@team_app' => mb_strtolower($this->entityTypeManager->getDefinition('team_app')->getSingularLabel()),
-        ]));
-      }
     }
   }
 
