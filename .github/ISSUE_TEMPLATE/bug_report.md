@@ -32,3 +32,5 @@ This can be the version you can see on admin/modules in Drupal or
 the output of this command: `composer show`.  Add Drupal core and
 other version information if needed.
 
+## Organization Info
+Please specify if you are using Apigee X or Apigee Edge.
