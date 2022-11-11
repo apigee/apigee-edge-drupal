@@ -25,6 +25,7 @@ namespace Drupal\Tests\apigee_edge\Unit\Commands {
   use Drupal\Tests\UnitTestCase;
   use Drush\Style\DrushStyle;
   use Prophecy\Argument;
+  use Prophecy\Prophet;
   use ReflectionClass;
   use Symfony\Component\Console\Input\InputInterface;
 
@@ -57,18 +58,28 @@ namespace Drupal\Tests\apigee_edge\Unit\Commands {
     protected $io;
 
     /**
+     * The Prophet class.
+     *
+     * @var \Prophecy\Prophet
+     */
+    private $prophet;
+
+    /**
      * {@inheritdoc}
      */
     protected function setUp(): void {
       parent::setUp();
-      $this->cliService = $this->prophesize(CliServiceInterface::class);
+
+      $this->prophet = new Prophet();
+
+      $this->cliService = $this->prophet->prophesize(CliServiceInterface::class);
       $this->apigeeEdgeCommands = new ApigeeEdgeCommands($this->cliService->reveal());
 
       // Set io in DrushCommands to a mock.
       $apigee_edge_commands_reflection = new ReflectionClass($this->apigeeEdgeCommands);
       $reflection_io_property = $apigee_edge_commands_reflection->getProperty('io');
       $reflection_io_property->setAccessible(TRUE);
-      $this->io = $this->prophesize(DrushStyle::class);
+      $this->io = $this->prophet->prophesize(DrushStyle::class);
       $reflection_io_property->setValue($this->apigeeEdgeCommands, $this->io->reveal());
 
       $this->io->askHidden(Argument::type('string'), Argument::any())
@@ -110,10 +121,10 @@ namespace Drupal\Tests\apigee_edge\Unit\Commands {
      */
     public function testValidatePasswordParam() {
 
-      $command_data_input = $this->prophesize(InputInterface::class);
+      $command_data_input = $this->prophet->prophesize(InputInterface::class);
       $command_data_input->getOption('password')->willReturn('secret');
       $command_data_input->getArgument('email')->willReturn('email.example.com');
-      $command_data = $this->prophesize(CommandData::class);
+      $command_data = $this->prophet->prophesize(CommandData::class);
       $command_data->input()->willReturn($command_data_input->reveal());
 
       $this->apigeeEdgeCommands->validateCreateEdgeRole($command_data->reveal());
@@ -132,11 +143,11 @@ namespace Drupal\Tests\apigee_edge\Unit\Commands {
      */
     public function testValidatePasswordParamEmpty() {
 
-      $command_data_input = $this->prophesize(InputInterface::class);
+      $command_data_input = $this->prophet->prophesize(InputInterface::class);
       $command_data_input->getOption('password')->willReturn(NULL);
       $command_data_input->setOption(Argument::type('string'), Argument::type('string'))->willReturn();
       $command_data_input->getArgument('email')->willReturn('email.example.com');
-      $command_data = $this->prophesize(CommandData::class);
+      $command_data = $this->prophet->prophesize(CommandData::class);
       $command_data->input()->willReturn($command_data_input->reveal());
 
       $this->apigeeEdgeCommands->validateCreateEdgeRole($command_data->reveal());
