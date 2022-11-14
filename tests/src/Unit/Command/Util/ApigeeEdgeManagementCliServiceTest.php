@@ -30,6 +30,7 @@ use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Exception\TransferException;
 use GuzzleHttp\Psr7\Response;
 use Prophecy\Argument;
+use Prophecy\Prophet;
 use Psr\Http\Message\RequestInterface;
 use Symfony\Component\Console\Style\StyleInterface;
 
@@ -83,11 +84,20 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
   protected $httpClient;
 
   /**
+   * The Prophet class.
+   *
+   * @var \Prophecy\Prophet
+   */
+  private $prophet;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
     parent::setUp();
-    $this->httpClient = $this->prophesize(Client::class);
+
+    $this->prophet = new Prophet();
+    $this->httpClient = $this->prophet->prophesize(Client::class);
   }
 
   /**
@@ -95,7 +105,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
    */
   public function testCreateEdgeRoleForDrupalCustomRoleAndBaseUrl() {
     // Output to user should show role created and permissions set.
-    $io = $this->prophesize(StyleInterface::class);
+    $io = $this->prophet->prophesize(StyleInterface::class);
     $io->success(Argument::exact('Connected to Edge org ' . $this->org . '.'))->shouldBeCalledTimes(1);
     $io->success(Argument::containingString('Role ' . $this->roleName . ' is configured.'))->shouldBeCalledTimes(1);
     $io->text(Argument::containingString('Role ' . $this->roleName . ' does not exist. Creating role.'))->shouldBeCalledTimes(1);
@@ -103,7 +113,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
     $io->text(Argument::containingString('/'))->shouldBeCalledTimes(12);
 
     // Org should exist.
-    $response_org = $this->prophesize(Response::class);
+    $response_org = $this->prophet->prophesize(Response::class);
     $response_org->getBody()
       ->shouldBeCalledTimes(1)
       ->willReturn('{ "name": "' . $this->org . '" }');
@@ -113,8 +123,8 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
       ->willReturn($response_org->reveal());
 
     // The role should not exist yet in system.
-    $request_role = $this->prophesize(RequestInterface::class);
-    $response_role = $this->prophesize(Response::class);
+    $request_role = $this->prophet->prophesize(RequestInterface::class);
+    $response_role = $this->prophet->prophesize(Response::class);
     $response_role->getStatusCode()->willReturn(404);
     $exception = new ClientException('Forbidden', $request_role->reveal(), $response_role->reveal());
     $this->httpClient
@@ -140,7 +150,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
    */
   public function testCreateEdgeRoleForDrupalDefaultRoleAndBaseUrl() {
     // Output to user should show role created and permissions set.
-    $io = $this->prophesize(StyleInterface::class);
+    $io = $this->prophet->prophesize(StyleInterface::class);
     $io->success(Argument::exact('Connected to Edge org ' . $this->org . '.'))->shouldBeCalledTimes(1);
     $io->success(Argument::containingString('Role ' . ApigeeEdgeManagementCliServiceInterface::DEFAULT_ROLE_NAME . ' is configured.'))->shouldBeCalledTimes(1);
     $io->text(Argument::containingString('Role ' . ApigeeEdgeManagementCliServiceInterface::DEFAULT_ROLE_NAME . ' does not exist'))->shouldBeCalledTimes(1);
@@ -148,7 +158,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
     $io->text(Argument::containingString('/'))->shouldBeCalledTimes(12);
 
     // Org should exist.
-    $response_org = $this->prophesize(Response::class);
+    $response_org = $this->prophet->prophesize(Response::class);
     $response_org->getBody()
       ->shouldBeCalledTimes(1)
       ->willReturn('{ "name": "' . $this->org . '" }');
@@ -158,8 +168,8 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
       ->willReturn($response_org->reveal());
 
     // The role should not exist yet in system.
-    $request_role = $this->prophesize(RequestInterface::class);
-    $response_role = $this->prophesize(Response::class);
+    $request_role = $this->prophet->prophesize(RequestInterface::class);
+    $response_role = $this->prophet->prophesize(Response::class);
     $response_role->getStatusCode()->willReturn(404);
     $exception = new ClientException('Forbidden', $request_role->reveal(), $response_role->reveal());
     $this->httpClient
@@ -185,14 +195,14 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
    */
   public function testCreateEdgeRoleForDrupalWhenRoleExistsTestWithForceFlag() {
     // Expected to output error if role does not exist.
-    $io = $this->prophesize(StyleInterface::class);
+    $io = $this->prophet->prophesize(StyleInterface::class);
     $io->success(Argument::exact('Connected to Edge org ' . $this->org . '.'))->shouldBeCalledTimes(1);
     $io->text(Argument::containingString('Setting permissions on role ' . $this->roleName . '.'))->shouldBeCalledTimes(1);
     $io->text(Argument::containingString('/'))->shouldBeCalledTimes(12);
     $io->success(Argument::containingString('Role ' . $this->roleName . ' is configured.'))->shouldBeCalledTimes(1);
 
     // Return organization info.
-    $response_org = $this->prophesize(Response::class);
+    $response_org = $this->prophet->prophesize(Response::class);
     $response_org->getBody()
       ->shouldBeCalledTimes(1)
       ->willReturn('{ "name": "' . $this->org . '" }');
@@ -202,7 +212,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
       ->willReturn($response_org->reveal());
 
     // Return existing role.
-    $response_user_role = $this->prophesize(Response::class);
+    $response_user_role = $this->prophet->prophesize(Response::class);
     $response_user_role->getBody()->willReturn('{ "name": "' . $this->roleName . '" }');
     $this->httpClient
       ->get(Argument::exact($this->baseUrl . '/o/' . $this->org . '/userroles/' . $this->roleName), Argument::type('array'))
@@ -227,13 +237,13 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
    */
   public function testCreateEdgeRoleForDrupalWhenRoleExistsTestNoForceFlag() {
     // Expected to output error if role does not exist.
-    $io = $this->prophesize(StyleInterface::class);
+    $io = $this->prophet->prophesize(StyleInterface::class);
     $io->success(Argument::exact('Connected to Edge org ' . $this->org . '.'))->shouldBeCalledTimes(1);
     $io->error(Argument::containingString('Role ' . $this->roleName . ' already exists.'))->shouldBeCalledTimes(1);
     $io->note(Argument::containingString('Run with --force option'))->shouldBeCalled();
 
     // Return organization info.
-    $response_org = $this->prophesize(Response::class);
+    $response_org = $this->prophet->prophesize(Response::class);
     $response_org->getBody()
       ->shouldBeCalledTimes(1)
       ->willReturn('{ "name": "' . $this->org . '" }');
@@ -243,7 +253,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
       ->willReturn($response_org->reveal());
 
     // Return existing role.
-    $response_user_role = $this->prophesize(Response::class);
+    $response_user_role = $this->prophet->prophesize(Response::class);
     $response_user_role->getBody()->willReturn('{ "name": "' . $this->roleName . '" }');
     $this->httpClient
       ->get(Argument::exact($this->baseUrl . '/o/' . $this->org . '/userroles/' . $this->roleName), Argument::type('array'))
@@ -259,13 +269,13 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
   public function testIsValidEdgeCredentialsBadEndpoint() {
     // Mimic a invalid response for the call to get org details.
     $body = "<h1>not json</h1>";
-    $response = $this->prophesize(Response::class);
+    $response = $this->prophet->prophesize(Response::class);
     $response->getBody()
       ->shouldBeCalledTimes(1)
       ->willReturn($body);
 
     // The user should see an error message.
-    $io = $this->prophesize(StyleInterface::class);
+    $io = $this->prophet->prophesize(StyleInterface::class);
     $io->error(Argument::containingString('Unable to parse response from GET'))
       ->shouldBeCalledTimes(1);
     $this->httpClient
@@ -284,8 +294,8 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
    */
   public function testIsValidEdgeCredentialsUnauthorized() {
     // Invalid password returns unauthorized 403.
-    $request_role = $this->prophesize(RequestInterface::class);
-    $response_role = $this->prophesize(Response::class);
+    $request_role = $this->prophet->prophesize(RequestInterface::class);
+    $response_role = $this->prophet->prophesize(Response::class);
     $response_role->getStatusCode()->willReturn(403);
     $exception = new ClientException('Unauthorized', $request_role->reveal(), $response_role->reveal());
     $this->httpClient
@@ -294,7 +304,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
       ->shouldBeCalledTimes(1);
 
     // The user should see an error message.
-    $io = $this->prophesize(StyleInterface::class);
+    $io = $this->prophet->prophesize(StyleInterface::class);
     $io->error(Argument::containingString('Error connecting to Apigee Edge'))
       ->shouldBeCalledTimes(1);
     $io->note(Argument::containingString('may not have the orgadmin role for Apigee Edge org'))
@@ -310,7 +320,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
    */
   public function testIsValidEdgeCredentialsValid() {
     // Org should exist.
-    $response_org = $this->prophesize(Response::class);
+    $response_org = $this->prophet->prophesize(Response::class);
     $response_org->getBody()
       ->shouldBeCalledTimes(1)
       ->willReturn('{ "name": "' . $this->org . '" }');
@@ -320,7 +330,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
       ->willReturn($response_org->reveal());
 
     // Errors should not be called.
-    $io = $this->prophesize(StyleInterface::class);
+    $io = $this->prophet->prophesize(StyleInterface::class);
     $io->error(Argument::type('string'))
       ->shouldNotBeCalled();
     $io->section(Argument::type('string'))
@@ -342,7 +352,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
    */
   public function testDoesRoleExistTrue() {
     // Return existing role.
-    $response_user_role = $this->prophesize(Response::class);
+    $response_user_role = $this->prophet->prophesize(Response::class);
     $response_user_role->getBody()->willReturn('{ "name": "' . $this->roleName . '" }');
     $this->httpClient
       ->get(Argument::exact($this->baseUrl . '/o/' . $this->org . '/userroles/' . $this->roleName), Argument::type('array'))
@@ -361,8 +371,8 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
    */
   public function testDoesRoleExistNotTrue() {
     // The role should not exist in system.
-    $request_role = $this->prophesize(RequestInterface::class);
-    $response_role = $this->prophesize(Response::class);
+    $request_role = $this->prophet->prophesize(RequestInterface::class);
+    $response_role = $this->prophet->prophesize(Response::class);
     $response_role->getStatusCode()->willReturn(404);
     $exception = new ClientException('Forbidden', $request_role->reveal(), $response_role->reveal());
     $this->httpClient
@@ -381,8 +391,8 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
    */
   public function testDoesRoleExistServerErrorThrown() {
     // Http client throws exception if network or server error happens.
-    $request = $this->prophesize(RequestInterface::class);
-    $response = $this->prophesize(Response::class);
+    $request = $this->prophet->prophesize(RequestInterface::class);
+    $response = $this->prophet->prophesize(Response::class);
     $response->getStatusCode()->willReturn(500);
     $exception = new ServerException('Server error.', $request->reveal(), $response->reveal());
     $this->expectException(ServerException::class);
@@ -399,12 +409,12 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
    */
   public function testHandleHttpClientExceptions0Code() {
     // Error message should output to user.
-    $io = $this->prophesize(StyleInterface::class);
+    $io = $this->prophet->prophesize(StyleInterface::class);
     $io->error(Argument::containingString('Error connecting to Apigee Edge'))->shouldBeCalledTimes(1);
     $io->note(Argument::containingString('Your system may not be able to connect'))->shouldBeCalledTimes(1);
 
     // Create network error.
-    $exception = $this->prophesize(TransferException::class);
+    $exception = $this->prophet->prophesize(TransferException::class);
 
     $apigee_edge_management_cli_service = new ApigeeEdgeManagementCliService($this->httpClient->reveal());
     $apigee_edge_management_cli_service->handleHttpClientExceptions($exception->reveal(), $io->reveal(), [$this, 'mockDt'], 'http://api.apigee.com/test', $this->org, $this->email);
@@ -415,13 +425,13 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
    */
   public function testHandleHttpClientExceptions401Code() {
     // Server returns 401 unauthorized.
-    $request = $this->prophesize(RequestInterface::class);
-    $response = $this->prophesize(Response::class);
+    $request = $this->prophet->prophesize(RequestInterface::class);
+    $response = $this->prophet->prophesize(Response::class);
     $response->getStatusCode()->willReturn(401);
     $exception = new ClientException('Unauthorized', $request->reveal(), $response->reveal());
 
     // Expect user friendly message displayed about error.
-    $io = $this->prophesize(StyleInterface::class);
+    $io = $this->prophet->prophesize(StyleInterface::class);
     $io->error(Argument::containingString('Error connecting to Apigee Edge'))->shouldBeCalledTimes(1);
     $io->note(Argument::exact('Your username or password is invalid.'))->shouldBeCalledTimes(1);
 
@@ -434,13 +444,13 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
    */
   public function testHandleHttpClientExceptions403Code() {
     // Server returns 403 forbidden.
-    $request = $this->prophesize(RequestInterface::class);
-    $response = $this->prophesize(Response::class);
+    $request = $this->prophet->prophesize(RequestInterface::class);
+    $response = $this->prophet->prophesize(Response::class);
     $response->getStatusCode()->willReturn(403);
     $exception = new ClientException('Forbidden', $request->reveal(), $response->reveal());
 
     // Expect error messages.
-    $io = $this->prophesize(StyleInterface::class);
+    $io = $this->prophet->prophesize(StyleInterface::class);
     $io->error(Argument::containingString('Error connecting to Apigee Edge'))->shouldBeCalledTimes(1);
     $io->note(Argument::containingString('User ' . $this->email . ' may not have the orgadmin role'))->shouldBeCalledTimes(1);
 
@@ -453,13 +463,13 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
    */
   public function testHandleHttpClientExceptions302Code() {
     // Return a 302 redirection response, which Apigee API would not do.
-    $request = $this->prophesize(RequestInterface::class);
-    $response = $this->prophesize(Response::class);
+    $request = $this->prophet->prophesize(RequestInterface::class);
+    $response = $this->prophet->prophesize(Response::class);
     $response->getStatusCode()->willReturn(302);
     $exception = new ClientException('Forbidden', $request->reveal(), $response->reveal());
 
     // User should see error message.
-    $io = $this->prophesize(StyleInterface::class);
+    $io = $this->prophet->prophesize(StyleInterface::class);
     $io->error(Argument::containingString('Error connecting to Apigee Edge'))->shouldBeCalledTimes(1);
     $io->note(Argument::containingString('the url ' . $this->baseUrl . '/test' . ' does not seem to be a valid Apigee Edge endpoint.'))->shouldBeCalledTimes(1);
 
@@ -483,7 +493,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
     $method_set_default_permissions->setAccessible(TRUE);
 
     // Create input params.
-    $io = $this->prophesize(StyleInterface::class);
+    $io = $this->prophet->prophesize(StyleInterface::class);
     $args = [
       $io->reveal(),
       [$this, 'mockDt'],
