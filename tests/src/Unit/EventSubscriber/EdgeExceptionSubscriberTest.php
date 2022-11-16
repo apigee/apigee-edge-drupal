@@ -30,6 +30,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\Core\Config\Config;
 use Prophecy\Argument;
+use Prophecy\Prophet;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -99,41 +100,49 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
   protected $getResponseForExceptionEvent;
 
   /**
+   * The Prophet class.
+   *
+   * @var \Prophecy\Prophet
+   */
+  private $prophet;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
     parent::setUp();
 
+    $this->prophet = new Prophet();
     $this->exception = new ApiException("API response error message.");
 
-    $this->logger = $this->prophesize(LoggerInterface::class);
+    $this->logger = $this->prophet->prophesize(LoggerInterface::class);
 
-    $this->messenger = $this->prophesize(MessengerInterface::class);
+    $this->messenger = $this->prophet->prophesize(MessengerInterface::class);
 
-    $response = $this->prophesize(Response::class);
+    $response = $this->prophet->prophesize(Response::class);
 
     $this->mainContentRenderers = ['html' => 'main_content_renderer.html'];
 
-    $htmlRenderer = $this->prophesize(HtmlRenderer::class);
+    $htmlRenderer = $this->prophet->prophesize(HtmlRenderer::class);
     $htmlRenderer->renderResponse(Argument::cetera())
       ->willReturn($response->reveal());
 
-    $errorPageController = $this->prophesize(ErrorPageController::class);
+    $errorPageController = $this->prophet->prophesize(ErrorPageController::class);
     $errorPageController->render()
       ->willReturn([]);
     $errorPageController->getPageTitle()
       ->willReturn('');
 
-    $this->classResolver = $this->prophesize(ClassResolverInterface::class);
+    $this->classResolver = $this->prophet->prophesize(ClassResolverInterface::class);
     $this->classResolver->getInstanceFromDefinition(Argument::is($this->mainContentRenderers['html']))
       ->willReturn($htmlRenderer->reveal());
     $this->classResolver->getInstanceFromDefinition(Argument::is(ErrorPageController::class))
       ->willReturn($errorPageController->reveal());
 
-    $this->routeMatch = $this->prophesize(RouteMatchInterface::class);
+    $this->routeMatch = $this->prophet->prophesize(RouteMatchInterface::class);
 
     // Drupal 9 / Symfony 4.x and up.
-    $this->getResponseForExceptionEvent = $this->prophesize(ExceptionEvent::class);
+    $this->getResponseForExceptionEvent = $this->prophet->prophesize(ExceptionEvent::class);
     $this->getResponseForExceptionEvent->getThrowable()
       ->willReturn($this->exception);
 
@@ -152,12 +161,12 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
   public function testOnExceptionErrorsOn() {
 
     // Config will return true when checked.
-    $config_error_page = $this->prophesize(Config::class);
+    $config_error_page = $this->prophet->prophesize(Config::class);
     $config_error_page
       ->get(Argument::is('error_page_debug_messages'))
       ->shouldBeCalledTimes(1)
       ->willReturn(TRUE);
-    $this->configFactory = $this->prophesize(ConfigFactoryInterface::class);
+    $this->configFactory = $this->prophet->prophesize(ConfigFactoryInterface::class);
     $this->configFactory
       ->get(Argument::is('apigee_edge.error_page'))
       ->willReturn($config_error_page->reveal());
@@ -187,12 +196,12 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
   public function testOnExceptionErrorsOff() {
 
     // Config will return false when checked.
-    $config_error_page = $this->prophesize(Config::class);
+    $config_error_page = $this->prophet->prophesize(Config::class);
     $config_error_page
       ->get(Argument::is('error_page_debug_messages'))
       ->shouldBeCalledTimes(1)
       ->willReturn(FALSE);
-    $this->configFactory = $this->prophesize(ConfigFactoryInterface::class);
+    $this->configFactory = $this->prophet->prophesize(ConfigFactoryInterface::class);
     $this->configFactory
       ->get(Argument::is('apigee_edge.error_page'))
       ->willReturn($config_error_page->reveal());
