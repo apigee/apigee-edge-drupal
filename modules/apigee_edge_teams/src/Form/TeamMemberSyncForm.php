@@ -95,13 +95,18 @@ class TeamMemberSyncForm extends FormBase {
       'list' => [
         '#theme' => 'item_list',
         '#items' => [
-          $this->t('Store the team members in Drupal'),
+          $this->t('Caches team members in Drupal'),
         ],
       ],
       'p2' => [
         '#type' => 'html_tag',
         '#tag' => 'p',
         '#value' => $this->t('The "Run team member sync" button will sync the team members, displaying a progress bar on the screen while running. The "Background team member sync" button will run the team member sync process in batches each time <a href=":cron_url">cron</a> runs and may take multiple cron runs to complete.', [':cron_url' => Url::fromRoute('system.cron_settings')->toString()]),
+      ],
+      'p3' => [
+        '#type' => 'html_tag',
+        '#tag' => 'p',
+        '#value' => $this->t('By running the sync, team member detail is stored in members cache table and will have expiry that is set in <a href=":team_caching">team caching</a>. To show more than 100 teams for a member enable permission "View extensive teams list". ', [':team_caching' => Url::fromRoute('apigee_edge_teams.settings.team.cache')->toString()]),
       ],
     ];
 
