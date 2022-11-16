@@ -26,6 +26,7 @@ namespace Drupal\Tests\apigee_edge\Unit\Command {
   use Drupal\Core\Logger\LogMessageParserInterface;
   use Drupal\Tests\UnitTestCase;
   use Prophecy\Argument;
+  use Prophecy\Prophet;
   use Symfony\Component\Console\Formatter\OutputFormatterInterface;
   use Symfony\Component\Console\Input\InputInterface;
   use Symfony\Component\Console\Output\OutputInterface;
@@ -94,6 +95,13 @@ namespace Drupal\Tests\apigee_edge\Unit\Command {
     private $outputFormatter;
 
     /**
+     * The Prophet class.
+     *
+     * @var \Prophecy\Prophet
+     */
+    private $prophet;
+
+    /**
      * {@inheritdoc}
      */
     protected function setUp(): void {
@@ -102,17 +110,18 @@ namespace Drupal\Tests\apigee_edge\Unit\Command {
       }
 
       parent::setUp();
-      $this->cliService = $this->prophesize(CliServiceInterface::class);
-      $this->logMessageParser = $this->prophesize(LogMessageParserInterface::class);
-      $this->loggerChannelFactory = $this->prophesize(LoggerChannelFactoryInterface::class);
+      $this->prophet = new Prophet();
+      $this->cliService = $this->prophet->prophesize(CliServiceInterface::class);
+      $this->logMessageParser = $this->prophet->prophesize(LogMessageParserInterface::class);
+      $this->loggerChannelFactory = $this->prophet->prophesize(LoggerChannelFactoryInterface::class);
       $this->createEdgeRoleCommand = new CreateEdgeRoleCommand($this->cliService->reveal(),
         $this->logMessageParser->reveal(), $this->loggerChannelFactory->reveal());
 
-      $this->input = $this->prophesize(InputInterface::class);
-      $this->output = $this->prophesize(OutputInterface::class);
-      $this->io = $this->prophesize(DrupalStyle::class);
+      $this->input = $this->prophet->prophesize(InputInterface::class);
+      $this->output = $this->prophet->prophesize(OutputInterface::class);
+      $this->io = $this->prophet->prophesize(DrupalStyle::class);
 
-      $this->outputFormatter = $this->prophesize(OutputFormatterInterface::class)->reveal();
+      $this->outputFormatter = $this->prophet->prophesize(OutputFormatterInterface::class)->reveal();
       $this->output->getFormatter()->willReturn($this->outputFormatter);
       $this->output->getVerbosity()->willReturn(OutputInterface::VERBOSITY_DEBUG);
     }
