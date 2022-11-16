@@ -130,3 +130,7 @@ services:
     arguments: ['@entity_type.manager', '@logger.channel.apigee_edge_teams']
     tags:
       - { name: paramconverter }
+
+  apigee_edge_teams.cli:
+    class: Drupal\apigee_edge_teams\CliService
+    arguments: ['@apigee_edge.apigee_edge_mgmt_cli_service']

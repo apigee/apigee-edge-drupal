@@ -1,0 +1,6 @@
+services:
+  apigee_edge_teams.commands:
+    class: \Drupal\apigee_edge_teams\Commands\ApigeeEdgeCommands
+    arguments: ['@apigee_edge_teams.cli', '@apigee_edge.apigee_edge_mgmt_cli_service']
+    tags:
+      - { name: drush.command }

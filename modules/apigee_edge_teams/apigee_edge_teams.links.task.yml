@@ -106,3 +106,8 @@ apigee_edge_teams.team_app.analytics:
   title: 'Analytics'
   base_route: entity.team_app.canonical
   weight: -1
+
+apigee_edge_teams.settings.team_member.sync:
+  route_name: apigee_edge_teams.settings.team_member.sync
+  title: 'Sync'
+  base_route: apigee_edge_teams.settings.team

@@ -164,7 +164,7 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
     else {
       // Check if current developer is a member of the team and has the permision
       // to view more than 100 teams.
-      if ($account->hasPermission('view extensive team list') && (count($developer_team_ids) > 100)) {
+      if ($account->hasPermission('view extensive team list') && (count($developer_team_ids) >= 100)) {
         $team_members = $this->teamMembershipManager->getMembers($team->id());
         if (in_array($account->getEmail(), $team_members)) {
           $developer_team_access = TRUE;
