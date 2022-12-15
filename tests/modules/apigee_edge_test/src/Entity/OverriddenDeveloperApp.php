@@ -39,6 +39,7 @@ final class OverriddenDeveloperApp extends DeveloperApp {
       'Length' => [
         'min' => 1,
         'max' => 30,
+        'allowEmptyString' => True
       ],
     ]);
 
