@@ -35,7 +35,7 @@ services:
     arguments: ['@apigee_mock_api_client_twig_json.loader']
 
   apigee_mock_api_client_twig_json.loader:
-    class: \Twig_Loader_Chain
+    class: Twig\Loader\ChainLoader
     public: false
     tags:
       - { name: service_collector, tag: apigee_mock_api_client_twig.loader, call: addLoader, required: TRUE }
