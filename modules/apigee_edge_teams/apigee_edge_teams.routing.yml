@@ -71,3 +71,27 @@ apigee_edge_teams.settings.team_app.cache:
     _title: 'Caching'
   requirements:
     _permission: 'administer team'
+
+apigee_edge_teams.settings.team_member.sync:
+  path: '/admin/config/apigee-edge/app-settings/team-settings/sync'
+  defaults:
+    _form: '\Drupal\apigee_edge_teams\Form\TeamMemberSyncForm'
+    _title: 'Team Member Synchronization'
+  requirements:
+    _permission: 'administer team'
+
+apigee_edge_teams.team_member.run:
+  path: '/admin/config/apigee-edge/app-settings/team-settings/sync/run'
+  defaults:
+    _controller: '\Drupal\apigee_edge_teams\Controller\TeamMemberSyncController::run'
+  requirements:
+    _permission: 'administer team'
+    _csrf_token: 'TRUE'
+
+apigee_edge_teams.team_member.schedule:
+  path: '/admin/config/apigee-edge/app-settings/team-settings/sync/schedule'
+  defaults:
+    _controller: '\Drupal\apigee_edge_teams\Controller\TeamMemberSyncController::schedule'
+  requirements:
+    _permission: 'administer team'
+    _csrf_token: 'TRUE'
