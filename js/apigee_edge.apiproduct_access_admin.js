@@ -22,14 +22,14 @@
  *
  * Modified version of Core's user.permissions.js.
  */
-(function ($, Drupal) {
+(function ($, Drupal, once) {
 
   'use strict';
 
   Drupal.behaviors.apigee_edge_apiproduct_access_admin = {
     attach: function attach(context) {
       var self = this;
-      $('table#visibility').once('visibility').each(function () {
+      $(once('visibility', 'table#visibility')).each(function () {
         var $table = $(this);
         var $ancestor = void 0;
         var method = void 0;
@@ -64,4 +64,4 @@
       });
     }
   };
-})(jQuery, Drupal);
+})(jQuery, Drupal, once);

@@ -27,7 +27,7 @@ apigee_edge.analytics:
     - apigee_edge/charts
     - core/drupal
     - core/jquery
-    - core/jquery.once
+    - core/once
     - core/drupalSettings
 
 apigee_edge.components:
@@ -69,7 +69,7 @@ apigee_edge.app_view:
       css/apigee_edge.app_view.css: {}
   dependencies:
     - core/jquery
-    - core/jquery.once
+    - core/once
     - core/drupal
     - core/drupalSettings
 
@@ -85,7 +85,7 @@ apiproduct_access_admin:
     js/apigee_edge.apiproduct_access_admin.js: {}
   dependencies:
     - core/jquery
-    - core/jquery.once
+    - core/once
     - core/drupal
     - core/drupalSettings
 
