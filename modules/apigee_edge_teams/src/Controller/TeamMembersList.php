@@ -116,6 +116,7 @@ class TeamMembersList extends ControllerBase {
     if (!empty($members)) {
       $user_storage = $this->entityTypeManager()->getStorage('user');
       $uids = $user_storage->getQuery()
+        ->accessCheck(FALSE)
         ->condition('mail', $members, 'IN')
         ->execute();
 
