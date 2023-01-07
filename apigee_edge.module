@@ -1288,11 +1288,11 @@ function apigee_edge_user_presave(UserInterface $account) {
 
   // If installation is through drush si, then avoid creating developer
   // entity on Apigee because Apigee config is empty.
-  // since drush si cannot set default values for the form.
+  // since drush site:install cannot set default values for the form.
   // Use `drush key-save apigee_edge_connection_default '{\"auth_type\"
   // :\"basic\",\"organization\":\"ORGANIZATION\",\"username\":\"USERNAME\"
   // ,\"password\":\"PASSWORD"}' --key-type=apigee_auth -y`
-  // to create a key after drush si.
+  // to create a key after drush site:install.
   /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
   $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
   try {

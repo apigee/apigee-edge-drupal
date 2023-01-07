@@ -24,7 +24,7 @@ use Drupal\apigee_edge\CliServiceInterface;
 use Drush\Commands\DrushCommands;
 
 /**
- * Drush 9 command file.
+ * Drush 11 command file.
  */
 class ApigeeEdgeCommands extends DrushCommands {
 
@@ -83,7 +83,8 @@ class ApigeeEdgeCommands extends DrushCommands {
    * @option $force
    *   Force running of permissions on a role that already exists, defaults
    *   to throwing an error message if role exists. Note that permissions are
-   *   only added, any current permissions not not removed.
+   *   only added, any current permissions are not removed.
+   *
    * @usage drush create-edge-role myorg me@example.com
    *   Create "drupalportal" role as orgadmin me@example.com for org myorg.
    * @usage drush create-edge-role myorg me@example.com --role-name=portal
@@ -92,6 +93,7 @@ class ApigeeEdgeCommands extends DrushCommands {
    *   Create role on private Apigee Edge server "api.edge.example.com".
    * @usage drush create-edge-role myorg me@example.com --force
    *   Update permissions on "drupalportal" role even if role already exists.
+   *
    * @command apigee-edge:create-edge-role
    * @aliases create-edge-role
    */

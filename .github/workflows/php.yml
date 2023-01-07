@@ -103,9 +103,9 @@ jobs:
     - name: Install Drupal
       run: |
         cd drupal   
-        php -d sendmail_path=$(which true); vendor/bin/drush --yes -v site-install minimal --db-url="$SIMPLETEST_DB"
-        vendor/bin/drush en apigee_edge -y
-        vendor/bin/drush rs 8000 &
+        php -d sendmail_path=$(which true); vendor/bin/drush --yes -v site:install minimal --db-url="$SIMPLETEST_DB"
+        vendor/bin/drush pm:enable apigee_edge -y
+        vendor/bin/drush runserver 8000 &
 
     - name: "PHPCS"
       run: |

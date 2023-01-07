@@ -24,7 +24,7 @@ use Drupal\apigee_edge_teams\CliServiceInterface;
 use Drush\Commands\DrushCommands;
 
 /**
- * Drush 9 command file.
+ * Drush 11 command file.
  */
 class ApigeeEdgeCommands extends DrushCommands {
 
