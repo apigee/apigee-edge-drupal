@@ -3,11 +3,11 @@ description: Role based access control over view operation on API products.
 package: Apigee
 
 type: module
-core_version_requirement: ^8 || ^9
+core_version_requirement: ^9.4 || ^10.0
 
 dependencies:
   - apigee_edge:apigee_edge
 
 configure: apigee_edge.settings.developer.api_product_access
 
-php: "7.1"
+php: "8.0"

@@ -3,7 +3,7 @@ description: Provides shared app functionality by allowing developers to be orga
 package: Apigee
 
 type: module
-core_version_requirement: ^8 || ^9
+core_version_requirement: ^9.4 || ^10.0
 
 dependencies:
   - apigee_edge:apigee_edge
@@ -12,4 +12,4 @@ dependencies:
 
 configure: apigee_edge_teams.settings.team
 
-php: "7.1"
+php: "8.0"

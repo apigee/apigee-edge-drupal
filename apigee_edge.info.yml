@@ -3,7 +3,7 @@ description: Apigee Edge Drupal integration.
 package: Apigee
 
 type: module
-core_version_requirement: ^8.7.7 || ^9
+core_version_requirement: ^9.4 || ^10.0
 
 dependencies:
   - drupal:file
@@ -12,8 +12,8 @@ dependencies:
   - drupal:filter
   - drupal:options
   - key:key
-  - drupal:system (>=8.7.0)
+  - drupal:system (>=9.4.0)
 
 configure: apigee_edge.settings
 
-php: "7.1"
+php: "8.0"

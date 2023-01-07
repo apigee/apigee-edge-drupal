@@ -1,7 +1,7 @@
 name: 'Apigee Edge Testing: App keys'
 type: module
 description: 'Support module for the Apigee Edge tests: Mocks app key generation via a 3rd party service.'
-core_version_requirement: ^8 || ^9
+core_version_requirement: ^9.4 || ^10.0
 package: Testing
 
 dependencies:

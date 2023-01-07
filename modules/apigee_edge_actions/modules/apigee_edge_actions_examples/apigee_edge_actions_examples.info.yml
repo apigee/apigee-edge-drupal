@@ -2,7 +2,7 @@ name: Apigee Edge Actions Examples
 description: Example rules for Apigee Edge.
 package: Apigee (Experimental)
 type: module
-core_version_requirement: ^8 || ^9
+core_version_requirement: ^9.4 || ^10.0
 configure: entity.rules_reaction_rule.collection
 dependencies:
   - apigee_edge_actions:apigee_edge_actions
