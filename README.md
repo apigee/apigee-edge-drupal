@@ -1,6 +1,6 @@
 # Apigee Edge Drupal module
 
-The Apigee Edge module enables you to integrate Drupal 9 with Apigee. 
+The Apigee Edge module enables you to integrate Drupal 10 (and Drupal 9) with Apigee. 
 
 * Users that register or are added to the Drupal site will be added as developers in Apigee.
 * Click on "Apps" in user menu to get keys for the APIs exposed in Apigee.
@@ -20,9 +20,9 @@ Please note that Team APIs and Monetization APIs are not currently supported on 
 
 ## Requirements
 
-* The Apigee Edge module requires **Drupal 8.7.x** or higher and PHP 7.1 or higher, though Drupal 9.x is recommended due to [Drupal 8's EOL timeline](https://www.drupal.org/psa-2021-2021-06-29).
+* The Apigee Edge module requires **Drupal 9.4.x** or higher and PHP 8.0 or higher, though Drupal 10.x is recommended due to [Drupal 9's EOL timeline](https://www.drupal.org/docs/understanding-drupal/drupal-9-release-date-and-what-it-means/how-long-will-drupal-9-be-supported#s-drupal-9-support-will-end-in-november-2023).
 * Drupal's minimum requirement is phpdocumentor/reflection-docblock:2.0.4 but at least 3.0 is required by this module. If you get the error  "Your requirements could not be resolved to an installable set of packages" it may be because you are running reflection-docblock version 2. You can update `phpdocumentor/reflection-docblock` with the following command: `composer update phpdocumentor/reflection-docblock --with-dependencies`.
-* **Check [composer.json](https://github.com/apigee/apigee-edge-drupal/blob/8.x-1.x/composer.json) for any required patches.** Patches prefixed with "(For testing)" are only required for running tests. Those are not necessary for using this module. Patches can be applied with the [cweagans/composer-patches](https://packagist.org/packages/cweagans/composer-patches) plugin automatically or manually. See [Applying Patches](#applying-patches) section below.
+* **Check [composer.json](https://github.com/apigee/apigee-edge-drupal/blob/2.x/composer.json) for any required patches.** Patches prefixed with "(For testing)" are only required for running tests. Those are not necessary for using this module. Patches can be applied with the [cweagans/composer-patches](https://packagist.org/packages/cweagans/composer-patches) plugin automatically or manually. See [Applying Patches](#applying-patches) section below.
 * (For developers) The locked commit from `behat/mink` library is required otherwise tests may fail. This caused by a Drupal core [bug](https://www.drupal.org/project/drupal/issues/2956279). See the related pull request for behat/mink [here](https://github.com/minkphp/Mink/pull/760).
 
 ## Installing
@@ -57,14 +57,14 @@ The Apigee Edge module may require Drupal core or contributed module patches to 
 can be applied automatically when Apigee Edge module gets installed but for that your Drupal installation must fulfill
 the following requirements:
 
-1. [cweagans/composer-patches](https://packagist.org/packages/cweagans/composer-patches) >= 1.6.5 has to be installed.
+1. [cweagans/composer-patches](https://packagist.org/packages/cweagans/composer-patches) >= 1.7.3 has to be installed.
 2. ["Allowing patches to be applied from dependencies
-"](https://github.com/cweagans/composer-patches/tree/1.6.5#allowing-patches-to-be-applied-from-dependencies)
+"](https://github.com/cweagans/composer-patches/tree/1.7.3#allowing-patches-to-be-applied-from-dependencies)
 has to be enabled in Drupal's composer.json.
 3. Proper [patch level](https://github.com/cweagans/composer-patches/pull/101#issue-104810467)
 for drupal/core has to be set in Drupal's composer.json.
 
-You can find the currently required patches, if any, in the Apigee Edge module's [composer.json](https://github.com/apigee/apigee-edge-drupal/blob/8.x-1.x/composer.json)
+You can find the currently required patches, if any, in the Apigee Edge module's [composer.json](https://github.com/apigee/apigee-edge-drupal/blob/2.x/composer.json)
 and in the Apigee PHP API Client's [composer.json](https://github.com/apigee/apigee-client-php/blob/2.x/composer.json).
 
 **If you do not have all required patches applied in your Drupal installation you may experience some problems with the
