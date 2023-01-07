@@ -29,12 +29,12 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - "8.0"
           - "8.1"
         drupal-core:
           # Should update the following as the minimum supported version from Drupal.org
           - "9.4.x"
           - "9.5.x"
+          - "10.0.x"
 
     steps:
 
