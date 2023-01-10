@@ -12,7 +12,6 @@ dependencies:
   - drupal:filter
   - drupal:options
   - key:key
-  - drupal:system (>=9.4.0)
 
 configure: apigee_edge.settings
 
