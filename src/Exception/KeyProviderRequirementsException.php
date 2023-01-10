@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge\Exception;
 
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
@@ -27,10 +28,12 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  */
 class KeyProviderRequirementsException extends RuntimeException {
 
+  use StringTranslationTrait;
+
   /**
    * The TranslatableMarkup object containing a message to render on the UI.
    *
-   * @var \Drupal\Core\StringTranslation\TranslatableMarkup
+   * @var \Drupal\Core\StringTranslation\TranslatableMarkup|null
    */
   protected $translatableMarkupMessage;
 
@@ -39,7 +42,7 @@ class KeyProviderRequirementsException extends RuntimeException {
    *
    * @param string $message
    *   The Exception message.
-   * @param \Drupal\Core\StringTranslation\TranslatableMarkup $translatable_markup_message
+   * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $translatable_markup_message
    *   The translatable markup object of the exception to display on the pages
    *   where the exception is caught.
    * @param int|null $code
