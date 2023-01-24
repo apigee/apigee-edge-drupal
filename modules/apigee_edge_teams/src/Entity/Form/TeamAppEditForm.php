@@ -97,8 +97,10 @@ class TeamAppEditForm extends AppEditForm {
    */
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
-    foreach (Element::children($form['credential']) as $credential) {
-      $form['credential'][$credential]['api_products'] += $this->nonMemberApiProductAccessWarningElement($form, $form_state);
+    if (isset($form['credential'])) {
+      foreach (Element::children($form['credential']) as $credential) {
+        $form['credential'][$credential]['api_products'] += $this->nonMemberApiProductAccessWarningElement($form, $form_state);
+      }
     }
     return $form;
   }
