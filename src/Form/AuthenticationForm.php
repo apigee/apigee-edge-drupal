@@ -81,6 +81,8 @@ class AuthenticationForm extends KeyEditForm {
       ]);
     }
 
+    $this->setOperation('edit');
+
     // Sets the entity object for the form. This is the best place where we
     // can do that if we do not want to override n+1 methods inherited from the
     // EntityForm.
