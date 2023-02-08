@@ -62,7 +62,7 @@ jobs:
       id: composercache
       run: |
         cd drupal
-        echo "::set-output name=dir::$(composer config cache-files-dir)"
+        echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
     - name: Cache composer dependencies
       uses: actions/cache@v3
