@@ -26,7 +26,7 @@
   Drupal.behaviors.apigee_edge_teams_team_permissions = {
     attach: function attach(context) {
       var self = this;
-      $('table#permissions').once('permissions').each(function () {
+      $(once('permissions', 'table#permissions')).each(function () {
         var $table = $(this);
         var $ancestor = void 0;
         var method = void 0;

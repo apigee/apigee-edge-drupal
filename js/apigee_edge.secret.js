@@ -39,7 +39,7 @@
           $this.addClass(hClass);
 
           // Toggle secret.
-          $(this).find('.secret__toggle').once().on('click', function (event) {
+          $(once('apigee_edge_secret', '.secret__toggle', this)).on('click', function (event) {
             let index = $(this).closest(appElWrapper).find('.secret__toggle').index(this);
             let wrapperIndex = $wrapper.data('app-container-index');
             event.preventDefault();
