@@ -7,7 +7,7 @@ apigee_edge.admin:
     js/apigee_edge.admin.js: {}
 
 apigee_edge.analytics:
-  version: 1.0
+  version: 1.1
   css:
     theme:
       css/apigee_edge.analytics.css: {}
@@ -27,7 +27,7 @@ apigee_edge.analytics:
     - apigee_edge/charts
     - core/drupal
     - core/jquery
-    - core/jquery.once
+    - core/once
     - core/drupalSettings
 
 apigee_edge.components:
@@ -51,7 +51,7 @@ apigee_edge.status_property:
       css/apigee_edge.status_property.css: {}
 
 apigee_edge.secret:
-  version: 1.1
+  version: 1.2
   css:
     theme:
       css/apigee_edge.secret.css: {}
@@ -61,6 +61,7 @@ apigee_edge.secret:
     - core/jquery
     - core/drupalSettings
     - core/drupal
+    - core/once
 
 apigee_edge.app_view:
   version: 1.0
@@ -69,7 +70,7 @@ apigee_edge.app_view:
       css/apigee_edge.app_view.css: {}
   dependencies:
     - core/jquery
-    - core/jquery.once
+    - core/once
     - core/drupal
     - core/drupalSettings
 
@@ -80,12 +81,12 @@ apigee_edge.app_credential:
       css/apigee_edge.app_credential.css: {}
 
 apiproduct_access_admin:
-  version: 1.0
+  version: 1.1
   js:
     js/apigee_edge.apiproduct_access_admin.js: {}
   dependencies:
     - core/jquery
-    - core/jquery.once
+    - core/once
     - core/drupal
     - core/drupalSettings
 

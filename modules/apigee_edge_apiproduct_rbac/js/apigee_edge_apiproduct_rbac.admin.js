@@ -29,7 +29,7 @@
   Drupal.behaviors.apigee_edge_apiproduct_rbac_admin = {
     attach: function attach(context) {
       var self = this;
-      $('table#rbac-settings').once('rbac-settings').each(function () {
+      $(once('rbac-settings', 'table#rbac-settings')).each(function () {
         var $table = $(this);
         var $ancestor = void 0;
         var method = void 0;
