@@ -168,7 +168,7 @@ class SDKConnector implements SDKConnectorInterface {
       return ($this->organization && ('CLOUD' === $this->organization->getRuntimeType() || 'HYBRID' === $this->organization->getRuntimeType()));
     }
     catch (\Exception $e) {
-      $this->messenger->addError($e->getMessage());
+      return FALSE;
     }
   }
 
