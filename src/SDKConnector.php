@@ -28,6 +28,7 @@ use Drupal\apigee_edge\Exception\AuthenticationKeyException;
 use Drupal\apigee_edge\Exception\AuthenticationKeyNotFoundException;
 use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
+use Drupal\apigee_edge\Entity\Controller\OrganizationController as EdgeOrganizationController;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\InfoParserInterface;
@@ -156,6 +157,19 @@ class SDKConnector implements SDKConnectorInterface {
   public function getOrganization(): string {
     $credentials = $this->getCredentials();
     return $credentials->getKeyType()->getOrganization($credentials->getKey());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isOrganizationApigeeX(EdgeOrganizationController $organizationController): bool {
+    try {
+      $this->organization = $organizationController->load($this->getOrganization());
+      return ($this->organization && ('CLOUD' === $this->organization->getRuntimeType() || 'HYBRID' === $this->organization->getRuntimeType()));
+    }
+    catch (\Exception $e) {
+      $this->messenger->addError($e->getMessage());
+    }
   }
 
   /**
