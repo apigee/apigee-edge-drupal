@@ -20,6 +20,7 @@
 namespace Drupal\apigee_edge;
 
 use Apigee\Edge\ClientInterface;
+use Drupal\apigee_edge\Entity\Controller\OrganizationController;
 use Drupal\key\KeyInterface;
 use Http\Message\Authentication;
 
@@ -35,6 +36,14 @@ interface SDKConnectorInterface {
    *   The organization.
    */
   public function getOrganization(): string;
+
+  /**
+   * Checking if the Organisation is ApigeeX..
+   *
+   * @return bool
+   *   TRUE if given Organisation is ApigeeX. FALSE otherwise.
+   */
+  public function isOrganizationApigeeX(OrganizationController $organizationController): bool;
 
   /**
    * Returns the http client.
