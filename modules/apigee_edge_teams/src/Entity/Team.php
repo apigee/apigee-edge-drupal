@@ -269,6 +269,34 @@ class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterfa
   /**
    * {@inheritdoc}
    */
+  public function getCorrelationId(): ?string {
+    return $this->decorated->getCorrelationId();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setCorrelationId(string $correlationId): void {
+    $this->decorated->setCorrelationId($correlationId);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getChannelId(): ?string {
+    return $this->decorated->getChannelId();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setChannelId(string $channelId): void {
+    $this->decorated->setChannelId($channelId);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     /** @var \Drupal\Core\Field\BaseFieldDefinition[] $definitions */
     $definitions = parent::baseFieldDefinitions($entity_type);
