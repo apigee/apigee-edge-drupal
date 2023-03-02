@@ -21,8 +21,10 @@
 namespace Drupal\apigee_edge_teams\Entity\Form;
 
 use Apigee\Edge\Exception\ApiException;
+use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge\Entity\Form\EdgeEntityFormInterface;
 use Drupal\apigee_edge\Entity\Form\FieldableEdgeEntityForm;
+use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -41,6 +43,12 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
    * Admin email attribute name.
    */
   const ADMIN_EMAIL_ATTRIBUTE = 'ADMIN_EMAIL';
+
+  /**
+   * Membership attribute name for admin email in appgroup.
+   */
+  const APPGROUP_ADMIN_EMAIL_ATTRIBUTE = '_apigee_reserved__memberships';
+
 
   /**
    * The team membership manager service.
@@ -64,6 +72,20 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
   protected $logger;
 
   /**
+   * The SDK connector service.
+   *
+   * @var \Drupal\apigee_edge\SDKConnectorInterface
+   */
+  protected $sdkConnector;
+
+  /**
+   * The organization controller service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface
+   */
+  private $orgController;
+
+  /**
    * TeamForm constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -74,12 +96,18 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
    *   The current user.
    * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
    *   The logger service.
+   * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
+   *   The SDK connector service.
+   * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
+   *   The organization controller service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager, AccountProxyInterface $current_user, LoggerChannelInterface $logger) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager, AccountProxyInterface $current_user, LoggerChannelInterface $logger, SDKConnectorInterface $connector, OrganizationControllerInterface $org_controller) {
     $this->entityTypeManager = $entity_type_manager;
     $this->teamMembershipManager = $team_membership_manager;
     $this->currentUser = $current_user;
     $this->logger = $logger;
+    $this->connector = $connector;
+    $this->orgController = $org_controller;
   }
 
   /**
@@ -90,7 +118,9 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
       $container->get('entity_type.manager'),
       $container->get('apigee_edge_teams.team_membership_manager'),
       $container->get('current_user'),
-      $container->get('logger.channel.apigee_edge_teams')
+      $container->get('logger.channel.apigee_edge_teams'),
+      $container->get('apigee_edge.sdk_connector'),
+      $container->get('apigee_edge.controller.organization')
     );
   }
 
@@ -104,8 +134,12 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
     // ADMIN_EMAIL_ATTRIBUTE is a required field for monetization.
     // We add to any team to make sure team creation works for mint orgs even
     // if they do not enable the m10n teams module.
-    $team->setAttribute(static::ADMIN_EMAIL_ATTRIBUTE, $this->currentUser->getEmail());
-
+    if ($this->connector->isOrganizationApigeeX($this->orgController)) {
+      $team->setAttribute(static::APPGROUP_ADMIN_EMAIL_ATTRIBUTE, "[{'developer':'email':'{$this->currentUser->getEmail()}','role':['admin']}]");
+    }
+    else {
+      $team->setAttribute(static::ADMIN_EMAIL_ATTRIBUTE, $this->currentUser->getEmail());
+    }
     return $team;
   }
 
