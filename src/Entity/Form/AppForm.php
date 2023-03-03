@@ -125,7 +125,7 @@ abstract class AppForm extends FieldableEdgeEntityForm {
     // @see \Drupal\apigee_edge\Entity\Controller\DeveloperAppEdgeEntityControllerProxy::create()
     $entity->setAppOwner($form_state->getValue('owner'));
 
-    // Set the api_products while creating App initially
+    // Set the api_products while creating App initially.
     if ($form_state->getValue('api_products')) {
       $entity->setInitialApiProducts(array_keys(array_filter($form_state->getValue('api_products'))));
     }
