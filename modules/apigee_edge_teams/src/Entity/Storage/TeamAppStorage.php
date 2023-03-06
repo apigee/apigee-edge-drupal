@@ -26,6 +26,7 @@ use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
 use Drupal\apigee_edge\Entity\Storage\AppStorage;
 use Drupal\apigee_edge_teams\Entity\Controller\TeamAppControllerFactoryInterface;
 use Drupal\apigee_edge_teams\Entity\Controller\TeamAppEdgeEntityControllerProxy;
+use Drupal\apigee_edge_teams\Entity\Controller\TeamAppApigeeXEntityControllerProxy;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
@@ -83,7 +84,13 @@ class TeamAppStorage extends AppStorage implements TeamAppStorageInterface {
    * {@inheritdoc}
    */
   protected function entityController(): EdgeEntityControllerInterface {
-    return new TeamAppEdgeEntityControllerProxy($this->teamAppControllerFactory, $this->appController);
+    if ($this->appController->isOrgApigeeX()) {
+      $teamAppEntityControllerProxy = new TeamAppApigeeXEntityControllerProxy($this->teamAppControllerFactory, $this->appController);
+    }
+    else {
+      $teamAppEntityControllerProxy = new TeamAppEdgeEntityControllerProxy($this->teamAppControllerFactory, $this->appController);
+    }
+    return $teamAppEntityControllerProxy;
   }
 
   /**

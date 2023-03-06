@@ -77,4 +77,15 @@ abstract class AppControllerBase implements EntityCacheAwareControllerInterface 
     return $this->appCache;
   }
 
+  /**
+   * Checking if the Organisation is ApigeeX.
+   *
+   * @return bool
+   *   TRUE if given Organisation is ApigeeX. FALSE otherwise.
+   */
+  public function isOrgApigeeX(): bool {
+    // Checking if the Organisation is ApigeeX.
+    return $this->connector->isOrganizationApigeeX($this->organizationController);
+  }
+
 }

@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge_teams\Entity;
 
+use Apigee\Edge\Api\ApigeeX\Entity\AppGroupApp;
 use Apigee\Edge\Api\Management\Entity\CompanyApp;
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
 use Drupal\apigee_edge\Entity\App;
@@ -87,7 +88,7 @@ class TeamApp extends App implements TeamAppInterface {
   /**
    * The decorated company app entity from the SDK.
    *
-   * @var \Apigee\Edge\Api\Management\Entity\CompanyApp
+   * @var \Apigee\Edge\Api\Management\Entity\CompanyApp|\Apigee\Edge\Api\ApigeeX\Entity\AppGroupApp
    */
   protected $decorated;
 
@@ -103,7 +104,7 @@ class TeamApp extends App implements TeamAppInterface {
    *   The SDK entity that this Drupal entity decorates.
    */
   public function __construct(array $values, ?string $entity_type = NULL, ?EdgeEntityInterface $decorated = NULL) {
-    /** @var \Apigee\Edge\Api\Management\Entity\CompanyAppInterface $decorated */
+    /** @var \Apigee\Edge\Api\ApigeeX\Entity\AppGroupAppInterface|\Apigee\Edge\Api\Management\Entity\CompanyAppInterface $decorated */
     $entity_type = $entity_type ?? 'team_app';
     parent::__construct($values, $entity_type, $decorated);
   }
@@ -122,35 +123,72 @@ class TeamApp extends App implements TeamAppInterface {
    * {@inheritdoc}
    */
   public function getAppOwner(): ?string {
-    return $this->decorated->getCompanyName();
+    $appController = \Drupal::service('apigee_edge.controller.app');
+    if ($appController->isOrgApigeeX()) {
+      return $this->decorated->getAppGroup();
+    }
+    else {
+      return $this->decorated->getCompanyName();
+    }
   }
 
   /**
    * {@inheritdoc}
    */
   public function setAppOwner(string $owner): void {
-    $this->decorated->setCompanyName($owner);
+    $appController = \Drupal::service('apigee_edge.controller.app');
+    if ($appController->isOrgApigeeX()) {
+      $this->decorated->setAppGroup($owner);
+    }
+    else {
+      $this->decorated->setCompanyName($owner);
+    }
   }
 
   /**
    * {@inheritdoc}
    */
   public function getCompanyName(): ?string {
-    return $this->decorated->getCompanyName();
+    $appController = \Drupal::service('apigee_edge.controller.app');
+    if ($appController->isOrgApigeeX()) {
+      return $this->getAppGroup();
+    }
+    else {
+      return $this->decorated->getCompanyName();
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getAppGroup(): ?string {
+    return $this->decorated->getAppGroup();
   }
 
   /**
    * {@inheritdoc}
    */
   protected static function decoratedClass(): string {
-    return CompanyApp::class;
+    $appController = \Drupal::service('apigee_edge.controller.app');
+    if ($appController->isOrgApigeeX()) {
+      return AppGroupApp::class;
+    }
+    else {
+      return CompanyApp::class;
+    }
   }
 
   /**
    * {@inheritdoc}
    */
   public static function idProperty(): string {
-    return CompanyApp::idProperty();
+    $appController = \Drupal::service('apigee_edge.controller.app');
+    if ($appController->isOrgApigeeX()) {
+      return AppGroupApp::idProperty();
+    }
+    else {
+      return CompanyApp::idProperty();
+    }
   }
 
   /**
@@ -174,7 +212,13 @@ class TeamApp extends App implements TeamAppInterface {
     }
 
     // Hide readonly properties from Manage form display list.
-    $definitions['companyName']->setDisplayConfigurable('form', FALSE);
+    $appController = \Drupal::service('apigee_edge.controller.app');
+    if ($appController->isOrgApigeeX()) {
+      $definitions['appGroup']->setDisplayConfigurable('form', FALSE);
+    }
+    else {
+      $definitions['companyName']->setDisplayConfigurable('form', FALSE);
+    }
 
     return $definitions;
   }

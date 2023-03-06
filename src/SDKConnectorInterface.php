@@ -38,7 +38,7 @@ interface SDKConnectorInterface {
   public function getOrganization(): string;
 
   /**
-   * Checking if the Organisation is ApigeeX..
+   * Checking if the Organisation is ApigeeX.
    *
    * @return bool
    *   TRUE if given Organisation is ApigeeX. FALSE otherwise.

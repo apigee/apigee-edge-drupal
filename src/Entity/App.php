@@ -72,7 +72,10 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
    * {@inheritdoc}
    */
   public function getAppFamily(): string {
-    return $this->decorated->getAppFamily();
+    return method_exists($this->decorated, 'getAppFamily') ?
+      /* @phpstan-ignore-next-line */
+      $this->decorated->getAppFamily() :
+      '';
   }
 
   /**
@@ -137,7 +140,7 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
       /** @var \Drupal\apigee_edge\Entity\Controller\AppControllerInterface $app_controller */
       $app_controller = \Drupal::service('apigee_edge.controller.app');
       try {
-        $app = $app_controller->loadApp($this->getAppId());
+        $app = $app_controller->isOrgApigeeX() ? $app_controller->loadAppGroup($this->getAppId()) : $app_controller->loadApp($this->getAppId());
       }
       catch (ApiException $e) {
         // Just catch it and leave app to be NULL.
