@@ -29,6 +29,7 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
+          - "7.4"
           - "8.0"
           - "8.1"
         drupal-core:
@@ -86,6 +87,7 @@ jobs:
         composer config --no-plugins allow-plugins.wikimedia/composer-merge-plugin true
         composer config --no-plugins allow-plugins.composer/package-versions-deprecated true
         composer config --no-plugins allow-plugins.cweagans/composer-patches true
+        composer config --no-plugins allow-plugins.php-http/discovery true        
         composer require --dev drush/drush
         composer config minimum-stability dev
         composer require drupal/rules:3.0.0-alpha7
