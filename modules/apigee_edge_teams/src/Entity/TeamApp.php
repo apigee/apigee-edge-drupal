@@ -149,13 +149,7 @@ class TeamApp extends App implements TeamAppInterface {
    * {@inheritdoc}
    */
   public function getCompanyName(): ?string {
-    $appController = \Drupal::service('apigee_edge.controller.app');
-    if ($appController->isOrgApigeeX()) {
-      return $this->getAppGroup();
-    }
-    else {
-      return $this->decorated->getCompanyName();
-    }
+    return $this->decorated->getCompanyName();
   }
 
   /**
@@ -231,7 +225,13 @@ class TeamApp extends App implements TeamAppInterface {
     $link_templates = $this->linkTemplates();
     if (isset($link_templates[$rel])) {
       if (strpos($link_templates[$rel], '{team}') !== FALSE) {
-        $params['team'] = $this->getCompanyName();
+        $appController = \Drupal::service('apigee_edge.controller.app');
+        if ($appController->isOrgApigeeX()) {
+          $params['team'] = $this->getAppGroup();
+        }
+        else {
+          $params['team'] = $this->getCompanyName();
+        }
       }
       if (strpos($link_templates[$rel], '{app}') !== FALSE) {
         $params['app'] = $this->getName();
