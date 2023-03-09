@@ -55,6 +55,9 @@ class EdgeEntityUpdateEventTest extends ApigeeEdgeActionsRulesKernelTestBase {
     ]);
     $config_entity->save();
 
+    // Add matched organization response so it returns the org whenever called.
+    $this->addOrganizationMatchedResponse();
+
     // Insert and update entity.
     /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
     $entity = $this->createDeveloperApp();
