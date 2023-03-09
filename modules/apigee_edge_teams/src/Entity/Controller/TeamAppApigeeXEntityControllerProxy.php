@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Google Inc.
+ * Copyright 2023 Google Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,27 +18,29 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Entity\Controller;
+namespace Drupal\apigee_edge_teams\Entity\Controller;
 
 use Apigee\Edge\Api\Management\Entity\AppInterface;
-use Apigee\Edge\Api\Management\Entity\DeveloperAppInterface;
+use Apigee\Edge\Api\ApigeeX\Entity\AppGroupAppInterface;
 use Apigee\Edge\Entity\EntityInterface;
+use Drupal\apigee_edge\Entity\Controller\AppControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
 use Drupal\apigee_edge\Exception\RuntimeException;
 
 /**
- * Developer app specific entity controller implementation.
+ * Team app specific entity controller implementation.
  *
  * It ensures that the right SDK controllers (and with that the right API
  * endpoints) gets used for CRUDL operations.
  */
-final class DeveloperAppEdgeEntityControllerProxy implements EdgeEntityControllerInterface {
+final class TeamAppApigeeXEntityControllerProxy implements EdgeEntityControllerInterface {
 
   /**
-   * The developer app controller factory service.
+   * The team app controller factory service.
    *
-   * @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerFactoryInterface
+   * @var \Drupal\apigee_edge_teams\Entity\Controller\TeamAppControllerFactoryInterface
    */
-  private $devAppControllerFactory;
+  private $teamAppControllerFactory;
 
   /**
    * The app controller service.
@@ -48,15 +50,15 @@ final class DeveloperAppEdgeEntityControllerProxy implements EdgeEntityControlle
   private $appController;
 
   /**
-   * DeveloperAppEntityControllerProxy constructor.
+   * TeamAppApigeeXEntityControllerProxy constructor.
    *
-   * @param \Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerFactoryInterface $developer_app_controller_factory
-   *   The developer app controller factory service.
+   * @param \Drupal\apigee_edge_teams\Entity\Controller\TeamAppControllerFactoryInterface $team_app_controller_factory
+   *   The team app controller factory service.
    * @param \Drupal\apigee_edge\Entity\Controller\AppControllerInterface $app_controller
    *   The app controller service.
    */
-  public function __construct(DeveloperAppControllerFactoryInterface $developer_app_controller_factory, AppControllerInterface $app_controller) {
-    $this->devAppControllerFactory = $developer_app_controller_factory;
+  public function __construct(TeamAppControllerFactoryInterface $team_app_controller_factory, AppControllerInterface $app_controller) {
+    $this->teamAppControllerFactory = $team_app_controller_factory;
     $this->appController = $app_controller;
   }
 
@@ -64,12 +66,12 @@ final class DeveloperAppEdgeEntityControllerProxy implements EdgeEntityControlle
    * {@inheritdoc}
    */
   public function create(EntityInterface $entity): void {
-    /** @var \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface $entity */
-    if (empty($entity->getDeveloperId())) {
+    /** @var \Apigee\Edge\Api\ApigeeX\Entity\AppGroupAppInterface $entity */
+    if (empty($entity->getAppGroup())) {
       // Sanity check.
-      throw new RuntimeException('Developer id has to set on the app.');
+      throw new RuntimeException('AppGroup name has to set on the app.');
     }
-    $controller = $this->devAppControllerFactory->developerAppController($entity->getDeveloperId());
+    $controller = $this->teamAppControllerFactory->teamAppController($entity->getAppGroup());
     $controller->create($entity);
   }
 
@@ -77,16 +79,15 @@ final class DeveloperAppEdgeEntityControllerProxy implements EdgeEntityControlle
    * {@inheritdoc}
    */
   public function load(string $id): EntityInterface {
-    $app = $this->appController->isOrgApigeeX() ? $this->appController->loadAppGroup($id) : $this->appController->loadApp($id);
-    return $app;
+    return $this->appController->loadAppGroup($id);
   }
 
   /**
    * {@inheritdoc}
    */
   public function update(EntityInterface $entity): void {
-    /** @var \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface $entity */
-    $controller = $this->devAppControllerFactory->developerAppController($entity->getDeveloperId());
+    /** @var \Apigee\Edge\Api\ApigeeX\Entity\AppGroupAppInterface $entity */
+    $controller = $this->teamAppControllerFactory->teamAppController($entity->getAppGroup());
     $controller->update($entity);
   }
 
@@ -94,16 +95,16 @@ final class DeveloperAppEdgeEntityControllerProxy implements EdgeEntityControlle
    * {@inheritdoc}
    */
   public function delete(string $id): void {
-    // Try to be smart here and load the app from the developer app
+    // Try to be smart here and load the app from the appgroup app
     // entity cache (app controller's cache is probably empty unless there were
     // a load() or getEntities() call before).
-    $entity = \Drupal::entityTypeManager()->getStorage('developer_app')->load($id);
+    $entity = \Drupal::entityTypeManager()->getStorage('team_app')->load($id);
     if (!$entity) {
       // Entity has not found in the entity cache, we have it from Apigee Edge.
       $entity = $this->load($id);
     }
-    /** @var \Apigee\Edge\Api\Management\Entity\DeveloperAppInterface $entity */
-    $controller = $this->devAppControllerFactory->developerAppController($entity->getDeveloperId());
+    /** @var \Apigee\Edge\Api\ApigeeX\Entity\AppGroupAppInterface $entity */
+    $controller = $this->teamAppControllerFactory->teamAppController($entity->getAppGroup());
     // The id that we got is a UUID, what we need is an app name.
     $controller->delete($entity->getName());
   }
@@ -113,7 +114,7 @@ final class DeveloperAppEdgeEntityControllerProxy implements EdgeEntityControlle
    */
   public function loadAll(): array {
     return array_filter($this->appController->listApps(TRUE), function (AppInterface $app) {
-      return $app instanceof DeveloperAppInterface;
+      return $app instanceof AppGroupAppInterface;
     });
   }
 
