@@ -127,7 +127,14 @@ abstract class AppForm extends FieldableEdgeEntityForm {
 
     // Set the api_products while creating App initially.
     if ($form_state->getValue('api_products')) {
-      $entity->setInitialApiProducts(array_keys(array_filter($form_state->getValue('api_products'))));
+      if (is_array($form_state->getValue('api_products'))) {
+        // API Products are multiselect.
+        $entity->setInitialApiProducts(array_keys(array_filter($form_state->getValue('api_products'))));
+      }
+      else {
+        // API Products are single select or radio.
+        $entity->setInitialApiProducts([$form_state->getValue('api_products')]);
+      }
     }
 
     return $entity;
