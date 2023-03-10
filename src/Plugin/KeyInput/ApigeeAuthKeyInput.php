@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge\Plugin\KeyInput;
 
+use Apigee\Edge\ClientInterface;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use Drupal\apigee_edge\Connector\GceServiceAccountAuthentication;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
@@ -68,8 +69,8 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       ]),
       '#required' => TRUE,
       '#options' => [
-        EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC => $this->t('Apigee Edge (Endpoint: https://api.enterprise.apigee.com/v1)'),
-        EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID => $this->t('Apigee X (Endpoint: https://apigee.googleapis.com/v1)'),
+        EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC => $this->t('Apigee Edge (Endpoint: %endpoint)', ['%endpoint' => ClientInterface::EDGE_ENDPOINT]),
+        EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID => $this->t('Apigee X (Endpoint: %endpoint)', ['%endpoint' => ClientInterface::APIGEE_ON_GCP_ENDPOINT]),
         EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE => $this->t('Private cloud (Custom endpoint)'),
       ],
       '#default_value' => $values['instance_type'] ?? 'public',
