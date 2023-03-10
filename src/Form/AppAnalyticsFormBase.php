@@ -503,7 +503,7 @@ abstract class AppAnalyticsFormBase extends FormBase {
     $stats_query
       ->setFilter("({$this->getAnalyticsFilterCriteriaByAppOwner($app)} and developer_app eq '{$app->getName()}')")
       ->setTimeUnit('hour');
-    return $stats_controller->getOptimizedMetricsByDimensions(['apps'], $stats_query);
+    return $stats_controller->getOptimizedMetricsByDimensions(['developer_app'], $stats_query);
   }
 
   /**
