@@ -21,12 +21,12 @@ namespace Drupal\apigee_edge\Form;
 
 use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
 use Apigee\Edge\Structure\CredentialProductInterface;
-use Drupal\apigee_edge\Entity\AppInterface;
-use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\apigee_edge\Entity\AppInterface;
+use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 
 /**
  * Provides app API key add base form.
@@ -58,7 +58,7 @@ abstract class AppApiKeyAddFormBase extends FormBase {
    * @return \Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface
    *   The app api-key controller.
    */
-  abstract protected function appCredentialController(string $owner, string $app_name) : AppCredentialControllerInterface;
+  abstract protected function appCredentialController(string $owner, string $app_name): AppCredentialControllerInterface;
 
   /**
    * Returns the redirect url for the app.
@@ -165,54 +165,75 @@ abstract class AppApiKeyAddFormBase extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    $t_args = [
+      '@app' => $this->app->label(),
+    ];
     $expiry = $form_state->getValue('expiry');
     $expiry_date = $form_state->getValue('expiry_date');
     $expires_in = $expiry === 'date' ? (strtotime($expiry_date) - time()) * 1000 : -1;
-    $selected_products = [];
+
+    $form_state->setRedirectUrl($this->getRedirectUrl());
 
     $api_products = $this->getApiProductsForApp($this->app);
-    if (count($api_products)) {
-      $selected_products = array_map(function (CredentialProductInterface $api_product) {
-        return $api_product->getApiproduct();
-      }, $api_products);
+    // @todo The "Add credential button must not be available when it cannot
+    //   be used.
+    if ($api_products === []) {
+      // Is this a skeleton key?
+      $this->messenger()->addWarning($this->t('The @app @app_entity_label has no @apis associated.', $t_args + [
+        '@app_entity_label' => $this->app->getEntityType()->getSingularLabel(),
+          // @todo DI dependency.
+          // phpcs:disable
+          '@apis' => \Drupal::entityTypeManager()->getDefinition('api_product')->getPluralLabel(),
+          // phpcs:enable
+      ]));
+      return;
     }
 
-    $args = [
-      '@app' => $this->app->label(),
-    ];
+    $selected_products = array_map(static function (CredentialProductInterface $api_product) {
+      return $api_product->getApiproduct();
+    }, $api_products);
 
     try {
       $this->appCredentialController($this->app->getAppOwner(), $this->app->getName())
-        ->generate($selected_products, $this->app->getAttributes(), $this->app->getCallbackUrl() ?? "", [], $expires_in);
+        ->generate($selected_products, $this->app->getAttributes(), $this->app->getCallbackUrl() ?? '', [], $expires_in);
       Cache::invalidateTags($this->app->getCacheTags());
-      $this->messenger()->addStatus($this->t('New API key added to @app.', $args));
-      $form_state->setRedirectUrl($this->getRedirectUrl());
+      $this->messenger()->addStatus($this->t('New API key added to @app.', $t_args));
     }
     catch (\Exception $exception) {
-      $this->messenger()->addError($this->t('Failed to add API key for @app.', $args));
+      $this->messenger()->addError($this->t('Failed to add API key for @app.', $t_args));
     }
   }
 
   /**
    * Helper to find API products based on the recently active API key.
    *
+   * Returns the most recent approved credential, if there is any, otherwise
+   * returns the most recent revoked credential.
+   *
    * @param \Drupal\apigee_edge\Entity\AppInterface $app
    *   The app entity.
    *
-   * @return \Apigee\Edge\Structure\CredentialProductInterface[]|array
-   *   An array of API products.
+   * @return \Apigee\Edge\Structure\CredentialProductInterface[]
+   *   An array of credential API products.
    */
   protected function getApiProductsForApp(AppInterface $app): array {
-    $approved_credentials = array_filter($app->getCredentials(), function (AppCredentialInterface $credential) {
-      return $credential->getStatus() === AppCredentialInterface::STATUS_APPROVED;
-    });
+    if ($app->getCredentials() === []) {
+      // Is this a skeleton key?
+      return [];
+    }
 
-    // Find the recently active one.
-    usort($approved_credentials, function (AppCredentialInterface $a, AppCredentialInterface $b) {
+    $credentials = $app->getCredentials();
+    usort($credentials, static function (AppCredentialInterface $a, AppCredentialInterface $b) {
       return $b->getIssuedAt() <=> $a->getIssuedAt();
     });
 
-    return count($approved_credentials) ? $approved_credentials[0]->getApiProducts() : [];
+    $approved_credentials = array_filter($app->getCredentials(), static function (AppCredentialInterface $credential) {
+      return $credential->getStatus() === AppCredentialInterface::STATUS_APPROVED;
+    });
+
+    $credential = $approved_credentials !== [] ? reset($approved_credentials) : reset($credentials);
+
+    return $credential->getApiProducts();
   }
 
 }

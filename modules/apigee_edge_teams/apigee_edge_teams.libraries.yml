@@ -1,5 +1,5 @@
 permissions:
-  version: VERSION
+  version: 1.0
   css:
     theme:
       css/apigee_edge_teams.team_permissions.css: {}
@@ -12,13 +12,13 @@ permissions:
     - core/drupalSettings
 
 switcher:
-  version: VERSION
+  version: 1.0
   css:
     theme:
       css/apigee_edge_teams.switcher.css: {}
 
 disabled_action:
-  version: VERSION
+  version: 1.0
   css:
     theme:
       css/apigee_edge_teams.disabled_action.css: {}

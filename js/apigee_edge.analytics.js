@@ -129,7 +129,7 @@
    */
   Drupal.behaviors.apigeeEdgeAnalyticsQuickDatePicker = {
     attach: function attach(context, drupalSettings) {
-      $(once('#edit-quick-date-picker', context)).bind('change', function () {
+      $(once('apigee_analytics_datepicker', '#edit-quick-date-picker', context)).bind('change', function () {
         var since = getServerOffsetDate(new Date());
         switch (this.selectedOptions['0'].value) {
           case '1d':

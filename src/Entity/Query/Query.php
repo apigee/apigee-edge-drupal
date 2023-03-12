@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge\Entity\Query;
 
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -84,9 +85,40 @@ class Query extends QueryBase implements QueryInterface {
     // Basically, DeveloperAppQuery already applies a condition on the returned
     // result because this function gets called.
     $all_records = $this->getFromStorage();
-    $filter = $this->condition->compile($this);
 
+    // @todo Proper entity query support that is aligned with the implementation
+    //   in \Drupal\Core\Entity\Query\Sql\Query::prepare() can be only added
+    //   if the following Entity API module issue is solved.
+    //   https://www.drupal.org/project/entity/issues/3332956
+    //   (Having a fix for a similar Group module issue is a nice to have,
+    //   https://www.drupal.org/project/group/issues/3332963.)
+    if ($this->accessCheck) {
+      // Read meta-data from query, if provided.
+      if (!$account = $this->getMetaData('account')) {
+        // @todo DI dependency.
+        $account = \Drupal::currentUser();
+      }
+      $cacheability = CacheableMetadata::createFromRenderArray([]);
+      $all_records = array_filter($all_records, static function (EntityInterface $entity) use ($cacheability, $account) {
+        // Bubble up cacheability information even from a revoked access result.
+        $result = $entity->access('view', $account, TRUE);
+        $cacheability->addCacheableDependency($result);
+        return $result->isAllowed();
+      });
+      // @todo DI dependencies.
+      /** @var \Symfony\Component\HttpFoundation\Request $request */
+      $request = \Drupal::requestStack()->getCurrentRequest();
+      $renderer = \Drupal::service('renderer');
+      if ($request->isMethodCacheable() && $renderer->hasRenderContext()) {
+        $build = [];
+        $cacheability->applyTo($build);
+        $renderer->render($build);
+      }
+    }
+
+    $filter = $this->condition->compile($this);
     $result = array_filter($all_records, $filter);
+
     if ($this->count) {
       return count($result);
     }
