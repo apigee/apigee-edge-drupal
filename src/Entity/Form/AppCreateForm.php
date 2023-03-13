@@ -121,9 +121,12 @@ abstract class AppCreateForm extends AppForm {
     $app_settings = $this->config('apigee_edge.common_app_settings');
     $user_select = (bool) $app_settings->get('user_select');
 
-    $api_products_options = array_map(function (ApiProductInterface $product) {
+    $api_products = $this->apiProductList($form, $form_state);
+    $api_products_options = array_map(static function (ApiProductInterface $product) {
       return $product->label();
-    }, $this->apiProductList($form, $form_state));
+    }, usort($api_products, static function (ApiProductInterface $a, ApiProductInterface $b) {
+      return strnatcmp(strtolower($a->getDisplayName()), strtolower($b->getDisplayName()));
+    }));
 
     $multiple = $app_settings->get('multiple_products');
     $default_products = $app_settings->get('default_products') ?: [];

@@ -107,7 +107,12 @@ abstract class AppEditForm extends AppForm {
 
     // If "Let user select the product(s)" is enabled.
     if ($app_settings->get('user_select')) {
-      $available_products_by_user = $this->apiProductList($form, $form_state);
+      $api_products = $this->apiProductList($form, $form_state);
+      $available_products_by_user = array_map(static function (ApiProductInterface $product) {
+        return $product->label();
+      }, usort($api_products, static function (ApiProductInterface $a, ApiProductInterface $b) {
+        return strnatcmp(strtolower($a->getDisplayName()), strtolower($b->getDisplayName()));
+      }));
 
       $form['credential'] = [
         '#type' => 'container',

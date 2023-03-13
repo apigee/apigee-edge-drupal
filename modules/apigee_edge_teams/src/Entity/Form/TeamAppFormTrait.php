@@ -221,10 +221,8 @@ trait TeamAppFormTrait {
         return $this->getTeamMemberApiProductAccessHandler()->access($api_product, 'assign', $team);
       };
     }
-    $apiProducts = $this->getEntityTypeManager()->getStorage('api_product')->loadMultiple();
-    ksort($apiProducts);
 
-    return array_filter($apiProducts, $filter);
+    return array_filter($this->getEntityTypeManager()->getStorage('api_product')->loadMultiple(), $filter);
   }
 
   /**
