@@ -128,10 +128,8 @@ trait DeveloperAppFormTrait {
     $email = $form_state->getValue('owner') ?? $form['owner']['#value'] ?? $form['owner']['#default_value'];
     /** @var \Drupal\user\UserInterface|null $account */
     $account = user_load_by_mail($email);
-    $apiProducts = \Drupal::entityTypeManager()->getStorage('api_product')->loadMultiple();
-    ksort($apiProducts);
 
-    return array_filter($apiProducts, function (ApiProductInterface $product) use ($account) {
+    return array_filter(\Drupal::entityTypeManager()->getStorage('api_product')->loadMultiple(), function (ApiProductInterface $product) use ($account) {
       return $product->access('assign', $account);
     });
   }
