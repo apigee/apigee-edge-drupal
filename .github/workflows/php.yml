@@ -95,7 +95,6 @@ jobs:
         composer config --json extra.merge-plugin.require '["modules/contrib/apigee_edge/composer.json"]'
         composer config platform.php ${{ matrix.php-version }}
         composer config --json extra.patches."drupal/core" '{ "Support entities that are neither content nor config entities": "https://www.drupal.org/files/issues/2020-12-02/3042467-50.patch"}'
-        composer config --json extra.patches."apigee/apigee-client-php" '{ "Support assigning API products to Apps on creation": "https://patch-diff.githubusercontent.com/raw/apigee/apigee-client-php/pull/248.patch"}'
         composer update --with-all-dependencies
         composer require --dev phpspec/prophecy-phpunit:^2
         composer config --no-plugins allow-plugins.drupal/console-extend-plugin true
