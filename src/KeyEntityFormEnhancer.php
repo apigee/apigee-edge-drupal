@@ -253,7 +253,6 @@ final class KeyEntityFormEnhancer {
               ':input[name="key_input_settings[password]"]' => ['empty' => FALSE],
               ':input[name="key_input_settings[username]"]' => ['empty' => FALSE],
             ],
-            'or',
             [
               ':input[name="key_input_settings[instance_type]"]' => ['value' => EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID],
               ':input[name="key_input_settings[organization]"]' => ['empty' => FALSE],
