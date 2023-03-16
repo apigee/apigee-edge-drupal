@@ -458,4 +458,11 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
     return array_merge(parent::uniqueIdProperties(), ['appId']);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function setInitialApiProducts(array $initialApiProducts): void {
+    $this->decorated->setInitialApiProducts($initialApiProducts);
+  }
+
 }
