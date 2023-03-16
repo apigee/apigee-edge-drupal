@@ -107,12 +107,7 @@ abstract class AppEditForm extends AppForm {
 
     // If "Let user select the product(s)" is enabled.
     if ($app_settings->get('user_select')) {
-      $api_products = $this->apiProductList($form, $form_state);
-      $available_products_by_user = array_map(static function (ApiProductInterface $product) {
-        return $product->label();
-      }, usort($api_products, static function (ApiProductInterface $a, ApiProductInterface $b) {
-        return strnatcmp(strtolower($a->getDisplayName()), strtolower($b->getDisplayName()));
-      }));
+      $available_products_by_user = $this->apiProductList($form, $form_state);
 
       $form['credential'] = [
         '#type' => 'container',
@@ -146,6 +141,7 @@ abstract class AppEditForm extends AppForm {
         $credential_product_options = array_map(function (ApiProductInterface $product) {
           return $product->label();
         }, $available_products_by_user + $this->entityTypeManager->getStorage('api_product')->loadMultiple($credential_currently_assigned_product_ids));
+        asort($credential_product_options, SORT_STRING | SORT_FLAG_CASE | SORT_NATURAL);
 
         $form['credential'][$credential->getConsumerKey()]['api_products'] = [
           '#title' => $api_product_def->getPluralLabel(),
