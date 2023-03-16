@@ -296,6 +296,7 @@ trait DeveloperAppUITestTrait {
       'name' => $name,
       'displayName[0][value]' => $name,
     ];
+
     if (count($products) === 1) {
       $formdata['api_products'] = reset($products)->getName();
     }
