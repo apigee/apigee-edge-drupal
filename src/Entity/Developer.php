@@ -25,7 +25,10 @@ use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Structure\AttributesProperty;
 use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
+use Drupal\apigee_edge_teams\Entity\TeamInterface;
+use Drupal\apigee_edge_teams\Entity\TeamMemberRole;
 use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Error;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
@@ -264,6 +267,34 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
    */
   public function hasApp(string $app_name): bool {
     return $this->decorated->hasApp($app_name);
+  }
+
+  /**
+   * Returns a list of teams from team_member_role entity for specific developer.
+   *
+   * @param Drupal\Core\Session\AccountInterface $account
+   *   The team which members gets listed.
+   *
+   * @return array
+   *   Render array.
+   */
+  public function getAppGroups(AccountInterface $account): array {
+    // TODO : Save it to the local cache so we can serve it from there
+    // next time.
+    // Load team_member_role object.
+    $team_member_role_storage = \Drupal::entityTypeManager()->getStorage('team_member_role');
+
+    /** @var \Drupal\user\UserInterface $user */
+    $user = user_load_by_mail($account->getEmail());
+    /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface $team_member_roles */
+
+    $developerTeam = array_reduce($team_member_role_storage->loadByDeveloper($user), function ($carry, TeamMemberRole $team_role) {
+        $carry[$team_role->getTeam()->id()] = $team_role->getTeam()->id();
+        return $carry;
+    },
+    []);
+
+    return array_keys($developerTeam);
   }
 
   /**

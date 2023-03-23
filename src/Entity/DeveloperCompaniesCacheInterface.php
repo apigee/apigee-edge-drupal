@@ -42,6 +42,25 @@ interface DeveloperCompaniesCacheInterface {
   public function getCompanies(string $id): ?array;
 
   /**
+   * Returns appgroups of a developer.
+   *
+   * @param string $id
+   *   Developer id.
+   *
+   * @return string[]|null
+   *   Array of appgroup names or NULL if information is not yet available.
+   */
+  public function getAppGroups(string $id): ?array;
+
+  /**
+   * Saves developers' appgroups to cache.
+   *
+   * @param \Apigee\Edge\Api\Management\Entity\DeveloperInterface[] $developers
+   *   Developer entities.
+   */
+  public function saveAppGroups(array $developers): void;
+
+  /**
    * Saves developers' companies to cache.
    *
    * @param \Apigee\Edge\Api\Management\Entity\DeveloperInterface[] $developers

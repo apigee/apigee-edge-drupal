@@ -23,11 +23,13 @@ namespace Drupal\apigee_edge_teams;
 use Apigee\Edge\Api\Management\Structure\CompanyMembership;
 use Drupal\apigee_edge\Entity\Controller\DeveloperControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface;
 use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\user\UserInterface;
 use Psr\Log\LoggerInterface;
 
@@ -81,6 +83,13 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
   private $logger;
 
   /**
+   * The organization controller service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface
+   */
+  private $orgController;
+
+  /**
    * TeamMembershipManager constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -95,14 +104,17 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
    *   The cache tags invalidator service.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
+   * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
+   *   The organization controller service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, CompanyMembersControllerFactoryInterface $company_members_controller_factory, DeveloperControllerInterface $developer_controller, DeveloperCompaniesCacheInterface $developer_companies_cache, CacheTagsInvalidatorInterface $cache_tags_invalidator, LoggerInterface $logger) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, CompanyMembersControllerFactoryInterface $company_members_controller_factory, DeveloperControllerInterface $developer_controller, DeveloperCompaniesCacheInterface $developer_companies_cache, CacheTagsInvalidatorInterface $cache_tags_invalidator, LoggerInterface $logger, OrganizationControllerInterface $org_controller) {
     $this->entityTypeManager = $entity_type_manager;
     $this->companyMembersControllerFactory = $company_members_controller_factory;
     $this->developerController = $developer_controller;
     $this->developerCompaniesCache = $developer_companies_cache;
     $this->cacheTagsInvalidator = $cache_tags_invalidator;
     $this->logger = $logger;
+    $this->orgController = $org_controller;
   }
 
   /**
@@ -169,10 +181,20 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
     if ($entity === NULL) {
       throw new DeveloperDoesNotExistException($developer);
     }
-    // Developer entity's getCompanies() method should return the list of
-    // companies where the developer is member.
-    // @see \Drupal\apigee_edge\Entity\Developer::getCompanies()
-    return $entity->getCompanies();
+    // Checking for ApigeeX organization.
+    if ($this->orgController->isOrganizationApigeeX()) {
+      /** @var \Drupal\user\Entity\User $account */
+      $account = user_load_by_mail($developer);
+      // Developer entity's getAppGroups() method should return the list of
+      // AppGroups/teams where the developer is a member.
+      return $entity->getAppGroups($account);
+    }
+    else {
+      // Developer entity's getCompanies() method should return the list of
+      // companies where the developer is member.
+      // @see \Drupal\apigee_edge\Entity\Developer::getCompanies()
+      return $entity->getCompanies();
+    }
   }
 
   /**
