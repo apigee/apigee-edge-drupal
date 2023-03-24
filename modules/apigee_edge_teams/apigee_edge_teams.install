@@ -18,9 +18,49 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
+use Apigee\Edge\Utility\OrganizationFeatures;
 use Drupal\Core\Config\FileStorage;
 use Drupal\user\RoleInterface;
 use Drupal\views\Views;
+
+/**
+ * Install, update and uninstall functions for Apigee Edge and ApigeeX Teams.
+ */
+
+/**
+ * Implements hook_requirements().
+ */
+function apigee_edge_teams_requirements($phase) {
+  $requirements = [];
+
+  if ($phase == 'install' || $phase == 'runtime') {
+    try {
+      /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
+      $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
+      $org_controller = \Drupal::service('apigee_edge.controller.organization');
+      /* @var \Apigee\Edge\Api\Management\Entity\Organization $organization */
+      $organization = $org_controller->load($sdk_connector->getOrganization());
+      if ($organization && !OrganizationFeatures::isCompaniesFeatureAvailable($organization) && OrganizationFeatures::isMonetizationEnabled($organization)) {
+        $url = [
+          ':url' => 'https://cloud.google.com/apigee/docs/api-platform/get-started/compare-apigee-products#unsupported-apis',
+        ];
+        $message = ($phase == 'runtime') ?
+          t("The Apigee Edge and X Teams module functionality is not available for monetization enabled org and should be uninstalled, because <a href=':url' target='_blank'>Edge company and ApigeeX AppGroup APIs are not supported in Apigee hybrid orgs with monetization enabled</a>.", $url) :
+          t("The Apigee Edge and X Teams module functionality is not available for your monetization enabled org because <a href=':url' target='_blank'>Edge company and ApigeeX AppGroup APIs are not supported in Apigee hybrid orgs with monetization enabled</a>.", $url);
+        $requirements['apigee_edge_teams_not_supported'] = [
+          'title' => t('Apigee Edge Teams'),
+          'description' => $message,
+          'severity' => REQUIREMENT_ERROR,
+        ];
+      }
+    }
+    catch (\Exception $exception) {
+      // Do nothing if connection to Edge is not available.
+    }
+  }
+
+  return $requirements;
+}
 
 /**
  * Implements hook_install().
