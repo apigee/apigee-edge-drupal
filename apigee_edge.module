@@ -1588,7 +1588,7 @@ function apigee_edge_cron() {
   // The reason of this is to avoid race conditions.
   for ($i = 0; $i < 100; $i++) {
     if (($job = $executor->select())) {
-      $executor->cast($job);
+      $executor->call($job);
     }
     else {
       break;
