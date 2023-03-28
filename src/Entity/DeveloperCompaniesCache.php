@@ -48,9 +48,33 @@ final class DeveloperCompaniesCache implements DeveloperCompaniesCacheInterface 
   /**
    * {@inheritdoc}
    */
+  public function getAppGroups(string $id): ?array {
+    $item = $this->backend->get($id);
+    return $item ? $item->data : NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getCompanies(string $id): ?array {
     $item = $this->backend->get($id);
     return $item ? $item->data : NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function saveAppGroups(array $developers): void {
+    /** @var \Apigee\Edge\Api\Management\Entity\DeveloperInterface $developer */
+    foreach ($developers as $developer) {
+      $tags = array_merge([
+        "developer:{$developer->getDeveloperId()}",
+        "developer:{$developer->getEmail()}",
+      ], array_map(function (string $company) {
+        return "company:{$company}";
+      }, $developer->getAppGroups()));
+      $this->backend->set($developer->id(), $developer->getAppGroups(), CacheBackendInterface::CACHE_PERMANENT, $tags);
+    }
   }
 
   /**
