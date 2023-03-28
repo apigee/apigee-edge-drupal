@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge_teams;
 
 use Apigee\Edge\Api\Management\Controller\CompanyMembersController as EdgeCompanyMembersController;
 use Apigee\Edge\Api\Management\Structure\CompanyMembership;
+use Drupal\apigee_edge\Entity\Controller\OrganizationController;
 use Drupal\apigee_edge\SDKConnectorInterface;
 
 /**
@@ -102,7 +103,17 @@ final class CompanyMembersController implements CompanyMembersControllerInterfac
    * {@inheritdoc}
    */
   public function setMembers(CompanyMembership $members): CompanyMembership {
-    $result = $this->decorated()->setMembers($members);
+    // TODO : DI.
+    $organizationController = new OrganizationController($this->connector);
+    // Checks whether the organization is Edge or ApigeeX organization.
+    if ($organizationController->isOrganizationApigeeX()) {
+      // Returning the member for AppGroup, as we are storing members locally.
+      // TODO : Store membership info on appgroups _apigee_reserved__memberships attribute for ApigeeX.
+      $result = $members;
+    }
+    else {
+      $result = $this->decorated()->setMembers($members);
+    }
     // Returned membership does not contain all actual members of the company,
     // so it is easier to remove the membership object from the cache and
     // enforce reload in getMembers().
@@ -114,7 +125,15 @@ final class CompanyMembersController implements CompanyMembersControllerInterfac
    * {@inheritdoc}
    */
   public function removeMember(string $email): void {
-    $this->decorated()->removeMember($email);
+    // TODO : DI.
+    $organizationController = new OrganizationController($this->connector);
+    // Checks whether the organization is Edge or ApigeeX organization.
+    // Removing member from apigee management for Edge Org.
+    // ApigeeX storing members on local storage only.
+    // TODO : Remove members info from appgroups _apigee_reserved__memberships attribute for ApigeeX.
+    if (!$organizationController->isOrganizationApigeeX()) {
+      $this->decorated()->removeMember($email);
+    }
     $this->companyMembershipObjectCache->removeMembership($this->company);
   }
 
