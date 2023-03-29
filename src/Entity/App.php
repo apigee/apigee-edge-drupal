@@ -341,6 +341,7 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
 
     // Hide readonly properties from Manage form display list.
     $read_only_fields = [
+      'apiProducts',
       'appId',
       'appFamily',
       'createdAt',
