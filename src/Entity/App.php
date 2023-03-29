@@ -139,8 +139,9 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
       // App has not found in cache, we have to load it from Apigee Edge.
       /** @var \Drupal\apigee_edge\Entity\Controller\AppControllerInterface $app_controller */
       $app_controller = \Drupal::service('apigee_edge.controller.app');
+      $orgController = \Drupal::service('apigee_edge.controller.organization');
       try {
-        $app = $app_controller->isOrgApigeeX() ? $app_controller->loadAppGroup($this->getAppId()) : $app_controller->loadApp($this->getAppId());
+        $app = $orgController->isOrganizationApigeeX() ? $app_controller->loadAppGroup($this->getAppId()) : $app_controller->loadApp($this->getAppId());
       }
       catch (ApiException $e) {
         // Just catch it and leave app to be NULL.

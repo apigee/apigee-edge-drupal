@@ -123,26 +123,14 @@ class TeamApp extends App implements TeamAppInterface {
    * {@inheritdoc}
    */
   public function getAppOwner(): ?string {
-    $appController = \Drupal::service('apigee_edge.controller.app');
-    if ($appController->isOrgApigeeX()) {
-      return $this->decorated->getAppGroup();
-    }
-    else {
-      return $this->decorated->getCompanyName();
-    }
+    return $this->isApigeeX() ? $this->decorated->getAppGroup() : $this->decorated->getCompanyName();
   }
 
   /**
    * {@inheritdoc}
    */
   public function setAppOwner(string $owner): void {
-    $appController = \Drupal::service('apigee_edge.controller.app');
-    if ($appController->isOrgApigeeX()) {
-      $this->decorated->setAppGroup($owner);
-    }
-    else {
-      $this->decorated->setCompanyName($owner);
-    }
+    $this->isApigeeX() ? $this->decorated->setAppGroup($owner) : $this->decorated->setCompanyName($owner);
   }
 
   /**
@@ -160,29 +148,28 @@ class TeamApp extends App implements TeamAppInterface {
   }
 
   /**
+   * Checks whether the organization is Edge or ApigeeX organization.
+   *
+   * @return bool
+   *   bool
+   */
+  public static function isApigeeX(): bool {
+    $orgController = \Drupal::service('apigee_edge.controller.organization');
+    return $orgController->isOrganizationApigeeX();
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected static function decoratedClass(): string {
-    $appController = \Drupal::service('apigee_edge.controller.app');
-    if ($appController->isOrgApigeeX()) {
-      return AppGroupApp::class;
-    }
-    else {
-      return CompanyApp::class;
-    }
+    return TeamApp::isApigeeX() ? AppGroupApp::class : CompanyApp::class;
   }
 
   /**
    * {@inheritdoc}
    */
   public static function idProperty(): string {
-    $appController = \Drupal::service('apigee_edge.controller.app');
-    if ($appController->isOrgApigeeX()) {
-      return AppGroupApp::idProperty();
-    }
-    else {
-      return CompanyApp::idProperty();
-    }
+    return TeamApp::isApigeeX() ? AppGroupApp::idProperty() : CompanyApp::idProperty();
   }
 
   /**
@@ -206,8 +193,7 @@ class TeamApp extends App implements TeamAppInterface {
     }
 
     // Hide readonly properties from Manage form display list.
-    $appController = \Drupal::service('apigee_edge.controller.app');
-    if ($appController->isOrgApigeeX()) {
+    if (TeamApp::isApigeeX()) {
       $definitions['appGroup']->setDisplayConfigurable('form', FALSE);
     }
     else {
@@ -225,13 +211,7 @@ class TeamApp extends App implements TeamAppInterface {
     $link_templates = $this->linkTemplates();
     if (isset($link_templates[$rel])) {
       if (strpos($link_templates[$rel], '{team}') !== FALSE) {
-        $appController = \Drupal::service('apigee_edge.controller.app');
-        if ($appController->isOrgApigeeX()) {
-          $params['team'] = $this->getAppGroup();
-        }
-        else {
-          $params['team'] = $this->getCompanyName();
-        }
+        $params['team'] = $this->isApigeeX() ? $this->getAppGroup() : $this->getCompanyName();
       }
       if (strpos($link_templates[$rel], '{app}') !== FALSE) {
         $params['app'] = $this->getName();

@@ -38,14 +38,6 @@ interface SDKConnectorInterface {
   public function getOrganization(): string;
 
   /**
-   * Checking if the Organisation is ApigeeX.
-   *
-   * @return bool
-   *   TRUE if given Organisation is ApigeeX. FALSE otherwise.
-   */
-  public function isOrganizationApigeeX(OrganizationController $organizationController): bool;
-
-  /**
    * Returns the http client.
    *
    * @return \Apigee\Edge\ClientInterface
