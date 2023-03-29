@@ -158,7 +158,7 @@ final class TeamController implements TeamControllerInterface {
    */
   private function decorated(): EdgeCompanyControllerInterface|AppGroupControllerInterface {
     if ($this->instance === NULL) {
-      if ($this->connector->isOrganizationApigeeX($this->orgController)) {
+      if ($this->orgController->isOrganizationApigeeX()) {
         $this->instance = new AppGroupController($this->connector->getOrganization(), $this->connector->getClient(), NULL, $this->orgController);
       }
       else {
@@ -186,7 +186,7 @@ final class TeamController implements TeamControllerInterface {
    * {@inheritdoc}
    */
   public function setStatus(string $entity_id, string $status): void {
-    if (!$this->connector->isOrganizationApigeeX($this->orgController)) {
+    if (!$this->orgController->isOrganizationApigeeX()) {
       $this->decorated()->setStatus($entity_id, $status);
     }
     // Enforce reload of entity from Apigee Edge.

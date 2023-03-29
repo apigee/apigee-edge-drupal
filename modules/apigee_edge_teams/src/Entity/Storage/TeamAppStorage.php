@@ -23,6 +23,7 @@ namespace Drupal\apigee_edge_teams\Entity\Storage;
 use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Entity\Controller\AppControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge\Entity\Storage\AppStorage;
 use Drupal\apigee_edge_teams\Entity\Controller\TeamAppControllerFactoryInterface;
 use Drupal\apigee_edge_teams\Entity\Controller\TeamAppEdgeEntityControllerProxy;
@@ -46,6 +47,13 @@ class TeamAppStorage extends AppStorage implements TeamAppStorageInterface {
   private $teamAppControllerFactory;
 
   /**
+   * The organization controller service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface
+   */
+  private $orgController;
+
+  /**
    * AppStorage constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -60,10 +68,13 @@ class TeamAppStorage extends AppStorage implements TeamAppStorageInterface {
    *   The team app controller factory service.
    * @param \Drupal\apigee_edge\Entity\Controller\AppControllerInterface $app_controller
    *   The app controller service.
+   * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
+   *   The organization controller service.
    */
-  public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, TeamAppControllerFactoryInterface $team_app_controller_factory, AppControllerInterface $app_controller) {
+  public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, TeamAppControllerFactoryInterface $team_app_controller_factory, AppControllerInterface $app_controller, OrganizationControllerInterface $org_controller) {
     parent::__construct($entity_type, $cache_backend, $memory_cache, $system_time, $app_controller);
     $this->teamAppControllerFactory = $team_app_controller_factory;
+    $this->orgController = $org_controller;
   }
 
   /**
@@ -76,7 +87,8 @@ class TeamAppStorage extends AppStorage implements TeamAppStorageInterface {
       $container->get('entity.memory_cache'),
       $container->get('datetime.time'),
       $container->get('apigee_edge_teams.controller.team_app_controller_factory'),
-      $container->get('apigee_edge.controller.app')
+      $container->get('apigee_edge.controller.app'),
+      $container->get('apigee_edge.controller.organization')
     );
   }
 
@@ -84,7 +96,7 @@ class TeamAppStorage extends AppStorage implements TeamAppStorageInterface {
    * {@inheritdoc}
    */
   protected function entityController(): EdgeEntityControllerInterface {
-    if ($this->appController->isOrgApigeeX()) {
+    if ($this->orgController->isOrganizationApigeeX()) {
       $teamAppEntityControllerProxy = new TeamAppApigeeXEntityControllerProxy($this->teamAppControllerFactory, $this->appController);
     }
     else {

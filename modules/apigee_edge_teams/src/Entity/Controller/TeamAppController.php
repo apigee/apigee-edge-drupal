@@ -37,9 +37,8 @@ final class TeamAppController extends AppByOwnerController implements TeamAppCon
    */
   protected function decorated(): EdgeAppByOwnerControllerInterface {
     if (!isset($this->instances[$this->owner])) {
-
-      // Checking if the Organisation is Hybrid/ApigeeX.
-      if ($this->isOrgApigeeX()) {
+      // Checks whether the organization is Edge or ApigeeX organization.
+      if ($this->organizationController->isOrganizationApigeeX()) {
         $this->instances[$this->owner] = new EdgeAppGroupAppController($this->connector->getOrganization(), $this->owner, $this->connector->getClient(), NULL, $this->organizationController);
       }
       else {

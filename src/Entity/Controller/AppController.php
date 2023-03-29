@@ -93,8 +93,8 @@ final class AppController extends AppControllerBase implements AppControllerInte
    */
   protected function decorated(): EdgeAppControllerInterface|EdgeAppGroupControllerInterface {
     if ($this->instance === NULL) {
-      // Checking if the Organisation is Hybrid/ApigeeX.
-      if ($this->isOrgApigeeX()) {
+      // Checking if the Organisation is ApigeeX.
+      if ($this->organizationController->isOrganizationApigeeX()) {
         $this->instance = new AppGroupController($this->connector->getOrganization(), $this->connector->getClient(), NULL, $this->organizationController);
       }
       else {

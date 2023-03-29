@@ -162,19 +162,6 @@ class SDKConnector implements SDKConnectorInterface {
   /**
    * {@inheritdoc}
    */
-  public function isOrganizationApigeeX(EdgeOrganizationController $organizationController): bool {
-    try {
-      $this->organization = $organizationController->load($this->getOrganization());
-      return ($this->organization && ('CLOUD' === $this->organization->getRuntimeType() || 'HYBRID' === $this->organization->getRuntimeType()));
-    }
-    catch (\Exception $e) {
-      return FALSE;
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function getClient(?Authentication $authentication = NULL, ?string $endpoint = NULL): ClientInterface {
     if ($authentication === NULL) {
       if (self::$client === NULL) {
