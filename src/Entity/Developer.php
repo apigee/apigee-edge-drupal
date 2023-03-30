@@ -289,8 +289,11 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
     /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface $team_member_roles */
 
     $developerTeam = array_reduce($team_member_role_storage->loadByDeveloper($user), function ($carry, TeamMemberRole $team_role) {
+      // If team is not available, avoid null value exception.
+      if ($team_role->getTeam() !== NULL) {
         $carry[$team_role->getTeam()->id()] = $team_role->getTeam()->id();
         return $carry;
+      }
     },
     []);
 
