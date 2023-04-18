@@ -127,6 +127,7 @@ abstract class AppCreateForm extends AppForm {
 
     $multiple = $app_settings->get('multiple_products');
     $default_products = $app_settings->get('default_products') ?: [];
+    asort($api_products_options, SORT_STRING | SORT_FLAG_CASE | SORT_NATURAL);
 
     $element = [
       '#title' => $this->entityTypeManager->getDefinition('api_product')->getPluralLabel(),

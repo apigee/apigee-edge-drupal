@@ -341,6 +341,7 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
 
     // Hide readonly properties from Manage form display list.
     $read_only_fields = [
+      'apiProducts',
       'appId',
       'appFamily',
       'createdAt',
@@ -456,6 +457,13 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
    */
   public static function uniqueIdProperties(): array {
     return array_merge(parent::uniqueIdProperties(), ['appId']);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setInitialApiProducts(array $initialApiProducts): void {
+    $this->decorated->setInitialApiProducts($initialApiProducts);
   }
 
 }
