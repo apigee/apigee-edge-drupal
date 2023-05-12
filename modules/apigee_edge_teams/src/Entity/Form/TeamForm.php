@@ -25,13 +25,16 @@ use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge\Entity\Form\EdgeEntityFormInterface;
 use Drupal\apigee_edge\Entity\Form\FieldableEdgeEntityForm;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
+use Drupal\apigee_edge_teams\Form\TeamAliasForm;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Utility\Error;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * General form handler for the team create/edit forms.
@@ -57,6 +60,13 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
   protected $teamMembershipManager;
 
   /**
+   * Configuration Factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactory
+   */
+  protected $config;
+
+  /**
    * The current user.
    *
    * @var \Drupal\Core\Session\AccountProxyInterface
@@ -71,11 +81,25 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
   protected $logger;
 
   /**
+   * The request service.
+   *
+   * @var Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $request;
+
+  /**
    * The organization controller service.
    *
    * @var \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface
    */
   private $orgController;
+
+  /**
+   * The Team prefix value.
+   *
+   * @var string|null
+   */
+  private $teamPrefix;
 
   /**
    * TeamForm constructor.
@@ -90,13 +114,22 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
    *   The logger service.
    * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
    *   The organization controller service.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+   *   The request stack object.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   Config factory.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager, AccountProxyInterface $current_user, LoggerChannelInterface $logger, OrganizationControllerInterface $org_controller) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager, AccountProxyInterface $current_user, LoggerChannelInterface $logger, OrganizationControllerInterface $org_controller, RequestStack $request_stack, ConfigFactoryInterface $config_factory) {
     $this->entityTypeManager = $entity_type_manager;
     $this->teamMembershipManager = $team_membership_manager;
     $this->currentUser = $current_user;
     $this->logger = $logger;
     $this->orgController = $org_controller;
+    $this->request = $request_stack->getCurrentRequest();
+    $this->config = $config_factory->get('apigee_edge_teams.team_settings');
+    // Prefixing the value to team name.
+    // Configurable in team-settings.
+    $this->team_prefix = !empty($this->config->get('team_prefix')) ? mb_strtolower($this->config->get('team_prefix')) : "";
   }
 
   /**
@@ -108,7 +141,9 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
       $container->get('apigee_edge_teams.team_membership_manager'),
       $container->get('current_user'),
       $container->get('logger.channel.apigee_edge_teams'),
-      $container->get('apigee_edge.controller.organization')
+      $container->get('apigee_edge.controller.organization'),
+      $container->get('request_stack'),
+      $container->get('config.factory')
     );
   }
 
@@ -116,6 +151,11 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
    * {@inheritdoc}
    */
   public function buildEntity(array $form, FormStateInterface $form_state) {
+    if (str_contains($form_state->getValue('name'), $this->team_prefix) === FALSE) {
+      // Update the team name with predefined prefix.
+      $form_state->setValue('name', $this->team_prefix . $form_state->getValue('name'));
+    }
+
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
     $team = parent::buildEntity($form, $form_state);
 
@@ -123,7 +163,14 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
     // We add to any team to make sure team creation works for mint orgs even
     // if they do not enable the m10n teams module.
     if ($this->orgController->isOrganizationApigeeX()) {
-      $team->setAttribute(static::APPGROUP_ADMIN_EMAIL_ATTRIBUTE, "[{'developer':'{$this->currentUser->getEmail()}','roles':['admin']}]");
+      $team->setAttribute(static::APPGROUP_ADMIN_EMAIL_ATTRIBUTE, '[{"developer":"' . $this->currentUser->getEmail() . '","roles":["admin"]}]');
+      global $base_url;
+      // Channel url for a team.
+      $team->setChannelUri($base_url . '/teams/' . $team->id());
+
+      // ChannelId is configurable from Admin portal.
+      $channelId = !empty($this->config->get('channelid')) ? $this->config->get('channelid') : TeamAliasForm::originalChannelId();
+      $team->setChannelId(trim($channelId));
     }
     else {
       $team->setAttribute(static::ADMIN_EMAIL_ATTRIBUTE, $this->currentUser->getEmail());
@@ -148,6 +195,7 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
         'label' => $this->t('Internal name'),
         'exists' => [$this, 'exists'],
       ],
+      '#field_prefix' => $team->isNew() ? $this->team_prefix : "",
       '#disabled' => !$team->isNew(),
       '#default_value' => $team->id(),
     ];
@@ -172,7 +220,10 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
     if ($name === '') {
       return FALSE;
     }
-
+    if (str_contains($name, $this->team_prefix) === FALSE) {
+      // Update the team name with predefined prefix.
+      $name = $this->team_prefix . $form_state->getValue('name');
+    }
     $query = $this->entityTypeManager->getStorage('team')->getQuery()->condition('name', $name);
 
     return (bool) $query->count()->execute();

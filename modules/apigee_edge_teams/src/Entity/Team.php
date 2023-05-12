@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge_teams\Entity;
 
+use Apigee\Edge\Api\ApigeeX\Entity\AppGroup;
 use Apigee\Edge\Api\Management\Entity\Company;
 use Apigee\Edge\Entity\EntityInterface;
 use Apigee\Edge\Structure\AttributesProperty;
@@ -75,9 +76,9 @@ use Drupal\Core\Entity\EntityTypeInterface;
 class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterface {
 
   /**
-   * The decorated company entity from the SDK.
+   * The decorated company/appgroup entity from the SDK.
    *
-   * @var \Apigee\Edge\Api\Management\Entity\Company
+   * @var \Apigee\Edge\Api\Management\Entity\Company | Apigee\Edge\Api\ApigeeX\Entity\AppGroup
    */
   protected $decorated;
 
@@ -106,7 +107,7 @@ class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterfa
    * {@inheritdoc}
    */
   protected static function decoratedClass(): string {
-    return Company::class;
+    return self::isApigeeX() ? AppGroup::class : Company::class;
   }
 
   /**
@@ -123,7 +124,7 @@ class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterfa
    * {@inheritdoc}
    */
   public static function idProperty(): string {
-    return Company::idProperty();
+    return self::isApigeeX() ? AppGroup::idProperty() : Company::idProperty();
   }
 
   /**
@@ -131,6 +132,17 @@ class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterfa
    */
   protected function drupalEntityId(): ?string {
     return $this->decorated->id();
+  }
+
+  /**
+   * Checks whether the organization is Edge or ApigeeX organization.
+   *
+   * @return bool
+   *   bool
+   */
+  public static function isApigeeX(): bool {
+    $orgController = \Drupal::service('apigee_edge.controller.organization');
+    return $orgController->isOrganizationApigeeX();
   }
 
   /**
@@ -269,15 +281,15 @@ class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterfa
   /**
    * {@inheritdoc}
    */
-  public function getCorrelationId(): ?string {
-    return $this->decorated->getCorrelationId();
+  public function getChannelUri(): ?string {
+    return $this->decorated->getChannelUri();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setCorrelationId(string $correlationId): void {
-    $this->decorated->setCorrelationId($correlationId);
+  public function setChannelUri(string $channelUri): void {
+    $this->decorated->setChannelUri($channelUri);
   }
 
   /**
@@ -369,7 +381,7 @@ class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterfa
       // Apps only contains app names (not display names), we do not want to
       // expose them by default.
       'apps',
-      // There is no need to expose the organization that the team (company)
+      // There is no need to expose the organization that the team (company/appgroup)
       // belongs.
       'organization',
     ]);
