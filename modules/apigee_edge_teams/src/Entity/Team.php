@@ -78,7 +78,7 @@ class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterfa
   /**
    * The decorated company/appgroup entity from the SDK.
    *
-   * @var \Apigee\Edge\Api\Management\Entity\Company | Apigee\Edge\Api\ApigeeX\Entity\AppGroup
+   * @var \Apigee\Edge\Api\Management\Entity\Company|Apigee\Edge\Api\ApigeeX\Entity\AppGroup
    */
   protected $decorated;
 
