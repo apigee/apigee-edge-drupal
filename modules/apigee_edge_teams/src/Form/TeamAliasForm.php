@@ -81,11 +81,11 @@ class TeamAliasForm extends EdgeEntityAliasConfigFormBase {
     $team_prefix = $form_state->getValue('team_prefix');
     $channelid = $form_state->getValue('channelid');
 
-    if (!preg_match($pattern, $team_prefix) && !empty($team_prefix)) {
+    if (!empty($team_prefix) && !preg_match($pattern, $team_prefix)) {
       $form_state->setError($form['team_label']['team_prefix'], $this->t('Team prefix name must contain only lowercase letters, numbers, hyphen or the underscore character.'));
       return;
     }
-    if (!preg_match($pattern, $channelid) && !empty($channelid)) {
+    if (!empty($channelid) && !preg_match($pattern, $channelid)) {
       $form_state->setError($form['channel_label']['channelid'], $this->t('Channel ID must contain only lowercase letters, numbers, hyphen or the underscore character.'));
       return;
     }
