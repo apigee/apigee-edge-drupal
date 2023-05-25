@@ -1,6 +1,6 @@
 apigee_edge_teams.settings.team:
   route_name: apigee_edge_teams.settings.team
-  title: 'Alias'
+  title: 'Settings'
   base_route: apigee_edge_teams.settings.team
   weight: -10
 
