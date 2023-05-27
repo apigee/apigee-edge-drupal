@@ -20,6 +20,7 @@
 
 use Apigee\Edge\Utility\OrganizationFeatures;
 use Drupal\Core\Config\FileStorage;
+use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\user\RoleInterface;
 use Drupal\views\Views;
 
@@ -177,4 +178,25 @@ function apigee_edge_teams_update_8705() {
   }
 }
 
+/**
+ * Update the field storage defination of Team App.
+ */
+function apigee_edge_teams_update_9001() {
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  /** @var \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $last_installed_schema_repository */
+  $last_installed_schema_repository = \Drupal::service('entity.last_installed_schema.repository');
+  $entity_type_id = 'team_app';
+  $entity_type = $definition_update_manager->getEntityType($entity_type_id);
+  $field_storage_definitions = $last_installed_schema_repository->getLastInstalledFieldStorageDefinitions($entity_type_id);
 
+  $field_storage_definitions['apiProducts'] = BaseFieldDefinition::create('string')
+    ->setName('apiproducts')
+    ->setTargetEntityTypeId($entity_type_id)
+    ->setTargetBundle(NULL)
+    ->setStorageRequired(FALSE)
+    ->setInternal(TRUE)
+    ->setTranslatable(FALSE)
+    ->setRevisionable(FALSE);
+
+  $definition_update_manager->updateFieldableEntityType($entity_type, $field_storage_definitions);
+}
