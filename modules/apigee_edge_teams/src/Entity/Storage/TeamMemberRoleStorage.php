@@ -193,6 +193,15 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
     }
 
     try {
+      // Adding the roles in AppGroup.
+      $updated_roles = array_map(function ($item) {
+        return $item = $item['target_id'];
+      }, $team_member_roles->roles->getValue());
+      // Updating the members role in apigee_reserve_membership attribute for ApigeeX.
+      $this->teamMembershipManager->addMembers($team->id(), [
+        $account->getEmail() => $updated_roles
+      ]);
+
       $team_member_roles->save();
     }
     catch (EntityStorageException $exception) {
@@ -243,6 +252,15 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
         $team_member_roles->delete();
       }
       else {
+        // Removing the member roles in AppGroup.
+        $updated_roles = array_map(function ($item) {
+          return $item = $item['target_id'];
+        }, $team_member_roles->roles->getValue());
+        // Updating the members role in apigee_reserve_membership attribute for ApigeeX.
+        $this->teamMembershipManager->addMembers($team->id(), [
+          $account->getEmail() => $updated_roles
+        ]);
+
         $team_member_roles->save();
       }
     }

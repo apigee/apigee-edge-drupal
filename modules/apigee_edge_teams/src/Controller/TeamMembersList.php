@@ -20,8 +20,10 @@
 
 namespace Drupal\apigee_edge_teams\Controller;
 
+use Apigee\Edge\Api\ApigeeX\Structure\AppGroupMembership;
 use Apigee\Edge\Api\Management\Structure\CompanyMembership;
 use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
+use Drupal\apigee_edge_teams\AppGroupMembershipObjectCacheInterface;
 use Drupal\apigee_edge_teams\CompanyMembershipObjectCacheInterface;
 use Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
@@ -47,6 +49,13 @@ class TeamMembersList extends ControllerBase {
    * @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface
    */
   private $teamMembershipManager;
+
+  /**
+   * The appgroup membership object cache.
+   *
+   * @var \Drupal\apigee_edge_teams\AppGroupMembershipObjectCacheInterface
+   */
+  private $appGroupMembershipObjectCache;
 
   /**
    * The company membership object cache.
@@ -87,10 +96,12 @@ class TeamMembersList extends ControllerBase {
    *   The module handler.
    * @param \Drupal\apigee_edge_teams\CompanyMembershipObjectCacheInterface $company_membership_object_cache
    *   The company membership object cache.
+   * @param \Drupal\apigee_edge_teams\AppGroupMembershipObjectCacheInterface $appgroup_membership_object_cache
+   *   The appgroup membership object cache.
    * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
    *   The organization controller service.
    */
-  public function __construct(TeamMembershipManagerInterface $team_membership_manager, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler = NULL, CompanyMembershipObjectCacheInterface $company_membership_object_cache, OrganizationControllerInterface $org_controller) {
+  public function __construct(TeamMembershipManagerInterface $team_membership_manager, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler = NULL, CompanyMembershipObjectCacheInterface $company_membership_object_cache,AppGroupMembershipObjectCacheInterface $appgroup_membership_object_cache, OrganizationControllerInterface $org_controller) {
     if (!$module_handler) {
       @trigger_error('Calling ' . __METHOD__ . ' without the $module_handler is deprecated in apigee_edge:8-x-1.19 and is required before apigee_edge:8.x-2.0. See https://github.com/apigee/apigee-edge-drupal/pull/518.', E_USER_DEPRECATED);
       $module_handler = \Drupal::moduleHandler();
@@ -105,6 +116,7 @@ class TeamMembersList extends ControllerBase {
 
     $this->moduleHandler = $module_handler;
     $this->companyMembershipObjectCache = $company_membership_object_cache;
+    $this->appGroupMembershipObjectCache = $appgroup_membership_object_cache;
     $this->orgController = $org_controller;
   }
 
@@ -117,6 +129,7 @@ class TeamMembersList extends ControllerBase {
       $container->get('entity_type.manager'),
       $container->get('module_handler'),
       $container->get('apigee_edge_teams.cache.company_membership_object'),
+      $container->get('apigee_edge_teams.cache.appgroup_membership_object'),
       $container->get('apigee_edge.controller.organization')
     );
   }
@@ -131,7 +144,7 @@ class TeamMembersList extends ControllerBase {
    *   Render array.
    */
   protected function getAppGroupMembers(TeamInterface $team): array {
-    $membership = $this->companyMembershipObjectCache->getMembership($team->id());
+    $membership = $this->appGroupMembershipObjectCache->getMembership($team->id());
 
     if ($membership === NULL) {
       // Load team_member_role object.
@@ -142,8 +155,8 @@ class TeamMembersList extends ControllerBase {
       },
       []);
 
-      $membership = new CompanyMembership($members);
-      $this->companyMembershipObjectCache->saveMembership($team->id(), $membership);
+      $membership = new AppGroupMembership($members);
+      $this->appGroupMembershipObjectCache->saveMembership($team->id(), $membership);
     }
     return array_keys($membership->getMembers());
   }

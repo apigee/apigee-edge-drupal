@@ -139,8 +139,12 @@ class TeamInvitationSubscriber implements EventSubscriberInterface {
 
     $success = FALSE;
     try {
+      $selected_roles = array_map(function (TeamRoleInterface $team_member_role) {
+        return $team_member_role->id();
+      }, $team_invitation->getTeamRoles());
+
       $this->teamMembershipManager->addMembers($team->id(), [
-        $team_invitation->getRecipient()
+        $team_invitation->getRecipient() => $selected_roles
       ]);
       $success = TRUE;
     }
