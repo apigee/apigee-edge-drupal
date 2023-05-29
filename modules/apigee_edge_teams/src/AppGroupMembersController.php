@@ -112,14 +112,14 @@ final class AppGroupMembersController implements AppGroupMembersControllerInterf
     $existing_members = Json::decode($attributeKey);
 
     $new_membership = [];
-    foreach($members->getMembers() as $key => $value) {
-        $new_membership['developer'] = $key; 
-        $new_membership['roles'] = $value; 
+    foreach ($members->getMembers() as $key => $value) {
+      $new_membership['developer'] = $key;
+      $new_membership['roles'] = $value;
     }
     array_push($existing_members, $new_membership);
 
     $unique_members;
-    foreach($existing_members as $key => $values) {
+    foreach ($existing_members as $key => $values) {
       $unique_members[$values['developer']] = $values;
     }
     // Adding the new members into the attribute.
@@ -146,7 +146,7 @@ final class AppGroupMembersController implements AppGroupMembersControllerInterf
     $existing_members = Json::decode($attributeKey);
 
     $unique_members;
-    foreach($existing_members as $key => $values) {
+    foreach ($existing_members as $key => $values) {
       if ($values['developer'] !== $email) {
         $unique_members[$values['developer']] = $values;
       }
@@ -158,4 +158,5 @@ final class AppGroupMembersController implements AppGroupMembersControllerInterf
     $result = $this->decorated()->setReservedMembership($apigeeReservedMembers);
     $this->appGroupMembershipObjectCache->removeMembership($this->appGroup);
   }
+
 }

@@ -104,6 +104,8 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
    *   The entity type manager service.
    * @param \Drupal\apigee_edge_teams\CompanyMembersControllerFactoryInterface $company_members_controller_factory
    *   The company members controller factory service.
+   * @param \Drupal\apigee_edge_teams\AppGroupMembersControllerFactoryInterface $appgroup_members_controller_factory
+   *   The company members controller factory service.
    * @param \Drupal\apigee_edge\Entity\Controller\DeveloperControllerInterface $developer_controller
    *   The developer controller service.
    * @param \Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface $developer_companies_cache
