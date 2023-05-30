@@ -153,7 +153,7 @@ class TeamInvitationSubscriber implements EventSubscriberInterface {
       $selected_roles = array_map(function (TeamRoleInterface $team_member_role) {
         return $team_member_role->id();
       }, $team_invitation->getTeamRoles());
-      // Adding roles to the array for ApigeeX 
+      // Adding roles to the array for ApigeeX
       // So while storing the membership in _apigee_reserve_membership
       // attribute we can store the roles as well.
       if ($this->orgController->isOrganizationApigeeX()) {
