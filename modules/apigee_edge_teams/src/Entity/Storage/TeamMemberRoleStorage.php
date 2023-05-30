@@ -194,7 +194,7 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
 
     try {
       // Adding member roles in array for ApigeeX.
-      if (!$this->orgController->isOrganizationApigeeX()) {
+      if ($this->orgController->isOrganizationApigeeX()) {
         // Adding the roles in AppGroup.
         $updated_roles = array_map(function ($item) {
           return $item = $item['target_id'];
@@ -255,7 +255,7 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
       }
       else {
         // Adding member roles in array for ApigeeX.
-        if (!$this->orgController->isOrganizationApigeeX()) {
+        if ($this->orgController->isOrganizationApigeeX()) {
           // Removing the member roles in AppGroup.
           $updated_roles = array_map(function ($item) {
             return $item = $item['target_id'];
