@@ -3,7 +3,7 @@ description: Debug helper for Apigee Edge Drupal integration.
 package: Apigee
 
 type: module
-core_version_requirement: ^9 || ^10
+core_version_requirement: ^9.4 || ^10
 
 dependencies:
   - apigee_edge:apigee_edge
