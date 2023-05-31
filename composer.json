@@ -14,8 +14,7 @@
     },
     "require-dev": {
         "apigee/apigee-mock-client-php": "dev-drupal10-prep",
-        "behat/mink-extension": "^2.0",
-        "bex/behat-screenshot": "^1.2",
+        "drupal/drupal-extension": "^4.2.1 || ~5",
         "cweagans/composer-patches": "^1.6",
         "drupal/core-dev": "^9.4 || ^10.0",
         "drush/drush": "^9.0 || ^10.0 || ^11.5",
