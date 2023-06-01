@@ -10,7 +10,7 @@
         "drupal/core": "^9.4 || ^10.0",
         "drupal/entity": "^1.0",
         "drupal/key": "^1.8",
-        "php-http/guzzle7-adapter": "^1.0"
+        "php-http/guzzle6-adapter": "^2.0"
     },
     "require-dev": {
         "apigee/apigee-mock-client-php": "dev-drupal10-prep",
