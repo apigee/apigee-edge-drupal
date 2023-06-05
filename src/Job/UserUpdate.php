@@ -42,7 +42,7 @@ class UserUpdate extends UserCreateUpdate {
     }
 
     $context = [
-      'link' => $result->getUser()->toLink(t('View user'))->toString(),
+      '@link' => $result->getUser()->toLink(t('View user'))->toString(),
     ];
     $this->logConversionProblems($result->getProblems(), $context);
 
