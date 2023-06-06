@@ -142,18 +142,22 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
       $controller->removeMember($developer);
       // Remove team member's roles from Drupal.
       if (array_key_exists($developer, $users_by_mail)) {
-        /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface[] $team_member_roles_in_teams */
-        $team_member_roles_in_teams = $team_member_role_storage->loadByDeveloper($users_by_mail[$developer]);
-        foreach ($team_member_roles_in_teams as $team_member_roles_in_team) {
-          try {
+        /** @var \Drupal\user\Entity\User $account */
+        $account = user_load_by_mail($users_by_mail[$developer]->getEmail());
+        $team_entity = $this->entityTypeManager->getStorage('team')->load($team);
+
+        /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface[] $team_member_roles_in_team */
+        $team_member_roles_in_team = $team_member_role_storage->loadByDeveloperAndTeam($account, $team_entity);
+        try {
+          if (!empty($team_member_roles_in_team)) {
             $team_member_roles_in_team->delete();
           }
-          catch (EntityStorageException $e) {
-            $this->logger->critical("Failed to remove %developer team member's roles in %team team with its membership.", [
-              '%developer' => $developer,
-              '%team' => $team_member_roles_in_team->getTeam()->id(),
-            ]);
-          }
+        }
+        catch (EntityStorageException $e) {
+          $this->logger->critical("Failed to remove %developer team member's roles in %team team with its membership.", [
+            '%developer' => $developer,
+            '%team' => $team_member_roles_in_team->getTeam()->id(),
+          ]);
         }
       }
     }
