@@ -133,6 +133,7 @@ class QueryTest extends ApigeeEdgeFunctionalTestBase {
    */
   protected function developerQueryTest() {
     $result = $this->developerStorage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('email', "{$this->prefix}.test", 'STARTS_WITH')
       ->condition('email', '@example.com', 'ENDS_WITH')
       ->sort('lastName')
@@ -145,6 +146,7 @@ class QueryTest extends ApigeeEdgeFunctionalTestBase {
     ]), array_values($result));
 
     $result = $this->developerStorage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('email', "{$this->prefix}.test", 'STARTS_WITH')
       ->condition('email', '@example.com', 'ENDS_WITH')
       ->sort('email')
@@ -153,6 +155,7 @@ class QueryTest extends ApigeeEdgeFunctionalTestBase {
     $this->assertEquals(array_values(["{$this->prefix}.test01@example.com"]), array_values($result));
 
     $result = $this->developerStorage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('email', "{$this->prefix}.test", 'STARTS_WITH')
       ->condition('email', '@example.com', 'ENDS_WITH')
       ->count()
@@ -177,12 +180,14 @@ class QueryTest extends ApigeeEdgeFunctionalTestBase {
     // When primary id(s) of entities is set to something empty we should
     // get back an empty result.
     $result = $this->developerStorage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('email', NULL)
       ->count()
       ->execute();
     $this->assertEquals(0, $result);
 
     $result = $this->developerStorage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('developerId', NULL)
       ->count()
       ->execute();
@@ -190,6 +195,7 @@ class QueryTest extends ApigeeEdgeFunctionalTestBase {
 
     $developer = reset($this->edgeDevelopers);
     $result = $this->developerAppStorage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('developerId', $developer->getDeveloperId())
       ->count()
       ->execute();
@@ -199,12 +205,14 @@ class QueryTest extends ApigeeEdgeFunctionalTestBase {
     // Edge by calling the proper API endpoint - is set to something empty
     // we should get back an empty result.
     $result = $this->developerAppStorage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('developerId', NULL)
       ->count()
       ->execute();
     $this->assertEquals(0, $result);
 
     $result = $this->developerAppStorage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('email', $developer->getEmail())
       ->count()
       ->execute();
@@ -214,6 +222,7 @@ class QueryTest extends ApigeeEdgeFunctionalTestBase {
     // Edge by calling the proper API endpoint - is set to something empty
     // we should get back an empty result.
     $result = $this->developerAppStorage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('email', NULL)
       ->count()
       ->execute();
@@ -222,6 +231,7 @@ class QueryTest extends ApigeeEdgeFunctionalTestBase {
     // If app name is set to something empty then query should not fail and
     // we should get back an empty list even if the developer has apps.
     $result = $this->developerAppStorage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('email', $developer->getEmail())
       ->condition('name', NULL)
       ->count()

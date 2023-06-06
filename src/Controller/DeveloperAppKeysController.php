@@ -67,6 +67,7 @@ class DeveloperAppKeysController extends ControllerBase {
       if ($developer_id = $user->get('apigee_edge_developer_id')->value) {
         $app_storage = $this->entityTypeManager->getStorage('developer_app');
         $app_ids = $app_storage->getQuery()
+          ->accessCheck(FALSE)
           ->condition('developerId', $developer_id)
           ->condition('name', $app->getName())
           ->execute();
