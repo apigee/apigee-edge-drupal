@@ -41,6 +41,17 @@ interface TeamMembershipManagerInterface {
   public function getMembers(string $team): array;
 
   /**
+   * Sync the team members details from ApigeeX and returns members of a team.
+   *
+   * @param string $team
+   *   Name of a team.
+   *
+   * @return string[]
+   *   Array of developer email addresses.
+   */
+  public function syncAppGroupMembers(string $team): array;
+
+  /**
    * Adds members to a team.
    *
    * @param string $team

@@ -90,7 +90,10 @@ final class AppGroupMembersController implements AppGroupMembersControllerInterf
   }
 
   /**
-   * {@inheritdoc}
+   * Syncs the appgroup team members email and roles in database.
+   *
+   * @return \Apigee\Edge\Api\ApigeeX\Structure\AppGroupMembership
+   *   Array of developers with their optional roles in the appgroup.
    */
   public function syncAppGroupMembers(): AppGroupMembership {
     $membership = $this->decorated()->getMembers();
