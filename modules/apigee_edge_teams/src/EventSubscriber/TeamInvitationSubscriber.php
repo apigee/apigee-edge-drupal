@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge_teams\EventSubscriber;
 
+use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge_teams\Entity\TeamRole;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\apigee_edge_teams\Event\TeamInvitationEventInterface;
@@ -72,6 +73,13 @@ class TeamInvitationSubscriber implements EventSubscriberInterface {
   protected $teamInvitationNotifier;
 
   /**
+   * The organization controller service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface
+   */
+  private $orgController;
+
+  /**
    * TeamInvitationSubscriber constructor.
    *
    * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
@@ -82,13 +90,16 @@ class TeamInvitationSubscriber implements EventSubscriberInterface {
    *   The team membership manager.
    * @param \Drupal\apigee_edge_teams\TeamInvitationNotifierInterface $team_invitation_notifier
    *   The team_invitation notifier service.
+   * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
+   *   The organization controller service.
    */
-  public function __construct(LoggerChannelInterface $logger, EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager, TeamInvitationNotifierInterface $team_invitation_notifier) {
+  public function __construct(LoggerChannelInterface $logger, EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager, TeamInvitationNotifierInterface $team_invitation_notifier, OrganizationControllerInterface $org_controller) {
     $this->logger = $logger;
     $this->teamMembershipManager = $team_membership_manager;
     $this->entityTypeManager = $entity_type_manager;
     $this->teamMemberRoleStorage = $this->entityTypeManager->getStorage('team_member_role');
     $this->teamInvitationNotifier = $team_invitation_notifier;
+    $this->orgController = $org_controller;
   }
 
   /**
@@ -139,9 +150,23 @@ class TeamInvitationSubscriber implements EventSubscriberInterface {
 
     $success = FALSE;
     try {
-      $this->teamMembershipManager->addMembers($team->id(), [
-        $team_invitation->getRecipient()
-      ]);
+      $selected_roles = array_map(function (TeamRoleInterface $team_member_role) {
+        return $team_member_role->id();
+      }, $team_invitation->getTeamRoles());
+      // Adding roles to the array for ApigeeX
+      // So while storing the membership in __apigee_reserved__developer_details
+      // attribute we can store the roles as well.
+      if ($this->orgController->isOrganizationApigeeX()) {
+        $this->teamMembershipManager->addMembers($team->id(), [
+          $team_invitation->getRecipient() => $selected_roles
+        ]);
+      }
+      else {
+        $this->teamMembershipManager->addMembers($team->id(), [
+          $team_invitation->getRecipient()
+        ]);
+      }
+
       $success = TRUE;
     }
     catch (\Exception $exception) {
