@@ -115,6 +115,7 @@ class TeamMembersList extends ControllerBase {
 
     if (!empty($members)) {
       $user_storage = $this->entityTypeManager()->getStorage('user');
+      // Only members with access can view the member list.
       $uids = $user_storage->getQuery()
         ->accessCheck(TRUE)
         ->condition('mail', $members, 'IN')
