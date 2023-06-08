@@ -3,7 +3,7 @@ description: Helpers and an API middleware used for testing.
 package: Apigee
 
 type: module
-core_version_requirement: ^9.4 || ^10
+core_version_requirement: ^10
 
 dependencies:
   - apigee_edge:apigee_edge
