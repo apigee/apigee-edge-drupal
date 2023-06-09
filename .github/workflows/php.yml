@@ -29,13 +29,10 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - "7.4"
-          - "8.0"
           - "8.1"
         drupal-core:
           # Should update the following as the minimum supported version from Drupal.org
-          - "9.4.x"
-          - "9.5.x"
+          - "10.0.x"
 
     steps:
 
@@ -90,7 +87,7 @@ jobs:
         composer config --no-plugins allow-plugins.php-http/discovery true        
         composer require --dev drush/drush
         composer config minimum-stability dev
-        composer require drupal/rules:3.0.0-alpha7
+        composer require 'drupal/rules:3.x-dev@dev'
         composer require wikimedia/composer-merge-plugin
         composer config --json extra.merge-plugin.require '["modules/contrib/apigee_edge/composer.json"]'
         composer config platform.php ${{ matrix.php-version }}

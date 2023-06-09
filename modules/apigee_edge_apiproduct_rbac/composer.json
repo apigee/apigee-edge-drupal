@@ -4,7 +4,7 @@
     "type": "drupal-module",
     "license": "GPL-2.0-or-later",
     "require": {
-        "php": ">=7.1",
+        "php": "~8.1",
         "drupal/apigee_edge": "*"
     },
     "config": {
