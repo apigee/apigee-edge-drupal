@@ -150,8 +150,11 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
     if ($name === '') {
       return FALSE;
     }
-
-    $query = $this->entityTypeManager->getStorage('team')->getQuery()->condition('name', $name);
+    // Only member with access can check if team exists.
+    $query = $this->entityTypeManager->getStorage('team')
+      ->getQuery()
+      ->accessCheck(TRUE)
+      ->condition('name', $name);
 
     return (bool) $query->count()->execute();
   }
