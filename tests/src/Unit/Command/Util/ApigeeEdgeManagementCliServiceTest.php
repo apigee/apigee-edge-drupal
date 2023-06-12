@@ -33,6 +33,7 @@ use Prophecy\Argument;
 use Prophecy\Prophet;
 use Psr\Http\Message\RequestInterface;
 use Symfony\Component\Console\Style\StyleInterface;
+use GuzzleHttp\Psr7\Utils;
 
 /**
  * Test ApigeeEdgeManagementCliService.
@@ -116,7 +117,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
     $response_org = $this->prophet->prophesize(Response::class);
     $response_org->getBody()
       ->shouldBeCalledTimes(1)
-      ->willReturn('{ "name": "' . $this->org . '" }');
+      ->willReturn(Utils::streamFor('{ "name": "' . $this->org . '" }'));
     $this->httpClient
       ->get(Argument::exact($this->baseUrl . '/o/' . $this->org), Argument::type('array'))
       ->shouldBeCalledTimes(1)
@@ -161,7 +162,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
     $response_org = $this->prophet->prophesize(Response::class);
     $response_org->getBody()
       ->shouldBeCalledTimes(1)
-      ->willReturn('{ "name": "' . $this->org . '" }');
+      ->willReturn(Utils::streamFor('{ "name": "' . $this->org . '" }'));
     $this->httpClient
       ->get(Argument::exact(ApigeeClientInterface::EDGE_ENDPOINT . '/o/' . $this->org), Argument::type('array'))
       ->shouldBeCalledTimes(1)
@@ -205,7 +206,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
     $response_org = $this->prophet->prophesize(Response::class);
     $response_org->getBody()
       ->shouldBeCalledTimes(1)
-      ->willReturn('{ "name": "' . $this->org . '" }');
+      ->willReturn(Utils::streamFor('{ "name": "' . $this->org . '" }'));
     $this->httpClient
       ->get(Argument::exact($this->baseUrl . '/o/' . $this->org), Argument::type('array'))
       ->shouldBeCalledTimes(1)
@@ -213,7 +214,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
 
     // Return existing role.
     $response_user_role = $this->prophet->prophesize(Response::class);
-    $response_user_role->getBody()->willReturn('{ "name": "' . $this->roleName . '" }');
+    $response_user_role->getBody()->willReturn(Utils::streamFor('{ "name": "' . $this->roleName . '" }'));
     $this->httpClient
       ->get(Argument::exact($this->baseUrl . '/o/' . $this->org . '/userroles/' . $this->roleName), Argument::type('array'))
       ->willReturn($response_user_role->reveal());
@@ -246,7 +247,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
     $response_org = $this->prophet->prophesize(Response::class);
     $response_org->getBody()
       ->shouldBeCalledTimes(1)
-      ->willReturn('{ "name": "' . $this->org . '" }');
+      ->willReturn(Utils::streamFor('{ "name": "' . $this->org . '" }'));
     $this->httpClient
       ->get(Argument::exact($this->baseUrl . '/o/' . $this->org), Argument::type('array'))
       ->shouldBeCalledTimes(1)
@@ -254,7 +255,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
 
     // Return existing role.
     $response_user_role = $this->prophet->prophesize(Response::class);
-    $response_user_role->getBody()->willReturn('{ "name": "' . $this->roleName . '" }');
+    $response_user_role->getBody()->willReturn(Utils::streamFor('{ "name": "' . $this->roleName . '" }'));
     $this->httpClient
       ->get(Argument::exact($this->baseUrl . '/o/' . $this->org . '/userroles/' . $this->roleName), Argument::type('array'))
       ->willReturn($response_user_role->reveal());
@@ -272,7 +273,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
     $response = $this->prophet->prophesize(Response::class);
     $response->getBody()
       ->shouldBeCalledTimes(1)
-      ->willReturn($body);
+      ->willReturn(Utils::streamFor($body));
 
     // The user should see an error message.
     $io = $this->prophet->prophesize(StyleInterface::class);
@@ -323,7 +324,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
     $response_org = $this->prophet->prophesize(Response::class);
     $response_org->getBody()
       ->shouldBeCalledTimes(1)
-      ->willReturn('{ "name": "' . $this->org . '" }');
+      ->willReturn(Utils::streamFor('{ "name": "' . $this->org . '" }'));
     $this->httpClient
       ->get(Argument::exact($this->baseUrl . '/o/' . $this->org), Argument::type('array'))
       ->shouldBeCalledTimes(1)
@@ -353,7 +354,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
   public function testDoesRoleExistTrue() {
     // Return existing role.
     $response_user_role = $this->prophet->prophesize(Response::class);
-    $response_user_role->getBody()->willReturn('{ "name": "' . $this->roleName . '" }');
+    $response_user_role->getBody()->willReturn(Utils::streamFor('{ "name": "' . $this->roleName . '" }'));
     $this->httpClient
       ->get(Argument::exact($this->baseUrl . '/o/' . $this->org . '/userroles/' . $this->roleName), Argument::type('array'))
       ->shouldBeCalledTimes(1)
