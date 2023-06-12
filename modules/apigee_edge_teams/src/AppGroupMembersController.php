@@ -25,6 +25,7 @@ use Apigee\Edge\Api\ApigeeX\Structure\AppGroupMembership;
 use Drupal\apigee_edge\Entity\Controller\OrganizationController;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\apigee_edge_teams\Entity\Form\TeamForm;
+use Drupal\apigee_edge_teams\Entity\TeamInvitationInterface;
 use Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface;
 use Drupal\Component\Serialization\Json;
 
@@ -98,6 +99,7 @@ final class AppGroupMembersController implements AppGroupMembersControllerInterf
   public function syncAppGroupMembers(): AppGroupMembership {
     $membership = $this->decorated()->getMembers();
 
+    $developer_exist = TRUE;
     foreach ($membership->getMembers() as $developer_id => $roles) {
       $roles = is_array($roles) ? $roles : [];
 
@@ -105,15 +107,24 @@ final class AppGroupMembersController implements AppGroupMembersControllerInterf
       $account = user_load_by_mail($developer_id);
 
       if (!$account) {
+        $developer_exist = FALSE;
         /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamInvitationStorageInterface $teamInvitationStorage */
         $teamInvitationStorage = \Drupal::entityTypeManager()->getStorage('team_invitation');
-        $teamInvitationStorage->create([
-          'team' => ['target_id' => $this->appGroup],
-          'team_roles' => array_values(array_map(function (string $role) {
-            return ['target_id' => $role];
-          }, $roles)),
-          'recipient' => $developer_id,
-        ])->save();
+
+        $pending_invitations = array_filter($teamInvitationStorage->loadByRecipient($developer_id, $this->appGroup), function (TeamInvitationInterface $team_invitation) {
+          return $team_invitation->isPending();
+        });
+
+        // Checking if this developer has already pending invite to prevent multiple invites.
+        if (count($pending_invitations) === 0) {
+          $teamInvitationStorage->create([
+            'team' => ['target_id' => $this->appGroup],
+            'team_roles' => array_values(array_map(function (string $role) {
+              return ['target_id' => $role];
+            }, $roles)),
+            'recipient' => $developer_id,
+          ])->save();
+        }
       }
       else {
         /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface|null $team_entity */
@@ -123,7 +134,11 @@ final class AppGroupMembersController implements AppGroupMembersControllerInterf
         $team_member_role_storage->addTeamRoles($account, $team_entity, $roles);
       }
     }
-    $this->appGroupMembershipObjectCache->saveMembership($this->appGroup, $membership);
+    // Caching the membership only if all the developer exists in Drupal
+    // to avoid team member without access.
+    if ($developer_exist) {
+      $this->appGroupMembershipObjectCache->saveMembership($this->appGroup, $membership);
+    }
 
     return $membership;
   }
@@ -154,29 +169,16 @@ final class AppGroupMembersController implements AppGroupMembersControllerInterf
    * {@inheritdoc}
    */
   public function setMembers(AppGroupMembership $members): AppGroupMembership {
-    // Get the existing members and roles from AppGroup ApigeeX.
-    $apigeeReservedMembers = $this->decorated()->getReservedMembership();
-    // Extract the attributes from response and get the __apigee_reserved__developer_details values.
-    $attributeKey = $apigeeReservedMembers->getValue(TeamForm::APPGROUP_ADMIN_EMAIL_ATTRIBUTE);
-    // If __apigee_reserved__developer_details attribute is not set.
-    $existing_members = $attributeKey !== NULL ? Json::decode($attributeKey) : [];
+    // Get the existing members and roles from ApigeeX.
+    $apigeeReservedMembers = $this->decorated()->getMembers();
+    // Getting all developers including the newly added one.
+    $developers = array_merge($apigeeReservedMembers->getMembers(), $members->getMembers());
 
-    $new_membership = [];
-    foreach ($members->getMembers() as $key => $value) {
-      $new_membership['developer'] = $key;
-      $new_membership['roles'] = $value;
+    foreach ($developers as $developer => $roles) {
+      $members->setMember($developer, $roles);
     }
-    array_push($existing_members, $new_membership);
-
-    $unique_members;
-    foreach ($existing_members as $key => $values) {
-      $unique_members[$values['developer']] = $values;
-    }
-    // Adding the new members into the attribute.
-    $apigeeReservedMembers->add(TeamForm::APPGROUP_ADMIN_EMAIL_ATTRIBUTE, Json::encode(array_values($unique_members)));
-
     // Storing membership info on appgroups __apigee_reserved__developer_details attribute for ApigeeX.
-    $result = $this->decorated()->setReservedMembership($apigeeReservedMembers);
+    $result = $this->decorated()->setMembers($members);
 
     // Returned membership does not contain all actual members of the appGroup,
     // so it is easier to remove the membership object from the cache and
@@ -189,24 +191,18 @@ final class AppGroupMembersController implements AppGroupMembersControllerInterf
    * {@inheritdoc}
    */
   public function removeMember(string $email): void {
-    // Get the existing members and roles from AppGroup ApigeeX.
-    $apigeeReservedMembers = $this->decorated()->getReservedMembership();
-    // Extract the attributes from response and get the __apigee_reserved__developer_details values.
-    $attributeKey = $apigeeReservedMembers->getValue(TeamForm::APPGROUP_ADMIN_EMAIL_ATTRIBUTE);
-    // If __apigee_reserved__developer_details attribute is not set.
-    $existing_members = $attributeKey !== NULL ? Json::decode($attributeKey) : [];
+    // Get the existing members and roles from ApigeeX.
+    $apigeeReservedMembers = $this->decorated()->getMembers();
 
-    $unique_members = [];
-    foreach ($existing_members as $key => $values) {
-      if ($values['developer'] !== $email) {
-        $unique_members[$values['developer']] = $values;
+    foreach ($apigeeReservedMembers->getMembers() as $developer => $roles) {
+      if ($developer === $email) {
+        $apigeeReservedMembers->removeMember($developer);
       }
     }
-    // Adding the new members into the attribute.
-    $apigeeReservedMembers->add(TeamForm::APPGROUP_ADMIN_EMAIL_ATTRIBUTE, Json::encode(array_values($unique_members)));
     // Storing membership info on appgroups __apigee_reserved__developer_details attribute for ApigeeX.
     // Removing and updating the member on appgroups __apigee_reserved__developer_details attribute for ApigeeX.
-    $result = $this->decorated()->setReservedMembership($apigeeReservedMembers);
+    $result = $this->decorated()->setMembers($apigeeReservedMembers);
+
     $this->appGroupMembershipObjectCache->removeMembership($this->appGroup);
   }
 
