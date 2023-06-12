@@ -95,7 +95,7 @@ jobs:
         composer update --with-all-dependencies
         composer require --dev phpspec/prophecy-phpunit:^2
         composer config --no-plugins allow-plugins.drupal/console-extend-plugin true
-        composer require --dev drupal/console --with-dependencies
+       # composer require --dev drupal/console --with-dependencies
 
 
     # Install drupal using minimal installation profile and enable the module.
