@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Google Inc.
+ * Copyright 2023 Google Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,15 +18,15 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Entity;
+namespace Drupal\apigee_edge_teams\Entity;
 
 use Drupal\apigee_edge\MemoryCacheFactoryInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
 
 /**
- * Default non-persistent developer company membership cache implementation.
+ * Default non-persistent developer appgroup membership cache implementation.
  */
-final class DeveloperCompaniesCache implements DeveloperCompaniesCacheInterface {
+final class AppGroupCache implements AppGroupCacheInterface {
 
   /**
    * The memory cache backend.
@@ -36,7 +36,7 @@ final class DeveloperCompaniesCache implements DeveloperCompaniesCacheInterface 
   private $backend;
 
   /**
-   * DeveloperCompaniesCache constructor.
+   * AppGroupCache constructor.
    *
    * @param \Drupal\apigee_edge\MemoryCacheFactoryInterface $memory_cache_factory
    *   The memory cache factory service.
@@ -56,14 +56,6 @@ final class DeveloperCompaniesCache implements DeveloperCompaniesCacheInterface 
   /**
    * {@inheritdoc}
    */
-  public function getCompanies(string $id): ?array {
-    $item = $this->backend->get($id);
-    return $item ? $item->data : NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function saveAppGroups(array $developers): void {
     /** @var \Apigee\Edge\Api\Management\Entity\DeveloperInterface $developer */
     foreach ($developers as $developer) {
@@ -74,22 +66,6 @@ final class DeveloperCompaniesCache implements DeveloperCompaniesCacheInterface 
         return "company:{$company}";
       }, $developer->getAppGroups()));
       $this->backend->set($developer->id(), $developer->getAppGroups(), CacheBackendInterface::CACHE_PERMANENT, $tags);
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function saveCompanies(array $developers): void {
-    /** @var \Apigee\Edge\Api\Management\Entity\DeveloperInterface $developer */
-    foreach ($developers as $developer) {
-      $tags = array_merge([
-        "developer:{$developer->getDeveloperId()}",
-        "developer:{$developer->getEmail()}",
-      ], array_map(function (string $company) {
-        return "company:{$company}";
-      }, $developer->getCompanies()));
-      $this->backend->set($developer->id(), $developer->getCompanies(), CacheBackendInterface::CACHE_PERMANENT, $tags);
     }
   }
 

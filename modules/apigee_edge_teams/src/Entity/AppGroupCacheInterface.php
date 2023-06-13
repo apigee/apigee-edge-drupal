@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Google Inc.
+ * Copyright 2023 Google Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,28 +18,15 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Entity;
+namespace Drupal\apigee_edge_teams\Entity;
 
 /**
- * Definition of the developer company membership cache.
+ * Definition of the developer appgroup membership cache.
  *
  * @internal This cache only exists to allow developers to reload list
- * of companies returned by Developer::getCompanies().
- *
- * @see \Drupal\apigee_edge\Entity\Developer::getCompanies()
+ * of appgroups returned by Developer::getAppGroups().
  */
-interface DeveloperCompaniesCacheInterface {
-
-  /**
-   * Returns companies of a developer.
-   *
-   * @param string $id
-   *   Developer id.
-   *
-   * @return string[]|null
-   *   Array of company names or NULL if information is not yet available.
-   */
-  public function getCompanies(string $id): ?array;
+interface AppGroupCacheInterface {
 
   /**
    * Returns appgroups of a developer.
@@ -61,15 +48,7 @@ interface DeveloperCompaniesCacheInterface {
   public function saveAppGroups(array $developers): void;
 
   /**
-   * Saves developers' companies to cache.
-   *
-   * @param \Apigee\Edge\Api\Management\Entity\DeveloperInterface[] $developers
-   *   Developer entities.
-   */
-  public function saveCompanies(array $developers): void;
-
-  /**
-   * Removes cached company information of a developer.
+   * Removes cached appgroup information of a developer.
    *
    * @param array $ids
    *   Array of developer ids, if the array is empty all entries gets removed.

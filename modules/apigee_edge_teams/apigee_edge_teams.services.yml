@@ -24,6 +24,14 @@ services:
     class: Drupal\apigee_edge_teams\CompanyMembershipObjectCache
     arguments: ['@cache_factory', '@apigee_edge.cache.memory_cache_factory', '@config.factory', '@datetime.time']
 
+  apigee_edge_teams.cache.appgroup_membership_object:
+    class: Drupal\apigee_edge_teams\AppGroupMembershipObjectCache
+    arguments: ['@cache_factory', '@apigee_edge.cache.memory_cache_factory', '@config.factory', '@datetime.time']
+
+  apigee_edge.controller.cache.appgroup_teams:
+    class: Drupal\apigee_edge_teams\AppGroupCache
+    arguments: ['@apigee_edge.cache.memory_cache_factory']
+
   apigee_edge_teams.controller.team:
     class: Drupal\apigee_edge_teams\Entity\Controller\TeamController
     arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.controller.organization', '@apigee_edge_teams.controller.cache.team', '@apigee_edge_teams.controller.cache.team_ids', '@apigee_edge.entity.controller.cache.app_cache_by_owner_factory', '@apigee_edge.entity.controller.cache.app_name_cache_by_owner_factory', '@apigee_edge_teams.cache.company_membership_object', '@apigee_edge.controller.cache.developer_companies']
@@ -40,6 +48,10 @@ services:
     class: Drupal\apigee_edge_teams\CompanyMembersControllerFactory
     arguments: ['@apigee_edge.sdk_connector', '@apigee_edge_teams.cache.company_membership_object']
 
+  apigee_edge_teams.appgroup_members_controller_factory:
+    class: Drupal\apigee_edge_teams\AppGroupMembersControllerFactory
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge_teams.cache.appgroup_membership_object']
+
   apigee_edge_teams.controller.cache.team:
     class: Drupal\apigee_edge\Entity\Controller\Cache\EntityCache
     arguments: ['@apigee_edge_teams.cache.memory_cache_factory', '@apigee_edge_teams.controller.cache.team_ids', team]
@@ -49,7 +61,7 @@ services:
 
   apigee_edge_teams.team_membership_manager:
     class: Drupal\apigee_edge_teams\TeamMembershipManager
-    arguments: [ '@entity_type.manager', '@apigee_edge_teams.company_members_controller_factory', '@apigee_edge.controller.developer', '@apigee_edge.controller.cache.developer_companies', '@cache_tags.invalidator', '@logger.channel.apigee_edge_teams']
+    arguments: [ '@entity_type.manager', '@apigee_edge_teams.company_members_controller_factory','@apigee_edge_teams.appgroup_members_controller_factory', '@apigee_edge.controller.developer', '@apigee_edge.controller.cache.developer_companies', '@cache_tags.invalidator', '@logger.channel.apigee_edge_teams', '@apigee_edge.controller.organization']
 
   apigee_edge_teams.team_permissions:
     class: Drupal\apigee_edge_teams\TeamPermissionHandler
@@ -85,7 +97,7 @@ services:
 
   apigee_edge_teams.event_subscriber.team_invitation_event_subscriber:
     class: Drupal\apigee_edge_teams\EventSubscriber\TeamInvitationSubscriber
-    arguments: ['@logger.channel.apigee_edge_teams', '@entity_type.manager', '@apigee_edge_teams.team_membership_manager', '@apigee_edge_teams.team_invitation_notifier.email']
+    arguments: ['@logger.channel.apigee_edge_teams', '@entity_type.manager', '@apigee_edge_teams.team_membership_manager', '@apigee_edge_teams.team_invitation_notifier.email', '@apigee_edge.controller.organization']
     tags:
       - { name: event_subscriber }
 
