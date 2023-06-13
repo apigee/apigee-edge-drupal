@@ -20,8 +20,8 @@
 namespace Drupal\Tests\apigee_edge\Kernel;
 
 use Drupal\apigee_edge\Exception\OauthTokenStorageException;
-use Drupal\Component\Serialization\Json;
 use Drupal\apigee_edge\OauthTokenFileStorage;
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\KernelTests\KernelTestBase;

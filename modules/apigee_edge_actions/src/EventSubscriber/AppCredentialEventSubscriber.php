@@ -20,17 +20,17 @@
 
 namespace Drupal\apigee_edge_actions\EventSubscriber;
 
-use Drupal\apigee_edge_actions\Event\EdgeEntityEventEdge;
 use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Event\AppCredentialAddApiProductEvent;
 use Drupal\apigee_edge\Event\AppCredentialDeleteApiProductEvent;
+use Drupal\apigee_edge_actions\Event\EdgeEntityEventEdge;
 use Drupal\Component\Plugin\Exception\PluginException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Session\AccountInterface;
-use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * Events for an API Product being added to an app already exist.
