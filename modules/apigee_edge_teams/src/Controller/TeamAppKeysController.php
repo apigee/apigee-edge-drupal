@@ -19,8 +19,8 @@
 
 namespace Drupal\apigee_edge_teams\Controller;
 
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\apigee_edge\Controller\DeveloperAppKeysController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * Controller for the team app credentials.

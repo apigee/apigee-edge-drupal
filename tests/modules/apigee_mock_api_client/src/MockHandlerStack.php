@@ -25,8 +25,8 @@ use Apigee\MockClient\GuzzleHttp\MockHandler;
 use Apigee\MockClient\MockStorageInterface;
 use Apigee\MockClient\ResponseFactoryInterface;
 use GuzzleHttp\Psr7\Response;
-use Twig\Environment;
 use Symfony\Component\Yaml\Yaml;
+use Twig\Environment;
 
 /**
  * The mock handler stack.

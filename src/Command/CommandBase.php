@@ -20,11 +20,11 @@
 namespace Drupal\apigee_edge\Command;
 
 use Drupal\apigee_edge\CliServiceInterface;
+use Drupal\Console\Core\Command\Command;
 use Drupal\Console\Core\Command\Shared\CommandTrait;
 use Drupal\Console\Core\Style\DrupalStyle;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Logger\LogMessageParserInterface;
-use Drupal\Console\Core\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
