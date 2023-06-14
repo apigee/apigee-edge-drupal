@@ -161,6 +161,7 @@ class TeamInvitationStorage extends SqlContentEntityStorage implements TeamInvit
    * {@inheritdoc}
    */
   public function getInvitationsToExpire(): array {
+    // Team invitation is accessable as we need to update status in cron run.
     $query = $this->getQuery()->accessCheck(FALSE)->condition('expiry', $this->time->getCurrentTime(), '<')
       ->condition('status', TeamInvitationInterface::STATUS_PENDING);
 
