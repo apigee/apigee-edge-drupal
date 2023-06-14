@@ -85,6 +85,10 @@ abstract class UserCreateUpdate extends EdgeJob {
         '@operation' => get_class($this),
       ];
       $context += Error::decodeException($exception);
+      // Unset backtrace, exception, severity_level as they are not shown in the log message
+      // and throws php warning in logs.
+      unset($context['backtrace'], $context['exception'], $context['severity_level']);
+
       $this->logger()->error($message, $context);
       $this->recordMessage(t('Skipping %mail user: @message', $context)->render());
     }
