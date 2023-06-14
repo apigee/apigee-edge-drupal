@@ -19,8 +19,8 @@
 
 namespace Drupal\apigee_edge_teams;
 
-use Drupal\apigee_edge_teams\Controller\TeamMemberSyncController;
 use Drupal\apigee_edge\Command\Util\ApigeeEdgeManagementCliServiceInterface;
+use Drupal\apigee_edge_teams\Controller\TeamMemberSyncController;
 use Symfony\Component\Console\Style\StyleInterface;
 
 /**
