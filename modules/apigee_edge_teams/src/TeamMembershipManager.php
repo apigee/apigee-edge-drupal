@@ -27,6 +27,7 @@ use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface;
 use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
+use Drupal\apigee_edge_teams\Entity\Form\TeamForm;
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -246,7 +247,7 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getTeams(string $developer): array {
+  public function getTeams(string $developer, string $team = NULL): array {
     /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $entity */
     $entity = $this->entityTypeManager->getStorage('developer')->load($developer);
     if ($entity === NULL) {
@@ -254,11 +255,15 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
     }
     // Checking for ApigeeX organization.
     if ($this->orgController->isOrganizationApigeeX()) {
-      /** @var \Drupal\user\Entity\User $account */
-      $account = user_load_by_mail($developer);
-      // Developer entity's getAppGroups() method should return the list of
-      // AppGroups/teams where the developer is a member.
-      return $entity->getAppGroups($account);
+      // If team not available, this could happen when switching
+      // the Org and if another Orgs team exist in database.
+      if ($team !== NULL) {
+        // List developer email ids for a particular team.
+        $members = $this->getAppGroupMembers($team);
+        // Return the AppGroups/teams where the developer is a member.
+        return in_array($developer, $members) ? [$team] : [];
+      }
+      return [];
     }
     else {
       // Developer entity's getCompanies() method should return the list of

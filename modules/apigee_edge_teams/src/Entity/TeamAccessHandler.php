@@ -112,7 +112,8 @@ final class TeamAccessHandler extends EntityAccessControlHandler implements Enti
           $developer = $this->developerStorage->load($account->getEmail());
           // Checking for ApigeeX organization.
           if ($this->orgController->isOrganizationApigeeX()) {
-            $developer_team_ids = $developer->getAppGroups($account);
+            // Argument #2 in getTeams() is required for checking the AppGroup members and not required for Edge.
+            $developer_team_ids = $this->teamMembershipManager->getTeams($account->getEmail(), $entity->id());
           }
           else {
             $developer_team_ids = $developer->getCompanies();

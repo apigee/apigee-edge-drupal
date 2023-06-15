@@ -270,36 +270,6 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
   }
 
   /**
-   * Returns a list of teams from team_member_role entity for specific developer.
-   *
-   * @param Drupal\Core\Session\AccountInterface $account
-   *   The team which members gets listed.
-   *
-   * @return array
-   *   Render array.
-   */
-  public function getAppGroups(AccountInterface $account): array {
-    // TODO : Save it to the local cache so we can serve it from there
-    // next time.
-    // Load team_member_role object.
-    $team_member_role_storage = \Drupal::entityTypeManager()->getStorage('team_member_role');
-
-    /** @var \Drupal\user\UserInterface $user */
-    $user = user_load_by_mail($account->getEmail());
-    /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface $team_member_roles */
-    $developerTeam = array_reduce($team_member_role_storage->loadByDeveloper($user), function ($carry, TeamMemberRole $team_role) {
-      // If team is not available, avoid null value exception.
-      if ($team_role->getTeam() !== NULL) {
-        $carry[$team_role->getTeam()->id()] = $team_role->getTeam()->id();
-      }
-      return $carry;
-    },
-    []);
-
-    return array_keys($developerTeam);
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function getCompanies(): array {
