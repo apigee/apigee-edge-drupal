@@ -131,6 +131,15 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
   /**
    * {@inheritdoc}
    */
+  public function syncAppGroupMembers(string $team): array {
+    $controller = $this->appGroupMembersControllerFactory->appGroupMembersController($team);
+    $members = $controller->syncAppGroupMembers();
+    return array_keys($members->getMembers());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getMembers(string $team): array {
     // Checking for ApigeeX organization.
     if ($this->orgController->isOrganizationApigeeX()) {
@@ -144,9 +153,12 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Get the AppGroup ApigeeX members email ID and roles.
+   *
+   * @param string $team
+   *   Name of a team.
    */
-  public function getAppGroupMembers(string $team): array {
+  private function getAppGroupMembers(string $team): array {
     $controller = $this->appGroupMembersControllerFactory->appGroupMembersController($team);
     $members = $controller->getMembers();
     return array_keys($members->getMembers());
@@ -171,9 +183,14 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Add the AppGroup ApigeeX members email ID and roles.
+   *
+   * @param string $team
+   *   Name of a team.
+   * @param array $developers
+   *   Array of developer email addresses.
    */
-  public function addAppGroupMembers(string $team, array $developers): void {
+  private function addAppGroupMembers(string $team, array $developers): void {
     $appGroupMembership = new AppGroupMembership($developers);
     $controller = $this->appGroupMembersControllerFactory->appGroupMembersController($team);
     $controller->setMembers($appGroupMembership);

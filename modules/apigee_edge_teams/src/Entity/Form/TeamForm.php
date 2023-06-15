@@ -49,7 +49,7 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
   /**
    * Membership attribute name for admin email in appgroup.
    */
-  const APPGROUP_ADMIN_EMAIL_ATTRIBUTE = '_apigee_reserved__memberships';
+  const APPGROUP_ADMIN_EMAIL_ATTRIBUTE = '__apigee_reserved__developer_details';
 
 
   /**
@@ -266,7 +266,7 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
         if ($this->orgController->isOrganizationApigeeX()) {
           // For ApigeeX adding the member as admin.
           $this->teamMembershipManager->addMembers($team->id(), [
-            $this->currentUser->getEmail() => 'admin'
+            $this->currentUser->getEmail() => ['admin']
           ]);
         }
         else {

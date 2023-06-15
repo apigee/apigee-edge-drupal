@@ -154,7 +154,7 @@ class TeamInvitationSubscriber implements EventSubscriberInterface {
         return $team_member_role->id();
       }, $team_invitation->getTeamRoles());
       // Adding roles to the array for ApigeeX
-      // So while storing the membership in _apigee_reserve_membership
+      // So while storing the membership in __apigee_reserved__developer_details
       // attribute we can store the roles as well.
       if ($this->orgController->isOrganizationApigeeX()) {
         $this->teamMembershipManager->addMembers($team->id(), [

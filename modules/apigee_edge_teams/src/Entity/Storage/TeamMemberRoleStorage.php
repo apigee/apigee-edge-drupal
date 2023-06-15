@@ -193,13 +193,13 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
     }
 
     try {
-      // Adding member roles in array for ApigeeX.
-      if ($this->orgController->isOrganizationApigeeX()) {
+      // Adding member roles in array for ApigeeX only if the roles has changed.
+      if ($this->orgController->isOrganizationApigeeX() && !empty($unique_roles)) {
         // Adding the roles in AppGroup.
         $updated_roles = array_map(function ($item) {
           return $item = $item['target_id'];
         }, $team_member_roles->roles->getValue());
-        // Updating the members role in apigee_reserve_membership attribute for ApigeeX.
+        // Updating the members role in __apigee_reserved__developer_details attribute for ApigeeX.
         $this->teamMembershipManager->addMembers($team->id(), [
           $account->getEmail() => $updated_roles
         ]);
@@ -260,7 +260,7 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
           $updated_roles = array_map(function ($item) {
             return $item = $item['target_id'];
           }, $team_member_roles->roles->getValue());
-          // Updating the members role in apigee_reserve_membership attribute for ApigeeX.
+          // Updating the members role in __apigee_reserved__developer_details attribute for ApigeeX.
           $this->teamMembershipManager->addMembers($team->id(), [
             $account->getEmail() => $updated_roles
           ]);

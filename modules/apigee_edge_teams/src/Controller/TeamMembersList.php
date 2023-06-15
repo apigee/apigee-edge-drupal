@@ -135,33 +135,6 @@ class TeamMembersList extends ControllerBase {
   }
 
   /**
-   * Returns a list of team members from team_member_role entity.
-   *
-   * @param \Drupal\apigee_edge_teams\Entity\TeamInterface $team
-   *   The team which members gets listed.
-   *
-   * @return array
-   *   Render array.
-   */
-  protected function getAppGroupMembers(TeamInterface $team): array {
-    $membership = $this->appGroupMembershipObjectCache->getMembership($team->id());
-
-    if ($membership === NULL) {
-      // Load team_member_role object.
-      $team_member_role_storage = \Drupal::entityTypeManager()->getStorage('team_member_role');
-      $members = array_reduce($team_member_role_storage->loadByTeam($team), function ($carry, TeamMemberRoleInterface $developer_role) {
-          $carry[$developer_role->getDeveloper()->getEmail()] = $developer_role->getDeveloper()->getEmail();
-          return $carry;
-      },
-      []);
-
-      $membership = new AppGroupMembership($members);
-      $this->appGroupMembershipObjectCache->saveMembership($team->id(), $membership);
-    }
-    return array_keys($membership->getMembers());
-  }
-
-  /**
    * Returns a list of team members.
    *
    * @param \Drupal\apigee_edge_teams\Entity\TeamInterface $team
@@ -174,7 +147,7 @@ class TeamMembersList extends ControllerBase {
    */
   public function overview(TeamInterface $team) {
     $entity_type = $this->entityTypeManager()->getDefinition('team');
-    $members = $this->orgController->isOrganizationApigeeX() ? $this->getAppGroupMembers($team) : $this->teamMembershipManager->getMembers($team->id());
+    $members = $this->teamMembershipManager->getMembers($team->id());
     $users_by_mail = [];
     $team_member_roles_by_mail = [];
 
