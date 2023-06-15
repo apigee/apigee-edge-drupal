@@ -19,7 +19,7 @@
  * @file
  * Javascript functions related to the app listing.
  */
-(function ($, Drupal) {
+(function ($, Drupal, once) {
 
   'use strict';
 
@@ -31,7 +31,7 @@
 
   Drupal.apigeeEdgeAppListing = {
     tableToggle: function (context, settings) {
-      $('.toggle--warning').once('tableToggle').on('click', function (event) {
+      $(once('tableToggle', '.toggle--warning')).on('click', function (event) {
         event.preventDefault();
         var targetURL = $(this).attr('href');
         var targetID = '#' + targetURL.substr(targetURL.indexOf('#') + 1);
@@ -50,4 +50,4 @@
 
     }
   };
-})(jQuery, Drupal);
+})(jQuery, Drupal, once);
