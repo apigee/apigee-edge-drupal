@@ -20,9 +20,9 @@
 
 namespace Drupal\apigee_mock_api_client;
 
+use Apigee\MockClient\GuzzleHttp\MockHandler;
 use Drupal\Core\Http\ClientFactory;
 use Drupal\Core\State\StateInterface;
-use Apigee\MockClient\GuzzleHttp\MockHandler;
 use GuzzleHttp\HandlerStack;
 
 /**

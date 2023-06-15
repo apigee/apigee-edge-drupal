@@ -233,6 +233,7 @@ trait DeveloperAppUITestTrait {
     $storage = \Drupal::entityTypeManager()->getStorage('developer_app');
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp $app */
     $app = $storage->load(array_values($storage->getQuery()
+      ->accessCheck(TRUE)
       ->condition('developerId', $developer->uuid())
       ->condition('name', $name)
       ->execute())[0]);
@@ -348,6 +349,7 @@ trait DeveloperAppUITestTrait {
       $storage = \Drupal::entityTypeManager()->getStorage('developer_app');
       $results_ids = $storage
         ->getQuery()
+        ->accessCheck(FALSE)
         ->condition('developerId', $developer->uuid())
         ->condition('name', $name)
         ->execute();

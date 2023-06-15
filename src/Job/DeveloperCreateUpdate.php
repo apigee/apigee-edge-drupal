@@ -75,7 +75,7 @@ abstract class DeveloperCreateUpdate extends EdgeJob {
       $message = '@operation: Skipping %mail developer. @message %function (line %line of %file). <pre>@backtrace_string</pre>';
       $context = [
         '%mail' => $this->email,
-        'link' => $account->toLink(t('View user'))->toString(),
+        '@link' => $account->toLink(t('View user'))->toString(),
         '@operation' => get_class($this),
       ];
       $context += Error::decodeException($exception);
@@ -102,7 +102,7 @@ abstract class DeveloperCreateUpdate extends EdgeJob {
    */
   protected function beforeDeveloperSave(UserToDeveloperConversionResult $result, UserInterface $user) : void {
     $context = [
-      'link' => $user->toLink(t('View user'))->toString(),
+      '@link' => $user->toLink(t('View user'))->toString(),
     ];
     $this->logConversionProblems($result->getProblems(), $context);
   }

@@ -20,8 +20,8 @@
 
 namespace Drupal\apigee_edge;
 
-use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\ApigeeOnGcpOauth2AuthenticationException;
+use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use Drupal\apigee_edge\Exception\AuthenticationKeyException;

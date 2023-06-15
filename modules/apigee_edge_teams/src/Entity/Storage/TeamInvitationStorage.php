@@ -147,7 +147,7 @@ class TeamInvitationStorage extends SqlContentEntityStorage implements TeamInvit
    * {@inheritdoc}
    */
   public function loadByRecipient(string $email, ?string $team_id = NULL): array {
-    $query = $this->getQuery()->condition('recipient', $email);
+    $query = $this->getQuery()->accessCheck(TRUE)->condition('recipient', $email);
 
     if ($team_id) {
       $query->condition('team', $team_id);
@@ -161,7 +161,8 @@ class TeamInvitationStorage extends SqlContentEntityStorage implements TeamInvit
    * {@inheritdoc}
    */
   public function getInvitationsToExpire(): array {
-    $query = $this->getQuery()->condition('expiry', $this->time->getCurrentTime(), '<')
+    // Team invitation is accessable as we need to update status in cron run.
+    $query = $this->getQuery()->accessCheck(FALSE)->condition('expiry', $this->time->getCurrentTime(), '<')
       ->condition('status', TeamInvitationInterface::STATUS_PENDING);
 
     $ids = $query->execute();
