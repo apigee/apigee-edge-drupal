@@ -20,9 +20,9 @@
 
 namespace Drupal\apigee_edge_actions;
 
-use Drupal\apigee_edge_actions\Event\EdgeEntityEventEdge;
 use Drupal\apigee_edge\Entity\Controller\DeveloperControllerInterface;
 use Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface;
+use Drupal\apigee_edge_actions\Event\EdgeEntityEventEdge;
 use Drupal\apigee_edge_teams\CompanyMembersControllerFactoryInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;

@@ -24,9 +24,9 @@ use Apigee\Edge\Api\Management\Controller\AppController as EdgeAppController;
 use Apigee\Edge\Api\Management\Controller\AppControllerInterface as EdgeAppControllerInterface;
 use Apigee\Edge\Api\Management\Entity\AppInterface;
 use Apigee\Edge\Structure\PagerInterface;
+use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface;
 use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface;
 use Drupal\apigee_edge\Entity\Controller\Cache\AppIdCache;
-use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 
 /**
