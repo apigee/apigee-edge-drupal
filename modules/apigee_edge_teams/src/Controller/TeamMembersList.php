@@ -25,8 +25,8 @@ use Apigee\Edge\Api\Management\Structure\CompanyMembership;
 use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge_teams\AppGroupMembershipObjectCacheInterface;
 use Drupal\apigee_edge_teams\CompanyMembershipObjectCacheInterface;
-use Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
+use Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Component\Utility\Html;
@@ -153,7 +153,9 @@ class TeamMembersList extends ControllerBase {
 
     if (!empty($members)) {
       $user_storage = $this->entityTypeManager()->getStorage('user');
+      // Only members with access can view the member list.
       $uids = $user_storage->getQuery()
+        ->accessCheck(TRUE)
         ->condition('mail', $members, 'IN')
         ->execute();
 

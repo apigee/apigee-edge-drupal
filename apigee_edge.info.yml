@@ -16,4 +16,4 @@ dependencies:
 
 configure: apigee_edge.settings
 
-php: "8.0"
+php: 8.0
