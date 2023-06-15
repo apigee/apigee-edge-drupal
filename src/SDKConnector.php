@@ -35,7 +35,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Http\ClientFactory;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
-use Http\Adapter\Guzzle6\Client as GuzzleClientAdapter;
+use Http\Adapter\Guzzle7\Client as GuzzleClientAdapter;
 use Http\Message\Authentication;
 
 /**
