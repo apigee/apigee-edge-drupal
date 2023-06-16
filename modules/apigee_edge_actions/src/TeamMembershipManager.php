@@ -156,6 +156,13 @@ class TeamMembershipManager implements TeamMembershipManagerInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function syncAppGroupMembers(string $team): array {
+    return $this->inner->syncAppGroupMembers($team);
+  }
+
+  /**
    * Helper to dispatch event.
    *
    * @param string $event
