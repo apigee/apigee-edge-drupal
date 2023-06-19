@@ -151,8 +151,8 @@ class TeamMembershipManager implements TeamMembershipManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getTeams(string $developer): array {
-    return $this->inner->getTeams($developer);
+  public function getTeams(string $developer, string $team = NULL): array {
+    return $this->inner->getTeams($developer, $team);
   }
 
   /**
