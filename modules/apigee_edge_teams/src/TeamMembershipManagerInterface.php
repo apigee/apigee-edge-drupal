@@ -76,6 +76,8 @@ interface TeamMembershipManagerInterface {
    *
    * @param string $developer
    *   Developer email address.
+   * @param string|null $team
+   *   Name of a team.
    *
    * @return string[]
    *   Array of team names.
@@ -83,6 +85,6 @@ interface TeamMembershipManagerInterface {
    * @throws \Drupal\apigee_edge\Exception\DeveloperDoesNotExistException
    *   If developer not found with id.
    */
-  public function getTeams(string $developer): array;
+  public function getTeams(string $developer, ?string $team = NULL): array;
 
 }

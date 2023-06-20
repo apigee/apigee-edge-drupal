@@ -159,11 +159,13 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
     if ($account->isAnonymous()) {
       throw new InvalidArgumentException('Anonymous user can not be member of a team.');
     }
-    // Skipping for ApigeeX Org.
-    // TODO : Save AppGroup teams in the cache when new member is added to the team.
+    // TODO : Implement this check for ApigeeX.
+    // DB is empty durning Team syncronization for 1st time, so $developer_team_ids
+    // is always empty which cause issue for member update in DB.
     if (!$this->orgController->isOrganizationApigeeX()) {
       try {
-        $developer_team_ids = $this->teamMembershipManager->getTeams($account->getEmail());
+        // Argument #2 in getTeams() is required for checking the AppGroup members and not required for Edge.
+        $developer_team_ids = $this->teamMembershipManager->getTeams($account->getEmail(), $team->id());
       }
       catch (\Exception $e) {
         $developer_team_ids = [];
@@ -229,7 +231,8 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
       throw new InvalidArgumentException('Anonymous user can not be member of a team.');
     }
     try {
-      $developer_team_ids = $this->teamMembershipManager->getTeams($account->getEmail());
+      // Argument #2 in getTeams() is required for checking the AppGroup members and not required for Edge.
+      $developer_team_ids = $this->teamMembershipManager->getTeams($account->getEmail(), $team->id());
     }
     catch (\Exception $e) {
       $developer_team_ids = [];
