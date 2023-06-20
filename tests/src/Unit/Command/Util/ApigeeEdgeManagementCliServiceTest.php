@@ -29,11 +29,11 @@ use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Exception\TransferException;
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\Utils;
 use Prophecy\Argument;
 use Prophecy\Prophet;
 use Psr\Http\Message\RequestInterface;
 use Symfony\Component\Console\Style\StyleInterface;
-use GuzzleHttp\Psr7\Utils;
 
 /**
  * Test ApigeeEdgeManagementCliService.
