@@ -19,6 +19,7 @@
 
 namespace Drupal\apigee_edge_teams\Form;
 
+use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -38,13 +39,23 @@ class TeamMemberSyncForm extends FormBase {
   protected $sdkConnector;
 
   /**
+   * The organization controller service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface
+   */
+  private $orgController;
+
+  /**
    * Constructs a new TeamMemberSyncForm.
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
    *   SDK connector service.
+   * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
+   *   The organization controller service.
    */
-  public function __construct(SDKConnectorInterface $sdk_connector) {
+  public function __construct(SDKConnectorInterface $sdk_connector, OrganizationControllerInterface $org_controller) {
     $this->sdkConnector = $sdk_connector;
+    $this->orgController = $org_controller;
   }
 
   /**
@@ -52,7 +63,8 @@ class TeamMemberSyncForm extends FormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('apigee_edge.sdk_connector')
+      $container->get('apigee_edge.sdk_connector'),
+      $container->get('apigee_edge.controller.organization')
     );
   }
 
@@ -109,6 +121,22 @@ class TeamMemberSyncForm extends FormBase {
         '#value' => $this->t('By running the sync, team member detail is stored in members cache table and will have expiry that is set in <a href=":team_caching">team caching</a>. To show more than 100 teams for a member enable permission "View extensive teams list". ', [':team_caching' => Url::fromRoute('apigee_edge_teams.settings.team.cache')->toString()]),
       ],
     ];
+
+    // Displaying this message only for ApigeeX.
+    if ($this->orgController->isOrganizationApigeeX()) {
+      $form['sync']['description']['list'] = [
+        '#theme' => 'item_list',
+        '#items' => [
+          $this->t('Caches team members in Drupal'),
+          $this->t('Migrate the members information from Apigee X to Drupal portal database.'),
+        ],
+      ];
+      $form['sync']['description']['p4'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'p',
+        '#value' => $this->t('<strong>Note: </strong>First, execute the <a href=":developer_sync">Developer sync</a> to add all the developers from ApigeeX to Drupal portal, and then proceed to add the required <a href=":developer_roles">member roles</a>. Finally, run the Team member sync. ', [':developer_sync' => Url::fromRoute('apigee_edge.settings.developer.sync')->toString(), ':developer_roles' => Url::fromRoute('entity.team_role.collection')->toString()]),
+      ];
+    }
 
     $form['sync']['sync_submit'] = [
       '#title' => $this->t('Run team member sync'),
