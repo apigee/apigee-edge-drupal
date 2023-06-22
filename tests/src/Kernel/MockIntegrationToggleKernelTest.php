@@ -21,8 +21,8 @@ namespace Drupal\Tests\apigee_edge\Kernel;
 
 use Apigee\MockClient\GuzzleHttp\MockHandler;
 use Drupal\KernelTests\KernelTestBase;
-use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Client;
+use GuzzleHttp\HandlerStack;
 
 /**
  * Tests the testing framework for testing offline.
