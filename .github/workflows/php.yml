@@ -94,6 +94,7 @@ jobs:
         composer config --json extra.patches."drupal/core" '{ "Support entities that are neither content nor config entities": "https://www.drupal.org/files/issues/2020-12-02/3042467-50.patch"}'
         composer update --with-all-dependencies
         composer require --dev phpspec/prophecy-phpunit:^2
+        composer require --dev drupal/classy:^1.0
         composer config --no-plugins allow-plugins.drupal/console-extend-plugin true
 
     # Install drupal using minimal installation profile and enable the module.

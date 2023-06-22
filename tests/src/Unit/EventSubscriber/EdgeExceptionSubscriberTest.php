@@ -35,6 +35,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 /**
  * Test EdgeExceptionSubscriber.
@@ -142,14 +143,9 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
     $this->routeMatch = $this->prophet->prophesize(RouteMatchInterface::class);
 
     // Drupal 9 / Symfony 4.x and up.
-    $this->getResponseForExceptionEvent = $this->prophet->prophesize(ExceptionEvent::class);
-    $this->getResponseForExceptionEvent->getThrowable()
-      ->willReturn($this->exception);
-
-    $this->getResponseForExceptionEvent->getRequest()
-      ->willReturn(new Request());
-    $this->getResponseForExceptionEvent->setResponse(Argument::any())
-      ->willReturn();
+    $kernel = $this->prophet->prophesize(HttpKernelInterface::class);
+    $request = Request::create('/test');
+    $this->getResponseForExceptionEvent = new ExceptionEvent($kernel->reveal(), $request, HttpKernelInterface::MAIN_REQUEST, new \Exception());
   }
 
   /**
@@ -184,7 +180,7 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
       $this->mainContentRenderers
     );
 
-    $edge_exception_subscriber->onException($this->getResponseForExceptionEvent->reveal());
+    $edge_exception_subscriber->onException($this->getResponseForExceptionEvent);
   }
 
   /**
@@ -219,7 +215,7 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
       $this->mainContentRenderers
     );
 
-    $edge_exception_subscriber->onException($this->getResponseForExceptionEvent->reveal());
+    $edge_exception_subscriber->onException($this->getResponseForExceptionEvent);
   }
 
 }

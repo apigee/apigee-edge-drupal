@@ -55,7 +55,7 @@ final class ApigeeEdgeDebugToFileLogger extends SysLog {
   /**
    * {@inheritdoc}
    */
-  public function log($level, $message, array $context = []) {
+  public function log($level, $message, array $context = []): void {
     // Only log messages from our debug module.
     if ($context['channel'] === 'apigee_edge_debug') {
       parent::log($level, $message, $context);
