@@ -34,8 +34,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Entity storage class for Team app entities.
- *
- * @phpstan-ignore-next-line
  */
 class TeamAppStorage extends AppStorage implements TeamAppStorageInterface {
 

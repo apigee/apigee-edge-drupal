@@ -21,7 +21,6 @@ namespace Drupal\Tests\apigee_edge\Kernel;
 
 use Apigee\MockClient\GuzzleHttp\MockHandler;
 use Drupal\KernelTests\KernelTestBase;
-use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
 
 /**
@@ -79,9 +78,10 @@ class MockIntegrationToggleKernelTest extends KernelTestBase {
 
     $handler = $this->container
       ->get('apigee_mock_api_client.mock_http_client_factory')
-      ->fromOptions([]);
+      ->fromOptions([])
+      ->getConfig('handler');
 
-    self::assertInstanceOf(Client::class, $handler);
+    self::assertInstanceOf(MockHandler::class, $handler);
 
     putenv('APIGEE_INTEGRATION_ENABLE=' . $integration_enabled ? 1 : 0);
   }
@@ -97,9 +97,10 @@ class MockIntegrationToggleKernelTest extends KernelTestBase {
 
     $handler = $this->container
       ->get('apigee_mock_api_client.mock_http_client_factory')
-      ->fromOptions([]);
+      ->fromOptions([])
+      ->getConfig('handler');
 
-    self::assertInstanceOf(Client::class, $handler);
+    self::assertInstanceOf(HandlerStack::class, $handler);
 
     putenv('APIGEE_INTEGRATION_ENABLE=' . $integration_enabled ? 1 : 0);
   }
