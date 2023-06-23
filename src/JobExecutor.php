@@ -151,6 +151,8 @@ class JobExecutor implements JobExecutorInterface {
       $job->setStatus($result ? Job::IDLE : Job::FINISHED);
     }
     catch (\Exception $ex) {
+      // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
+      // @phpstan-ignore-next-line
       watchdog_exception('apigee_edge_job', $ex);
       $job->recordException($ex);
       $job->setStatus($job->shouldRetry($ex) && $job->consumeRetry() ? Job::RESCHEDULED : Job::FAILED);

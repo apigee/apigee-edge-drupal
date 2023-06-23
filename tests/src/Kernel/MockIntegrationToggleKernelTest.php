@@ -76,6 +76,8 @@ class MockIntegrationToggleKernelTest extends KernelTestBase {
 
     $this->enableModules(['apigee_mock_api_client']);
 
+    // @todo getConfig() is deprecated and will be removed in guzzlehttp/guzzle:8.0
+    // @phpstan-ignore-next-line
     $handler = $this->container
       ->get('apigee_mock_api_client.mock_http_client_factory')
       ->fromOptions([])
@@ -95,6 +97,8 @@ class MockIntegrationToggleKernelTest extends KernelTestBase {
 
     $this->enableModules(['apigee_mock_api_client']);
 
+    // @todo getConfig() is deprecated and will be removed in guzzlehttp/guzzle:8.0
+    // @phpstan-ignore-next-line
     $handler = $this->container
       ->get('apigee_mock_api_client.mock_http_client_factory')
       ->fromOptions([])

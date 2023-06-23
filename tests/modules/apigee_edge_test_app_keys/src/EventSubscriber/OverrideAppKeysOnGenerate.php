@@ -89,20 +89,28 @@ class OverrideAppKeysOnGenerate implements EventSubscriberInterface {
           $credential_controller->addProducts($new_consumer_key, $products);
         }
         catch (ApiException $e) {
+          // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
+          // @phpstan-ignore-next-line
           watchdog_exception('apigee_edge', $e, 'Unable to assign API products to the newly generated API key on Apigee Edge for @app app. !message', ['@app' => "{$event->getOwnerId()}:{$event->getAppName()}"]);
           try {
             $credential_controller->delete($new_consumer_key);
           }
           catch (ApiException $e) {
+            // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
+            // @phpstan-ignore-next-line
             watchdog_exception('apigee_edge', $e, 'Unable to delete newly generated API key after API product re-association has failed on Apigee Edge for @app app. !message', ['@app' => "{$event->getOwnerId()}:{$event->getAppName()}"]);
           }
         }
       }
       catch (ApiException $e) {
+        // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
+        // @phpstan-ignore-next-line
         watchdog_exception('apigee_edge', $e, 'Unable to create new API key on Apigee Edge for @app app. !message', ['@app' => "{$event->getOwnerId()}:{$event->getAppName()}"]);
       }
     }
     catch (ApiException $e) {
+      // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
+      // @phpstan-ignore-next-line
       watchdog_exception('apigee_edge', $e, 'Unable to delete auto-generated key of @app app on Apigee Edge. !message', ['@app' => "{$event->getOwnerId()}:{$event->getAppName()}"]);
     }
   }

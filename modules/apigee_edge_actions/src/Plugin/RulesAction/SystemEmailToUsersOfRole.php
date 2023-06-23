@@ -83,9 +83,7 @@ class SystemEmailToUsersOfRole extends RulesSystemMailToUsersOfRole {
    */
   protected function doExecute(array $roles, $subject, $message, $reply = NULL, LanguageInterface $language = NULL) {
     // SystemMailToUsersOfRole::doExecute() expects an array of RoleInterface.
-    // Upcast $roles from string[] to RoleInterface[].
-    // @see https://www.drupal.org/project/rules/issues/2800749
-    $roles = $this->roleStorage->loadMultiple($roles);
+    // Upcast is done in RulesActionBase.
     parent::doExecute($roles, $subject, $message, $reply, $language);
   }
 

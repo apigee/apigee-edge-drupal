@@ -17,14 +17,11 @@
         "drupal/drupal-extension": "^4.2.1 || ~5",
         "cweagans/composer-patches": "^1.6",
         "drupal/core-dev": "^10.0",
-        "drush/drush": "^11.5",
+        "drush/drush": "^12.0",
         "mglaman/drupal-check": "1.3",
         "phpmd/phpmd": "^2.8.2",
         "phpmetrics/phpmetrics": "^2.5",
         "phpstan/phpstan": "^1.5"
-    },
-    "suggest": {
-        "drupal/console": "Needed only to run tests in Drupal 8."
     },
     "config": {
         "sort-packages": true
@@ -34,7 +31,7 @@
     "extra": {
         "drush": {
             "services": {
-                "drush.services.yml": "^9"
+                "drush.services.yml": "^12"
             }
         }
     }
