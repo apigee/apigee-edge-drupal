@@ -379,6 +379,8 @@ abstract class AppAnalyticsFormBase extends FormBase {
     catch (\Exception $e) {
       $this->messenger()
         ->addError($this->t('Unable to retrieve analytics data. Please try again.'));
+      // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
+      // @phpstan-ignore-next-line
       watchdog_exception('apigee_edge', $e);
     }
 

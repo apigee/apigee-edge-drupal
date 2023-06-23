@@ -36,10 +36,14 @@ function apigee_edge_test_app_keys_developer_app_insert(EntityInterface $entity)
         $dacc->create("{$prefix}-{$random->name()}", "{$prefix}-{$random->name()}");
       }
       catch (ApiException $e) {
+        // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
+        // @phpstan-ignore-next-line
         watchdog_exception('apigee_edge', $e, 'Unable to create new API key on Apigee Edge for @app app. !message', ['@app' => $entity->id()]);
       }
     }
     catch (ApiException $e) {
+      // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
+      // @phpstan-ignore-next-line
       watchdog_exception('apigee_edge', $e, 'Unable to delete auto-generated key of @app app on Apigee Edge. !message', ['@app' => $entity->id()]);
     }
   }

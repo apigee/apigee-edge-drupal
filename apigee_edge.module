@@ -986,7 +986,7 @@ function _apigee_edge_existing_developer_email_verification_link(UserInterface $
   // edit forms.
   $route = 'user.register';
   $route_params = [];
-  if (!$account->isAnonymous()) {
+  if (!$account->isAnonymous() && $account->id()) {
     $route = 'entity.user.edit_form';
     $route_params['user'] = $account->id();
   }

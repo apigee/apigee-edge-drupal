@@ -35,6 +35,8 @@ trait ApigeeEdgeKernelTestTrait {
    */
   protected function logException(\Exception $exception, string $suffix = '') {
     $ro = new \ReflectionObject($this);
+    // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
+    // @phpstan-ignore-next-line
     watchdog_exception("{$ro->getShortName()}{$suffix}", $exception);
   }
 

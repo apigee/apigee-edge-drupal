@@ -349,6 +349,8 @@ final class KeyEntityFormEnhancer {
       drupal_flush_all_caches();
     }
     catch (\Exception $exception) {
+      // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
+      // @phpstan-ignore-next-line
       watchdog_exception('apigee_edge', $exception);
 
       $form_state->setError($form, $this->t('@suggestion Error message: %response', [
