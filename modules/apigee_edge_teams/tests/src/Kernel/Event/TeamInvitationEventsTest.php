@@ -71,6 +71,8 @@ class TeamInvitationEventsTest extends KernelTestBase {
     $this->installSchema('user', ['users_data']);
 
     $this->baseSetUp();
+
+    $this->addOrganizationMatchedResponse();
   }
 
   /**

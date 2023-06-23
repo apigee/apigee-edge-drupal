@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Google Inc.
+ * Copyright 2023 Google Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,14 +18,13 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge_teams\Entity;
+namespace Drupal\apigee_edge_teams;
 
-use Apigee\Edge\Api\ApigeeX\Entity\AppGroupAppInterface;
-use Drupal\apigee_edge\Entity\AppInterface;
+use Apigee\Edge\Api\ApigeeX\Controller\AppGroupMembersControllerInterface as ApigeeXAppGroupMembersControllerInterface;
 
 /**
- * Defines an interface for team (company app entity objects.
+ * Base definition of the appgroup members controller service in Drupal.
  */
-interface TeamAppInterface extends AppGroupAppInterface, AppInterface {
+interface AppGroupMembersControllerInterface extends ApigeeXAppGroupMembersControllerInterface {
 
 }

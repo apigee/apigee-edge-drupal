@@ -23,6 +23,7 @@ namespace Drupal\apigee_edge\Entity\Controller;
 use Apigee\Edge\Api\Management\Entity\AppInterface;
 use Apigee\Edge\Api\Management\Entity\DeveloperAppInterface;
 use Apigee\Edge\Entity\EntityInterface;
+use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge\Exception\RuntimeException;
 
 /**
@@ -47,6 +48,14 @@ final class DeveloperAppEdgeEntityControllerProxy implements EdgeEntityControlle
    */
   private $appController;
 
+
+  /**
+   * The organization controller service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface
+   */
+  private $orgController;
+
   /**
    * DeveloperAppEntityControllerProxy constructor.
    *
@@ -54,10 +63,13 @@ final class DeveloperAppEdgeEntityControllerProxy implements EdgeEntityControlle
    *   The developer app controller factory service.
    * @param \Drupal\apigee_edge\Entity\Controller\AppControllerInterface $app_controller
    *   The app controller service.
+   * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
+   *   The organization controller service.
    */
-  public function __construct(DeveloperAppControllerFactoryInterface $developer_app_controller_factory, AppControllerInterface $app_controller) {
+  public function __construct(DeveloperAppControllerFactoryInterface $developer_app_controller_factory, AppControllerInterface $app_controller, OrganizationControllerInterface $org_controller) {
     $this->devAppControllerFactory = $developer_app_controller_factory;
     $this->appController = $app_controller;
+    $this->orgController = $org_controller;
   }
 
   /**
@@ -77,7 +89,8 @@ final class DeveloperAppEdgeEntityControllerProxy implements EdgeEntityControlle
    * {@inheritdoc}
    */
   public function load(string $id): EntityInterface {
-    return $this->appController->loadApp($id);
+    $app = $this->orgController->isOrganizationApigeeX() ? $this->appController->loadAppGroup($id) : $this->appController->loadApp($id);
+    return $app;
   }
 
   /**

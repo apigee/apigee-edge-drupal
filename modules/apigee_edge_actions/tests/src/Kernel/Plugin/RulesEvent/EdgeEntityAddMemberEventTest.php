@@ -54,6 +54,8 @@ class EdgeEntityAddMemberEventTest extends ApigeeEdgeActionsRulesKernelTestBase 
     parent::setUp();
 
     $this->installEntitySchema('team_member_role');
+
+    $this->addOrganizationMatchedResponse();
   }
 
   /**
