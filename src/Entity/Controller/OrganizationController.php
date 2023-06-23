@@ -135,4 +135,20 @@ final class OrganizationController implements OrganizationControllerInterface {
     }
   }
 
+  /**
+   * Checks whether the organization is Edge or ApigeeX organization.
+   *
+   * @return bool
+   *   TRUE if the value of the property is "true", false otherwise.
+   */
+  public function isOrganizationApigeeX(): bool {
+    try {
+      $this->organization = $this->load($this->connector->getOrganization());
+      return ($this->organization && ('CLOUD' === $this->organization->getRuntimeType() || 'HYBRID' === $this->organization->getRuntimeType()));
+    }
+    catch (\Exception $e) {
+      return FALSE;
+    }
+  }
+
 }

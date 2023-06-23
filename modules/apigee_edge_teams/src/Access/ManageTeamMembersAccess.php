@@ -86,7 +86,8 @@ final class ManageTeamMembersAccess implements AccessInterface {
     // If the developer parameter is available in the route make sure it is
     // member of the team.
     if ($developer !== NULL) {
-      if (!in_array($team->id(), $this->teamMembershipManager->getTeams($developer->getEmail()))) {
+      // Argument #2 in getTeams() is required for checking the AppGroup members and not required for Edge.
+      if (!in_array($team->id(), $this->teamMembershipManager->getTeams($developer->getEmail(), $team->id()))) {
         return AccessResultForbidden::forbidden("The {$developer->getEmail()} developer is not member of the {$team->id()} team.");
       }
     }

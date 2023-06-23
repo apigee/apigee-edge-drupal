@@ -21,6 +21,7 @@
 namespace Drupal\apigee_edge_teams\Form;
 
 use Drupal\apigee_edge\Form\EdgeEntityAliasConfigFormBase;
+use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Provides a form for changing Team aliases.
@@ -32,6 +33,87 @@ class TeamAliasForm extends EdgeEntityAliasConfigFormBase {
    */
   public function getFormId() {
     return 'apigee_edge_teams_team_alias_form';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm(array $form, FormStateInterface $form_state) {
+    $config = $this->config($this->getConfigNameWithLabels());
+
+    $form['team_label'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Team settings'),
+      '#collapsible' => FALSE,
+    ];
+
+    $form['team_label']['team_prefix'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Prefix to add for the Team name'),
+      '#default_value' => $config->get('team_prefix'),
+      '#description' => $this->t('<i>Example: "<strong>int-</strong>"</i> or leave empty for no prefix.'),
+    ];
+
+    $org_controller = \Drupal::service('apigee_edge.controller.organization');
+    if ($org_controller->isOrganizationApigeeX()) {
+      $form['channel_label'] = [
+        '#type' => 'fieldset',
+        '#title' => $this->t('Channel settings'),
+        '#collapsible' => FALSE,
+      ];
+
+      $form['channel_label']['channelid'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('Channel ID'),
+        '#default_value' => $config->get('channelid'),
+        '#description' => $this->t('Leave empty to use the default "@channelid" as channel ID.', ['@channelid' => $this->originalChannelId()]),
+      ];
+    }
+    return parent::buildForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    parent::validateForm($form, $form_state);
+    $pattern = '/^[a-z0-9_-]+$/';
+    $team_prefix = $form_state->getValue('team_prefix');
+    $channelid = $form_state->getValue('channelid');
+
+    if (!empty($team_prefix) && !preg_match($pattern, $team_prefix)) {
+      $form_state->setError($form['team_label']['team_prefix'], $this->t('Team prefix name must contain only lowercase letters, numbers, hyphen or the underscore character.'));
+      return;
+    }
+    if (!empty($channelid) && !preg_match($pattern, $channelid)) {
+      $form_state->setError($form['channel_label']['channelid'], $this->t('Channel ID must contain only lowercase letters, numbers, hyphen or the underscore character.'));
+      return;
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    $config = $this->config($this->getConfigNameWithLabels());
+
+    if ($config->get('team_prefix') !== $form_state->getValue('team_prefix') || $config->get('channelid') !== $form_state->getValue('channelid')) {
+      $config->set('team_prefix', $form_state->getValue('team_prefix'))
+        ->set('channelid', $form_state->getValue('channelid'))
+        ->save();
+    }
+
+    parent::submitForm($form, $form_state);
+  }
+
+  /**
+   * Returns the default value for Channel ID for ApigeeX.
+   *
+   * @return string
+   *   default channel ID value.
+   */
+  public static function originalChannelId(): string {
+    return t('devportal');
   }
 
   /**

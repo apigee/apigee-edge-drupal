@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge_teams;
 
 use Apigee\Edge\Api\Management\Controller\CompanyMembersController as EdgeCompanyMembersController;
 use Apigee\Edge\Api\Management\Structure\CompanyMembership;
+use Drupal\apigee_edge\Entity\Controller\OrganizationController;
 use Drupal\apigee_edge\SDKConnectorInterface;
 
 /**
@@ -114,6 +115,7 @@ final class CompanyMembersController implements CompanyMembersControllerInterfac
    * {@inheritdoc}
    */
   public function removeMember(string $email): void {
+    // Removing member from apigee management for Edge Org.
     $this->decorated()->removeMember($email);
     $this->companyMembershipObjectCache->removeMembership($this->company);
   }

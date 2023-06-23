@@ -25,7 +25,7 @@ use Drupal\user\RoleInterface;
 use Drupal\views\Views;
 
 /**
- * Install, update and uninstall functions for Apigee Edge Teams.
+ * Install, update and uninstall functions for Apigee Edge and ApigeeX Teams.
  */
 
 /**
@@ -41,13 +41,13 @@ function apigee_edge_teams_requirements($phase) {
       $org_controller = \Drupal::service('apigee_edge.controller.organization');
       /* @var \Apigee\Edge\Api\Management\Entity\Organization $organization */
       $organization = $org_controller->load($sdk_connector->getOrganization());
-      if ($organization && !OrganizationFeatures::isCompaniesFeatureAvailable($organization)) {
+      if ($organization && !OrganizationFeatures::isCompaniesFeatureAvailable($organization) && OrganizationFeatures::isMonetizationEnabled($organization)) {
         $url = [
           ':url' => 'https://cloud.google.com/apigee/docs/api-platform/get-started/compare-apigee-products#unsupported-apis',
         ];
         $message = ($phase == 'runtime') ?
-          t("The Apigee Edge Teams module functionality is not available for your org and should be uninstalled, because <a href=':url' target='_blank'>Edge company APIs are not supported in Apigee X and Apigee Hybrid orgs</a>.", $url) :
-          t("The Apigee Edge Teams module functionality is not available for your org because <a href=':url' target='_blank'>Edge company APIs are not supported in Apigee X and Apigee Hybrid orgs</a>.", $url);
+          t("The Teams module functionality is not available for monetization enabled org on Apigee X / Hybrid and should be uninstalled, because <a href=':url' target='_blank'>AppGroup APIs are not supported in Apigee X / Hybrid orgs with monetization enabled</a>.", $url) :
+          t("The Teams module functionality is not available for monetization enabled org on Apigee X / Hybrid because <a href=':url' target='_blank'>AppGroup APIs are not supported in Apigee X / Hybrid orgs with monetization enabled</a>.", $url);
         $requirements['apigee_edge_teams_not_supported'] = [
           'title' => t('Apigee Edge Teams'),
           'description' => $message,

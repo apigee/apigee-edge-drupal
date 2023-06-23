@@ -20,6 +20,7 @@
 namespace Drupal\apigee_edge;
 
 use Apigee\Edge\ClientInterface;
+use Drupal\apigee_edge\Entity\Controller\OrganizationController;
 use Drupal\key\KeyInterface;
 use Http\Message\Authentication;
 

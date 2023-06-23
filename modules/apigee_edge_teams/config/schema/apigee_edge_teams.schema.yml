@@ -2,6 +2,12 @@ apigee_edge_teams.team_settings:
   type: config_object
   label: 'Team settings'
   mapping:
+    team_prefix:
+      type: label
+      label: 'Prefix to add for the Team name'
+    channelid:
+      type: label
+      label: 'ChannelId settings'
     entity_label_singular:
       type: label
       label: 'How to refer to a Team on the UI (singular)'

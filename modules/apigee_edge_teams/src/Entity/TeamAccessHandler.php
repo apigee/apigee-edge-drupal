@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge_teams\Entity;
 
+use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityAccessControlHandler;
@@ -34,6 +35,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Access handler for Team entities.
  */
 final class TeamAccessHandler extends EntityAccessControlHandler implements EntityHandlerInterface {
+
+  /**
+   * The organization controller service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface
+   */
+  private $orgController;
 
   /**
    * The developer storage.
@@ -58,11 +66,14 @@ final class TeamAccessHandler extends EntityAccessControlHandler implements Enti
    *   The entity type manager.
    * @param \Drupal\apigee_edge_teams\TeamMembershipManagerInterface $team_membership_manager
    *   The team membership manager service.
+   * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
+   *   The organization controller service.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, TeamMembershipManagerInterface $team_membership_manager, OrganizationControllerInterface $org_controller) {
     parent::__construct($entity_type);
     $this->developerStorage = $entity_type_manager->getStorage('developer');
     $this->teamMembershipManager = $team_membership_manager;
+    $this->orgController = $org_controller;
   }
 
   /**
@@ -72,7 +83,8 @@ final class TeamAccessHandler extends EntityAccessControlHandler implements Enti
     return new static(
       $entity_type,
       $container->get('entity_type.manager'),
-      $container->get('apigee_edge_teams.team_membership_manager')
+      $container->get('apigee_edge_teams.team_membership_manager'),
+      $container->get('apigee_edge.controller.organization')
     );
   }
 
@@ -98,7 +110,15 @@ final class TeamAccessHandler extends EntityAccessControlHandler implements Enti
           // (Reminder, anonymous user can not be member of a team.
           /** @var \Drupal\apigee_edge\Entity\DeveloperInterface|null $developer */
           $developer = $this->developerStorage->load($account->getEmail());
-          $developer_team_ids = $developer->getCompanies();
+          // Checking for ApigeeX organization.
+          if ($this->orgController->isOrganizationApigeeX()) {
+            // Argument #2 in getTeams() is required for checking the AppGroup members and not required for Edge.
+            $developer_team_ids = $this->teamMembershipManager->getTeams($account->getEmail(), $entity->id());
+          }
+          else {
+            $developer_team_ids = $developer->getCompanies();
+          }
+
           $developer_team_access = FALSE;
 
           if ($developer && in_array($entity->id(), $developer_team_ids)) {
