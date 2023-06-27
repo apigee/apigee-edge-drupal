@@ -224,7 +224,11 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
       // Update the team name with predefined prefix.
       $name = $this->team_prefix . $form_state->getValue('name');
     }
-    $query = $this->entityTypeManager->getStorage('team')->getQuery()->condition('name', $name);
+    // Only member with access can check if team exists.
+    $query = $this->entityTypeManager->getStorage('team')
+      ->getQuery()
+      ->accessCheck(TRUE)
+      ->condition('name', $name);
 
     return (bool) $query->count()->execute();
   }
