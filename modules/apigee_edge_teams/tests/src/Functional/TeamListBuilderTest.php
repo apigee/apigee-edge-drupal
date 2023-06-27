@@ -143,6 +143,8 @@ class TeamListBuilderTest extends ApigeeEdgeTeamsFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function tearDown(): void {
+    parent::tearDown();
+
     try {
       $this->teamStorage->delete([$this->teamA, $this->teamB]);
       $this->account->delete();

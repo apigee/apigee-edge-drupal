@@ -61,6 +61,8 @@ final class SyslogToFileLogger extends SysLog {
       $log_path = \Drupal::service('file_system')->realpath('public://');
     }
     // Add test id as a suffix to the log file.
+    // @todo tablePrefix() is deprecated in Drupal 10.1
+    // @phpstan-ignore-next-line
     $log_path .= '/syslog-' . str_replace('test', '', $this->database->tablePrefix()) . '.log';
     // Do not fail a test just because the fail is not writable.
     @error_log($entry . PHP_EOL, 3, $log_path);

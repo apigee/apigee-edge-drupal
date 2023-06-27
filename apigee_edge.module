@@ -872,6 +872,8 @@ function apigee_edge_form_user_form_api_connection_validate(array $form, FormSta
       '@user_email' => $form_state->getValue('mail'),
       '@message' => (string) $exception,
     ];
+    // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
+    // @phpstan-ignore-next-line
     watchdog_exception('apigee_edge', $exception, 'Could not create/update Drupal user: @user_email, because there was no connection to Apigee Edge. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
     $form_state->setError($form, t('User registration is temporarily unavailable. Try again later or contact the site administrator.'));
   }
@@ -951,6 +953,8 @@ function apigee_edge_form_user_register_form_developer_email_validate(array $for
       $sendNotifications->set($account->getEmail(), $result);
     }
     catch (TempStoreException $e) {
+      // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
+      // @phpstan-ignore-next-line
       watchdog_exception(__FUNCTION__, $e);
     }
   }
@@ -986,7 +990,7 @@ function _apigee_edge_existing_developer_email_verification_link(UserInterface $
   // edit forms.
   $route = 'user.register';
   $route_params = [];
-  if (!$account->isAnonymous()) {
+  if (!$account->isAnonymous() && $account->id()) {
     $route = 'entity.user.edit_form';
     $route_params['user'] = $account->id();
   }
@@ -1505,6 +1509,8 @@ function apigee_edge_user_delete(UserInterface $account) {
       '@developer' => $account->getEmail(),
       '@message' => (string) $exception,
     ];
+    // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
+    // @phpstan-ignore-next-line
     watchdog_exception('apigee_edge', $exception, 'Could not delete @developer developer entity. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
   }
 }

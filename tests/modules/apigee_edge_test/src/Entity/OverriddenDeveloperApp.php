@@ -38,8 +38,7 @@ final class OverriddenDeveloperApp extends DeveloperApp {
     $definitions['displayName']->setPropertyConstraints('value', [
       'Length' => [
         'min' => 1,
-        'max' => 30,
-        'allowEmptyString' => TRUE
+        'max' => 30
       ],
     ]);
 

@@ -55,7 +55,7 @@ final class ApigeeEdgeDebugToFileLogger extends SysLog {
   /**
    * {@inheritdoc}
    */
-  public function log($level, $message, array $context = []) {
+  public function log($level, $message, array $context = []): void {
     // Only log messages from our debug module.
     if ($context['channel'] === 'apigee_edge_debug') {
       parent::log($level, $message, $context);
@@ -71,6 +71,7 @@ final class ApigeeEdgeDebugToFileLogger extends SysLog {
       $log_path = \Drupal::service('file_system')->realpath('public://');
     }
     // Add test prefix to the log file.
+    // @phpstan-ignore-next-line
     $log_path .= '/apigee_edge_debug-' . str_replace('test', '', $this->database->tablePrefix()) . '.log';
     // Do not fail a test just because the fail is not writable.
     @error_log($entry . PHP_EOL, 3, $log_path);

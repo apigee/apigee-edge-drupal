@@ -52,6 +52,8 @@ class ApigeeEdgeDeveloperIdFieldItem extends FieldItemList {
       $this->list[0] = $this->createItem(0, $value);
     }
     catch (\Exception $exception) {
+      // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
+      // @phpstan-ignore-next-line
       watchdog_exception('apigee_edge', $exception);
     }
   }

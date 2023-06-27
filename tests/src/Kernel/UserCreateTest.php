@@ -90,6 +90,8 @@ class UserCreateTest extends KernelTestBase {
     catch (\Exception $exception) {
       $this->logException($exception);
     }
+
+    parent::tearDown();
   }
 
   /**
