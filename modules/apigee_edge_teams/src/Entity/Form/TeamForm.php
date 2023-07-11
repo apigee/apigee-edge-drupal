@@ -188,11 +188,11 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
     $team = $this->entity;
 
     $form['name'] = [
-      '#title' => $this->t('Internal name'),
+      '#title' => $this->t('Machine name'),
       '#type' => 'machine_name',
       '#machine_name' => [
         'source' => ['displayName', 'widget', 0, 'value'],
-        'label' => $this->t('Internal name'),
+        'label' => $this->t('Machine name'),
         'exists' => [$this, 'exists'],
       ],
       '#field_prefix' => $team->isNew() ? $this->team_prefix : "",
@@ -308,7 +308,8 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
       }
 
     }
-    $form_state->setRedirectUrl($team->toUrl('collection'));
+    // Redirecting user to team view page to manage the team members and apps.
+    $form_state->setRedirectUrl($team->toUrl('canonical'));
 
     return $result;
   }
