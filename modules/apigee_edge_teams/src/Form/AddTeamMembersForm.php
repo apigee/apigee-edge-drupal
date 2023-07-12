@@ -95,8 +95,8 @@ class AddTeamMembersForm extends TeamMembersFormBase {
     $role_options = $this->getRoleOptions();
 
     $form['developers'] = [
-      '#title' => $this->t('Members'),
-      '#description' => $this->t('Enter the email of one or more members, separated by commas, to invite them to the @team.', [
+      '#title' => $this->t('Email address(es)'),
+      '#description' => $this->t('Enter the email of one or more developers, separated by commas, to invite them to the @team.', [
         '@team' => mb_strtolower($this->team->getEntityType()->getSingularLabel()),
       ]),
       '#type' => 'textarea',
@@ -118,7 +118,7 @@ class AddTeamMembersForm extends TeamMembersFormBase {
     ];
 
     $form['team_roles']['description'] = [
-      '#markup' => $this->t('Assign one or more roles to <em>all members</em> that you selected in %team_label @team.', [
+      '#markup' => $this->t('Assign one or more roles to <em>all developers</em> that you selected in %team_label @team.', [
         '%team_label' => $this->team->label(),
         '@team' => mb_strtolower($this->team->getEntityType()->getSingularLabel()),
       ]),
