@@ -80,6 +80,15 @@ class ApiProduct extends EdgeEntityBase implements ApiProductInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * We are sending id as uuid for getting api products while using JSONAPI.
+   */
+  public function uuid(): ?string {
+    return $this->id();
+  }
+
+  /**
+   * {@inheritdoc}
    */
   protected function drupalEntityId(): ?string {
     return $this->getName();
