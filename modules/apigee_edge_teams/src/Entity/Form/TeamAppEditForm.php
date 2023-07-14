@@ -113,12 +113,12 @@ class TeamAppEditForm extends AppEditForm {
     // Hide the Delete button.
     $actions['delete']['#access'] = FALSE;
     // Cancel button to redirect the user to team app listing page.
-    $actions['cancel'] = array (
+    $actions['cancel'] = [
       '#type' => 'link',
       '#title' => $this->t('Cancel'),
       '#attributes' => ['class' => ['btn btn-outline-primary']],
       '#url' => $this->entity->toUrl('collection-by-team'),
-    );
+    ];
     return $actions;
   }
 
