@@ -268,7 +268,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->pageTextContains($name);
     $this->clickLink($name);
     // Result depends on how fast the response was.
-    $this->assertSession()->pageTextMatches('/1 week (2|3) days hence/');
+    $this->assertSession()->pageTextMatches('/1 week (2|3) days from now/');
 
     // Change credential lifetime to 0 (Never) days from 10.
     $this->drupalGet($url);
