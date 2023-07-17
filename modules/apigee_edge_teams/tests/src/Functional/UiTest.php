@@ -178,7 +178,6 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
 
     // The team's display name and field values are visible on the canonical
     // page.
-    $this->clickLink($team_display_name);
     $this->assertSession()->pageTextContains($team_display_name);
     $this->assertSession()->pageTextContains($this->fields['integer']['data']);
     $this->assertSession()->pageTextContains($this->fields['email']['data']);
