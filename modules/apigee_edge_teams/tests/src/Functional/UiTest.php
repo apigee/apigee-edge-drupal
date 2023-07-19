@@ -192,7 +192,6 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
       'field_email[0][value]' => $this->fields['email']['data_edited'],
     ], 'Save team');
 
-    $this->clickLink($team_modified_display_name);
     $this->assertSession()->pageTextContains($team_modified_display_name);
     $this->assertSession()->pageTextContains($this->fields['integer']['data_edited']);
     $this->assertSession()->pageTextContains($this->fields['email']['data_edited']);
