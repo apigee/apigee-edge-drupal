@@ -1186,11 +1186,11 @@ function template_preprocess_app_credential(array &$variables) {
       /** @var \DateTimeInterface $value */
       if ($value !== -1) {
         $time_diff = \Drupal::time()->getRequestTime() - intval($value / 1000);
-        if ($time_diff > 0) {
+        if ($time_diff >= 0) {
           $value = t('@time ago', ['@time' => $dateFormatter->formatTimeDiffSince(intval($value / 1000))]);
         }
         else {
-          $value = t('@time hence', ['@time' => $dateFormatter->formatTimeDiffUntil(intval($value / 1000))]);
+          $value = t('@time from now', ['@time' => $dateFormatter->formatTimeDiffUntil(intval($value / 1000))]);
         }
       }
       else {
