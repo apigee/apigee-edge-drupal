@@ -20,19 +20,23 @@
 
 namespace Drupal\apigee_edge_teams;
 
+use Apigee\Edge\Api\ApigeeX\Structure\AppGroupMembership;
 use Apigee\Edge\Api\Management\Structure\CompanyMembership;
 use Drupal\apigee_edge\Entity\Controller\DeveloperControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface;
 use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
+use Drupal\apigee_edge_teams\Entity\Form\TeamForm;
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\user\UserInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Service that makes easier to work with company (team) memberships.
+ * Service that makes easier to work with company/appgroup (team) memberships.
  *
  * It also handles cache invalidation.
  */
@@ -44,6 +48,13 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
    * @var \Drupal\apigee_edge_teams\CompanyMembersControllerFactoryInterface
    */
   private $companyMembersControllerFactory;
+
+  /**
+   * The appgroup members controller factory service.
+   *
+   * @var \Drupal\apigee_edge_teams\AppGroupMembersControllerFactoryInterface
+   */
+  private $appGroupMembersControllerFactory;
 
   /**
    * The developer companies cache.
@@ -81,11 +92,20 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
   private $logger;
 
   /**
+   * The organization controller service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface
+   */
+  private $orgController;
+
+  /**
    * TeamMembershipManager constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
    * @param \Drupal\apigee_edge_teams\CompanyMembersControllerFactoryInterface $company_members_controller_factory
+   *   The company members controller factory service.
+   * @param \Drupal\apigee_edge_teams\AppGroupMembersControllerFactoryInterface $appgroup_members_controller_factory
    *   The company members controller factory service.
    * @param \Drupal\apigee_edge\Entity\Controller\DeveloperControllerInterface $developer_controller
    *   The developer controller service.
@@ -95,21 +115,52 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
    *   The cache tags invalidator service.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
+   * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
+   *   The organization controller service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, CompanyMembersControllerFactoryInterface $company_members_controller_factory, DeveloperControllerInterface $developer_controller, DeveloperCompaniesCacheInterface $developer_companies_cache, CacheTagsInvalidatorInterface $cache_tags_invalidator, LoggerInterface $logger) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, CompanyMembersControllerFactoryInterface $company_members_controller_factory, AppGroupMembersControllerFactoryInterface $appgroup_members_controller_factory, DeveloperControllerInterface $developer_controller, DeveloperCompaniesCacheInterface $developer_companies_cache, CacheTagsInvalidatorInterface $cache_tags_invalidator, LoggerInterface $logger, OrganizationControllerInterface $org_controller) {
     $this->entityTypeManager = $entity_type_manager;
     $this->companyMembersControllerFactory = $company_members_controller_factory;
+    $this->appGroupMembersControllerFactory = $appgroup_members_controller_factory;
     $this->developerController = $developer_controller;
     $this->developerCompaniesCache = $developer_companies_cache;
     $this->cacheTagsInvalidator = $cache_tags_invalidator;
     $this->logger = $logger;
+    $this->orgController = $org_controller;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function syncAppGroupMembers(string $team): array {
+    $controller = $this->appGroupMembersControllerFactory->appGroupMembersController($team);
+    $members = $controller->syncAppGroupMembers();
+    return array_keys($members->getMembers());
   }
 
   /**
    * {@inheritdoc}
    */
   public function getMembers(string $team): array {
-    $controller = $this->companyMembersControllerFactory->companyMembersController($team);
+    // Checking for ApigeeX organization.
+    if ($this->orgController->isOrganizationApigeeX()) {
+      return $this->getAppGroupMembers($team);
+    }
+    else {
+      $controller = $this->companyMembersControllerFactory->companyMembersController($team);
+      $members = $controller->getMembers();
+      return array_keys($members->getMembers());
+    }
+  }
+
+  /**
+   * Get the AppGroup ApigeeX members email ID and roles.
+   *
+   * @param string $team
+   *   Name of a team.
+   */
+  private function getAppGroupMembers(string $team): array {
+    $controller = $this->appGroupMembersControllerFactory->appGroupMembersController($team);
     $members = $controller->getMembers();
     return array_keys($members->getMembers());
   }
@@ -118,19 +169,48 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
    * {@inheritdoc}
    */
   public function addMembers(string $team, array $developers): void {
-    $membership = new CompanyMembership(array_map(function ($item) {
-      return NULL;
-    }, array_flip($developers)));
-    $controller = $this->companyMembersControllerFactory->companyMembersController($team);
-    $controller->setMembers($membership);
-    $this->invalidateCaches($team, $developers);
+    // Checking for ApigeeX organization.
+    if ($this->orgController->isOrganizationApigeeX()) {
+      $this->addAppGroupMembers($team, $developers);
+    }
+    else {
+      $membership = new CompanyMembership(array_map(function ($item) {
+        return NULL;
+      }, array_flip($developers)));
+      $controller = $this->companyMembersControllerFactory->companyMembersController($team);
+      $controller->setMembers($membership);
+      $this->invalidateCaches($team, $developers);
+    }
+  }
+
+  /**
+   * Add the AppGroup ApigeeX members email ID and roles.
+   *
+   * @param string $team
+   *   Name of a team.
+   * @param array $developers
+   *   Array of developer email addresses.
+   */
+  private function addAppGroupMembers(string $team, array $developers): void {
+    $appGroupMembership = new AppGroupMembership($developers);
+    $controller = $this->appGroupMembersControllerFactory->appGroupMembersController($team);
+    $controller->setMembers($appGroupMembership);
+
+    $membership = new AppGroupMembership(array_flip(array_keys($developers)));
+    $this->invalidateCaches($team, $membership->getMembers());
   }
 
   /**
    * {@inheritdoc}
    */
   public function removeMembers(string $team, array $developers): void {
-    $controller = $this->companyMembersControllerFactory->companyMembersController($team);
+    // Checking for ApigeeX organization.
+    if ($this->orgController->isOrganizationApigeeX()) {
+      $controller = $this->appGroupMembersControllerFactory->appGroupMembersController($team);
+    }
+    else {
+      $controller = $this->companyMembersControllerFactory->companyMembersController($team);
+    }
     /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorageInterface $team_member_role_storage */
     $team_member_role_storage = $this->entityTypeManager->getStorage('team_member_role');
     /** @var \Drupal\user\UserInterface[] $users_by_mail */
@@ -138,22 +218,26 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
       $carry[$user->getEmail()] = $user;
       return $carry;
     }, []);
+
     foreach ($developers as $developer) {
       $controller->removeMember($developer);
       // Remove team member's roles from Drupal.
       if (array_key_exists($developer, $users_by_mail)) {
-        /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface[] $team_member_roles_in_teams */
-        $team_member_roles_in_teams = $team_member_role_storage->loadByDeveloper($users_by_mail[$developer]);
-        foreach ($team_member_roles_in_teams as $team_member_roles_in_team) {
-          try {
+        /** @var \Drupal\user\Entity\User $account */
+        $account = user_load_by_mail($users_by_mail[$developer]->getEmail());
+        $team_entity = $this->entityTypeManager->getStorage('team')->load($team);
+        /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface[] $team_member_roles_in_team */
+        $team_member_roles_in_team = $team_member_role_storage->loadByDeveloperAndTeam($account, $team_entity);
+        try {
+          if (!empty($team_member_roles_in_team)) {
             $team_member_roles_in_team->delete();
           }
-          catch (EntityStorageException $e) {
-            $this->logger->critical("Failed to remove %developer team member's roles in %team team with its membership.", [
-              '%developer' => $developer,
-              '%team' => $team_member_roles_in_team->getTeam()->id(),
-            ]);
-          }
+        }
+        catch (EntityStorageException $e) {
+          $this->logger->critical("Failed to remove %developer team member's roles in %team team with its membership.", [
+            '%developer' => $developer,
+            '%team' => $team_member_roles_in_team->getTeam()->id(),
+          ]);
         }
       }
     }
@@ -163,16 +247,30 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getTeams(string $developer): array {
+  public function getTeams(string $developer, string $team = NULL): array {
     /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $entity */
     $entity = $this->entityTypeManager->getStorage('developer')->load($developer);
     if ($entity === NULL) {
       throw new DeveloperDoesNotExistException($developer);
     }
-    // Developer entity's getCompanies() method should return the list of
-    // companies where the developer is member.
-    // @see \Drupal\apigee_edge\Entity\Developer::getCompanies()
-    return $entity->getCompanies();
+    // Checking for ApigeeX organization.
+    if ($this->orgController->isOrganizationApigeeX()) {
+      // If team not available, this could happen when switching
+      // the Org and if another Orgs team exist in database.
+      if ($team !== NULL) {
+        // List developer email ids for a particular team.
+        $members = $this->getAppGroupMembers($team);
+        // Return the AppGroups/teams where the developer is a member.
+        return in_array($developer, $members) ? [$team] : [];
+      }
+      return [];
+    }
+    else {
+      // Developer entity's getCompanies() method should return the list of
+      // companies where the developer is member.
+      // @see \Drupal\apigee_edge\Entity\Developer::getCompanies()
+      return $entity->getCompanies();
+    }
   }
 
   /**

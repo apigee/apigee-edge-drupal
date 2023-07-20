@@ -60,8 +60,11 @@ class EditTeamMemberForm extends TeamMembersFormBase {
     else {
       $current_role_options = [];
     }
+
     // Add TEAM_MEMBER_ROLE to current role options so it's always displayed.
-    $current_role_options[] = TeamRoleInterface::TEAM_MEMBER_ROLE;
+    if (!in_array(TeamRoleInterface::TEAM_MEMBER_ROLE, $current_role_options)) {
+      $current_role_options[] = TeamRoleInterface::TEAM_MEMBER_ROLE;
+    }
 
     $form['team_roles'] = [
       '#type' => 'checkboxes',
@@ -115,6 +118,11 @@ class EditTeamMemberForm extends TeamMembersFormBase {
     $removed_roles = array_diff($form['team_roles']['#default_value'], $selected_roles);
     $success = TRUE;
 
+    // Remove TEAM_MEMBER_ROLE to current role if present,as we dont want to delete TEAM_MEMBER_ROLE role.
+    if (in_array(TeamRoleInterface::TEAM_MEMBER_ROLE, $removed_roles)) {
+      $roles = array_search(TeamRoleInterface::TEAM_MEMBER_ROLE, $removed_roles);
+      unset($removed_roles[$roles]);
+    }
     try {
       if ($new_roles) {
         $this->teamMemberRoleStorage->addTeamRoles($this->developer->getOwner(), $this->team, $new_roles);
@@ -133,7 +141,6 @@ class EditTeamMemberForm extends TeamMembersFormBase {
       $context += Error::decodeException($exception);
       $logger->error('Failed to modify %developer developer roles in %team_id team. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
     }
-
     if ($success) {
       $this->messenger()->addStatus($this->t('Changes successfully saved.'));
     }

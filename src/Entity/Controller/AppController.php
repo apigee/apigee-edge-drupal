@@ -20,13 +20,15 @@
 
 namespace Drupal\apigee_edge\Entity\Controller;
 
+use Apigee\Edge\Api\ApigeeX\Controller\AppController as AppGroupController;
+use Apigee\Edge\Api\ApigeeX\Controller\AppControllerInterface as EdgeAppGroupControllerInterface;
 use Apigee\Edge\Api\Management\Controller\AppController as EdgeAppController;
 use Apigee\Edge\Api\Management\Controller\AppControllerInterface as EdgeAppControllerInterface;
 use Apigee\Edge\Api\Management\Entity\AppInterface;
 use Apigee\Edge\Structure\PagerInterface;
+use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface;
 use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheInterface;
 use Drupal\apigee_edge\Entity\Controller\Cache\AppIdCache;
-use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 
 /**
@@ -89,9 +91,15 @@ final class AppController extends AppControllerBase implements AppControllerInte
    * @return \Apigee\Edge\Api\Management\Controller\AppControllerInterface
    *   The initialized app controller.
    */
-  protected function decorated(): EdgeAppControllerInterface {
+  protected function decorated(): EdgeAppControllerInterface|EdgeAppGroupControllerInterface {
     if ($this->instance === NULL) {
-      $this->instance = new EdgeAppController($this->connector->getOrganization(), $this->connector->getClient(), NULL, $this->organizationController);
+      // Checking if the Organisation is ApigeeX.
+      if ($this->organizationController->isOrganizationApigeeX()) {
+        $this->instance = new AppGroupController($this->connector->getOrganization(), $this->connector->getClient(), NULL, $this->organizationController);
+      }
+      else {
+        $this->instance = new EdgeAppController($this->connector->getOrganization(), $this->connector->getClient(), NULL, $this->organizationController);
+      }
     }
     return $this->instance;
   }
@@ -103,6 +111,18 @@ final class AppController extends AppControllerBase implements AppControllerInte
     $app = $this->appCache->getEntity($app_id);
     if ($app === NULL) {
       $app = $this->decorated()->loadApp($app_id);
+      $this->appCache->saveEntities([$app]);
+    }
+    return $app;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function loadAppGroup(string $app_id): AppInterface {
+    $app = $this->appCache->getEntity($app_id);
+    if ($app === NULL) {
+      $app = $this->decorated()->loadAppGroup($app_id);
       $this->appCache->saveEntities([$app]);
     }
     return $app;

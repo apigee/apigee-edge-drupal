@@ -20,6 +20,8 @@
 
 namespace Drupal\apigee_edge_teams\Entity\Controller;
 
+use Apigee\Edge\Api\ApigeeX\Controller\AppGroupController;
+use Apigee\Edge\Api\ApigeeX\Controller\AppGroupControllerInterface;
 use Apigee\Edge\Api\Management\Controller\CompanyController as EdgeCompanyController;
 use Apigee\Edge\Api\Management\Controller\CompanyControllerInterface as EdgeCompanyControllerInterface;
 use Apigee\Edge\Entity\EntityInterface;
@@ -149,14 +151,19 @@ final class TeamController implements TeamControllerInterface {
   }
 
   /**
-   * Returns the decorated company controller from the SDK.
+   * Returns the decorated company controller or appgroup controller from the SDK.
    *
-   * @return \Apigee\Edge\Api\Management\Controller\CompanyControllerInterface
-   *   The initialized company controller.
+   * @return CompanyControllerInterface|AppGroupControllerInterface
+   *   The initialized company or appgroup controller.
    */
-  private function decorated(): EdgeCompanyControllerInterface {
+  private function decorated(): EdgeCompanyControllerInterface|AppGroupControllerInterface {
     if ($this->instance === NULL) {
-      $this->instance = new EdgeCompanyController($this->connector->getOrganization(), $this->connector->getClient(), NULL, $this->orgController);
+      if ($this->orgController->isOrganizationApigeeX()) {
+        $this->instance = new AppGroupController($this->connector->getOrganization(), $this->connector->getClient(), NULL, $this->orgController);
+      }
+      else {
+        $this->instance = new EdgeCompanyController($this->connector->getOrganization(), $this->connector->getClient(), NULL, $this->orgController);
+      }
     }
     return $this->instance;
   }
@@ -179,7 +186,9 @@ final class TeamController implements TeamControllerInterface {
    * {@inheritdoc}
    */
   public function setStatus(string $entity_id, string $status): void {
-    $this->decorated()->setStatus($entity_id, $status);
+    if (!$this->orgController->isOrganizationApigeeX()) {
+      $this->decorated()->setStatus($entity_id, $status);
+    }
     // Enforce reload of entity from Apigee Edge.
     $this->entityCache->removeEntities([$entity_id]);
     $this->entityCache->allEntitiesInCache(FALSE);

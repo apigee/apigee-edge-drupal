@@ -1,5 +1,5 @@
 admin:
-  version: 1.0
+  version: 1.1
   css:
     theme:
       css/apigee_edge_apiproduct_rbac.admin.css: {}
@@ -7,6 +7,6 @@ admin:
     js/apigee_edge_apiproduct_rbac.admin.js: {}
   dependencies:
     - core/jquery
-    - core/jquery.once
+    - core/once
     - core/drupal
     - core/drupalSettings

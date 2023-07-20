@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge_teams\Entity\Controller;
 
+use Apigee\Edge\Api\ApigeeX\Controller\AppGroupAppController as EdgeAppGroupAppController;
 use Apigee\Edge\Api\Management\Controller\AppByOwnerControllerInterface as EdgeAppByOwnerControllerInterface;
 use Apigee\Edge\Api\Management\Controller\CompanyAppController as EdgeCompanyAppController;
 use Drupal\apigee_edge\Entity\Controller\AppByOwnerController;
@@ -36,7 +37,13 @@ final class TeamAppController extends AppByOwnerController implements TeamAppCon
    */
   protected function decorated(): EdgeAppByOwnerControllerInterface {
     if (!isset($this->instances[$this->owner])) {
-      $this->instances[$this->owner] = new EdgeCompanyAppController($this->connector->getOrganization(), $this->owner, $this->connector->getClient(), NULL, $this->organizationController);
+      // Checks whether the organization is Edge or ApigeeX organization.
+      if ($this->organizationController->isOrganizationApigeeX()) {
+        $this->instances[$this->owner] = new EdgeAppGroupAppController($this->connector->getOrganization(), $this->owner, $this->connector->getClient(), NULL, $this->organizationController);
+      }
+      else {
+        $this->instances[$this->owner] = new EdgeCompanyAppController($this->connector->getOrganization(), $this->owner, $this->connector->getClient(), NULL, $this->organizationController);
+      }
     }
     return $this->instances[$this->owner];
   }

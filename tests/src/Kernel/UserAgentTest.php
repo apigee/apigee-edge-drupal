@@ -19,9 +19,9 @@
 
 namespace Drupal\Tests\apigee_edge\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\Core\Extension\InfoParser;
 use Drupal\Core\Extension\InfoParserInterface;
+use Drupal\KernelTests\KernelTestBase;
 
 /**
  * Apigee Useragent tests.

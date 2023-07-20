@@ -36,8 +36,8 @@
    * @see {@link https://developers.google.com/chart|Google Charts}
    */
   Drupal.behaviors.apigeeEdgeAnalyticsDraw = {
-    attach: function attach(context, drupalSettings) {
-      $(context).find('body').once('load_google_chart').each(function () {
+    attach: function attach(context, drupalSettings) {   
+      $(once('load_google_chart', 'body', context)).each(function () {
         var metric = drupalSettings.analytics.metric;
         var timestamps = drupalSettings.analytics.timestamps;
         var values = drupalSettings.analytics.values;
@@ -129,7 +129,7 @@
    */
   Drupal.behaviors.apigeeEdgeAnalyticsQuickDatePicker = {
     attach: function attach(context, drupalSettings) {
-      $('#edit-quick-date-picker', context).once().bind('change', function () {
+      $(once('apigee_analytics_datepicker', '#edit-quick-date-picker', context)).bind('change', function () {
         var since = getServerOffsetDate(new Date());
         switch (this.selectedOptions['0'].value) {
           case '1d':

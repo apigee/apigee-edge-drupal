@@ -62,17 +62,17 @@ jobs:
       id: composercache
       run: |
         cd drupal
-        echo "::set-output name=dir::$(composer config cache-files-dir)"
+        echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
     - name: Cache composer dependencies
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ${{ steps.composercache.outputs.dir }}
         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
         restore-keys: ${{ runner.os }}-composer-
 
     - name: Checkout apigee_edge module
-      uses: actions/checkout@v3.0.0
+      uses: actions/checkout@v3
       with:
         path: drupal/modules/contrib/apigee_edge
 
@@ -86,6 +86,7 @@ jobs:
         composer config --no-plugins allow-plugins.wikimedia/composer-merge-plugin true
         composer config --no-plugins allow-plugins.composer/package-versions-deprecated true
         composer config --no-plugins allow-plugins.cweagans/composer-patches true
+        composer config --no-plugins allow-plugins.php-http/discovery true        
         composer require --dev drush/drush
         composer config minimum-stability dev
         composer require drupal/rules:3.0.0-alpha7

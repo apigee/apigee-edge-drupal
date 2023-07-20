@@ -19,8 +19,8 @@
 
 namespace Drupal\apigee_edge;
 
-use Drupal\apigee_edge\Controller\DeveloperSyncController;
 use Drupal\apigee_edge\Command\Util\ApigeeEdgeManagementCliServiceInterface;
+use Drupal\apigee_edge\Controller\DeveloperSyncController;
 use Symfony\Component\Console\Style\StyleInterface;
 
 /**

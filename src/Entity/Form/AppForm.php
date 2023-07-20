@@ -73,10 +73,10 @@ abstract class AppForm extends FieldableEdgeEntityForm {
       '#type' => 'machine_name',
       '#machine_name' => [
         'source' => ['displayName', 'widget', 0, 'value'],
-        'label' => $this->t('Internal name'),
+        'label' => $this->t('Machine name'),
         'exists' => [$this, 'appExists'],
       ],
-      '#title' => $this->t('Internal name'),
+      '#title' => $this->t('Machine name'),
       // It should/can not be changed if app is not new.
       '#disabled' => !$app->isNew(),
       '#default_value' => $app->getName(),
@@ -124,6 +124,19 @@ abstract class AppForm extends FieldableEdgeEntityForm {
     // Set the owner of the app. Without this an app can not be saved.
     // @see \Drupal\apigee_edge\Entity\Controller\DeveloperAppEdgeEntityControllerProxy::create()
     $entity->setAppOwner($form_state->getValue('owner'));
+
+    // Set the api_products while creating App initially.
+    if ($form_state->getValue('api_products')) {
+      if (is_array($form_state->getValue('api_products'))) {
+        // API Products are multiselect.
+        $entity->setInitialApiProducts(array_keys(array_filter($form_state->getValue('api_products'))));
+      }
+      else {
+        // API Products are single select or radio.
+        $entity->setInitialApiProducts([$form_state->getValue('api_products')]);
+      }
+    }
+
     return $entity;
   }
 

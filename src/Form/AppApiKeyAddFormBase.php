@@ -21,12 +21,12 @@ namespace Drupal\apigee_edge\Form;
 
 use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
 use Apigee\Edge\Structure\CredentialProductInterface;
+use Drupal\apigee_edge\Entity\AppInterface;
+use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Drupal\apigee_edge\Entity\AppInterface;
-use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 
 /**
  * Provides app API key add base form.
@@ -180,12 +180,12 @@ abstract class AppApiKeyAddFormBase extends FormBase {
     if ($api_products === []) {
       // Is this a skeleton key?
       $this->messenger()->addWarning($this->t('The @app @app_entity_label has no @apis associated.', $t_args + [
-          '@app_entity_label' => $this->app->getEntityType()->getSingularLabel(),
+        '@app_entity_label' => $this->app->getEntityType()->getSingularLabel(),
           // @todo DI dependency.
           // phpcs:disable
           '@apis' => \Drupal::entityTypeManager()->getDefinition('api_product')->getPluralLabel(),
           // phpcs:enable
-        ]));
+      ]));
       return;
     }
 
