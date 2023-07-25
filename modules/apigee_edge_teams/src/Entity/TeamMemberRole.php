@@ -44,6 +44,7 @@ use Drupal\user\UserInterface;
  *   data_table = "team_member_role_data",
  *   handlers = {
  *     "storage" = "Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorage",
+ *     "storage_schema" = "Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorageSchema",
  *   },
  *   entity_keys = {
  *     "id" = "uuid",
