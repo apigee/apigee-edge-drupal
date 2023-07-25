@@ -73,10 +73,10 @@ abstract class AppForm extends FieldableEdgeEntityForm {
       '#type' => 'machine_name',
       '#machine_name' => [
         'source' => ['displayName', 'widget', 0, 'value'],
-        'label' => $this->t('Internal name'),
+        'label' => $this->t('Machine name'),
         'exists' => [$this, 'appExists'],
       ],
-      '#title' => $this->t('Internal name'),
+      '#title' => $this->t('Machine name'),
       // It should/can not be changed if app is not new.
       '#disabled' => !$app->isNew(),
       '#default_value' => $app->getName(),
