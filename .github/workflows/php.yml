@@ -120,6 +120,9 @@ jobs:
         vendor/bin/drupal-check modules/contrib/apigee_edge
 
     - uses: nanasess/setup-chromedriver@v1
+      with:
+        # Specifing the version because 115 is still not available to download
+        chromedriver-version: '114.0.5735.90'
 
     - run: |
         export DISPLAY=:99
