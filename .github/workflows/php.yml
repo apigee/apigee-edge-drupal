@@ -124,13 +124,13 @@ jobs:
         sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
 
     - name: "Run PHPUnit tests"
-      if: ${{ matrix.drupal-core != '9.5.x' || matrix.php-version != '8.1' }}
+      if: ${{ matrix.drupal-core != '10.1.x' }}
       run: |
         cd drupal
         vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit,kernel,functional,functional-javascript modules/contrib/apigee_edge
 
     - name: "Run PHPUnit tests with Code Coverage"
-      if: ${{ matrix.drupal-core == '9.5.x' && matrix.php-version == '8.1' }}
+      if: ${{ matrix.drupal-core == '10.1.x' }}
       run: |
         cd drupal
         cp modules/contrib/apigee_edge/phpunit.core.xml.dist core/phpunit.xml
@@ -144,7 +144,7 @@ jobs:
         path: drupal/sites/simpletest/browser_output/*
 
     - name: Upload coverage to Codecov
-      if: ${{ matrix.drupal-core == '9.5.x' && matrix.php-version == '8.1' }}
+      if: ${{ matrix.drupal-core == '10.1.x' }}
       uses: codecov/codecov-action@v3
       with:
         files: /tmp/coverage.xml
