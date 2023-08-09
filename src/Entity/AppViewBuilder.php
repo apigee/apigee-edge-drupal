@@ -28,5 +28,4 @@ use Drupal\Core\Url;
  */
 class AppViewBuilder extends EdgeEntityViewBuilder {
 
-
 }
