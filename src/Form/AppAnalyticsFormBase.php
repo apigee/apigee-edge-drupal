@@ -501,7 +501,7 @@ abstract class AppAnalyticsFormBase extends FormBase {
    */
   final protected function getAnalytics(AppInterface $app, string $metric, string $since, string $until, string $environment): array {
     $stats_controller = new StatsController($environment, $this->connector->getOrganization(), $this->connector->getClient());
-    $stats_query = new StatsQuery([$metric], new Period(new \DateTimeImmutable('@' . $since), new \DateTimeImmutable('@' . $until)));
+    $stats_query = new StatsQuery([$metric], Period::fromDate(new \DateTimeImmutable('@' . $since), new \DateTimeImmutable('@' . $until)));
     $stats_query
       ->setFilter("({$this->getAnalyticsFilterCriteriaByAppOwner($app)} and developer_app eq '{$app->getName()}')")
       ->setTimeUnit('hour');
