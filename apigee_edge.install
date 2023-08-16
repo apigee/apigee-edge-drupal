@@ -373,3 +373,18 @@ function apigee_edge_update_9001() {
 
   $definition_update_manager->updateFieldableEntityType($entity_type, $field_storage_definitions);
 }
+
+/**
+ * Install Configs for Core Entity View Display for Default Team App
+ */
+function apigee_edge_update_9002() {
+  // Update existing config.
+  /** @var \Drupal\Core\Config\StorageInterface $config_storage */
+  $config_storage = \Drupal::service('config.storage');
+  $module_path = \Drupal::service('extension.list.module')->getPath('apigee_edge');
+  $source = new FileStorage("$module_path/config/install");
+  $new_edge_settings = $source->read('core.entity_view_display.developer_app.developer_app.default');
+  $edge_settings = $config_storage->read('core.entity_view_display.developer_app.developer_app.default');
+  $edge_settings['content'] = $new_edge_settings['content'];
+  $config_storage->write('core.entity_view_display.developer_app.developer_app.default', $edge_settings);
+}
