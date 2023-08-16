@@ -93,12 +93,13 @@ class AppCallbackUrlSettingsForm extends ConfigFormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     parent::validateForm($form, $form_state);
 
-    $isRegExValid = false;
-    try{
+    $isRegExValid = FALSE;
+    try {
       preg_match($form_state->getValue(['callback_url', 'pattern'], ''), '');
-      $isRegExValid = true;
-    }catch (Exception $e) {
-      $isRegExValid = false;
+      $isRegExValid = TRUE;
+    }
+    catch (Exception $e) {
+      $isRegExValid = FALSE;
     }
 
     if (!$isRegExValid) {
