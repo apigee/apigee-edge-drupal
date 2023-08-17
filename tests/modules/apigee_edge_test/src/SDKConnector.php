@@ -56,6 +56,13 @@ final class SDKConnector extends DecoratedSDKConnector implements SDKConnectorIn
   private $logger;
 
   /**
+   * The service ID.
+   *
+   * @var string
+   */
+  public $_serviceId;
+
+  /**
    * Constructs a new SDKConnector.
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $inner_service
