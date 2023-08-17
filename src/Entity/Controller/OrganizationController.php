@@ -67,6 +67,13 @@ final class OrganizationController implements OrganizationControllerInterface {
   private $connector;
 
   /**
+   * Apigee organization details.
+   *
+   * @var \Apigee\Edge\Api\Management\Entity\Organization
+   */
+  private $organization;
+
+  /**
    * OrganizationController constructor.
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
