@@ -44,6 +44,13 @@ final class UserDeveloperConverter extends DecoratedUserDeveloperConverter {
   private $innerService;
 
   /**
+   * The service ID.
+   *
+   * @var string
+   */
+  public $_serviceId;
+
+  /**
    * UserToDeveloper constructor.
    *
    * @param \Drupal\apigee_edge\UserDeveloperConverterInterface $inner_service
