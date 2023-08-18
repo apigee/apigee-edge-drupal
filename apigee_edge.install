@@ -375,7 +375,7 @@ function apigee_edge_update_9001() {
 }
 
 /**
- * Install Configs for Core Entity View Display for Default Team App
+ * Updates Configs for Core Entity View Display for Default Team App
  */
 function apigee_edge_update_9002() {
   // Update existing config.
