@@ -328,4 +328,10 @@ class ApiProduct extends EdgeEntityBase implements ApiProductInterface {
     $this->decorated->setScopes(...$scopes);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheMaxAge(): int {
+    return \Drupal::config('apigee_edge.api_product_settings')->get('cache_expiration');
+  }
 }
