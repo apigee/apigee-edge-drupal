@@ -549,10 +549,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->drupalGet($app_edit_url);
     $this->submitForm([], 'Save');
     // The assertion of which checks for text "The URL urlname is not valid" is now removed as the field type is changed to string and for string it is not valid.
-    $this->drupalGet($app_edit_url);
-    $this->submitForm([
-      'callbackUrl[0][value]' => 'http://example.com'
-    ], 'Save');
+    $this->assertSession()->pageTextContains("Callback URL field is not in the right format.");
     $this->drupalGet($app_edit_url);
     $this->submitForm([
       'callbackUrl[0][value]' => 'https://example.com'
