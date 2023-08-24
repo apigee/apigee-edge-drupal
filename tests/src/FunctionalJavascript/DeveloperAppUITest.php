@@ -75,7 +75,6 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $isValidInput = function () : bool {
       return $this->getSession()->evaluateScript('document.getElementById("edit-callbackurl-0-value").checkValidity()');
     };
-    // $checkValidationMessage is removed as it was testing for url fieldtype behaviour, which won't match and not required for string fieldtype.
 
     // Override default configuration.
     $pattern_error_message = 'It must be https://example.com';
