@@ -582,6 +582,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $app_edit_form_for_developer_url = $app->toUrl('edit-form-for-developer');
 
     $this->drupalGet($app_view_url);
+    // The assertion of which checks for text error message is now removed as the field type is changed which is not valid for string.
     $this->assertSession()->pageTextNotContains('Callback URL:');
     $this->drupalGet($app_view_by_developer_url);
     $this->assertSession()->pageTextNotContains('Callback URL:');
