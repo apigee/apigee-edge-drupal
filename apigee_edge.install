@@ -28,6 +28,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Installer\InstallerKernel;
 use Drupal\Core\Url;
 use Drupal\user\RoleInterface;
+use Drupal\Core\Config\FileStorage;
 
 /**
  * Implements hook_requirements().
