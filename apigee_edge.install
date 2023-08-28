@@ -386,6 +386,6 @@ function apigee_edge_update_9002() {
   $source = new FileStorage("$module_path/config/install");
   $new_edge_settings = $source->read('core.entity_view_display.developer_app.developer_app.default');
   $edge_settings = $config_storage->read('core.entity_view_display.developer_app.developer_app.default');
-  $edge_settings['content'] = $new_edge_settings['content'];
+  $edge_settings['content']['callbackUrl'] = $new_edge_settings['content']['callbackUrl'];
   $config_storage->write('core.entity_view_display.developer_app.developer_app.default', $edge_settings);
 }
