@@ -228,7 +228,7 @@ class TeamApp extends App implements TeamAppInterface {
    * {@inheritdoc}
    */
   public function getCacheMaxAge(): int {
-    return \Drupal::config('apigee_edge.team_app_settings')->get('cache_expiration');
+    return \Drupal::config('apigee_edge_teams.team_app_settings')->get('cache_expiration');
   }
 
 }
