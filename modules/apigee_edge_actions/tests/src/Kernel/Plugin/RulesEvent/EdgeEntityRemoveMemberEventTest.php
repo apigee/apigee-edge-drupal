@@ -60,7 +60,7 @@ class EdgeEntityRemoveMemberEventTest extends ApigeeEdgeActionsRulesKernelTestBa
     $config_factory = \Drupal::configFactory();
     $config = $config_factory->getEditable('apigee_edge_teams.team_settings');
 
-    if (null === $config->get('cache_expiration')) {
+    if (NULL === $config->get('cache_expiration')) {
       $config->set('cache_expiration', 900);
       $config->save(TRUE);
     }
