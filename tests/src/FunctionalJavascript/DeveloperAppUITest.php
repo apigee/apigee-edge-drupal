@@ -75,11 +75,14 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $isValidInput = function () : bool {
       return $this->getSession()->evaluateScript('document.getElementById("edit-callbackurl-0-value").checkValidity()');
     };
-    // $checkValidationMessage is removed as it was testing for url fieldtype behaviour, which won't match and not required for string fieldtype.
+    $checkValidationMessage = function (string $expected) : void {
+      $this->assertEquals($expected, $this->getSession()->evaluateScript('document.getElementById("edit-callbackurl-0-value").validationMessage'));
+    };
+
     // Override default configuration.
     $pattern_error_message = 'It must be https://example.com';
     $this->config('apigee_edge.common_app_settings')
-      ->set('callback_url_pattern', '^https:\/\/example.com')
+      ->set('callback_url_pattern', '^(https?|sap):\/\/example.com')
       ->set('callback_url_pattern_error_message', $pattern_error_message)
       ->save();
 
@@ -96,12 +99,21 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $this->createScreenshot('DeveloperAppUITest-' . __FUNCTION__);
     $this->assertFalse($isValidInput());
     $this->drupalGet($app_edit_url);
-    $this->submitForm(['callbackUrl[0][value]' => 'http://example.com'], 'Save');
+    $this->submitForm(['callbackUrl[0][value]' => 'map://example.com'], 'Save');
     $this->createScreenshot('DeveloperAppUITest-' . __FUNCTION__);
     $this->assertFalse($isValidInput());
-    // The format in Firefox is different, it is only one line:
-    // "Please match the requested format: {$pattern_description}.".
+    $checkValidationMessage('Please match the requested format.');
     $this->assertEquals($pattern_error_message, $this->getSession()->evaluateScript('document.getElementById("edit-callbackurl-0-value").title'));
+    $this->drupalGet($app_edit_url);
+    $this->submitForm(['callbackUrl[0][value]' => 'sap://example.com'], 'Save');
+    $this->createScreenshot('DeveloperAppUITest-' . __FUNCTION__);
+    $this->assertSession()->pageTextContains('App has been successfully updated.');
+    $this->assertSession()->pageTextContains('sap://example.com');
+    $this->drupalGet($app_edit_url);
+    $this->submitForm(['callbackUrl[0][value]' => 'http://example.com'], 'Save');
+    $this->createScreenshot('DeveloperAppUITest-' . __FUNCTION__);
+    $this->assertSession()->pageTextContains('App has been successfully updated.');
+    $this->assertSession()->pageTextContains('http://example.com');
     $this->drupalGet($app_edit_url);
     $this->submitForm(['callbackUrl[0][value]' => 'https://example.com'], 'Save');
     $this->assertSession()->pageTextContains('App has been successfully updated.');
