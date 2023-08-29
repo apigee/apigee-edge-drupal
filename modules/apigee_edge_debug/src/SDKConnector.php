@@ -54,6 +54,13 @@ class SDKConnector extends OriginalSDKConnector implements SDKConnectorInterface
   private $innerService;
 
   /**
+   * The service ID.
+   *
+   * @var string
+   */
+  public $_serviceId;
+
+  /**
    * Constructs a new SDKConnector.
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $inner_service
