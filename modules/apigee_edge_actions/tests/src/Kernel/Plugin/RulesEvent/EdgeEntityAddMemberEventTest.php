@@ -56,6 +56,15 @@ class EdgeEntityAddMemberEventTest extends ApigeeEdgeActionsRulesKernelTestBase 
     $this->installEntitySchema('team_member_role');
 
     $this->addOrganizationMatchedResponse();
+
+    // Setting teams cache to 900 to make sure null value is not returned in getCacheMaxAge().
+    $config_factory = \Drupal::configFactory();
+    $config = $config_factory->getEditable('apigee_edge_teams.team_settings');
+
+    if (NULL === $config->get('cache_expiration')) {
+      $config->set('cache_expiration', 900);
+      $config->save(TRUE);
+    }
   }
 
   /**

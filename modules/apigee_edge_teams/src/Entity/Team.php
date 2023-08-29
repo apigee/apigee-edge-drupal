@@ -387,4 +387,11 @@ class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterfa
     ]);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheMaxAge(): int {
+    return \Drupal::config('apigee_edge_teams.team_settings')->get('cache_expiration');
+  }
+
 }
