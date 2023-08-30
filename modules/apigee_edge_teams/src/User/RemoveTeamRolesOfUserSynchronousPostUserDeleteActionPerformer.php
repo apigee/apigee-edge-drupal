@@ -20,7 +20,7 @@
 
 namespace Drupal\apigee_edge_teams\User;
 
-use Drupal\apigee_edge\User\UserRemovalHandlerInterface;
+use Drupal\apigee_edge\User\PostUserDeleteActionPerformerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Utility\Error;
 use Drupal\user\UserInterface;
@@ -30,31 +30,31 @@ use Psr\Log\LogLevel;
 /**
  * Ensures team roles of the removed user also get deleted.
  */
-final class RemoveTeamRolesWithUserSynchronousUserRemovalHandler implements UserRemovalHandlerInterface {
+final class RemoveTeamRolesOfUserSynchronousPostUserDeleteActionPerformer implements PostUserDeleteActionPerformerInterface {
 
   /**
-   * RemoveTeamRolesWithUserSynchronousUserRemovalHandler constructor.
+   * Constructs a new object.
    */
-  public function __construct(private readonly UserRemovalHandlerInterface $decorated, private readonly EntityTypeManagerInterface $entityTypeManager, private readonly LoggerInterface $logger) {}
+  public function __construct(private readonly PostUserDeleteActionPerformerInterface $decorated, private readonly EntityTypeManagerInterface $entityTypeManager, private readonly LoggerInterface $logger) {}
 
   /**
    * {@inheritdoc}
    */
-  public function __invoke(UserInterface $account): void {
-    ($this->decorated)($account);
+  public function __invoke(UserInterface $user): void {
+    ($this->decorated)($user);
 
     /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorageInterface $team_member_role_storage */
     $team_member_role_storage = $this->entityTypeManager->getStorage('team_member_role');
     // When a user gets deleted then its developer account also gets deleted
     // from Apigee Edge which removes its (team) company memberships.
     // We must delete this user's team roles from Drupal as well.
-    foreach ($team_member_role_storage->loadByDeveloper($account) as $team_member_roles_in_team) {
+    foreach ($team_member_role_storage->loadByDeveloper($user) as $team_member_roles_in_team) {
       try {
         $team_member_roles_in_team->delete();
       }
       catch (\Exception $e) {
         Error::logException($this->logger, $e, "Integrity check: Failed to remove %developer team member's roles in %team team when its Drupal user got deleted. Reason: @message", [
-          '%developer' => $account->getEmail(),
+          '%developer' => $user->getEmail(),
           '%team' => $team_member_roles_in_team->getTeam()->id(),
         ], LogLevel::CRITICAL);
       }

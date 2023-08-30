@@ -147,7 +147,7 @@ services:
     class: Drupal\apigee_edge_teams\CliService
     arguments: ['@apigee_edge.apigee_edge_mgmt_cli_service']
 
-  apigee_edge_teams.user_removal_handler:
-    class: Drupal\apigee_edge_teams\User\RemoveTeamRolesWithUserSynchronousUserRemovalHandler
-    decorates: apigee_edge.user_removal_handler
-    arguments: [ '@apigee_edge_teams.user_removal_handler.inner', '@entity_type.manager', '@logger.channel.apigee_edge_teams' ]
+  apigee_edge_teams.post_user_delete_action_performer:
+    class: Drupal\apigee_edge_teams\User\RemoveTeamRolesOfUserSynchronousPostUserDeleteActionPerformer
+    decorates: apigee_edge.post_user_delete_action_performer
+    arguments: [ '@apigee_edge_teams.post_user_delete_action_performer.inner', '@entity_type.manager', '@logger.channel.apigee_edge_teams' ]

@@ -23,18 +23,22 @@ namespace Drupal\apigee_edge\User;
 use Drupal\user\UserInterface;
 
 /**
- * Contract for triggering an Apigee specific reaction on user removal.
+ * Contract for triggering Apigee specific reactions _after_ user removal.
+ *
+ * It is important to know that when implementations are called the user
+ * entity is already removed and the database transaction is closed, there
+ * is no way to roll that back.
  */
-interface UserRemovalHandlerInterface {
+interface PostUserDeleteActionPerformerInterface {
 
   /**
    * React on user removal.
    *
-   * @param \Drupal\user\UserInterface $account
-   *   The deleted user account.
+   * @param \Drupal\user\UserInterface $user
+   *   The deleted user.
    *
    * @see \hook_ENTITY_TYPE_delete()
    */
-  public function __invoke(UserInterface $account): void;
+  public function __invoke(UserInterface $user): void;
 
 }

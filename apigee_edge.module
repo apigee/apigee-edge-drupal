@@ -1490,7 +1490,7 @@ function apigee_edge_user_cancel_methods_alter(&$methods) {
  * Implements hook_user_delete().
  */
 function apigee_edge_user_delete(UserInterface $account) {
-  (\Drupal::service('apigee_edge.user_removal_handler'))($account);
+  (\Drupal::service('apigee_edge.post_user_delete_action_performer'))($account);
 }
 
 /**

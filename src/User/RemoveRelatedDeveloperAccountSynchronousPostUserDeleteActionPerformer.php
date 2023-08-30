@@ -35,7 +35,7 @@ use Psr\Log\LoggerInterface;
  *
  * @see \apigee_edge_user_delete()
  */
-final class RemoveDeveloperWithUserSynchronousUserRemovalHandler implements UserRemovalHandlerInterface {
+final class RemoveRelatedDeveloperAccountSynchronousPostUserDeleteActionPerformer implements PostUserDeleteActionPerformerInterface {
 
   /**
    * Entity type manager.
@@ -52,7 +52,7 @@ final class RemoveDeveloperWithUserSynchronousUserRemovalHandler implements User
   private LoggerInterface $logger;
 
   /**
-   * RemoveDeveloperWithUserSynchronousUserRemovalHandler constructor.
+   * Constructs a new object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   Entity type manager.
@@ -67,27 +67,27 @@ final class RemoveDeveloperWithUserSynchronousUserRemovalHandler implements User
   /**
    * {@inheritdoc}
    */
-  public function __invoke(UserInterface $account): void {
+  public function __invoke(UserInterface $user): void {
     // Do not try to delete developer of the anonymous user because it does
     // not exist.
-    if ($account->isAnonymous()) {
+    if ($user->isAnonymous()) {
       return;
     }
 
     try {
       /** @var \Drupal\apigee_edge\Entity\DeveloperInterface|null $developer */
-      $developer = $this->entityTypeManager->getStorage('developer')->load($account->getEmail());
+      $developer = $this->entityTypeManager->getStorage('developer')->load($user->getEmail());
       // Sanity check, the developer may not exist in Apigee Edge.
       if ($developer) {
         $developer->delete();
         $this->logger->info('The @developer developer has been deleted as a reaction to removing its user account.', [
-          '@developer' => $account->getEmail(),
+          '@developer' => $user->getEmail(),
         ]);
       }
     }
     catch (\Exception $exception) {
       $context = [
-        '@developer' => $account->getEmail(),
+        '@developer' => $user->getEmail(),
       ];
       Error::logException($this->logger, $exception, 'The @developer developer could not be deleted as a reaction to removing its user account. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
     }
