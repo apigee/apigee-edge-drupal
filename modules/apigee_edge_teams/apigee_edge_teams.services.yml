@@ -146,3 +146,8 @@ services:
   apigee_edge_teams.cli:
     class: Drupal\apigee_edge_teams\CliService
     arguments: ['@apigee_edge.apigee_edge_mgmt_cli_service']
+
+  apigee_edge_teams.user_removal_handler:
+    class: Drupal\apigee_edge_teams\User\RemoveTeamRolesWithUserSynchronousUserRemovalHandler
+    decorates: apigee_edge.user_removal_handler
+    arguments: [ '@apigee_edge_teams.user_removal_handler.inner', '@entity_type.manager', '@logger.channel.apigee_edge_teams' ]
