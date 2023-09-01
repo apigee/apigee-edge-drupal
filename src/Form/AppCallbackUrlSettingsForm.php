@@ -95,7 +95,9 @@ class AppCallbackUrlSettingsForm extends ConfigFormBase {
 
     $isRegExValid = FALSE;
     try {
-      if (@preg_match($form_state->getValue(['callback_url', 'pattern']), '') !== FALSE) $isRegExValid = TRUE;
+      if (@preg_match($form_state->getValue(['callback_url', 'pattern']), '') !== FALSE) {
+        $isRegExValid = TRUE;
+      }
     }
     catch (Exception $e) {
       $isRegExValid = FALSE;
