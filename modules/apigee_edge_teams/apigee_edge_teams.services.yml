@@ -146,3 +146,8 @@ services:
   apigee_edge_teams.cli:
     class: Drupal\apigee_edge_teams\CliService
     arguments: ['@apigee_edge.apigee_edge_mgmt_cli_service']
+
+  apigee_edge_teams.post_user_delete_action_performer:
+    class: Drupal\apigee_edge_teams\User\RemoveTeamRolesOfUserSynchronousPostUserDeleteActionPerformer
+    decorates: apigee_edge.post_user_delete_action_performer
+    arguments: [ '@apigee_edge_teams.post_user_delete_action_performer.inner', '@entity_type.manager', '@logger.channel.apigee_edge_teams' ]
