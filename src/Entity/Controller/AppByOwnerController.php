@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge\Entity\Controller;
 
+use Apigee\Edge\Api\ApigeeX\Controller\AppByOwnerControllerInterface as XAppByOwnerControllerInterface;
 use Apigee\Edge\Api\Management\Controller\AppByOwnerControllerInterface;
 use Apigee\Edge\Api\Management\Controller\AppByOwnerControllerInterface as EdgeAppByOwnerControllerInterface;
 use Apigee\Edge\Entity\EntityInterface;
@@ -100,7 +101,7 @@ abstract class AppByOwnerController extends AppControllerBase implements AppByOw
    * @return \Apigee\Edge\Api\Management\Controller\AppByOwnerControllerInterface
    *   The initialized developer- or company app controller.
    */
-  abstract protected function decorated() : EdgeAppByOwnerControllerInterface;
+  abstract protected function decorated() : EdgeAppByOwnerControllerInterface | XAppByOwnerControllerInterface;
 
   /**
    * {@inheritdoc}
