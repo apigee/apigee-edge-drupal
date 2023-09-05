@@ -85,7 +85,11 @@ class AppCallbackUrlWidget extends StringTextfieldWidget {
     // Fallback to the default configuration if field widget does
     // not have an override.
     $app_settings = \Drupal::config("apigee_edge.common_app_settings");
-    $element['value']['#pattern'] = $this->getSetting('callback_url_pattern') ?? $app_settings->get('callback_url_pattern');
+    $callback_url_pattern = $this->getSetting('callback_url_pattern') ?? $app_settings->get('callback_url_pattern');
+    if (substr($callback_url_pattern, 0, 1) === '/' && substr($callback_url_pattern, -1) === '/') {
+      $callback_url_pattern = substr($callback_url_pattern, 1, -1);
+    }
+    $element['value']['#pattern'] = $callback_url_pattern;
     $element['value']['#attributes']['title'] = $this->getSetting('callback_url_pattern_error_message') ?? $app_settings->get('callback_url_pattern_error_message');
     $element['value']['#placeholder'] = $this->getSetting('placeholder') ?? $app_settings->get('callback_url_placeholder');
     $element['value']['#description'] = $this->getSetting('callback_url_description') ?? $app_settings->get('callback_url_description');
