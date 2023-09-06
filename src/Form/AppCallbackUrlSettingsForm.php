@@ -61,7 +61,7 @@ class AppCallbackUrlSettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('Pattern'),
       '#default_value' => $app_settings->get('callback_url_pattern'),
-      '#description' => $this->t('<a href="https://www.php.net/manual/en/function.preg-match.php" target="_blank">Regular expression </a> that a Callback URL should match. Default is "/^https?:\/\/.*$/" that ensures callback url starts with either <em>http://</em> or <em>https://</em>.'),
+      '#description' => $this->t('Regular expression that a Callback URL should match. Default is "^https?:\/\/.*$" that ensures callback url starts with either <em>http://</em> or <em>https://</em>.'),
       '#required' => TRUE,
     ];
     $form['callback_url']['pattern_error_message'] = [
@@ -94,8 +94,12 @@ class AppCallbackUrlSettingsForm extends ConfigFormBase {
     parent::validateForm($form, $form_state);
 
     $isRegExValid = FALSE;
+    $callback_url_pattern = $form_state->getValue(['callback_url', 'pattern']);
+    if (str_starts_with($callback_url_pattern, '/') && str_ends_with($callback_url_pattern, '/')) {
+      $callback_url_pattern = substr($callback_url_pattern, 1, -1);
+    }
     try {
-      if (@preg_match($form_state->getValue(['callback_url', 'pattern']), '') !== FALSE) {
+      if (@preg_match('/' . $callback_url_pattern . '/', '') !== FALSE) {
         $isRegExValid = TRUE;
       }
     }
@@ -104,7 +108,7 @@ class AppCallbackUrlSettingsForm extends ConfigFormBase {
     }
 
     if (!$isRegExValid) {
-      $form_state->setError($form['callback_url']['pattern'], $this->t('The pattern should be a valid regular expression. It should /start and end/ with proper delimiters.'));
+      $form_state->setError($form['callback_url']['pattern'], $this->t('The pattern should be a valid regular expression.'));
     }
   }
 
