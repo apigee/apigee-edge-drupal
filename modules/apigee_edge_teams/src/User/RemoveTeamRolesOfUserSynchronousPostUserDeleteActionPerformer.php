@@ -23,7 +23,6 @@ namespace Drupal\apigee_edge_teams\User;
 use Drupal\apigee_edge\User\PostUserDeleteActionPerformerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\user\UserInterface;
-use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
 /**
@@ -32,9 +31,26 @@ use Psr\Log\LogLevel;
 final class RemoveTeamRolesOfUserSynchronousPostUserDeleteActionPerformer implements PostUserDeleteActionPerformerInterface {
 
   /**
+   * The decorated service.
+   *
+   * @var \Drupal\apigee_edge\User\PostUserDeleteActionPerformerInterface
+   */
+  private PostUserDeleteActionPerformerInterface $decorated;
+
+  /**
+   * Entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  private EntityTypeManagerInterface $entityTypeManager;
+
+  /**
    * Constructs a new object.
    */
-  public function __construct(private readonly PostUserDeleteActionPerformerInterface $decorated, private readonly EntityTypeManagerInterface $entityTypeManager, private readonly LoggerInterface $logger) {}
+  public function __construct(PostUserDeleteActionPerformerInterface $decorated, EntityTypeManagerInterface $entityTypeManager) {
+    $this->entityTypeManager = $entityTypeManager;
+    $this->decorated = $decorated;
+  }
 
   /**
    * {@inheritdoc}
