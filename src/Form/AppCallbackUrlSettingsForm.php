@@ -61,7 +61,7 @@ class AppCallbackUrlSettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('Pattern'),
       '#default_value' => $app_settings->get('callback_url_pattern'),
-      '#description' => $this->t('Regular expression that a Callback URL should match. Default is "^https?:\/\/.*$" that ensures callback url starts with either <em>http://</em> or <em>https://</em>. Avoid using delimiters.'),
+      '#description' => $this->t('Regular expression that a Callback URL should match. Default is "^https?:\/\/.*$" that ensures callback url starts with either <em>http://</em> or <em>https://</em>.'),
       '#required' => TRUE,
     ];
     $form['callback_url']['pattern_error_message'] = [
