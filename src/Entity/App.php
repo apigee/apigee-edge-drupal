@@ -391,54 +391,6 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
   /**
    * {@inheritdoc}
    */
-  public function get($field_name) {
-    $value = parent::get($field_name);
-
-    // Make sure that returned callback url field values are actually valid
-    // URLs. Apigee Edge allows to set anything as callbackUrl value but
-    // Drupal can only accept valid URIs.
-    if ($field_name === 'callbackUrl') {
-      if (!$value->isEmpty()) {
-        foreach ($value->getValue() as $id => $item) {
-          try {
-            Url::fromUri($item['value']);
-          }
-          catch (\Exception $exception) {
-            $value->removeItem($id);
-          }
-        }
-      }
-    }
-
-    return $value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function set($field_name, $value, $notify = TRUE) {
-    // If the callback URL value is not a valid URL then save an empty string
-    // as the field value and set the callbackUrl property to the original
-    // value. (So we can display the original (invalid URL) on the edit form.)
-    // This trick is not necessary if the value's type is array because in this
-    // case the field value is set on the developer app edit form.
-    if ($field_name === 'callbackUrl' && !is_array($value)) {
-      try {
-        Url::fromUri($value);
-      }
-      catch (\Exception $exception) {
-        /** @var \Drupal\apigee_edge\Entity\App $app */
-        $app = parent::set($field_name, '', $notify);
-        $app->setCallbackUrl($value);
-        return $app;
-      }
-    }
-    return parent::set($field_name, $value, $notify);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function label() {
     $label = parent::label();
     // Return app name instead of app id if display name is missing.

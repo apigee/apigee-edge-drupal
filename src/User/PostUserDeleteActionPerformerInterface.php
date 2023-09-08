@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Google Inc.
+ * Copyright 2023 Google Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,14 +18,27 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\apigee_edge\Entity;
+namespace Drupal\apigee_edge\User;
 
-use Drupal\Core\Render\Element;
-use Drupal\Core\Url;
+use Drupal\user\UserInterface;
 
 /**
- * Common app view builder for developer- and company (team) apps.
+ * Contract for triggering Apigee specific reactions _after_ user removal.
+ *
+ * It is important to know that when implementations are called the user
+ * entity is already removed and the database transaction is closed, there
+ * is no way to roll that back.
  */
-class AppViewBuilder extends EdgeEntityViewBuilder {
+interface PostUserDeleteActionPerformerInterface {
+
+  /**
+   * React on user removal.
+   *
+   * @param \Drupal\user\UserInterface $user
+   *   The deleted user.
+   *
+   * @see \hook_ENTITY_TYPE_delete()
+   */
+  public function __invoke(UserInterface $user): void;
 
 }

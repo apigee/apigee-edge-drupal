@@ -99,7 +99,7 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
    *
    * @var string|null
    */
-  private $teamPrefix;
+  private $team_prefix;
 
   /**
    * TeamForm constructor.
