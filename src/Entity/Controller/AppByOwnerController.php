@@ -32,7 +32,7 @@ use Drupal\apigee_edge\Entity\Controller\Cache\EntityIdCacheInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 
 /**
- * Base class for developer- and company app controller services in Drupal.
+ * Base class for developer- and company/appgroup app controller services in Drupal.
  */
 abstract class AppByOwnerController extends AppControllerBase implements AppByOwnerControllerInterface {
 
@@ -96,12 +96,12 @@ abstract class AppByOwnerController extends AppControllerBase implements AppByOw
   }
 
   /**
-   * Returns the decorated developer- or company app controller.
+   * Returns the decorated developer- or company/appgroup app controller.
    *
-   * @return \Apigee\Edge\Api\Management\Controller\AppByOwnerControllerInterface
-   *   The initialized developer- or company app controller.
+   * @return \Apigee\Edge\Api\Management\Controller\AppByOwnerControllerInterface|Apigee\Edge\Api\ApigeeX\Controller\AppByOwnerControllerInterface
+   *   The initialized developer- or company/appgroup app controller.
    */
-  abstract protected function decorated() : EdgeAppByOwnerControllerInterface | XAppByOwnerControllerInterface;
+  abstract protected function decorated() : EdgeAppByOwnerControllerInterface|XAppByOwnerControllerInterface;
 
   /**
    * {@inheritdoc}
