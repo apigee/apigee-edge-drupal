@@ -33,7 +33,6 @@ jobs:
           - "8.2"
         drupal-core:
           # Should update the following as the minimum supported version from Drupal.org
-          - "10.0.x"
           - "10.1.x"
 
     steps:
