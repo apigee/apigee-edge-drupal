@@ -33,6 +33,11 @@
             "services": {
                 "drush.services.yml": "^12"
             }
+        },
+        "patches": {
+            "drupal/core": {
+                "Add a method to access the original property": "https://www.drupal.org/files/issues/2023-07-22/2839195-105.patch"
+            }
         }
     }
 }
