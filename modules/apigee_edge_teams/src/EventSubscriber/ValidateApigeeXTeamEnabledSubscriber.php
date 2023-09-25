@@ -74,7 +74,7 @@ class ValidateApigeeXTeamEnabledSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
    *   The event.
    */
-  public function validateApigeeXTeamEnabled(RequestEvent $event) {
+  public function validateApigeexTeamEnabled(RequestEvent $event) {
     /** @var \Symfony\Component\Routing\Route $current_route */
     if (($current_route = $event->getRequest()->get('_route')) && ($current_route === 'entity.team.collection')) {
       $organization = $this->orgController->load($this->connector->getOrganization());
@@ -90,7 +90,7 @@ class ValidateApigeeXTeamEnabledSubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents() {
-    $events[KernelEvents::REQUEST][] = ['validateApigeeXTeamEnabled'];
+    $events[KernelEvents::REQUEST][] = ['validateApigeexTeamEnabled'];
     return $events;
   }
 
