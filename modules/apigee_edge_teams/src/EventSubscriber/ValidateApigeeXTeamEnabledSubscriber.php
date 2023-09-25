@@ -76,7 +76,7 @@ class ValidateApigeeXTeamEnabledSubscriber implements EventSubscriberInterface {
    */
   public function validateApigeexTeamEnabled(RequestEvent $event) {
     /** @var \Symfony\Component\Routing\Route $current_route */
-    if (($current_route = $event->getRequest()->get('_route')) && (strpos($current_route, 'team') !== false)) {
+    if (($current_route = $event->getRequest()->get('_route')) && (strpos($current_route, 'team') !== FALSE)) {
       $organization = $this->orgController->load($this->connector->getOrganization());
       if ($organization && $this->orgController->isOrganizationApigeeX()) {
         if ($organization->getAddonsConfig() || TRUE === $organization->getAddonsConfig()->getMonetizationConfig()->getEnabled()) {
