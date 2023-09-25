@@ -27,7 +27,7 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
- * Validates that Apigee X Team is enabled on Team list page.
+ * Validates that Apigee X Team is enabled on every Team page request.
  */
 class ValidateApigeeXTeamEnabledSubscriber implements EventSubscriberInterface {
 
@@ -76,7 +76,7 @@ class ValidateApigeeXTeamEnabledSubscriber implements EventSubscriberInterface {
    */
   public function validateApigeexTeamEnabled(RequestEvent $event) {
     /** @var \Symfony\Component\Routing\Route $current_route */
-    if (($current_route = $event->getRequest()->get('_route')) && ($current_route === 'entity.team.collection')) {
+    if (($current_route = $event->getRequest()->get('_route')) && (strpos($current_route, 'team') !== false)) {
       $organization = $this->orgController->load($this->connector->getOrganization());
       if ($organization && $this->orgController->isOrganizationApigeeX()) {
         if ($organization->getAddonsConfig() || TRUE === $organization->getAddonsConfig()->getMonetizationConfig()->getEnabled()) {
