@@ -56,21 +56,6 @@ function apigee_edge_teams_requirements($phase) {
             'severity' => REQUIREMENT_ERROR,
           ];
         }
-      } else {
-        // Edge company APIs are not supported in Apigee Hybrid orgs.
-        if ($organization && !OrganizationFeatures::isCompaniesFeatureAvailable($organization)) {
-          $url = [
-            ':url' => 'https://cloud.google.com/apigee/docs/api-platform/get-started/compare-apigee-products#unsupported-apis',
-          ];
-          $message = ($phase == 'runtime') ?
-            t("The Apigee Edge Teams module functionality is not available for your org and should be uninstalled, because <a href=':url' target='_blank'>Edge company APIs are not supported for Apigee Hybrid orgs</a>.", $url) :
-            t("The Apigee Edge Teams module functionality is not available for your org because <a href=':url' target='_blank'>Edge company APIs are not supported for Apigee Hybrid orgs</a>.", $url);
-          $requirements['apigee_edge_teams_not_supported'] = [
-            'title' => t('Apigee Edge Teams'),
-            'description' => $message,
-            'severity' => REQUIREMENT_ERROR,
-          ];
-        }
       }
     }
     catch (\Exception $exception) {

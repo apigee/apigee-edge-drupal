@@ -29,28 +29,28 @@ use Symfony\Component\HttpKernel\KernelEvents;
 /**
  * Validates that Apigee X Team is enabled on every Team page request.
  */
-class ValidateApigeeXTeamEnabledSubscriber implements EventSubscriberInterface {
+final class ValidateApigeeXTeamEnabledSubscriber implements EventSubscriberInterface {
 
   /**
    * The SDK connector service.
    *
    * @var \Drupal\apigee_edge\SDKConnectorInterface
    */
-  private $connector;
+  private SDKConnectorInterface $connector;
 
   /**
    * The organization controller service.
    *
    * @var \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface
    */
-  protected $orgController;
+  protected OrganizationControllerInterface $orgController;
 
   /**
    * The messenger service.
    *
    * @var \Drupal\Core\Messenger\MessengerInterface
    */
-  protected $messenger;
+  protected MessengerInterface $messenger;
 
   /**
    * ValidateApigeeXTeamEnabledSubscriber constructor.
@@ -76,11 +76,11 @@ class ValidateApigeeXTeamEnabledSubscriber implements EventSubscriberInterface {
    */
   public function validateApigeexTeamEnabled(RequestEvent $event) {
     /** @var \Symfony\Component\Routing\Route $current_route */
-    if (($current_route = $event->getRequest()->get('_route')) && (strpos($current_route, 'team') !== FALSE)) {
+    if (($current_route = $event->getRequest()->get('_route')) && (strpos($current_route, 'entity.team') !== FALSE || strpos($current_route, 'settings.team') !== FALSE)) {
       $organization = $this->orgController->load($this->connector->getOrganization());
       if ($organization && $this->orgController->isOrganizationApigeeX()) {
         if ($organization->getAddonsConfig() || TRUE === $organization->getAddonsConfig()->getMonetizationConfig()->getEnabled()) {
-          $this->messenger->addError('The Teams module functionality is not available for monetization enabled org on Apigee X / Hybrid and should be uninstalled');
+          $this->messenger->addError('The Teams module functionality is not available for monetization enabled org on Apigee X / Hybrid and should be uninstalled.');
         }
       }
     }
