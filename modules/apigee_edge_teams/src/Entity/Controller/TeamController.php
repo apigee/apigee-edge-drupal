@@ -25,6 +25,7 @@ use Apigee\Edge\Api\ApigeeX\Controller\AppGroupControllerInterface;
 use Apigee\Edge\Api\Management\Controller\CompanyController as EdgeCompanyController;
 use Apigee\Edge\Api\Management\Controller\CompanyControllerInterface as EdgeCompanyControllerInterface;
 use Apigee\Edge\Entity\EntityInterface;
+use Apigee\Edge\Structure\PagerInterface;
 use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface;
 use Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactoryInterface;
 use Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface;
@@ -231,6 +232,53 @@ final class TeamController implements TeamControllerInterface {
     $app_name_cache->removeIds($app_name_cache->getIds());
 
     return $entity;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEntities(PagerInterface $pager = NULL, string $key_provider = 'id'): array {
+    if ($this->entityCache()->isAllEntitiesInCache()) {
+      if ($pager === NULL) {
+        return $this->entityCache()->getEntities();
+      }
+      else {
+        return $this->extractSubsetOfAssociativeArray($this->entityCache()->getEntities(), $pager->getLimit(), $pager->getStartKey());
+      }
+    }
+
+    if ($this->orgController->isOrganizationApigeeX()) {
+      // Getting the channelId & filter enable check from Config form.
+      $channelconfig = \Drupal::config('apigee_edge_teams.team_settings');
+      $channelid = $channelconfig->get('channelid');
+      $channelfilter = $channelconfig->get('enablefilter');
+
+      if ($channelfilter) {
+        if ($channelid) {
+          $queryparam = [
+            'filter' => 'channelId=' . $channelid,
+          ];
+        }
+        else {
+          $queryparam = [
+            'filter' => 'channelId=devportal',
+          ];
+        }
+        $entities = $this->decorated()->getEntities($pager, $key_provider, $queryparam);
+      }
+      else {
+        $entities = $this->decorated()->getEntities($pager, $key_provider);
+      }
+    }
+    else {
+      $entities = $this->decorated()->getEntities($pager, $key_provider);
+    }
+    $this->entityCache()->saveEntities($entities);
+    if ($pager === NULL) {
+      $this->entityCache()->allEntitiesInCache(TRUE);
+    }
+
+    return $entities;
   }
 
 }

@@ -55,27 +55,7 @@ trait CachedPaginatedEntityListingControllerTrait {
       }
     }
 
-    // Getting the channelId & filter enable check from Config form.
-    $channelconfig = \Drupal::config('apigee_edge_teams.team_settings');
-    $channelid = $channelconfig->get('channelid');
-    $channelfilter = $channelconfig->get('enablefilter');
-
-    if ($channelfilter) {
-      if ($channelid) {
-        $queryparam = [
-          'filter' => 'channelId=' . $channelid,
-        ];
-      }
-      else {
-        $queryparam = [
-          'filter' => 'channelId=devportal',
-        ];
-      }
-      $entities = $this->decorated()->getEntities($pager, $key_provider, $queryparam);
-    }
-    else {
-      $entities = $this->decorated()->getEntities($pager, $key_provider);
-    }
+    $entities = $this->decorated()->getEntities($pager, $key_provider);
     $this->entityCache()->saveEntities($entities);
     if ($pager === NULL) {
       $this->entityCache()->allEntitiesInCache(TRUE);
