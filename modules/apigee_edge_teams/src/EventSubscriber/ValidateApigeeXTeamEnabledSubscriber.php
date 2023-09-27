@@ -75,12 +75,15 @@ final class ValidateApigeeXTeamEnabledSubscriber implements EventSubscriberInter
    *   The event.
    */
   public function validateApigeexTeamEnabled(RequestEvent $event) {
-    /** @var \Symfony\Component\Routing\Route $current_route */
-    if (($current_route = $event->getRequest()->get('_route')) && (strpos($current_route, 'entity.team') !== FALSE || strpos($current_route, 'settings.team') !== FALSE)) {
-      $organization = $this->orgController->load($this->connector->getOrganization());
-      if ($organization && $this->orgController->isOrganizationApigeeX()) {
-        if ($organization->getAddonsConfig() || TRUE === $organization->getAddonsConfig()->getMonetizationConfig()->getEnabled()) {
-          $this->messenger->addError('The Teams module functionality is not available for monetization enabled org on Apigee X / Hybrid and should be uninstalled.');
+    // Check only for html request.
+    if ($event->getRequest()->getRequestFormat() === 'html') {
+      /** @var \Symfony\Component\Routing\Route $current_route */
+      if (($current_route = $event->getRequest()->get('_route')) && (strpos($current_route, 'entity.team') !== FALSE || strpos($current_route, 'settings.team') !== FALSE)) {
+        $organization = $this->orgController->load($this->connector->getOrganization());
+        if ($organization && $this->orgController->isOrganizationApigeeX()) {
+          if ($organization->getAddonsConfig() || TRUE === $organization->getAddonsConfig()->getMonetizationConfig()->getEnabled()) {
+            $this->messenger->addError('The Teams module functionality is not available for monetization enabled org on Apigee X / Hybrid and should be uninstalled.');
+          }
         }
       }
     }
