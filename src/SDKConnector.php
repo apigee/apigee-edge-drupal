@@ -254,7 +254,7 @@ class SDKConnector implements SDKConnectorInterface {
       // apigee_edge module info.
       $edge_module_info = $this->infoParser->parse($this->moduleHandler->getModule('apigee_edge')->getPathname());
       if (!isset($edge_module_info['version'])) {
-        $edge_module_info['version'] = '2.x-dev';
+        $edge_module_info['version'] = '3.x-dev';
       }
       $user_agent_parts[] = $edge_module_info['name'] . '/' . $edge_module_info['version'];
       $user_agent_parts[] = 'Drupal/' . \Drupal::VERSION;
