@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge_teams\EventSubscriber;
 use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -30,6 +31,13 @@ use Symfony\Component\HttpKernel\KernelEvents;
  * Validates that Apigee X Team is enabled on every Team page request.
  */
 final class ValidateApigeeXTeamEnabledSubscriber implements EventSubscriberInterface {
+
+  /**
+   * The current user.
+   *
+   * @var \Drupal\Core\Session\AccountInterface
+   */
+  private $currentUser;
 
   /**
    * The SDK connector service.
@@ -55,6 +63,8 @@ final class ValidateApigeeXTeamEnabledSubscriber implements EventSubscriberInter
   /**
    * ValidateApigeeXTeamEnabledSubscriber constructor.
    *
+   * @param \Drupal\Core\Session\AccountInterface $current_user
+   *   The current user.
    * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
    *   The SDK connector service.
    * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
@@ -62,7 +72,8 @@ final class ValidateApigeeXTeamEnabledSubscriber implements EventSubscriberInter
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
    */
-  public function __construct(SDKConnectorInterface $sdk_connector, OrganizationControllerInterface $org_controller, MessengerInterface $messenger) {
+  public function __construct(AccountInterface $current_user, SDKConnectorInterface $sdk_connector, OrganizationControllerInterface $org_controller, MessengerInterface $messenger) {
+    $this->currentUser = $current_user;
     $this->connector = $sdk_connector;
     $this->orgController = $org_controller;
     $this->messenger = $messenger;
@@ -75,8 +86,8 @@ final class ValidateApigeeXTeamEnabledSubscriber implements EventSubscriberInter
    *   The event.
    */
   public function validateApigeexTeamEnabled(RequestEvent $event) {
-    // Check only for html request.
-    if ($event->getRequest()->getRequestFormat() === 'html') {
+    // Check only for html request and admin users.
+    if (($this->currentUser->id() == 1 || $this->currentUser->hasRole('administrator')) && $event->getRequest()->getRequestFormat() === 'html') {
       /** @var \Symfony\Component\Routing\Route $current_route */
       if (($current_route = $event->getRequest()->get('_route')) && (strpos($current_route, 'entity.team') !== FALSE || strpos($current_route, 'settings.team') !== FALSE)) {
         $organization = $this->orgController->load($this->connector->getOrganization());

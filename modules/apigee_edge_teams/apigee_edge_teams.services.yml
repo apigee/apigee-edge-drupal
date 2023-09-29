@@ -123,7 +123,7 @@ services:
 
   apigee_edge_teams.validate_apigeexteam_enabled:
     class: Drupal\apigee_edge_teams\EventSubscriber\ValidateApigeeXTeamEnabledSubscriber
-    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.controller.organization', '@messenger']
+    arguments: ['@current_user', '@apigee_edge.sdk_connector', '@apigee_edge.controller.organization', '@messenger']
     tags:
       - {name: event_subscriber}
 
