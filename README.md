@@ -24,7 +24,7 @@ Please note that the Monetization APIs are not currently supported on Apigee hyb
 
 ## Requirements
 
-* The Apigee Edge module requires **Drupal 9.4.x** or higher and PHP 8.0 or higher, though Drupal 9.x is recommended due to [Drupal 8's EOL timeline](https://www.drupal.org/psa-2021-2021-06-29).
+* The Apigee Edge module requires **Drupal 9.5.x** or higher and PHP 8.0 or higher, though Drupal 10.x is recommended due to Drupal 9's EOL timeline because of its Symfony 4 dependency. Reference: [Symfony 4.4 release checker](https://symfony.com/releases/4.4).
 * Drupal's minimum requirement is phpdocumentor/reflection-docblock:2.0.4 but at least 3.0 is required by this module. If you get the error  "Your requirements could not be resolved to an installable set of packages" it may be because you are running reflection-docblock version 2. You can update `phpdocumentor/reflection-docblock` with the following command: `composer update phpdocumentor/reflection-docblock --with-dependencies`.
 * **Check [composer.json](https://github.com/apigee/apigee-edge-drupal/blob/8.x-1.x/composer.json) for any required patches.** Patches prefixed with "(For testing)" are only required for running tests. Those are not necessary for using this module. Patches can be applied with the [cweagans/composer-patches](https://packagist.org/packages/cweagans/composer-patches) plugin automatically or manually. See [Applying Patches](#applying-patches) section below.
 * (For developers) The locked commit from `behat/mink` library is required otherwise tests may fail. This caused by a Drupal core [bug](https://www.drupal.org/project/drupal/issues/2956279). See the related pull request for behat/mink [here](https://github.com/minkphp/Mink/pull/760).
