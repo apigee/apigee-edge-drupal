@@ -37,7 +37,7 @@ final class ValidateApigeeXTeamEnabledSubscriber implements EventSubscriberInter
    *
    * @var \Drupal\Core\Session\AccountInterface
    */
-  private $currentUser;
+  private AccountInterface $currentUser;
 
   /**
    * The SDK connector service.
@@ -87,7 +87,7 @@ final class ValidateApigeeXTeamEnabledSubscriber implements EventSubscriberInter
    */
   public function validateApigeexTeamEnabled(RequestEvent $event) {
     // Check only for html request and admin users.
-    if (($this->currentUser->id() == 1 || $this->currentUser->hasRole('administrator')) && $event->getRequest()->getRequestFormat() === 'html') {
+    if ($this->currentUser->hasPermission('administer modules') && $event->getRequest()->getRequestFormat() === 'html') {
       /** @var \Symfony\Component\Routing\Route $current_route */
       if (($current_route = $event->getRequest()->get('_route')) && (strpos($current_route, 'entity.team') !== FALSE || strpos($current_route, 'settings.team') !== FALSE)) {
         $organization = $this->orgController->load($this->connector->getOrganization());
