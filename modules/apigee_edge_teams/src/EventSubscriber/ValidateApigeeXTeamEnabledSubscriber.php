@@ -85,7 +85,7 @@ final class ValidateApigeeXTeamEnabledSubscriber implements EventSubscriberInter
    * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
    *   The event.
    */
-  public function validateApigeexTeamEnabled(RequestEvent $event) {
+  public function validateApigeexTeamEnabled(RequestEvent $event): void {
     // Check only for html request and admin users.
     if ($this->currentUser->hasPermission('administer modules') && $event->getRequest()->getRequestFormat() === 'html') {
       /** @var \Symfony\Component\Routing\Route $current_route */
@@ -103,7 +103,7 @@ final class ValidateApigeeXTeamEnabledSubscriber implements EventSubscriberInter
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     $events[KernelEvents::REQUEST][] = ['validateApigeexTeamEnabled'];
     return $events;
   }
