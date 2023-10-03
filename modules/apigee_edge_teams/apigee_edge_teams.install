@@ -43,7 +43,7 @@ function apigee_edge_teams_requirements($phase) {
       $organization = $org_controller->load($sdk_connector->getOrganization());
       if ($organization && $org_controller->isOrganizationApigeeX()) {
         // AppGroup APIs are not supported in Apigee X / Hybrid orgs with monetization enabled.
-        if ($organization->getAddonsConfig() || TRUE === $organization->getAddonsConfig()->getMonetizationConfig()->getEnabled()) {
+        if ($organization->getAddonsConfig() && $organization->getAddonsConfig()->getMonetizationConfig() && TRUE === $organization->getAddonsConfig()->getMonetizationConfig()->getEnabled()) {
           $url = [
             ':url' => 'https://cloud.google.com/apigee/docs/api-platform/publish/organizing-client-app-ownership?hl=en#appgroups-limitations-and-known-issues',
           ];

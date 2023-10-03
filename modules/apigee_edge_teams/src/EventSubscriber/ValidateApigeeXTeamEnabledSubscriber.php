@@ -92,7 +92,7 @@ final class ValidateApigeeXTeamEnabledSubscriber implements EventSubscriberInter
       if (($current_route = $event->getRequest()->get('_route')) && (strpos($current_route, 'entity.team') !== FALSE || strpos($current_route, 'settings.team') !== FALSE)) {
         $organization = $this->orgController->load($this->connector->getOrganization());
         if ($organization && $this->orgController->isOrganizationApigeeX()) {
-          if ($organization->getAddonsConfig() || TRUE === $organization->getAddonsConfig()->getMonetizationConfig()->getEnabled()) {
+          if ($organization->getAddonsConfig() && $organization->getAddonsConfig()->getMonetizationConfig() && TRUE === $organization->getAddonsConfig()->getMonetizationConfig()->getEnabled()) {
             $this->messenger->addError($this->t('The Teams module functionality is not available for monetization enabled org on Apigee X / Hybrid and should be uninstalled.'));
           }
         }
