@@ -23,6 +23,7 @@ use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -31,6 +32,8 @@ use Symfony\Component\HttpKernel\KernelEvents;
  * Validates that Apigee X Team is enabled on every Team page request.
  */
 final class ValidateApigeeXTeamEnabledSubscriber implements EventSubscriberInterface {
+
+  use StringTranslationTrait;
 
   /**
    * The current user.
