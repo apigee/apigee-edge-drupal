@@ -152,16 +152,14 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
    * Tests the UI of the team and team app entities.
    */
   public function testUi() {
-    $team_name = mb_strtolower($this->getRandomGenerator()->name());
-    $team_app_1_name = mb_strtolower($this->getRandomGenerator()->name());
-    $this->teamsWorkflowTest($team_name, $team_app_1_name);
-    $this->teamAndTeamAppLabelTest($team_name, $team_app_1_name);
+    $this->teamsWorkflowTest();
+    $this->teamAndTeamAppLabelTest();
   }
 
   /**
    * Tests CRUD UIs of team and team app entities.
    */
-  protected function teamsWorkflowTest($team_name, $team_app_1_name) {
+  protected function teamsWorkflowTest() {
     $this->drupalLogin($this->account);
     // Open team collection page.
     $this->drupalGet(Url::fromRoute('entity.team.collection'));
@@ -169,7 +167,7 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
     // Create a new team and check whether the link to the team is visible on
     // the listing page.
     $this->clickLink('Add team');
-    $team_display_name = $team_name;
+    $team_name = $team_display_name = mb_strtolower($this->getRandomGenerator()->name());
     $this->submitForm([
       'name' => $team_name,
       'displayName[0][value]' => $team_display_name,
@@ -225,7 +223,7 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
     $this->assertSession()->pageTextContains('There are no team apps yet.');
     $this->clickLink('Add team app');
 
-    $team_app_1_display_name = $team_app_1_name;
+    $team_app_1_name = $team_app_1_display_name = mb_strtolower($this->getRandomGenerator()->name());;
     $this->submitForm([
       'name' => $team_app_1_name,
       'displayName[0][value]' => $team_app_1_display_name,
@@ -310,10 +308,10 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
   /**
    * Tests the team entity label modifications.
    */
-  protected function teamAndTeamAppLabelTest($team_name, $team_app_1_name) {
+  protected function teamAndTeamAppLabelTest() {
     $this->drupalLogin($this->rootUser);
-    $this->changeEntityAliasesAndValidate($team_name, 'apigee_edge_teams.settings.team');
-    $this->changeEntityAliasesAndValidate($team_app_1_name, 'apigee_edge_teams.settings.team_app');
+    $this->changeEntityAliasesAndValidate('team', 'apigee_edge_teams.settings.team');
+    $this->changeEntityAliasesAndValidate('team_app', 'apigee_edge_teams.settings.team_app');
   }
 
   /**
