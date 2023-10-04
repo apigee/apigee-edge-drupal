@@ -309,9 +309,11 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
    * Tests the team entity label modifications.
    */
   protected function teamAndTeamAppLabelTest() {
+    $team_name = mb_strtolower($this->getRandomGenerator()->name());
+    $team_app_1_name = mb_strtolower($this->getRandomGenerator()->name());
     $this->drupalLogin($this->rootUser);
-    $this->changeEntityAliasesAndValidate('team', 'apigee_edge_teams.settings.team');
-    $this->changeEntityAliasesAndValidate('team_app', 'apigee_edge_teams.settings.team_app');
+    $this->changeEntityAliasesAndValidate($team_name, 'apigee_edge_teams.settings.team');
+    $this->changeEntityAliasesAndValidate($team_app_1_name, 'apigee_edge_teams.settings.team_app');
   }
 
   /**

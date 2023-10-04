@@ -73,7 +73,7 @@ class TeamAliasForm extends EdgeEntityAliasConfigFormBase {
         '#type' => 'checkbox',
         '#title' => $this->t('Filter by Channel ID'),
         '#default_value' => $config->get('enablefilter'),
-        '#description' => $this->t('Enables the filter with Channel ID for AppGroups listing'),
+        '#description' => $this->t('Enforce the filtering of AppGroups based on Channel ID specified in the field above.'),
       ];
     }
     return parent::buildForm($form, $form_state);

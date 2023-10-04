@@ -39,6 +39,7 @@ use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\apigee_edge_teams\CompanyMembershipObjectCacheInterface;
+use Drupal\apigee_edge_teams\Form\TeamAliasForm;
 
 /**
  * Definition of the Team controller service.
@@ -260,8 +261,9 @@ final class TeamController implements TeamControllerInterface {
           ];
         }
         else {
+          $defaultChannelId = TeamAliasForm::originalChannelId();
           $queryparam = [
-            'filter' => 'channelId=devportal',
+            'filter' => 'channelId=' . $defaultChannelId,
           ];
         }
         $entities = $this->decorated()->getEntities($pager, $key_provider, $queryparam);
