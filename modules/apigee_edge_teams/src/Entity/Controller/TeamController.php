@@ -239,15 +239,6 @@ final class TeamController implements TeamControllerInterface {
    * {@inheritdoc}
    */
   public function getEntities(PagerInterface $pager = NULL, string $key_provider = 'id'): array {
-    if ($this->entityCache()->isAllEntitiesInCache()) {
-      if ($pager === NULL) {
-        return $this->entityCache()->getEntities();
-      }
-      else {
-        return $this->extractSubsetOfAssociativeArray($this->entityCache()->getEntities(), $pager->getLimit(), $pager->getStartKey());
-      }
-    }
-
     if ($this->orgController->isOrganizationApigeeX()) {
       // Getting the channelId & filter enable check from Config form.
       $channelconfig = \Drupal::config('apigee_edge_teams.team_settings');
@@ -274,10 +265,6 @@ final class TeamController implements TeamControllerInterface {
     }
     else {
       $entities = $this->decorated()->getEntities($pager, $key_provider);
-    }
-    $this->entityCache()->saveEntities($entities);
-    if ($pager === NULL) {
-      $this->entityCache()->allEntitiesInCache(TRUE);
     }
 
     return $entities;
