@@ -9,7 +9,7 @@ apigee_edge_teams.team_settings:
       type: label
       label: 'ChannelId settings'
     enablefilter:
-      type: checkbox
+      type: label
       label: 'Filter by Channel ID'
     entity_label_singular:
       type: label
