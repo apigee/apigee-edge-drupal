@@ -239,34 +239,18 @@ final class TeamController implements TeamControllerInterface {
    * {@inheritdoc}
    */
   public function getEntities(PagerInterface $pager = NULL, string $key_provider = 'id'): array {
+    $queryparam = [];
     if ($this->orgController->isOrganizationApigeeX()) {
       // Getting the channelId & filter enable check from Config form.
       $channelconfig = \Drupal::config('apigee_edge_teams.team_settings');
       $channelid = $channelconfig->get('channelid');
       $channelfilter = $channelconfig->get('enablefilter');
-
+      $defaultChannelId = TeamAliasForm::originalChannelId();
       if ($channelfilter) {
-        if ($channelid) {
-          $queryparam = [
-            'filter' => 'channelId=' . $channelid,
-          ];
-        }
-        else {
-          $defaultChannelId = TeamAliasForm::originalChannelId();
-          $queryparam = [
-            'filter' => 'channelId=' . $defaultChannelId,
-          ];
-        }
-        $entities = $this->decorated()->getEntities($pager, $key_provider, $queryparam);
-      }
-      else {
-        $entities = $this->decorated()->getEntities($pager, $key_provider);
+        $queryparam = ($channelid) ? ['filter' => 'channelId=' . $channelid,] : ['filter' => 'channelId=' . $defaultChannelId,]; 
       }
     }
-    else {
-      $entities = $this->decorated()->getEntities($pager, $key_provider);
-    }
-
+    $entities = $this->decorated()->getEntities($pager, $key_provider, $queryparam);
     return $entities;
   }
 
