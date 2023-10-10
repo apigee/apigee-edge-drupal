@@ -19,9 +19,9 @@
 
 namespace Drupal\Tests\apigee_mock_api_client\Traits;
 
+use Apigee\Edge\Api\ApigeeX\Entity\AppGroup;
 use Apigee\Edge\Api\Management\Entity\App;
 use Apigee\Edge\Api\Management\Entity\Company;
-use Apigee\Edge\Api\ApigeeX\Entity\AppGroup;
 use Apigee\Edge\Api\Management\Entity\Organization;
 use Apigee\Edge\Structure\AddonsConfig;
 use Apigee\Edge\Structure\MonetizationConfig;
