@@ -21,6 +21,7 @@ namespace Drupal\Tests\apigee_mock_api_client\Traits;
 
 use Apigee\Edge\Api\Management\Entity\App;
 use Apigee\Edge\Api\Management\Entity\Company;
+use Apigee\Edge\Api\ApigeeX\Entity\AppGroup;
 use Apigee\Edge\Api\Management\Entity\Organization;
 use Apigee\Edge\Structure\AddonsConfig;
 use Apigee\Edge\Structure\MonetizationConfig;
@@ -153,6 +154,31 @@ trait ApigeeMockApiClientHelperTrait {
   }
 
   /**
+   * Helper function to queue up an Apigee X org response since every test will need it.
+   *
+   * @param string $runtimetype
+   *   Whether or not the org is cloud, hybrid or non-hybrid.
+   * @param bool $monetized
+   *   Whether or not the org is monetized.
+   *
+   * @throws \Exception
+   */
+  protected function warmApigeexOrganizationCache($runtimetype = 'CLOUD', $monetized = TRUE) {
+    if (!$this->sdkConnector->getOrganization()) {
+      $this->addApigeexOrganizationMatchedResponse();
+    }
+    $this->stack
+      ->queueMockResponse([
+        'get_apigeex_organization' => [
+          'runtimetype' => $runtimetype,
+          'monetization_enabled' => $monetized ? 'true' : 'false',
+          'timezone' => $this->org_default_timezone,
+        ],
+      ]);
+    $this->sdkConnector->getOrganization();
+  }
+
+  /**
    * Add matched developer response.
    *
    * @param \Drupal\user\UserInterface $developer
@@ -241,6 +267,23 @@ trait ApigeeMockApiClientHelperTrait {
   }
 
   /**
+   * Queues up a mock appgroup response.
+   *
+   * @param \Apigee\Edge\Api\ApigeeX\Entity\AppGroup $appgroup
+   *   The appgroup to get properties from.
+   * @param string|null $response_code
+   *   Add a response code to override the default.
+   */
+  protected function queueAppGroupResponse(AppGroup $appgroup, $response_code = NULL) {
+    $context = empty($response_code) ? [] : ['status_code' => $response_code];
+
+    $context['appgroup'] = $appgroup;
+    $context['org_name'] = $this->sdkConnector->getOrganization();
+
+    $this->stack->queueMockResponse(['appgroup' => $context]);
+  }
+
+  /**
    * Queues up a mock companies response.
    *
    * @param array $companies
@@ -313,6 +356,28 @@ trait ApigeeMockApiClientHelperTrait {
       'displayName' => $this->randomGenerator->name(),
     ]);
     $this->queueCompanyResponse($team->decorated());
+    $this->stack->queueMockResponse('no_content');
+    $team->save();
+
+    return $team;
+  }
+
+  /**
+   * Helper to create a Apigee X Team entity.
+   *
+   * @return \Drupal\apigee_edge_teams\Entity\TeamInterface
+   *   A Team entity.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  protected function createApigeexTeam(): TeamInterface {
+    /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
+    $team = Team::create([
+      'name' => $this->randomMachineName(),
+      'displayName' => $this->randomGenerator->name(),
+    ]);
+
+    $this->queueAppGroupResponse($team->decorated());
     $this->stack->queueMockResponse('no_content');
     $team->save();
 
