@@ -85,7 +85,7 @@ class TeamViewBuilderTest extends KernelTestBase {
 
     $this->apigeeTestHelperSetup();
     $this->addApigeexOrganizationMatchedResponse();
-    $this->entity = $this->createXTeam();
+    $this->entity = $this->createApigeexTeam();
   }
 
   /**
