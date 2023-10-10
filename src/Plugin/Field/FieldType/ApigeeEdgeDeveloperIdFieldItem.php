@@ -23,6 +23,7 @@ namespace Drupal\apigee_edge\Plugin\Field\FieldType;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\TypedData\ComputedItemListTrait;
+use Drupal\Core\Utility\Error;
 
 /**
  * Definition of Apigee Edge Developer ID computed field for User entity.
@@ -52,9 +53,8 @@ class ApigeeEdgeDeveloperIdFieldItem extends FieldItemList {
       $this->list[0] = $this->createItem(0, $value);
     }
     catch (\Exception $exception) {
-      // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
-      // @phpstan-ignore-next-line
-      watchdog_exception('apigee_edge', $exception);
+      $logger = \Drupal::logger('apigee_edge');
+      Error::logException($logger, $exception);
     }
   }
 

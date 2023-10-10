@@ -23,6 +23,7 @@ use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController as Ed
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
+use Drupal\Core\Utility\Error;
 use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
@@ -299,9 +300,8 @@ trait ApigeeEdgeFunctionalTestTrait {
    */
   protected function logException(\Exception $exception, string $suffix = '') {
     $ro = new \ReflectionObject($this);
-    // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
-    // @phpstan-ignore-next-line
-    watchdog_exception("{$ro->getShortName()}{$suffix}", $exception);
+    $logger = \Drupal::logger("{$ro->getShortName()}{$suffix}");
+    Error::logException($logger, $exception);
   }
 
   /**
