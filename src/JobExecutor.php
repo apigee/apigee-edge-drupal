@@ -22,8 +22,8 @@ namespace Drupal\apigee_edge;
 use Drupal\apigee_edge\Job\Job;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Database\Connection;
-use Drupal\Core\Utility\Error;
 use Drupal\Core\Queue\QueueFactory;
+use Drupal\Core\Utility\Error;
 
 /**
  * Job executor service.
