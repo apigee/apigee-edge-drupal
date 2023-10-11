@@ -121,6 +121,12 @@ services:
     tags:
       - { name: event_subscriber }
 
+  apigee_edge_teams.validate_apigeexteam_enabled:
+    class: Drupal\apigee_edge_teams\EventSubscriber\ValidateApigeeXTeamEnabledSubscriber
+    arguments: ['@current_user', '@apigee_edge.sdk_connector', '@apigee_edge.controller.organization', '@messenger']
+    tags:
+      - {name: event_subscriber}
+
   route.subscriber.apigee_edge_teams.team_app_by_name:
     class: Drupal\apigee_edge_teams\Routing\TeamAppByNameRouteAlterSubscriber
     tags:
