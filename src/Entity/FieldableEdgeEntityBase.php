@@ -569,8 +569,7 @@ abstract class FieldableEdgeEntityBase extends EdgeEntityBase implements Fieldab
     if (!isset($this->fieldDefinitions)) {
       $this->getFieldDefinitions();
     }
-    // Apigee base fields are special, so they need special treatment.
-    if (isset($this->fieldDefinitions[$name]) && !($this->fieldDefinitions[$name] instanceof BaseFieldDefinition)) {
+    if (isset($this->fieldDefinitions[$name])) {
       $return = $this->getField($name);
       return $return;
     }
@@ -607,6 +606,11 @@ abstract class FieldableEdgeEntityBase extends EdgeEntityBase implements Fieldab
         $this->getField($name)->setValue($value);
       }
     }
+    // The translations array is unset when cloning the entity object, we just
+    // need to restore it.
+    elseif ($name == 'translations') {
+      $this->translations = $value;
+    }
     // Directly write non-field values.
     else {
       $this->values[$name] = $value;
@@ -635,6 +639,17 @@ abstract class FieldableEdgeEntityBase extends EdgeEntityBase implements Fieldab
       unset($this->values[$name]);
     }
   }
+
+  /**
+   * An array of entity translation metadata.
+   *
+   * An associative array keyed by translation language code. Every value is an
+   * array containing the translation status and the translation object, if it has
+   * already been instantiated.
+   *
+   * @var array
+   */
+  private $translations = [];
 
   /**
    * Gets a non-translatable field.
