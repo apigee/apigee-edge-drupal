@@ -20,6 +20,8 @@
 
 namespace Drupal\Tests\apigee_edge\Kernel;
 
+use Drupal\Core\Utility\Error;
+
 /**
  * Provides common functionality for the Apigee Edge kernel test classes.
  */
@@ -35,9 +37,9 @@ trait ApigeeEdgeKernelTestTrait {
    */
   protected function logException(\Exception $exception, string $suffix = '') {
     $ro = new \ReflectionObject($this);
-    // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
-    // @phpstan-ignore-next-line
-    watchdog_exception("{$ro->getShortName()}{$suffix}", $exception);
+
+    $logger = \Drupal::logger("{$ro->getShortName()}{$suffix}");
+    Error::logException($logger, $exception);
   }
 
 }
