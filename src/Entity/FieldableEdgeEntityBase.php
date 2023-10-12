@@ -569,7 +569,7 @@ abstract class FieldableEdgeEntityBase extends EdgeEntityBase implements Fieldab
     if (!isset($this->fieldDefinitions)) {
       $this->getFieldDefinitions();
     }
-    if (isset($this->fieldDefinitions[$name])) {
+    if (isset($this->fieldDefinitions[$name]) && !($this->fieldDefinitions[$name] instanceof BaseFieldDefinition)) {
       $return = $this->getField($name);
       return $return;
     }
