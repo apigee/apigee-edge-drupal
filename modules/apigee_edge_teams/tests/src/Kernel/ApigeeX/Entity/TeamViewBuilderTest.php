@@ -18,7 +18,7 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\apigee_edge_teams\ApigeeX\Kernel\Entity;
+namespace Drupal\Tests\apigee_edge_teams\Kernel\ApigeeX\Entity;
 
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\apigee_edge\Kernel\ApigeeEdgeKernelTestTrait;
