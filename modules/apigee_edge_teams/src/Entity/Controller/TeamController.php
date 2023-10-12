@@ -245,9 +245,11 @@ final class TeamController implements TeamControllerInterface {
       $channelconfig = \Drupal::config('apigee_edge_teams.team_settings');
       $channelid = $channelconfig->get('channelid');
       $channelfilter = $channelconfig->get('enablefilter');
-      $defaultChannelId = TeamAliasForm::originalChannelId();
       if ($channelfilter) {
-        $queryparam = ($channelid) ? ['filter' => 'channelId=' . $channelid,] : ['filter' => 'channelId=' . $defaultChannelId,]; 
+        $channelid = $channelid ? $channelid : TeamAliasForm::originalChannelId();
+        $queryparam = [
+          'filter' => 'channelId=' . $channelid
+        ];
       }
     }
     $entities = $this->decorated()->getEntities($pager, $key_provider, $queryparam);
