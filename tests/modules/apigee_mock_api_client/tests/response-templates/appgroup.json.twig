@@ -1,0 +1,25 @@
+{#
+/**
+ * @file
+ *   AppGroup
+ *
+ * Usage:
+ *   @code {% include 'team.json.twig' %} @endcode
+ *
+ * Variables:
+ * - appgroup: The team (appgroup).
+ * - org_name: The org name.
+ */
+#}
+{
+    "apps": [],
+    "name": "{{ appgroup.name|default('foo') }}",
+    "displayName": "{{ appgroup.displayName }}",
+    "organization": "{{ org_name }}",
+    "status": "active",
+    "attributes": [],
+    "createdAt": 1506959878351,
+    "createdBy" : "user@example.com",
+    "lastModifiedAt": 1506959878351,
+    "lastModifiedBy" : "user@example.com"
+}
