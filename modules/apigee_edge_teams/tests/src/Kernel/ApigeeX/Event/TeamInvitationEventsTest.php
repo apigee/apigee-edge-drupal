@@ -18,7 +18,7 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\apigee_edge_teams\Kernel;
+namespace Drupal\Tests\apigee_edge_teams\Kernel\ApigeeX;
 
 use Drupal\apigee_edge_teams\Entity\Team;
 use Drupal\apigee_edge_teams\Entity\TeamInvitation;
