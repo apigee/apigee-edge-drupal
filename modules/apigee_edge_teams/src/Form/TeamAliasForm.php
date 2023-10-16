@@ -68,6 +68,13 @@ class TeamAliasForm extends EdgeEntityAliasConfigFormBase {
         '#default_value' => $config->get('channelid'),
         '#description' => $this->t('Leave empty to use the default "@channelid" as channel ID.', ['@channelid' => $this->originalChannelId()]),
       ];
+
+      $form['channel_label']['enablefilter'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Filter by Channel ID'),
+        '#default_value' => $config->get('enablefilter'),
+        '#description' => $this->t('Enforce the filtering of AppGroups based on Channel ID specified in the field above.'),
+      ];
     }
     return parent::buildForm($form, $form_state);
   }
@@ -97,9 +104,10 @@ class TeamAliasForm extends EdgeEntityAliasConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $config = $this->config($this->getConfigNameWithLabels());
 
-    if ($config->get('team_prefix') !== $form_state->getValue('team_prefix') || $config->get('channelid') !== $form_state->getValue('channelid')) {
+    if ($config->get('team_prefix') !== $form_state->getValue('team_prefix') || $config->get('channelid') !== $form_state->getValue('channelid') || $config->get('enablefilter') !== $form_state->getValue('enablefilter')) {
       $config->set('team_prefix', $form_state->getValue('team_prefix'))
         ->set('channelid', $form_state->getValue('channelid'))
+        ->set('enablefilter', $form_state->getValue('enablefilter'))
         ->save();
     }
 
