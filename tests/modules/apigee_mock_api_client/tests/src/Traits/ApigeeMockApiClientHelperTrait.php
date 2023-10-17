@@ -378,7 +378,6 @@ trait ApigeeMockApiClientHelperTrait {
     ]);
 
     $this->queueAppGroupResponse($team->decorated());
-    $this->stack->queueMockResponse('no_content');
     $team->save();
 
     return $team;
