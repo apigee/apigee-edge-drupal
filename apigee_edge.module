@@ -893,9 +893,9 @@ function apigee_edge_form_user_form_api_connection_validate(array $form, FormSta
       '@user_email' => $form_state->getValue('mail'),
       '@message' => (string) $exception,
     ];
-    // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
-    // @phpstan-ignore-next-line
-    watchdog_exception('apigee_edge', $exception, 'Could not create/update Drupal user: @user_email, because there was no connection to Apigee Edge. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
+
+    $logger = \Drupal::logger('apigee_edge');
+    Error::logException($logger, $exception, 'Could not create/update Drupal user: @user_email, because there was no connection to Apigee Edge. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
     $form_state->setError($form, t('User registration is temporarily unavailable. Try again later or contact the site administrator.'));
   }
 }
@@ -974,9 +974,8 @@ function apigee_edge_form_user_register_form_developer_email_validate(array $for
       $sendNotifications->set($account->getEmail(), $result);
     }
     catch (TempStoreException $e) {
-      // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
-      // @phpstan-ignore-next-line
-      watchdog_exception(__FUNCTION__, $e);
+      $logger = \Drupal::logger(__FUNCTION__);
+      Error::logException($logger, $e);
     }
   }
 }
