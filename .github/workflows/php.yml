@@ -95,6 +95,7 @@ jobs:
         composer update --with-all-dependencies
         composer require --dev phpspec/prophecy-phpunit:^2
         composer require --dev drupal/classy:^1.0
+        composer require --dev mglaman/phpstan-drupal:1.2.0
         composer config --no-plugins allow-plugins.drupal/console-extend-plugin true
 
     # Install drupal using minimal installation profile and enable the module.
