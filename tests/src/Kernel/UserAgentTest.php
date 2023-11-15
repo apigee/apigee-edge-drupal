@@ -70,7 +70,7 @@ class UserAgentTest extends KernelTestBase {
    */
   public function testUserAgentWithoutMonetization() {
     // apigee_edge module info.
-    $infoParser = new InfoParser();
+    $infoParser = new InfoParser($this->root);
     $this->edgeModuleInfo = $infoParser->parse(\Drupal::service('module_handler')->getModule('apigee_edge')->getPathname());
     if (!isset($this->edgeModuleInfo['version'])) {
       $this->edgeModuleInfo['version'] = '2.x-dev';
