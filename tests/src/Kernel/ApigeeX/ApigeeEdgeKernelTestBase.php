@@ -40,7 +40,7 @@ abstract class ApigeeEdgeKernelTestBase extends KernelTestBase {
     parent::setUp();
   }
 
- /**
+  /**
    * Stores pre-configured token storage service for testing.
    */
   protected function storeToken() {
