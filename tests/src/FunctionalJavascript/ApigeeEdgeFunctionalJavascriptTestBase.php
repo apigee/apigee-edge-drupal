@@ -64,9 +64,7 @@ abstract class ApigeeEdgeFunctionalJavascriptTestBase extends WebDriverTestBase 
     }
     /** @var \Drupal\Core\Database\Connection $database */
     $database = $this->container->get('database');
-    // @todo tablePrefix() is deprecated in Drupal 10.1
-    // @phpstan-ignore-next-line
-    $test_id = str_replace('test', '', $database->tablePrefix());
+    $test_id = str_replace('test', '', $database->getPrefix());
     // Add table suffix (test id) to the file name and ensure the generated
     // file name is unique.
     $filename = \Drupal::service('file_system')
