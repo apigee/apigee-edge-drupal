@@ -84,6 +84,7 @@ class TeamViewBuilderTest extends ApigeeEdgeKernelTestBase {
     $this->installSchema('user', ['users_data']);
 
     $this->apigeeTestHelperSetup();
+    $this->storeToken();
     $this->addApigeexOrganizationMatchedResponse();
     $this->entity = $this->createApigeexTeam();
   }

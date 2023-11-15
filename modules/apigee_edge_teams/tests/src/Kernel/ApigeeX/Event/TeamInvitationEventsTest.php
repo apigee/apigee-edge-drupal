@@ -79,6 +79,7 @@ class TeamInvitationEventsTest extends ApigeeEdgeKernelTestBase {
 
     $this->baseSetUp();
 
+    $this->storeToken();
     $this->addApigeexOrganizationMatchedResponse();
   }
 
