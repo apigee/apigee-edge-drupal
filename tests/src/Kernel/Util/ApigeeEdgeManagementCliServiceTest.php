@@ -23,7 +23,7 @@ use Apigee\Edge\Exception\ClientErrorException;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\DependencyInjection\ServiceModifierInterface;
 use Drupal\Core\Utility\Error;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\apigee_edge\Kernel\ApigeeEdgeKernelTestBase;
 use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 
 /**
@@ -37,7 +37,7 @@ use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
  * @group apigee_edge
  * @group apigee_edge_kernel
  */
-class ApigeeEdgeManagementCliServiceTest extends KernelTestBase implements ServiceModifierInterface {
+class ApigeeEdgeManagementCliServiceTest extends ApigeeEdgeKernelTestBase implements ServiceModifierInterface {
 
   use ApigeeMockApiClientHelperTrait;
 
