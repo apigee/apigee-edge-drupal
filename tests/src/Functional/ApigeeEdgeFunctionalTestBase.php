@@ -19,6 +19,7 @@
 
 namespace Drupal\Tests\apigee_edge\Functional;
 
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Tests\apigee_edge\Traits\ApigeeEdgeFunctionalTestTrait;
 use Drupal\Tests\BrowserTestBase;
 
@@ -40,6 +41,11 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
    * {@inheritdoc}
    */
   protected function setUp(): void {
+    // Skipping the test if instance type is Public.
+    $instance_type = getenv('APIGEE_EDGE_INSTANCE_TYPE');
+    if (!empty($instance_type) && $instance_type === EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+      $this->markTestSkipped('This test suite is expecting a PUBLIC instance type.');
+    }
     parent::setUp();
     $this->initTestEnv();
   }
