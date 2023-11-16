@@ -24,7 +24,7 @@ use Drupal\apigee_edge_teams\Entity\Team;
 use Drupal\apigee_edge_teams\Entity\TeamInvitation;
 use Drupal\apigee_edge_teams\Entity\TeamInvitationInterface;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\apigee_edge\Kernel\ApigeeX\ApigeeEdgeKernelTestBase;
 use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 
 /**
@@ -35,7 +35,7 @@ use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
  * @group apigee_edge_teams
  * @group apigee_edge_teams_kernel
  */
-class TeamInvitationEventsTest extends KernelTestBase {
+class TeamInvitationEventsTest extends ApigeeEdgeKernelTestBase {
 
   use ApigeeMockApiClientHelperTrait {
     apigeeTestHelperSetup as baseSetUp;
@@ -79,6 +79,7 @@ class TeamInvitationEventsTest extends KernelTestBase {
 
     $this->baseSetUp();
 
+    $this->storeToken();
     $this->addApigeexOrganizationMatchedResponse();
   }
 
