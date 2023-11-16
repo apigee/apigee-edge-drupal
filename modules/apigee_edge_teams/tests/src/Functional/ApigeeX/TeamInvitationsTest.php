@@ -22,7 +22,6 @@ namespace Drupal\Tests\apigee_edge_teams\Functional\ApigeeX;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\Core\Url;
-use Drupal\Tests\apigee_edge_teams\Functional\ApigeeEdgeTeamsFunctionalTestBase;
 use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 use Drupal\views\Views;
 
@@ -85,6 +84,7 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
   protected function setUp(): void {
     parent::setUp();
 
+    $this->storeToken();
     $this->addApigeexOrganizationMatchedResponse();
     $this->teamA = $this->createApigeexTeam();
     $this->teamB = $this->createApigeexTeam();
@@ -106,10 +106,6 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function tearDown(): void {
-    if (!$this->integration_enabled) {
-      return;
-    }
-
     $teams = [
       $this->teamA,
       $this->teamB,
