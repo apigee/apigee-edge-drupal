@@ -34,7 +34,7 @@ abstract class ApigeeEdgeTeamsFunctionalTestBase extends ApigeeEdgeFunctionalTes
     'apigee_edge_teams',
   ];
 
- /**
+  /**
    * Stores pre-configured token storage service for testing.
    */
   protected function storeToken() {
