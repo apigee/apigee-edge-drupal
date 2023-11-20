@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2020 Google Inc.
+ * Copyright 2023 Google Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,13 +18,13 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\apigee_edge_teams\Kernel;
+namespace Drupal\Tests\apigee_edge_teams\Kernel\ApigeeX;
 
 use Drupal\apigee_edge_teams\Entity\Team;
 use Drupal\apigee_edge_teams\Entity\TeamInvitation;
 use Drupal\apigee_edge_teams\Entity\TeamInvitationInterface;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
-use Drupal\Tests\apigee_edge\Kernel\ApigeeEdgeKernelTestBase;
+use Drupal\Tests\apigee_edge\Kernel\ApigeeX\ApigeeEdgeKernelTestBase;
 use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 
 /**
@@ -57,6 +57,13 @@ class TeamInvitationEventsTest extends ApigeeEdgeKernelTestBase {
   ];
 
   /**
+   * The team entity.
+   *
+   * @var \Drupal\apigee_edge_teams\Entity\TeamInterface
+   */
+  protected $entity;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -72,19 +79,20 @@ class TeamInvitationEventsTest extends ApigeeEdgeKernelTestBase {
 
     $this->baseSetUp();
 
-    $this->addOrganizationMatchedResponse();
+    $this->storeToken();
+    $this->addApigeexOrganizationMatchedResponse();
   }
 
   /**
-   * Tests team_invitation events.
+   * Tests team_invitation events for AppGroup org.
    */
   public function testEvents() {
-    $team = $this->createTeam();
-    $this->queueCompanyResponse($team->decorated());
+    $this->entity = $this->createApigeexTeam();
+    $this->queueAppGroupResponse($this->entity->decorated());
 
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInvitationInterface $team_invitation */
     $team_invitation = TeamInvitation::create([
-      'team' => ['target_id' => $team->id()],
+      'team' => ['target_id' => $this->entity->id()],
       'team_roles' => [TeamRoleInterface::TEAM_MEMBER_ROLE],
       'recipient' => 'doe@example.com',
     ]);

@@ -8,6 +8,9 @@ apigee_edge_teams.team_settings:
     channelid:
       type: label
       label: 'ChannelId settings'
+    enablefilter:
+      type: label
+      label: 'Filter by Channel ID'
     entity_label_singular:
       type: label
       label: 'How to refer to a Team on the UI (singular)'
