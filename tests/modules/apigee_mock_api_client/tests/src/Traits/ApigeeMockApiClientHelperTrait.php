@@ -299,6 +299,21 @@ trait ApigeeMockApiClientHelperTrait {
   }
 
   /**
+   * Queues up a mock appgroups response.
+   *
+   * @param array $appgroups
+   *   An array of appgroup objects.
+   * @param string|null $response_code
+   *   Add a response code to override the default.
+   */
+  protected function queueAppGroupsResponse(array $appgroups, $response_code = NULL) {
+    $context = empty($response_code) ? [] : ['status_code' => $response_code];
+    $context['appgroups'] = $appgroups;
+
+    $this->stack->queueMockResponse(['appgroups' => $context]);
+  }
+
+  /**
    * Queues up a mock developers in a company response.
    *
    * @param array $developers

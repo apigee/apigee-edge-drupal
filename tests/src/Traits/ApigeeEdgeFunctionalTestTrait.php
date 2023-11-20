@@ -100,7 +100,7 @@ trait ApigeeEdgeFunctionalTestTrait {
     $edit = [
       'first_name' => $this->randomMachineName(),
       'last_name' => $this->randomMachineName(),
-      'name' => $this->randomMachineName(),
+      'name' => strtolower($this->randomMachineName()),
       'pass' => \Drupal::service('password_generator')->generate(),
       'status' => $status,
     ];
