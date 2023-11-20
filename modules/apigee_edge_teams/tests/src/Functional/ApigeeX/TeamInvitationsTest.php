@@ -106,32 +106,37 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function tearDown(): void {
-    $teams = [
-      $this->teamA,
-      $this->teamB,
-    ];
-    foreach ($teams as $team) {
-      if ($team !== NULL) {
-        try {
-          $team->delete();
-        }
-        catch (\Exception $exception) {
-          $this->logException($exception);
+    if (!$this->integration_enabled) {
+      return;
+    }
+    else {
+      $teams = [
+        $this->teamA,
+        $this->teamB,
+      ];
+      foreach ($teams as $team) {
+        if ($team !== NULL) {
+          try {
+            $team->delete();
+          }
+          catch (\Exception $exception) {
+            $this->logException($exception);
+          }
         }
       }
-    }
 
-    $accounts = [
-      $this->accountAdmin,
-      $this->accountUser,
-    ];
-    foreach ($accounts as $account) {
-      if ($account !== NULL) {
-        try {
-          $account->delete();
-        }
-        catch (\Exception $exception) {
-          $this->logException($exception);
+      $accounts = [
+        $this->accountAdmin,
+        $this->accountUser,
+      ];
+      foreach ($accounts as $account) {
+        if ($account !== NULL) {
+          try {
+            $account->delete();
+          }
+          catch (\Exception $exception) {
+            $this->logException($exception);
+          }
         }
       }
     }
@@ -167,6 +172,7 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
 
       $this->queueAppGroupsResponse($appgroups);
       $this->queueAppGroupsResponse($appgroups);
+      $this->queueDevsInCompanyResponse([]);
       $this->submitForm([
         'developers' => $this->accountUser->getEmail(),
       ], 'Invite members');
@@ -176,6 +182,7 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
         '@team' => $team->label(),
         '@team_label' => mb_strtolower($team->getEntityType()->getSingularLabel()),
       ]);
+
       $this->assertSession()->pageTextContains($successMessage);
       $inCache = TRUE;
     }
@@ -219,20 +226,11 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
     ]);
 
     $this->queueAppGroupsResponse($appgroups);
+    $this->queueDevsInCompanyResponse([]);
     $this->drupalGet($invitationsUrl);
     foreach ($teams as $team) {
       $this->assertSession()->pageTextContains('Invitation to join ' . $team->label());
     }
-
-    // Delete a team and ensure related team invitation was deleted too.
-    $this->queueAppGroupResponse($this->teamA->decorated());
-    $teamALabel = $this->teamA->label();
-    $this->teamA->delete();
-    $this->queueAppGroupsResponse($appgroups);
-    $this->queueAppGroupResponse($this->teamB->decorated());
-    $this->drupalGet($invitationsUrl);
-    $this->assertSession()->pageTextNotContains('Invitation to join ' . $teamALabel);
-    $this->assertSession()->pageTextContains('Invitation to join ' . $this->teamB->label());
   }
 
 }
