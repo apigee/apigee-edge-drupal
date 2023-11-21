@@ -22,6 +22,7 @@ namespace Drupal\Tests\apigee_edge\Functional;
 use Apigee\Edge\Api\Management\Entity\App;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
+use Drupal\user\Entity\Role;
 use Drupal\user\RoleInterface;
 
 /**
@@ -203,9 +204,13 @@ class DeveloperAppPermissionTest extends ApigeeEdgeFunctionalTestBase {
    */
   protected function revokeDefaultAuthUserPermissions() {
     $definition = $this->entityType;
-    // @todo user_role_permissions() is deprecated for Drupal 10.1 https://www.drupal.org/node/3348138
-    // @phpstan-ignore-next-line
-    $user_permissions = user_role_permissions([RoleInterface::AUTHENTICATED_ID]);
+    $roles = [RoleInterface::AUTHENTICATED_ID];
+    $entities = Role::loadMultiple($roles);
+
+    $user_permissions = [];
+    foreach ($roles as $rid) {
+      $user_permissions[$rid] = $entities[$rid]->getPermissions() ?: [];
+    }
     $authenticated_user_permissions = array_filter($user_permissions[RoleInterface::AUTHENTICATED_ID], function ($perm) use ($definition) {
       return preg_match("/own {$definition->id()}$/", $perm);
     });
