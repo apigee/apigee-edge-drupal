@@ -27,6 +27,10 @@ use Psr\Log\LogLevel;
 
 /**
  * Redirects Drupal logging messages to Drupal Console log.
+ * 
+ * @deprecated in 3.0.3 and will be removed.
+ *
+ * @see https://github.com/apigee/apigee-edge-drupal/issues/984
  */
 class DrupalConsoleLog implements LoggerInterface {
 

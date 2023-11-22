@@ -29,6 +29,10 @@ use Symfony\Component\Console\Output\OutputInterface;
  *     extension="apigee_edge",
  *     extensionType="module"
  * )
+ * 
+ * @deprecated in 3.0.3 and will be removed.
+ *
+ * @see https://github.com/apigee/apigee-edge-drupal/issues/984
  */
 class DeveloperSyncCommand extends CommandBase {
 

@@ -19,6 +19,8 @@
 
 namespace Drupal\apigee_edge\Command;
 
+@trigger_error('The ' . __NAMESPACE__ . '\CommandBase is deprecated in 3.0.4 and will be removed. See https://github.com/apigee/apigee-edge-drupal/issues/984', E_USER_DEPRECATED);
+
 use Drupal\apigee_edge\CliServiceInterface;
 use Drupal\Console\Core\Command\Command;
 use Drupal\Console\Core\Command\Shared\CommandTrait;
@@ -32,6 +34,10 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 /**
  * Class CommandBase for shared functionality.
+ * 
+ * @deprecated in 3.0.4 and will be removed.
+ *
+ * @see https://github.com/apigee/apigee-edge-drupal/issues/984
  */
 abstract class CommandBase extends Command {
 
