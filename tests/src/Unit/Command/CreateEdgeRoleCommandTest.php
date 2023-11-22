@@ -36,7 +36,7 @@ namespace Drupal\Tests\apigee_edge\Unit\Command {
    *
    * @group apigee_edge
    * 
-   * @phpstan-ignore-next-line
+   * @group legacy
    */
   class CreateEdgeRoleCommandTest extends UnitTestCase {
 
