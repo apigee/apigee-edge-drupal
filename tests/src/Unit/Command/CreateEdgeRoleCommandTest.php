@@ -35,7 +35,7 @@ namespace Drupal\Tests\apigee_edge\Unit\Command {
    * Test ApigeeEdgeCommands class.
    *
    * @group apigee_edge
-   * 
+   *
    * @group legacy
    */
   class CreateEdgeRoleCommandTest extends UnitTestCase {
