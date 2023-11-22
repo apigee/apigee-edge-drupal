@@ -33,6 +33,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @deprecated in 3.0.3 and will be removed.
  *
  * @see https://github.com/apigee/apigee-edge-drupal/issues/984
+ * 
+ * @phpstan-ignore-next-line
  */
 class DeveloperSyncCommand extends CommandBase {
 

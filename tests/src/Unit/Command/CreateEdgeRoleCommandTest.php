@@ -35,6 +35,8 @@ namespace Drupal\Tests\apigee_edge\Unit\Command {
    * Test ApigeeEdgeCommands class.
    *
    * @group apigee_edge
+   * 
+   * @phpstan-ignore-next-line
    */
   class CreateEdgeRoleCommandTest extends UnitTestCase {
 
