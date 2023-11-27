@@ -83,6 +83,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   field_ui_base_route = "apigee_edge_teams.settings.team_app",
  * )
  */
+#[\AllowDynamicProperties]
 class TeamApp extends App implements TeamAppInterface {
 
   /**
