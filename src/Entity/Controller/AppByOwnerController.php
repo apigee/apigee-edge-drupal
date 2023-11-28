@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge\Entity\Controller;
 
+use Apigee\Edge\Api\ApigeeX\Controller\AppByOwnerControllerInterface as XAppByOwnerControllerInterface;
 use Apigee\Edge\Api\Management\Controller\AppByOwnerControllerInterface;
 use Apigee\Edge\Api\Management\Controller\AppByOwnerControllerInterface as EdgeAppByOwnerControllerInterface;
 use Apigee\Edge\Entity\EntityInterface;
@@ -31,7 +32,7 @@ use Drupal\apigee_edge\Entity\Controller\Cache\EntityIdCacheInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 
 /**
- * Base class for developer- and company app controller services in Drupal.
+ * Base class for developer- and company/appgroup app controller services in Drupal.
  */
 abstract class AppByOwnerController extends AppControllerBase implements AppByOwnerControllerInterface {
 
@@ -51,7 +52,7 @@ abstract class AppByOwnerController extends AppControllerBase implements AppByOw
   /**
    * The owner of an app.
    *
-   * It could be a developer's email address, uuid or a company's company name.
+   * It could be a developer's email address, uuid or a company's or appgroup's company/appgroup name.
    *
    * @var string
    */
@@ -75,7 +76,7 @@ abstract class AppByOwnerController extends AppControllerBase implements AppByOw
    * AppByOwnerController constructor.
    *
    * @param string $owner
-   *   A developer's email address, uuid or a company's company name.
+   *   A developer's email address, uuid or a company's or appgroup's company/appgroup name.
    * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
    *   The SDK connector service.
    * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
@@ -95,12 +96,12 @@ abstract class AppByOwnerController extends AppControllerBase implements AppByOw
   }
 
   /**
-   * Returns the decorated developer- or company app controller.
+   * Returns the decorated developer- or company/appgroup app controller.
    *
-   * @return \Apigee\Edge\Api\Management\Controller\AppByOwnerControllerInterface
-   *   The initialized developer- or company app controller.
+   * @return \Apigee\Edge\Api\Management\Controller\AppByOwnerControllerInterface|Apigee\Edge\Api\ApigeeX\Controller\AppByOwnerControllerInterface
+   *   The initialized developer- or company/appgroup app controller.
    */
-  abstract protected function decorated() : EdgeAppByOwnerControllerInterface;
+  abstract protected function decorated() : EdgeAppByOwnerControllerInterface|XAppByOwnerControllerInterface;
 
   /**
    * {@inheritdoc}

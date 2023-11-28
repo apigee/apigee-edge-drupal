@@ -92,14 +92,14 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
    *
    * @var \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface
    */
-  private $orgController;
+  protected $orgController;
 
   /**
    * The Team prefix value.
    *
    * @var string|null
    */
-  private $teamPrefix;
+  private $team_prefix;
 
   /**
    * TeamForm constructor.

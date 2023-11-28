@@ -519,4 +519,11 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
     $storage->resetCache($developer_mail_id_map);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheMaxAge(): int {
+    return \Drupal::config('apigee_edge.developer_settings')->get('cache_expiration');
+  }
+
 }

@@ -46,6 +46,7 @@ use Apigee\Edge\Structure\AttributesProperty;
  *   },
  * )
  */
+#[\AllowDynamicProperties]
 class ApiProduct extends EdgeEntityBase implements ApiProductInterface {
 
   // The majority of Drupal core & contrib assumes that an entity to be
@@ -326,6 +327,13 @@ class ApiProduct extends EdgeEntityBase implements ApiProductInterface {
    */
   public function setScopes(string ...$scopes): void {
     $this->decorated->setScopes(...$scopes);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheMaxAge(): int {
+    return \Drupal::config('apigee_edge.api_product_settings')->get('cache_expiration');
   }
 
 }

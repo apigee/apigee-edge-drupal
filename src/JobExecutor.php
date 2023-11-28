@@ -23,6 +23,7 @@ use Drupal\apigee_edge\Job\Job;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Queue\QueueFactory;
+use Drupal\Core\Utility\Error;
 
 /**
  * Job executor service.
@@ -151,9 +152,8 @@ class JobExecutor implements JobExecutorInterface {
       $job->setStatus($result ? Job::IDLE : Job::FINISHED);
     }
     catch (\Exception $ex) {
-      // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
-      // @phpstan-ignore-next-line
-      watchdog_exception('apigee_edge_job', $ex);
+      $logger = \Drupal::logger('apigee_edge_job');
+      Error::logException($logger, $ex);
       $job->recordException($ex);
       $job->setStatus($job->shouldRetry($ex) && $job->consumeRetry() ? Job::RESCHEDULED : Job::FAILED);
     }

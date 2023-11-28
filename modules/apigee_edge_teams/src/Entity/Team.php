@@ -73,6 +73,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   field_ui_base_route = "apigee_edge_teams.settings.team",
  * )
  */
+#[\AllowDynamicProperties]
 class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterface {
 
   /**
@@ -385,6 +386,13 @@ class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterfa
       // belongs.
       'organization',
     ]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheMaxAge(): int {
+    return \Drupal::config('apigee_edge_teams.team_settings')->get('cache_expiration');
   }
 
 }

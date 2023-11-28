@@ -40,6 +40,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Core\Render\Element\StatusMessages;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\Utility\Error;
 use Drupal\key\Form\KeyFormBase;
 use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyProviderSettableValueInterface;
@@ -349,9 +350,8 @@ final class KeyEntityFormEnhancer {
       drupal_flush_all_caches();
     }
     catch (\Exception $exception) {
-      // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
-      // @phpstan-ignore-next-line
-      watchdog_exception('apigee_edge', $exception);
+      $logger = \Drupal::logger('apigee_edge');
+      Error::logException($logger, $exception);
 
       $form_state->setError($form, $this->t('@suggestion Error message: %response', [
         '@suggestion' => $this->createSuggestion($exception, $test_key),

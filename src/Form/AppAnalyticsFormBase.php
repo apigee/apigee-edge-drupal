@@ -32,6 +32,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\UrlGeneratorInterface;
 use Drupal\Core\TempStore\PrivateTempStoreFactory;
 use Drupal\Core\Url;
+use Drupal\Core\Utility\Error;
 use League\Period\Period;
 use Moment\MomentException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -379,9 +380,9 @@ abstract class AppAnalyticsFormBase extends FormBase {
     catch (\Exception $e) {
       $this->messenger()
         ->addError($this->t('Unable to retrieve analytics data. Please try again.'));
-      // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
-      // @phpstan-ignore-next-line
-      watchdog_exception('apigee_edge', $e);
+
+      $logger = \Drupal::logger('apigee_edge');
+      Error::logException($logger, $e);
     }
 
     $date_time_zone = new \DateTimeZone(date_default_timezone_get());
@@ -501,7 +502,7 @@ abstract class AppAnalyticsFormBase extends FormBase {
    */
   final protected function getAnalytics(AppInterface $app, string $metric, string $since, string $until, string $environment): array {
     $stats_controller = new StatsController($environment, $this->connector->getOrganization(), $this->connector->getClient());
-    $stats_query = new StatsQuery([$metric], new Period(new \DateTimeImmutable('@' . $since), new \DateTimeImmutable('@' . $until)));
+    $stats_query = new StatsQuery([$metric], Period::fromDate(new \DateTimeImmutable('@' . $since), new \DateTimeImmutable('@' . $until)));
     $stats_query
       ->setFilter("({$this->getAnalyticsFilterCriteriaByAppOwner($app)} and developer_app eq '{$app->getName()}')")
       ->setTimeUnit('hour');

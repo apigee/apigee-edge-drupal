@@ -290,4 +290,11 @@ class DeveloperApp extends App implements DeveloperAppInterface {
     return $params;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheMaxAge(): int {
+    return \Drupal::config('apigee_edge.developer_app_settings')->get('cache_expiration');
+  }
+
 }

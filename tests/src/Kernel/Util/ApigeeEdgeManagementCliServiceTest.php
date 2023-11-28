@@ -22,7 +22,8 @@ namespace Drupal\Tests\apigee_edge\Kernel\Util;
 use Apigee\Edge\Exception\ClientErrorException;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\DependencyInjection\ServiceModifierInterface;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Core\Utility\Error;
+use Drupal\Tests\apigee_edge\Kernel\ApigeeEdgeKernelTestBase;
 use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 
 /**
@@ -36,7 +37,7 @@ use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
  * @group apigee_edge
  * @group apigee_edge_kernel
  */
-class ApigeeEdgeManagementCliServiceTest extends KernelTestBase implements ServiceModifierInterface {
+class ApigeeEdgeManagementCliServiceTest extends ApigeeEdgeKernelTestBase implements ServiceModifierInterface {
 
   use ApigeeMockApiClientHelperTrait;
 
@@ -145,9 +146,8 @@ class ApigeeEdgeManagementCliServiceTest extends KernelTestBase implements Servi
       }
     }
     catch (\Exception $exception) {
-      // @todo watchdog_exception() function has been deprecated for Drupal 10.1 https://www.drupal.org/node/2932520
-      // @phpstan-ignore-next-line
-      watchdog_exception('apigee_edge', $exception);
+      $logger = \Drupal::logger('apigee_edge');
+      Error::logException($logger, $exception);
     }
 
     parent::tearDown();
