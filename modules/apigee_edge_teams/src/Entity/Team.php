@@ -73,6 +73,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   field_ui_base_route = "apigee_edge_teams.settings.team",
  * )
  */
+#[\AllowDynamicProperties]
 class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterface {
 
   /**
