@@ -177,7 +177,7 @@ function apigee_edge_teams_preprocess(&$variables, $hook) {
   }
 
   $team = \Drupal::routeMatch()->getParameter('team');
-  if (!$team || $team->getStatus() !== TeamInterface::STATUS_INACTIVE) {
+  if (!($team instanceof TeamInterface) || $team->getStatus() !== TeamInterface::STATUS_INACTIVE) {
     return;
   }
 
