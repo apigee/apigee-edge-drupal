@@ -29,6 +29,13 @@ use Drupal\KernelTests\KernelTestBase;
 abstract class ApigeeEdgeKernelTestBase extends KernelTestBase {
 
   /**
+   * Test token data.
+   *
+   * @var array
+   */
+  private $testTokenData = [];
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -44,7 +51,7 @@ abstract class ApigeeEdgeKernelTestBase extends KernelTestBase {
    * Stores pre-configured token storage service for testing.
    */
   protected function storeToken() {
-    // Storing the token for Appigeex Hybrid Org.
+    // Storing the token for Apigeex Hybrid Org.
     $this->testTokenData = [
       'access_token' => mb_strtolower($this->randomMachineName(32)),
       'token_type' => 'bearer',
