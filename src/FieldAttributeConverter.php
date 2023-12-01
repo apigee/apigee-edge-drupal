@@ -82,11 +82,7 @@ final class FieldAttributeConverter implements FieldAttributeConverterInterface 
    *   Prefix of the field.
    */
   protected function getFieldPrefix(): string {
-    // If the Field UI module is installed, and has a specific prefix
-    // configured, use that. Otherwise, just default to using 'field_' as
-    // a prefix, which is the default that Field UI ships with.
-    $prefix = $this->config->get('field_ui.settings')->get('field_prefix') !== NULL ? $this->config->get('field_ui.settings')->get('field_prefix') : 'field_';
-    return (string) $prefix;
+    return (string) $this->config->get('field_ui.settings')->get('field_prefix');
   }
 
   /**
