@@ -255,5 +255,5 @@ final class TeamController implements TeamControllerInterface {
     $entities = $this->decorated()->getEntities($pager, $key_provider, $queryparam);
     return $entities;
   }
-  
+
 }
