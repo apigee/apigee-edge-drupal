@@ -25,6 +25,7 @@ use Apigee\Edge\Api\ApigeeX\Controller\AppGroupControllerInterface;
 use Apigee\Edge\Api\Management\Controller\CompanyController as EdgeCompanyController;
 use Apigee\Edge\Api\Management\Controller\CompanyControllerInterface as EdgeCompanyControllerInterface;
 use Apigee\Edge\Entity\EntityInterface;
+use Apigee\Edge\Structure\PagerInterface;
 use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface;
 use Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactoryInterface;
 use Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface;
@@ -38,6 +39,7 @@ use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\apigee_edge_teams\CompanyMembershipObjectCacheInterface;
+use Drupal\apigee_edge_teams\Form\TeamAliasForm;
 
 /**
  * Definition of the Team controller service.
@@ -233,4 +235,25 @@ final class TeamController implements TeamControllerInterface {
     return $entity;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getEntities(PagerInterface $pager = NULL, string $key_provider = 'id'): array {
+    $queryparam = [];
+    if ($this->orgController->isOrganizationApigeeX()) {
+      // Getting the channelId & filter enable check from Config form.
+      $channelconfig = \Drupal::config('apigee_edge_teams.team_settings');
+      $channelid = $channelconfig->get('channelid');
+      $channelfilter = $channelconfig->get('enablefilter');
+      if ($channelfilter) {
+        $channelid = $channelid ? $channelid : TeamAliasForm::originalChannelId();
+        $queryparam = [
+          'filter' => 'channelId=' . $channelid
+        ];
+      }
+    }
+    $entities = $this->decorated()->getEntities($pager, $key_provider, $queryparam);
+    return $entities;
+  }
+  
 }
