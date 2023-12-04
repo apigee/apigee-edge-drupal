@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Google Inc.
+ * Copyright 2023 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License version 2 as published by the
@@ -17,37 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\apigee_edge\Functional;
+namespace Drupal\Tests\apigee_edge\Kernel;
 
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
-use Drupal\Tests\apigee_edge\Traits\ApigeeEdgeFunctionalTestTrait;
-use Drupal\Tests\BrowserTestBase;
+use Drupal\KernelTests\KernelTestBase;
 
 /**
- * Base class for functional tests.
+ * Base class for kernel tests.
  */
-abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
-
-  use ApigeeEdgeFunctionalTestTrait;
-
-  /**
-   * For tests relying on no markup at all or at least no core markup.
-   *
-   * @var string
-   */
-  protected $defaultTheme = 'stark';
+abstract class ApigeeEdgeKernelTestBase extends KernelTestBase {
 
   /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
-    // Skipping the test if instance type is Public.
+    // Skipping the test if instance type is hybrid.
     $instance_type = getenv('APIGEE_EDGE_INSTANCE_TYPE');
     if (!empty($instance_type) && $instance_type === EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
       $this->markTestSkipped('This test suite is expecting a PUBLIC instance type.');
     }
     parent::setUp();
-    $this->initTestEnv();
   }
 
 }

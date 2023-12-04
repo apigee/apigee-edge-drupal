@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2020 Google Inc.
+ * Copyright 2023 Google Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,10 +18,10 @@
  * MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\apigee_edge_teams\Kernel\Entity;
+namespace Drupal\Tests\apigee_edge_teams\Kernel\ApigeeX\Entity;
 
-use Drupal\Tests\apigee_edge\Kernel\ApigeeEdgeKernelTestBase;
 use Drupal\Tests\apigee_edge\Kernel\ApigeeEdgeKernelTestTrait;
+use Drupal\Tests\apigee_edge\Kernel\ApigeeX\ApigeeEdgeKernelTestBase;
 use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 
 /**
@@ -84,10 +84,9 @@ class TeamViewBuilderTest extends ApigeeEdgeKernelTestBase {
     $this->installSchema('user', ['users_data']);
 
     $this->apigeeTestHelperSetup();
-
-    $this->addOrganizationMatchedResponse();
-
-    $this->entity = $this->createTeam();
+    $this->storeToken();
+    $this->addApigeexOrganizationMatchedResponse();
+    $this->entity = $this->createApigeexTeam();
   }
 
   /**
