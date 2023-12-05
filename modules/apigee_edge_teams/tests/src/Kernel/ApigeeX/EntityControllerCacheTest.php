@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Google Inc.
+ * Copyright 2023 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License version 2 as published by the
@@ -17,10 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\apigee_edge_teams\Kernel;
+namespace Drupal\Tests\apigee_edge_teams\Kernel\ApigeeX;
 
-use Apigee\Edge\Api\Management\Entity\Company;
-use Drupal\Tests\apigee_edge\Kernel\ApigeeEdgeKernelTestBase;
+use Apigee\Edge\Api\ApigeeX\Entity\AppGroup;
+use Drupal\Tests\apigee_edge\Kernel\ApigeeX\ApigeeEdgeKernelTestBase;
 use Drupal\Tests\apigee_edge\Traits\EntityControllerCacheUtilsTrait;
 
 /**
@@ -57,14 +57,14 @@ class EntityControllerCacheTest extends ApigeeEdgeKernelTestBase {
     $teams = [];
     for ($i = 0; $i < 3; $i++) {
       $id = $this->getRandomUniqueId();
-      $teams[$id] = new Company([
+      $teams[$id] = new AppGroup([
         'name' => $id,
       ]);
     }
 
     $this->saveAllEntitiesAndValidate($teams, $team_cache, $team_id_cache);
 
-    /** @var \Apigee\Edge\Api\Management\Entity\CompanyInterface $team */
+    /** @var \Apigee\Edge\Api\Management\Entity\AppGroupInterface $team */
     foreach ($teams as $team) {
       // Load team by name.
       $this->assertSame($team, $team_cache->getEntity($team->getName()));
