@@ -46,7 +46,6 @@ use Apigee\Edge\Structure\AttributesProperty;
  *   },
  * )
  */
-#[\AllowDynamicProperties]
 class ApiProduct extends EdgeEntityBase implements ApiProductInterface {
 
   // The majority of Drupal core & contrib assumes that an entity to be
