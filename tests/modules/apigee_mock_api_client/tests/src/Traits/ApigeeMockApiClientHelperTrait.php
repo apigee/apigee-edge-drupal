@@ -271,15 +271,17 @@ trait ApigeeMockApiClientHelperTrait {
    *
    * @param \Apigee\Edge\Api\ApigeeX\Entity\AppGroup $appgroup
    *   The appgroup to get properties from.
+   * @param string|null $developer
+   *   Member email.
    * @param string|null $response_code
    *   Add a response code to override the default.
    */
-  protected function queueAppGroupResponse(AppGroup $appgroup, $response_code = NULL) {
+  protected function queueAppGroupResponse(AppGroup $appgroup, $developer = NULL, $response_code = NULL) {
     $context = empty($response_code) ? [] : ['status_code' => $response_code];
 
     $context['appgroup'] = $appgroup;
     $context['org_name'] = $this->sdkConnector->getOrganization();
-
+    $context['members'] = $developer;
     $this->stack->queueMockResponse(['appgroup' => $context]);
   }
 
@@ -423,6 +425,47 @@ trait ApigeeMockApiClientHelperTrait {
 
     $this->queueDeveloperResponse($user, 200, [
       'companies' => [$team->id()],
+    ]);
+
+    return $this->entityTypeManager->getStorage('developer')->load($user->getEmail());
+  }
+
+  /**
+   * Adds a user to a X team.
+   *
+   * Adding a team to a user will add the team as long as the developer entity
+   * is loaded from cache.
+   *
+   * @param \Drupal\apigee_edge_teams\Entity\TeamInterface $team
+   *   The team.
+   * @param \Drupal\user\UserInterface $user
+   *   A drupal user.
+   *
+   * @return \Drupal\apigee_edge\Entity\DeveloperInterface
+   *   The developer entity.
+   */
+  public function addUserToXteam(TeamInterface $team, UserInterface $user) {
+    $this->queueDevsInCompanyResponse([
+      ['email' => $user->getEmail()],
+    ]);
+    $this->queueAppGroupResponse($team->decorated(), $user->getEmail());
+    $this->queueAppGroupResponse($team->decorated(), $user->getEmail());
+
+    /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface $team_member_roles */
+    $team_member_role_storage = \Drupal::entityTypeManager()->getStorage('team_member_role');
+    $team_member_role_storage->addTeamRoles($user, $team, ['admin']);
+    $team_member_roles = $team_member_role_storage->loadByDeveloperAndTeam($user, $team);
+    $team_member_roles->save();
+
+    $this->queueDevsInCompanyResponse([
+      ['email' => $user->getEmail()],
+    ]);
+    $teamMembershipManager = \Drupal::service('apigee_edge_teams.team_membership_manager');
+    $this->queueAppGroupResponse($team->decorated(), $user->getEmail());
+    $teamMembershipManager->addMembers($team->id(), [$user->getEmail() => ['admin']]);
+
+    $this->queueDeveloperResponse($user, 200, [
+      'appgroups' => [$team->id()],
     ]);
 
     return $this->entityTypeManager->getStorage('developer')->load($user->getEmail());
