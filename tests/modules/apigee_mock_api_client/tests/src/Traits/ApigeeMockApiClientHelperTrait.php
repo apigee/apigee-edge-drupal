@@ -271,6 +271,8 @@ trait ApigeeMockApiClientHelperTrait {
    *
    * @param \Apigee\Edge\Api\ApigeeX\Entity\AppGroup $appgroup
    *   The appgroup to get properties from.
+   * @param string|null $developer
+   *   Member email.
    * @param string|null $response_code
    *   Add a response code to override the default.
    */
