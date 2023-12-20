@@ -20,8 +20,8 @@
 
 namespace Drupal\apigee_edge_teams\Entity\ListBuilder;
 
-use Drupal\apigee_edge\Entity\ListBuilder\AppListBuilder;
 use Drupal\apigee_edge\Entity\AppWarningsCheckerInterface;
+use Drupal\apigee_edge\Entity\ListBuilder\AppListBuilder;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
