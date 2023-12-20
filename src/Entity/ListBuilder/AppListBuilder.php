@@ -120,7 +120,8 @@ class AppListBuilder extends EdgeEntityListBuilder {
       $container->get('renderer'),
       $container->get('request_stack'),
       $container->get('datetime.time'),
-      $container->get('config.factory')
+      $container->get('config.factory'),
+      $container->get('app_warnings_checker')
     );
   }
 

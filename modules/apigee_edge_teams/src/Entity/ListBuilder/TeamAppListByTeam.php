@@ -21,6 +21,7 @@
 namespace Drupal\apigee_edge_teams\Entity\ListBuilder;
 
 use Drupal\apigee_edge\Entity\ListBuilder\AppListBuilder;
+use Drupal\apigee_edge\Entity\AppWarningsCheckerInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
@@ -62,14 +63,20 @@ class TeamAppListByTeam extends AppListBuilder implements ContainerInjectionInte
    *   The route match object.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
+   * @param \Drupal\apigee_edge\Entity\AppWarningsCheckerInterface $app_warnings_checker
+   *   The app warnings checker service.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render, RequestStack $request_stack, TimeInterface $time, RouteMatchInterface $route_match, ConfigFactoryInterface $config_factory = NULL) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render, RequestStack $request_stack, TimeInterface $time, RouteMatchInterface $route_match, ConfigFactoryInterface $config_factory = NULL, AppWarningsCheckerInterface $app_warnings_checker = NULL) {
     if (!$config_factory) {
       $config_factory = \Drupal::service('config.factory');
+    }
+    if (!$app_warnings_checker) {
+      $app_warnings_checker = \Drupal::service('apigee_edge.entity.app_warnings_checker');
     }
 
     parent::__construct($entity_type, $entity_type_manager, $render, $request_stack, $time, $config_factory);
     $this->routeMatch = $route_match;
+    $this->appWarningsChecker = $app_warnings_checker;
   }
 
   /**
@@ -83,7 +90,8 @@ class TeamAppListByTeam extends AppListBuilder implements ContainerInjectionInte
       $container->get('request_stack'),
       $container->get('datetime.time'),
       $container->get('current_route_match'),
-      $container->get('config.factory')
+      $container->get('config.factory'),
+      $container->get('app_warnings_checker')
     );
   }
 

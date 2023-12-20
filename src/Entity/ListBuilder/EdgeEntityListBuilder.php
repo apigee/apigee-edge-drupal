@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge\Entity\ListBuilder;
 
+use Drupal\apigee_edge\Entity\AppWarningsCheckerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -57,6 +58,13 @@ class EdgeEntityListBuilder extends EntityListBuilder {
   protected $configFactory;
 
   /**
+   * The app warnings checker.
+   *
+   * @var \Drupal\apigee_edge\Entity\AppWarningsCheckerInterface
+   */
+  protected $appWarningsChecker;
+
+  /**
    * EdgeEntityListBuilder constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -65,19 +73,25 @@ class EdgeEntityListBuilder extends EntityListBuilder {
    *   The entity type manager.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
+   * @param \Drupal\apigee_edge\Entity\AppWarningsCheckerInterface $app_warnings_checker
+   *   The app warnings checker service.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory = NULL) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory = NULL, AppWarningsCheckerInterface $app_warnings_checker = NULL) {
     parent::__construct($entity_type, $entity_type_manager->getStorage($entity_type->id()));
     $this->entityTypeManager = $entity_type_manager;
 
     if (!$config_factory) {
       $config_factory = \Drupal::service('config.factory');
     }
+    if (!$app_warnings_checker) {
+      $app_warnings_checker = \Drupal::service('apigee_edge.entity.app_warnings_checker');
+    }
 
     $this->configFactory = $config_factory;
+    $this->appWarningsChecker = $app_warnings_checker;
     // Disable pager for now for all Apigee Edge entities.
     $this->limit = 0;
   }
@@ -89,7 +103,8 @@ class EdgeEntityListBuilder extends EntityListBuilder {
     return new static(
       $entity_type,
       $container->get('entity_type.manager'),
-      $container->get('config.factory')
+      $container->get('config.factory'),
+      $container->get('app_warnings_checker')
     );
   }
 

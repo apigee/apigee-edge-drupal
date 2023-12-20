@@ -21,6 +21,7 @@
 namespace Drupal\apigee_edge\Entity\ListBuilder;
 
 use Drupal\apigee_edge\Entity\AppInterface;
+use Drupal\apigee_edge\Entity\AppWarningsCheckerInterface;
 use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Utility\Html;
@@ -85,15 +86,21 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
    *   The route match object.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
+   * @param \Drupal\apigee_edge\Entity\AppWarningsCheckerInterface $app_warnings_checker
+   *   The app warnings checker service.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render, RequestStack $request_stack, TimeInterface $time, AccountInterface $current_user, RouteMatchInterface $route_match, ConfigFactoryInterface $config_factory = NULL) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render, RequestStack $request_stack, TimeInterface $time, AccountInterface $current_user, RouteMatchInterface $route_match, ConfigFactoryInterface $config_factory = NULL, AppWarningsCheckerInterface $app_warnings_checker = NULL) {
     if (!$config_factory) {
       $config_factory = \Drupal::service('config.factory');
+    }
+    if (!$app_warnings_checker) {
+      $app_warnings_checker = \Drupal::service('apigee_edge.entity.app_warnings_checker');
     }
 
     parent::__construct($entity_type, $entity_type_manager, $render, $request_stack, $time, $config_factory);
     $this->currentUser = $current_user;
     $this->routeMatch = $route_match;
+    $this->appWarningsChecker = $app_warnings_checker;
   }
 
   /**
@@ -108,7 +115,8 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
       $container->get('datetime.time'),
       $container->get('current_user'),
       $container->get('current_route_match'),
-      $container->get('config.factory')
+      $container->get('config.factory'),
+      $container->get('app_warnings_checker')
     );
   }
 
