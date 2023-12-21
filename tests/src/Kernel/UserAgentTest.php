@@ -82,7 +82,7 @@ class UserAgentTest extends KernelTestBase {
     \Drupal::moduleHandler()->invokeAll('apigee_edge_user_agent_string_alter', [&$user_agent_parts]);
     $userAgentPrefix = implode('; ', $user_agent_parts);
 
-    $this->assertSame($userAgentPrefix, 'Apigee Edge/2.x-dev;' . ' Drupal/' . \Drupal::VERSION);
+    $this->assertSame($userAgentPrefix, 'Apigee/2.x-dev;' . ' Drupal/' . \Drupal::VERSION);
   }
 
 }
