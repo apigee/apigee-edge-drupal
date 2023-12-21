@@ -57,13 +57,6 @@ class EdgeEntityListBuilder extends EntityListBuilder {
   protected $configFactory;
 
   /**
-   * The app warnings checker.
-   *
-   * @var \Drupal\apigee_edge\Entity\AppWarningsCheckerInterface
-   */
-  protected $appWarningsChecker;
-
-  /**
    * EdgeEntityListBuilder constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
