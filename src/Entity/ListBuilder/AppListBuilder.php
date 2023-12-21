@@ -99,6 +99,7 @@ class AppListBuilder extends EdgeEntityListBuilder {
       $config_factory = \Drupal::service('config.factory');
     }
     if (!$app_warnings_checker) {
+      @trigger_error('Calling ' . __METHOD__ . ' without the $app_warnings_checker is deprecated in apigee_edge:8-x-1.18 and is required before apigee_edge:8.x-2.0. See https://github.com/apigee/apigee-edge-drupal/pull/507', E_USER_DEPRECATED);
       $app_warnings_checker = \Drupal::service('apigee_edge.entity.app_warnings_checker');
     }
 
