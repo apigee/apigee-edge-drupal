@@ -121,7 +121,7 @@ class AppListBuilder extends EdgeEntityListBuilder {
       $container->get('request_stack'),
       $container->get('datetime.time'),
       $container->get('config.factory'),
-      $container->get('app_warnings_checker')
+      $container->get('apigee_edge.entity.app_warnings_checker')
     );
   }
 
