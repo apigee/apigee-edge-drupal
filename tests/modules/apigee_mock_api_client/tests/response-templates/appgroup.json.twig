@@ -9,6 +9,7 @@
  * Variables:
  * - appgroup: The team (appgroup).
  * - org_name: The org name.
+ * - members: The member email id.
  */
 #}
 {
@@ -21,7 +22,7 @@
     "attributes": [
         {
             "name": "__apigee_reserved__developer_details",
-            "value": "[{\"developer\":\"doe@example.com\",\"roles\":[\"admin\"]}]"
+            "value": "[{\"developer\":\"{{ members|default('foo@example.com') }}\",\"roles\":[\"admin\"]}]"
         }
     ],
     "createdAt": 1506959878351,
