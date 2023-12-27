@@ -30,9 +30,9 @@ This project follows [Google's Open Source Community Guidelines](https://opensou
 
 ## To start
 * Fork this project on Github.
-* If you do not have an Apigee Edge trial organization, create a new one
-[here](https://login.apigee.com/login).
-* Register on https://circleci.com using your GitHub account.
+* If you do not have an Apigee Edge or X trial organization, create a new one
+[here for Edge](https://login.apigee.com/login) or [X](https://apigee.google.com/).
+* Setup [Github actions](https://docs.github.com/en/actions) using your GitHub account.
 * Install the module from for your fork instead of Drupal.org on your local. (See below.)
 
 ## For daily work
@@ -40,10 +40,10 @@ This project follows [Google's Open Source Community Guidelines](https://opensou
 * Add changes to the code. If you implement new features, add new
 tests to cover the implemented functionality. If you modify existing features, update related tests.
 * Push your changes to your repo's branch.
-* Wait until all CircleCI test jobs finish and _pass_. (If any of them fails
-restart them once or twice. They may have failed due to an API communication error. You can
+* Wait until all Github Actions/CircleCI test jobs finish and _pass_. (If any of them fails
+restart them once or twice. They may have failed due to an API communication error or caching issue. You can
 identify these type of issues from logs.)
-* Create [new pull request](https://github.com/apigee/apigee-edge-drupal/pull/new/8.x-1.x). CircleCI will
+* Create [new pull request](https://github.com/apigee/apigee-edge-drupal/pull/new/8.x-1.x). Github Actions/CircleCI will
 automatically report the status of each of the CI jobs directly to the GitHub PR.
 
 ## Installing module from your fork instead of Drupal.org
@@ -112,7 +112,7 @@ need to be set on your system. These variables are:
 
 Value of `APIGEE_EDGE_AUTH_TYPE` should be set to either 'basic' or 'oauth'.  If you select `oauth` and have a SAML enabled org you will also need to set `APIGEE_EDGE_AUTHORIZATION_SERVER`, `APIGEE_EDGE_CLIENT_ID`, `APIGEE_EDGE_CLIENT_SECRET` values.
 
-Value of `APIGEE_EDGE_USERNAME` should be an email address of an Apigee Edge user with **Organization administrator role** if you do not want to bump into permission issues in tests. Tests failed with "Forbidden" could be a sign of the insufficient permissions.
+Value of `APIGEE_EDGE_USERNAME` should be an email address of an Apigee Edge/X user with **Organization administrator role** if you do not want to bump into permission issues in tests. Tests failed with "Forbidden" could be a sign of the insufficient permissions.
 
 You can set these environment variables in multiple ways:
 - Copy the `phpunit.core.xml.dist` file included with this module as `core/phpunit.xml`. Uncomment the `APIGEE_*`
@@ -132,6 +132,7 @@ If you wish to run tests both against a Public and a Hybrid instance:
 1. First configure the credentials to the public org as described above.
 2. Add the `APIGEE_EDGE_ACCOUNT_JSON_KEY` environment variable.
 3. Add a`APIGEE_EDGE_HYBRID_ORGANIZATION` environment variable, which specifies the Hybrid organization to use for tests.
+4. Add the `APIGEE_EDGE_HYBRID_ENDPOINT` environment variable, which specifies the Hybrid/X endpoint to use for tests.
 
 ## Install development dependencies
 
@@ -169,13 +170,13 @@ You can read more about running Drupal 8 PHPUnit tests [here](https://www.drupal
 
 ### Troubleshooting
 
-**If a test is passing on your local, but it is failing on CircleCI:**
+**If a test is passing on your local, but it is failing on Github Actions/CircleCI:**
 1. Try to restart failing job(s) one or two times, failing tests could be caused by communication issues.
-2. If (1) did not work, try to run the failing test(s) on your local with the above described CircleCI CLI.
+2. If (1) did not work, try to run the failing test(s) on your local with the above described Github Actions/CircleCI CLI.
 
 ### If your pull request relies on changes that are not yet available in Apigee Edge Client Library for PHP's latest stable release
 You should *temporarily* add required changes as patches to module's composer.json.
-This way this module's tests could pass on CircleCI.
+This way this module's tests could pass on Github Actions/CircleCI.
 
 #### Example:
 
