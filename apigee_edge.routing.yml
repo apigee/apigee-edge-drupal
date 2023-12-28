@@ -10,7 +10,7 @@ apigee_edge.admin_config_edge:
   path: '/admin/config/apigee-edge'
   defaults:
     _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
-    _title: 'Apigee Edge'
+    _title: 'Apigee'
   requirements:
     _permission: 'administer apigee edge'
 
@@ -18,7 +18,7 @@ apigee_edge.settings:
   path: '/admin/config/apigee-edge/settings'
   defaults:
     _form: '\Drupal\apigee_edge\Form\AuthenticationForm'
-    _title: 'Apigee Edge general settings'
+    _title: 'Apigee general settings'
   requirements:
     _permission: 'administer apigee edge'
 
