@@ -30,7 +30,7 @@ use Drupal\key\Form\KeyEditForm;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides a form for saving the Apigee Edge API authentication key.
+ * Provides a form for saving the Apigee API authentication key.
  */
 class AuthenticationForm extends KeyEditForm {
 
@@ -73,8 +73,8 @@ class AuthenticationForm extends KeyEditForm {
       /** @var \Drupal\key\KeyInterface $active_key */
       $active_key = $key_storage->create([
         'id' => static::DEFAULT_KEY_ENTITY_ID,
-        'label' => $this->t('Apigee Edge connection'),
-        'description' => $this->t('Contains the credentials for connecting to Apigee Edge.'),
+        'label' => $this->t('Apigee connection'),
+        'description' => $this->t('Contains the credentials for connecting to Apigee.'),
         'key_type' => 'apigee_auth',
         'key_input' => 'apigee_auth_input',
         'key_provider' => 'apigee_edge_private_file',
@@ -141,7 +141,7 @@ class AuthenticationForm extends KeyEditForm {
     $form['id']['#access'] = FALSE;
     $form['description']['#access'] = FALSE;
     $form['settings']['type_section']['#access'] = FALSE;
-    $form['settings']['input_section']['#title'] = $this->t('Apigee Edge connection settings');
+    $form['settings']['input_section']['#title'] = $this->t('Apigee connection settings');
     $form['settings']['input_section']['#weight'] = 0;
     $form['settings']['provider_section']['#title'] = $this->t('Advanced settings');
     // Provider selection should be closed by default unless the form rebuild
