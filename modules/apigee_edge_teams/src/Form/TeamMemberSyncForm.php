@@ -83,7 +83,7 @@ class TeamMemberSyncForm extends FormBase {
       $this->sdkConnector->testConnection();
     }
     catch (\Exception $exception) {
-      $this->messenger()->addError($this->t('Cannot connect to Apigee Edge server. Please ensure that <a href=":link">Apigee Edge connection settings</a> are correct.', [
+      $this->messenger()->addError($this->t('Cannot connect to Apigee server. Please ensure that <a href=":link">Apigee connection settings</a> are correct.', [
         ':link' => Url::fromRoute('apigee_edge.settings')->toString(),
       ]));
       return $form;
