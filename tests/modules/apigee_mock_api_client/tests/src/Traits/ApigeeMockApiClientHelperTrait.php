@@ -453,6 +453,7 @@ trait ApigeeMockApiClientHelperTrait {
 
     /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface $team_member_roles */
     $team_member_role_storage = \Drupal::entityTypeManager()->getStorage('team_member_role');
+    $this->queueAppGroupResponse($team->decorated(), $user->getEmail());
     $team_member_role_storage->addTeamRoles($user, $team, ['admin']);
     $team_member_roles = $team_member_role_storage->loadByDeveloperAndTeam($user, $team);
     $team_member_roles->save();
@@ -461,6 +462,7 @@ trait ApigeeMockApiClientHelperTrait {
       ['email' => $user->getEmail()],
     ]);
     $teamMembershipManager = \Drupal::service('apigee_edge_teams.team_membership_manager');
+    $this->queueAppGroupResponse($team->decorated(), $user->getEmail());
     $this->queueAppGroupResponse($team->decorated(), $user->getEmail());
     $teamMembershipManager->addMembers($team->id(), [$user->getEmail() => ['admin']]);
 

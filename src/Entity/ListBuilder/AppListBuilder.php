@@ -94,13 +94,9 @@ class AppListBuilder extends EdgeEntityListBuilder {
    * @param \Drupal\apigee_edge\Entity\AppWarningsCheckerInterface $app_warnings_checker
    *   The app warnings checker service.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, RequestStack $request_stack, TimeInterface $time, ConfigFactoryInterface $config_factory = NULL, AppWarningsCheckerInterface $app_warnings_checker = NULL) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, RequestStack $request_stack, TimeInterface $time, ConfigFactoryInterface $config_factory = NULL, AppWarningsCheckerInterface $app_warnings_checker) {
     if (!$config_factory) {
       $config_factory = \Drupal::service('config.factory');
-    }
-    if (!$app_warnings_checker) {
-      @trigger_error('Calling ' . __METHOD__ . ' without the $app_warnings_checker is deprecated in apigee_edge:8-x-1.18 and is required before apigee_edge:8.x-2.0. See https://github.com/apigee/apigee-edge-drupal/pull/507', E_USER_DEPRECATED);
-      $app_warnings_checker = \Drupal::service('apigee_edge.entity.app_warnings_checker');
     }
 
     parent::__construct($entity_type, $entity_type_manager, $config_factory);
@@ -121,7 +117,8 @@ class AppListBuilder extends EdgeEntityListBuilder {
       $container->get('renderer'),
       $container->get('request_stack'),
       $container->get('datetime.time'),
-      $container->get('config.factory')
+      $container->get('config.factory'),
+      $container->get('apigee_edge.entity.app_warnings_checker')
     );
   }
 
