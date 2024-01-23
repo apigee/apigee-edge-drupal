@@ -40,10 +40,10 @@ This project follows [Google's Open Source Community Guidelines](https://opensou
 * Add changes to the code. If you implement new features, add new
 tests to cover the implemented functionality. If you modify existing features, update related tests.
 * Push your changes to your repo's branch.
-* Wait until all Github Actions/CircleCI test jobs finish and _pass_. (If any of them fails
+* Wait until all Github Actions test jobs finish and _pass_. (If any of them fails
 restart them once or twice. They may have failed due to an API communication error or caching issue. You can
 identify these type of issues from logs.)
-* Create [new pull request](https://github.com/apigee/apigee-edge-drupal/pull/new/8.x-1.x). Github Actions/CircleCI will
+* Create [new pull request](https://github.com/apigee/apigee-edge-drupal/pull/new/3.x). Github Actions will
 automatically report the status of each of the CI jobs directly to the GitHub PR.
 
 ## Installing module from your fork instead of Drupal.org
@@ -54,7 +54,7 @@ Update your composer.json and install the module from your fork:
 ```bash
 cd [DRUPAL_ROOT]
 composer config repositories.forked-apigee_edge vcs https://github.com/[YOUR-GITHUB-USERNAME]/apigee-edge-drupal
-composer require drupal/apigee_edge:dev-issue-12 # It is important to require a branch/tag here that does not exist in the Drupal.org repo otherwise code gets pulled from there. For example, dev-8.x-1.x condition would pull the code from Drupal.org repo instead of your fork.
+composer require drupal/apigee_edge:dev-issue-12 # It is important to require a branch/tag here that does not exist in the Drupal.org repo otherwise code gets pulled from there. For example, dev-3.x condition would pull the code from Drupal.org repo instead of your fork.
 ```
 
 If you would like to keep your fork always up-to-date with recent changes in
@@ -72,7 +72,7 @@ upstream:
 ```bash
 cd [DRUPAL_ROOT]/modules/contrib/apigee_edge
 git fetch upstream
-git rebase upstream/8.x-1.x
+git rebase upstream/3.x
 ```
 
 After you have installed the module from your fork you can easily create new
@@ -81,7 +81,7 @@ branches for new fixes on your local:
 ```bash
 cd [DRUPAL_ROOT]/modules/contrib/apigee_edge
 git fetch upstream
-git checkout -b issue-12 upstream/8.x-1.x
+git checkout -b issue-12 upstream/3.x
 
 # Add your awesome changes.
 # Do not forget to update tests or write additional test cases if needed.
@@ -155,28 +155,17 @@ cd [DRUPAL_ROOT]
 ./vendor/bin/phpunit -c core --verbose --color modules/contrib/apigee_edge/tests/src/Kernel/EntityControllerCacheTest.php
 ```
 
-If you have CircleCI CLI and Docker installed on your system you can also run
-PHPUnit tests with the following commands:
-
-```bash
-cd [DRUPAL_ROOT]/modules/contrib/apigee_edge/
-circleci local execute --job [JOB_NAME]
-```
-
-- Note: Replace `[JOB_NAME]` with the name of the job that you want to run locally. Examples:
-`run-unit-kernel-tests-8`, `run-functional-tests-9`, etc.
-
-You can read more about running Drupal 8 PHPUnit tests [here](https://www.drupal.org/docs/8/phpunit/running-phpunit-tests).
+You can read more about running Drupal 9 and above PHPUnit tests [here](https://www.drupal.org/docs/automated-testing/phpunit-in-drupal/running-phpunit-tests).
 
 ### Troubleshooting
 
-**If a test is passing on your local, but it is failing on Github Actions/CircleCI:**
+**If a test is passing on your local, but it is failing on Github Actions:**
 1. Try to restart failing job(s) one or two times, failing tests could be caused by communication issues.
-2. If (1) did not work, try to run the failing test(s) on your local with the above described Github Actions/CircleCI CLI.
+2. If (1) did not work, try to run the failing test(s) on your local with the above described Github Actions CLI.
 
-### If your pull request relies on changes that are not yet available in Apigee Edge Client Library for PHP's latest stable release
+### If your pull request relies on changes that are not yet available in Apigee Client Library for PHP's latest stable release
 You should *temporarily* add required changes as patches to module's composer.json.
-This way this module's tests could pass on Github Actions/CircleCI.
+This way this module's tests could pass on Github Actions.
 
 #### Example:
 
