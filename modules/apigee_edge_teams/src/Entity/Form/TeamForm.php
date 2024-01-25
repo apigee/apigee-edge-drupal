@@ -312,6 +312,12 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
       }
 
     }
+    $options = [];
+    $query = $this->getRequest()->query;
+    if ($query->has('destination')) {
+      $options['query']['destination'] = $query->get('destination');
+      $query->remove('destination');
+    }
     // Redirecting user to team view page to manage the team members and apps.
     $form_state->setRedirectUrl($team->toUrl('canonical'));
 
