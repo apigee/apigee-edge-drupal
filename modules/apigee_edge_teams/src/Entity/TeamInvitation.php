@@ -190,7 +190,9 @@ class TeamInvitation extends ContentEntityBase implements TeamInvitationInterfac
    * {@inheritdoc}
    */
   public function getRecipient(): ?string {
-    return $this->get('recipient')->value;
+    $recipientEmail = $this->get('recipient')->value;;
+    $user = user_load_by_mail($recipientEmail);
+    return $user ? $user->getEmail() : $recipientEmail;
   }
 
   /**
