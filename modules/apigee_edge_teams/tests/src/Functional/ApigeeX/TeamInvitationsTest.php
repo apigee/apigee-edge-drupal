@@ -159,20 +159,13 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
       $this->teamB->decorated(),
     ];
 
-    $inCache = FALSE;
     foreach ($teams as $team) {
-      if (!$inCache) {
-        $this->queueAppGroupResponse($team->decorated());
-      }
+      $this->queueAppGroupResponse($team->decorated());
       $this->drupalGet(Url::fromRoute('entity.team.add_members', [
         'team' => $team->id(),
       ]));
 
       $this->assertSession()->pageTextContains('Invite members');
-
-      $this->queueAppGroupsResponse($appgroups);
-      $this->queueAppGroupsResponse($appgroups);
-      $this->queueDevsInCompanyResponse([]);
       $this->submitForm([
         'developers' => $this->accountUser->getEmail(),
       ], 'Invite members');
@@ -184,7 +177,6 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
       ]);
 
       $this->assertSession()->pageTextContains($successMessage);
-      $inCache = TRUE;
     }
   }
 
