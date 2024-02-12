@@ -267,13 +267,7 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
 
     if ($was_new) {
       try {
-        if ($this->orgController->isOrganizationApigeeX()) {
-          // For ApigeeX adding the member as admin.
-          $this->teamMembershipManager->addMembers($team->id(), [
-            $this->currentUser->getEmail() => ['admin']
-          ]);
-        }
-        else {
+        if (!$this->orgController->isOrganizationApigeeX()) {
           $this->teamMembershipManager->addMembers($team->id(), [
             $this->currentUser->getEmail()
           ]);
