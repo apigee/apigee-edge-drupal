@@ -263,13 +263,7 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
 
     if ($was_new) {
       try {
-        if ($this->orgController->isOrganizationApigeeX()) {
-          // For ApigeeX adding the member as admin.
-          $this->teamMembershipManager->addMembers($team->id(), [
-            $this->currentUser->getEmail() => ['admin']
-          ]);
-        }
-        else {
+        if (!$this->orgController->isOrganizationApigeeX()) {
           $this->teamMembershipManager->addMembers($team->id(), [
             $this->currentUser->getEmail()
           ]);
@@ -307,6 +301,12 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
         $this->logger->error('Unable to add creator of the team (%email) as member to the team. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
       }
 
+    }
+    $options = [];
+    $query = $this->getRequest()->query;
+    if ($query->has('destination')) {
+      $options['query']['destination'] = $query->get('destination');
+      $query->remove('destination');
     }
     // Redirecting user to team view page to manage the team members and apps.
     $form_state->setRedirectUrl($team->toUrl('canonical'));
