@@ -174,7 +174,6 @@ class TeamListBuilderTest extends ApigeeEdgeTeamsFunctionalTestBase {
     $this->drupalLogin($this->aMemberAccount);
     $this->queueAppGroupsResponse($appgroups);
 
-    $this->queueDeveloperResponse($this->aMemberAccount, 200, ['appgroups' => [$this->teamA->id()]]);
     $this->drupalGet(Url::fromRoute('entity.team.collection'));
     $assert = $this->assertSession();
     $assert->pageTextContains($this->teamA->label());
