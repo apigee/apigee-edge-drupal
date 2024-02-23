@@ -34,7 +34,7 @@ use Symfony\Component\Routing\Route;
  */
 class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
 
-    /**
+  /**
    * The team entity storage.
    *
    * @var \Drupal\apigee_edge_teams\Entity\Storage\TeamStorageInterface
@@ -202,8 +202,8 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function setUp(): void {
-    //Setting isApigeeX() to true for Apigee X org.
-    TeamApp::$apigeex = true;
+    // Setting isApigeeX() to true for Apigee X org.
+    TeamApp::$apigeex = TRUE;
     parent::setUp();
     $this->teamStorage = $this->container->get('entity_type.manager')->getStorage('team');
     $this->teamAppStorage = $this->container->get('entity_type.manager')->getStorage('team_app');
@@ -234,14 +234,14 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
     });
 
     $this->team = $this->teamStorage->create([
-        'name' => mb_strtolower($this->getRandomGenerator()->name()),
-        'attributes' => new AttributesProperty([
-          'name' => '__apigee_reserved__developer_details',
-          'value' => '[{\"developer\":\"doe@example.com\",\"roles\":[\"admin\"]}]'
-        ]),
-      ]);
+      'name' => mb_strtolower($this->getRandomGenerator()->name()),
+      'attributes' => new AttributesProperty([
+        'name' => '__apigee_reserved__developer_details',
+        'value' => '[{\"developer\":\"doe@example.com\",\"roles\":[\"admin\"]}]'
+      ]),
+    ]);
     $this->team->save();
-    
+
     $this->teamApp = $this->teamAppStorage->create([
       'name' => mb_strtolower($this->getRandomGenerator()->name()),
       'appGroup' => $this->team->getName(),
@@ -311,8 +311,8 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
    * Tests team, team membership level and admin permissions, team roles.
    */
   public function testAccess() {
-    //Setting isApigeeX() to true for Apigee X org.
-    TeamApp::$apigeex = true;
+    // Setting isApigeeX() to true for Apigee X org.
+    TeamApp::$apigeex = TRUE;
 
     $this->teamAccessTest();
     $this->teamRoleAccessTest();
