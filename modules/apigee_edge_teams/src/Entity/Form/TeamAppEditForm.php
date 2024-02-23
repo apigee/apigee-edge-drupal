@@ -108,6 +108,23 @@ class TeamAppEditForm extends AppEditForm {
   /**
    * {@inheritdoc}
    */
+  protected function actions(array $form, FormStateInterface $form_state) {
+    $actions = parent::actions($form, $form_state);
+    // Hide the Delete button.
+    $actions['delete']['#access'] = FALSE;
+    // Cancel button to redirect the user to team app listing page.
+    $actions['cancel'] = [
+      '#type' => 'link',
+      '#title' => $this->t('Cancel'),
+      '#attributes' => ['class' => ['btn btn-outline-primary']],
+      '#url' => $this->entity->toUrl('collection-by-team'),
+    ];
+    return $actions;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function getRedirectUrl(): Url {
     $entity = $this->getEntity();
     if ($entity->hasLinkTemplate('collection-by-team')) {

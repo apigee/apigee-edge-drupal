@@ -182,7 +182,8 @@ trait TeamAppFormTrait {
       '#weight' => -100,
     ];
 
-    if (!in_array($this->getTeamName($form, $form_state), $this->getTeamMembershipMananger()->getTeams(\Drupal::currentUser()->getEmail()))) {
+    // Argument #2 in getTeams() is required for checking the AppGroup members and not required for Edge.
+    if (!in_array($this->getTeamName($form, $form_state), $this->getTeamMembershipMananger()->getTeams(\Drupal::currentUser()->getEmail(), $this->getTeamName($form, $form_state)))) {
       $element['#message_list']['warning'][] = t('You are not member of this @team. You may see @api_products here that a @team member can not see.', [
         '@team' => mb_strtolower($this->getEntityTypeManager()->getDefinition('team')->getSingularLabel()),
         '@api_products' => $this->getEntityTypeManager()->getDefinition('api_product')->getPluralLabel(),
@@ -210,7 +211,8 @@ trait TeamAppFormTrait {
     // be visible that visibility is matching with the configured
     // non_member_team_apps_visible_api_products config key value.
     // @see nonMemberApiProductAccessWarningElement()
-    if (!in_array($team_name, $this->getTeamMembershipMananger()->getTeams(\Drupal::currentUser()->getEmail()))) {
+    // Argument #2 in getTeams() is required for checking the AppGroup members and not required for Edge.
+    if (!in_array($team_name, $this->getTeamMembershipMananger()->getTeams(\Drupal::currentUser()->getEmail(), $team_name))) {
       $filter = function (ApiProductInterface $api_product) use ($team) {
         $visibility = $api_product->getAttributeValue('access') ?? 'public';
         return in_array($visibility, $this->getConfigObject('apigee_edge_teams.team_settings')->get('non_member_team_apps_visible_api_products'));

@@ -49,8 +49,15 @@ abstract class TeamMemberCreateUpdate extends EdgeJob {
    * {@inheritdoc}
    */
   protected function executeRequest() {
+    $orgController = \Drupal::service('apigee_edge.controller.organization');
     $member_controller = \Drupal::service('apigee_edge_teams.team_membership_manager');
-    $team_members = $member_controller->getMembers($this->team_ids);
+
+    if ($orgController->isOrganizationApigeeX()) {
+      $team_members = $member_controller->syncAppGroupMembers($this->team_ids);
+    }
+    else {
+      $team_members = $member_controller->getMembers($this->team_ids);
+    }
   }
 
 }

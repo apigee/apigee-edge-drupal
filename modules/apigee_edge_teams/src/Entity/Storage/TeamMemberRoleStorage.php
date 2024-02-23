@@ -20,8 +20,9 @@
 
 namespace Drupal\apigee_edge_teams\Entity\Storage;
 
-use Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface;
+use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
+use Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface;
 use Drupal\apigee_edge_teams\Exception\InvalidArgumentException;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Cache\Cache;
@@ -54,6 +55,13 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
   protected $teamMembershipManager;
 
   /**
+   * The organization controller service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface
+   */
+  private $orgController;
+
+  /**
    * The logger.
    *
    * @var \Psr\Log\LoggerInterface
@@ -83,11 +91,14 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
    *   The entity type bundle info.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
+   *   The organization controller service.
    */
-  public function __construct(EntityTypeInterface $entity_type, Connection $database, EntityFieldManagerInterface $entity_field_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, MemoryCacheInterface $memory_cache, TeamMembershipManagerInterface $team_membership_manager, LoggerInterface $logger, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, EntityTypeManagerInterface $entity_type_manager = NULL) {
+  public function __construct(EntityTypeInterface $entity_type, Connection $database, EntityFieldManagerInterface $entity_field_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, MemoryCacheInterface $memory_cache, TeamMembershipManagerInterface $team_membership_manager, LoggerInterface $logger, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, EntityTypeManagerInterface $entity_type_manager = NULL, OrganizationControllerInterface $org_controller) {
     parent::__construct($entity_type, $database, $entity_field_manager, $cache, $language_manager, $memory_cache, $entity_type_bundle_info, $entity_type_manager);
     $this->teamMembershipManager = $team_membership_manager;
     $this->logger = $logger;
+    $this->orgController = $org_controller;
   }
 
   /**
@@ -104,7 +115,8 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
       $container->get('apigee_edge_teams.team_membership_manager'),
       $container->get('logger.channel.apigee_edge_teams'),
       $container->get('entity_type.bundle.info'),
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('apigee_edge.controller.organization')
     );
   }
 
@@ -147,21 +159,30 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
     if ($account->isAnonymous()) {
       throw new InvalidArgumentException('Anonymous user can not be member of a team.');
     }
-    try {
-      $developer_team_ids = $this->teamMembershipManager->getTeams($account->getEmail());
-    }
-    catch (\Exception $e) {
-      $developer_team_ids = [];
-    }
-    if (!in_array($team->id(), $developer_team_ids)) {
-      throw new InvalidArgumentException("{$account->getEmail()} is not member of {$team->id()} team.");
+    // TODO : Implement this check for ApigeeX.
+    // DB is empty durning Team syncronization for 1st time, so $developer_team_ids
+    // is always empty which cause issue for member update in DB.
+    if (!$this->orgController->isOrganizationApigeeX()) {
+      try {
+        // Argument #2 in getTeams() is required for checking the AppGroup members and not required for Edge.
+        $developer_team_ids = $this->teamMembershipManager->getTeams($account->getEmail(), $team->id());
+      }
+      catch (\Exception $e) {
+        $developer_team_ids = [];
+      }
+      if (!in_array($team->id(), $developer_team_ids)) {
+        throw new InvalidArgumentException("{$account->getEmail()} is not member of {$team->id()} team.");
+      }
     }
     // Indicates whether a new team member role entity had to be created
     // or not.
     /** @var \Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface $team_member_roles */
     $team_member_roles = $this->loadByDeveloperAndTeam($account, $team);
     if ($team_member_roles === NULL) {
-      $team_member_roles = $this->create(['uid' => ['target_id' => $account->id()], 'team' => ['target_id' => $team->id()]]);
+      $team_member_roles = $this->create([
+        'uid' => ['target_id' => $account->id()],
+        'team' => ['target_id' => $team->id()]
+      ]);
     }
     // Make sure we only store unique values in the field.
     $existing_roles = array_map(function ($item) {
@@ -174,6 +195,17 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
     }
 
     try {
+      // Adding member roles in array for ApigeeX only if the roles has changed.
+      if ($this->orgController->isOrganizationApigeeX() && !empty($unique_roles)) {
+        // Adding the roles in AppGroup.
+        $updated_roles = array_map(function ($item) {
+          return $item = $item['target_id'];
+        }, $team_member_roles->roles->getValue());
+        // Updating the members role in __apigee_reserved__developer_details attribute for ApigeeX.
+        $this->teamMembershipManager->addMembers($team->id(), [
+          $account->getEmail() => $updated_roles
+        ]);
+      }
       $team_member_roles->save();
     }
     catch (EntityStorageException $exception) {
@@ -199,7 +231,8 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
       throw new InvalidArgumentException('Anonymous user can not be member of a team.');
     }
     try {
-      $developer_team_ids = $this->teamMembershipManager->getTeams($account->getEmail());
+      // Argument #2 in getTeams() is required for checking the AppGroup members and not required for Edge.
+      $developer_team_ids = $this->teamMembershipManager->getTeams($account->getEmail(), $team->id());
     }
     catch (\Exception $e) {
       $developer_team_ids = [];
@@ -224,6 +257,17 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
         $team_member_roles->delete();
       }
       else {
+        // Adding member roles in array for ApigeeX.
+        if ($this->orgController->isOrganizationApigeeX()) {
+          // Removing the member roles in AppGroup.
+          $updated_roles = array_map(function ($item) {
+            return $item = $item['target_id'];
+          }, $team_member_roles->roles->getValue());
+          // Updating the members role in __apigee_reserved__developer_details attribute for ApigeeX.
+          $this->teamMembershipManager->addMembers($team->id(), [
+            $account->getEmail() => $updated_roles
+          ]);
+        }
         $team_member_roles->save();
       }
     }

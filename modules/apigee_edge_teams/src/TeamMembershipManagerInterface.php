@@ -41,6 +41,17 @@ interface TeamMembershipManagerInterface {
   public function getMembers(string $team): array;
 
   /**
+   * Sync the team members details from ApigeeX and returns members of a team.
+   *
+   * @param string $team
+   *   Name of a team.
+   *
+   * @return string[]
+   *   Array of developer email addresses.
+   */
+  public function syncAppGroupMembers(string $team): array;
+
+  /**
    * Adds members to a team.
    *
    * @param string $team
@@ -65,6 +76,8 @@ interface TeamMembershipManagerInterface {
    *
    * @param string $developer
    *   Developer email address.
+   * @param string|null $team
+   *   Name of a team.
    *
    * @return string[]
    *   Array of team names.
@@ -72,6 +85,6 @@ interface TeamMembershipManagerInterface {
    * @throws \Drupal\apigee_edge\Exception\DeveloperDoesNotExistException
    *   If developer not found with id.
    */
-  public function getTeams(string $developer): array;
+  public function getTeams(string $developer, ?string $team = NULL): array;
 
 }

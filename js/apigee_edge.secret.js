@@ -39,7 +39,7 @@
           $this.addClass(hClass);
 
           // Toggle secret.
-          $(this).find('.secret__toggle').once().on('click', function (event) {
+          $(once('apigee_edge_secret', '.secret__toggle', this)).on('click', function (event) {
             let index = $(this).closest(appElWrapper).find('.secret__toggle').index(this);
             let wrapperIndex = $wrapper.data('app-container-index');
             event.preventDefault();
@@ -57,7 +57,7 @@
 
           // Copy to clipboard.
           let $copy = $(this).find('.secret__copy');
-          $copy.find('button').once().on('click', function (event) {
+          $(once('copybutton', 'button', this)).on('click', function (event) {
             let index = $(this).closest(appElWrapper).find('.secret__copy button').index(this);
             let wrapperIndex = $wrapper.closest('fieldset').parent().find('fieldset').index($(this).closest('fieldset'));
             callEndpoint($wrapper.data('app-keys-url'), function(data) {

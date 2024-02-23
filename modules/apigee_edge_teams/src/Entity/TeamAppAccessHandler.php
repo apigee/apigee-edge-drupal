@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge_teams\Entity;
 
+use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge_teams\TeamPermissionHandlerInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
@@ -43,6 +44,13 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   private $entityTypeManager;
+
+  /**
+   * The organization controller service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface
+   */
+  private $orgController;
 
   /**
    * The current route match.
@@ -69,12 +77,15 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
    *   The team permissions handler.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
+   * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
+   *   The organization controller service.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, TeamPermissionHandlerInterface $team_permission_handler, RouteMatchInterface $route_match) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, TeamPermissionHandlerInterface $team_permission_handler, RouteMatchInterface $route_match, OrganizationControllerInterface $org_controller) {
     parent::__construct($entity_type);
     $this->entityTypeManager = $entity_type_manager;
     $this->routeMatch = $route_match;
     $this->teamPermissionHandler = $team_permission_handler;
+    $this->orgController = $org_controller;
   }
 
   /**
@@ -85,7 +96,8 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
       $entity_type,
       $container->get('entity_type.manager'),
       $container->get('apigee_edge_teams.team_permissions'),
-      $container->get('current_route_match')
+      $container->get('current_route_match'),
+      $container->get('apigee_edge.controller.organization')
     );
   }
 
@@ -99,8 +111,10 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
     if ($result->isNeutral()) {
       $result = $this->checkAccessByPermissions($account);
       if ($result->isNeutral()) {
+        // For ApigeeX get AppGroup name and for Edge Company name.
+        $team_name = $this->orgController->isOrganizationApigeeX() ? $entity->getAppGroup() : $entity->getCompanyName();
         /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
-        $team = $this->entityTypeManager->getStorage('team')->load($entity->getCompanyName());
+        $team = $this->entityTypeManager->getStorage('team')->load($team_name);
         if ($team) {
           // The developer is not member of the team.
           // @see hook_apigee_edge_teams_developer_permissions_by_team_alter()

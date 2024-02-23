@@ -9,6 +9,9 @@ env:
   APIGEE_EDGE_INSTANCE_TYPE: ${{ secrets.APIGEE_EDGE_INSTANCE_TYPE }}
   APIGEE_INTEGRATION_ENABLE: ${{ secrets.APIGEE_INTEGRATION_ENABLE }}
   APIGEE_EDGE_ENDPOINT: ${{ secrets.APIGEE_EDGE_ENDPOINT }}
+  APIGEE_EDGE_ACCOUNT_JSON_KEY: ${{ secrets.APIGEE_EDGE_ACCOUNT_JSON_KEY }}
+  APIGEE_EDGE_HYBRID_ENDPOINT: ${{ secrets.APIGEE_EDGE_HYBRID_ENDPOINT }}
+  APIGEE_EDGE_HYBRID_ORGANIZATION: ${{ secrets.APIGEE_EDGE_HYBRID_ORGANIZATION }}
   BROWSERTEST_OUTPUT_DIRECTORY: "sites/simpletest/browser_output"
   BROWSERTEST_OUTPUT_BASE_URL: ""
   MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", { "chromeOptions": { "w3c": false } }, "http://127.0.0.1:9515/wd/hub"]'
@@ -24,7 +27,7 @@ jobs:
 
     runs-on: ubuntu-latest
     
-    name: "PHP ${{ matrix.php-version }} | Drupal ${{ matrix.drupal-core }}"
+    name: "PHP ${{ matrix.php-version }} | Drupal ${{ matrix.drupal-core }} | ${{ matrix.instance-type }}"
     strategy:
       fail-fast: false
       matrix:
@@ -33,8 +36,10 @@ jobs:
           - "8.1"
         drupal-core:
           # Should update the following as the minimum supported version from Drupal.org
-          - "9.4.x"
           - "9.5.x"
+        instance-type:
+          - "Edge"
+          - "X"
 
     steps:
 
@@ -62,17 +67,17 @@ jobs:
       id: composercache
       run: |
         cd drupal
-        echo "::set-output name=dir::$(composer config cache-files-dir)"
+        echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
     - name: Cache composer dependencies
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ${{ steps.composercache.outputs.dir }}
         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
         restore-keys: ${{ runner.os }}-composer-
 
     - name: Checkout apigee_edge module
-      uses: actions/checkout@v3.0.0
+      uses: actions/checkout@v3
       with:
         path: drupal/modules/contrib/apigee_edge
 
@@ -86,6 +91,7 @@ jobs:
         composer config --no-plugins allow-plugins.wikimedia/composer-merge-plugin true
         composer config --no-plugins allow-plugins.composer/package-versions-deprecated true
         composer config --no-plugins allow-plugins.cweagans/composer-patches true
+        composer config --no-plugins allow-plugins.php-http/discovery true        
         composer require --dev drush/drush
         composer config minimum-stability dev
         composer require drupal/rules:3.0.0-alpha7
@@ -107,18 +113,24 @@ jobs:
         vendor/bin/drush en apigee_edge -y
         vendor/bin/drush rs 8000 &
 
-    - name: "PHPCS"
+    - name: "PHPCS and setting up Apigee X environment"
+      if: ${{ matrix.instance-type == 'X' }}
       run: |
         cd drupal
         cp modules/contrib/apigee_edge/phpcs.xml.dist .
         vendor/bin/phpcs --standard=./phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors
+        # Setting environment variables to run Apigee X tests
+        echo "APIGEE_EDGE_INSTANCE_TYPE=hybrid" >> $GITHUB_ENV
+        echo "APIGEE_EDGE_ORGANIZATION=$APIGEE_EDGE_HYBRID_ORGANIZATION" >> $GITHUB_ENV
+        echo "APIGEE_EDGE_ENDPOINT=$APIGEE_EDGE_HYBRID_ENDPOINT" >> $GITHUB_ENV
+        composer show > composer-show.txt
 
     - name: "Drupal check"
       run: |
         cd drupal
         vendor/bin/drupal-check modules/contrib/apigee_edge
 
-    - uses: nanasess/setup-chromedriver@v1
+    - uses: nanasess/setup-chromedriver@v2
 
     - run: |
         export DISPLAY=:99
@@ -136,20 +148,20 @@ jobs:
       run: |
         cd drupal
         cp modules/contrib/apigee_edge/phpunit.core.xml.dist core/phpunit.xml
-        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit,kernel,functional,functional-javascript --debug --coverage-clover /tmp/coverage.xml modules/contrib/apigee_edge
+        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit,kernel,functional,functional-javascript --debug --coverage-clover /tmp/coverage_${{ matrix.instance-type }}.xml modules/contrib/apigee_edge
 
     - name: Artifacts
       if: failure()
       uses: actions/upload-artifact@v3
       with:
-        name: browser-output-${{ matrix.php-version }}-${{ matrix.drupal-core }}-artifact
+        name: browser-output-${{ matrix.php-version }}-${{ matrix.drupal-core }}-${{ matrix.instance-type }}-artifact
         path: drupal/sites/simpletest/browser_output/*
 
     - name: Upload coverage to Codecov
       if: ${{ matrix.drupal-core == '9.5.x' && matrix.php-version == '8.1' }}
       uses: codecov/codecov-action@v3
       with:
-        files: /tmp/coverage.xml
+        files: /tmp/coverage_${{ matrix.instance-type }}.xml
         name: codecov-umbrella
         fail_ci_if_error: true
         verbose: true

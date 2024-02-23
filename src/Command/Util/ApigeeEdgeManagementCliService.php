@@ -19,9 +19,9 @@
 
 namespace Drupal\apigee_edge\Command\Util;
 
+use Apigee\Edge\ClientInterface as ApigeeClientInterface;
 use Drupal\Component\Utility\UrlHelper;
 use GuzzleHttp\ClientInterface;
-use Apigee\Edge\ClientInterface as ApigeeClientInterface;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\TransferException;
 use Symfony\Component\Console\Style\StyleInterface;

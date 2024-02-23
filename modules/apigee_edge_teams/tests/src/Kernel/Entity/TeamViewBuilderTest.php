@@ -20,7 +20,7 @@
 
 namespace Drupal\Tests\apigee_edge_teams\Kernel\Entity;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\apigee_edge\Kernel\ApigeeEdgeKernelTestBase;
 use Drupal\Tests\apigee_edge\Kernel\ApigeeEdgeKernelTestTrait;
 use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 
@@ -32,7 +32,7 @@ use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
  * @group apigee_edge_teams
  * @group apigee_edge_teams_kernel
  */
-class TeamViewBuilderTest extends KernelTestBase {
+class TeamViewBuilderTest extends ApigeeEdgeKernelTestBase {
 
   use ApigeeMockApiClientHelperTrait, ApigeeEdgeKernelTestTrait;
 

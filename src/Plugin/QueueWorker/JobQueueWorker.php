@@ -32,6 +32,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @QueueWorker(
  *   id = "apigee_edge_job",
  *   title = "Apigee Edge job runner",
+ *   cron = {"time" = \Drupal\Core\Queue\QueueWorkerManagerInterface::DEFAULT_QUEUE_CRON_TIME}
  * )
  */
 class JobQueueWorker extends QueueWorkerBase implements ContainerFactoryPluginInterface {

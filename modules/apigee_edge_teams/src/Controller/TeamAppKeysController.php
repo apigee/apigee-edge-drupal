@@ -19,8 +19,8 @@
 
 namespace Drupal\apigee_edge_teams\Controller;
 
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\apigee_edge\Controller\DeveloperAppKeysController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * Controller for the team app credentials.
@@ -37,7 +37,10 @@ class TeamAppKeysController extends DeveloperAppKeysController {
     $payload = [];
     if ($team) {
       $app_storage = $this->entityTypeManager->getStorage('team_app');
+      // Lists all the team apps ids.
+      // Team app is accessible to all the team members.
       $app_ids = $app_storage->getQuery()
+        ->accessCheck(FALSE)
         ->condition('companyName', $team->id())
         ->condition('name', $app->getName())
         ->execute();

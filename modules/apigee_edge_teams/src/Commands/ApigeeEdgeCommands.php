@@ -49,9 +49,9 @@ class ApigeeEdgeCommands extends DrushCommands {
   /**
    * Team Member synchronization.
    *
-   * @command apigee-edge-teams:sync
+   * @command apigee-edge:teams-sync
    *
-   * @usage drush apigee-edge-teams:sync
+   * @usage drush apigee-edge:teams-sync
    *   Starts the team member synchronization.
    */
   public function sync() {

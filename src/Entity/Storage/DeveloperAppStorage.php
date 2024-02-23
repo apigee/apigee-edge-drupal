@@ -25,6 +25,7 @@ use Drupal\apigee_edge\Entity\Controller\AppControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerFactoryInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppEdgeEntityControllerProxy;
 use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
@@ -71,10 +72,12 @@ class DeveloperAppStorage extends AppStorage implements DeveloperAppStorageInter
    *   Configuration factory.
    * @param \Drupal\Component\Utility\EmailValidatorInterface $email_validator
    *   The email validator service.
+   * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
+   *   The organization controller service.
    */
-  public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, DeveloperAppControllerFactoryInterface $developer_app_controller_factory, AppControllerInterface $app_controller, ConfigFactoryInterface $config, EmailValidatorInterface $email_validator) {
+  public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, DeveloperAppControllerFactoryInterface $developer_app_controller_factory, AppControllerInterface $app_controller, ConfigFactoryInterface $config, EmailValidatorInterface $email_validator, OrganizationControllerInterface $org_controller) {
     parent::__construct($entity_type, $cache_backend, $memory_cache, $system_time, $app_controller);
-    $this->appEntityController = new DeveloperAppEdgeEntityControllerProxy($developer_app_controller_factory, $app_controller);
+    $this->appEntityController = new DeveloperAppEdgeEntityControllerProxy($developer_app_controller_factory, $app_controller, $org_controller);
     $this->cacheExpiration = $config->get('apigee_edge.developer_app_settings')->get('cache_expiration');
     $this->emailValidator = $email_validator;
   }
@@ -91,7 +94,8 @@ class DeveloperAppStorage extends AppStorage implements DeveloperAppStorageInter
       $container->get('apigee_edge.controller.developer_app_controller_factory'),
       $container->get('apigee_edge.controller.app'),
       $container->get('config.factory'),
-      $container->get('email.validator')
+      $container->get('email.validator'),
+      $container->get('apigee_edge.controller.organization')
     );
   }
 
@@ -106,7 +110,9 @@ class DeveloperAppStorage extends AppStorage implements DeveloperAppStorageInter
    * {@inheritdoc}
    */
   public function loadByDeveloper(string $developer_id): array {
-    $query = $this->getQuery();
+    // Lists all the developer apps ids for a particular
+    // developer email id and app name.
+    $query = $this->getQuery()->accessCheck(FALSE);
     // We have to figure out whether this is an email or a UUID to call the
     // best API endpoint that is possible.
     if ($this->emailValidator->isValid($developer_id)) {

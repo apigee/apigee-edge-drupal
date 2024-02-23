@@ -20,9 +20,12 @@
 
 namespace Drupal\apigee_edge_teams\Entity\Controller;
 
+use Apigee\Edge\Api\ApigeeX\Controller\AppGroupController;
+use Apigee\Edge\Api\ApigeeX\Controller\AppGroupControllerInterface;
 use Apigee\Edge\Api\Management\Controller\CompanyController as EdgeCompanyController;
 use Apigee\Edge\Api\Management\Controller\CompanyControllerInterface as EdgeCompanyControllerInterface;
 use Apigee\Edge\Entity\EntityInterface;
+use Apigee\Edge\Structure\PagerInterface;
 use Drupal\apigee_edge\Entity\Controller\Cache\AppCacheByOwnerFactoryInterface;
 use Drupal\apigee_edge\Entity\Controller\Cache\AppNameCacheByOwnerFactoryInterface;
 use Drupal\apigee_edge\Entity\Controller\Cache\EntityCacheInterface;
@@ -36,6 +39,7 @@ use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\apigee_edge_teams\CompanyMembershipObjectCacheInterface;
+use Drupal\apigee_edge_teams\Form\TeamAliasForm;
 
 /**
  * Definition of the Team controller service.
@@ -149,14 +153,19 @@ final class TeamController implements TeamControllerInterface {
   }
 
   /**
-   * Returns the decorated company controller from the SDK.
+   * Returns the decorated company controller or appgroup controller from the SDK.
    *
-   * @return \Apigee\Edge\Api\Management\Controller\CompanyControllerInterface
-   *   The initialized company controller.
+   * @return CompanyControllerInterface|AppGroupControllerInterface
+   *   The initialized company or appgroup controller.
    */
-  private function decorated(): EdgeCompanyControllerInterface {
+  private function decorated(): EdgeCompanyControllerInterface|AppGroupControllerInterface {
     if ($this->instance === NULL) {
-      $this->instance = new EdgeCompanyController($this->connector->getOrganization(), $this->connector->getClient(), NULL, $this->orgController);
+      if ($this->orgController->isOrganizationApigeeX()) {
+        $this->instance = new AppGroupController($this->connector->getOrganization(), $this->connector->getClient(), NULL, $this->orgController);
+      }
+      else {
+        $this->instance = new EdgeCompanyController($this->connector->getOrganization(), $this->connector->getClient(), NULL, $this->orgController);
+      }
     }
     return $this->instance;
   }
@@ -179,7 +188,9 @@ final class TeamController implements TeamControllerInterface {
    * {@inheritdoc}
    */
   public function setStatus(string $entity_id, string $status): void {
-    $this->decorated()->setStatus($entity_id, $status);
+    if (!$this->orgController->isOrganizationApigeeX()) {
+      $this->decorated()->setStatus($entity_id, $status);
+    }
     // Enforce reload of entity from Apigee Edge.
     $this->entityCache->removeEntities([$entity_id]);
     $this->entityCache->allEntitiesInCache(FALSE);
@@ -222,6 +233,27 @@ final class TeamController implements TeamControllerInterface {
     $app_name_cache->removeIds($app_name_cache->getIds());
 
     return $entity;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEntities(PagerInterface $pager = NULL, string $key_provider = 'id'): array {
+    $queryparam = [];
+    if ($this->orgController->isOrganizationApigeeX()) {
+      // Getting the channelId & filter enable check from Config form.
+      $channelconfig = \Drupal::config('apigee_edge_teams.team_settings');
+      $channelid = $channelconfig->get('channelid');
+      $channelfilter = $channelconfig->get('enablefilter');
+      if ($channelfilter) {
+        $channelid = $channelid ? $channelid : TeamAliasForm::originalChannelId();
+        $queryparam = [
+          'filter' => 'channelId=' . $channelid
+        ];
+      }
+    }
+    $entities = $this->decorated()->getEntities($pager, $key_provider, $queryparam);
+    return $entities;
   }
 
 }

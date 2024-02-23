@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge\Entity\Controller\Cache;
 
+use Apigee\Edge\Api\ApigeeX\Entity\AppGroupAppInterface;
 use Apigee\Edge\Api\Management\Entity\AppInterface;
 use Apigee\Edge\Api\Management\Entity\CompanyAppInterface;
 use Apigee\Edge\Api\Management\Entity\DeveloperAppInterface;
@@ -85,6 +86,9 @@ final class AppCache extends EntityCache implements AppCacheInterface {
     }
     elseif ($app instanceof CompanyAppInterface) {
       return $app->getCompanyName();
+    }
+    elseif ($app instanceof AppGroupAppInterface) {
+      return $app->getAppGroup();
     }
 
     throw new RuntimeException('Unable to identify app owner.');

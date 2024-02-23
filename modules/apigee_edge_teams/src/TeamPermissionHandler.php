@@ -151,7 +151,8 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
     $developer_team_access = FALSE;
     $permissions = [];
     try {
-      $developer_team_ids = $this->teamMembershipManager->getTeams($account->getEmail());
+      // Argument #2 in getTeams() is required for checking the AppGroup members and not required for Edge.
+      $developer_team_ids = $this->teamMembershipManager->getTeams($account->getEmail(), $team->id());
     }
     catch (\Exception $e) {
       $developer_team_ids = [];

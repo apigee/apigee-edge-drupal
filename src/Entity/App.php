@@ -72,7 +72,10 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
    * {@inheritdoc}
    */
   public function getAppFamily(): string {
-    return $this->decorated->getAppFamily();
+    return method_exists($this->decorated, 'getAppFamily') ?
+      /* @phpstan-ignore-next-line */
+      $this->decorated->getAppFamily() :
+      '';
   }
 
   /**
@@ -136,8 +139,9 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
       // App has not found in cache, we have to load it from Apigee Edge.
       /** @var \Drupal\apigee_edge\Entity\Controller\AppControllerInterface $app_controller */
       $app_controller = \Drupal::service('apigee_edge.controller.app');
+      $orgController = \Drupal::service('apigee_edge.controller.organization');
       try {
-        $app = $app_controller->loadApp($this->getAppId());
+        $app = $orgController->isOrganizationApigeeX() ? $app_controller->loadAppGroup($this->getAppId()) : $app_controller->loadApp($this->getAppId());
       }
       catch (ApiException $e) {
         // Just catch it and leave app to be NULL.
@@ -341,6 +345,7 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
 
     // Hide readonly properties from Manage form display list.
     $read_only_fields = [
+      'apiProducts',
       'appId',
       'appFamily',
       'createdAt',
@@ -386,54 +391,6 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
   /**
    * {@inheritdoc}
    */
-  public function get($field_name) {
-    $value = parent::get($field_name);
-
-    // Make sure that returned callback url field values are actually valid
-    // URLs. Apigee Edge allows to set anything as callbackUrl value but
-    // Drupal can only accept valid URIs.
-    if ($field_name === 'callbackUrl') {
-      if (!$value->isEmpty()) {
-        foreach ($value->getValue() as $id => $item) {
-          try {
-            Url::fromUri($item['value']);
-          }
-          catch (\Exception $exception) {
-            $value->removeItem($id);
-          }
-        }
-      }
-    }
-
-    return $value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function set($field_name, $value, $notify = TRUE) {
-    // If the callback URL value is not a valid URL then save an empty string
-    // as the field value and set the callbackUrl property to the original
-    // value. (So we can display the original (invalid URL) on the edit form.)
-    // This trick is not necessary if the value's type is array because in this
-    // case the field value is set on the developer app edit form.
-    if ($field_name === 'callbackUrl' && !is_array($value)) {
-      try {
-        Url::fromUri($value);
-      }
-      catch (\Exception $exception) {
-        /** @var \Drupal\apigee_edge\Entity\App $app */
-        $app = parent::set($field_name, '', $notify);
-        $app->setCallbackUrl($value);
-        return $app;
-      }
-    }
-    return parent::set($field_name, $value, $notify);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function label() {
     $label = parent::label();
     // Return app name instead of app id if display name is missing.
@@ -456,6 +413,13 @@ abstract class App extends AttributesAwareFieldableEdgeEntityBase implements App
    */
   public static function uniqueIdProperties(): array {
     return array_merge(parent::uniqueIdProperties(), ['appId']);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setInitialApiProducts(array $initialApiProducts): void {
+    $this->decorated->setInitialApiProducts($initialApiProducts);
   }
 
 }
