@@ -1268,6 +1268,36 @@ function template_preprocess_app_credential(array &$variables) {
 }
 
 /**
+ * Forcing user email address to lowercase for ApigeeX/Hybrid Org.
+ * @see https://github.com/apigee/apigee-edge-drupal/issues/730
+ */
+function apigee_edge_user_email_check(&$account) {
+  $email = $account->getEmail();
+  try {
+    /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
+    $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
+    $org_controller = \Drupal::service('apigee_edge.controller.organization');
+    /* @var \Apigee\Edge\Api\Management\Entity\Organization $organization */
+    $organization = $org_controller->load($sdk_connector->getOrganization());
+
+    // Check if org is ApigeeX.
+    if ($organization && ('CLOUD' === $organization->getRuntimeType() || 'HYBRID' === $organization->getRuntimeType())) {
+       // Apigee X Org is only accepting lower case email address,
+       // therefore preventing the form from creating account
+       // with uppercase email address.
+       if (preg_match('/[A-Z]/', $email)) {
+        $account->set('mail', strtolower($email));
+        \Drupal::messenger()->addWarning(t('Apigee X Org is only accepting lowercase email address.'));
+       }
+    }
+  }
+  catch (\Exception $exception) {
+    // If not able to connect to Apigee Edge.
+    Drupal::logger('apigee_edge')->error($exception->getMessage());
+  }
+}
+
+/**
  * Implements hook_user_presave().
  *
  * TODO Take (configurable?) actions if a user could not be saved in Drupal but
@@ -1302,6 +1332,11 @@ function apigee_edge_user_presave(UserInterface $account) {
     $logger->warning("Could not create developer entity: @developer on Apigee Edge/X, because there was no connection to Apigee Edge.", $context);
     return;
   }
+
+  // Force email address to lowercase for ApigeeX org,
+  // Apigee X Org is only accepting lowercase email address.
+  // @see https://github.com/apigee/apigee-edge-drupal/issues/730
+  apigee_edge_user_email_check($account);
 
   /** @var \Drupal\apigee_edge\UserDeveloperConverterInterface $user_developer */
   $user_developer = \Drupal::service('apigee_edge.converter.user_developer');
