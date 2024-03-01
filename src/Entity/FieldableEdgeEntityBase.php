@@ -26,6 +26,8 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Language\LanguageInterface;
+use Drupal\Core\TypedData\TypedDataInterface;
 
 /**
  * Base field support for Apigee Entities without making them content entities.
@@ -534,6 +536,145 @@ abstract class FieldableEdgeEntityBase extends EdgeEntityBase implements Fieldab
    */
   public function getIterator(): \Traversable {
     return new \ArrayIterator($this->getFields());
+  }
+
+  /**
+   * The plain data values of the contained fields.
+   *
+   * This always holds the original, unchanged values of the entity. The values
+   * are keyed by language code to follow core's suit, regardless that
+   * Apigee Edge entities are NOT translatable.
+   *
+   * @todo: Add methods for getting original fields and for determining
+   * changes.
+   * @todo: Provide a better way for defining default values.
+   *
+   * @var array
+   */
+  private $values = [];
+
+  /**
+   * Implements the magic method for getting object properties.
+   *
+   * @see https://www.drupal.org/project/drupal/issues/3281720
+   * @see \Drupal\Core\Entity\ContentEntityBase
+   */
+  public function &__get($name) {
+    // If this is an entity field, handle it accordingly. We first check whether
+    // a field object has been already created. If not, we create one.
+    if (isset($this->fields[$name][LanguageInterface::LANGCODE_NOT_SPECIFIED])) {
+      return $this->fields[$name][LanguageInterface::LANGCODE_NOT_SPECIFIED];
+    }
+    // Inline getFieldDefinition() to speed things up.
+    if (!isset($this->fieldDefinitions)) {
+      $this->getFieldDefinitions();
+    }
+    if (isset($this->fieldDefinitions[$name]) && !($this->fieldDefinitions[$name] instanceof BaseFieldDefinition)) {
+      $return = $this->getField($name);
+      return $return;
+    }
+    // Else directly read/write plain values. That way, non-field entity
+    // properties can always be accessed directly.
+    if (!isset($this->values[$name])) {
+      $this->values[$name] = NULL;
+    }
+    return $this->values[$name];
+  }
+
+  /**
+   * Implements the magic method for setting object properties.
+   *
+   * Uses default language always.
+   */
+  public function __set($name, $value) {
+    // Inline getFieldDefinition() to speed things up.
+    if (!isset($this->fieldDefinitions)) {
+      $this->getFieldDefinitions();
+    }
+    // Handle Field API fields.
+    if (isset($this->fieldDefinitions[$name])) {
+      // Support setting values via property objects.
+      if ($value instanceof TypedDataInterface) {
+        $value = $value->getValue();
+      }
+      // If a FieldItemList object already exists, set its value.
+      if (isset($this->fields[$name][LanguageInterface::LANGCODE_NOT_SPECIFIED])) {
+        $this->fields[$name][LanguageInterface::LANGCODE_NOT_SPECIFIED]->setValue($value);
+      }
+      // If not, create one.
+      else {
+        $this->getField($name)->setValue($value);
+      }
+    }
+    // The translations array is unset when cloning the entity object, we just
+    // need to restore it.
+    elseif ($name == 'translations') {
+      $this->translations = $value;
+    }
+    // Directly write non-field values.
+    else {
+      $this->values[$name] = $value;
+    }
+  }
+
+  /**
+   * Implements the magic method for isset().
+   */
+  public function __isset($name) {
+    // "Official" Field API fields are always set. For non-field properties,
+    // check the internal values.
+    return $this->hasField($name) ? TRUE : isset($this->values[$name]);
+  }
+
+  /**
+   * Implements the magic method for unset().
+   */
+  public function __unset($name) {
+    // Unsetting a field means emptying it.
+    if ($this->hasField($name)) {
+      $this->get($name)->setValue([]);
+    }
+    // For non-field properties, unset the internal value.
+    else {
+      unset($this->values[$name]);
+    }
+  }
+
+  /**
+   * An array of entity translation metadata.
+   *
+   * An associative array keyed by translation language code. Every value is an
+   * array containing the translation status and the translation object, if it has
+   * already been instantiated.
+   *
+   * @var array
+   */
+  private $translations = [];
+
+  /**
+   * Gets a non-translatable field.
+   *
+   * @return \Drupal\Core\Field\FieldItemListInterface
+   */
+  private function getField($name) {
+    // Populate $this->fields to speed-up further look-ups and to keep track of
+    // fields objects, possibly holding changes to field values.
+    if (!isset($this->fields[$name][LanguageInterface::LANGCODE_NOT_SPECIFIED])) {
+      $definition = $this->getFieldDefinition($name);
+      if (!$definition) {
+        throw new \InvalidArgumentException("Field $name is unknown.");
+      }
+      // Non-translatable fields are always stored with
+      // LanguageInterface::LANGCODE_DEFAULT as key.
+      $value = NULL;
+      if (isset($this->values[$name][LanguageInterface::LANGCODE_NOT_SPECIFIED])) {
+        $value = $this->values[$name][LanguageInterface::LANGCODE_NOT_SPECIFIED];
+      }
+      $field = \Drupal::service('plugin.manager.field.field_type')->createFieldItemList($this->getTranslation(LanguageInterface::LANGCODE_NOT_SPECIFIED), $name, $value);
+      $field->setLangcode(LanguageInterface::LANGCODE_NOT_SPECIFIED);
+      $this->fields[$name][LanguageInterface::LANGCODE_NOT_SPECIFIED] = $field;
+    }
+    return $this->fields[$name][LanguageInterface::LANGCODE_NOT_SPECIFIED];
   }
 
 }
