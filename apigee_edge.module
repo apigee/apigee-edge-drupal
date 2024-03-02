@@ -43,6 +43,7 @@ use Drupal\Component\Utility\Crypt;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Breadcrumb\Breadcrumb;
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -137,6 +138,12 @@ function apigee_edge_theme() {
     'apigee_secret' => [
       'render element' => 'elements',
       'base hook' => 'apigee_secret',
+    ],
+    'apigee_app_credential_warnings' => [
+      'variables' => ['warnings' => []],
+    ],
+    'apigee_app_credential_warnings_placeholder' => [
+      'variables' => ['app_type' => NULL, 'id' => NULL],
     ],
   ];
 }
@@ -450,15 +457,32 @@ function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityV
   }
 
   if ($display->getComponent('warnings')) {
-    /** @var \Drupal\apigee_edge\Entity\AppWarningsCheckerInterface $app_warnings_checker */
-    $app_warnings_checker = \Drupal::service('apigee_edge.entity.app_warnings_checker');
-    $warnings = array_filter($app_warnings_checker->getWarnings($entity));
-    if (count($warnings)) {
+    $app_settings_config = \Drupal::configFactory()->getEditable('apigee_edge.common_app_settings');
+    CacheableMetadata::createFromRenderArray($build)->addCacheableDependency($app_settings_config)->applyTo($build);
+
+
+    if ($app_settings_config->get('app_credential_warnings_bc_mode')) {
+      /** @var \Drupal\apigee_edge\Entity\AppWarningsCheckerInterface $app_warnings_checker */
+      $app_warnings_checker = \Drupal::service('apigee_edge.entity.app_warnings_checker');
+      $warnings = array_filter($app_warnings_checker->getWarnings($entity));
+      if (count($warnings)) {
+        $build['warnings'] = [
+          '#theme' => 'status_messages',
+          '#message_list' => [
+            'warning' => $warnings,
+          ],
+        ];
+      }
+    }
+    else {
       $build['warnings'] = [
-        '#theme' => 'status_messages',
-        '#message_list' => [
-          'warning' => $warnings,
-        ],
+        '#lazy_builder' => ['\Drupal\apigee_edge\LazyBuilder\AppWarningsLazyBuilder::lazyBuilder', [$entity->getEntityType()->id(), $entity->id()]],
+        '#create_placeholder' => TRUE,
+        '#lazy_builder_preview' => [
+          '#theme' => 'apigee_app_credential_warnings_placeholder',
+          '#app_type' => $entity->getEntityType()->id(),
+          '#id' => $entity->id(),
+        ]
       ];
     }
   }
