@@ -7,6 +7,7 @@ core_version_requirement: ^10
 
 dependencies:
   - drupal:file
+  - drupal:field_ui
   - drupal:user
   - entity:entity
   - drupal:filter
