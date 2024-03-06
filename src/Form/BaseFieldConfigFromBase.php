@@ -27,7 +27,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Base form for configuring base fields on Apigee Edge entities.
+ * Base form for configuring base fields on Apigee entities.
  */
 abstract class BaseFieldConfigFromBase extends FormBase {
 

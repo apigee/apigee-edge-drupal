@@ -193,7 +193,7 @@ class TeamMembersSelection extends UserSelection {
       // retrieved then return an empty list.
       $query->condition('mail', 0);
       $context = Error::decodeException($exception);
-      $this->logger->error("Unable to retrieve list of developer email addresses from Apigee Edge. @message %function (line %line of %file). <pre>@backtrace_string</pre>", $context);
+      $this->logger->error("Unable to retrieve list of developer email addresses from Apigee. @message %function (line %line of %file). <pre>@backtrace_string</pre>", $context);
       return $query;
     }
 
@@ -221,7 +221,7 @@ class TeamMembersSelection extends UserSelection {
           '%team' => $team_name,
         ];
         $context += Error::decodeException($exception);
-        $this->logger->error("Unable to retrieve list of %team team from Apigee Edge. @message %function (line %line of %file). <pre>@backtrace_string</pre>", $context);
+        $this->logger->error("Unable to retrieve list of %team team from Apigee. @message %function (line %line of %file). <pre>@backtrace_string</pre>", $context);
       }
 
     }

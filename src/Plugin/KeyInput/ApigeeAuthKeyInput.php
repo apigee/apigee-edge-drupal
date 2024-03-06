@@ -26,6 +26,7 @@ use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\key\Plugin\KeyInputBase;
+use Http\Client\Exception;
 
 /**
  * Apigee Edge authentication credentials input text fields.
@@ -96,7 +97,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
     $form['organization'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Organization'),
-      '#description' => $this->t('Name of the organization on Apigee Edge. Changing this value could make your site stop working.'),
+      '#description' => $this->t('Name of the organization on Apigee. Changing this value could make your site stop working.'),
       '#default_value' => $values['organization'] ?? '',
       '#required' => TRUE,
       '#attributes' => ['autocomplete' => 'off'],
@@ -133,7 +134,14 @@ class ApigeeAuthKeyInput extends KeyInputBase {
 
     $state_for_not_gcp_hosted = [];
     $gceServiceAccountAuth = new GceServiceAccountAuthentication(\Drupal::service('apigee_edge.authentication.oauth_token_storage'));
-    if ($gceServiceAccountAuth->isAvailable()) {
+    $is_gce_hosted_site = FALSE;
+    try {
+      $is_gce_hosted_site = $gceServiceAccountAuth->isAvailable();
+    }
+    catch (Exception) {
+
+    }
+    if ($is_gce_hosted_site) {
       $form['gcp_hosted'] = [
         '#type' => 'checkbox',
         '#title' => $this->t('Use the default service account if this portal is hosted on GCP'),
@@ -161,8 +169,8 @@ class ApigeeAuthKeyInput extends KeyInputBase {
     ];
     $form['endpoint'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Apigee Edge endpoint'),
-      '#description' => $this->t('Apigee Edge endpoint where the API calls are being sent. For a Private Cloud installation it is in the form: %form_a or %form_b.', [
+      '#title' => $this->t('Apigee endpoint'),
+      '#description' => $this->t('Apigee endpoint where the API calls are being sent. For a Private Cloud installation it is in the form: %form_a or %form_b.', [
         '%form_a' => 'http://ms_IP_or_DNS:8080/v1',
         '%form_b' => 'https://ms_IP_or_DNS:TLSport/v1',
       ]),

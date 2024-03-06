@@ -99,7 +99,7 @@ class TeamStatusWarningSubscriber implements EventSubscriberInterface {
    */
   public function onRespond(ResponseEvent $event) {
     // Anonymous user's does not have access to these routes.
-    if ($this->currentUser->isAuthenticated() && strpos($this->routeMatch->getRouteName(), 'entity.team_app.') === 0) {
+    if ($this->currentUser->isAuthenticated() && strpos((string) $this->routeMatch->getRouteName(), 'entity.team_app.') === 0) {
       // Team is available in most of the team app routes as a route parameter.
       /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface|NULL $team */
       $team = $this->routeMatch->getParameter('team');

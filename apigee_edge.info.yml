@@ -1,5 +1,5 @@
-name: Apigee Edge
-description: Apigee Edge Drupal integration.
+name: Apigee
+description: Apigee Drupal integration.
 package: Apigee
 
 type: module

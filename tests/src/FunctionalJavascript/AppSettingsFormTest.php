@@ -68,12 +68,12 @@ class AppSettingsFormTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     // Visit the app settings form using invalid API credentials.
     $this->invalidateKey();
     $this->drupalGet(Url::fromRoute('apigee_edge.settings.general_app'));
-    $this->assertSession()->pageTextContains('Unable to retrieve API product list from Apigee Edge. Please ensure that Apigee Edge connection settings are correct.');
+    $this->assertSession()->pageTextContains('Unable to retrieve API product list from Apigee. Please ensure that Apigee connection settings are correct.');
 
     // Visit the app settings form using valid API credentials.
     $this->restoreKey();
     $this->drupalGet(Url::fromRoute('apigee_edge.settings.general_app'));
-    $this->assertSession()->pageTextNotContains('Unable to retrieve API product list from Apigee Edge. Please ensure that Apigee Edge connection settings are correct.');
+    $this->assertSession()->pageTextNotContains('Unable to retrieve API product list from Apigee. Please ensure that Apigee connection settings are correct.');
 
     // Selecting default API product is not required by default.
     $product_list = $this->getSession()->getPage()->find('css', '#default-api-product-multiple fieldset');

@@ -50,7 +50,7 @@ class ConnectionConfigForm extends ConfigFormBase {
     $form['connect_timeout'] = [
       '#type' => 'number',
       '#title' => $this->t('Connection timeout'),
-      '#description' => $this->t('Number of seconds before an HTTP connection to Apigee Edge is assumed to have timed out.'),
+      '#description' => $this->t('Number of seconds before an HTTP connection to Apigee is assumed to have timed out.'),
       '#default_value' => $this->config('apigee_edge.client')->get('http_client_connect_timeout'),
       '#min' => 0,
       '#step' => 0.1,
@@ -60,7 +60,7 @@ class ConnectionConfigForm extends ConfigFormBase {
     $form['request_timeout'] = [
       '#type' => 'number',
       '#title' => $this->t('Request timeout'),
-      '#description' => $this->t('Number of seconds before an HTTP response from Apigee Edge is assumed to have timed out.'),
+      '#description' => $this->t('Number of seconds before an HTTP response from Apigee is assumed to have timed out.'),
       '#default_value' => $this->config('apigee_edge.client')->get('http_client_timeout'),
       '#min' => 0,
       '#step' => 0.1,
@@ -70,7 +70,7 @@ class ConnectionConfigForm extends ConfigFormBase {
     $form['http_proxy'] = [
       '#type' => 'textfield',
       '#title' => $this->t('HTTP client proxy'),
-      '#description' => $this->t('Leave empty unless an HTTP proxy is needed to connect to Apigee Edge.'),
+      '#description' => $this->t('Leave empty unless an HTTP proxy is needed to connect to Apigee.'),
       '#default_value' => $this->config('apigee_edge.client')->get('http_client_proxy'),
       '#required' => FALSE,
     ];
