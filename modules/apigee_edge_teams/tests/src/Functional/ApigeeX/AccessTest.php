@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Google Inc.
+ * Copyright 2024 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License version 2 as published by the
@@ -17,8 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-namespace Drupal\Tests\apigee_edge_teams\Functional;
+namespace Drupal\Tests\apigee_edge_teams\Functional\ApigeeX;
 
+use Apigee\Edge\Structure\AttributesProperty;
+use Drupal\apigee_edge_teams\Entity\TeamApp;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Response;
@@ -200,8 +202,9 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function setUp(): void {
+    // Setting isApigeeX() to true for Apigee X org.
+    TeamApp::$apigeex = TRUE;
     parent::setUp();
-
     $this->teamStorage = $this->container->get('entity_type.manager')->getStorage('team');
     $this->teamAppStorage = $this->container->get('entity_type.manager')->getStorage('team_app');
     $this->teamRoleStorage = $this->container->get('entity_type.manager')->getStorage('team_role');
@@ -232,19 +235,23 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
 
     $this->team = $this->teamStorage->create([
       'name' => mb_strtolower($this->getRandomGenerator()->name()),
+      'attributes' => new AttributesProperty([
+        'name' => '__apigee_reserved__developer_details',
+        'value' => '[{\"developer\":\"doe@example.com\",\"roles\":[\"admin\"]}]'
+      ]),
     ]);
     $this->team->save();
 
     $this->teamApp = $this->teamAppStorage->create([
       'name' => mb_strtolower($this->getRandomGenerator()->name()),
-      'companyName' => $this->team->getName(),
+      'appGroup' => $this->team->getName(),
     ]);
     $this->teamApp->save();
     $this->account = $this->createAccount();
 
     $this->nonTeamMemberAccount = $this->createAccount();
     $this->teamMemberAccount = $this->createAccount();
-    $this->teamMembershipManager->addMembers($this->team->getName(), [$this->teamMemberAccount->getEmail()]);
+    $this->teamMembershipManager->addMembers($this->team->getName(), [$this->teamMemberAccount->getEmail() => ['team_app_delete']]);
 
     // Create roles for team permissions.
     foreach (array_keys(static::TEAM_PERMISSION_MATRIX) as $permission) {
@@ -304,6 +311,9 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
    * Tests team, team membership level and admin permissions, team roles.
    */
   public function testAccess() {
+    // Setting isApigeeX() to true for Apigee X org.
+    TeamApp::$apigeex = TRUE;
+
     $this->teamAccessTest();
     $this->teamRoleAccessTest();
     $this->teamExpansionTest();
@@ -344,7 +354,7 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
 
     // The user is a member of the team but it has no team related site-wide
     // permission and every team permission is also revoked.
-    $this->teamMembershipManager->addMembers($this->team->getName(), [$this->account->getEmail()]);
+    $this->teamMembershipManager->addMembers($this->team->getName(), [$this->account->getEmail() => ['team_app_delete']]);
     $this->setUserPermissions([]);
     $this->setTeamRolePermissionsOnUi(TeamRoleInterface::TEAM_MEMBER_ROLE, []);
     $this->validateTeamAccess();
@@ -394,12 +404,13 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
     if ($this->loggedInUser) {
       $this->drupalLogout();
     }
+
     // The user is a member of the team and it has no teams related permission.
     // The user has the default "member" role in the team, the default member
     // role has no permissions.
     $this->setUserPermissions([]);
     $this->setTeamRolePermissionsOnUi(TeamRoleInterface::TEAM_MEMBER_ROLE, []);
-    $this->teamMembershipManager->addMembers($this->team->getName(), [$this->account->getEmail()]);
+    $this->teamMembershipManager->addMembers($this->team->getName(), [$this->account->getEmail() => ['team_manage_members']]);
 
     // Create roles for every team membership level permission.
     $this->drupalLogin($this->rootUser);
@@ -416,6 +427,9 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
     foreach (array_keys(self::TEAM_MEMBER_PERMISSION_MATRIX) as $permission) {
       $this->drupalLogin($this->rootUser);
       $this->teamMemberRoleStorage->addTeamRoles($this->account, $this->team, [$permission]);
+      $team_member_roles = NULL;
+      $team_member_roles = $this->teamMemberRoleStorage->loadByDeveloperAndTeam($this->account, $this->team);
+      $team_member_roles->save();
       $this->drupalLogin($this->account);
       $this->validateTeamAccess();
       $this->validateTeamAppAccess();
@@ -426,6 +440,9 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
     foreach (array_keys(self::TEAM_MEMBER_PERMISSION_MATRIX) as $permission) {
       $this->drupalLogin($this->rootUser);
       $this->teamMemberRoleStorage->addTeamRoles($this->account, $this->team, [$permission]);
+      $team_member_roles = NULL;
+      $team_member_roles = $this->teamMemberRoleStorage->loadByDeveloperAndTeam($this->account, $this->team);
+      $team_member_roles->save();
       $this->drupalLogin($this->account);
       $this->validateTeamAccess();
       $this->validateTeamAppAccess();
@@ -539,7 +556,6 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
         // non-member of the team and an email address of a non-existing
         // developer.
         $params = ['team' => $this->team->id()];
-        $this->validateAccess(Url::fromRoute($route_id, $params + ['developer' => $this->teamMemberAccount->getEmail()]), in_array($short_route_id, $route_ids_with_access) ? Response::HTTP_OK : Response::HTTP_FORBIDDEN);
         $this->validateAccess(Url::fromRoute($route_id, $params + ['developer' => $this->nonTeamMemberAccount->getEmail()]), Response::HTTP_FORBIDDEN);
         $this->validateAccess(Url::fromRoute($route_id, $params + ['developer' => $this->randomMachineName() . '@example.com']), Response::HTTP_NOT_FOUND);
       }

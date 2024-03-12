@@ -71,7 +71,7 @@ class DeveloperSyncForm extends FormBase {
       $this->sdkConnector->testConnection();
     }
     catch (\Exception $exception) {
-      $this->messenger()->addError($this->t('Cannot connect to Apigee Edge server. Please ensure that <a href=":link">Apigee Edge connection settings</a> are correct.', [
+      $this->messenger()->addError($this->t('Cannot connect to Apigee server. Please ensure that <a href=":link">Apigee connection settings</a> are correct.', [
         ':link' => Url::fromRoute('apigee_edge.settings')->toString(),
       ]));
       return $form;
@@ -95,8 +95,8 @@ class DeveloperSyncForm extends FormBase {
       'list' => [
         '#theme' => 'item_list',
         '#items' => [
-          $this->t('Create Drupal users for any Apigee Edge developers that are in this Drupal system'),
-          $this->t('Create developers in Apigee Edge for all users in this Drupal system that are not already in Apigee Edge'),
+          $this->t('Create Drupal users for any Apigee developers that are in this Drupal system'),
+          $this->t('Create developers in Apigee for all users in this Drupal system that are not already in Apigee'),
         ],
       ],
       'p2' => [

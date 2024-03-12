@@ -2,11 +2,11 @@
     "name": "drupal/apigee_edge",
     "license": "GPL-2.0-or-later",
     "type": "drupal-module",
-    "description": "Apigee Edge for Drupal.",
+    "description": "Apigee for Drupal.",
     "require": {
         "php": "~8.1.0 || ~8.2.0",
         "ext-json": "*",
-        "apigee/apigee-client-php": "^3.0.1",
+        "apigee/apigee-client-php": "~3.0.5",
         "drupal/core": "^10.1",
         "drupal/entity": "^1.0",
         "drupal/key": "^1.8",
@@ -32,11 +32,6 @@
         "drush": {
             "services": {
                 "drush.services.yml": "^12"
-            }
-        },
-        "patches": {
-            "drupal/core": {
-                "Add a method to access the original property": "https://www.drupal.org/files/issues/2023-07-22/2839195-105.patch"
             }
         }
     }

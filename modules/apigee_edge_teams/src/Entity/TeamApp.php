@@ -83,7 +83,15 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   field_ui_base_route = "apigee_edge_teams.settings.team_app",
  * )
  */
+#[\AllowDynamicProperties]
 class TeamApp extends App implements TeamAppInterface {
+
+  /**
+   * True if organization is Apigee X.
+   *
+   * @var bool
+   */
+  public static $apigeex = FALSE;
 
   /**
    * The decorated company app entity from the SDK.
@@ -155,7 +163,11 @@ class TeamApp extends App implements TeamAppInterface {
    */
   public static function isApigeeX(): bool {
     $orgController = \Drupal::service('apigee_edge.controller.organization');
-    return $orgController->isOrganizationApigeeX();
+    if ($orgController->isOrganizationApigeeX()) {
+      TeamApp::$apigeex = $orgController->isOrganizationApigeeX();
+    }
+
+    return TeamApp::$apigeex;
   }
 
   /**

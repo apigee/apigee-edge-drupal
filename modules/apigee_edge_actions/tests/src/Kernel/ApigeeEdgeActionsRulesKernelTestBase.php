@@ -20,6 +20,7 @@
 
 namespace Drupal\Tests\apigee_edge_actions\Kernel;
 
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Core\Database\Database;
 use Drupal\dblog\Controller\DbLogController;
 use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
@@ -67,6 +68,11 @@ class ApigeeEdgeActionsRulesKernelTestBase extends RulesKernelTestBase {
    * {@inheritdoc}
    */
   protected function setUp(): void {
+    // Skipping the test if instance type is Public.
+    $instance_type = getenv('APIGEE_EDGE_INSTANCE_TYPE');
+    if (!empty($instance_type) && $instance_type === EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+      $this->markTestSkipped('This test suite is expecting a PUBLIC instance type.');
+    }
     parent::setUp();
 
     $this->storage = $this->container->get('entity_type.manager')->getStorage('rules_reaction_rule');
