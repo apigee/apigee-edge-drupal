@@ -1287,7 +1287,7 @@ function apigee_edge_user_email_check(&$account) {
        // with uppercase email address.
        if (preg_match('/[A-Z]/', $email)) {
         $account->set('mail', strtolower($email));
-        \Drupal::messenger()->addWarning(t('The site has converted your email address to lowercase as the site accepts only lower-case email address.'));
+        \Drupal::messenger()->addWarning(t('The site has converted your email address to lowercase.'));
        }
     }
   }
