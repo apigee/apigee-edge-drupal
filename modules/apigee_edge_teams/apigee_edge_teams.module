@@ -261,15 +261,15 @@ function apigee_edge_teams_api_product_access(EntityInterface $entity, $operatio
     $team_storage = \Drupal::entityTypeManager()->getStorage('team');
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
     $teams = $team_storage->loadMultiple($developer_team_ids);
+    $result = AccessResult::neutral();
     foreach ($teams as $team) {
-      $result = $access_checker->access($entity, $operation, $team, $account, TRUE);
+      $result = $result->orIf($access_checker->access($entity, $operation, $team, $account, TRUE));
       if ($result->isAllowed()) {
         break;
       }
     }
   }
 
-  // $result is always defined.
   return $result;
 }
 
