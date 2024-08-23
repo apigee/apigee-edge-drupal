@@ -98,7 +98,7 @@ jobs:
         composer require wikimedia/composer-merge-plugin
         composer config --json extra.merge-plugin.require '["modules/contrib/apigee_edge/composer.json"]'
         composer config platform.php ${{ matrix.php-version }}
-        composer config --json extra.patches."drupal/core" '{ "TypeError: FieldTypePluginManager::createFieldItem() called in FieldStorageConfig.php": "https://www.drupal.org/files/issues/2024-05-27/field-typeerror-3450175-3.patch", "Support entities that are neither content nor config entities": "https://www.drupal.org/files/issues/2020-12-02/3042467-50.patch", "Add a method to access the original property": "https://www.drupal.org/files/issues/2023-07-22/2839195-105.patch"}'
+        composer config --json extra.patches."drupal/core" '{ "Support entities that are neither content nor config entities": "https://www.drupal.org/files/issues/2020-12-02/3042467-50.patch", "Add a method to access the original property": "https://www.drupal.org/files/issues/2023-07-22/2839195-105.patch"}'
         composer update --with-all-dependencies
         composer require --dev phpspec/prophecy-phpunit:^2
         composer require --dev drupal/classy:^1.0

@@ -73,7 +73,7 @@ abstract class AttributesAwareFieldableEdgeEntityBase extends FieldableEdgeEntit
     $definition = $this->getFieldDefinition($field_name);
     // No field found with this name.
     if ($definition === NULL) {
-      return NULL;
+      throw new InvalidArgumentException(sprintf('"%s" field does not exist on "s" entity.', $field_name, get_class($this)));
     }
     // Ignore base fields, because their value should be stored in entity
     // properties.
