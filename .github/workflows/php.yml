@@ -59,7 +59,7 @@ jobs:
         coverage: "xdebug"
         php-version: "${{ matrix.php-version }}"
         tools: composer:v2
-        extensions: dom, curl, libxml, mbstring, zip, pdo, mysql, pdo_mysql, bcmath, gd, exif, iconv, opcache, imagick
+        extensions: date, dom, filter, hash, json, curl, libxml, mbstring, zip, pdo, sqlite3, mysqli, mysql, pdo_mysql, bcmath, gd, exif, iconv, opcache, imagick, openssl
 
     - name: Checkout Drupal core
       run: |
