@@ -47,6 +47,18 @@ jobs:
 
     steps:
 
+    - name: Update sqlite3
+      run: |
+        sudo apt-get update
+        # sudo apt-get install -y build-essential wget
+        wget https://www.sqlite.org/2024/sqlite-autoconf-3470000.tar.gz
+        tar xvfz sqlite-autoconf-3470000.tar.gz
+        cd sqlite-autoconf-3470000
+        ./configure --prefix=/usr
+        make
+        sudo make install
+        sqlite3 --version
+
     - name: Disable deprecations check for PR
       if: github.event_name != 'schedule'
       run: |
@@ -104,7 +116,7 @@ jobs:
         # composer config --json extra.patches."drupal/core" '{ "Support entities that are neither content nor config entities": "https://www.drupal.org/files/issues/2020-12-02/3042467-50.patch", "Drupal 11 compatibility for classy": "https://www.drupal.org/files/issues/2024-08-26/classy-3461089-5.patch"}'
         composer update --with-all-dependencies
         composer require --dev phpspec/prophecy-phpunit:^2
-        # composer require --dev drupal/classy:^1.0
+        # composer require --dev drupal/olivero
         composer config --no-plugins allow-plugins.drupal/console-extend-plugin true
 
     # Install drupal using minimal installation profile and enable the module.
