@@ -299,7 +299,7 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
   protected function getModuleNames(): array {
     $modules = [];
     foreach (array_keys($this->moduleHandler->getModuleList()) as $module) {
-      $modules[$module] = $this->moduleHandler->getName($module);
+      $modules[$module] = \Drupal::service('extension.list.module')->getName($module);
     }
     asort($modules);
     return $modules;

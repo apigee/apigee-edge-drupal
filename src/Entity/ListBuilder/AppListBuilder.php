@@ -290,7 +290,7 @@ class AppListBuilder extends EdgeEntityListBuilder {
       $url = Url::fromUserInput($this->requestStack->getCurrentRequest()->getRequestUri(), $link_options);
       $link = Link::fromTextAndUrl($this->t('<span class="ui-icon-triangle-1-e ui-icon"></span><span class="text">Show details</span>'), $url);
       $build['warning-toggle'] = $link->toRenderable();
-      $rows[$info_row_css_id]['data']['status']['data'] = $this->renderer->renderPlain($build);
+      $rows[$info_row_css_id]['data']['status']['data'] = $this->renderer->renderInIsolation($build);
       $row['data']['info'] = [
         'colspan' => count($this->buildHeader()),
       ];

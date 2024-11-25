@@ -19,14 +19,14 @@
 
 namespace Drupal\apigee_edge\Element;
 
-use Drupal\Core\Render\Element\RenderElement;
+use Drupal\Core\Render\Element\RenderElementBase;
 
 /**
  * Provides a status property element.
  *
- * @RenderElement("status_property")
+ * @RenderElementBase("status_property")
  */
-class StatusPropertyElement extends RenderElement {
+class StatusPropertyElement extends RenderElementBase {
 
   /**
    * Indicator status configuration id: OK.

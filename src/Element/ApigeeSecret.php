@@ -20,14 +20,14 @@
 
 namespace Drupal\apigee_edge\Element;
 
-use Drupal\Core\Render\Element\RenderElement;
+use Drupal\Core\Render\Element\RenderElementBase;
 
 /**
  * Provides a secret element.
  *
- * @RenderElement("apigee_secret")
+ * @RenderElementBase("apigee_secret")
  */
-class ApigeeSecret extends RenderElement {
+class ApigeeSecret extends RenderElementBase {
 
   /**
    * {@inheritdoc}

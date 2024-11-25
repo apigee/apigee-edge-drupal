@@ -20,14 +20,14 @@
 
 namespace Drupal\apigee_edge\Element;
 
-use Drupal\Core\Render\Element\RenderElement;
+use Drupal\Core\Render\Element\RenderElementBase;
 
 /**
  * Provides an app credential element.
  *
- * @RenderElement("app_credential")
+ * @RenderElementBase("app_credential")
  */
-class AppCredentialElement extends RenderElement {
+class AppCredentialElement extends RenderElementBase {
 
   /**
    * {@inheritdoc}
