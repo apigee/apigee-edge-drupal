@@ -233,7 +233,7 @@ function apigee_edge_apiproduct_rbac_form_apigee_edge_api_product_access_control
     '#value' => $product_names,
   ];
 
-  $form['#attached']['library'][] = 'apigee_edge_apiproduct_rbac/admin';
+  $form['#attached']['library'][] = 'apigee_edge_apiproduct_rbac/apigee_edge_apiproduct_rbac.admin';
   $form['#submit'][] = 'apigee_edge_apiproduct_rbac_form_apigee_edge_api_product_access_control_form_submit';
 }
 
