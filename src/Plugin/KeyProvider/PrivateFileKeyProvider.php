@@ -20,7 +20,7 @@
 namespace Drupal\apigee_edge\Plugin\KeyProvider;
 
 use Drupal\Core\File\Exception\FileException;
-Use Drupal\Core\File\FileExists;
+use Drupal\Core\File\FileExists;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Utility\Error;
