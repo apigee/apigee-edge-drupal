@@ -78,7 +78,7 @@ abstract class FieldableEdgeEntityBase extends EdgeEntityBase implements Fieldab
   /**
    * {@inheritdoc}
    */
-  public function __sleep() {
+  public function __sleep(): array {
     $this->fields = [];
     $this->fieldDefinitions = NULL;
     return parent::__sleep();
