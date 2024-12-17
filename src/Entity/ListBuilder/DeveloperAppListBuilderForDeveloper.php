@@ -84,17 +84,17 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
    *   Currently logged-in user.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The route match object.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The config factory.
    * @param \Drupal\apigee_edge\Entity\AppWarningsCheckerInterface $app_warnings_checker
    *   The app warnings checker service.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render, RequestStack $request_stack, TimeInterface $time, AccountInterface $current_user, RouteMatchInterface $route_match, ?ConfigFactoryInterface $config_factory = NULL, AppWarningsCheckerInterface $app_warnings_checker) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $render, RequestStack $request_stack, TimeInterface $time, AccountInterface $current_user, RouteMatchInterface $route_match, AppWarningsCheckerInterface $app_warnings_checker, ?ConfigFactoryInterface $config_factory = NULL) {
     if (!$config_factory) {
       $config_factory = \Drupal::service('config.factory');
     }
 
-    parent::__construct($entity_type, $entity_type_manager, $render, $request_stack, $time, $config_factory, $app_warnings_checker);
+    parent::__construct($entity_type, $entity_type_manager, $render, $request_stack, $time, $app_warnings_checker, $config_factory);
     $this->currentUser = $current_user;
     $this->routeMatch = $route_match;
   }
@@ -111,8 +111,8 @@ class DeveloperAppListBuilderForDeveloper extends AppListBuilder implements Cont
       $container->get('datetime.time'),
       $container->get('current_user'),
       $container->get('current_route_match'),
-      $container->get('config.factory'),
-      $container->get('apigee_edge.entity.app_warnings_checker')
+      $container->get('apigee_edge.entity.app_warnings_checker'),
+      $container->get('config.factory')
     );
   }
 

@@ -89,12 +89,12 @@ class AppListBuilder extends EdgeEntityListBuilder {
    *   The request stack object.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface|null $config_factory
-   *   The config factory.
    * @param \Drupal\apigee_edge\Entity\AppWarningsCheckerInterface $app_warnings_checker
    *   The app warnings checker service.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface|null $config_factory
+   *   The config factory.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, RequestStack $request_stack, TimeInterface $time, ?ConfigFactoryInterface $config_factory = NULL, AppWarningsCheckerInterface $app_warnings_checker) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, RequestStack $request_stack, TimeInterface $time, AppWarningsCheckerInterface $app_warnings_checker, ?ConfigFactoryInterface $config_factory = NULL) {
     if (!$config_factory) {
       $config_factory = \Drupal::service('config.factory');
     }
@@ -117,8 +117,8 @@ class AppListBuilder extends EdgeEntityListBuilder {
       $container->get('renderer'),
       $container->get('request_stack'),
       $container->get('datetime.time'),
-      $container->get('config.factory'),
-      $container->get('apigee_edge.entity.app_warnings_checker')
+      $container->get('apigee_edge.entity.app_warnings_checker'),
+      $container->get('config.factory')
     );
   }
 
