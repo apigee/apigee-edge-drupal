@@ -257,7 +257,7 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
     // Login with the default user, the created team app should be visible on
     // the team app administer collection page (/team-apps).
     $this->drupalLogin($this->account);
-    $this->drupalGet(Url::fromRoute('entity.team_app.collection'));
+    $this->drupalGet(Url::fromRoute('entity.team_app.collection_by_team'));
     $this->assertSession()->linkExists($team_modified_display_name);
     $this->assertSession()->linkExists($team_app_1_modified_display_name);
 
@@ -270,7 +270,7 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
 
     // Remove the other user from the team's member list.
     $this->drupalLogin($this->account);
-    $this->drupalGet(Url::fromRoute('entity.team_app.collection'));
+    $this->drupalGet(Url::fromRoute('entity.team_app.collection_by_team'));
     $this->clickLink($team_modified_display_name);
     $this->clickLink('Members');
     $this->getSession()->getPage()->findById((Html::getUniqueId($this->otherAccount->getEmail())))->clickLink('Remove');
