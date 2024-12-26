@@ -259,6 +259,8 @@ class UiTest extends ApigeeEdgeTeamsFunctionalTestBase {
     $this->drupalLogin($this->account);
     $this->drupalGet($this->team->toUrl('collection'));
     $this->assertSession()->linkExists($team_modified_display_name);
+    $this->clickLink($team_modified_display_name);
+    $this->clickLink('Team Apps');
     $this->assertSession()->linkExists($team_app_1_modified_display_name);
 
     // Try to delete the first team app without verification code then with a
