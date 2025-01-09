@@ -49,7 +49,7 @@ use Drupal\apigee_edge\Plugin\FieldStorageFormatInterface;
  *
  * @see https://github.com/symfony/symfony/issues/27447
  */
-class CSV implements FieldStorageFormatInterface {
+class Csv implements FieldStorageFormatInterface {
 
   /**
    * {@inheritdoc}

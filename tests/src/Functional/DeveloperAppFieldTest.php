@@ -150,7 +150,7 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
   }
 
   /**
-   * Tests field storage formatters (CSV and JSON).
+   * Tests field storage formatters (Csv and Json).
    */
   protected function fieldStorageFormattersTest() {
     $field_name_prefix = (string) $this->config('field_ui.settings')->get('field_prefix');
