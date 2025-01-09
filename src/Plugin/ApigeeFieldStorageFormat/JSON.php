@@ -31,7 +31,8 @@ use Drupal\apigee_edge\Plugin\FieldStorageFormatInterface;
  *   weight = 1000,
  * )
  */
-class Json implements FieldStorageFormatInterface {
+// @phpcs:ignore Drupal.NamingConventions.ValidClassName.NoUpperAcronyms
+class JSON implements FieldStorageFormatInterface {
 
   /**
    * {@inheritdoc}

@@ -23,8 +23,8 @@ use Apigee\Edge\Api\Management\Controller\DeveloperController;
 use Drupal\Core\Url;
 use Drupal\Tests\field_ui\Traits\FieldUiTestTrait;
 use Drupal\apigee_edge\Entity\Developer;
-use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormat\Csv;
-use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormat\Json;
+use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormat\CSV;
+use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormat\JSON;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\user\Entity\User;
@@ -579,11 +579,11 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
 
         foreach ($this->fields as $field_type => $data) {
           $formatter = $this->formatManager->lookupPluginForFieldType($field_type);
-          if ($formatter instanceof Json) {
+          if ($formatter instanceof JSON) {
             $this->assertJsonStringEqualsJsonString($developer->getAttributeValue($data['name']), $formatter->encode($user->get($this->fieldNamePrefix . $data['name'])->getValue()));
             $this->assertJsonStringEqualsJsonString($developer->getAttributeValue($data['name']), $formatter->encode($data['data_changed']));
           }
-          elseif ($formatter instanceof Csv) {
+          elseif ($formatter instanceof CSV) {
             $this->assertEquals($developer->getAttributeValue($data['name']), $formatter->encode($user->get($this->fieldNamePrefix . $data['name'])->getValue()));
             $this->assertEquals($developer->getAttributeValue($data['name']), $formatter->encode($data['data_changed']));
           }
@@ -592,11 +592,11 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       else {
         foreach ($this->fields as $field_type => $data) {
           $formatter = $this->formatManager->lookupPluginForFieldType($field_type);
-          if ($formatter instanceof Json) {
+          if ($formatter instanceof JSON) {
             $this->assertJsonStringEqualsJsonString($developer->getAttributeValue($data['name']), $formatter->encode($user->get($this->fieldNamePrefix . $data['name'])->getValue()));
             $this->assertJsonStringEqualsJsonString($developer->getAttributeValue($data['name']), $formatter->encode($data['data']));
           }
-          elseif ($formatter instanceof Csv) {
+          elseif ($formatter instanceof CSV) {
             $this->assertEquals($developer->getAttributeValue($data['name']), $formatter->encode($user->get($this->fieldNamePrefix . $data['name'])->getValue()));
             $this->assertEquals($developer->getAttributeValue($data['name']), $formatter->encode($data['data']));
           }
