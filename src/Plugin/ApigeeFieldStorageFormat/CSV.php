@@ -49,6 +49,7 @@ use Drupal\apigee_edge\Plugin\FieldStorageFormatInterface;
  *
  * @see https://github.com/symfony/symfony/issues/27447
  */
+// @phpcs:ignore Drupal.NamingConventions.ValidClassName.NoUpperAcronyms
 class CSV implements FieldStorageFormatInterface {
 
   /**
