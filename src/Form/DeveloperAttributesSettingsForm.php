@@ -20,6 +20,7 @@
 namespace Drupal\apigee_edge\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -57,6 +58,13 @@ class DeveloperAttributesSettingsForm extends ConfigFormBase {
   private $fieldStorageFormatManager;
 
   /**
+   * Typed Config Service.
+   *
+   * @var \Drupal\Core\Config\TypedConfigManagerInterface
+   */
+  protected TypedConfigManagerInterface $typedConfigManager;
+
+  /**
    * DeveloperAttributesSettingsForm constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -67,19 +75,28 @@ class DeveloperAttributesSettingsForm extends ConfigFormBase {
    *   Field storage format manager service.
    * @param \Drupal\apigee_edge\FieldAttributeConverter $field_attribute_converter
    *   Field name to attribute name converted service.
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config_manager
+   *   The typed config manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, EntityFieldManagerInterface $entity_field_manager, FieldStorageFormatManagerInterface $field_storage_format_manager, FieldAttributeConverter $field_attribute_converter) {
-    parent::__construct($config_factory);
+  public function __construct(ConfigFactoryInterface $config_factory, EntityFieldManagerInterface $entity_field_manager, FieldStorageFormatManagerInterface $field_storage_format_manager, FieldAttributeConverter $field_attribute_converter, TypedConfigManagerInterface $typed_config_manager) {
+    parent::__construct($config_factory, $typed_config_manager);
     $this->fieldAttributeConverter = $field_attribute_converter;
     $this->entityFieldManager = $entity_field_manager;
     $this->fieldStorageFormatManager = $field_storage_format_manager;
+    $this->typedConfigManager = $typed_config_manager;
   }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('config.factory'), $container->get('entity_field.manager'), $container->get('plugin.manager.apigee_field_storage_format'), $container->get('apigee_edge.converter.field_attribute'));
+    return new static(
+      $container->get('config.factory'),
+      $container->get('entity_field.manager'),
+      $container->get('plugin.manager.apigee_field_storage_format'),
+      $container->get('apigee_edge.converter.field_attribute'),
+      $container->get('config.typed')
+    );
   }
 
   /**
