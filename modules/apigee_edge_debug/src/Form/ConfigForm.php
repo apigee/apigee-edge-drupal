@@ -21,6 +21,7 @@
 namespace Drupal\apigee_edge_debug\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager;
@@ -39,23 +40,37 @@ class ConfigForm extends ConfigFormBase {
   private $pluginManager;
 
   /**
+   * Typed Config Service.
+   *
+   * @var \Drupal\Core\Config\TypedConfigManagerInterface
+   */
+  protected TypedConfigManagerInterface $typedConfigManager;
+
+  /**
    * ConfigForm constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
    * @param \Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager $plugin_manager
    *   The debug message formatter plugin manager.
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config_manager
+   *   The typed config manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, DebugMessageFormatterPluginManager $plugin_manager) {
-    parent::__construct($config_factory);
+  public function __construct(ConfigFactoryInterface $config_factory, DebugMessageFormatterPluginManager $plugin_manager, TypedConfigManagerInterface $typed_config_manager) {
+    parent::__construct($config_factory, $typed_config_manager);
     $this->pluginManager = $plugin_manager;
+    $this->typedConfigManager = $typed_config_manager;
   }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('config.factory'), $container->get('plugin.manager.apigee_edge_debug.debug_message_formatter'));
+    return new static(
+      $container->get('config.factory'),
+      $container->get('plugin.manager.apigee_edge_debug.debug_message_formatter'),
+      $container->get('config.typed'),
+    );
   }
 
   /**
