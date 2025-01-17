@@ -61,7 +61,7 @@ class ConfigForm extends ConfigFormBase {
     return new static(
       $container->get('config.factory'),
       $container->get('plugin.manager.apigee_edge_debug.debug_message_formatter'),
-      $container->get('config.typed'),
+      $container->get('config.typed')
     );
   }
 
