@@ -67,7 +67,7 @@ function apigee_edge_apiproduct_rbac_api_product_access(EntityInterface $entity,
 
     if (empty($entity->getAttributeValue($rbac_attribute_name))) {
       if ('assign' === $operation) {
-        $result = AccessResult::neutral("{$operation} is not allowed on {$entity->label()} API product.");
+        $result = AccessResult::forbidden("{$operation} is not allowed on {$entity->label()} API product.");
       }
       elseif ($config->get('grant_access_if_attribute_missing')) {
         $result = AccessResult::allowed();
@@ -94,7 +94,7 @@ function apigee_edge_apiproduct_rbac_api_product_access(EntityInterface $entity,
       // Displaying these products should be solved on the form level always.
       if (empty(array_intersect($roles, $account->getRoles()))) {
         if ('assign' === $operation) {
-          $result = AccessResult::neutral("{$operation} is not allowed on {$entity->label()} API product.");
+          $result = AccessResult::forbidden("{$operation} is not allowed on {$entity->label()} API product.");
         }
         else {
           $result = _apigee_edge_user_has_an_app_with_product($entity->id(), $account, TRUE);

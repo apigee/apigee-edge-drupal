@@ -94,7 +94,7 @@ class AppListBuilder extends EdgeEntityListBuilder {
    * @param \Drupal\apigee_edge\Entity\AppWarningsCheckerInterface $app_warnings_checker
    *   The app warnings checker service.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, RequestStack $request_stack, TimeInterface $time, ?ConfigFactoryInterface $config_factory = NULL, AppWarningsCheckerInterface $app_warnings_checker) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, RequestStack $request_stack, TimeInterface $time, ConfigFactoryInterface $config_factory, AppWarningsCheckerInterface $app_warnings_checker) {
     if (!$config_factory) {
       $config_factory = \Drupal::service('config.factory');
     }
