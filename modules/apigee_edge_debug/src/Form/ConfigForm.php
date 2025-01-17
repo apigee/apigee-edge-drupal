@@ -40,13 +40,6 @@ class ConfigForm extends ConfigFormBase {
   private $pluginManager;
 
   /**
-   * Typed Config Service.
-   *
-   * @var \Drupal\Core\Config\TypedConfigManagerInterface
-   */
-  protected TypedConfigManagerInterface $typedConfigManager;
-
-  /**
    * ConfigForm constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -59,7 +52,6 @@ class ConfigForm extends ConfigFormBase {
   public function __construct(ConfigFactoryInterface $config_factory, DebugMessageFormatterPluginManager $plugin_manager, TypedConfigManagerInterface $typed_config_manager) {
     parent::__construct($config_factory, $typed_config_manager);
     $this->pluginManager = $plugin_manager;
-    $this->typedConfigManager = $typed_config_manager;
   }
 
   /**

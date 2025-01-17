@@ -74,13 +74,6 @@ class EdgeEntityDisplaySettingsForm extends ConfigFormBase implements BaseFormId
   protected $routeMatch;
 
   /**
-   * Typed Config Service.
-   *
-   * @var \Drupal\Core\Config\TypedConfigManagerInterface
-   */
-  protected TypedConfigManagerInterface $typedConfigManager;
-
-  /**
    * AppDisplaySettingsForm constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -102,7 +95,6 @@ class EdgeEntityDisplaySettingsForm extends ConfigFormBase implements BaseFormId
     $this->moduleHandler = $module_handler;
     $this->entityDisplayRepository = $entity_display_repository;
     $this->routeMatch = $route_match;
-    $this->typedConfigManager = $typed_config_manager;
   }
 
   /**

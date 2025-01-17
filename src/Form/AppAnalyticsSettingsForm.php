@@ -40,13 +40,6 @@ class AppAnalyticsSettingsForm extends ConfigFormBase {
   protected $environmentController;
 
   /**
-   * Typed Config Service.
-   *
-   * @var \Drupal\Core\Config\TypedConfigManagerInterface
-   */
-  protected TypedConfigManagerInterface $typedConfigManager;
-
-  /**
    * Constructs a new DeveloperAppAnalyticsSettingsForm.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -59,7 +52,6 @@ class AppAnalyticsSettingsForm extends ConfigFormBase {
   public function __construct(ConfigFactoryInterface $config_factory, SDKConnectorInterface $sdk_connector, TypedConfigManagerInterface $typed_config_manager) {
     parent::__construct($config_factory, $typed_config_manager);
     $this->environmentController = new EnvironmentController($sdk_connector->getOrganization(), $sdk_connector->getClient());
-    $this->typedConfigManager = $typed_config_manager;
   }
 
   /**

@@ -40,13 +40,6 @@ class ApiProductAccessControlForm extends ConfigFormBase {
   protected $entityTypeManager;
 
   /**
-   * Typed Config Service.
-   *
-   * @var \Drupal\Core\Config\TypedConfigManagerInterface
-   */
-  protected TypedConfigManagerInterface $typedConfigManager;
-
-  /**
    * ProductAccessControlForm constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -59,7 +52,6 @@ class ApiProductAccessControlForm extends ConfigFormBase {
   public function __construct(ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, TypedConfigManagerInterface $typed_config_manager) {
     parent::__construct($config_factory, $typed_config_manager);
     $this->entityTypeManager = $entity_type_manager;
-    $this->typedConfigManager = $typed_config_manager;
   }
 
   /**

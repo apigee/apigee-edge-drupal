@@ -58,13 +58,6 @@ class DeveloperAttributesSettingsForm extends ConfigFormBase {
   private $fieldStorageFormatManager;
 
   /**
-   * Typed Config Service.
-   *
-   * @var \Drupal\Core\Config\TypedConfigManagerInterface
-   */
-  protected TypedConfigManagerInterface $typedConfigManager;
-
-  /**
    * DeveloperAttributesSettingsForm constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -83,7 +76,6 @@ class DeveloperAttributesSettingsForm extends ConfigFormBase {
     $this->fieldAttributeConverter = $field_attribute_converter;
     $this->entityFieldManager = $entity_field_manager;
     $this->fieldStorageFormatManager = $field_storage_format_manager;
-    $this->typedConfigManager = $typed_config_manager;
   }
 
   /**

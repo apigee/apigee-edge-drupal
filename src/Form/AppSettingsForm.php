@@ -51,13 +51,6 @@ class AppSettingsForm extends ConfigFormBase {
   protected $renderer;
 
   /**
-   * Typed Config Service.
-   *
-   * @var \Drupal\Core\Config\TypedConfigManagerInterface
-   */
-  protected TypedConfigManagerInterface $typedConfigManager;
-
-  /**
    * AppSettingsForm constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -73,7 +66,6 @@ class AppSettingsForm extends ConfigFormBase {
     parent::__construct($config_factory, $typed_config_manager);
     $this->entityTypeManager = $entity_type_manager;
     $this->renderer = $renderer;
-    $this->typedConfigManager = $typed_config_manager;
   }
 
   /**
