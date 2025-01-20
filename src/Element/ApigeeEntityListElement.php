@@ -30,6 +30,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @RenderElement("apigee_entity_list")
  */
+/**
+ * Provides an element for listing Apigee entities.
+ *
+ * @todo class RenderElement is deprecated for Drupal 10.3 & is removed from drupal:12.0. Use \Drupal\Core\Render\Element\RenderElementBase instead. https://www.drupal.org/node/3436275
+ * @phpstan-ignore-next-line
+ */
 class ApigeeEntityListElement extends RenderElement implements ContainerFactoryPluginInterface {
 
   /**
@@ -52,6 +58,8 @@ class ApigeeEntityListElement extends RenderElement implements ContainerFactoryP
    *   The entity type manager.
    */
   public function __construct(array $configuration, $plugin_id, array $plugin_definition, EntityTypeManagerInterface $entity_type_manager) {
+    // @todo class RenderElement is deprecated for Drupal 10.3 & is removed from drupal:12.0. Use \Drupal\Core\Render\Element\RenderElementBase instead. https://www.drupal.org/node/3436275
+    // @phpstan-ignore-next-line
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeManager = $entity_type_manager;
   }
