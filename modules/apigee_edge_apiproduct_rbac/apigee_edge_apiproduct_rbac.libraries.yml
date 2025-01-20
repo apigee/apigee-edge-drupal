@@ -1,4 +1,4 @@
-admin:
+apigee_edge_apiproduct_rbac.admin:
   version: 1.1
   css:
     theme:
