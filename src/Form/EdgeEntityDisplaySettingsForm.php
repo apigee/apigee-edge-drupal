@@ -21,6 +21,7 @@
 namespace Drupal\apigee_edge\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -85,9 +86,11 @@ class EdgeEntityDisplaySettingsForm extends ConfigFormBase implements BaseFormId
    *   The module handler.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The route match.
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config_manager
+   *   The typed config manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository, ModuleHandlerInterface $module_handler, RouteMatchInterface $route_match) {
-    parent::__construct($config_factory);
+  public function __construct(ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository, ModuleHandlerInterface $module_handler, RouteMatchInterface $route_match, TypedConfigManagerInterface $typed_config_manager) {
+    parent::__construct($config_factory, $typed_config_manager);
     $this->entityTypeManager = $entity_type_manager;
     $this->moduleHandler = $module_handler;
     $this->entityDisplayRepository = $entity_display_repository;
@@ -103,7 +106,8 @@ class EdgeEntityDisplaySettingsForm extends ConfigFormBase implements BaseFormId
       $container->get('entity_type.manager'),
       $container->get('entity_display.repository'),
       $container->get('module_handler'),
-      $container->get('current_route_match')
+      $container->get('current_route_match'),
+      $container->get('config.typed')
     );
   }
 

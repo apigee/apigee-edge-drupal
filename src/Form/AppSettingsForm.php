@@ -22,6 +22,7 @@ namespace Drupal\apigee_edge\Form;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
@@ -58,9 +59,11 @@ class AppSettingsForm extends ConfigFormBase {
    *   The entity type manager service.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer.
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config_manager
+   *   The typed config manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer) {
-    parent::__construct($config_factory);
+  public function __construct(ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, TypedConfigManagerInterface $typed_config_manager) {
+    parent::__construct($config_factory, $typed_config_manager);
     $this->entityTypeManager = $entity_type_manager;
     $this->renderer = $renderer;
   }
@@ -72,7 +75,8 @@ class AppSettingsForm extends ConfigFormBase {
     return new static(
       $container->get('config.factory'),
       $container->get('entity_type.manager'),
-      $container->get('renderer')
+      $container->get('renderer'),
+      $container->get('config.typed')
     );
   }
 

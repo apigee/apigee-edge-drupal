@@ -21,6 +21,7 @@ namespace Drupal\apigee_edge\Form;
 
 use Apigee\Edge\Api\Management\Controller\EnvironmentController;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
@@ -45,9 +46,11 @@ class AppAnalyticsSettingsForm extends ConfigFormBase {
    *   The factory for configuration objects.
    * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
    *   The SDK connector service.
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config_manager
+   *   The typed config manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, SDKConnectorInterface $sdk_connector) {
-    parent::__construct($config_factory);
+  public function __construct(ConfigFactoryInterface $config_factory, SDKConnectorInterface $sdk_connector, TypedConfigManagerInterface $typed_config_manager) {
+    parent::__construct($config_factory, $typed_config_manager);
     $this->environmentController = new EnvironmentController($sdk_connector->getOrganization(), $sdk_connector->getClient());
   }
 
@@ -57,7 +60,8 @@ class AppAnalyticsSettingsForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
-      $container->get('apigee_edge.sdk_connector')
+      $container->get('apigee_edge.sdk_connector'),
+      $container->get('config.typed')
     );
   }
 
