@@ -38,6 +38,7 @@ jobs:
           - "11.1.x"
         instance-type:
           - "Edge"
+          - "X"
 
     steps:
 
@@ -98,7 +99,6 @@ jobs:
         composer config --json extra.patches."drupal/core" '{ "Support entities that are neither content nor config entities": "https://www.drupal.org/files/issues/2020-12-02/3042467-50.patch"}'
         composer update --with-all-dependencies
         composer require --dev phpspec/prophecy-phpunit:^2
-        # composer require --dev drupal/olivero
         composer config --no-plugins allow-plugins.drupal/console-extend-plugin true
 
     # Install drupal using minimal installation profile and enable the module.
@@ -109,11 +109,16 @@ jobs:
         vendor/bin/drush en apigee_edge -y
         vendor/bin/drush rs 8000 &
 
-    - name: "PHPCS Check and Installed details"
+    - name: "PHPCS and setting up Apigee X environment"
+      if: ${{ matrix.instance-type == 'X' }}
       run: |
         cd drupal
         cp modules/contrib/apigee_edge/phpcs.xml.dist .
         vendor/bin/phpcs --standard=./phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors
+        # Setting environment variables to run Apigee X tests
+        echo "APIGEE_EDGE_INSTANCE_TYPE=hybrid" >> $GITHUB_ENV
+        echo "APIGEE_EDGE_ORGANIZATION=$APIGEE_EDGE_HYBRID_ORGANIZATION" >> $GITHUB_ENV
+        echo "APIGEE_EDGE_ENDPOINT=$APIGEE_EDGE_HYBRID_ENDPOINT" >> $GITHUB_ENV
         composer show > composer-show.txt
 
     - name: "Drupal check"
