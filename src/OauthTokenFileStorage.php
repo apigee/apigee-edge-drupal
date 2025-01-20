@@ -172,7 +172,8 @@ final class OauthTokenFileStorage implements OauthTokenStorageInterface {
     try {
       $this->checkRequirements();
       // Write the obfuscated token data to a private file.
-      $this->fileSystem->saveData(base64_encode(Json::encode($data)), $this->tokenFilePath, FileSystemInterface::EXISTS_REPLACE);
+      // @todo class constant EXISTS_REPLACE is deprecated for Drupal 10.3 & is removed from drupal:12.0. Use \Drupal\Core\File\FileExists::Replace instead. https://www.drupal.org/node/3426517
+      $this->fileSystem->saveData(base64_encode(Json::encode($data)), $this->tokenFilePath, FileSystemInterface::EXISTS_REPLACE); // @phpstan-ignore argument.type
     }
     catch (FileException $e) {
       $this->logger->critical('Error saving OAuth token file.');

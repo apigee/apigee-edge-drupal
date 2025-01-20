@@ -183,7 +183,8 @@ class OauthTokenFileStorageTest extends KernelTestBase {
     $stored_token['access_token'] = mb_strtolower($this->randomMachineName(32));
     \Drupal::service('file_system')->saveData(
       base64_encode(Json::encode($stored_token)),
-      $this->tokenFileUri(), FileSystemInterface::EXISTS_REPLACE);
+      // @todo class constant EXISTS_REPLACE is deprecated for Drupal 10.3 & is removed from drupal:12.0. Use \Drupal\Core\File\FileExists::Replace instead. https://www.drupal.org/node/3426517
+      $this->tokenFileUri(), FileSystemInterface::EXISTS_REPLACE); // @phpstan-ignore argument.type
 
     // Make sure the cached version is still returned.
     $this->assertSame($access_token, $storage->getAccessToken());
