@@ -25,23 +25,19 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     
     name: "PHP ${{ matrix.php-version }} | Drupal ${{ matrix.drupal-core }} | ${{ matrix.instance-type }}"
     strategy:
       fail-fast: false
       matrix:
         php-version:
-          - "8.1"
-          - "8.2"
           - "8.3"
         drupal-core:
           # Should update the following as the minimum supported version from Drupal.org
-          - "10.2.x"
-          - "10.3.x"
+          - "11.1.x"
         instance-type:
           - "Edge"
-          - "X"
 
     steps:
 
@@ -57,7 +53,7 @@ jobs:
         coverage: "xdebug"
         php-version: "${{ matrix.php-version }}"
         tools: composer:v2
-        extensions: dom, curl, libxml, mbstring, zip, pdo, mysql, pdo_mysql, bcmath, gd, exif, iconv, opcache, imagick
+        extensions: date, dom, filter, hash, json, curl, libxml, mbstring, zip, pdo, sqlite3, mysqli, mysql, pdo_mysql, bcmath, gd, exif, iconv, opcache, imagick, openssl
 
     - name: Checkout Drupal core
       run: |
@@ -95,28 +91,15 @@ jobs:
         composer config --no-plugins allow-plugins.cweagans/composer-patches true
         composer config --no-plugins allow-plugins.php-http/discovery true        
         composer config minimum-stability dev
+        composer require 'drupal/rules:^4.0'
         composer require wikimedia/composer-merge-plugin
         composer config --json extra.merge-plugin.require '["modules/contrib/apigee_edge/composer.json"]'
         composer config platform.php ${{ matrix.php-version }}
-        composer config --json extra.patches."drupal/core" '{ "Support entities that are neither content nor config entities": "https://www.drupal.org/files/issues/2020-12-02/3042467-50.patch", "Add a method to access the original property": "https://www.drupal.org/files/issues/2023-07-22/2839195-105.patch"}'
+        composer config --json extra.patches."drupal/core" '{ "Support entities that are neither content nor config entities": "https://www.drupal.org/files/issues/2020-12-02/3042467-50.patch"}'
         composer update --with-all-dependencies
         composer require --dev phpspec/prophecy-phpunit:^2
-        composer require --dev drupal/classy:^1.0
+        # composer require --dev drupal/olivero
         composer config --no-plugins allow-plugins.drupal/console-extend-plugin true
-
-    - name: "Allow plugins and dev dependencies for Drupal 10.2"
-      if: ${{ matrix.drupal-core == '10.2.x' }}
-      run: |
-        cd drupal
-        composer require 'drupal/rules:3.x-dev@dev'
-        composer update --with-all-dependencies
-
-    - name: "Allow plugins and dev dependencies for Drupal 10.3"
-      if: ${{ matrix.drupal-core == '10.3.x' }}
-      run: |
-        cd drupal
-        composer require 'drupal/rules:^4.0'
-        composer update --with-all-dependencies
 
     # Install drupal using minimal installation profile and enable the module.
     - name: Install Drupal
@@ -126,20 +109,14 @@ jobs:
         vendor/bin/drush en apigee_edge -y
         vendor/bin/drush rs 8000 &
 
-    - name: "PHPCS and setting up Apigee X environment"
-      if: ${{ matrix.instance-type == 'X' }}
+    - name: "PHPCS Check and Installed details"
       run: |
         cd drupal
         cp modules/contrib/apigee_edge/phpcs.xml.dist .
         vendor/bin/phpcs --standard=./phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors
-        # Setting environment variables to run Apigee X tests
-        echo "APIGEE_EDGE_INSTANCE_TYPE=hybrid" >> $GITHUB_ENV
-        echo "APIGEE_EDGE_ORGANIZATION=$APIGEE_EDGE_HYBRID_ORGANIZATION" >> $GITHUB_ENV
-        echo "APIGEE_EDGE_ENDPOINT=$APIGEE_EDGE_HYBRID_ENDPOINT" >> $GITHUB_ENV
         composer show > composer-show.txt
 
-    - name: "Drupal check for Drupal 10.2"
-      if: ${{ matrix.drupal-core == '10.2.x' }}
+    - name: "Drupal check"
       run: |
         cd drupal
         vendor/bin/drupal-check modules/contrib/apigee_edge
@@ -151,14 +128,7 @@ jobs:
         chromedriver --url-base=/wd/hub &
         sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
 
-    - name: "Run PHPUnit tests"
-      if: ${{ matrix.drupal-core != '10.2.x' || matrix.php-version != '8.2' }}
-      run: |
-        cd drupal
-        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit,kernel,functional,functional-javascript modules/contrib/apigee_edge
-
     - name: "Run PHPUnit tests with Code Coverage"
-      if: ${{ matrix.drupal-core == '10.2.x' && matrix.php-version == '8.2' }}
       run: |
         cd drupal
         cp modules/contrib/apigee_edge/phpunit.core.xml.dist core/phpunit.xml
@@ -172,7 +142,6 @@ jobs:
         path: drupal/sites/simpletest/browser_output/*
 
     - name: Upload coverage to Codecov
-      if: ${{ matrix.drupal-core == '10.2.x' && matrix.php-version == '8.2' }}
       uses: codecov/codecov-action@v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
