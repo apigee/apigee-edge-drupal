@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge;
 
+use Drupal\Component\Datetime\Time;
 use Drupal\Core\Cache\MemoryCache\MemoryCache;
 use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
 
@@ -65,7 +66,7 @@ final class MemoryCacheFactory implements MemoryCacheFactoryInterface {
   public function get($bin): MemoryCacheInterface {
     $bin = "{$this->prefix}_{$bin}";
     if (!isset($this->bins[$bin])) {
-      $this->bins[$bin] = new MemoryCache();
+      $this->bins[$bin] = new MemoryCache(new Time());
     }
     return $this->bins[$bin];
   }
