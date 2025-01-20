@@ -137,7 +137,7 @@ jobs:
       run: |
         cd drupal
         cp modules/contrib/apigee_edge/phpunit.core.xml.dist core/phpunit.xml
-        vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit,kernel,functional,functional-javascript --debug --coverage-clover /tmp/coverage_${{ matrix.instance-type }}.xml modules/contrib/apigee_edge
+        vendor/bin/phpunit -c core --color --group apigee_edge --testsuite unit,kernel,functional,functional-javascript --no-output --log-events-text php://stdout --coverage-clover /tmp/coverage_${{ matrix.instance-type }}.xml modules/contrib/apigee_edge
 
     - name: Artifacts
       if: failure()
