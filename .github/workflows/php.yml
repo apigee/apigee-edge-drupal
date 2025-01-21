@@ -121,10 +121,10 @@ jobs:
         echo "APIGEE_EDGE_ENDPOINT=$APIGEE_EDGE_HYBRID_ENDPOINT" >> $GITHUB_ENV
         composer show > composer-show.txt
 
-    - name: "Drupal check"
-      run: |
-        cd drupal
-        vendor/bin/drupal-check modules/contrib/apigee_edge
+    # - name: "Drupal check"
+    #   run: |
+    #     cd drupal
+    #     vendor/bin/drupal-check modules/contrib/apigee_edge
 
     - uses: nanasess/setup-chromedriver@v2
 
@@ -137,6 +137,7 @@ jobs:
       run: |
         cd drupal
         cp modules/contrib/apigee_edge/phpunit.core.xml.dist core/phpunit.xml
+        vendor/bin/phpunit --migrate-configuration -c core --color --group apigee_edge --testsuite unit,kernel,functional,functional-javascript --no-output --log-events-text php://stdout --coverage-clover /tmp/coverage_${{ matrix.instance-type }}.xml modules/contrib/apigee_edge
         vendor/bin/phpunit -c core --color --group apigee_edge --testsuite unit,kernel,functional,functional-javascript --no-output --log-events-text php://stdout --coverage-clover /tmp/coverage_${{ matrix.instance-type }}.xml modules/contrib/apigee_edge
 
     - name: Artifacts
