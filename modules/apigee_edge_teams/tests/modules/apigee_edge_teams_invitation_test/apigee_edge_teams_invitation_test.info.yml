@@ -1,7 +1,7 @@
 name: 'Apigee Teams: Invitation tests'
 type: module
 description: 'Support module for the Apigee Teams invitation tests.'
-core_version_requirement: ^10
+core_version_requirement: ^11
 package: Testing
 
 dependencies:
