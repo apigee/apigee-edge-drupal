@@ -27,6 +27,7 @@ use Apigee\Edge\Structure\AddonsConfig;
 use Apigee\Edge\Structure\MonetizationConfig;
 use Apigee\MockClient\Generator\ApigeeSdkEntitySource;
 use Drupal\Tests\apigee_edge\Traits\ApigeeEdgeUtilTestTrait;
+use Drupal\TestTools\Random;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
@@ -370,7 +371,7 @@ trait ApigeeMockApiClientHelperTrait {
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
     $team = Team::create([
       'name' => $this->randomMachineName(),
-      'displayName' => $this->randomGenerator->name(),
+      'displayName' => Random::getGenerator()->name(),
     ]);
     $this->queueCompanyResponse($team->decorated());
     $this->stack->queueMockResponse('no_content');
@@ -391,7 +392,7 @@ trait ApigeeMockApiClientHelperTrait {
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
     $team = Team::create([
       'name' => $this->randomMachineName(),
-      'displayName' => $this->randomGenerator->name(),
+      'displayName' => Random::getGenerator()->name(),
     ]);
 
     $this->queueAppGroupResponse($team->decorated());

@@ -22,6 +22,7 @@ namespace Drupal\Tests\apigee_edge\Functional;
 use Apigee\Edge\Api\Management\Controller\DeveloperController;
 use Drupal\Core\Url;
 use Drupal\Tests\field_ui\Traits\FieldUiTestTrait;
+use Drupal\TestTools\Random;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormat\CSV;
 use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormat\JSON;
@@ -234,8 +235,8 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       }
 
       // Change first name and last name.
-      $this->modifiedEdgeDevelopers[$user->getEmail()]->setFirstName($this->randomGenerator->word(8));
-      $this->modifiedEdgeDevelopers[$user->getEmail()]->setLastName($this->randomGenerator->word(8));
+      $this->modifiedEdgeDevelopers[$user->getEmail()]->setFirstName(Random::getGenerator()->word(8));
+      $this->modifiedEdgeDevelopers[$user->getEmail()]->setLastName(Random::getGenerator()->word(8));
 
       // Set unlinked attribute on the developer.
       $this->modifiedEdgeDevelopers[$user->getEmail()]->setAttribute('one_track_field', 'developer');
@@ -273,9 +274,9 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       }
 
       // Change first name, last name and username.
-      $this->modifiedDrupalUsers[$user->getEmail()]->set('first_name', $this->randomGenerator->word(8));
-      $this->modifiedDrupalUsers[$user->getEmail()]->set('last_name', $this->randomGenerator->word(8));
-      $this->modifiedDrupalUsers[$user->getEmail()]->set('name', $this->randomGenerator->word(8));
+      $this->modifiedDrupalUsers[$user->getEmail()]->set('first_name', Random::getGenerator()->word(8));
+      $this->modifiedDrupalUsers[$user->getEmail()]->set('last_name', Random::getGenerator()->word(8));
+      $this->modifiedDrupalUsers[$user->getEmail()]->set('name', Random::getGenerator()->word(8));
 
       // Set unlinked field in Drupal.
       $this->modifiedDrupalUsers[$user->getEmail()]->set($this->fieldNamePrefix . 'one_track_field', 'user');

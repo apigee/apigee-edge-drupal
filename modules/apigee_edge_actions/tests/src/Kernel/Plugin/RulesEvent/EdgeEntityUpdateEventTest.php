@@ -21,6 +21,7 @@
 namespace Drupal\Tests\apigee_edge_actions\Kernel\Plugin\RulesEvent;
 
 use Drupal\Tests\apigee_edge_actions\Kernel\ApigeeEdgeActionsRulesKernelTestBase;
+use Drupal\TestTools\Random;
 use Drupal\rules\Context\ContextConfig;
 
 /**
@@ -62,7 +63,7 @@ class EdgeEntityUpdateEventTest extends ApigeeEdgeActionsRulesKernelTestBase {
     /** @var \Drupal\apigee_edge\Entity\DeveloperAppInterface $entity */
     $entity = $this->createDeveloperApp();
     $original_name = $entity->getDisplayName();
-    $new_name = $this->randomGenerator->name();
+    $new_name = Random::getGenerator()->name();
     $this->queueDeveloperAppResponse($entity);
     $entity->setDisplayName($new_name);
     $this->queueDeveloperAppResponse($entity);

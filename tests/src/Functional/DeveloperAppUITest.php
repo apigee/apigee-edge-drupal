@@ -22,6 +22,7 @@ namespace Drupal\Tests\apigee_edge\Functional;
 use Apigee\Edge\Api\Management\Controller\DeveloperController;
 use Drupal\Core\Url;
 use Drupal\Tests\apigee_edge\Traits\EntityUtilsTrait;
+use Drupal\TestTools\Random;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 
@@ -580,7 +581,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   public function testInvalidEdgeSideCallbackUrl() {
     $this->drupalLogin($this->rootUser);
     $this->products[] = $this->createProduct();
-    $callback_url = $this->randomGenerator->word(8);
+    $callback_url = Random::getGenerator()->word(8);
     $callback_url_warning_msg = "The Callback URL value should be fixed. The URI '{$callback_url}' is invalid. You must use a valid URI scheme.";
     $app = $this->createDeveloperApp(
       [
