@@ -32,6 +32,7 @@ use Drupal\apigee_edge\Entity\DeveloperApp;
  * @group apigee_edge
  * @group apigee_edge_developer_app
  */
+#[\AllowDynamicProperties]
 class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
 
   use DeveloperAppUITestTrait;
