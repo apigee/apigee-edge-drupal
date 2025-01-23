@@ -25,6 +25,7 @@ use Drupal\apigee_edge\Entity\DeveloperApp;
 /**
  * Class OverriddenDeveloperApp.
  */
+#[\AllowDynamicProperties]
 final class OverriddenDeveloperApp extends DeveloperApp {
 
   /**
