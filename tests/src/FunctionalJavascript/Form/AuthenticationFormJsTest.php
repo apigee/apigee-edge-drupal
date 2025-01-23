@@ -21,6 +21,7 @@ namespace Drupal\Tests\apigee_edge\FunctionalJavascript\Form;
 
 use Drupal\Core\Url;
 use Drupal\Tests\apigee_edge\FunctionalJavascript\ApigeeEdgeFunctionalJavascriptTestBase;
+use Drupal\TestTools\Random;
 use Drupal\apigee_edge\Form\AuthenticationForm;
 use Drupal\apigee_edge\OauthTokenFileStorage;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
@@ -375,7 +376,7 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     // @todo Re-add this assert later, if requires.
     // Irrespective of incorrect organization, username or password it will say Forbidden.
     // Test invalid organization.
-    // $random_org = $this->randomGenerator->word(16);
+    // $random_org = Random::getGenerator()->word(16);
     // $page->fillField('Organization', $random_org);
     // $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given organization name ({$random_org}) is incorrect. Error message: ");
     // $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', 'HTTP/1.1 404 Not Found');
@@ -383,7 +384,7 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     // $page->fillField('Organization', $this->organization);
     // Test invalid endpoint.
     $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE);
-    $invalid_domain = "{$this->randomGenerator->word(16)}.example.com";
+    $invalid_domain = "{Random::getGenerator()->word(16)}.example.com";
     $page->fillField('Apigee endpoint', "http://{$invalid_domain}/");
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given endpoint (http://{$invalid_domain}/) is incorrect or something is wrong with the connection. Error message: ");
     $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"endpoint\": \"http:\/\/{$invalid_domain}\/\"");
@@ -409,7 +410,7 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
     // Test invalid authorization server.
     $this->cssSelect('select[data-drupal-selector="edit-key-input-settings-auth-type"]')[0]->setValue('oauth');
-    $invalid_domain = "{$this->randomGenerator->word(16)}.example.com";
+    $invalid_domain = "{Random::getGenerator()->word(16)}.example.com";
     $page->selectFieldOption('key_input_settings[authorization_server_type]', 'custom');
     $page->fillField('Custom authorization server', "http://{$invalid_domain}/");
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to the OAuth authorization server. The given authorization server (http://{$invalid_domain}/) is incorrect or something is wrong with the connection. Error message: ");
@@ -422,7 +423,7 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $page->selectFieldOption('key_input_settings[authorization_server_type]', 'default');
 
     // Test invalid client secret.
-    $random_secret = $this->randomGenerator->word(16);
+    $random_secret = Random::getGenerator()->word(16);
     $page->fillField('Client secret', $random_secret);
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to the OAuth authorization server. The given username ({$this->username}) or password or client ID (edgecli) or client secret is incorrect. Error message: ");
     $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', '"authorization_server": "https:\/\/login.apigee.com\/oauth\/token"');
@@ -432,7 +433,7 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $page->fillField('Client secret', '');
 
     // Test invalid client id.
-    $client_id = $this->randomGenerator->word(8);
+    $client_id = Random::getGenerator()->word(8);
     $page->fillField('Client ID', $client_id);
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to the OAuth authorization server. The given username ({$this->username}) or password or client ID ({$client_id}) or client secret is incorrect. Error message: ");
     $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', '"authorization_server": "https:\/\/login.apigee.com\/oauth\/token"');
