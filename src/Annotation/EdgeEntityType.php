@@ -19,9 +19,9 @@
 
 namespace Drupal\apigee_edge\Annotation;
 
-use Drupal\apigee_edge\Entity\EdgeEntityType as EntityEdgeEntityType;
 use Drupal\Core\Entity\Annotation\EntityType;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\apigee_edge\Entity\EdgeEntityType as EntityEdgeEntityType;
 
 /**
  * Defines an Apigee Edge entity type annotation object.

@@ -21,18 +21,18 @@
 namespace Drupal\apigee_edge_teams\Entity\Form;
 
 use Apigee\Edge\Exception\ApiException;
-use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
-use Drupal\apigee_edge\Entity\Form\EdgeEntityFormInterface;
-use Drupal\apigee_edge\Entity\Form\FieldableEdgeEntityForm;
-use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
-use Drupal\apigee_edge_teams\Form\TeamAliasForm;
-use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Utility\Error;
+use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
+use Drupal\apigee_edge\Entity\Form\EdgeEntityFormInterface;
+use Drupal\apigee_edge\Entity\Form\FieldableEdgeEntityForm;
+use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
+use Drupal\apigee_edge_teams\Form\TeamAliasForm;
+use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -163,7 +163,6 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
     // We add to any team to make sure team creation works for mint orgs even
     // if they do not enable the m10n teams module.
     if ($this->orgController->isOrganizationApigeeX()) {
-      $team->setAttribute(static::APPGROUP_ADMIN_EMAIL_ATTRIBUTE, '[{"developer":"' . $this->currentUser->getEmail() . '","roles":["admin"]}]');
       global $base_url;
       // Channel url for a team.
       $team->setChannelUri($base_url . '/teams/' . $team->id());
@@ -267,15 +266,9 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
 
     if ($was_new) {
       try {
-        if ($this->orgController->isOrganizationApigeeX()) {
-          // For ApigeeX adding the member as admin.
+        if (!$this->orgController->isOrganizationApigeeX()) {
           $this->teamMembershipManager->addMembers($team->id(), [
-            $this->currentUser->getEmail() => ['admin']
-          ]);
-        }
-        else {
-          $this->teamMembershipManager->addMembers($team->id(), [
-            $this->currentUser->getEmail()
+            $this->currentUser->getEmail(),
           ]);
         }
 
@@ -311,6 +304,12 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
         $this->logger->error('Unable to add creator of the team (%email) as member to the team. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
       }
 
+    }
+    $options = [];
+    $query = $this->getRequest()->query;
+    if ($query->has('destination')) {
+      $options['query']['destination'] = $query->get('destination');
+      $query->remove('destination');
     }
     // Redirecting user to team view page to manage the team members and apps.
     $form_state->setRedirectUrl($team->toUrl('canonical'));

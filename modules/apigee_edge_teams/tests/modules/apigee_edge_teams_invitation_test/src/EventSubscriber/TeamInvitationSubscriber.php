@@ -20,7 +20,6 @@
 
 namespace Drupal\apigee_edge_teams_invitation_test\EventSubscriber;
 
-use Drupal\apigee_edge_teams\Event\TeamInvitationEvent;
 use Drupal\apigee_edge_teams\Event\TeamInvitationEventInterface;
 use Drupal\apigee_edge_teams\Event\TeamInvitationEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;

@@ -20,7 +20,6 @@
 namespace Drupal\apigee_edge;
 
 use Apigee\Edge\ClientInterface;
-use Drupal\apigee_edge\Entity\Controller\OrganizationController;
 use Drupal\key\KeyInterface;
 use Http\Message\Authentication;
 
@@ -54,7 +53,7 @@ interface SDKConnectorInterface {
    *
    * @throws \Exception
    */
-  public function testConnection(KeyInterface $key = NULL);
+  public function testConnection(?KeyInterface $key = NULL);
 
   /**
    * Returns a pre-configured API client with the provided credentials.

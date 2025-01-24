@@ -20,14 +20,14 @@
 
 namespace Drupal\apigee_edge_teams\EventSubscriber;
 
-use Drupal\apigee_edge_teams\Entity\TeamInterface;
-use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
+use Drupal\apigee_edge_teams\Entity\TeamInterface;
+use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -99,7 +99,7 @@ class TeamStatusWarningSubscriber implements EventSubscriberInterface {
    */
   public function onRespond(ResponseEvent $event) {
     // Anonymous user's does not have access to these routes.
-    if ($this->currentUser->isAuthenticated() && strpos($this->routeMatch->getRouteName(), 'entity.team_app.') === 0) {
+    if ($this->currentUser->isAuthenticated() && strpos((string) $this->routeMatch->getRouteName(), 'entity.team_app.') === 0) {
       // Team is available in most of the team app routes as a route parameter.
       /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface|NULL $team */
       $team = $this->routeMatch->getParameter('team');

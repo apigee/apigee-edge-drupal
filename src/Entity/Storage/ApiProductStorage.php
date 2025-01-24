@@ -19,16 +19,16 @@
 
 namespace Drupal\apigee_edge\Entity\Storage;
 
-use Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface;
-use Drupal\apigee_edge\Entity\Controller\CachedManagementApiEdgeEntityControllerProxy;
-use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
-use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
-use Drupal\apigee_edge\Entity\Controller\ManagementApiEdgeEntityControllerProxy;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\CachedManagementApiEdgeEntityControllerProxy;
+use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\ManagementApiEdgeEntityControllerProxy;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

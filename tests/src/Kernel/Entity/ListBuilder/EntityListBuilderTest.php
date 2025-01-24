@@ -22,7 +22,7 @@ namespace Drupal\Tests\apigee_edge\Kernel\Entity\ListBuilder;
 
 use Drupal\Core\Entity\Entity\EntityViewMode;
 use Drupal\Core\Url;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\apigee_edge\Kernel\ApigeeEdgeKernelTestBase;
 use Drupal\Tests\apigee_edge\Kernel\ApigeeEdgeKernelTestTrait;
 use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 use Drupal\Tests\user\Traits\UserCreationTrait;
@@ -35,7 +35,7 @@ use Symfony\Component\HttpFoundation\Request;
  * @group apigee_edge
  * @group apigee_edge_kernel
  */
-class EntityListBuilderTest extends KernelTestBase {
+class EntityListBuilderTest extends ApigeeEdgeKernelTestBase {
 
   use ApigeeMockApiClientHelperTrait, ApigeeEdgeKernelTestTrait, UserCreationTrait;
 
@@ -60,7 +60,7 @@ class EntityListBuilderTest extends KernelTestBase {
     'apigee_mock_api_client',
     'key',
     'user',
-    'options'
+    'options',
   ];
 
   /**
@@ -140,7 +140,7 @@ class EntityListBuilderTest extends KernelTestBase {
     $this->app = $this->createDeveloperApp();
     $this->stack->queueMockResponse([
       'get_developer_apps' => [
-        'apps' => [$this->app]
+        'apps' => [$this->app],
       ],
     ]);
 

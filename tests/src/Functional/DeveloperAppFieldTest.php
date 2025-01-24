@@ -21,12 +21,14 @@ namespace Drupal\Tests\apigee_edge\Functional;
 
 use Apigee\Edge\Api\Management\Controller\DeveloperAppController;
 use Apigee\Edge\Api\Management\Entity\App;
-use Drupal\apigee_edge\Entity\Developer;
-use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Url;
 use Drupal\Tests\field_ui\Traits\FieldUiTestTrait;
+use Drupal\apigee_edge\Entity\Developer;
+use Drupal\apigee_edge\Entity\DeveloperApp;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -69,6 +71,27 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
    * @var \Drupal\apigee_edge\Entity\DeveloperAppInterface
    */
   protected $developerApp;
+
+  /**
+   * Array of list fields.
+   *
+   * @var array
+   */
+  protected $listFields = [];
+
+  /**
+   * Name of the option field.
+   *
+   * @var string
+   */
+  protected $fieldName;
+
+  /**
+   * Admin path to manage field storage settings.
+   *
+   * @var string
+   */
+  protected $adminPath;
 
   /**
    * {@inheritdoc}
@@ -161,7 +184,7 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
         'encoded' => implode(',', [
           round(M_PI, 10),
           round(M_E, 10),
-          round(M_EULER, 10)
+          round(M_EULER, 10),
         ]),
       ],
       strtolower($this->randomMachineName()) => [
@@ -178,47 +201,6 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
           ['value' => '0.1'],
         ],
         'encoded' => '0.1',
-      ],
-      strtolower($this->randomMachineName()) => [
-        'type' => 'list_float',
-        'settings' => [
-          'settings[allowed_values]' => implode(PHP_EOL, [
-            round(M_PI, 10),
-            round(M_E, 10),
-            round(M_EULER, 10),
-          ]),
-        ],
-        'data' => [
-          ['value' => round(M_PI, 10)],
-        ],
-        'encoded' => (string) round(M_PI, 10),
-      ],
-      strtolower($this->randomMachineName()) => [
-        'type' => 'list_integer',
-        'settings' => [
-          'settings[allowed_values]' => implode(PHP_EOL, [1, 2, 3]),
-        ],
-        'data' => [
-          ['value' => 2],
-          ['value' => 3],
-        ],
-        'encoded' => '2,3',
-      ],
-      strtolower($this->randomMachineName()) => [
-        'type' => 'list_string',
-        'settings' => [
-          'settings[allowed_values]' => implode(PHP_EOL, [
-            'qwer',
-            'asdf',
-            'zxcv',
-          ]),
-        ],
-        'data' => [
-          ['value' => 'qwer'],
-          ['value' => 'asdf'],
-          ['value' => 'zxcv'],
-        ],
-        'encoded' => 'qwer,asdf,zxcv',
       ],
       strtolower($this->randomMachineName()) => [
         'type' => 'string',
@@ -256,6 +238,62 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
         'encoded' => json_encode($link),
       ],
     ];
+
+    $this->listFields = [
+      'list_integer' => [
+        'name' => strtolower($this->randomMachineName()),
+        'settings' => [
+          'field_storage[subform][settings][allowed_values][table][0][item][key]' => 0,
+          'field_storage[subform][settings][allowed_values][table][0][item][label]' => 'Zero',
+          'field_storage[subform][settings][allowed_values][table][1][item][key]' => 1,
+          'field_storage[subform][settings][allowed_values][table][1][item][label]' => 'One',
+        ],
+        'data' => [
+          0 => 'Zero',
+          1 => 'One',
+        ],
+        'encoded' => '0,1',
+      ],
+      'list_string' => [
+        'name' => strtolower($this->randomMachineName()),
+        'settings' => [
+          'field_storage[subform][settings][allowed_values][table][0][item][key]' => 'zero',
+          'field_storage[subform][settings][allowed_values][table][0][item][label]' => 'Zero',
+          'field_storage[subform][settings][allowed_values][table][1][item][key]' => 'one',
+          'field_storage[subform][settings][allowed_values][table][1][item][label]' => 'One',
+        ],
+        'data' => [
+          'zero' => 'Zero',
+          'one' => 'One',
+        ],
+        'encoded' => 'zero,one',
+      ],
+      'list_float' => [
+        'name' => strtolower($this->randomMachineName()),
+        'settings' => [
+          'field_storage[subform][settings][allowed_values][table][0][item][key]' => 0,
+          'field_storage[subform][settings][allowed_values][table][0][item][label]' => 'Zero',
+          'field_storage[subform][settings][allowed_values][table][1][item][key]' => .5,
+          'field_storage[subform][settings][allowed_values][table][1][item][label]' => 'Point five',
+          'field_storage[subform][settings][allowed_values][table][2][item][key]' => 2,
+          'field_storage[subform][settings][allowed_values][table][2][item][label]' => 'Two',
+        ],
+        'data' => [
+          '0' => 'Zero',
+          '0.5' => 'Point five',
+          '2' => 'Two',
+        ],
+        'encoded' => '0.5',
+      ],
+    ];
+
+    // Changes for field of types 'list' fields
+    // Using field configs to save the fields as issue is faced by FieldUiTestTrait.
+    foreach ($this->listFields as $list_type => $listData) {
+      $this->fieldName = 'field_' . $listData['name'];
+      $this->createOptionsField($list_type);
+      $this->assertAllowedValuesInput($listData['settings'], $listData['data'], '');
+    }
 
     // Add fields to developer app.
     $add_field_path = Url::fromRoute('apigee_edge.settings.developer_app')->toString();
@@ -314,12 +352,12 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
       /**
        * {@inheritdoc}
        */
-      public function resetCache(array $ids = NULL) {}
+      public function resetCache(?array $ids = NULL) {}
 
       /**
        * {@inheritdoc}
        */
-      public function loadMultiple(array $ids = NULL) {}
+      public function loadMultiple(?array $ids = NULL) {}
 
       /**
        * {@inheritdoc}
@@ -584,6 +622,66 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
     else {
       $this->assertSession()->pageTextNotContains($field_label);
       $this->assertSession()->pageTextNotContains($field_value);
+    }
+  }
+
+  /**
+   * Helper function to create list field of a given type.
+   *
+   * @param string $type
+   *   One of 'list_integer', 'list_float' or 'list_string'.
+   */
+  protected function createOptionsField($type) {
+    // Create a field.
+    FieldStorageConfig::create([
+      'field_name' => $this->fieldName,
+      'entity_type' => 'developer_app',
+      'type' => $type,
+    ])->save();
+    FieldConfig::create([
+      'field_name' => $this->fieldName,
+      'entity_type' => 'developer_app',
+      'bundle' => 'developer_app',
+    ])->save();
+
+    \Drupal::service('entity_display.repository')
+      ->getFormDisplay('developer_app', 'developer_app')
+      ->setComponent($this->fieldName)
+      ->save();
+
+    $this->adminPath = 'admin/config/apigee-edge/app-settings/developer-apps/fields/developer_app.developer_app.' . $this->fieldName;
+  }
+
+  /**
+   * Tests an input array for the 'allowed values' form element.
+   *
+   * @param array $input
+   *   The input array.
+   * @param array|string $result
+   *   Either an expected resulting array in
+   *   $field->getSetting('allowed_values'), or an expected error message.
+   * @param string $message
+   *   Message to display.
+   *
+   * @internal
+   */
+  public function assertAllowedValuesInput(array $input, $result, string $message): void {
+    $this->drupalGet($this->adminPath);
+    $page = $this->getSession()->getPage();
+    $add_button = $page->findButton('Add another item');
+    $add_button->click();
+    $add_button->click();
+
+    $this->submitForm($input, 'Save');
+    // Verify that the page does not have double escaped HTML tags.
+    $this->assertSession()->responseNotContains('&amp;lt;');
+
+    if (is_string($result)) {
+      $this->assertSession()->pageTextContains($result);
+    }
+    else {
+      $field_storage = FieldStorageConfig::loadByName('developer_app', $this->fieldName);
+      $this->assertSame($field_storage->getSetting('allowed_values'), $result, $message);
     }
   }
 

@@ -51,14 +51,16 @@ class ApigeeEdgeManagementCliService implements ApigeeEdgeManagementCliServiceIn
   /**
    * {@inheritdoc}
    */
-  public function createEdgeRoleForDrupal(StyleInterface $io,
-                                          callable $t,
-                                          string $org,
-                                          string $email,
-                                          string $password,
-                                          ?string $base_url,
-                                          ?string $role_name,
-                                          bool $force) {
+  public function createEdgeRoleForDrupal(
+    StyleInterface $io,
+    callable $t,
+    string $org,
+    string $email,
+    string $password,
+    ?string $base_url,
+    ?string $role_name,
+    bool $force,
+  ) {
 
     // Set default base URL if var is null or empty string.
     if (empty($base_url)) {

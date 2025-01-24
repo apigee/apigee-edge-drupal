@@ -23,7 +23,6 @@ namespace Drupal\apigee_edge\Entity\Controller;
 use Apigee\Edge\Api\Management\Entity\AppInterface;
 use Apigee\Edge\Api\Management\Entity\DeveloperAppInterface;
 use Apigee\Edge\Entity\EntityInterface;
-use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge\Exception\RuntimeException;
 
 /**

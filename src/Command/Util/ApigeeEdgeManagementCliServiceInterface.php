@@ -57,7 +57,7 @@ interface ApigeeEdgeManagementCliServiceInterface {
     string $password,
     ?string $base_url,
     ?string $role_name,
-    bool $force
+    bool $force,
   );
 
 }

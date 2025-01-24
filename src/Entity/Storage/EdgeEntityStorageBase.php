@@ -22,9 +22,6 @@ namespace Drupal\apigee_edge\Entity\Storage;
 
 use Apigee\Edge\Entity\EntityInterface as SdkEntityInterface;
 use Apigee\Edge\Exception\ApiException;
-use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
-use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
-use Drupal\apigee_edge\Entity\EdgeEntityInterface as DrupalEdgeEntityInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
@@ -33,6 +30,9 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageBase as DrupalEntityStorageBase;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
+use Drupal\apigee_edge\Entity\EdgeEntityInterface as DrupalEdgeEntityInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -107,7 +107,7 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
   /**
    * {@inheritdoc}
    */
-  protected function doLoadMultiple(array $ids = NULL) {
+  protected function doLoadMultiple(?array $ids = NULL) {
     // Attempt to load entities from the persistent cache. This will remove IDs
     // that were loaded from $ids.
     $entities_from_cache = $this->getFromPersistentCache($ids);
@@ -248,7 +248,7 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  protected function getFromStorage(array $ids = NULL) {
+  protected function getFromStorage(?array $ids = NULL) {
     $entities = [];
 
     // If ids is an empty array there is nothing to do.
@@ -262,7 +262,7 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
       $tmp = [];
       // Speed up things by loading only one entity.
       if ($ids !== NULL && count($ids) === 1) {
-        // TODO When user's email changes do not ask Apigee Edge 3 times
+        // @todo When user's email changes do not ask Apigee Edge 3 times
         // whether a developer exists with the new email address or not.
         try {
           $entity = $controller->load(reset($ids));
@@ -358,7 +358,7 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
    * @return \Drupal\Core\Entity\EntityInterface[]
    *   Array of entities from the persistent cache.
    */
-  protected function getFromPersistentCache(array &$ids = NULL) {
+  protected function getFromPersistentCache(?array &$ids = NULL) {
     if (!$this->entityType->isPersistentlyCacheable() || empty($ids)) {
       return [];
     }
@@ -450,7 +450,7 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
   /**
    * {@inheritdoc}
    */
-  public function resetCache(array $ids = NULL) {
+  public function resetCache(?array $ids = NULL) {
     if ($this->entityType->isStaticallyCacheable() && $ids) {
       $cids = [];
       foreach ($ids as $id) {

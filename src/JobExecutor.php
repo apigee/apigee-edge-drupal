@@ -19,11 +19,11 @@
 
 namespace Drupal\apigee_edge;
 
-use Drupal\apigee_edge\Job\Job;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Queue\QueueFactory;
 use Drupal\Core\Utility\Error;
+use Drupal\apigee_edge\Job\Job;
 
 /**
  * Job executor service.
@@ -120,7 +120,7 @@ class JobExecutor implements JobExecutorInterface {
    * {@inheritdoc}
    */
   public function select(?string $tag = NULL): ?Job {
-    // TODO handle race conditions.
+    // @todo handle race conditions.
     $query = $this->connection->select('apigee_edge_job', 'j')
       ->fields('j', ['job'])
       ->orderBy('updated')

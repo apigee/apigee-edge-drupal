@@ -19,12 +19,12 @@
 
 namespace Drupal\apigee_edge\Plugin\Field\FieldFormatter;
 
-use Drupal\apigee_edge\Element\StatusPropertyElement;
-use Drupal\apigee_edge\Entity\EdgeEntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\apigee_edge\Element\StatusPropertyElement;
+use Drupal\apigee_edge\Entity\EdgeEntityInterface;
 
 /**
  * Plugin implementation of the 'status_property' formatter.

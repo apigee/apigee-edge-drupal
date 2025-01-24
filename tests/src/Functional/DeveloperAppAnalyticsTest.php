@@ -20,11 +20,11 @@
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Apigee\Edge\Api\Management\Entity\App;
-use Drupal\apigee_edge\Entity\Developer;
-use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Url;
+use Drupal\apigee_edge\Entity\Developer;
+use Drupal\apigee_edge\Entity\DeveloperApp;
 
 /**
  * Developer app analytics test.

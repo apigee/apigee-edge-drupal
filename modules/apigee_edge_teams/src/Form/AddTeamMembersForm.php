@@ -20,12 +20,12 @@
 
 namespace Drupal\apigee_edge_teams\Form;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\apigee_edge_teams\Entity\TeamInvitationInterface;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -90,7 +90,7 @@ class AddTeamMembersForm extends TeamMembersFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, TeamInterface $team = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?TeamInterface $team = NULL) {
     $this->team = $team;
     $role_options = $this->getRoleOptions();
 

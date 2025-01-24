@@ -19,8 +19,8 @@
 
 namespace Drupal\apigee_edge_test\Entity;
 
-use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\apigee_edge\Entity\DeveloperApp;
 
 /**
  * Class OverriddenDeveloperApp.
@@ -38,7 +38,7 @@ final class OverriddenDeveloperApp extends DeveloperApp {
     $definitions['displayName']->setPropertyConstraints('value', [
       'Length' => [
         'min' => 1,
-        'max' => 30
+        'max' => 30,
       ],
     ]);
 

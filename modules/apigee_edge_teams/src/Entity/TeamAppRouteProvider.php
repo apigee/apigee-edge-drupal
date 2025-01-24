@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge_teams\Entity;
 
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\apigee_edge\Entity\AppRouteProvider;
 use Drupal\apigee_edge\Entity\AppTitleProvider;
 use Drupal\apigee_edge_teams\Controller\TeamAppKeysController;
@@ -27,7 +28,6 @@ use Drupal\apigee_edge_teams\Entity\ListBuilder\TeamAppListByTeam;
 use Drupal\apigee_edge_teams\Form\TeamAppApiKeyAddForm;
 use Drupal\apigee_edge_teams\Form\TeamAppApiKeyDeleteForm;
 use Drupal\apigee_edge_teams\Form\TeamAppApiKeyRevokeForm;
-use Drupal\Core\Entity\EntityTypeInterface;
 use Symfony\Component\Routing\Route;
 
 /**

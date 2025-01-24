@@ -25,7 +25,7 @@ use Symfony\Component\EventDispatcher\GenericEvent;
 /**
  * Base class for Edge events.
  *
- * TODO: Rules does not support non GenericEvent context.
+ * @todo Rules does not support non GenericEvent context.
  */
 abstract class EdgeEntityEventBase extends GenericEvent {
 

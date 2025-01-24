@@ -22,8 +22,8 @@ namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Api\Management\Entity\DeveloperApp as EdgeDeveloperApp;
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
-use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 

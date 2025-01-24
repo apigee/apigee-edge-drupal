@@ -22,16 +22,14 @@ namespace Drupal\apigee_edge_teams;
 
 use Apigee\Edge\Api\ApigeeX\Structure\AppGroupMembership;
 use Apigee\Edge\Api\Management\Structure\CompanyMembership;
+use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface;
 use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
-use Drupal\apigee_edge_teams\Entity\Form\TeamForm;
-use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
-use Drupal\Core\Entity\EntityStorageException;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\user\UserInterface;
 use Psr\Log\LoggerInterface;
 
@@ -247,7 +245,7 @@ final class TeamMembershipManager implements TeamMembershipManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getTeams(string $developer, string $team = NULL): array {
+  public function getTeams(string $developer, ?string $team = NULL): array {
     /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $entity */
     $entity = $this->entityTypeManager->getStorage('developer')->load($developer);
     if ($entity === NULL) {

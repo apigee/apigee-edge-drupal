@@ -20,13 +20,13 @@
 
 namespace Drupal\apigee_edge_actions;
 
+use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperControllerInterface;
 use Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface;
 use Drupal\apigee_edge_actions\Event\EdgeEntityEventEdge;
 use Drupal\apigee_edge_teams\CompanyMembersControllerFactoryInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
-use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\user\UserInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -151,7 +151,7 @@ class TeamMembershipManager implements TeamMembershipManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getTeams(string $developer, string $team = NULL): array {
+  public function getTeams(string $developer, ?string $team = NULL): array {
     return $this->inner->getTeams($developer, $team);
   }
 

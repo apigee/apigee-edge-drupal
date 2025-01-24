@@ -20,9 +20,7 @@
 
 namespace Drupal\apigee_edge_actions\Plugin\RulesAction;
 
-use Drupal\Core\Annotation\ContextDefinition;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\rules\Core\Annotation\RulesAction;
 use Drupal\rules\Core\RulesActionBase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;

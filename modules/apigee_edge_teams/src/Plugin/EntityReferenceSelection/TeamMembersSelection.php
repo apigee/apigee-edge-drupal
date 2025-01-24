@@ -20,14 +20,14 @@
 
 namespace Drupal\apigee_edge_teams\Plugin\EntityReferenceSelection;
 
-use Drupal\apigee_edge\Entity\Controller\DeveloperControllerInterface;
-use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Error;
+use Drupal\apigee_edge\Entity\Controller\DeveloperControllerInterface;
+use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\user\Plugin\EntityReferenceSelection\UserSelection;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -193,7 +193,7 @@ class TeamMembersSelection extends UserSelection {
       // retrieved then return an empty list.
       $query->condition('mail', 0);
       $context = Error::decodeException($exception);
-      $this->logger->error("Unable to retrieve list of developer email addresses from Apigee Edge. @message %function (line %line of %file). <pre>@backtrace_string</pre>", $context);
+      $this->logger->error("Unable to retrieve list of developer email addresses from Apigee. @message %function (line %line of %file). <pre>@backtrace_string</pre>", $context);
       return $query;
     }
 
@@ -221,7 +221,7 @@ class TeamMembersSelection extends UserSelection {
           '%team' => $team_name,
         ];
         $context += Error::decodeException($exception);
-        $this->logger->error("Unable to retrieve list of %team team from Apigee Edge. @message %function (line %line of %file). <pre>@backtrace_string</pre>", $context);
+        $this->logger->error("Unable to retrieve list of %team team from Apigee. @message %function (line %line of %file). <pre>@backtrace_string</pre>", $context);
       }
 
     }
@@ -249,7 +249,7 @@ class TeamMembersSelection extends UserSelection {
     $options = [];
     $entities = $this->entityTypeManager->getStorage($target_type)->loadMultiple($result);
 
-    /* @var \Drupal\user\UserInterface $entity */
+    /** @var \Drupal\user\UserInterface $entity */
     foreach ($entities as $id => $entity) {
       $options[$target_type][$id] = $entity->getEmail();
     }

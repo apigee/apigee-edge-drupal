@@ -21,10 +21,10 @@
 namespace Drupal\apigee_edge;
 
 use Apigee\Edge\Structure\AttributesProperty;
-use Drupal\apigee_edge\Plugin\FieldStorageFormatInterface;
-use Drupal\apigee_edge\Plugin\FieldStorageFormatManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
+use Drupal\apigee_edge\Plugin\FieldStorageFormatInterface;
+use Drupal\apigee_edge\Plugin\FieldStorageFormatManagerInterface;
 
 /**
  * Default field-attribute converter service implementation.

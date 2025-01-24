@@ -22,7 +22,6 @@ namespace Drupal\apigee_edge_teams;
 
 use Apigee\Edge\Api\Management\Controller\CompanyMembersController as EdgeCompanyMembersController;
 use Apigee\Edge\Api\Management\Structure\CompanyMembership;
-use Drupal\apigee_edge\Entity\Controller\OrganizationController;
 use Drupal\apigee_edge\SDKConnectorInterface;
 
 /**

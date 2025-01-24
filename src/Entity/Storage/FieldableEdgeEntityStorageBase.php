@@ -20,12 +20,12 @@
 
 namespace Drupal\apigee_edge\Entity\Storage;
 
-use Drupal\apigee_edge\Entity\FieldableEdgeEntityInterface;
-use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\apigee_edge\Entity\FieldableEdgeEntityInterface;
+use Drupal\apigee_edge\Exception\InvalidArgumentException;
 
 /**
  * Base class for fieldable Apigee Edge entities.
@@ -81,7 +81,7 @@ abstract class FieldableEdgeEntityStorageBase extends EdgeEntityStorageBase impl
   /**
    * {@inheritdoc}
    */
-  public function onFieldableEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original, array $field_storage_definitions, array $original_field_storage_definitions, array &$sandbox = NULL) {
+  public function onFieldableEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original, array $field_storage_definitions, array $original_field_storage_definitions, ?array &$sandbox = NULL) {
   }
 
   /**

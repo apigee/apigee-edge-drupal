@@ -20,16 +20,16 @@
 
 namespace Drupal\apigee_edge_teams;
 
-use Drupal\apigee_edge_teams\Entity\TeamInterface;
-use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
-use Drupal\apigee_edge_teams\Exception\InvalidArgumentException;
-use Drupal\apigee_edge_teams\Structure\TeamPermission;
 use Drupal\Core\DependencyInjection\ClassResolverInterface;
 use Drupal\Core\Discovery\YamlDiscovery;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\apigee_edge_teams\Entity\TeamInterface;
+use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
+use Drupal\apigee_edge_teams\Exception\InvalidArgumentException;
+use Drupal\apigee_edge_teams\Structure\TeamPermission;
 
 /**
  * Provides the available team permissions based on yml files.

@@ -20,9 +20,9 @@
 
 namespace Drupal\apigee_edge\Plugin\Validation\Constraint;
 
-use Drupal\apigee_edge\Entity\Developer;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\apigee_edge\Entity\Developer;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;

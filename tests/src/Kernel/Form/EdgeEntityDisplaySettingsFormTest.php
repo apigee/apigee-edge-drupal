@@ -20,10 +20,10 @@
 
 namespace Drupal\Tests\apigee_edge\Kernel\Form;
 
-use Drupal\apigee_edge\Form\EdgeEntityDisplaySettingsForm;
 use Drupal\Core\Entity\Entity\EntityViewMode;
 use Drupal\Core\Form\FormState;
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\apigee_edge\Form\EdgeEntityDisplaySettingsForm;
 
 /**
  * Tests for EdgeEntityDisplaySettingsForm.

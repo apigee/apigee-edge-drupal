@@ -20,8 +20,6 @@
 namespace Drupal\Tests\apigee_edge\Unit\EventSubscriber;
 
 use Apigee\Edge\Exception\ApiException;
-use Drupal\apigee_edge\Controller\ErrorPageController;
-use Drupal\apigee_edge\EventSubscriber\EdgeExceptionSubscriber;
 use Drupal\Core\Config\Config;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ClassResolverInterface;
@@ -29,6 +27,8 @@ use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Render\MainContent\HtmlRenderer;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\apigee_edge\Controller\ErrorPageController;
+use Drupal\apigee_edge\EventSubscriber\EdgeExceptionSubscriber;
 use Prophecy\Argument;
 use Prophecy\Prophet;
 use Psr\Log\LoggerInterface;

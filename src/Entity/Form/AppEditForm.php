@@ -22,14 +22,14 @@ namespace Drupal\apigee_edge\Entity\Form;
 
 use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
 use Apigee\Edge\Exception\ApiException;
-use Drupal\apigee_edge\Element\StatusPropertyElement;
-use Drupal\apigee_edge\Entity\ApiProductInterface;
-use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Utility\Error;
+use Drupal\apigee_edge\Element\StatusPropertyElement;
+use Drupal\apigee_edge\Entity\ApiProductInterface;
+use Drupal\apigee_edge\Entity\AppInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

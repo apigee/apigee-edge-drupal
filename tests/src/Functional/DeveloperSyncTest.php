@@ -20,11 +20,13 @@
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Apigee\Edge\Api\Management\Controller\DeveloperController;
+use Drupal\Core\Url;
+use Drupal\Tests\field_ui\Traits\FieldUiTestTrait;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormat\CSV;
 use Drupal\apigee_edge\Plugin\ApigeeFieldStorageFormat\JSON;
-use Drupal\Core\Url;
-use Drupal\Tests\field_ui\Traits\FieldUiTestTrait;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\user\Entity\User;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\BufferedOutput;
@@ -115,6 +117,13 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
   protected $fields = [];
 
   /**
+   * Array of Drupal user list fields.
+   *
+   * @var array
+   */
+  protected $listFields = [];
+
+  /**
    * Field name prefix.
    *
    * @var string
@@ -127,6 +136,20 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
    * @var \Drupal\apigee_edge\Plugin\FieldStorageFormatManager
    */
   protected $formatManager;
+
+  /**
+   * Name of the option field.
+   *
+   * @var string
+   */
+  protected $fieldName;
+
+  /**
+   * Admin path to manage field storage settings.
+   *
+   * @var string
+   */
+  protected $adminPath;
 
   /**
    * {@inheritdoc}
@@ -159,6 +182,10 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
         $formatter = $this->formatManager->lookupPluginForFieldType($field_type);
         $this->edgeDevelopers[$mail]->setAttribute($data['name'], $formatter->encode($data['data']));
       }
+      foreach ($this->listFields as $field_type => $data) {
+        $formatter = $this->formatManager->lookupPluginForFieldType($field_type);
+        $this->edgeDevelopers[$mail]->setAttribute($data['name'], $formatter->encode($data['odata']));
+      }
       $this->edgeDevelopers[$mail]->setAttribute('invalid_email', 'invalid_email_address');
       $this->edgeDevelopers[$mail]->save();
     }
@@ -170,6 +197,9 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       $user = $this->createAccount([], TRUE, $this->prefix);
       foreach ($this->fields as $field_type => $data) {
         $user->set($this->fieldNamePrefix . $data['name'], $data['data']);
+      }
+      foreach ($this->listFields as $field_type => $data) {
+        $user->set($this->fieldNamePrefix . $data['name'], $data['odata']);
       }
       $user->save();
       $this->drupalUsers[$user->getEmail()] = $user;
@@ -183,6 +213,9 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       foreach ($this->fields as $field_type => $data) {
         $user->set($this->fieldNamePrefix . $data['name'], $data['data']);
       }
+      foreach ($this->listFields as $field_type => $data) {
+        $user->set($this->fieldNamePrefix . $data['name'], $data['odata']);
+      }
       // Set unlinked field on the user.
       $user->set($this->fieldNamePrefix . 'invalid_email', 'valid.email@example.com');
       // Set valid email field on the user.
@@ -192,6 +225,10 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       $this->modifiedEdgeDevelopers[$user->getEmail()] = Developer::load($user->getEmail());
 
       foreach ($this->fields as $field_type => $data) {
+        $formatter = $this->formatManager->lookupPluginForFieldType($field_type);
+        $this->modifiedEdgeDevelopers[$user->getEmail()]->setAttribute($data['name'], $formatter->encode($data['data_changed']));
+      }
+      foreach ($this->listFields as $field_type => $data) {
         $formatter = $this->formatManager->lookupPluginForFieldType($field_type);
         $this->modifiedEdgeDevelopers[$user->getEmail()]->setAttribute($data['name'], $formatter->encode($data['data_changed']));
       }
@@ -213,6 +250,9 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       foreach ($this->fields as $field_type => $data) {
         $user->set($this->fieldNamePrefix . $data['name'], $data['data']);
       }
+      foreach ($this->listFields as $field_type => $data) {
+        $user->set($this->fieldNamePrefix . $data['name'], $data['odata']);
+      }
       $user->save();
       $this->modifiedDrupalUsers[$user->getEmail()] = $user;
 
@@ -226,6 +266,9 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
       // developer won't be updated.
       $this->disableUserPresave();
       foreach ($this->fields as $field_type => $data) {
+        $this->modifiedDrupalUsers[$user->getEmail()]->set($this->fieldNamePrefix . $data['name'], $data['data_changed']);
+      }
+      foreach ($this->listFields as $field_type => $data) {
         $this->modifiedDrupalUsers[$user->getEmail()]->set($this->fieldNamePrefix . $data['name'], $data['data_changed']);
       }
 
@@ -320,39 +363,6 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
           ['value' => 1],
         ],
       ],
-      'list_integer' => [
-        'name' => strtolower($this->randomMachineName()),
-        'settings' => [
-          'settings[allowed_values]' => implode(PHP_EOL, [1, 2, 3]),
-        ],
-        'data' => [
-          ['value' => 2],
-          ['value' => 3],
-        ],
-        'data_changed' => [
-          ['value' => 1],
-          ['value' => 3],
-        ],
-      ],
-      'list_string' => [
-        'name' => strtolower($this->randomMachineName()),
-        'settings' => [
-          'settings[allowed_values]' => implode(PHP_EOL, [
-            'qwer',
-            'asdf',
-            'zxcv',
-          ]),
-        ],
-        'data' => [
-          ['value' => 'qwer'],
-          ['value' => 'asdf'],
-          ['value' => 'zxcv'],
-        ],
-        'data_changed' => [
-          ['value' => 'qwer'],
-          ['value' => 'asdf'],
-        ],
-      ],
       'string' => [
         'name' => strtolower($this->randomMachineName()),
         'data' => [
@@ -377,6 +387,79 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
         'data_changed' => $link_changed,
       ],
     ];
+
+    $this->listFields = [
+      'list_integer' => [
+        'name' => strtolower($this->randomMachineName()),
+        'settings' => [
+          'field_storage[subform][settings][allowed_values][table][0][item][key]' => 0,
+          'field_storage[subform][settings][allowed_values][table][0][item][label]' => 'Zero',
+          'field_storage[subform][settings][allowed_values][table][1][item][key]' => 1,
+          'field_storage[subform][settings][allowed_values][table][1][item][label]' => 'One',
+        ],
+        'data' => [
+          0 => 'Zero',
+          1 => 'One',
+        ],
+        'odata' => [
+          ['value' => 0],
+          ['value' => 1],
+        ],
+        'data_changed' => [
+          ['value' => 2],
+        ],
+      ],
+      'list_string' => [
+        'name' => strtolower($this->randomMachineName()),
+        'settings' => [
+          'field_storage[subform][settings][allowed_values][table][0][item][key]' => 'zero',
+          'field_storage[subform][settings][allowed_values][table][0][item][label]' => 'Zero',
+          'field_storage[subform][settings][allowed_values][table][1][item][key]' => 'one',
+          'field_storage[subform][settings][allowed_values][table][1][item][label]' => 'One',
+        ],
+        'data' => [
+          'zero' => 'Zero',
+          'one' => 'One',
+        ],
+        'odata' => [
+          ['value' => 'zero'],
+          ['value' => 'one'],
+        ],
+        'data_changed' => [
+          ['value' => 'two'],
+        ],
+      ],
+      'list_float' => [
+        'name' => strtolower($this->randomMachineName()),
+        'settings' => [
+          'field_storage[subform][settings][allowed_values][table][0][item][key]' => 0,
+          'field_storage[subform][settings][allowed_values][table][0][item][label]' => 'Zero',
+          'field_storage[subform][settings][allowed_values][table][1][item][key]' => .5,
+          'field_storage[subform][settings][allowed_values][table][1][item][label]' => 'Point five',
+          'field_storage[subform][settings][allowed_values][table][2][item][key]' => 2,
+          'field_storage[subform][settings][allowed_values][table][2][item][label]' => 'Two',
+        ],
+        'data' => [
+          '0' => 'Zero',
+          '0.5' => 'Point five',
+          '2' => 'Two',
+        ],
+        'odata' => [
+          ['value' => 0.5],
+        ],
+        'data_changed' => [
+          ['value' => 0.8],
+        ],
+      ],
+    ];
+
+    // Changes for field of types 'list' fields
+    // Using field configs to save the fields as issue is faced by FieldUiTestTrait.
+    foreach ($this->listFields as $list_type => $listData) {
+      $this->fieldName = 'field_' . $listData['name'];
+      $this->createOptionsField($list_type);
+      $this->assertAllowedValuesInput($listData['settings'], $listData['data'], '');
+    }
 
     foreach ($this->fields as $field_type => $data) {
       $this->fieldUIAddNewField(
@@ -609,6 +692,66 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
     }
 
     $this->verify();
+  }
+
+  /**
+   * Helper function to create list field of a given type.
+   *
+   * @param string $type
+   *   One of 'list_integer', 'list_float' or 'list_string'.
+   */
+  protected function createOptionsField($type) {
+    // Create a field.
+    FieldStorageConfig::create([
+      'field_name' => $this->fieldName,
+      'entity_type' => 'user',
+      'type' => $type,
+    ])->save();
+    FieldConfig::create([
+      'field_name' => $this->fieldName,
+      'entity_type' => 'user',
+      'bundle' => 'user',
+    ])->save();
+
+    \Drupal::service('entity_display.repository')
+      ->getFormDisplay('user', 'user')
+      ->setComponent($this->fieldName)
+      ->save();
+
+    $this->adminPath = 'admin/config/people/accounts/fields/user.user.' . $this->fieldName;
+  }
+
+  /**
+   * Tests an input array for the 'allowed values' form element.
+   *
+   * @param array $input
+   *   The input array.
+   * @param array|string $result
+   *   Either an expected resulting array in
+   *   $field->getSetting('allowed_values'), or an expected error message.
+   * @param string $message
+   *   Message to display.
+   *
+   * @internal
+   */
+  public function assertAllowedValuesInput(array $input, $result, string $message): void {
+    $this->drupalGet($this->adminPath);
+    $page = $this->getSession()->getPage();
+    $add_button = $page->findButton('Add another item');
+    $add_button->click();
+    $add_button->click();
+
+    $this->submitForm($input, 'Save');
+    // Verify that the page does not have double escaped HTML tags.
+    $this->assertSession()->responseNotContains('&amp;lt;');
+
+    if (is_string($result)) {
+      $this->assertSession()->pageTextContains($result);
+    }
+    else {
+      $field_storage = FieldStorageConfig::loadByName('user', $this->fieldName);
+      $this->assertSame($field_storage->getSetting('allowed_values'), $result, $message);
+    }
   }
 
 }

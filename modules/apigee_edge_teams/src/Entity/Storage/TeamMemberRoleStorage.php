@@ -20,11 +20,6 @@
 
 namespace Drupal\apigee_edge_teams\Entity\Storage;
 
-use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
-use Drupal\apigee_edge_teams\Entity\TeamInterface;
-use Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface;
-use Drupal\apigee_edge_teams\Exception\InvalidArgumentException;
-use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
@@ -39,6 +34,11 @@ use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Error;
+use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
+use Drupal\apigee_edge_teams\Entity\TeamInterface;
+use Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface;
+use Drupal\apigee_edge_teams\Exception\InvalidArgumentException;
+use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -94,7 +94,7 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
    * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
    *   The organization controller service.
    */
-  public function __construct(EntityTypeInterface $entity_type, Connection $database, EntityFieldManagerInterface $entity_field_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, MemoryCacheInterface $memory_cache, TeamMembershipManagerInterface $team_membership_manager, LoggerInterface $logger, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, EntityTypeManagerInterface $entity_type_manager = NULL, OrganizationControllerInterface $org_controller) {
+  public function __construct(EntityTypeInterface $entity_type, Connection $database, EntityFieldManagerInterface $entity_field_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, MemoryCacheInterface $memory_cache, TeamMembershipManagerInterface $team_membership_manager, LoggerInterface $logger, EntityTypeBundleInfoInterface $entity_type_bundle_info, EntityTypeManagerInterface $entity_type_manager, OrganizationControllerInterface $org_controller) {
     parent::__construct($entity_type, $database, $entity_field_manager, $cache, $language_manager, $memory_cache, $entity_type_bundle_info, $entity_type_manager);
     $this->teamMembershipManager = $team_membership_manager;
     $this->logger = $logger;
@@ -159,7 +159,7 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
     if ($account->isAnonymous()) {
       throw new InvalidArgumentException('Anonymous user can not be member of a team.');
     }
-    // TODO : Implement this check for ApigeeX.
+    // @todo Implement this check for ApigeeX.
     // DB is empty durning Team syncronization for 1st time, so $developer_team_ids
     // is always empty which cause issue for member update in DB.
     if (!$this->orgController->isOrganizationApigeeX()) {
@@ -181,7 +181,7 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
     if ($team_member_roles === NULL) {
       $team_member_roles = $this->create([
         'uid' => ['target_id' => $account->id()],
-        'team' => ['target_id' => $team->id()]
+        'team' => ['target_id' => $team->id()],
       ]);
     }
     // Make sure we only store unique values in the field.
@@ -203,7 +203,7 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
         }, $team_member_roles->roles->getValue());
         // Updating the members role in __apigee_reserved__developer_details attribute for ApigeeX.
         $this->teamMembershipManager->addMembers($team->id(), [
-          $account->getEmail() => $updated_roles
+          $account->getEmail() => $updated_roles,
         ]);
       }
       $team_member_roles->save();
@@ -265,7 +265,7 @@ class TeamMemberRoleStorage extends SqlContentEntityStorage implements TeamMembe
           }, $team_member_roles->roles->getValue());
           // Updating the members role in __apigee_reserved__developer_details attribute for ApigeeX.
           $this->teamMembershipManager->addMembers($team->id(), [
-            $account->getEmail() => $updated_roles
+            $account->getEmail() => $updated_roles,
           ]);
         }
         $team_member_roles->save();

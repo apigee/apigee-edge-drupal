@@ -20,8 +20,8 @@
 
 namespace Drupal\apigee_edge\Entity\Enhancer;
 
-use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\Core\Routing\EnhancerInterface;
+use Drupal\apigee_edge\Entity\AppInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**

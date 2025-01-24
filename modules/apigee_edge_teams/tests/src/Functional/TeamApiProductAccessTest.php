@@ -20,11 +20,11 @@
 
 namespace Drupal\Tests\apigee_edge_teams\Functional;
 
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
 use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
-use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\Url;
 
 /**
  * Team-level API product access test.

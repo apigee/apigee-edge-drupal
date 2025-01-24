@@ -19,11 +19,11 @@
 
 namespace Drupal\apigee_edge_teams\Controller;
 
+use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\apigee_edge\Job\Job;
 use Drupal\apigee_edge\JobExecutorInterface;
 use Drupal\apigee_edge_teams\Job\TeamMemberSync;
-use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Messenger\MessengerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;

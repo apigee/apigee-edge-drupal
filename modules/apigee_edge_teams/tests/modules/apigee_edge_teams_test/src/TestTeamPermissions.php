@@ -20,11 +20,11 @@
 
 namespace Drupal\apigee_edge_teams_test;
 
-use Drupal\apigee_edge_teams\DynamicTeamPermissionProviderInterface;
-use Drupal\apigee_edge_teams\Structure\TeamPermission;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
+use Drupal\apigee_edge_teams\DynamicTeamPermissionProviderInterface;
+use Drupal\apigee_edge_teams\Structure\TeamPermission;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

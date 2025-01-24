@@ -20,10 +20,10 @@
 namespace Drupal\apigee_edge\Form;
 
 use Apigee\Edge\Api\Management\Controller\EnvironmentController;
-use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\apigee_edge\SDKConnectorInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

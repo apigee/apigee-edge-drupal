@@ -20,16 +20,16 @@
 
 namespace Drupal\apigee_edge\Entity\Storage;
 
-use Drupal\apigee_edge\Entity\AppInterface;
-use Drupal\apigee_edge\Entity\Controller\AppControllerInterface;
-use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
-use Drupal\apigee_edge\Entity\FieldableEdgeEntityInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\apigee_edge\Entity\AppInterface;
+use Drupal\apigee_edge\Entity\Controller\AppControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
+use Drupal\apigee_edge\Entity\FieldableEdgeEntityInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -106,7 +106,7 @@ abstract class AppStorage extends AttributesAwareFieldableEdgeEntityStorageBase 
    * @return \Drupal\apigee_edge\Entity\AppInterface|null
    *   The unchanged entity, or NULL if the entity cannot be loaded.
    *
-   * @TODO: this method should be also available in the AppStorageInterface, but
+   * @todo this method should be also available in the AppStorageInterface, but
    *   that would be a breaking change, so we can only add that in the next
    *   major version of the module.
    */
@@ -138,7 +138,7 @@ abstract class AppStorage extends AttributesAwareFieldableEdgeEntityStorageBase 
   /**
    * {@inheritdoc}
    */
-  protected function getFromStorage(array $ids = NULL) {
+  protected function getFromStorage(?array $ids = NULL) {
     // Try to load entities from the entity controller's static cache.
     if (!empty($ids)) {
       // If $ids are developer app ids (UUIDs) let's check whether all (SDK)
@@ -208,7 +208,7 @@ abstract class AppStorage extends AttributesAwareFieldableEdgeEntityStorageBase 
   /**
    * {@inheritdoc}
    */
-  public function resetCache(array $ids = NULL) {
+  public function resetCache(?array $ids = NULL) {
     parent::resetCache($ids);
     if ($this->entityType->isStaticallyCacheable() && $ids) {
       $tags = [];

@@ -20,8 +20,6 @@
 
 namespace Drupal\apigee_edge_teams\Entity;
 
-use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
-use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Entity\EntityHandlerInterface;
@@ -29,6 +27,8 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
+use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

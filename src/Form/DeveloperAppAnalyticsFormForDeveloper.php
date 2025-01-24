@@ -19,8 +19,8 @@
 
 namespace Drupal\apigee_edge\Form;
 
-use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\apigee_edge\Entity\AppInterface;
 
 /**
  * Displays the analytics page of a developer app for a given user on the UI.

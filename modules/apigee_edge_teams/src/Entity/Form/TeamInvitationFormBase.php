@@ -20,9 +20,9 @@
 
 namespace Drupal\apigee_edge_teams\Entity\Form;
 
-use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\Core\Entity\ContentEntityConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\apigee_edge_teams\Entity\TeamInterface;
 
 /**
  * Provides a base class for updating status for a team_invitation.
@@ -67,7 +67,7 @@ abstract class TeamInvitationFormBase extends ContentEntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, TeamInterface $team = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?TeamInterface $team = NULL) {
     $this->team = $team;
 
     if ($this->handleExpired && $this->entity->isExpired()) {

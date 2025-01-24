@@ -20,6 +20,9 @@
 
 namespace Drupal\apigee_edge_teams\EventSubscriber;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Logger\LoggerChannelInterface;
+use Drupal\Core\Utility\Error;
 use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge_teams\Entity\TeamRole;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
@@ -27,9 +30,6 @@ use Drupal\apigee_edge_teams\Event\TeamInvitationEventInterface;
 use Drupal\apigee_edge_teams\Event\TeamInvitationEvents;
 use Drupal\apigee_edge_teams\TeamInvitationNotifierInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Logger\LoggerChannelInterface;
-use Drupal\Core\Utility\Error;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -158,12 +158,12 @@ class TeamInvitationSubscriber implements EventSubscriberInterface {
       // attribute we can store the roles as well.
       if ($this->orgController->isOrganizationApigeeX()) {
         $this->teamMembershipManager->addMembers($team->id(), [
-          $team_invitation->getRecipient() => $selected_roles
+          $team_invitation->getRecipient() => $selected_roles,
         ]);
       }
       else {
         $this->teamMembershipManager->addMembers($team->id(), [
-          $team_invitation->getRecipient()
+          $team_invitation->getRecipient(),
         ]);
       }
 

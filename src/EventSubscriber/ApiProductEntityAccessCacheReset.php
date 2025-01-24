@@ -20,12 +20,12 @@
 
 namespace Drupal\apigee_edge\EventSubscriber;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\apigee_edge\Event\AppCredentialAddApiProductEvent;
 use Drupal\apigee_edge\Event\AppCredentialCreateEvent;
 use Drupal\apigee_edge\Event\AppCredentialDeleteApiProductEvent;
 use Drupal\apigee_edge\Event\AppCredentialDeleteEvent;
 use Drupal\apigee_edge\Event\AppCredentialGenerateEvent;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Contracts\EventDispatcher\Event;
 

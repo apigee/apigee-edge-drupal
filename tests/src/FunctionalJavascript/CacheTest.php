@@ -21,9 +21,9 @@ namespace Drupal\Tests\apigee_edge\FunctionalJavascript;
 
 use Apigee\Edge\Api\Management\Controller\DeveloperAppController;
 use Apigee\Edge\Api\Management\Entity\App;
+use Drupal\Core\Url;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
-use Drupal\Core\Url;
 
 /**
  * Apigee Edge entity cache related tests.

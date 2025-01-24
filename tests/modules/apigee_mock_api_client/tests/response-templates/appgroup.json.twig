@@ -9,15 +9,22 @@
  * Variables:
  * - appgroup: The team (appgroup).
  * - org_name: The org name.
+ * - members: The member email id.
  */
 #}
 {
-    "apps": [],
     "name": "{{ appgroup.name|default('foo') }}",
+    "channelUri": "http:\/\/localhost:8080\/test\/web\/teams\/drupalteam",
+    "channelId": "devportal",
     "displayName": "{{ appgroup.displayName }}",
     "organization": "{{ org_name }}",
     "status": "active",
-    "attributes": [],
+    "attributes": [
+        {
+            "name": "__apigee_reserved__developer_details",
+            "value": "[{\"developer\":\"{{ members|default('foo@example.com') }}\",\"roles\":[\"admin\"]}]"
+        }
+    ],
     "createdAt": 1506959878351,
     "createdBy" : "user@example.com",
     "lastModifiedAt": 1506959878351,

@@ -64,7 +64,7 @@ final class TeamMemberRole extends ContentEntityBase implements TeamMemberRoleIn
   /**
    * {@inheritdoc}
    */
-  public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
+  public function access($operation, ?AccountInterface $account = NULL, $return_as_object = FALSE) {
     if (!$account) {
       // If we have hit this without an account return forbidden.
       return AccessResult::forbidden();

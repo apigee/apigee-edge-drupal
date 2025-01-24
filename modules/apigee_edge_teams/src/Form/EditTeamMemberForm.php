@@ -20,11 +20,11 @@
 
 namespace Drupal\apigee_edge_teams\Form;
 
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Utility\Error;
 use Drupal\apigee_edge\Entity\DeveloperInterface;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Utility\Error;
 
 /**
  * Edit team member form.
@@ -48,7 +48,7 @@ class EditTeamMemberForm extends TeamMembersFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, TeamInterface $team = NULL, DeveloperInterface $developer = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?TeamInterface $team = NULL, ?DeveloperInterface $developer = NULL) {
     $this->team = $team;
     $this->developer = $developer;
     $role_options = $this->getRoleOptions();

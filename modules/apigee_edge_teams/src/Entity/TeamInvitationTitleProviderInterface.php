@@ -39,7 +39,7 @@ interface TeamInvitationTitleProviderInterface {
    * @return string|null
    *   The title for the entity accept page.
    */
-  public function acceptTitle(RouteMatchInterface $route_match, EntityInterface $_entity = NULL);
+  public function acceptTitle(RouteMatchInterface $route_match, ?EntityInterface $_entity = NULL);
 
   /**
    * Provides the decline title for a team_invitation.
@@ -52,7 +52,7 @@ interface TeamInvitationTitleProviderInterface {
    * @return string|null
    *   The title for the entity decline page.
    */
-  public function declineTitle(RouteMatchInterface $route_match, EntityInterface $_entity = NULL);
+  public function declineTitle(RouteMatchInterface $route_match, ?EntityInterface $_entity = NULL);
 
   /**
    * Provides the resend title for a team_invitation.
@@ -65,6 +65,6 @@ interface TeamInvitationTitleProviderInterface {
    * @return string|null
    *   The title for the entity resend page.
    */
-  public function resendTitle(RouteMatchInterface $route_match, EntityInterface $_entity = NULL);
+  public function resendTitle(RouteMatchInterface $route_match, ?EntityInterface $_entity = NULL);
 
 }

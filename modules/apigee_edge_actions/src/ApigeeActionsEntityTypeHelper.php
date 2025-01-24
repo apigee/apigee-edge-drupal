@@ -20,9 +20,9 @@
 
 namespace Drupal\apigee_edge_actions;
 
-use Drupal\apigee_edge\Entity\FieldableEdgeEntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\apigee_edge\Entity\FieldableEdgeEntityInterface;
 
 /**
  * Defines the apigee_edge_actions.edge_entity_type_manager service.

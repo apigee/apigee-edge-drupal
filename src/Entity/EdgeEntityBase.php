@@ -22,8 +22,8 @@ namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Entity\EntityInterface;
 use Apigee\Edge\Entity\Property\DisplayNamePropertyInterface;
-use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\Core\Entity\EntityBase;
+use Drupal\apigee_edge\Exception\InvalidArgumentException;
 
 /**
  * Base class for Apigee Edge entities in Drupal.

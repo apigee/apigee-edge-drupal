@@ -19,11 +19,11 @@
 
 namespace Drupal\apigee_edge\Plugin\QueueWorker;
 
-use Drupal\apigee_edge\Job\Job;
-use Drupal\apigee_edge\JobExecutorInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Queue\QueueFactory;
 use Drupal\Core\Queue\QueueWorkerBase;
+use Drupal\apigee_edge\Job\Job;
+use Drupal\apigee_edge\JobExecutorInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

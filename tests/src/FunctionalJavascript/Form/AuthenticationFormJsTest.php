@@ -19,12 +19,12 @@
 
 namespace Drupal\Tests\apigee_edge\FunctionalJavascript\Form;
 
+use Drupal\Core\Url;
+use Drupal\Tests\apigee_edge\FunctionalJavascript\ApigeeEdgeFunctionalJavascriptTestBase;
 use Drupal\apigee_edge\Form\AuthenticationForm;
 use Drupal\apigee_edge\OauthTokenFileStorage;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
-use Drupal\Core\Url;
 use Drupal\key\Entity\Key;
-use Drupal\Tests\apigee_edge\FunctionalJavascript\ApigeeEdgeFunctionalJavascriptTestBase;
 
 /**
  * Apigee Edge API credentials, authentication form, key integration test.
@@ -290,7 +290,7 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $web_assert->fieldValueEquals('Username', '');
     $web_assert->fieldValueEquals('Password', '');
     $web_assert->fieldValueEquals('Organization', '');
-    $web_assert->fieldValueEquals('Apigee Edge endpoint', '');
+    $web_assert->fieldValueEquals('Apigee endpoint', '');
 
     // Select basic auth.
     $page->selectFieldOption('key_input_settings[auth_type]', EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC);
@@ -318,9 +318,8 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
     // Make sure that test connection is disabled without a password.
     // $page->fillField('Password', '');
-    // $this->assertTrue($this->cssSelect('input[name="test_connection"]')[0]->hasAttribute('disabled'));
-    // TODO: Enable above test case later.
-
+    // $this->assertTrue($this->cssSelect('input[name="test_connection"]')[0]->hasAttribute('disabled'));.
+    // @todo Enable above test case later.
     // Make sure that test connection is now enabled.
     $page->fillField('Password', $this->password);
     $this->assertFalse($this->cssSelect('input[name="test_connection"]')[0]->hasAttribute('disabled'));
@@ -358,7 +357,7 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $random_pass = $this->randomString();
     $page->fillField('Password', $random_pass);
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given username ({$this->username}) or password is incorrect. Error message: ");
-    // TODO Re-add this assert later. It had to be disabled because of a
+    // @todo Re-add this assert later. It had to be disabled because of a
     // regression bug in the Apigee Edge for Public Cloud 19.03.01 release. If
     // valid organization name and username provided with an invalid password
     // the MGMT server returns HTTP 500 with an error instead of HTTP 401.
@@ -373,7 +372,7 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The organization username should be a valid email. Error message: ");
     $page->fillField('Username', $this->username);
 
-    // TODO Re-add this assert later, if requires.
+    // @todo Re-add this assert later, if requires.
     // Irrespective of incorrect organization, username or password it will say Forbidden.
     // Test invalid organization.
     // $random_org = $this->randomGenerator->word(16);
@@ -385,11 +384,11 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     // Test invalid endpoint.
     $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE);
     $invalid_domain = "{$this->randomGenerator->word(16)}.example.com";
-    $page->fillField('Apigee Edge endpoint', "http://{$invalid_domain}/");
+    $page->fillField('Apigee endpoint', "http://{$invalid_domain}/");
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given endpoint (http://{$invalid_domain}/) is incorrect or something is wrong with the connection. Error message: ");
     $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"endpoint\": \"http:\/\/{$invalid_domain}\/\"");
-    $web_assert->fieldValueEquals('Apigee Edge endpoint', "http://{$invalid_domain}/");
-    $page->fillField('Apigee Edge endpoint', '');
+    $web_assert->fieldValueEquals('Apigee endpoint', "http://{$invalid_domain}/");
+    $page->fillField('Apigee endpoint', '');
     $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC);
 
     // Test another invalid endpoint scenario:
@@ -399,12 +398,12 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     if (static::$mock_api_client_ready && !$this->integration_enabled) {
       $invalid_endpoint = 'enterprise.apigee.com/platform/orgname';
       $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE);
-      $page->fillField('Apigee Edge endpoint', "https://{$invalid_endpoint}/");
+      $page->fillField('Apigee endpoint', "https://{$invalid_endpoint}/");
       $this->assertSendRequestMessage('.messages--error', "Failed to connect to Apigee Edge. The given endpoint (https://{$invalid_endpoint}/) is incorrect or something is wrong with the connection. Error message: ");
       $invalid_endpoint_escaped = str_replace('/', '\/', $invalid_endpoint);
       $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"endpoint\": \"https:\/\/{$invalid_endpoint_escaped}\/\"");
-      $web_assert->fieldValueEquals('Apigee Edge endpoint', "https://{$invalid_endpoint}/");
-      $page->fillField('Apigee Edge endpoint', '');
+      $web_assert->fieldValueEquals('Apigee endpoint', "https://{$invalid_endpoint}/");
+      $page->fillField('Apigee endpoint', '');
       $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC);
     }
 

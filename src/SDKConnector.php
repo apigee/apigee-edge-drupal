@@ -23,17 +23,16 @@ use Apigee\Edge\Api\Management\Controller\OrganizationController;
 use Apigee\Edge\Client;
 use Apigee\Edge\ClientInterface;
 use Apigee\Edge\HttpClient\Utility\Builder;
-use Drupal\apigee_edge\Connector\HybridCredentials;
-use Drupal\apigee_edge\Entity\Controller\OrganizationController as EdgeOrganizationController;
-use Drupal\apigee_edge\Exception\AuthenticationKeyException;
-use Drupal\apigee_edge\Exception\AuthenticationKeyNotFoundException;
-use Drupal\apigee_edge\Exception\InvalidArgumentException;
-use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\InfoParserInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Http\ClientFactory;
+use Drupal\apigee_edge\Connector\HybridCredentials;
+use Drupal\apigee_edge\Exception\AuthenticationKeyException;
+use Drupal\apigee_edge\Exception\AuthenticationKeyNotFoundException;
+use Drupal\apigee_edge\Exception\InvalidArgumentException;
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
 use Http\Adapter\Guzzle7\Client as GuzzleClientAdapter;
@@ -272,7 +271,7 @@ class SDKConnector implements SDKConnectorInterface {
   /**
    * {@inheritdoc}
    */
-  public function testConnection(KeyInterface $key = NULL) {
+  public function testConnection(?KeyInterface $key = NULL) {
     if ($key !== NULL) {
       $credentials = $this->buildCredentials($key);
       $client = $this->buildClient($credentials->getAuthentication(), $credentials->getKeyType()->getEndpoint($credentials->getKey()));
@@ -285,7 +284,7 @@ class SDKConnector implements SDKConnectorInterface {
     try {
       // We use the original, non-decorated organization controller here.
       $oc = new OrganizationController($client);
-      /* @var \Apigee\Edge\Api\Management\Entity\Organization $org */
+      /** @var \Apigee\Edge\Api\Management\Entity\Organization $org */
       $org = $oc->load($credentials->getKeyType()->getOrganization($credentials->getKey()));
 
       // Calling an invalid endpoint under some circumstances might return an

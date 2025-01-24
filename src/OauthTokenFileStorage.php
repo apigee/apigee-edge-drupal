@@ -19,17 +19,17 @@
 
 namespace Drupal\apigee_edge;
 
-use Drupal\apigee_edge\Exception\OauthTokenStorageException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
+use Drupal\apigee_edge\Exception\OauthTokenStorageException;
 
 /**
  * Stores OAuth token data in a file.
  *
- * @todo: move to \Drupal\apigee_edge\Connector namespace.
+ * @todo move to \Drupal\apigee_edge\Connector namespace.
  */
 final class OauthTokenFileStorage implements OauthTokenStorageInterface {
 

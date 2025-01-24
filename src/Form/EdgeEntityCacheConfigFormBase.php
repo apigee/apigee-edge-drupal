@@ -25,7 +25,7 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Base cache expiration config form for Apigee Edge entities.
+ * Base cache expiration config form for Apigee entities.
  */
 abstract class EdgeEntityCacheConfigFormBase extends ConfigFormBase {
 
@@ -42,7 +42,7 @@ abstract class EdgeEntityCacheConfigFormBase extends ConfigFormBase {
     $form['cache']['cache_expiration'] = [
       '#type' => 'number',
       '#title' => $this->t('Expires'),
-      '#description' => $this->t('Number of <strong>seconds</strong> until a cached item expires. Use <em>-1</em> to cache items until they have been updated on the Developer Portal (ignore changes made on the Apigee Edge Management UI or in an external application). Use <em>0</em> to completely disable caching.'),
+      '#description' => $this->t('Number of <strong>seconds</strong> until a cached item expires. Use <em>-1</em> to cache items until they have been updated on the Developer Portal (ignore changes made on the Apigee Management UI or in an external application). Use <em>0</em> to completely disable caching.'),
       '#default_value' => $config->get('cache_expiration'),
       '#min' => -1,
       '#required' => TRUE,

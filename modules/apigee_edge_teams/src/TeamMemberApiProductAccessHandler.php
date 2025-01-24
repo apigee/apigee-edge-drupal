@@ -20,13 +20,13 @@
 
 namespace Drupal\apigee_edge_teams;
 
-use Drupal\apigee_edge\Entity\ApiProductInterface;
-use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultForbidden;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\apigee_edge\Entity\ApiProductInterface;
+use Drupal\apigee_edge_teams\Entity\TeamInterface;
 
 /**
  * Default team member API product access handler implementation.
@@ -92,7 +92,7 @@ final class TeamMemberApiProductAccessHandler implements TeamMemberApiProductAcc
   /**
    * {@inheritdoc}
    */
-  public function access(ApiProductInterface $api_product, string $operation, TeamInterface $team, AccountInterface $account = NULL, bool $return_as_object = FALSE) {
+  public function access(ApiProductInterface $api_product, string $operation, TeamInterface $team, ?AccountInterface $account = NULL, bool $return_as_object = FALSE) {
     if ($account === NULL) {
       $account = $this->currentUser;
     }

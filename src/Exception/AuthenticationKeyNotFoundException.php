@@ -44,7 +44,7 @@ class AuthenticationKeyNotFoundException extends AuthenticationKeyException {
    * @param \Throwable|null $previous
    *   Previous exception.
    */
-  public function __construct(string $key_id, string $message = 'Authentication key not found with "@id" id.', int $code = 0, \Throwable $previous = NULL) {
+  public function __construct(string $key_id, string $message = 'Authentication key not found with "@id" id.', int $code = 0, ?\Throwable $previous = NULL) {
     $this->keyId = $key_id;
     $message = strtr($message, ['@id' => $key_id]);
     parent::__construct($message, $code, $previous);

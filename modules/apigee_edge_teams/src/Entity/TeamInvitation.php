@@ -26,7 +26,6 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\user\EntityOwnerTrait;
-use Drupal\user\UserInterface;
 
 /**
  * Defines the team invitation entity.
@@ -287,7 +286,7 @@ class TeamInvitation extends ContentEntityBase implements TeamInvitationInterfac
         '@team' => $this->getTeam()->label(),
         '@roles' => implode(', ', array_map(function (TeamRoleInterface $team_role) {
           return $team_role->label();
-        }, $this->getTeamRoles()))
+        }, $this->getTeamRoles())),
       ]));
     }
 

@@ -20,10 +20,10 @@
 
 namespace Drupal\Tests\apigee_edge_teams\FunctionalJavascript;
 
-use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\Core\Url;
 use Drupal\FunctionalJavascriptTests\WebDriverWebAssert;
 use Drupal\Tests\apigee_edge\FunctionalJavascript\ApigeeEdgeFunctionalJavascriptTestBase;
+use Drupal\apigee_edge\Entity\ApiProductInterface;
 
 /**
  * Extra validation for API product access on team app forms.

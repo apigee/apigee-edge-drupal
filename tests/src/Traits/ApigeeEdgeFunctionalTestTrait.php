@@ -20,18 +20,18 @@
 namespace Drupal\Tests\apigee_edge\Traits;
 
 use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController as EdgeDeveloperAppCredentialController;
+use Drupal\Core\Utility\Error;
+use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
-use Drupal\Core\Utility\Error;
-use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
 /**
  * Provides common functionality for the Apigee Edge test classes.
  *
- * TODO Move methods from this trait that can be also used in kernel tests to a
+ * @todo Move methods from this trait that can be also used in kernel tests to a
  * new trait, ex.: getRandomUniqueId(), logException(), etc.
  */
 trait ApigeeEdgeFunctionalTestTrait {
@@ -100,7 +100,7 @@ trait ApigeeEdgeFunctionalTestTrait {
     $edit = [
       'first_name' => $this->randomMachineName(),
       'last_name' => $this->randomMachineName(),
-      'name' => $this->randomMachineName(),
+      'name' => strtolower($this->randomMachineName()),
       'pass' => \Drupal::service('password_generator')->generate(),
       'status' => $status,
     ];

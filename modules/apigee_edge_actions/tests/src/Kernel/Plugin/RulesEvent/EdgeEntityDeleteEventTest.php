@@ -20,8 +20,8 @@
 
 namespace Drupal\Tests\apigee_edge_actions\Kernel\Plugin\RulesEvent;
 
-use Drupal\rules\Context\ContextConfig;
 use Drupal\Tests\apigee_edge_actions\Kernel\ApigeeEdgeActionsRulesKernelTestBase;
+use Drupal\rules\Context\ContextConfig;
 
 /**
  * Tests Edge entity delete event.

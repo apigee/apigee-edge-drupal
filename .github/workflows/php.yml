@@ -34,9 +34,11 @@ jobs:
         php-version:
           - "8.1"
           - "8.2"
+          - "8.3"
         drupal-core:
           # Should update the following as the minimum supported version from Drupal.org
-          - "10.1.x"
+          - "10.2.x"
+          - "10.3.x"
         instance-type:
           - "Edge"
           - "X"
@@ -70,14 +72,14 @@ jobs:
         echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
     - name: Cache composer dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ${{ steps.composercache.outputs.dir }}
         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
         restore-keys: ${{ runner.os }}-composer-
 
     - name: Checkout apigee_edge module
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         path: drupal/modules/contrib/apigee_edge
 
@@ -93,7 +95,6 @@ jobs:
         composer config --no-plugins allow-plugins.cweagans/composer-patches true
         composer config --no-plugins allow-plugins.php-http/discovery true        
         composer config minimum-stability dev
-        composer require 'drupal/rules:3.x-dev@dev'
         composer require wikimedia/composer-merge-plugin
         composer config --json extra.merge-plugin.require '["modules/contrib/apigee_edge/composer.json"]'
         composer config platform.php ${{ matrix.php-version }}
@@ -101,8 +102,21 @@ jobs:
         composer update --with-all-dependencies
         composer require --dev phpspec/prophecy-phpunit:^2
         composer require --dev drupal/classy:^1.0
-        composer require --dev mglaman/phpstan-drupal:1.2.0
         composer config --no-plugins allow-plugins.drupal/console-extend-plugin true
+
+    - name: "Allow plugins and dev dependencies for Drupal 10.2"
+      if: ${{ matrix.drupal-core == '10.2.x' }}
+      run: |
+        cd drupal
+        composer require 'drupal/rules:3.x-dev@dev'
+        composer update --with-all-dependencies
+
+    - name: "Allow plugins and dev dependencies for Drupal 10.3"
+      if: ${{ matrix.drupal-core == '10.3.x' }}
+      run: |
+        cd drupal
+        composer require 'drupal/rules:^4.0'
+        composer update --with-all-dependencies
 
     # Install drupal using minimal installation profile and enable the module.
     - name: Install Drupal
@@ -124,7 +138,8 @@ jobs:
         echo "APIGEE_EDGE_ENDPOINT=$APIGEE_EDGE_HYBRID_ENDPOINT" >> $GITHUB_ENV
         composer show > composer-show.txt
 
-    - name: "Drupal check"
+    - name: "Drupal check for Drupal 10.2"
+      if: ${{ matrix.drupal-core == '10.2.x' }}
       run: |
         cd drupal
         vendor/bin/drupal-check modules/contrib/apigee_edge
@@ -137,13 +152,13 @@ jobs:
         sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
 
     - name: "Run PHPUnit tests"
-      if: ${{ matrix.drupal-core != '9.5.x' || matrix.php-version != '8.1' }}
+      if: ${{ matrix.drupal-core != '10.2.x' || matrix.php-version != '8.2' }}
       run: |
         cd drupal
         vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit,kernel,functional,functional-javascript modules/contrib/apigee_edge
 
     - name: "Run PHPUnit tests with Code Coverage"
-      if: ${{ matrix.drupal-core == '9.5.x' && matrix.php-version == '8.1' }}
+      if: ${{ matrix.drupal-core == '10.2.x' && matrix.php-version == '8.2' }}
       run: |
         cd drupal
         cp modules/contrib/apigee_edge/phpunit.core.xml.dist core/phpunit.xml
@@ -151,15 +166,16 @@ jobs:
 
     - name: Artifacts
       if: failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: browser-output-${{ matrix.php-version }}-${{ matrix.drupal-core }}-${{ matrix.instance-type }}-artifact
         path: drupal/sites/simpletest/browser_output/*
 
     - name: Upload coverage to Codecov
-      if: ${{ matrix.drupal-core == '9.5.x' && matrix.php-version == '8.1' }}
-      uses: codecov/codecov-action@v3
+      if: ${{ matrix.drupal-core == '10.2.x' && matrix.php-version == '8.2' }}
+      uses: codecov/codecov-action@v4
       with:
+        token: ${{ secrets.CODECOV_TOKEN }}
         files: /tmp/coverage_${{ matrix.instance-type }}.xml
         name: codecov-umbrella
         fail_ci_if_error: true

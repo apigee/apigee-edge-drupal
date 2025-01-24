@@ -22,8 +22,6 @@ namespace Drupal\apigee_edge\Form;
 
 use Apigee\Edge\Api\Management\Controller\StatsController;
 use Apigee\Edge\Api\Management\Query\StatsQuery;
-use Drupal\apigee_edge\Entity\AppInterface;
-use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -33,6 +31,8 @@ use Drupal\Core\Routing\UrlGeneratorInterface;
 use Drupal\Core\TempStore\PrivateTempStoreFactory;
 use Drupal\Core\Url;
 use Drupal\Core\Utility\Error;
+use Drupal\apigee_edge\Entity\AppInterface;
+use Drupal\apigee_edge\SDKConnectorInterface;
 use League\Period\Period;
 use Moment\MomentException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -166,7 +166,7 @@ abstract class AppAnalyticsFormBase extends FormBase {
       ],
       '#default_value' => 'avg(total_response_time)',
       '#title' => t('Metrics'),
-      '#title_display' => 'invisible'
+      '#title_display' => 'invisible',
     ];
 
     $form['controls']['since'] = [
@@ -199,7 +199,7 @@ abstract class AppAnalyticsFormBase extends FormBase {
         'custom' => $this->t('Custom range'),
       ],
       '#title' => t('Date range'),
-      '#title_display' => 'invisible'
+      '#title_display' => 'invisible',
     ];
 
     $form['controls']['submit'] = [

@@ -45,7 +45,7 @@ trait CachedPaginatedEntityListingControllerTrait {
   /**
    * {@inheritdoc}
    */
-  public function getEntities(PagerInterface $pager = NULL, string $key_provider = 'id'): array {
+  public function getEntities(?PagerInterface $pager = NULL, string $key_provider = 'id'): array {
     if ($this->entityCache()->isAllEntitiesInCache()) {
       if ($pager === NULL) {
         return $this->entityCache()->getEntities();

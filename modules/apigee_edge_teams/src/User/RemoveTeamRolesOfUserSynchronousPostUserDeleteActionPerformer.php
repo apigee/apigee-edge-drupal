@@ -20,12 +20,12 @@
 
 namespace Drupal\apigee_edge_teams\User;
 
-use Drupal\apigee_edge\User\PostUserDeleteActionPerformerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Utility\Error;
+use Drupal\apigee_edge\User\PostUserDeleteActionPerformerInterface;
 use Drupal\user\UserInterface;
-use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use Psr\Log\LoggerInterface;
 
 /**
  * Ensures team roles of the removed user also get deleted.

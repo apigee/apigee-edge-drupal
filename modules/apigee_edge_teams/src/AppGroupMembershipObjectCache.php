@@ -21,12 +21,12 @@
 namespace Drupal\apigee_edge_teams;
 
 use Apigee\Edge\Api\ApigeeX\Structure\AppGroupMembership;
-use Drupal\apigee_edge\MemoryCacheFactoryInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Cache\CacheFactoryInterface;
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\apigee_edge\MemoryCacheFactoryInterface;
 
 /**
  * Providers a persistent & non-persistent cache for appgroup membership objects.

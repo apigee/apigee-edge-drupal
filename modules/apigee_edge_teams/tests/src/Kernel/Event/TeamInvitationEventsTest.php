@@ -20,12 +20,11 @@
 
 namespace Drupal\Tests\apigee_edge_teams\Kernel;
 
-use Drupal\apigee_edge_teams\Entity\Team;
+use Drupal\Tests\apigee_edge\Kernel\ApigeeEdgeKernelTestBase;
+use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 use Drupal\apigee_edge_teams\Entity\TeamInvitation;
 use Drupal\apigee_edge_teams\Entity\TeamInvitationInterface;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
-use Drupal\KernelTests\KernelTestBase;
-use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 
 /**
  * Tests team_invitation events.
@@ -35,7 +34,7 @@ use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
  * @group apigee_edge_teams
  * @group apigee_edge_teams_kernel
  */
-class TeamInvitationEventsTest extends KernelTestBase {
+class TeamInvitationEventsTest extends ApigeeEdgeKernelTestBase {
 
   use ApigeeMockApiClientHelperTrait {
     apigeeTestHelperSetup as baseSetUp;

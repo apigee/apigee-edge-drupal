@@ -1,6 +1,6 @@
-# Apigee Edge Drupal module
+# Apigee Drupal module
 
-The Apigee Edge module enables you to integrate Drupal 10 with Apigee.
+The Apigee module enables you to integrate Drupal 10 with Apigee Edge or Apigee X.
 
 * Users that register or are added to the Drupal site will be added as developers in Apigee.
 * Click on "Apps" in user menu to get keys for the APIs exposed in Apigee.
@@ -10,7 +10,7 @@ This module includes the following submodules:
 * __Debug:__ enables administrators to configure and manage Apigee debug logs.
 * __Teams:__ enables developers to be organized into teams.
 
-For more details read the [Apigee Edge module documentation](https://www.drupal.org/docs/contributed-modules/apigee-edge).
+For more details read the [Apigee module documentation](https://www.drupal.org/docs/contributed-modules/apigee-edge).
 
 ## Support for Apigee Hybrid Cloud and Apigee X
 
@@ -24,15 +24,15 @@ Please note that the Monetization APIs are not currently supported on Apigee hyb
 
 ## Requirements
 
-* The Apigee Edge module requires **Drupal 10.1.x** or higher and PHP 8.1, Drupal 10.x is recommended due to [Drupal 9's EOL timeline](https://www.drupal.org/docs/understanding-drupal/drupal-9-release-date-and-what-it-means/how-long-will-drupal-9-be-supported#s-drupal-9-support-will-end-in-november-2023).
+* The Apigee module requires **Drupal 10.1.x** or higher and PHP 8.1, Drupal 10.x is recommended due to [Drupal 9's EOL timeline](https://www.drupal.org/docs/understanding-drupal/drupal-9-release-date-and-what-it-means/how-long-will-drupal-9-be-supported#s-drupal-9-support-will-end-in-november-2023).
 * Drupal's minimum requirement is phpdocumentor/reflection-docblock:2.0.4 but at least 3.0 is required by this module. If you get the error  "Your requirements could not be resolved to an installable set of packages" it may be because you are running reflection-docblock version 2. You can update `phpdocumentor/reflection-docblock` with the following command: `composer update phpdocumentor/reflection-docblock --with-dependencies`.
 * **Check [composer.json](https://github.com/apigee/apigee-edge-drupal/blob/3.x/composer.json) for any required patches.** Patches prefixed with "(For testing)" are only required for running tests. Those are not necessary for using this module. Patches can be applied with the [cweagans/composer-patches](https://packagist.org/packages/cweagans/composer-patches) plugin automatically or manually. See [Applying Patches](#applying-patches) section below.
 * (For developers) The locked commit from `behat/mink` library is required otherwise tests may fail. This caused by a Drupal core [bug](https://www.drupal.org/project/drupal/issues/2956279). See the related pull request for behat/mink [here](https://github.com/minkphp/Mink/pull/760).
 
 ## Installing
 
-1. Install the Apigee Edge module using [Composer](https://getcomposer.org/).
-  Composer will download the Apigee Edge module and all its dependencies.
+1. Install the Apigee module using [Composer](https://getcomposer.org/).
+  Composer will download the Apigee module and all its dependencies.
   **Note**: Composer must be executed at the root of your Drupal installation.
   For example:
    ```
@@ -42,7 +42,7 @@ Please note that the Monetization APIs are not currently supported on Apigee hyb
 
     For more information about installing contributed modules using composer, see [the official documentation](https://www.drupal.org/docs/develop/using-composer/using-composer-to-manage-drupal-site-dependencies#managing-contributed).
 2. Click **Extend** in the Drupal administration menu.
-3. Select the **Apigee Edge** module.
+3. Select the **Apigee** module.
 4. Click **Install**.
 5. Configure the [connection to your Apigee org](https://www.drupal.org/docs/contributed-modules/apigee-edge/configure-the-connection-to-apigee)
 
@@ -50,7 +50,7 @@ Please note that the Monetization APIs are not currently supported on Apigee hyb
 
 * If you do not configure the connection between Drupal and Apigee, you will not be able to register developers on
   the site and may cause other issues with Drupal core functions. If you do not plan to configure the connection between
-  Drupal and Apigee, you should uninstall the Apigee Edge module.
+  Drupal and Apigee, you should uninstall the Apigee module.
 * When you first install the module, existing users in the Drupal site may not have a developer account in Apigee.
   You can run [developer synchronization](https://www.drupal.org/docs/contributed-modules/apigee-edge/synchronize-developers-with-apigee-edge)
   to make sure Drupal users and Apigee developers are synchronized.
@@ -58,8 +58,8 @@ Please note that the Monetization APIs are not currently supported on Apigee hyb
 
 ## Applying Patches
 
-The Apigee Edge module may require Drupal core or contributed module patches to be able to work properly. These patches
-can be applied automatically when Apigee Edge module gets installed but for that your Drupal installation must fulfill
+The Apigee module may require Drupal core or contributed module patches to be able to work properly. These patches
+can be applied automatically when Apigee module gets installed but for that your Drupal installation must fulfill
 the following requirements:
 
 1. [cweagans/composer-patches](https://packagist.org/packages/cweagans/composer-patches) >= 1.6.5 has to be installed.
@@ -69,11 +69,11 @@ has to be enabled in Drupal's composer.json.
 3. Proper [patch level](https://github.com/cweagans/composer-patches/pull/101#issue-104810467)
 for drupal/core has to be set in Drupal's composer.json.
 
-You can find the currently required patches, if any, in the Apigee Edge module's [composer.json](https://github.com/apigee/apigee-edge-drupal/blob/3.x/composer.json)
+You can find the currently required patches, if any, in the Apigee module's [composer.json](https://github.com/apigee/apigee-edge-drupal/blob/3.x/composer.json)
 and in the Apigee PHP API Client's [composer.json](https://github.com/apigee/apigee-client-php/blob/3.x/composer.json).
 
 **If you do not have all required patches applied in your Drupal installation you may experience some problems with the
-Apigee Edge module.**
+Apigee module.**
 
 ## Troubleshooting
 

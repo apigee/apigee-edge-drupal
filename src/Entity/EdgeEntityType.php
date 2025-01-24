@@ -20,11 +20,11 @@
 
 namespace Drupal\apigee_edge\Entity;
 
-use Drupal\apigee_edge\Entity\ListBuilder\EdgeEntityListBuilder;
-use Drupal\apigee_edge\Exception\RuntimeException;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Entity\EntityType;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\apigee_edge\Entity\ListBuilder\EdgeEntityListBuilder;
+use Drupal\apigee_edge\Exception\RuntimeException;
 
 /**
  * Provides an implementation of an Apigee Edge entity type and its metadata.

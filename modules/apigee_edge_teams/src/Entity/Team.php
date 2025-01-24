@@ -24,8 +24,8 @@ use Apigee\Edge\Api\ApigeeX\Entity\AppGroup;
 use Apigee\Edge\Api\Management\Entity\Company;
 use Apigee\Edge\Entity\EntityInterface;
 use Apigee\Edge\Structure\AttributesProperty;
-use Drupal\apigee_edge\Entity\AttributesAwareFieldableEdgeEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\apigee_edge\Entity\AttributesAwareFieldableEdgeEntityBase;
 
 /**
  * Defines the Team entity class.
@@ -73,6 +73,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   field_ui_base_route = "apigee_edge_teams.settings.team",
  * )
  */
+#[\AllowDynamicProperties]
 class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterface {
 
   /**

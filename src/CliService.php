@@ -81,7 +81,7 @@ class CliService implements CliServiceInterface {
     string $password,
     ?string $base_url,
     ?string $role_name,
-    ?bool $force
+    ?bool $force,
   ) {
     $this->apigeeEdgeManagementCliService->createEdgeRoleForDrupal(
       $io,

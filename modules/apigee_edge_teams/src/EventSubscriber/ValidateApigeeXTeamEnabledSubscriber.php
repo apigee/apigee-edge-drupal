@@ -19,11 +19,11 @@
 
 namespace Drupal\apigee_edge_teams\EventSubscriber;
 
-use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
-use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
+use Drupal\apigee_edge\SDKConnectorInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;

@@ -131,7 +131,7 @@ final class AppController extends AppControllerBase implements AppControllerInte
   /**
    * {@inheritdoc}
    */
-  public function listAppIds(PagerInterface $pager = NULL): array {
+  public function listAppIds(?PagerInterface $pager = NULL): array {
     if ($this->appIdCache->isAllIdsInCache()) {
       if ($pager === NULL) {
         return $this->appIdCache->getIds();
@@ -150,7 +150,7 @@ final class AppController extends AppControllerBase implements AppControllerInte
   /**
    * {@inheritdoc}
    */
-  public function listApps(bool $include_credentials = FALSE, PagerInterface $pager = NULL): array {
+  public function listApps(bool $include_credentials = FALSE, ?PagerInterface $pager = NULL): array {
     // If all entities in the cache and apps with credentials should be
     // returned.
     if ($this->appCache->isAllEntitiesInCache() && $include_credentials === TRUE) {
@@ -197,7 +197,7 @@ final class AppController extends AppControllerBase implements AppControllerInte
   /**
    * {@inheritdoc}
    */
-  public function listAppIdsByStatus(string $status, PagerInterface $pager = NULL): array {
+  public function listAppIdsByStatus(string $status, ?PagerInterface $pager = NULL): array {
     $apps_from_cache = $this->getAppsFromCacheByStatus($status, $pager);
     if ($apps_from_cache !== NULL) {
       return array_map(function (AppInterface $app) {
@@ -211,7 +211,7 @@ final class AppController extends AppControllerBase implements AppControllerInte
   /**
    * {@inheritdoc}
    */
-  public function listAppsByStatus(string $status, bool $include_credentials = TRUE, PagerInterface $pager = NULL): array {
+  public function listAppsByStatus(string $status, bool $include_credentials = TRUE, ?PagerInterface $pager = NULL): array {
     $apps_from_cache = $this->getAppsFromCacheByStatus($status, $pager);
     if ($apps_from_cache !== NULL) {
       return $apps_from_cache;
@@ -239,7 +239,7 @@ final class AppController extends AppControllerBase implements AppControllerInte
    *   If not all apps in the cache it returns null, otherwise it returns the
    *   required amount of apps from the cache.
    */
-  private function getAppsFromCacheByStatus(string $status, PagerInterface $pager = NULL): ?array {
+  private function getAppsFromCacheByStatus(string $status, ?PagerInterface $pager = NULL): ?array {
     $apps = NULL;
     if ($this->appCache->isAllEntitiesInCache()) {
       if ($pager === NULL) {
@@ -260,14 +260,14 @@ final class AppController extends AppControllerBase implements AppControllerInte
   /**
    * {@inheritdoc}
    */
-  public function listAppIdsByType(string $app_type, PagerInterface $pager = NULL): array {
+  public function listAppIdsByType(string $app_type, ?PagerInterface $pager = NULL): array {
     return $this->decorated()->listAppIdsByType($app_type, $pager);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function listAppIdsByFamily(string $app_family, PagerInterface $pager = NULL): array {
+  public function listAppIdsByFamily(string $app_family, ?PagerInterface $pager = NULL): array {
     return $this->decorated()->listAppIdsByFamily($app_family, $pager);
   }
 

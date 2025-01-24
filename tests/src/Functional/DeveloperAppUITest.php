@@ -20,10 +20,10 @@
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Apigee\Edge\Api\Management\Controller\DeveloperController;
-use Drupal\apigee_edge\Entity\Developer;
-use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\Core\Url;
 use Drupal\Tests\apigee_edge\Traits\EntityUtilsTrait;
+use Drupal\apigee_edge\Entity\Developer;
+use Drupal\apigee_edge\Entity\DeveloperApp;
 
 /**
  * Developer app UI tests.
@@ -335,7 +335,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
   public function testAppCrudSingleProductChange() {
     $this->submitAdminForm([
       'display_as_select' => TRUE,
-      'multiple_products' => FALSE
+      'multiple_products' => FALSE,
     ]);
     $this->products[] = $this->createProduct();
 
@@ -500,7 +500,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->products[] = $product2;
     $app = $this->createDeveloperApp([
       'name' => $this->randomMachineName(),
-      'displayName' => $this->randomString()
+      'displayName' => $this->randomString(),
     ], $this->account, [$product1->id(), $product2->id()]);
     $app_edit_url = $app->toUrl('edit-form-for-developer');
 
@@ -551,18 +551,18 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->pageTextContains("Callback URL field is not in the right format.");
     $this->drupalGet($app_edit_url);
     $this->submitForm([
-      'callbackUrl[0][value]' => 'map://example.com'
+      'callbackUrl[0][value]' => 'map://example.com',
     ], 'Save');
     $this->assertSession()->pageTextContains("Callback URL field is not in the right format.");
     $this->drupalGet($app_edit_url);
     $this->submitForm([
-      'callbackUrl[0][value]' => 'http://example.com'
+      'callbackUrl[0][value]' => 'http://example.com',
     ], 'Save');
     $this->assertSession()->pageTextContains('App has been successfully updated.');
     $this->assertSession()->pageTextContains('http://example.com');
     $this->drupalGet($app_edit_url);
     $this->submitForm([
-      'callbackUrl[0][value]' => 'sap://example.com'
+      'callbackUrl[0][value]' => 'sap://example.com',
     ], 'Save');
     $this->assertSession()->pageTextContains('App has been successfully updated.');
     $this->assertSession()->pageTextContains('sap://example.com');

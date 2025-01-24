@@ -19,8 +19,8 @@
 
 namespace Drupal\Tests\apigee_edge_teams\Functional;
 
-use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\Core\Url;
+use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Route;
 
@@ -443,7 +443,7 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
     $this->drupalGet(Url::fromRoute('apigee_edge_teams.settings.team.permissions'));
     // Check whether the permission group labels and the permission labels and
     // descriptions are visible.
-    $this->assertSession()->pageTextContains('Apigee Edge Teams: Testing');
+    $this->assertSession()->pageTextContains('Apigee Teams: Testing');
     $this->assertSession()->pageTextContains('Team permission test');
     $this->assertSession()->pageTextContains('Team permission test 1');
     $this->assertSession()->pageTextContains('This is the 1st team test permission.');

@@ -20,9 +20,9 @@
 
 namespace Drupal\Tests\apigee_edge_apiproduct_rbac\FunctionalJavascript;
 
-use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\Core\Url;
 use Drupal\Tests\apigee_edge\FunctionalJavascript\ApiProductAccessTest;
+use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\user\UserInterface;
 
 /**

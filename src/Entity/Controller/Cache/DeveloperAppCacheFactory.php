@@ -20,9 +20,9 @@
 
 namespace Drupal\apigee_edge\Entity\Controller\Cache;
 
-use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
 use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
 
 /**
  * Developer specific app cache by app owner factory service.

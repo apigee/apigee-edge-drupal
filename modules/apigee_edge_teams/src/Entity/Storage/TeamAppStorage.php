@@ -20,6 +20,10 @@
 
 namespace Drupal\apigee_edge_teams\Entity\Storage;
 
+use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Entity\Controller\AppControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
@@ -28,10 +32,6 @@ use Drupal\apigee_edge\Entity\Storage\AppStorage;
 use Drupal\apigee_edge_teams\Entity\Controller\TeamAppApigeeXEntityControllerProxy;
 use Drupal\apigee_edge_teams\Entity\Controller\TeamAppControllerFactoryInterface;
 use Drupal\apigee_edge_teams\Entity\Controller\TeamAppEdgeEntityControllerProxy;
-use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Core\Cache\CacheBackendInterface;
-use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
-use Drupal\Core\Entity\EntityTypeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

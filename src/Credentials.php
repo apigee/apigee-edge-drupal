@@ -26,7 +26,7 @@ use Http\Message\Authentication;
 /**
  * The API credentials.
  *
- * @todo: move to \Drupal\apigee_edge\Connector namespace.
+ * @todo move to \Drupal\apigee_edge\Connector namespace.
  */
 class Credentials implements CredentialsInterface {
 

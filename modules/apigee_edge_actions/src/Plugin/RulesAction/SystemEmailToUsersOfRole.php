@@ -81,7 +81,7 @@ class SystemEmailToUsersOfRole extends RulesSystemMailToUsersOfRole {
   /**
    * {@inheritdoc}
    */
-  protected function doExecute(array $roles, $subject, $message, $reply = NULL, LanguageInterface $language = NULL) {
+  protected function doExecute(array $roles, $subject, $message, $reply = NULL, ?LanguageInterface $language = NULL) {
     // SystemMailToUsersOfRole::doExecute() expects an array of RoleInterface.
     // Upcast is done in RulesActionBase.
     parent::doExecute($roles, $subject, $message, $reply, $language);

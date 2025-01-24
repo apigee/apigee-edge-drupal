@@ -19,12 +19,12 @@
 
 namespace Drupal\apigee_edge\Plugin\KeyType;
 
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\apigee_edge\Connector\GceServiceAccountAuthentication;
 use Drupal\apigee_edge\Connector\HybridAuthentication;
 use Drupal\apigee_edge\OauthAuthentication;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeBase;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\key\KeyInterface;
 use Http\Message\Authentication;
 use Http\Message\Authentication\BasicAuth;

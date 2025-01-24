@@ -39,7 +39,7 @@ class AppTitleProvider extends EdgeEntityTitleProvider {
    * @return string|null
    *   The title for the app analytics page, null if an entity was found.
    */
-  public function analyticsTitle(RouteMatchInterface $route_match, EntityInterface $_entity = NULL) {
+  public function analyticsTitle(RouteMatchInterface $route_match, ?EntityInterface $_entity = NULL) {
     if ($entity = $this->doGetEntity($route_match, $_entity)) {
       return $this->t('Analytics of %label @entity_type', [
         '%label' => $entity->label(),
@@ -51,7 +51,7 @@ class AppTitleProvider extends EdgeEntityTitleProvider {
   /**
    * {@inheritdoc}
    */
-  protected function doGetEntity(RouteMatchInterface $route_match, EntityInterface $_entity = NULL) {
+  protected function doGetEntity(RouteMatchInterface $route_match, ?EntityInterface $_entity = NULL) {
     if ($_entity) {
       $entity = $_entity;
     }

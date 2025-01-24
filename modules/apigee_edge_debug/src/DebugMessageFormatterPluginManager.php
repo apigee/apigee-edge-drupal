@@ -20,11 +20,11 @@
 
 namespace Drupal\apigee_edge_debug;
 
-use Drupal\apigee_edge_debug\Annotation\DebugMessageFormatter;
-use Drupal\apigee_edge_debug\Plugin\DebugMessageFormatter\DebugMessageFormatterPluginInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
+use Drupal\apigee_edge_debug\Annotation\DebugMessageFormatter;
+use Drupal\apigee_edge_debug\Plugin\DebugMessageFormatter\DebugMessageFormatterPluginInterface;
 
 /**
  * Provides a debug message formatter plugin manager.

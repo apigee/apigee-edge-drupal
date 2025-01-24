@@ -20,9 +20,9 @@
 
 namespace Drupal\Tests\apigee_edge_actions\Kernel\Plugin\RulesEvent;
 
+use Drupal\Tests\apigee_edge_actions\Kernel\ApigeeEdgeActionsRulesKernelTestBase;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\rules\Context\ContextConfig;
-use Drupal\Tests\apigee_edge_actions\Kernel\ApigeeEdgeActionsRulesKernelTestBase;
 
 /**
  * Tests Edge entity add_product event.
@@ -103,7 +103,7 @@ class EdgeEntityAddProductEventTest extends ApigeeEdgeActionsRulesKernelTestBase
     $this->queueDeveloperResponse($this->account);
     $this->stack->queueMockResponse([
       'get_developer_apps' => [
-        'apps' => [$developer_app]
+        'apps' => [$developer_app],
       ],
     ]);
 

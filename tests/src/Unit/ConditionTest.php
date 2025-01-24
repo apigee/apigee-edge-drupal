@@ -20,9 +20,9 @@
 namespace Drupal\Tests\apigee_edge\Unit;
 
 use Apigee\Edge\Entity\EntityInterface;
-use Drupal\apigee_edge\Entity\Query\Condition;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\apigee_edge\Entity\Query\Condition;
 
 /**
  * Entity query condition tests.

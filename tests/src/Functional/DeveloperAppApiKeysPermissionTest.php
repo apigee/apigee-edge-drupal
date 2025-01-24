@@ -117,7 +117,7 @@ class DeveloperAppApiKeysPermissionTest extends ApigeeEdgeFunctionalTestBase {
       $this->consumer_key = $credential->getConsumerKey();
       $this->apiProduct = $this->createProduct();
 
-      /* @var \Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface $appCredentialController */
+      /** @var \Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface $appCredentialController */
       $appCredentialController = \Drupal::service('apigee_edge.controller.developer_app_credential_factory')
         ->developerAppCredentialController($this->developerApp->getAppOwner(), $this->developerApp->getName());
       $appCredentialController->addProducts($this->consumer_key, [$this->apiProduct->getName()]);

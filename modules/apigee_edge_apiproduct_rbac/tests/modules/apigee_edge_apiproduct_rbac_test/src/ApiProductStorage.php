@@ -20,14 +20,14 @@
 
 namespace Drupal\apigee_edge_apiproduct_rbac_test;
 
-use Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface;
-use Drupal\apigee_edge\Entity\Storage\ApiProductStorage as OriginalApiProductStorage;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\State\StateInterface;
+use Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface;
+use Drupal\apigee_edge\Entity\Storage\ApiProductStorage as OriginalApiProductStorage;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

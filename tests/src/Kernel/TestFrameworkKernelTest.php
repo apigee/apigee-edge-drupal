@@ -19,11 +19,10 @@
 
 namespace Drupal\Tests\apigee_edge\Kernel;
 
-use Drupal\apigee_edge\Entity\Developer;
 use Drupal\Core\Form\FormState;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\apigee_mock_api_client\Traits\ApigeeMockApiClientHelperTrait;
 use Drupal\Tests\user\Traits\UserCreationTrait;
+use Drupal\apigee_edge\Entity\Developer;
 use GuzzleHttp\Psr7\Response;
 use Http\Message\Authentication\AutoBasicAuth;
 
@@ -33,7 +32,7 @@ use Http\Message\Authentication\AutoBasicAuth;
  * @group apigee_edge
  * @group apigee_edge_kernel
  */
-class TestFrameworkKernelTest extends KernelTestBase {
+class TestFrameworkKernelTest extends ApigeeEdgeKernelTestBase {
 
   use ApigeeMockApiClientHelperTrait;
   use UserCreationTrait;

@@ -20,9 +20,9 @@
 
 namespace Drupal\apigee_edge_teams;
 
+use Drupal\Core\Session\AccountInterface;
 use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
-use Drupal\Core\Session\AccountInterface;
 
 /**
  * Base definition of the team member API product access handler.
@@ -56,7 +56,7 @@ interface TeamMemberApiProductAccessHandlerInterface {
    *   returned, i.e. TRUE means access is explicitly allowed, FALSE means
    *   access is either explicitly forbidden or "no opinion".
    */
-  public function access(ApiProductInterface $api_product, string $operation, TeamInterface $team, AccountInterface $account = NULL, bool $return_as_object = FALSE);
+  public function access(ApiProductInterface $api_product, string $operation, TeamInterface $team, ?AccountInterface $account = NULL, bool $return_as_object = FALSE);
 
   /**
    * Clears all cached access checks.

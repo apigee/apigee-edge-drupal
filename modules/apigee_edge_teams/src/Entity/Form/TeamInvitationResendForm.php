@@ -20,13 +20,12 @@
 
 namespace Drupal\apigee_edge_teams\Entity\Form;
 
-use Drupal\apigee_edge_teams\Entity\TeamInvitationInterface;
-use Drupal\apigee_edge_teams\TeamInvitationNotifierInterface;
 use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\apigee_edge_teams\Entity\TeamInvitationInterface;
+use Drupal\apigee_edge_teams\TeamInvitationNotifierInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

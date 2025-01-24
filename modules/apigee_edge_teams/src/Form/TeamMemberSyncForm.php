@@ -19,11 +19,11 @@
 
 namespace Drupal\apigee_edge_teams\Form;
 
-use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
-use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
+use Drupal\apigee_edge\SDKConnectorInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -83,7 +83,7 @@ class TeamMemberSyncForm extends FormBase {
       $this->sdkConnector->testConnection();
     }
     catch (\Exception $exception) {
-      $this->messenger()->addError($this->t('Cannot connect to Apigee Edge server. Please ensure that <a href=":link">Apigee Edge connection settings</a> are correct.', [
+      $this->messenger()->addError($this->t('Cannot connect to Apigee server. Please ensure that <a href=":link">Apigee connection settings</a> are correct.', [
         ':link' => Url::fromRoute('apigee_edge.settings')->toString(),
       ]));
       return $form;

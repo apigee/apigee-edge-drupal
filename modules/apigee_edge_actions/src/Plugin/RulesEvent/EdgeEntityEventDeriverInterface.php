@@ -20,8 +20,8 @@
 
 namespace Drupal\apigee_edge_actions\Plugin\RulesEvent;
 
-use Drupal\apigee_edge\Entity\EdgeEntityTypeInterface;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
+use Drupal\apigee_edge\Entity\EdgeEntityTypeInterface;
 
 /**
  * Provides an interface for Apigee Edge entity event deriver.

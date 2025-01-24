@@ -20,9 +20,9 @@
 
 namespace Drupal\Tests\apigee_edge_actions\Kernel\Plugin\RulesEvent;
 
+use Drupal\Tests\apigee_edge_actions\Kernel\ApigeeEdgeActionsRulesKernelTestBase;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\rules\Context\ContextConfig;
-use Drupal\Tests\apigee_edge_actions\Kernel\ApigeeEdgeActionsRulesKernelTestBase;
 
 /**
  * Tests Edge entity remove_product event.

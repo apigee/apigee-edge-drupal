@@ -92,7 +92,7 @@ abstract class EdgeJob extends Job {
    * {@inheritdoc}
    */
   public function renderArray(): array {
-    // TODO visualize Journal.
+    // @todo visualize Journal.
     return [];
   }
 

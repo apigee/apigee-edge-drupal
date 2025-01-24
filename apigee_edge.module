@@ -333,6 +333,7 @@ function apigee_edge_entity_base_field_info_alter(&$fields, EntityTypeInterface 
     $mail = $fields['mail'];
     $mail->setRequired(TRUE);
     $mail->addConstraint('DeveloperMailUnique');
+    $mail->addConstraint('DeveloperLowercaseEmail');
 
     // Add a bundle to these fields to allow other modules to display them
     // as configurable (fields added through the UI or configuration do have a
@@ -340,6 +341,28 @@ function apigee_edge_entity_base_field_info_alter(&$fields, EntityTypeInterface 
     // @see https://github.com/apigee/apigee-edge-drupal/issues/396
     $fields['first_name']->setTargetBundle('user');
     $fields['last_name']->setTargetBundle('user');
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() for install_configure_form().
+ *
+ * Allows the profile to alter the site configuration form.
+ */
+function apigee_edge_form_install_configure_form_alter(&$form, FormStateInterface $form_state) {
+  $form['#validate'][] = '_apigee_edge_site_install_form_check_email';
+}
+
+/**
+*  @internal
+*/
+function _apigee_edge_site_install_form_check_email(&$form, FormStateInterface $form_state) {
+  $org_controller = \Drupal::service('apigee_edge.controller.organization');
+  // Check if org is ApigeeX.
+  if ($org_controller->isOrganizationApigeeX()) {
+    if (preg_match('/[A-Z]/', $form_state->getValue(['account', 'mail']))) {
+      $form_state->setErrorByName('account][mail', 'This email address accepts only lowercase characters.');
+    }
   }
 }
 

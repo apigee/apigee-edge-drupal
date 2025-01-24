@@ -19,8 +19,8 @@
 
 namespace Drupal\Tests\apigee_edge\Unit\Entity;
 
-use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\Tests\UnitTestCase;
+use Drupal\apigee_edge\Entity\ApiProduct;
 
 /**
  * Test ApiProductTest class.

@@ -20,9 +20,6 @@
 
 namespace Drupal\apigee_edge_teams\Entity\Storage;
 
-use Drupal\apigee_edge_teams\Entity\TeamInvitationInterface;
-use Drupal\apigee_edge_teams\Event\TeamInvitationEvent;
-use Drupal\apigee_edge_teams\Event\TeamInvitationEvents;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
@@ -34,6 +31,9 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
 use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\apigee_edge_teams\Entity\TeamInvitationInterface;
+use Drupal\apigee_edge_teams\Event\TeamInvitationEvent;
+use Drupal\apigee_edge_teams\Event\TeamInvitationEvents;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 

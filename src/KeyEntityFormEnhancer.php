@@ -20,16 +20,10 @@
 
 namespace Drupal\apigee_edge;
 
-use Apigee\Edge\Exception\ApigeeOnGcpOauth2AuthenticationException;
 use Apigee\Edge\Exception\ApiRequestException;
+use Apigee\Edge\Exception\ApigeeOnGcpOauth2AuthenticationException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
-use Drupal\apigee_edge\Exception\AuthenticationKeyException;
-use Drupal\apigee_edge\Exception\InvalidArgumentException;
-use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
-use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
-use Drupal\apigee_edge\Plugin\KeyProviderRequirementsInterface;
-use Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType;
 use Drupal\Component\Render\MarkupInterface;
 use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Component\Utility\Random;
@@ -41,6 +35,12 @@ use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Core\Render\Element\StatusMessages;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Utility\Error;
+use Drupal\apigee_edge\Exception\AuthenticationKeyException;
+use Drupal\apigee_edge\Exception\InvalidArgumentException;
+use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
+use Drupal\apigee_edge\Plugin\KeyProviderRequirementsInterface;
+use Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType;
 use Drupal\key\Form\KeyFormBase;
 use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyProviderSettableValueInterface;
@@ -544,7 +544,7 @@ final class KeyEntityFormEnhancer {
     // authentication).
     else {
       // Invalid credentials.
-      // TODO Remove the second condition which is a workaround for a
+      // @todo Remove the second condition which is a workaround for a
       // regression bug in the Apigee Edge for Public Cloud 19.03.01 release. If
       // valid organization name and username provided with an invalid password
       // the MGMT server returns HTTP 500 with an error instead of HTTP 401.

@@ -22,7 +22,6 @@ namespace Drupal\Tests\apigee_edge\Functional;
 use Apigee\Edge\Api\Management\Entity\App;
 use Apigee\Edge\Api\Management\Entity\AppCredentialInterface;
 use Drupal\apigee_edge\Entity\ApiProduct;
-use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 
@@ -288,7 +287,7 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
           "consumerSecret" => $this->randomMachineName(),
           "status" => AppCredentialInterface::STATUS_APPROVED,
           "issuedAt" => 1594973277300,
-        ]
+        ],
       ];
     }
     else {
@@ -343,7 +342,7 @@ class DeveloperAppApiKeyTest extends ApigeeEdgeFunctionalTestBase {
           "consumerKey" => $this->randomMachineName(),
           "consumerSecret" => $this->randomMachineName(),
           "status" => AppCredentialInterface::STATUS_APPROVED,
-        ]
+        ],
       ];
     }
     else {

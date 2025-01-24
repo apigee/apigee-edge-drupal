@@ -20,9 +20,9 @@
 namespace Drupal\Tests\apigee_edge\Unit\Command\Util;
 
 use Apigee\Edge\ClientInterface as ApigeeClientInterface;
+use Drupal\Tests\UnitTestCase;
 use Drupal\apigee_edge\Command\Util\ApigeeEdgeManagementCliService;
 use Drupal\apigee_edge\Command\Util\ApigeeEdgeManagementCliServiceInterface;
-use Drupal\Tests\UnitTestCase;
 use Drush\Utils\StringUtils;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;

@@ -1,11 +1,11 @@
 system.admin_config_edge:
-  title: 'Apigee Edge'
+  title: 'Apigee'
   parent: system.admin_config
   route_name: apigee_edge.admin_config_edge
 
 apigee_edge.settings:
   title: 'General'
-  description: 'Apigee Edge module settings.'
+  description: 'Apigee module settings.'
   parent: system.admin_config_edge
   route_name: apigee_edge.settings
   weight: -10

@@ -20,9 +20,9 @@
 
 namespace Drupal\apigee_edge_teams\Entity\Form;
 
-use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\Core\Entity\ContentEntityDeleteForm;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\apigee_edge_teams\Entity\TeamInterface;
 
 /**
  * Provides the delete form for team_invitation.
@@ -56,7 +56,7 @@ class TeamInvitationDeleteForm extends ContentEntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, TeamInterface $team = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?TeamInterface $team = NULL) {
     $this->team = $team;
     return parent::buildForm($form, $form_state);
   }

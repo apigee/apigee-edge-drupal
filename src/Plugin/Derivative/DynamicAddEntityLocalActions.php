@@ -20,12 +20,12 @@
 
 namespace Drupal\apigee_edge\Plugin\Derivative;
 
-use Drupal\apigee_edge\Entity\EdgeEntityTypeInterface;
 use Drupal\Component\Plugin\Derivative\DeriverBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
+use Drupal\apigee_edge\Entity\EdgeEntityTypeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

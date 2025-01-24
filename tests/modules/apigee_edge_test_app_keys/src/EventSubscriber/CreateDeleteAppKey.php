@@ -20,10 +20,10 @@
 
 namespace Drupal\apigee_edge_test_app_keys\EventSubscriber;
 
-use Drupal\apigee_edge\Event\AppCredentialCreateEvent;
-use Drupal\apigee_edge\Event\AppCredentialDeleteEvent;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\State\StateInterface;
+use Drupal\apigee_edge\Event\AppCredentialCreateEvent;
+use Drupal\apigee_edge\Event\AppCredentialDeleteEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**

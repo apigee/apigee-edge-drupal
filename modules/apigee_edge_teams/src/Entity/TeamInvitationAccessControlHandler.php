@@ -20,12 +20,12 @@
 
 namespace Drupal\apigee_edge_teams\Entity;
 
-use Drupal\apigee_edge_teams\TeamPermissionHandlerInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityHandlerInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\apigee_edge_teams\TeamPermissionHandlerInterface;
 use Drupal\entity\EntityAccessControlHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 

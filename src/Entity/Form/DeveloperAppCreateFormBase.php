@@ -20,10 +20,10 @@
 
 namespace Drupal\apigee_edge\Entity\Form;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

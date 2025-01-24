@@ -20,8 +20,8 @@
 
 namespace Drupal\apigee_edge\Controller;
 
-use Drupal\apigee_edge\Event\EdgeEntityFieldConfigListAlterEvent;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\apigee_edge\Event\EdgeEntityFieldConfigListAlterEvent;
 use Drupal\field_ui\Controller\FieldConfigListController;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -60,7 +60,7 @@ class EdgeEntityFieldConfigListController extends FieldConfigListController {
   /**
    * {@inheritdoc}
    */
-  public function listing($entity_type_id = NULL, $bundle = NULL, RouteMatchInterface $route_match = NULL) {
+  public function listing($entity_type_id = NULL, $bundle = NULL, ?RouteMatchInterface $route_match = NULL) {
     $page = parent::listing($entity_type_id, $bundle, $route_match);
     $event = new EdgeEntityFieldConfigListAlterEvent($entity_type_id, $page);
     $this->eventDispatcher->dispatch($event, EdgeEntityFieldConfigListAlterEvent::EVENT_NAME);

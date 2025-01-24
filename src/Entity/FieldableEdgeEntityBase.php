@@ -20,12 +20,12 @@
 
 namespace Drupal\apigee_edge\Entity;
 
-use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\Core\Entity\EntityConstraintViolationList;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\apigee_edge\Exception\InvalidArgumentException;
 
 /**
  * Base field support for Apigee Entities without making them content entities.

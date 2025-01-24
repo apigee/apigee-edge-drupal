@@ -20,9 +20,9 @@
 
 namespace Drupal\apigee_edge_teams;
 
-use Drupal\apigee_edge_teams\Entity\TeamInvitationInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Mail\MailManagerInterface;
+use Drupal\apigee_edge_teams\Entity\TeamInvitationInterface;
 
 /**
  * Handles notifications for team_invitation via email.

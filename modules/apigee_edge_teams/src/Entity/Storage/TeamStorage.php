@@ -21,12 +21,6 @@
 namespace Drupal\apigee_edge_teams\Entity\Storage;
 
 use Apigee\Edge\Exception\ApiException;
-use Drupal\apigee_edge\Entity\Controller\CachedManagementApiEdgeEntityControllerProxy;
-use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
-use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
-use Drupal\apigee_edge\Entity\Controller\ManagementApiEdgeEntityControllerProxy;
-use Drupal\apigee_edge\Entity\Storage\AttributesAwareFieldableEdgeEntityStorageBase;
-use Drupal\apigee_edge_teams\Entity\Controller\TeamControllerInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
@@ -36,6 +30,12 @@ use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Utility\Error;
+use Drupal\apigee_edge\Entity\Controller\CachedManagementApiEdgeEntityControllerProxy;
+use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\ManagementApiEdgeEntityControllerProxy;
+use Drupal\apigee_edge\Entity\Storage\AttributesAwareFieldableEdgeEntityStorageBase;
+use Drupal\apigee_edge_teams\Entity\Controller\TeamControllerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -128,7 +128,7 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
     $result = parent::doSave($id, $entity);
 
     // Change the status of the team (company) in Apigee Edge.
-    // TODO Only change it if it has changed.
+    // @todo Only change it if it has changed.
     try {
       $this->teamController->setStatus($entity->id(), $team_status);
     }

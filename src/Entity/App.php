@@ -25,7 +25,6 @@ use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Structure\AttributesProperty;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\Core\Url;
 
 /**
  * Base class for App Drupal entities.

@@ -23,8 +23,8 @@ use Apigee\Edge\Api\Management\Controller\CompanyController;
 use Apigee\Edge\Api\Management\Controller\CompanyMembersController;
 use Apigee\Edge\Api\Management\Entity\Company;
 use Apigee\Edge\Api\Management\Structure\CompanyMembership;
-use Drupal\apigee_edge\Entity\DeveloperInterface;
 use Drupal\Core\Url;
+use Drupal\apigee_edge\Entity\DeveloperInterface;
 use Drupal\user\UserInterface;
 
 /**

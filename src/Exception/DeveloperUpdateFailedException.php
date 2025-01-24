@@ -45,7 +45,7 @@ final class DeveloperUpdateFailedException extends ApiException implements Apige
    * @param \Throwable|null $previous
    *   Previous exception.
    */
-  public function __construct(string $email, string $message = 'Developer @email profile update failed.', int $code = 0, \Throwable $previous = NULL) {
+  public function __construct(string $email, string $message = 'Developer @email profile update failed.', int $code = 0, ?\Throwable $previous = NULL) {
     $this->email = $email;
     $message = strtr($message, ['@email' => $email]);
     parent::__construct($message, $code, $previous);

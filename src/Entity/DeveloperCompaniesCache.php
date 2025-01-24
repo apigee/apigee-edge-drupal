@@ -20,8 +20,8 @@
 
 namespace Drupal\apigee_edge\Entity;
 
-use Drupal\apigee_edge\MemoryCacheFactoryInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\apigee_edge\MemoryCacheFactoryInterface;
 
 /**
  * Default non-persistent developer company membership cache implementation.

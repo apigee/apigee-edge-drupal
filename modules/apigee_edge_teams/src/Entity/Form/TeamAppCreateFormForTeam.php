@@ -20,8 +20,8 @@
 
 namespace Drupal\apigee_edge_teams\Entity\Form;
 
-use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\apigee_edge_teams\Entity\TeamInterface;
 
 /**
  * Team app create form for a team.
@@ -38,7 +38,7 @@ class TeamAppCreateFormForTeam extends TeamAppCreateFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, TeamInterface $team = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?TeamInterface $team = NULL) {
     // This is the only place where we can grab additional route parameters.
     // See implementation in parent.
     $this->team = $team;

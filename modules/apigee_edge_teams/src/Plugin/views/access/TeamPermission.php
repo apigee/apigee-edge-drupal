@@ -20,11 +20,11 @@
 
 namespace Drupal\apigee_edge_teams\Plugin\views\access;
 
-use Drupal\apigee_edge_teams\Structure\TeamPermission as TeamPermissionEntity;
-use Drupal\apigee_edge_teams\TeamPermissionHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\apigee_edge_teams\Structure\TeamPermission as TeamPermissionEntity;
+use Drupal\apigee_edge_teams\TeamPermissionHandlerInterface;
 use Drupal\views\Plugin\views\access\AccessPluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\Route;

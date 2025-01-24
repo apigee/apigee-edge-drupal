@@ -19,10 +19,10 @@
 
 namespace Drupal\apigee_edge\Plugin;
 
-use Drupal\apigee_edge\Annotation\ApigeeFieldStorageFormat;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
+use Drupal\apigee_edge\Annotation\ApigeeFieldStorageFormat;
 
 /**
  * Provides a FieldStorageFormat plugin manager.

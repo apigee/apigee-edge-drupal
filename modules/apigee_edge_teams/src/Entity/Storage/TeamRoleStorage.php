@@ -20,8 +20,8 @@
 
 namespace Drupal\apigee_edge_teams\Entity\Storage;
 
-use Drupal\apigee_edge_teams\Exception\InvalidArgumentException;
 use Drupal\Core\Config\Entity\ConfigEntityStorage;
+use Drupal\apigee_edge_teams\Exception\InvalidArgumentException;
 
 /**
  * Team role entity storage.

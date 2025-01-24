@@ -24,9 +24,9 @@
  */
 
 
-use Drupal\apigee_edge\Entity\EdgeEntityInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Render\BubbleableMetadata;
+use Drupal\apigee_edge\Entity\EdgeEntityInterface;
 
 /**
  * Implements hook_token_info_alter().
@@ -79,7 +79,7 @@ function apigee_edge_actions_tokens($type, $tokens, array $data, array $options,
   $replacements = [];
 
   if ($type == 'entity' && !empty($data['entity_type']) && !empty($data['entity']) && !empty($data['token_type'])) {
-    /* @var \Drupal\Core\Entity\ContentEntityInterface $entity */
+    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $entity = $data['entity'];
 
     if ($entity instanceof EdgeEntityInterface) {

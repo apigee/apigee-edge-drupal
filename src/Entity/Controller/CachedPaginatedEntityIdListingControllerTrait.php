@@ -57,7 +57,7 @@ trait CachedPaginatedEntityIdListingControllerTrait {
   /**
    * {@inheritdoc}
    */
-  public function getEntityIds(PagerInterface $pager = NULL): array {
+  public function getEntityIds(?PagerInterface $pager = NULL): array {
     if ($this->entityIdCache()->isAllIdsInCache()) {
       if ($pager === NULL) {
         return $this->entityIdCache()->getIds();

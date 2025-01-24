@@ -20,8 +20,8 @@
 
 namespace Drupal\apigee_edge_teams\Routing;
 
-use Drupal\apigee_edge_teams\TeamContextManagerInterface;
 use Drupal\Core\Routing\RouteSubscriberBase;
+use Drupal\apigee_edge_teams\TeamContextManagerInterface;
 use Symfony\Component\Routing\RouteCollection;
 
 /**

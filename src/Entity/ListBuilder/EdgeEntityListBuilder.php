@@ -69,7 +69,7 @@ class EdgeEntityListBuilder extends EntityListBuilder {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory = NULL) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, ?ConfigFactoryInterface $config_factory = NULL) {
     parent::__construct($entity_type, $entity_type_manager->getStorage($entity_type->id()));
     $this->entityTypeManager = $entity_type_manager;
 

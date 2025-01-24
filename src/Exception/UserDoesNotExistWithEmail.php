@@ -44,7 +44,7 @@ class UserDoesNotExistWithEmail extends \RuntimeException implements ApigeeEdgeE
    * @param \Throwable|null $previous
    *   Previous exception.
    */
-  public function __construct(string $email, string $message = 'User with @email email address not found.', int $code = 0, \Throwable $previous = NULL) {
+  public function __construct(string $email, string $message = 'User with @email email address not found.', int $code = 0, ?\Throwable $previous = NULL) {
     $this->email = $email;
     $message = strtr($message, ['@email' => $email]);
     parent::__construct($message, $code, $previous);

@@ -20,9 +20,6 @@
 
 namespace Drupal\apigee_edge\Entity;
 
-use Drupal\Core\Render\Element;
-use Drupal\Core\Url;
-
 /**
  * Common app view builder for developer- and company (team) apps.
  */

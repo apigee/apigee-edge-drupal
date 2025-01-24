@@ -20,7 +20,6 @@
 namespace Drupal\Tests\apigee_edge\Kernel;
 
 use Drupal\Core\Extension\InfoParser;
-use Drupal\Core\Extension\InfoParserInterface;
 use Drupal\KernelTests\KernelTestBase;
 
 /**
@@ -70,10 +69,10 @@ class UserAgentTest extends KernelTestBase {
    */
   public function testUserAgentWithoutMonetization() {
     // apigee_edge module info.
-    $infoParser = new InfoParser();
+    $infoParser = new InfoParser($this->root);
     $this->edgeModuleInfo = $infoParser->parse(\Drupal::service('module_handler')->getModule('apigee_edge')->getPathname());
     if (!isset($this->edgeModuleInfo['version'])) {
-      $this->edgeModuleInfo['version'] = '2.x-dev';
+      $this->edgeModuleInfo['version'] = '3.x-dev';
     }
 
     $user_agent_parts[] = $this->edgeModuleInfo['name'] . '/' . $this->edgeModuleInfo['version'];
@@ -82,7 +81,7 @@ class UserAgentTest extends KernelTestBase {
     \Drupal::moduleHandler()->invokeAll('apigee_edge_user_agent_string_alter', [&$user_agent_parts]);
     $userAgentPrefix = implode('; ', $user_agent_parts);
 
-    $this->assertSame($userAgentPrefix, 'Apigee Edge/2.x-dev;' . ' Drupal/' . \Drupal::VERSION);
+    $this->assertSame($userAgentPrefix, 'Apigee/3.x-dev;' . ' Drupal/' . \Drupal::VERSION);
   }
 
 }

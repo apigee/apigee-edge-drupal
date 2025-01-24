@@ -20,11 +20,11 @@
 
 namespace Drupal\apigee_edge_teams\EventSubscriber;
 
-use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\Core\DependencyInjection\ClassResolverInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
@@ -116,7 +116,7 @@ class TeamInactiveStatusSubscriber implements EventSubscriberInterface {
     ];
 
     $renderer = $this->classResolver->getInstanceFromDefinition($this->mainContentRenderers['html']);
-    /* @var \Symfony\Component\HttpFoundation\Response $response */
+    /** @var \Symfony\Component\HttpFoundation\Response $response */
     $response = $renderer->renderResponse($content, $event->getRequest(), $this->routeMatch);
     $response->setStatusCode(Response::HTTP_FORBIDDEN);
 

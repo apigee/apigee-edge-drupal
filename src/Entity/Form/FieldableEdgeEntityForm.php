@@ -65,7 +65,7 @@ abstract class FieldableEdgeEntityForm extends EntityForm implements FieldableEd
   /**
    * {@inheritdoc}
    *
-   * TODO Add missing return type-hint in 2.x.
+   * @todo Add missing return type-hint in 2.x.
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     parent::validateForm($form, $form_state);

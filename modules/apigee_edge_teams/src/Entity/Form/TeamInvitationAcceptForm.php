@@ -20,8 +20,8 @@
 
 namespace Drupal\apigee_edge_teams\Entity\Form;
 
-use Drupal\apigee_edge_teams\Entity\TeamInvitationInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\apigee_edge_teams\Entity\TeamInvitationInterface;
 
 /**
  * Provides the accept form for team_invitation.

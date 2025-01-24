@@ -19,10 +19,10 @@
 
 namespace Drupal\Tests\apigee_edge\Functional;
 
-use Drupal\apigee_edge\Entity\Developer;
-use Drupal\apigee_edge\Form\DeveloperSettingsForm;
 use Drupal\Core\Test\AssertMailTrait;
 use Drupal\Core\Url;
+use Drupal\apigee_edge\Entity\Developer;
+use Drupal\apigee_edge\Form\DeveloperSettingsForm;
 
 /**
  * Developer email already exists in Apigee Edge related tests.

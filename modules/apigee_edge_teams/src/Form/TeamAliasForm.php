@@ -20,8 +20,8 @@
 
 namespace Drupal\apigee_edge_teams\Form;
 
-use Drupal\apigee_edge\Form\EdgeEntityAliasConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\apigee_edge\Form\EdgeEntityAliasConfigFormBase;
 
 /**
  * Provides a form for changing Team aliases.

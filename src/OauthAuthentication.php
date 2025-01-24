@@ -27,7 +27,7 @@ use Http\Message\Authentication\BasicAuth;
 /**
  * Decorator for OAuth authentication plugin.
  *
- * @todo: move to \Drupal\apigee_edge\Connector namespace.
+ * @todo move to \Drupal\apigee_edge\Connector namespace.
  */
 class OauthAuthentication extends Oauth {
 

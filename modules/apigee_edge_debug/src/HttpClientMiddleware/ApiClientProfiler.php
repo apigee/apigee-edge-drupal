@@ -20,14 +20,14 @@
 
 namespace Drupal\apigee_edge_debug\HttpClientMiddleware;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager;
 use Drupal\apigee_edge_debug\SDKConnector;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use GuzzleHttp\RequestOptions;
 use GuzzleHttp\TransferStats;
 use Psr\Http\Message\RequestInterface;
-use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use Psr\Log\LoggerInterface;
 
 /**
  * Http client middleware that profiles Apigee Edge API calls.

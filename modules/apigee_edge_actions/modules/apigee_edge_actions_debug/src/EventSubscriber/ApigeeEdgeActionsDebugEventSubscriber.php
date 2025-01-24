@@ -20,9 +20,9 @@
 
 namespace Drupal\apigee_edge_actions_debug\EventSubscriber;
 
+use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\apigee_edge_actions\Event\ApigeeEdgeActionsEventInterface;
 use Drupal\apigee_edge_actions\Event\EdgeEntityEventEdge;
-use Drupal\Core\Logger\LoggerChannelInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**

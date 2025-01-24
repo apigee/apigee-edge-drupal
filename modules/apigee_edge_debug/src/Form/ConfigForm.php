@@ -20,10 +20,10 @@
 
 namespace Drupal\apigee_edge_debug\Form;
 
-use Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

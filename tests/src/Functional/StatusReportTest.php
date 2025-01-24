@@ -19,9 +19,9 @@
 
 namespace Drupal\Tests\apigee_edge\Functional;
 
-use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Url;
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\key\Entity\Key;
 
 /**
@@ -39,7 +39,7 @@ class StatusReportTest extends ApigeeEdgeFunctionalTestBase {
 
   const CANNOT_CONNECT_SHORT = 'Cannot connect to Apigee Edge server.';
 
-  const CANNOT_CONNECT_LONG = 'Cannot connect to Apigee Edge server. You have either given wrong credential details or the Apigee Edge server is unreachable. Visit the Apigee Edge general settings page to get more information.';
+  const CANNOT_CONNECT_LONG = 'Cannot connect to Apigee server. You have either given wrong credential details or the Apigee server is unreachable. Visit the Apigee general settings page to get more information.';
 
   /**
    * {@inheritdoc}

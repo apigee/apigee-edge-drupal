@@ -19,7 +19,6 @@
 
 namespace Drupal\apigee_edge_teams\Commands;
 
-use Consolidation\AnnotatedCommand\CommandData;
 use Drupal\apigee_edge_teams\CliServiceInterface;
 use Drush\Commands\DrushCommands;
 
@@ -41,7 +40,7 @@ class ApigeeEdgeCommands extends DrushCommands {
    * @param \Drupal\apigee_edge_teams\CliServiceInterface $cli_service
    *   The CLI service which allows interoperability.
    */
-  public function __construct(CliServiceInterface $cli_service = NULL) {
+  public function __construct(?CliServiceInterface $cli_service = NULL) {
     parent::__construct();
     $this->cliService = $cli_service;
   }

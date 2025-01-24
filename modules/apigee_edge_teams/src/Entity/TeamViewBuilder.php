@@ -20,7 +20,6 @@
 
 namespace Drupal\apigee_edge_teams\Entity;
 
-use Drupal\apigee_edge\Entity\EdgeEntityViewBuilder;
 use Drupal\Core\Config\Config;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\EntityInterface;
@@ -28,6 +27,7 @@ use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Theme\Registry;
+use Drupal\apigee_edge\Entity\EdgeEntityViewBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -58,7 +58,7 @@ class TeamViewBuilder extends EdgeEntityViewBuilder {
    * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface|null $entity_display_repository
    *   The entity display repository.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityRepositoryInterface $entity_repository, LanguageManagerInterface $language_manager, Config $config, Registry $theme_registry = NULL, EntityDisplayRepositoryInterface $entity_display_repository = NULL) {
+  public function __construct(EntityTypeInterface $entity_type, EntityRepositoryInterface $entity_repository, LanguageManagerInterface $language_manager, Config $config, ?Registry $theme_registry = NULL, ?EntityDisplayRepositoryInterface $entity_display_repository = NULL) {
     parent::__construct($entity_type, $entity_repository, $language_manager, $theme_registry, $entity_display_repository);
     $this->config = $config;
   }

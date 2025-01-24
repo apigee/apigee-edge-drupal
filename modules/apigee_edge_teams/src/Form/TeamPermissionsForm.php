@@ -20,11 +20,11 @@
 
 namespace Drupal\apigee_edge_teams\Form;
 
-use Drupal\apigee_edge_teams\TeamPermissionHandlerInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\apigee_edge_teams\TeamPermissionHandlerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

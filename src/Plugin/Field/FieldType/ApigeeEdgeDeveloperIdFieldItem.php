@@ -20,10 +20,10 @@
 
 namespace Drupal\apigee_edge\Plugin\Field\FieldType;
 
-use Drupal\apigee_edge\Entity\Developer;
 use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\TypedData\ComputedItemListTrait;
 use Drupal\Core\Utility\Error;
+use Drupal\apigee_edge\Entity\Developer;
 
 /**
  * Definition of Apigee Edge Developer ID computed field for User entity.

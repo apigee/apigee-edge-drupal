@@ -20,8 +20,11 @@
 
 namespace Drupal\apigee_edge_teams\Controller;
 
-use Apigee\Edge\Api\ApigeeX\Structure\AppGroupMembership;
-use Apigee\Edge\Api\Management\Structure\CompanyMembership;
+use Drupal\Component\Utility\Html;
+use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Url;
 use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\apigee_edge_teams\AppGroupMembershipObjectCacheInterface;
 use Drupal\apigee_edge_teams\CompanyMembershipObjectCacheInterface;
@@ -29,11 +32,6 @@ use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\apigee_edge_teams\Entity\TeamMemberRoleInterface;
 use Drupal\apigee_edge_teams\Entity\TeamRoleInterface;
 use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
-use Drupal\Component\Utility\Html;
-use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Url;
 use Drupal\user\UserInterface;
 use Drupal\views\Views;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -101,7 +99,7 @@ class TeamMembersList extends ControllerBase {
    * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
    *   The organization controller service.
    */
-  public function __construct(TeamMembershipManagerInterface $team_membership_manager, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler = NULL, CompanyMembershipObjectCacheInterface $company_membership_object_cache, AppGroupMembershipObjectCacheInterface $appgroup_membership_object_cache, OrganizationControllerInterface $org_controller) {
+  public function __construct(TeamMembershipManagerInterface $team_membership_manager, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, CompanyMembershipObjectCacheInterface $company_membership_object_cache, AppGroupMembershipObjectCacheInterface $appgroup_membership_object_cache, OrganizationControllerInterface $org_controller) {
     if (!$module_handler) {
       @trigger_error('Calling ' . __METHOD__ . ' without the $module_handler is deprecated in apigee_edge:8-x-1.19 and is required before apigee_edge:8.x-2.0. See https://github.com/apigee/apigee-edge-drupal/pull/518.', E_USER_DEPRECATED);
       $module_handler = \Drupal::moduleHandler();

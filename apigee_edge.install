@@ -19,7 +19,7 @@
  */
 
 /**
- * Install, update and uninstall functions for Apigee Edge.
+ * Install, update and uninstall functions for Apigee.
  */
 
 use Drupal\apigee_edge\OauthTokenFileStorage;
@@ -46,8 +46,8 @@ function apigee_edge_requirements($phase) {
         ->execute();
       if (!empty($missing_mails)) {
         $requirements['apigee_edge_missing_mail'] = [
-          'title' => t('Apigee Edge'),
-          'description' => t('The module can be installed only if all users have emails in Drupal, because email is a required attribute on Apigee Edge.'),
+          'title' => t('Apigee'),
+          'description' => t('The module can be installed only if all users have emails in Drupal, because email is a required attribute on Apigee.'),
           'severity' => REQUIREMENT_ERROR,
         ];
       }
@@ -62,9 +62,9 @@ function apigee_edge_requirements($phase) {
     }
     catch (\Exception $exception) {
       $requirements['apigee_edge_connection_error'] = [
-        'title' => t('Apigee Edge'),
+        'title' => t('Apigee'),
         'value' => $exception->getMessage(),
-        'description' => t('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Apigee Edge server is unreachable. Visit the <a href=":url">Apigee Edge general settings</a> page to get more information.', [
+        'description' => t('Cannot connect to Apigee server. You have either given wrong credential details or the Apigee server is unreachable. Visit the <a href=":url">Apigee general settings</a> page to get more information.', [
           ':url' => Url::fromRoute('apigee_edge.settings', ['destination' => 'admin/reports/status'])->toString(),
         ]),
         'severity' => REQUIREMENT_WARNING,
@@ -78,8 +78,8 @@ function apigee_edge_requirements($phase) {
       $key = \Drupal::service('key.repository')->getKey($key_id);
       if ($key && $key->getKeyProvider()->getPluginId() === "config") {
         $requirements['apigee_edge_insecure_config_key_provider'] = [
-          'title' => t('Apigee Edge'),
-          'description' => t('Edge connection settings are stored in Drupal’s configuration system, which is not designed to store sensitive information. When installing Kickstart for uses other than local development, we highly recommend changing the Apigee Edge connection key provider to a more secure storage location. <a href="https://www.drupal.org/docs/8/modules/apigee-developer-portal-kickstart/apigee-kickstart-faqs#s-during-installation-a-warning-is-displayed-that-the-apigee-edge-connection-key-provider-is-not-considered-secure-what-should-i-do" target="_blank">Learn more.</a>'),
+          'title' => t('Apigee'),
+          'description' => t('Edge connection settings are stored in Drupal’s configuration system, which is not designed to store sensitive information. When installing Kickstart for uses other than local development, we highly recommend changing the Apigee connection key provider to a more secure storage location. <a href="https://www.drupal.org/docs/8/modules/apigee-developer-portal-kickstart/apigee-kickstart-faqs#s-during-installation-a-warning-is-displayed-that-the-apigee-edge-connection-key-provider-is-not-considered-secure-what-should-i-do" target="_blank">Learn more.</a>'),
           'severity' => REQUIREMENT_WARNING,
         ];
       }
@@ -90,8 +90,8 @@ function apigee_edge_requirements($phase) {
           $key->getKeyType()->getAuthenticationType($key) === EdgeKeyTypeInterface::EDGE_AUTH_TYPE_BASIC &&
           $key->getKeyType()->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC) {
           $requirements['apigee_edge_http_basic_auth'] = [
-            'title' => t('Apigee Edge'),
-            'description' => t('Apigee Edge HTTP basic authentication will be deprecated. Please choose another authentication method. Visit the <a href=":url">Apigee Edge general settings</a> page to get more information.', [
+            'title' => t('Apigee'),
+            'description' => t('Apigee Edge HTTP basic authentication will be deprecated. Please choose another authentication method. Visit the <a href=":url">Apigee general settings</a> page to get more information.', [
               ':url' => Url::fromRoute('apigee_edge.settings', ['destination' => 'admin/reports/status'])->toString(),
             ]),
             'severity' => REQUIREMENT_WARNING,

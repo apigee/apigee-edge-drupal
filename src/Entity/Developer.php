@@ -24,12 +24,9 @@ use Apigee\Edge\Api\Management\Entity\Developer as EdgeDeveloper;
 use Apigee\Edge\Entity\EntityInterface as EdgeEntityInterface;
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Structure\AttributesProperty;
-use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
-use Drupal\apigee_edge_teams\Entity\TeamInterface;
-use Drupal\apigee_edge_teams\Entity\TeamMemberRole;
 use Drupal\Core\Entity\EntityStorageInterface;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Error;
+use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
@@ -52,6 +49,7 @@ use Drupal\user\UserInterface;
  *   query_class = "Drupal\apigee_edge\Entity\Query\DeveloperQuery",
  * )
  */
+#[\AllowDynamicProperties]
 class Developer extends EdgeEntityBase implements DeveloperInterface {
 
   /**
@@ -121,7 +119,7 @@ class Developer extends EdgeEntityBase implements DeveloperInterface {
    * @param \Apigee\Edge\Entity\EntityInterface|null $decorated
    *   The SDK entity that this Drupal entity decorates.
    */
-  public function __construct(array $values, ?string $entity_type = NULL, EdgeEntityInterface $decorated = NULL) {
+  public function __construct(array $values, ?string $entity_type = NULL, ?EdgeEntityInterface $decorated = NULL) {
     $entity_type = $entity_type ?? 'developer';
     // Callers expect that the status is always either 'active' or 'inactive',
     // never null.

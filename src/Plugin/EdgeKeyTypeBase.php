@@ -22,8 +22,8 @@ namespace Drupal\apigee_edge\Plugin;
 use Apigee\Edge\Client;
 use Apigee\Edge\ClientInterface;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
-use Drupal\apigee_edge\Exception\AuthenticationKeyValueMalformedException;
 use Drupal\Component\Serialization\Json;
+use Drupal\apigee_edge\Exception\AuthenticationKeyValueMalformedException;
 use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyTypeBase;
 

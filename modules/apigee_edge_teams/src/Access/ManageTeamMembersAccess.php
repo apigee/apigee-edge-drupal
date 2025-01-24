@@ -20,14 +20,14 @@
 
 namespace Drupal\apigee_edge_teams\Access;
 
-use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
-use Drupal\apigee_edge_teams\TeamPermissionHandlerInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultAllowed;
 use Drupal\Core\Access\AccessResultForbidden;
 use Drupal\Core\Routing\Access\AccessInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
+use Drupal\apigee_edge_teams\TeamPermissionHandlerInterface;
 
 /**
  * Check access on manage team members routes.

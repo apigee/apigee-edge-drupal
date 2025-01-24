@@ -41,7 +41,7 @@ class ApigeeEdgeCommands extends DrushCommands {
    * @param \Drupal\apigee_edge\CliServiceInterface $cli_service
    *   The CLI service which allows interoperability.
    */
-  public function __construct(CliServiceInterface $cli_service = NULL) {
+  public function __construct(?CliServiceInterface $cli_service = NULL) {
     parent::__construct();
     $this->cliService = $cli_service;
   }
@@ -103,7 +103,8 @@ class ApigeeEdgeCommands extends DrushCommands {
       'base-url' => NULL,
       'role-name' => NULL,
       'force' => FALSE,
-    ]) {
+    ],
+  ) {
 
     // Call the CLI Service.
     $this->cliService->createEdgeRoleForDrupal(

@@ -20,6 +20,8 @@
 
 namespace Drupal\apigee_edge\Job;
 
+use Drupal\Core\TypedData\Plugin\DataType\ItemList;
+use Drupal\Core\Utility\Error;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Exception\DeveloperDoesNotExistException;
 use Drupal\apigee_edge\Exception\DeveloperToUserConversationInvalidValueException;
@@ -28,8 +30,6 @@ use Drupal\apigee_edge\Exception\UserDeveloperConversionException;
 use Drupal\apigee_edge\Exception\UserDeveloperConversionNoStorageFormatterFoundException;
 use Drupal\apigee_edge\Exception\UserDeveloperConversionUserFieldDoesNotExistException;
 use Drupal\apigee_edge\Structure\DeveloperToUserConversionResult;
-use Drupal\Core\TypedData\Plugin\DataType\ItemList;
-use Drupal\Core\Utility\Error;
 
 /**
  * Base class for user create/update sync jobs.

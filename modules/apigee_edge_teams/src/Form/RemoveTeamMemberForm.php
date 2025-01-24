@@ -20,13 +20,13 @@
 
 namespace Drupal\apigee_edge_teams\Form;
 
-use Drupal\apigee_edge\Entity\DeveloperInterface;
-use Drupal\apigee_edge_teams\Entity\TeamInterface;
-use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Utility\Error;
+use Drupal\apigee_edge\Entity\DeveloperInterface;
+use Drupal\apigee_edge_teams\Entity\TeamInterface;
+use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -103,7 +103,7 @@ class RemoveTeamMemberForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, TeamInterface $team = NULL, DeveloperInterface $developer = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?TeamInterface $team = NULL, ?DeveloperInterface $developer = NULL) {
     $this->team = $team;
     $this->developer = $developer;
     return parent::buildForm($form, $form_state);

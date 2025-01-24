@@ -90,7 +90,7 @@ abstract class AppQueryBase extends Query {
           }
         }
       }
-      // TODO Add support to IN conditions (multiple app names) when it
+      // @todo Add support to IN conditions (multiple app names) when it
       // becomes necessary.
       elseif ($condition['field'] === 'name' && in_array($condition['operator'], [NULL, '='])) {
         $app_name_found = FALSE;

@@ -20,8 +20,8 @@
 
 namespace Drupal\apigee_edge\Exception;
 
-use Drupal\apigee_edge\Entity\DeveloperInterface;
 use Drupal\Core\TypedData\Plugin\DataType\ItemList;
+use Drupal\apigee_edge\Entity\DeveloperInterface;
 use Symfony\Component\Validator\ConstraintViolationInterface;
 
 /**

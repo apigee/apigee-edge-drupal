@@ -20,13 +20,13 @@
 namespace Drupal\apigee_edge\EventSubscriber;
 
 use Apigee\Edge\Exception\ApiException;
-use Drupal\apigee_edge\Controller\ErrorPageController;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ClassResolverInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Routing\RouteMatch;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Utility\Error;
+use Drupal\apigee_edge\Controller\ErrorPageController;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
@@ -136,7 +136,7 @@ final class EdgeExceptionSubscriber implements EventSubscriberInterface {
       $routeMatch = new RouteMatch('apigee_edge.error_page', new Route('/api-communication-error'));
       $renderer = $this->classResolver->getInstanceFromDefinition($this->mainContentRenderers['html']);
 
-      /* @var \Symfony\Component\HttpFoundation\Response $response */
+      /** @var \Symfony\Component\HttpFoundation\Response $response */
       $response = $renderer->renderResponse($content, $event->getRequest(), $routeMatch);
       $response->setStatusCode(503);
 

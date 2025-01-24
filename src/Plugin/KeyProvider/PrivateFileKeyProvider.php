@@ -19,11 +19,11 @@
 
 namespace Drupal\apigee_edge\Plugin\KeyProvider;
 
-use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
 use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Utility\Error;
+use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
 use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyPluginFormInterface;
 use Drupal\key\Plugin\KeyProviderSettableValueInterface;

@@ -22,10 +22,10 @@ namespace Drupal\apigee_edge_test_app_keys\EventSubscriber;
 
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Structure\CredentialProduct;
-use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface;
-use Drupal\apigee_edge\Event\AppCredentialGenerateEvent;
 use Drupal\Component\Utility\Random;
 use Drupal\Core\Utility\Error;
+use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface;
+use Drupal\apigee_edge\Event\AppCredentialGenerateEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -73,7 +73,7 @@ class OverrideAppKeysOnGenerate implements EventSubscriberInterface {
       $credential_controller = $this->devAppCredentialControllerFactory->developerAppCredentialController($event->getOwnerId(), $event->getAppName());
     }
     else {
-      // TODO Finish when Company apps gets supported.
+      // @todo Finish when Company apps gets supported.
     }
 
     $prefix = apigee_edge_test_app_keys_get_prefix();

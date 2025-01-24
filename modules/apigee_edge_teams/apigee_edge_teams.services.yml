@@ -117,7 +117,7 @@ services:
 
   apigee_edge_teams.team_invitation_query_access_subscriber:
     class: Drupal\apigee_edge_teams\EventSubscriber\TeamInvitationQueryAccessSubscriber
-    arguments: ['@entity_type.manager']
+    arguments: ['@apigee_edge.controller.organization', '@entity_type.manager']
     tags:
       - { name: event_subscriber }
 

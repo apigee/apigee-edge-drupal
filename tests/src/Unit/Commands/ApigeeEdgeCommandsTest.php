@@ -20,9 +20,9 @@
 namespace Drupal\Tests\apigee_edge\Unit\Commands {
 
   use Consolidation\AnnotatedCommand\CommandData;
+  use Drupal\Tests\UnitTestCase;
   use Drupal\apigee_edge\CliServiceInterface;
   use Drupal\apigee_edge\Commands\ApigeeEdgeCommands;
-  use Drupal\Tests\UnitTestCase;
   use Drush\Style\DrushStyle;
   use Prophecy\Argument;
   use Prophecy\Prophet;

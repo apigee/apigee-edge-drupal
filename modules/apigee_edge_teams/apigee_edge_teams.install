@@ -51,7 +51,7 @@ function apigee_edge_teams_requirements($phase) {
             t("The Teams module functionality is not available for monetization enabled org on Apigee X / Hybrid and should be uninstalled, because <a href=':url' target='_blank'>AppGroup APIs are not supported in Apigee X / Hybrid orgs with monetization enabled</a>.", $url) :
             t("The Teams module functionality is not available for monetization enabled org on Apigee X / Hybrid because <a href=':url' target='_blank'>AppGroup APIs are not supported in Apigee X / Hybrid orgs with monetization enabled</a>.", $url);
           $requirements['apigee_edge_teams_not_supported'] = [
-            'title' => t('Apigee Edge Teams'),
+            'title' => t('Apigee Teams'),
             'description' => $message,
             'severity' => REQUIREMENT_ERROR,
           ];

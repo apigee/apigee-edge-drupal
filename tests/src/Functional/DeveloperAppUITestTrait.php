@@ -21,12 +21,12 @@
 namespace Drupal\Tests\apigee_edge\Functional;
 
 use Apigee\Edge\Structure\CredentialProduct;
+use Drupal\Core\Url;
+use Drupal\Tests\apigee_edge\Traits\ApigeeEdgeFunctionalTestTrait;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\Developer;
 use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\apigee_edge\Entity\DeveloperAppInterface;
-use Drupal\Core\Url;
-use Drupal\Tests\apigee_edge\Traits\ApigeeEdgeFunctionalTestTrait;
 use Drupal\user\UserInterface;
 
 /**
@@ -61,7 +61,7 @@ trait DeveloperAppUITestTrait {
     'view own developer_app',
     'update own developer_app',
     'delete own developer_app',
-    'edit_api_products developer_app'
+    'edit_api_products developer_app',
   ];
 
   /**
@@ -342,7 +342,7 @@ trait DeveloperAppUITestTrait {
    * @return \Drupal\apigee_edge\Entity\DeveloperAppInterface|null
    *   Loaded developer app or null if not found.
    */
-  protected function loadDeveloperApp(string $name, Developer $developer = NULL): ?DeveloperAppInterface {
+  protected function loadDeveloperApp(string $name, ?Developer $developer = NULL): ?DeveloperAppInterface {
     /** @var \Drupal\apigee_edge\Entity\DeveloperApp[] $apps */
 
     if ($developer) {

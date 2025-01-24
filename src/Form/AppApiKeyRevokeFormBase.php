@@ -19,9 +19,9 @@
 
 namespace Drupal\apigee_edge\Form;
 
-use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
 
 /**
  * Provides revoke confirmation base form for app API key.

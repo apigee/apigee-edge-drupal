@@ -20,13 +20,13 @@
 
 namespace Drupal\apigee_edge_teams\Entity;
 
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\apigee_edge\Entity\EdgeEntityRouteProvider;
 use Drupal\apigee_edge_teams\Controller\TeamMembersList;
 use Drupal\apigee_edge_teams\Form\AddTeamMembersForm;
 use Drupal\apigee_edge_teams\Form\EditTeamMemberForm;
 use Drupal\apigee_edge_teams\Form\RemoveTeamMemberForm;
 use Drupal\apigee_edge_teams\TeamContextManagerInterface;
-use Drupal\Core\Entity\EntityTypeInterface;
 use Symfony\Component\Routing\Route;
 
 /**

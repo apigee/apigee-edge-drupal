@@ -238,7 +238,7 @@ final class TeamController implements TeamControllerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getEntities(PagerInterface $pager = NULL, string $key_provider = 'id'): array {
+  public function getEntities(?PagerInterface $pager = NULL, string $key_provider = 'id'): array {
     $queryparam = [];
     if ($this->orgController->isOrganizationApigeeX()) {
       // Getting the channelId & filter enable check from Config form.
@@ -248,7 +248,7 @@ final class TeamController implements TeamControllerInterface {
       if ($channelfilter) {
         $channelid = $channelid ? $channelid : TeamAliasForm::originalChannelId();
         $queryparam = [
-          'filter' => 'channelId=' . $channelid
+          'filter' => 'channelId=' . $channelid,
         ];
       }
     }

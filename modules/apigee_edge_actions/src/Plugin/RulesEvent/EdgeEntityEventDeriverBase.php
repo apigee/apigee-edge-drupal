@@ -20,12 +20,12 @@
 
 namespace Drupal\apigee_edge_actions\Plugin\RulesEvent;
 
+use Drupal\Component\Plugin\Derivative\DeriverBase;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Entity\EdgeEntityTypeInterface;
 use Drupal\apigee_edge_actions\ApigeeActionsEntityTypeHelperInterface;
 use Drupal\apigee_edge_teams\Entity\TeamAppInterface;
-use Drupal\Component\Plugin\Derivative\DeriverBase;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

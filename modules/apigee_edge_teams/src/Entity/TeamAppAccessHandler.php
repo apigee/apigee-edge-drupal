@@ -20,8 +20,6 @@
 
 namespace Drupal\apigee_edge_teams\Entity;
 
-use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
-use Drupal\apigee_edge_teams\TeamPermissionHandlerInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Entity\EntityAccessControlHandler;
@@ -31,6 +29,8 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
+use Drupal\apigee_edge_teams\TeamPermissionHandlerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -198,7 +198,7 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
       'analytics',
       'add_api_key',
       'delete_api_key',
-      'revoke_api_key'
+      'revoke_api_key',
     ];
     if (!in_array($operation, $covered_operations)) {
       return AccessResult::neutral("Team membership based access check does not support {$operation} operation on team apps.");

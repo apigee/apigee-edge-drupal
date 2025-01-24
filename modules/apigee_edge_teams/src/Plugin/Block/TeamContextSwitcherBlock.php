@@ -20,8 +20,6 @@
 
 namespace Drupal\apigee_edge_teams\Plugin\Block;
 
-use Drupal\apigee_edge_teams\TeamContextManagerInterface;
-use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Cache\Cache;
@@ -31,6 +29,8 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
+use Drupal\apigee_edge_teams\TeamContextManagerInterface;
+use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

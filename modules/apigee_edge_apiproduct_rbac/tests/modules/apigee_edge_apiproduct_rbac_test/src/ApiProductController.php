@@ -27,8 +27,8 @@ use Apigee\Edge\Entity\EntityInterface;
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Structure\AttributesProperty;
 use Apigee\Edge\Structure\PagerInterface;
-use Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface;
 use Drupal\Core\State\StateInterface;
+use Drupal\apigee_edge\Entity\Controller\ApiProductControllerInterface;
 
 /**
  * API product controller that reads and writes attributes from/to States API.
@@ -139,7 +139,7 @@ final class ApiProductController implements ApiProductControllerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getEntities(PagerInterface $pager = NULL, string $key_provider = 'id'): array {
+  public function getEntities(?PagerInterface $pager = NULL, string $key_provider = 'id'): array {
     /** @var \Drupal\apigee_edge\Entity\ApiProductInterface $entity */
     $ids = array_map(function ($id) {
       return $this->generateApiProductStateKey($id);
@@ -255,7 +255,7 @@ final class ApiProductController implements ApiProductControllerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getEntityIds(PagerInterface $pager = NULL): array {
+  public function getEntityIds(?PagerInterface $pager = NULL): array {
     return $this->innerService->getEntityIds($pager);
   }
 

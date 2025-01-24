@@ -20,6 +20,8 @@
 
 namespace Drupal\apigee_edge;
 
+use Drupal\Core\Config\ConfigFactory;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\apigee_edge\Entity\DeveloperInterface;
 use Drupal\apigee_edge\Exception\DeveloperToUserConversationInvalidValueException;
 use Drupal\apigee_edge\Exception\DeveloperToUserConversionAttributeDoesNotExistException;
@@ -29,8 +31,6 @@ use Drupal\apigee_edge\Plugin\FieldStorageFormatManagerInterface;
 use Drupal\apigee_edge\Plugin\Validation\Constraint\DeveloperEmailUniqueValidator;
 use Drupal\apigee_edge\Structure\DeveloperToUserConversionResult;
 use Drupal\apigee_edge\Structure\UserToDeveloperConversionResult;
-use Drupal\Core\Config\ConfigFactory;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\user\UserInterface;
 
 /**

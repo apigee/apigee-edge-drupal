@@ -20,12 +20,12 @@
 
 namespace Drupal\apigee_edge_teams\Entity\ListBuilder;
 
-use Drupal\apigee_edge\Element\StatusPropertyElement;
-use Drupal\apigee_edge\Entity\ListBuilder\EdgeEntityListBuilder;
-use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Url;
+use Drupal\apigee_edge\Element\StatusPropertyElement;
+use Drupal\apigee_edge\Entity\ListBuilder\EdgeEntityListBuilder;
+use Drupal\apigee_edge_teams\Entity\TeamInterface;
 
 /**
  * General entity listing builder for teams.

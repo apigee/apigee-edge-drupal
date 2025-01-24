@@ -22,9 +22,9 @@ namespace Drupal\apigee_edge\Entity;
 
 use Apigee\Edge\Entity\EntityInterface;
 use Apigee\Edge\Entity\Property\AttributesPropertyInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\apigee_edge\Exception\InvalidArgumentException;
 use Drupal\apigee_edge\FieldAttributeConverterInterface;
-use Drupal\Core\Field\BaseFieldDefinition;
 
 /**
  * For fieldable Edge entities that can use attributes as field storage.
@@ -73,7 +73,7 @@ abstract class AttributesAwareFieldableEdgeEntityBase extends FieldableEdgeEntit
     $definition = $this->getFieldDefinition($field_name);
     // No field found with this name.
     if ($definition === NULL) {
-      return NULL;
+      throw new InvalidArgumentException(sprintf('"%s" field does not exist on "s" entity.', $field_name, get_class($this)));
     }
     // Ignore base fields, because their value should be stored in entity
     // properties.

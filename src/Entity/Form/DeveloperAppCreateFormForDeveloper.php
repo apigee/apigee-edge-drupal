@@ -38,7 +38,7 @@ class DeveloperAppCreateFormForDeveloper extends DeveloperAppCreateFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, UserInterface $user = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?UserInterface $user = NULL) {
     // This is the only place where we can grab additional route parameters.
     // See implementation in parent.
     $this->user = $user;

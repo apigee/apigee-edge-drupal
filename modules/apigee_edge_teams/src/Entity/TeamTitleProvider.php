@@ -20,9 +20,9 @@
 
 namespace Drupal\apigee_edge_teams\Entity;
 
-use Drupal\apigee_edge\Entity\EdgeEntityTitleProvider;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\apigee_edge\Entity\EdgeEntityTitleProvider;
 
 /**
  * Team specific title additions and overrides.
@@ -40,7 +40,7 @@ class TeamTitleProvider extends EdgeEntityTitleProvider {
    * @return string|null
    *   The title for the team members listing page, null if an entity was found.
    */
-  public function teamMembersList(RouteMatchInterface $route_match, EntityInterface $_entity = NULL) {
+  public function teamMembersList(RouteMatchInterface $route_match, ?EntityInterface $_entity = NULL) {
     if ($entity = $this->doGetEntity($route_match, $_entity)) {
       return $this->t('@entity_type Members', [
         '@entity_type' => ucfirst($this->entityTypeManager->getDefinition($entity->getEntityTypeId())->getSingularLabel()),

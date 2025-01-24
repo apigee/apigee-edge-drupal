@@ -20,8 +20,8 @@
 
 namespace Drupal\apigee_edge_teams;
 
-use Drupal\apigee_edge_teams\Entity\TeamInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\apigee_edge_teams\Entity\TeamInterface;
 
 /**
  * Defines an interface to list available team permissions.

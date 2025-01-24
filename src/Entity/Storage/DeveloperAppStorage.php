@@ -20,18 +20,18 @@
 
 namespace Drupal\apigee_edge\Entity\Storage;
 
-use Drupal\apigee_edge\Entity\AppInterface;
-use Drupal\apigee_edge\Entity\Controller\AppControllerInterface;
-use Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerFactoryInterface;
-use Drupal\apigee_edge\Entity\Controller\DeveloperAppEdgeEntityControllerProxy;
-use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
-use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\apigee_edge\Entity\AppInterface;
+use Drupal\apigee_edge\Entity\Controller\AppControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\DeveloperAppControllerFactoryInterface;
+use Drupal\apigee_edge\Entity\Controller\DeveloperAppEdgeEntityControllerProxy;
+use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

@@ -21,11 +21,6 @@ namespace Drupal\apigee_edge\Entity\Storage;
 
 use Apigee\Edge\Api\Management\Controller\DeveloperControllerInterface;
 use Apigee\Edge\Exception\ApiException;
-use Drupal\apigee_edge\Entity\Controller\CachedManagementApiEdgeEntityControllerProxy;
-use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
-use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
-use Drupal\apigee_edge\Entity\Controller\ManagementApiEdgeEntityControllerProxy;
-use Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
@@ -34,6 +29,11 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\apigee_edge\Entity\Controller\CachedManagementApiEdgeEntityControllerProxy;
+use Drupal\apigee_edge\Entity\Controller\EdgeEntityControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\EntityCacheAwareControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\ManagementApiEdgeEntityControllerProxy;
+use Drupal\apigee_edge\Entity\DeveloperCompaniesCacheInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -116,7 +116,7 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
    *
    * @see \Drupal\Core\Entity\EntityStorageBase::loadMultiple()
    */
-  public function loadMultiple(array $ids = NULL) {
+  public function loadMultiple(?array $ids = NULL) {
     $entities = parent::loadMultiple($ids);
     if ($ids) {
       $entities_by_developer_id = array_reduce($entities, function ($carry, $item) {
@@ -156,7 +156,7 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
       $entity->resetOriginalEmail();
     }
     // Change the status of the developer in Apigee Edge.
-    // TODO Only change it if it has changed.
+    // @todo Only change it if it has changed.
     try {
       $this->developerController->setStatus($entity->id(), $developer_status);
     }
@@ -248,7 +248,7 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
   /**
    * {@inheritdoc}
    */
-  public function resetCache(array $ids = NULL) {
+  public function resetCache(?array $ids = NULL) {
     parent::resetCache($ids);
 
     // Ensure that if ids contains email addresses we also invalidate cache

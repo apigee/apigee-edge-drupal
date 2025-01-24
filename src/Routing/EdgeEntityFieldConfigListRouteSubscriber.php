@@ -20,11 +20,11 @@
 
 namespace Drupal\apigee_edge\Routing;
 
-use Drupal\apigee_edge\Controller\EdgeEntityFieldConfigListController;
-use Drupal\apigee_edge\Entity\EdgeEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\RouteBuildEvent;
 use Drupal\Core\Routing\RoutingEvents;
+use Drupal\apigee_edge\Controller\EdgeEntityFieldConfigListController;
+use Drupal\apigee_edge\Entity\EdgeEntityInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**

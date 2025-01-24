@@ -20,12 +20,11 @@
 
 namespace Drupal\apigee_edge_debug\HttpClientMiddleware;
 
-use Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager;
-use Drupal\apigee_edge_debug\SDKConnector;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager;
 use GuzzleHttp\RequestOptions;
 use GuzzleHttp\TransferStats;
 use Psr\Http\Message\RequestInterface;

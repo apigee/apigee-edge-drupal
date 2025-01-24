@@ -21,11 +21,11 @@
 namespace Drupal\Tests\apigee_edge\FunctionalJavascript;
 
 use Apigee\Edge\Api\Management\Entity\App;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
 use Drupal\apigee_edge\Entity\ApiProduct;
 use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge\Entity\DeveloperApp;
-use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\Url;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 

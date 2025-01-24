@@ -203,7 +203,7 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
    * {@inheritdoc}
    */
   public function getAttribute(string $entity_id, string $name): string {
-    // TODO Get this from cache if available.
+    // @todo Get this from cache if available.
     return $this->decorated()->getAttribute($entity_id, $name);
   }
 
@@ -211,7 +211,7 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
    * {@inheritdoc}
    */
   public function getAttributes(string $entity_id): AttributesProperty {
-    // TODO Get this from cache if available.
+    // @todo Get this from cache if available.
     return $this->decorated()->getAttributes($entity_id);
   }
 
@@ -226,7 +226,7 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
    * {@inheritdoc}
    */
   public function load(string $consumer_key): AppCredentialInterface {
-    // TODO Get this from app cache if available.
+    // @todo Get this from app cache if available.
     return $this->decorated()->load($consumer_key);
   }
 

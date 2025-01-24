@@ -20,7 +20,6 @@
 
 namespace Drupal\apigee_edge\Form;
 
-use Drupal\apigee_edge\Entity\ListBuilder\EdgeEntityListBuilder;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -30,6 +29,7 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
+use Drupal\apigee_edge\Entity\ListBuilder\EdgeEntityListBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -171,7 +171,7 @@ class EdgeEntityDisplaySettingsForm extends ConfigFormBase implements BaseFormId
     ];
 
     $display_modes = [
-      'default' => $this->t('Default')
+      'default' => $this->t('Default'),
     ];
     foreach ($this->entityDisplayRepository->getViewModes($entity_type->id()) as $name => $view_mode) {
       $display_modes[$name] = $view_mode['label'];
@@ -194,13 +194,13 @@ class EdgeEntityDisplaySettingsForm extends ConfigFormBase implements BaseFormId
           [
             '#markup' => $this->t('<a href=":uri">Click here</a> to configure the display.', [
               ':uri' => Url::fromRoute("entity.entity_view_display.{$entity_type->id()}.default")->toString(),
-            ])
+            ]),
           ],
           [
             '#markup' => $this->t('<a href=":uri">Click here</a> to add a new display mode.', [
               ':uri' => Url::fromRoute('entity.entity_view_mode.collection')->toString(),
-            ])
-          ]
+            ]),
+          ],
         ],
       ];
     }

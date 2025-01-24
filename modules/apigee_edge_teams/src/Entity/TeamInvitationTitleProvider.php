@@ -32,7 +32,7 @@ class TeamInvitationTitleProvider extends EntityController implements TeamInvita
   /**
    * {@inheritdoc}
    */
-  public function acceptTitle(RouteMatchInterface $route_match, EntityInterface $_entity = NULL) {
+  public function acceptTitle(RouteMatchInterface $route_match, ?EntityInterface $_entity = NULL) {
     if ($entity = $this->doGetEntity($route_match, $_entity)) {
       return $this->t('Accept %label', ['%label' => $entity->label()]);
     }
@@ -41,7 +41,7 @@ class TeamInvitationTitleProvider extends EntityController implements TeamInvita
   /**
    * {@inheritdoc}
    */
-  public function declineTitle(RouteMatchInterface $route_match, EntityInterface $_entity = NULL) {
+  public function declineTitle(RouteMatchInterface $route_match, ?EntityInterface $_entity = NULL) {
     if ($entity = $this->doGetEntity($route_match, $_entity)) {
       return $this->t('Decline %label', ['%label' => $entity->label()]);
     }
@@ -50,7 +50,7 @@ class TeamInvitationTitleProvider extends EntityController implements TeamInvita
   /**
    * {@inheritdoc}
    */
-  public function resendTitle(RouteMatchInterface $route_match, EntityInterface $_entity = NULL) {
+  public function resendTitle(RouteMatchInterface $route_match, ?EntityInterface $_entity = NULL) {
     if ($entity = $this->doGetEntity($route_match, $_entity)) {
       return $this->t('Resend %label', ['%label' => $entity->label()]);
     }

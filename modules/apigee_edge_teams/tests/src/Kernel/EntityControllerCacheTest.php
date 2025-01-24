@@ -20,7 +20,7 @@
 namespace Drupal\Tests\apigee_edge_teams\Kernel;
 
 use Apigee\Edge\Api\Management\Entity\Company;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\apigee_edge\Kernel\ApigeeEdgeKernelTestBase;
 use Drupal\Tests\apigee_edge\Traits\EntityControllerCacheUtilsTrait;
 
 /**
@@ -31,7 +31,7 @@ use Drupal\Tests\apigee_edge\Traits\EntityControllerCacheUtilsTrait;
  * @group apigee_edge_teams
  * @group apigee_edge_teams_kernel
  */
-class EntityControllerCacheTest extends KernelTestBase {
+class EntityControllerCacheTest extends ApigeeEdgeKernelTestBase {
 
   use EntityControllerCacheUtilsTrait;
 

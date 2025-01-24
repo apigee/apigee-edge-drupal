@@ -19,8 +19,8 @@
 
 namespace Drupal\Tests\apigee_edge_teams\Functional;
 
-use Drupal\apigee_edge\Entity\Developer;
 use Drupal\Core\Url;
+use Drupal\apigee_edge\Entity\Developer;
 use Symfony\Component\HttpFoundation\Response;
 
 /**

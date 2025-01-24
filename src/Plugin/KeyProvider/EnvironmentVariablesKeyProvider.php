@@ -19,9 +19,9 @@
 
 namespace Drupal\apigee_edge\Plugin\KeyProvider;
 
-use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
 use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyPluginFormInterface;
 

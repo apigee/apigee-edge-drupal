@@ -20,9 +20,9 @@
 
 namespace Drupal\apigee_edge\EventSubscriber;
 
+use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\apigee_edge\Event\EdgeEntityFieldConfigListAlterEvent;
 use Drupal\apigee_edge\Form\DeveloperAppBaseFieldConfigForm;
-use Drupal\Core\Form\FormBuilderInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**

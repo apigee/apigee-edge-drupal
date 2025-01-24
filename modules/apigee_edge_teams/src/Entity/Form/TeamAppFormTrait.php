@@ -22,15 +22,15 @@ namespace Drupal\apigee_edge_teams\Entity\Form;
 
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\ClientErrorException;
-use Drupal\apigee_edge\Entity\ApiProductInterface;
-use Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandlerInterface;
-use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Utility\Error;
+use Drupal\apigee_edge\Entity\ApiProductInterface;
+use Drupal\apigee_edge_teams\TeamMemberApiProductAccessHandlerInterface;
+use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 
 /**
  * Helper trait that contains team app (create/edit) form specific tweaks.

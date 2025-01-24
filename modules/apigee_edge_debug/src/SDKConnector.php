@@ -20,13 +20,13 @@
 
 namespace Drupal\apigee_edge_debug;
 
-use Drupal\apigee_edge\SDKConnector as OriginalSDKConnector;
-use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\InfoParserInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Http\ClientFactory;
+use Drupal\apigee_edge\SDKConnector as OriginalSDKConnector;
+use Drupal\apigee_edge\SDKConnectorInterface;
 use Drupal\key\KeyRepositoryInterface;
 
 /**
