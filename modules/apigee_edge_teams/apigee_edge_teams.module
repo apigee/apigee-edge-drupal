@@ -44,11 +44,9 @@ function apigee_edge_teams_module_implements_alter(&$implementations, $hook) {
     // Move apigee_edge_teams_entity_type_alter() to the end of the list if
     // Devel module is enabled.
     // @see devel_entity_type_alter()
-    if (\Drupal::moduleHandler()->moduleExists('devel')) {
-      $group = $implementations['apigee_edge_teams'];
-      unset($implementations['apigee_edge_teams']);
-      $implementations['apigee_edge_teams'] = $group;
-    }
+    $group = $implementations['apigee_edge_teams'];
+    unset($implementations['apigee_edge_teams']);
+    $implementations['apigee_edge_teams'] = $group;
   }
 }
 
