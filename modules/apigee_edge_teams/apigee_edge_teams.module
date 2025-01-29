@@ -40,7 +40,7 @@ use Drupal\Core\Url;
  * Implements hook_module_implements_alter().
  */
 function apigee_edge_teams_module_implements_alter(&$implementations, $hook) {
-  if (\Drupal::moduleHandler()->moduleExists('devel') && $hook === 'entity_type_alter') {
+  if ($hook === 'entity_type_alter') {
     // Move apigee_edge_teams_entity_type_alter() to the end of the list if
     // Devel module is enabled.
     // @see devel_entity_type_alter()
