@@ -21,7 +21,7 @@
 namespace Drupal\apigee_edge\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\Core\Field\Plugin\Field\FieldWidget\UriWidget;
+use Drupal\Core\Field\Plugin\Field\FieldWidget\StringTextfieldWidget;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
@@ -43,7 +43,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   }
  * )
  */
-class AppCallbackUrlWidget extends UriWidget {
+class AppCallbackUrlWidget extends StringTextfieldWidget {
 
   /**
    * {@inheritdoc}

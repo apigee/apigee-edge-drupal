@@ -15,7 +15,7 @@ content:
     region: content
     settings: {  }
     third_party_settings: {  }
-    type: uri_link
+    type: basic_string
   createdAt:
     type: timestamp_ago
     label: inline

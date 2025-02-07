@@ -366,10 +366,7 @@ function apigee_edge_entity_extra_field_info() {
  * Implements hook_field_formatter_info_alter().
  */
 function apigee_edge_field_formatter_info_alter(array &$info) {
-  // Allows using the 'uri_link' formatter for the 'app_callback_url'
-  // field type, which uses it as default formatter.
-  // @see \Drupal\apigee_edge\Plugin\Field\FieldType\AppCallbackUrlItem
-  $info['uri_link']['field_types'][] = 'app_callback_url';
+  $info['basic_string']['field_types'][] = 'app_callback_url';
 }
 
 /**
@@ -447,7 +444,7 @@ function apigee_edge_entity_view(array &$build, EntityInterface $entity, EntityV
           ],
         ],
       ]))->toRenderable();
-     
+
      $build['#attached']['library'][] = 'core/drupal.dialog.ajax';
     }
   }
@@ -1486,27 +1483,7 @@ function apigee_edge_user_cancel_methods_alter(&$methods) {
  * Implements hook_user_delete().
  */
 function apigee_edge_user_delete(UserInterface $account) {
-  // Do not try to delete developer of the anonymous user because it does
-  // not exist.
-  if ($account->isAnonymous()) {
-    return;
-  }
-
-  try {
-    /** @var \Drupal\apigee_edge\Entity\Developer $developer */
-    $developer = Developer::load($account->getEmail());
-    // Sanity check, the developer may not exist in Apigee Edge.
-    if ($developer) {
-      $developer->delete();
-    }
-  }
-  catch (\Exception $exception) {
-    $context = [
-      '@developer' => $account->getEmail(),
-      '@message' => (string) $exception,
-    ];
-    watchdog_exception('apigee_edge', $exception, 'Could not delete @developer developer entity. @message %function (line %line of %file). <pre>@backtrace_string</pre>', $context);
-  }
+  (\Drupal::service('apigee_edge.post_user_delete_action_performer'))($account);
 }
 
 /**

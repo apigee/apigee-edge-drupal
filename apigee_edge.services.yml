@@ -213,3 +213,7 @@ services:
   apigee_edge.authentication.oauth_token_storage:
     class: Drupal\apigee_edge\OauthTokenFileStorage
     arguments: ['@config.factory', '@file_system', '@logger.channel.apigee_edge']
+
+  apigee_edge.post_user_delete_action_performer:
+    class: Drupal\apigee_edge\User\RemoveRelatedDeveloperAccountSynchronousPostUserDeleteActionPerformer
+    arguments: ['@entity_type.manager', '@logger.channel.apigee_edge']

@@ -1,0 +1,19 @@
+{#
+/**
+ * @file
+ *   AppGroups
+ *
+ * Usage:
+ *   @code {% include 'appgroups.json.twig' %} @endcode
+ *
+ * Variables:
+ * - appgroups: an array of appgroup objects.
+ */
+#}
+{
+  "appGroups" : [
+    {% for appgroup in appgroups %}
+    {% include 'appgroup.json.twig' with {'appgroup': appgroup} %}{{ loop.last ? '' : ',' }}
+    {% endfor %}
+  ]
+}

@@ -50,7 +50,7 @@ class TeamMemberSync extends EdgeJob {
   /**
    * Executes the request itself.
    */
-  protected function executeRequest(){}
+  protected function executeRequest() {}
 
   /**
    * {@inheritdoc}

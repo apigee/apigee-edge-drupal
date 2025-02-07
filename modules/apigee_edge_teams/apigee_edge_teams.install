@@ -41,18 +41,21 @@ function apigee_edge_teams_requirements($phase) {
       $org_controller = \Drupal::service('apigee_edge.controller.organization');
       /* @var \Apigee\Edge\Api\Management\Entity\Organization $organization */
       $organization = $org_controller->load($sdk_connector->getOrganization());
-      if ($organization && !OrganizationFeatures::isCompaniesFeatureAvailable($organization) && OrganizationFeatures::isMonetizationEnabled($organization)) {
-        $url = [
-          ':url' => 'https://cloud.google.com/apigee/docs/api-platform/get-started/compare-apigee-products#unsupported-apis',
-        ];
-        $message = ($phase == 'runtime') ?
-          t("The Teams module functionality is not available for monetization enabled org on Apigee X / Hybrid and should be uninstalled, because <a href=':url' target='_blank'>AppGroup APIs are not supported in Apigee X / Hybrid orgs with monetization enabled</a>.", $url) :
-          t("The Teams module functionality is not available for monetization enabled org on Apigee X / Hybrid because <a href=':url' target='_blank'>AppGroup APIs are not supported in Apigee X / Hybrid orgs with monetization enabled</a>.", $url);
-        $requirements['apigee_edge_teams_not_supported'] = [
-          'title' => t('Apigee Edge Teams'),
-          'description' => $message,
-          'severity' => REQUIREMENT_ERROR,
-        ];
+      if ($organization && $org_controller->isOrganizationApigeeX()) {
+        // AppGroup APIs are not supported in Apigee X / Hybrid orgs with monetization enabled.
+        if ($organization->getAddonsConfig() && $organization->getAddonsConfig()->getMonetizationConfig() && TRUE === $organization->getAddonsConfig()->getMonetizationConfig()->getEnabled()) {
+          $url = [
+            ':url' => 'https://cloud.google.com/apigee/docs/api-platform/publish/organizing-client-app-ownership?hl=en#appgroups-limitations-and-known-issues',
+          ];
+          $message = ($phase == 'runtime') ?
+            t("The Teams module functionality is not available for monetization enabled org on Apigee X / Hybrid and should be uninstalled, because <a href=':url' target='_blank'>AppGroup APIs are not supported in Apigee X / Hybrid orgs with monetization enabled</a>.", $url) :
+            t("The Teams module functionality is not available for monetization enabled org on Apigee X / Hybrid because <a href=':url' target='_blank'>AppGroup APIs are not supported in Apigee X / Hybrid orgs with monetization enabled</a>.", $url);
+          $requirements['apigee_edge_teams_not_supported'] = [
+            'title' => t('Apigee Edge Teams'),
+            'description' => $message,
+            'severity' => REQUIREMENT_ERROR,
+          ];
+        }
       }
     }
     catch (\Exception $exception) {
@@ -199,4 +202,34 @@ function apigee_edge_teams_update_9001() {
     ->setRevisionable(FALSE);
 
   $definition_update_manager->updateFieldableEntityType($entity_type, $field_storage_definitions);
+}
+
+/**
+ * Install Configs for Core Entity View Display for Default Team App
+ */
+function apigee_edge_teams_update_9002() {
+  // Update existing config.
+  /** @var \Drupal\Core\Config\StorageInterface $config_storage */
+  $config_storage = \Drupal::service('config.storage');
+  $module_path = \Drupal::service('extension.list.module')->getPath('apigee_edge_teams');
+  $source = new FileStorage("$module_path/config/install");
+  $new_team_settings = $source->read('core.entity_view_display.team_app.team_app.default');
+  $team_settings = $config_storage->read('core.entity_view_display.team_app.team_app.default');
+  $team_settings['content']['callbackUrl'] = $new_team_settings['content']['callbackUrl'];
+  $config_storage->write('core.entity_view_display.team_app.team_app.default', $team_settings);
+}
+
+/**
+ * Install Configs for TeamAlias Form for Teams Setting Page
+ */
+function apigee_edge_teams_update_9003() {
+  // Update existing config.
+  /** @var \Drupal\Core\Config\StorageInterface $config_storage */
+  $config_storage = \Drupal::service('config.storage');
+  $module_path = \Drupal::service('extension.list.module')->getPath('apigee_edge_teams');
+  $source = new FileStorage("$module_path/config/install");
+  $new_team_settings = $source->read('apigee_edge_teams.team_settings');
+  $team_settings = $config_storage->read('apigee_edge_teams.team_settings');
+  $team_settings['enablefilter'] = $new_team_settings['enablefilter'];
+  $config_storage->write('apigee_edge_teams.team_settings', $team_settings);
 }

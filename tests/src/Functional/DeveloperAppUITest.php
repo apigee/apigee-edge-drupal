@@ -529,7 +529,7 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     // Override default configuration.
     $description = 'This is a Callback URL field.';
     $this->config('apigee_edge.common_app_settings')
-      ->set('callback_url_pattern', '^https:\/\/example.com')
+      ->set('callback_url_pattern', '^(https?|sap):\/\/example.com')
       ->set('callback_url_description', $description)
       ->save();
 
@@ -548,15 +548,27 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->assertSession()->pageTextContains($description);
     $this->drupalGet($app_edit_url);
     $this->submitForm([], 'Save');
-    $this->assertSession()->pageTextContains("The URL {$callback_url} is not valid.");
+    $this->assertSession()->pageTextContains("Callback URL field is not in the right format.");
     $this->drupalGet($app_edit_url);
     $this->submitForm([
-      'callbackUrl[0][value]' => 'http://example.com'
+      'callbackUrl[0][value]' => 'map://example.com'
     ], 'Save');
     $this->assertSession()->pageTextContains("Callback URL field is not in the right format.");
     $this->drupalGet($app_edit_url);
     $this->submitForm([
-      'callbackUrl[0][value]' => 'https://example.com'
+      'callbackUrl[0][value]' => 'http://example.com'
+    ], 'Save');
+    $this->assertSession()->pageTextContains('App has been successfully updated.');
+    $this->assertSession()->pageTextContains('http://example.com');
+    $this->drupalGet($app_edit_url);
+    $this->submitForm([
+      'callbackUrl[0][value]' => 'sap://example.com'
+    ], 'Save');
+    $this->assertSession()->pageTextContains('App has been successfully updated.');
+    $this->assertSession()->pageTextContains('sap://example.com');
+    $this->drupalGet($app_edit_url);
+    $this->submitForm([
+      'callbackUrl[0][value]' => 'https://example.com',
     ], 'Save');
     $this->assertSession()->pageTextContains('App has been successfully updated.');
     $this->assertSession()->pageTextContains('https://example.com');
@@ -570,40 +582,36 @@ class DeveloperAppUITest extends ApigeeEdgeFunctionalTestBase {
     $this->products[] = $this->createProduct();
     $callback_url = $this->randomGenerator->word(8);
     $callback_url_warning_msg = "The Callback URL value should be fixed. The URI '{$callback_url}' is invalid. You must use a valid URI scheme.";
-    $app = $this->createDeveloperApp([
-      'name' => $this->randomMachineName(),
-      'displayName' => $this->randomString(),
-      'callbackUrl' => $callback_url,
-    ],
+    $app = $this->createDeveloperApp(
+      [
+        'name' => $this->randomMachineName(),
+        'displayName' => $this->randomString(),
+        'callbackUrl' => $callback_url,
+      ],
       $this->account,
       [
         $this->products[0]->id(),
-      ]);
-
+      ]
+    );
     $app_view_url = $app->toUrl('canonical');
     $app_view_by_developer_url = $app->toUrl('canonical-by-developer');
     $app_edit_form_url = $app->toUrl('edit-form');
     $app_edit_form_for_developer_url = $app->toUrl('edit-form-for-developer');
-
     $this->drupalGet($app_view_url);
-    $this->assertSession()->pageTextContains($callback_url_warning_msg);
     $this->assertSession()->pageTextNotContains('Callback URL:');
     $this->drupalGet($app_view_by_developer_url);
-    $this->assertSession()->pageTextContains($callback_url_warning_msg);
     $this->assertSession()->pageTextNotContains('Callback URL:');
-
     $this->drupalGet($app_edit_form_url);
     $this->assertSession()->fieldValueEquals('callbackUrl[0][value]', $callback_url);
     $this->drupalGet($app_edit_form_for_developer_url);
     $this->assertSession()->fieldValueEquals('callbackUrl[0][value]', $callback_url);
-
     $this->drupalGet(Url::fromRoute('entity.entity_view_display.developer_app.default'));
     $this->submitForm([
-      'fields[callbackUrl][region]' => 'hidden'
+      'fields[callbackUrl][region]' => 'hidden',
     ], 'Save');
     $this->drupalGet(Url::fromRoute('entity.entity_form_display.developer_app.default'));
     $this->submitForm([
-      'fields[callbackUrl][region]' => 'hidden'
+      'fields[callbackUrl][region]' => 'hidden',
     ], 'Save');
 
     $this->drupalGet($app_view_url);

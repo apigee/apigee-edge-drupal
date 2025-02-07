@@ -36,6 +36,9 @@ use Apigee\Edge\Structure\AttributesProperty;
  *     singular = "@count API",
  *     plural = "@count APIs",
  *   ),
+ *   entity_keys = {
+ *    "uuid" = "uuid"
+ *   },
  *   config_with_labels = "apigee_edge.api_product_settings",
  *   handlers = {
  *     "storage" = "\Drupal\apigee_edge\Entity\Storage\ApiProductStorage",

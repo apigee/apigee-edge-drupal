@@ -20,7 +20,7 @@
 
 namespace Drupal\apigee_edge\Plugin\Field\FieldType;
 
-use Drupal\Core\Field\Plugin\Field\FieldType\UriItem;
+use Drupal\Core\Field\Plugin\Field\FieldType\StringItem;
 
 /**
  * App callback url specific plugin implementation of a URI item.
@@ -33,10 +33,10 @@ use Drupal\Core\Field\Plugin\Field\FieldType\UriItem;
  *   label = @Translation("App Callback URL"),
  *   description = @Translation("An entity field containing a callback url for an app."),
  *   no_ui = TRUE,
- *   default_formatter = "uri_link",
+ *   default_formatter = "basic_string",
  *   default_widget = "app_callback_url",
  * )
  */
-class AppCallbackUrlItem extends UriItem {
+class AppCallbackUrlItem extends StringItem {
 
 }

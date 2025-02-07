@@ -20,11 +20,14 @@
 
 namespace Drupal\apigee_edge_teams\Entity;
 
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultAllowed;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\user\UserInterface;
 
 /**
@@ -41,9 +44,11 @@ use Drupal\user\UserInterface;
  *   data_table = "team_member_role_data",
  *   handlers = {
  *     "storage" = "Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorage",
+ *     "storage_schema" = "Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorageSchema",
  *   },
  *   entity_keys = {
  *     "id" = "uuid",
+ *     "uuid" = "uuid",
  *   },
  * )
  *
@@ -55,6 +60,31 @@ use Drupal\user\UserInterface;
 final class TeamMemberRole extends ContentEntityBase implements TeamMemberRoleInterface {
 
   use EntityChangedTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
+    if (!$account) {
+      // If we have hit this without an account return forbidden.
+      return AccessResult::forbidden();
+    }
+
+    $result = AccessResult::allowedIfHasPermissions($account, [
+      'administer team',
+      'manage team members',
+    ], 'OR');
+
+    if ($result->isNeutral()) {
+      $team = $this->getTeam();
+      $team_permission_handler = \Drupal::service('apigee_edge_teams.team_permissions');
+      $result = AccessResultAllowed::allowedIf(in_array('team_manage_members', $team_permission_handler->getDeveloperPermissionsByTeam($team, $account)))
+        ->addCacheableDependency($team)
+        ->cachePerUser();
+    }
+
+    return $result;
+  }
 
   /**
    * {@inheritdoc}

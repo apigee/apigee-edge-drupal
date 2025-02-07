@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge_teams\EventSubscriber;
 
+use Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\entity\QueryAccess\QueryAccessEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -28,6 +29,13 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * Subscribes to query access events for team_invitation.
  */
 class TeamInvitationQueryAccessSubscriber implements EventSubscriberInterface {
+
+  /**
+   * The organization controller service.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface
+   */
+  private $orgController;
 
   /**
    * The entity type manager service.
@@ -39,10 +47,13 @@ class TeamInvitationQueryAccessSubscriber implements EventSubscriberInterface {
   /**
    * TeamInvitationQueryAccessSubscriber constructor.
    *
+   * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
+   *   The organization controller service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(OrganizationControllerInterface $org_controller, EntityTypeManagerInterface $entity_type_manager) {
+    $this->orgController = $org_controller;
     $this->entityTypeManager = $entity_type_manager;
   }
 
@@ -62,6 +73,10 @@ class TeamInvitationQueryAccessSubscriber implements EventSubscriberInterface {
    *   The event.
    */
   public function onQueryAccess(QueryAccessEvent $event) {
+    // AppGroup members information is stored in Database tables.
+    if ($this->orgController->isOrganizationApigeeX()) {
+      return;
+    }
     // Add a condition to check for a valid team.
     // We query team from storage instead of check for a null team field because
     // the team might have been deleted on the remote server.
