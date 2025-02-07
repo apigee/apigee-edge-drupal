@@ -25,6 +25,10 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryBase;
 use Drupal\Core\Entity\Query\QueryInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Render\RendererInterface;
+use Drupal\Core\Session\AccountInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Defines the entity query for Apigee Edge entities.
@@ -53,7 +57,35 @@ class Query extends QueryBase implements QueryInterface {
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityTypeManager;
+  protected EntityTypeManagerInterface $entityTypeManager;
+
+  /**
+   * The current user.
+   *
+   * @var \Drupal\Core\Session\AccountInterface
+   */
+  protected AccountInterface $currentUser;
+
+  /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected RequestStack $requestStack;
+
+  /**
+   * The renderer.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
+   */
+  protected RendererInterface $renderer;
+
+  /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected ModuleHandlerInterface $moduleHandler;
 
   /**
    * Constructs a Query object.
@@ -61,16 +93,49 @@ class Query extends QueryBase implements QueryInterface {
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
    * @param string $conjunction
-   *   - AND: all of the conditions on the query need to match.
+   *   - AND: all the conditions on the query need to match.
    *   - OR: at least one of the conditions on the query need to match.
    * @param array $namespaces
    *   List of potential namespaces of the classes belonging to this query.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\Session\AccountInterface|null $current_user
+   *   The current user.
+   * @param \Symfony\Component\HttpFoundation\RequestStack|null $request_stack
+   *   The request stack.
+   * @param \Drupal\Core\Render\RendererInterface|null $renderer
+   *   The renderer.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface|null $module_handler
+   *   The module handler.
    */
-  public function __construct(EntityTypeInterface $entity_type, string $conjunction, array $namespaces, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(EntityTypeInterface $entity_type, string $conjunction, array $namespaces, EntityTypeManagerInterface $entity_type_manager, AccountInterface $current_user = NULL, RequestStack $request_stack = NULL, RendererInterface $renderer = NULL, ModuleHandlerInterface $module_handler = NULL) {
     parent::__construct($entity_type, $conjunction, $namespaces);
+
+    if ($current_user === NULL) {
+      $current_user = \Drupal::currentUser();
+      @trigger_error('Calling ' . __METHOD__ . ' without the $current_user is deprecated in apigee_edge:2.0.9 and is required before apigee_edge:3.0.0. See https://www.drupal.org/node/3338498', E_USER_DEPRECATED);
+    }
+
+    if ($request_stack === NULL) {
+      $request_stack = \Drupal::requestStack();
+      @trigger_error('Calling ' . __METHOD__ . ' without the $request_stack is deprecated in apigee_edge:2.0.9 and is required before apigee_edge:3.0.0. See https://www.drupal.org/node/3338498', E_USER_DEPRECATED);
+    }
+
+    if ($renderer === NULL) {
+      $renderer = \Drupal::service('renderer');
+      @trigger_error('Calling ' . __METHOD__ . ' without the $renderer is deprecated in apigee_edge:2.0.9 and is required before apigee_edge:3.0.0. See https://www.drupal.org/node/3338498', E_USER_DEPRECATED);
+    }
+
+    if ($module_handler === NULL) {
+      $module_handler = \Drupal::moduleHandler();
+      @trigger_error('Calling ' . __METHOD__ . ' without the $module_handler is deprecated in apigee_edge:2.0.9 and is required before apigee_edge:3.0.0. See https://www.drupal.org/node/3338498', E_USER_DEPRECATED);
+    }
+
     $this->entityTypeManager = $entity_type_manager;
+    $this->currentUser = $current_user;
+    $this->requestStack = $request_stack;
+    $this->renderer = $renderer;
+    $this->moduleHandler = $module_handler;
   }
 
   /**
@@ -86,35 +151,59 @@ class Query extends QueryBase implements QueryInterface {
     // result because this function gets called.
     $all_records = $this->getFromStorage();
 
-    // @todo Proper entity query support that is aligned with the implementation
-    //   in \Drupal\Core\Entity\Query\Sql\Query::prepare() can be only added
-    //   if the following Entity API module issue is solved.
-    //   https://www.drupal.org/project/entity/issues/3332956
-    //   (Having a fix for a similar Group module issue is a nice to have,
-    //   https://www.drupal.org/project/group/issues/3332963.)
+    // Be consistent with \Drupal\Core\Entity\Query\Sql\Query::prepare().
+    // Add and fire special entity query tags.
+    $this->addTag('entity_query');
+    $this->addTag('entity_query_' . $this->entityTypeId);
+
     if ($this->accessCheck) {
+      // We do not just add a tag but ensure that only those Apigee entities
+      // are returned that the entity access API grants view access.
+      // (Storage level filtering is not available or way too limited.)
+      $this->addTag($this->entityTypeId . '_access');
+
       // Read meta-data from query, if provided.
-      if (!$account = $this->getMetaData('account')) {
-        // @todo DI dependency.
-        $account = \Drupal::currentUser();
+      $account = $this->getMetaData('account');
+      if ($account === NULL) {
+        $account = $this->currentUser;
       }
+
       $cacheability = CacheableMetadata::createFromRenderArray([]);
-      $all_records = array_filter($all_records, static function (EntityInterface $entity) use ($cacheability, $account) {
+      $viewable_entity_ids = array_reduce($all_records, static function (array $carry, EntityInterface $entity) use ($cacheability, $account) {
         // Bubble up cacheability information even from a revoked access result.
         $result = $entity->access('view', $account, TRUE);
         $cacheability->addCacheableDependency($result);
-        return $result->isAllowed();
-      });
-      // @todo DI dependencies.
+        if ($result->isAllowed()) {
+          $carry[] = $entity->id();
+        }
+        return $carry;
+      }, []);
+
+      // We deliberately add conditions to the original entity query instead
+      // of pre-filtering all records because query conditions are visible
+      // in hook_query_TAG_alter() implementations for downstream developers.
+      if (empty($viewable_entity_ids)) {
+        // Add an always false condition. A persisted entity's primary id
+        // cannot be null.
+        $this->condition->notExists($this->entityType->getKey('id'));
+      }
+      else {
+        $this->condition->condition($this->entityType->getKey('id'), $viewable_entity_ids, 'IN');
+      }
       /** @var \Symfony\Component\HttpFoundation\Request $request */
-      $request = \Drupal::requestStack()->getCurrentRequest();
-      $renderer = \Drupal::service('renderer');
-      if ($request->isMethodCacheable() && $renderer->hasRenderContext()) {
+      $request = $this->requestStack->getCurrentRequest();
+      if ($request->isMethodCacheable() && $this->renderer->hasRenderContext()) {
         $build = [];
         $cacheability->applyTo($build);
-        $renderer->render($build);
+        $this->renderer->render($build);
       }
     }
+
+    $hooks = ['query'];
+    foreach ($this->alterTags as $tag => $value) {
+      $hooks[] = 'query_' . $tag;
+    }
+    $this->moduleHandler->alter($hooks, $this);
 
     $filter = $this->condition->compile($this);
     $result = array_filter($all_records, $filter);
@@ -124,7 +213,7 @@ class Query extends QueryBase implements QueryInterface {
     }
 
     if ($this->sort) {
-      uasort($result, function (EntityInterface $entity0, EntityInterface $entity1) : int {
+      uasort($result, function (EntityInterface $entity0, EntityInterface $entity1): int {
         foreach ($this->sort as $sort) {
           $value0 = Condition::getProperty($entity0, $sort['field']);
           $value1 = Condition::getProperty($entity1, $sort['field']);
@@ -150,7 +239,7 @@ class Query extends QueryBase implements QueryInterface {
       $result = array_slice($result, $this->range['start'], $this->range['length']);
     }
 
-    return array_map(function (EntityInterface $entity) : string {
+    return array_map(static function (EntityInterface $entity): string {
       return (string) $entity->id();
     }, $result);
   }
@@ -219,7 +308,7 @@ class Query extends QueryBase implements QueryInterface {
         else {
           $ids = [$id];
           unset($filtered_conditions[$key]);
-          // If we found an id field in the query do not look for an another
+          // If we found an id field in the query do not look for another
           // because that would not make any sense to query one entity by
           // both id fields. (Where in theory both id field could refer to a
           // different entity.)
