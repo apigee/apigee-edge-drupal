@@ -6,7 +6,7 @@
     "require": {
         "php": "~8.3.0",
         "ext-json": "*",
-        "apigee/apigee-client-php": "^4.0",
+        "apigee/apigee-client-php": "~4.0.0",
         "drupal/core": "^11.1",
         "drupal/entity": "^1.0",
         "drupal/key": "^1.8",
