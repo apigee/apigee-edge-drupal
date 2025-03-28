@@ -23,7 +23,7 @@ namespace Drupal\apigee_edge_teams;
 use Drupal\Core\DependencyInjection\ClassResolverInterface;
 use Drupal\Core\Discovery\YamlDiscovery;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Extension\ModuleExtensionList;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
@@ -76,7 +76,7 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
   /**
    * The module handler.
    *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   * @var \Drupal\Core\Extension\ModuleExtensionList
    */
   private $moduleHandler;
 
@@ -115,7 +115,7 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
   /**
    * TeamPermissionHandler constructor.
    *
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleExtensionList $module_handler
    *   The module handler.
    * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $class_resolver
    *   The class resolver.
@@ -124,7 +124,7 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    */
-  public function __construct(ModuleHandlerInterface $module_handler, ClassResolverInterface $class_resolver, TeamMembershipManagerInterface $team_membership_manager, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(ModuleExtensionList $module_handler, ClassResolverInterface $class_resolver, TeamMembershipManagerInterface $team_membership_manager, EntityTypeManagerInterface $entity_type_manager) {
     $this->moduleHandler = $module_handler;
     $this->classResolver = $class_resolver;
     $this->teamMembershipManager = $team_membership_manager;
