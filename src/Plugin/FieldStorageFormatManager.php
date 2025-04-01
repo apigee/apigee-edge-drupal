@@ -20,7 +20,7 @@
 namespace Drupal\apigee_edge\Plugin;
 
 use Drupal\Core\Cache\CacheBackendInterface;
-use Drupal\Core\Extension\ModuleExtensionList;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\apigee_edge\Annotation\ApigeeFieldStorageFormat;
 
@@ -32,7 +32,7 @@ class FieldStorageFormatManager extends DefaultPluginManager implements FieldSto
   /**
    * {@inheritdoc}
    */
-  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache, ModuleExtensionList $module_handler) {
+  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache, ModuleHandlerInterface $module_handler) {
     parent::__construct(
       'Plugin/ApigeeFieldStorageFormat',
       $namespaces,
