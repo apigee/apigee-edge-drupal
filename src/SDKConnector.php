@@ -26,7 +26,7 @@ use Apigee\Edge\HttpClient\Utility\Builder;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\InfoParserInterface;
-use Drupal\Core\Extension\ModuleExtensionList;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Http\ClientFactory;
 use Drupal\apigee_edge\Connector\HybridCredentials;
 use Drupal\apigee_edge\Exception\AuthenticationKeyException;
@@ -88,7 +88,7 @@ class SDKConnector implements SDKConnectorInterface {
   /**
    * The module handler service.
    *
-   * @var \Drupal\Core\Extension\ModuleExtensionList
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
    */
   protected $moduleHandler;
 
@@ -117,12 +117,12 @@ class SDKConnector implements SDKConnectorInterface {
    *   Entity type manager service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
-   * @param \Drupal\Core\Extension\ModuleExtensionList $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   Module handler service.
    * @param \Drupal\Core\Extension\InfoParserInterface $info_parser
    *   Info file parser service.
    */
-  public function __construct(ClientFactory $client_factory, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, ModuleExtensionList $module_handler, InfoParserInterface $info_parser) {
+  public function __construct(ClientFactory $client_factory, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $module_handler, InfoParserInterface $info_parser) {
     $this->clientFactory = $client_factory;
     $this->entityTypeManager = $entity_type_manager;
     $this->keyRepository = $key_repository;
