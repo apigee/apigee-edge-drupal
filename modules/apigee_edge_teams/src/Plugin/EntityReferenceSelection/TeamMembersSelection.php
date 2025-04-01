@@ -22,7 +22,7 @@ namespace Drupal\apigee_edge_teams\Plugin\EntityReferenceSelection;
 
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Extension\ModuleExtensionList;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Error;
@@ -81,7 +81,7 @@ class TeamMembersSelection extends UserSelection {
    *   The plugin implementation definition.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity manager service.
-   * @param \Drupal\Core\Extension\ModuleExtensionList $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler service.
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
@@ -94,7 +94,7 @@ class TeamMembersSelection extends UserSelection {
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, ModuleExtensionList $module_handler, AccountInterface $current_user, Connection $connection, TeamMembershipManagerInterface $team_membership_manager, DeveloperControllerInterface $developer_controller, LoggerInterface $logger) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, AccountInterface $current_user, Connection $connection, TeamMembershipManagerInterface $team_membership_manager, DeveloperControllerInterface $developer_controller, LoggerInterface $logger) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager, $module_handler, $current_user, $connection);
     $this->teamMembershipManager = $team_membership_manager;
     $this->developerController = $developer_controller;
