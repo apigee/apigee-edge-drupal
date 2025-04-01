@@ -23,6 +23,7 @@ namespace Drupal\apigee_edge\Element;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Render\Element\RenderElement;
+use Drupal\Core\Render\Element\RenderElementBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -30,7 +31,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @RenderElement("apigee_entity_list")
  */
-class ApigeeEntityListElement extends RenderElement implements ContainerFactoryPluginInterface {
+class ApigeeEntityListElement extends RenderElementBase implements ContainerFactoryPluginInterface {
 
   /**
    * The entity type manager.
