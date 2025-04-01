@@ -21,7 +21,7 @@
 namespace Drupal\apigee_edge_debug;
 
 use Drupal\Core\Cache\CacheBackendInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Extension\ModuleExtensionList;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\apigee_edge_debug\Annotation\DebugMessageFormatter;
 use Drupal\apigee_edge_debug\Plugin\DebugMessageFormatter\DebugMessageFormatterPluginInterface;
@@ -39,10 +39,10 @@ class DebugMessageFormatterPluginManager extends DefaultPluginManager {
    *   keyed by the corresponding namespace to look for plugin implementations.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
    *   The cache backend.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleExtensionList $module_handler
    *   The module handler.
    */
-  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
+  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleExtensionList $module_handler) {
     parent::__construct('Plugin/DebugMessageFormatter', $namespaces, $module_handler, DebugMessageFormatterPluginInterface::class, DebugMessageFormatter::class);
 
     $this->alterInfo('apigee_edge_debug_message_formatter_info');

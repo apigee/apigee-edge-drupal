@@ -20,7 +20,7 @@
 
 namespace Drupal\apigee_edge_teams\Routing;
 
-use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Extension\ModuleExtensionList;
 use Drupal\Core\Routing\RouteSubscriberBase;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -37,17 +37,17 @@ final class TeamAppDevelRouteFixerSubscriber extends RouteSubscriberBase {
   /**
    * The module handler service.
    *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   * @var \Drupal\Core\Extension\ModuleExtensionList
    */
   private $moduleHandler;
 
   /**
    * TeamAppDevelRouteFixerSubscriber constructor.
    *
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleExtensionList $module_handler
    *   The module handler service.
    */
-  public function __construct(ModuleHandlerInterface $module_handler) {
+  public function __construct(ModuleExtensionList $module_handler) {
     $this->moduleHandler = $module_handler;
   }
 

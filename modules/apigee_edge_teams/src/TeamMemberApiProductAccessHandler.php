@@ -23,7 +23,7 @@ namespace Drupal\apigee_edge_teams;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultForbidden;
 use Drupal\Core\Access\AccessResultInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Extension\ModuleExtensionList;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\apigee_edge\Entity\ApiProductInterface;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
@@ -38,7 +38,7 @@ final class TeamMemberApiProductAccessHandler implements TeamMemberApiProductAcc
   /**
    * The module handler service.
    *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   * @var \Drupal\Core\Extension\ModuleExtensionList
    */
   private $moduleHandler;
 
@@ -77,12 +77,12 @@ final class TeamMemberApiProductAccessHandler implements TeamMemberApiProductAcc
    *   The team membership manager service.
    * @param \Drupal\apigee_edge_teams\TeamPermissionHandlerInterface $team_permission_handler
    *   The team permission handler.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleExtensionList $module_handler
    *   The module handler service.
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The currently logged-in user.
    */
-  public function __construct(TeamMembershipManagerInterface $team_membership_manager, TeamPermissionHandlerInterface $team_permission_handler, ModuleHandlerInterface $module_handler, AccountInterface $current_user) {
+  public function __construct(TeamMembershipManagerInterface $team_membership_manager, TeamPermissionHandlerInterface $team_permission_handler, ModuleExtensionList $module_handler, AccountInterface $current_user) {
     $this->teamMembershipManager = $team_membership_manager;
     $this->teamPermissionHandler = $team_permission_handler;
     $this->moduleHandler = $module_handler;
