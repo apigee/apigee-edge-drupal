@@ -26,7 +26,7 @@ use Apigee\Edge\Exception\ApiResponseException;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\InfoParserInterface;
-use Drupal\Core\Extension\ModuleExtensionList;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Http\ClientFactory;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\apigee_edge\SDKConnector as DecoratedSDKConnector;
@@ -77,12 +77,12 @@ final class SDKConnector extends DecoratedSDKConnector implements SDKConnectorIn
    *   Entity type manager service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
-   * @param \Drupal\Core\Extension\ModuleExtensionList $moduleHandler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   Module handler service.
    * @param \Drupal\Core\Extension\InfoParserInterface $infoParser
    *   Info file parser service.
    */
-  public function __construct(SDKConnectorInterface $inner_service, LoggerChannelInterface $logger, ClientFactory $clientFactory, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, ModuleExtensionList $moduleHandler, InfoParserInterface $infoParser) {
+  public function __construct(SDKConnectorInterface $inner_service, LoggerChannelInterface $logger, ClientFactory $clientFactory, KeyRepositoryInterface $key_repository, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $moduleHandler, InfoParserInterface $infoParser) {
     $this->innerService = $inner_service;
     $this->logger = $logger;
     parent::__construct($clientFactory, $key_repository, $entity_type_manager, $config_factory, $moduleHandler, $infoParser);
