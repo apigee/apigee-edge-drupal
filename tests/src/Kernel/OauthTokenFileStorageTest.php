@@ -21,6 +21,7 @@ namespace Drupal\Tests\apigee_edge\Kernel;
 
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
+use Drupal\Core\File\FileExists;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\apigee_edge\Exception\OauthTokenStorageException;
@@ -183,7 +184,7 @@ class OauthTokenFileStorageTest extends KernelTestBase {
     $stored_token['access_token'] = mb_strtolower($this->randomMachineName(32));
     \Drupal::service('file_system')->saveData(
       base64_encode(Json::encode($stored_token)),
-      $this->tokenFileUri(), FileSystemInterface::EXISTS_REPLACE);
+      $this->tokenFileUri(), FileExists::Replace);
 
     // Make sure the cached version is still returned.
     $this->assertSame($access_token, $storage->getAccessToken());
