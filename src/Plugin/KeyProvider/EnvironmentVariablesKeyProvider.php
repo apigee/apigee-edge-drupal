@@ -32,7 +32,9 @@ use Drupal\key\Plugin\KeyPluginFormInterface;
  *   id = "apigee_edge_environment_variables",
  *   label = @Translation("Apigee Edge: Environment Variables"),
  *   description = @Translation("Stores Apigee Edge authentication credentials in the following environment variables:"),
- *   storage_method = "apigee_edge",
+ *   tags = {
+ *     "apigee_edge",
+ *   },
  *   key_value = {
  *     "accepted" = FALSE,
  *     "required" = FALSE
