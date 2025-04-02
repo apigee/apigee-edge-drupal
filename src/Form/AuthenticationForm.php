@@ -22,7 +22,7 @@ namespace Drupal\apigee_edge\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\Entity\ConfigEntityStorageInterface;
-use Drupal\Core\Extension\ModuleExtensionList;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
 use Drupal\apigee_edge\Plugin\KeyProviderRequirementsInterface;
@@ -55,10 +55,10 @@ class AuthenticationForm extends KeyEditForm {
    *   The key storage.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
-   * @param \Drupal\Core\Extension\ModuleExtensionList $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler.
    */
-  public function __construct(ConfigEntityStorageInterface $key_storage, ConfigFactoryInterface $config_factory, ModuleExtensionList $module_handler) {
+  public function __construct(ConfigEntityStorageInterface $key_storage, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $module_handler) {
     parent::__construct($key_storage);
     $this->configFactory = $config_factory;
     // Module handler must be set but Key does not set it.

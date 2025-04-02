@@ -21,7 +21,7 @@
 namespace Drupal\apigee_edge_debug\HttpClientMiddleware;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Extension\ModuleExtensionList;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\apigee_edge_debug\DebugMessageFormatterPluginManager;
@@ -59,7 +59,7 @@ final class DevelKintApiClientProfiler {
   /**
    * The module handler.
    *
-   * @var \Drupal\Core\Extension\ModuleExtensionList|null
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface|null
    */
   private $moduleHandler;
 
@@ -72,12 +72,12 @@ final class DevelKintApiClientProfiler {
    *   Debug message formatter plugin manager.
    * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The currently logged-in user.
-   * @param \Drupal\Core\Extension\ModuleExtensionList $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler service.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, DebugMessageFormatterPluginManager $debug_message_formatter_plugin, AccountInterface $currentUser, ModuleExtensionList $module_handler, MessengerInterface $messenger) {
+  public function __construct(ConfigFactoryInterface $config_factory, DebugMessageFormatterPluginManager $debug_message_formatter_plugin, AccountInterface $currentUser, ModuleHandlerInterface $module_handler, MessengerInterface $messenger) {
     // On module install, this constructor is called earlier than
     // the module's configuration would have been imported to the database.
     // In that case the $formatterPluginId is missing and it causes fatal

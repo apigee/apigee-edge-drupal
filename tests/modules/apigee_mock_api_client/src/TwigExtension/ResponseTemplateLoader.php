@@ -20,7 +20,7 @@
 
 namespace Drupal\apigee_mock_api_client\TwigExtension;
 
-use Drupal\Core\Extension\ModuleExtensionList;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Twig\Loader\FilesystemLoader;
 
 /**
@@ -31,10 +31,10 @@ class ResponseTemplateLoader extends FilesystemLoader {
   /**
    * Constructs a new FilesystemLoader object.
    *
-   * @param \Drupal\Core\Extension\ModuleExtensionList $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler service.
    */
-  public function __construct(ModuleExtensionList $module_handler) {
+  public function __construct(ModuleHandlerInterface $module_handler) {
     $modules = $module_handler->getModuleList();
 
     $paths = array_map(function ($module) {
