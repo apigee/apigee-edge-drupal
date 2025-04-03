@@ -91,6 +91,7 @@ use Drupal\user\UserInterface;
  *   field_ui_base_route = "apigee_edge.settings.developer_app",
  * )
  */
+#[\AllowDynamicProperties]
 class DeveloperApp extends App implements DeveloperAppInterface {
 
   /**
