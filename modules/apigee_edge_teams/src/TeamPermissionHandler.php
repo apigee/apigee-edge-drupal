@@ -24,7 +24,6 @@ use Drupal\Core\DependencyInjection\ClassResolverInterface;
 use Drupal\Core\Discovery\YamlDiscovery;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Extension\ModuleExtensionList;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
@@ -300,25 +299,10 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
   protected function getModuleNames(): array {
     $modules = [];
     foreach (array_keys($this->moduleHandler->getModuleList()) as $module) {
-      $modules[$module] = $this->getModuleList()->getName($module);
+      $modules[$module] = \Drupal::service('extension.list.module')->getName($module);
     }
     asort($modules);
     return $modules;
-  }
-
-  /**
-   * Returns the module extension list used.
-   *
-   * @return \Drupal\Core\Extension\ModuleExtensionList
-   *   The module extension list.
-   */
-  protected function getModuleList(): ModuleExtensionList {
-    // If the class has an injected module extension list, use it. Otherwise
-    // fall back to fetch it from the service container.
-    if (isset($this->moduleExtensionList)) {
-      return $this->moduleExtensionList;
-    }
-    return \Drupal::service('extension.list.module');
   }
 
 }
