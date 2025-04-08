@@ -24,6 +24,7 @@ use Drupal\Core\DependencyInjection\ClassResolverInterface;
 use Drupal\Core\Discovery\YamlDiscovery;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Extension\ModuleExtensionList;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
@@ -123,12 +124,17 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
    *   The team membership manager service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\Extension\ModuleExtensionList|null $moduleExtensionList
+   *   The module extension list.
    */
-  public function __construct(ModuleHandlerInterface $module_handler, ClassResolverInterface $class_resolver, TeamMembershipManagerInterface $team_membership_manager, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(ModuleHandlerInterface $module_handler, ClassResolverInterface $class_resolver, TeamMembershipManagerInterface $team_membership_manager, EntityTypeManagerInterface $entity_type_manager, protected ?ModuleExtensionList $moduleExtensionList = NULL) {
     $this->moduleHandler = $module_handler;
     $this->classResolver = $class_resolver;
     $this->teamMembershipManager = $team_membership_manager;
     $this->entityTypeManager = $entity_type_manager;
+    if ($this->moduleExtensionList === NULL) {
+      $this->moduleExtensionList = \Drupal::service('extension.list.module');
+    }
   }
 
   /**
@@ -299,7 +305,7 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
   protected function getModuleNames(): array {
     $modules = [];
     foreach (array_keys($this->moduleHandler->getModuleList()) as $module) {
-      $modules[$module] = \Drupal::service('extension.list.module')->getName($module);
+      $modules[$module] = $this->moduleExtensionList->getName($module);
     }
     asort($modules);
     return $modules;
