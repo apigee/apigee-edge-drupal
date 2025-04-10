@@ -132,9 +132,7 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
     $this->classResolver = $class_resolver;
     $this->teamMembershipManager = $team_membership_manager;
     $this->entityTypeManager = $entity_type_manager;
-    if ($this->moduleExtensionList === NULL) {
-      $this->moduleExtensionList = \Drupal::service('extension.list.module');
-    }
+    $this->moduleExtensionList = $moduleExtensionList;
   }
 
   /**
