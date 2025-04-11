@@ -127,7 +127,7 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
    * @param \Drupal\Core\Extension\ModuleExtensionList|null $moduleExtensionList
    *   The module extension list.
    */
-  public function __construct(ModuleHandlerInterface $module_handler, ClassResolverInterface $class_resolver, TeamMembershipManagerInterface $team_membership_manager, EntityTypeManagerInterface $entity_type_manager, protected ?ModuleExtensionList $moduleExtensionList = NULL) {
+  public function __construct(ModuleHandlerInterface $module_handler, ClassResolverInterface $class_resolver, TeamMembershipManagerInterface $team_membership_manager, EntityTypeManagerInterface $entity_type_manager, protected ModuleExtensionList $moduleExtensionList) {
     $this->moduleHandler = $module_handler;
     $this->classResolver = $class_resolver;
     $this->teamMembershipManager = $team_membership_manager;
