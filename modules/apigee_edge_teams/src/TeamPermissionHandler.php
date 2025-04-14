@@ -114,6 +114,13 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
   private $entityTypeManager;
 
   /**
+   * The module extension list.
+   *
+   * @var \Drupal\Core\Extension\ModuleExtensionList
+   */
+  private $moduleExtensionList;
+
+  /**
    * TeamPermissionHandler constructor.
    *
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
@@ -124,15 +131,15 @@ final class TeamPermissionHandler implements TeamPermissionHandlerInterface {
    *   The team membership manager service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Drupal\Core\Extension\ModuleExtensionList|null $moduleExtensionList
+   * @param \Drupal\Core\Extension\ModuleExtensionList $module_extension_list
    *   The module extension list.
    */
-  public function __construct(ModuleHandlerInterface $module_handler, ClassResolverInterface $class_resolver, TeamMembershipManagerInterface $team_membership_manager, EntityTypeManagerInterface $entity_type_manager, protected ModuleExtensionList $moduleExtensionList) {
+  public function __construct(ModuleHandlerInterface $module_handler, ClassResolverInterface $class_resolver, TeamMembershipManagerInterface $team_membership_manager, EntityTypeManagerInterface $entity_type_manager, ModuleExtensionList $module_extension_list) {
     $this->moduleHandler = $module_handler;
     $this->classResolver = $class_resolver;
     $this->teamMembershipManager = $team_membership_manager;
     $this->entityTypeManager = $entity_type_manager;
-    $this->moduleExtensionList = $moduleExtensionList;
+    $this->moduleExtensionList = $module_extension_list;
   }
 
   /**
