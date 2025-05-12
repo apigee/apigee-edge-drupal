@@ -99,4 +99,12 @@ interface JobExecutorInterface {
    */
   public function countJobs(?string $tag = NULL, ?array $statuses = NULL): int;
 
+  /**
+   * Cleans up finished jobs in the queue.
+   *
+   * @param string $tag
+   *   Tag to filter with.
+   */
+  public function cleanup(string $tag): void;
+
 }
