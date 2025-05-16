@@ -75,6 +75,11 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
   protected $systemTime;
 
   /**
+   * Indicates that all entities should be/have been loaded in this request.
+   */
+  private bool $allEntitiesHaveBeenLoaded = FALSE;
+
+  /**
    * Constructs an EdgeEntityStorageBase instance.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -468,10 +473,48 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
         Cache::invalidateTags([$this->entityTypeId . ':values']);
       }
     }
+    // When resetting cache for ANY of the entities, cache entry for ALL
+    // entities MUST also be cleared to prevent cache poisoning eg. after a
+    // loadMultiple(); save(); loadMultiple(); cycle.
+    $this->memoryCache->delete($this->entityTypeId . '-all-entity-ids');
     // We do not clear the entity controller's cache here because our main goal
     // with the entity controller cache to reduce the API calls that we
     // send to Apigee Edge. Although we do delete the entity controller's cache
     // when it is necessary, like in loadUnchanged().
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function loadMultiple(?array $ids = NULL) {
+    // Without $ids the caller wants to load ALL entities. To speed things up,
+    // let's assume the storage does not change during a page load; IOW, load
+    // all the entities for the first time and store them in a memory cache.
+    // For all subsequent calls for the same page load, return entities from
+    // that memory cache instead (without making API calls to Apigee).
+    if ($ids === NULL) {
+      $all_known_entity_ids = $this->memoryCache->get($this->entityTypeId . '-all-entity-ids');
+      if ($all_known_entity_ids !== FALSE) {
+        return parent::loadMultiple($all_known_entity_ids->data);
+      }
+      $this->allEntitiesHaveBeenLoaded = TRUE;
+      $return = parent::loadMultiple($ids);
+      $this->allEntitiesHaveBeenLoaded = FALSE;
+      return $return;
+    }
+
+    return parent::loadMultiple($ids);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setStaticCache(array $entities) {
+    if ($this->allEntitiesHaveBeenLoaded) {
+      $ids = array_map(static fn(DrupalEdgeEntityInterface $entity) => $entity->id(), $entities);
+      $this->memoryCache->set($this->entityTypeId . '-all-entity-ids', $ids);
+    }
+    parent::setStaticCache($entities);
   }
 
 }
