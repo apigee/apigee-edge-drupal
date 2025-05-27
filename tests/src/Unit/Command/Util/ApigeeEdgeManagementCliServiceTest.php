@@ -472,7 +472,7 @@ class ApigeeEdgeManagementCliServiceTest extends UnitTestCase {
     // User should see error message.
     $io = $this->prophet->prophesize(StyleInterface::class);
     $io->error(Argument::containingString('Error connecting to Apigee Edge'))->shouldBeCalledTimes(1);
-    $io->note(Argument::containingString('the url ' . $this->baseUrl . '/test' . ' does not seem to be a valid Apigee Edge endpoint.'))->shouldBeCalledTimes(1);
+    $io->note(Argument::containingString('the url ' . $this->baseUrl . '/test does not seem to be a valid Apigee Edge endpoint.'))->shouldBeCalledTimes(1);
 
     $apigee_edge_management_cli_service = new ApigeeEdgeManagementCliService($this->httpClient->reveal());
     $apigee_edge_management_cli_service->handleHttpClientExceptions($exception, $io->reveal(), [$this, 'mockDt'], $this->baseUrl . '/test', $this->org, $this->email);
