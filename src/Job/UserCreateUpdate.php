@@ -75,6 +75,12 @@ abstract class UserCreateUpdate extends EdgeJob {
         // the same developer in apigee_edge_user_presave() while creating
         // Drupal user based on a developer should be avoided.
         _apigee_edge_set_sync_in_progress(TRUE);
+
+        // Synchronize user's last modified timestamp with developer's timestamp
+        // to maintain data consistency and prevent infinite sync loops where
+        // outdated timestamps cause repeated scheduling of sync operations.
+        // @see \Drupal\apigee_edge\Job\DeveloperSync::execute()
+        $result->getUser()->setChangedTime($developer->getLastModifiedAt()->getTimestamp());
         $result->getUser()->save();
       }
     }
@@ -121,9 +127,6 @@ abstract class UserCreateUpdate extends EdgeJob {
         throw $problem;
       }
     }
-    // It's necessary because changed time is automatically updated on the
-    // UI only.
-    $result->getUser()->setChangedTime(\Drupal::time()->getCurrentTime());
   }
 
   /**

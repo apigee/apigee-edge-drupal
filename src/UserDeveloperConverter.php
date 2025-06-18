@@ -182,6 +182,11 @@ class UserDeveloperConverter implements UserDeveloperConverterInterface {
       $user = $user_storage->create([
         'pass' => \Drupal::service('password_generator')->generate(),
       ]);
+      // Set user creation date to match the original developer's creation
+      // timestamp to maintain chronological consistency between related
+      // entities and prevent confusion when comparing created vs modified dates
+      // in the user interface.
+      $user->set('created', $developer->getCreatedAt()->getTimestamp());
       // Suppress invalid email validation errors.
       DeveloperEmailUniqueValidator::whitelist($developer->id());
     }

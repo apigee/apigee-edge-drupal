@@ -147,7 +147,7 @@ class DeveloperSync extends EdgeJob {
       $last_modified_delta = $developer->getLastModifiedAt()->getTimestamp() - $user->getChangedTime();
       // Update Drupal user because the Apigee Edge developer is the most
       // recent.
-      if ($last_modified_delta >= 0) {
+      if ($last_modified_delta > 0) {
         $update_user_job = new UserUpdate($user->getEmail());
         $update_user_job->setTag($this->getTag());
         $this->scheduleJob($update_user_job);
