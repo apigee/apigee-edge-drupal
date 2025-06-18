@@ -20,7 +20,10 @@
 namespace Drupal\apigee_edge\Job;
 
 use Drupal\apigee_edge\Entity\Developer;
+use Drupal\apigee_edge\Entity\DeveloperInterface;
+use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
 use Drupal\user\Entity\User;
+use Drupal\user\UserInterface;
 
 /**
  * A job that synchronizes Apigee Edge developers and Drupal users.
@@ -59,6 +62,11 @@ class DeveloperSync extends EdgeJob {
   protected $filter = NULL;
 
   /**
+   * KV store tracks last update attempts for each user/developer.
+   */
+  protected KeyValueStoreInterface $lastUpdateTracker;
+
+  /**
    * DeveloperSync constructor.
    *
    * @param null|string $filter
@@ -67,6 +75,7 @@ class DeveloperSync extends EdgeJob {
   public function __construct(?string $filter) {
     parent::__construct();
     $this->filter = $filter;
+    $this->lastUpdateTracker = \Drupal::service('apigee_edge.dev_sync.last_update_tracker');
   }
 
   /**
@@ -131,6 +140,30 @@ class DeveloperSync extends EdgeJob {
   }
 
   /**
+   * Schedules the update of a user.
+   *
+   * @param \Drupal\user\UserInterface $user
+   *   The user.
+   */
+  protected function scheduleUserUpdate(UserInterface $user): void {
+    $update_user_job = new UserUpdate($user->getEmail());
+    $update_user_job->setTag($this->getTag());
+    $this->scheduleJob($update_user_job);
+  }
+
+  /**
+   * Schedules the update of a developer.
+   *
+   * @param \Drupal\apigee_edge\Entity\DeveloperInterface $developer
+   *   The developer.
+   */
+  protected function scheduleDeveloper(DeveloperInterface $developer): void {
+    $update_developer_job = new DeveloperUpdate($developer->getEmail());
+    $update_developer_job->setTag($this->getTag());
+    $this->scheduleJob($update_developer_job);
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function execute(): bool {
@@ -144,20 +177,31 @@ class DeveloperSync extends EdgeJob {
       /** @var \Drupal\user\UserInterface $user */
       $user = $this->drupalUsers[$clean_email];
 
-      $last_modified_delta = $developer->getLastModifiedAt()->getTimestamp() - $user->getChangedTime();
-      // Update Drupal user because the Apigee Edge developer is the most
-      // recent.
-      if ($last_modified_delta > 0) {
-        $update_user_job = new UserUpdate($user->getEmail());
-        $update_user_job->setTag($this->getTag());
-        $this->scheduleJob($update_user_job);
+      $last_synced = $this->lastUpdateTracker->get($developer->getEmail(), 0);
+
+      if ($last_synced === 0) {
+        $last_modified_delta = $developer->getLastModifiedAt()->getTimestamp() - $user->getChangedTime();
+        if ($last_modified_delta === 0) {
+          $this->lastUpdateTracker->set($developer->getEmail(), \Drupal::time()->getCurrentTime());
+          continue;
+        }
+
+        // Update Drupal user because the Apigee Edge developer is the most
+        // recent.
+        if ($last_modified_delta > 0) {
+          $this->scheduleUserUpdate($user);
+        }
+        // Update Apigee Edge developer because the Drupal user is the most
+        // recent.
+        else {
+          $this->scheduleDeveloper($developer);
+        }
       }
-      // Update Apigee Edge developer because the Drupal user is the most
-      // recent.
-      elseif ($last_modified_delta < 0) {
-        $update_developer_job = new DeveloperUpdate($developer->getEmail());
-        $update_developer_job->setTag($this->getTag());
-        $this->scheduleJob($update_developer_job);
+      elseif ($last_synced < $developer->getLastModifiedAt()->getTimestamp()) {
+        $this->scheduleUserUpdate($user);
+      }
+      elseif ($last_synced < $user->getChangedTime()) {
+        $this->scheduleDeveloper($developer);
       }
     }
 

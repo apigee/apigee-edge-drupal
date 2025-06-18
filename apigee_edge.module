@@ -1365,6 +1365,7 @@ function apigee_edge_user_presave(UserInterface $account) {
     }
     $developer = $result->getDeveloper();
     $developer->save();
+    \Drupal::getContainer()->get('apigee_edge.dev_sync.last_update_tracker')->set($developer->getEmail(), \Drupal::time()->getCurrentTime());
   }
   catch (\Exception $exception) {
     $previous = $exception->getPrevious();
@@ -1386,6 +1387,7 @@ function apigee_edge_user_presave(UserInterface $account) {
           // "originalEmail" property's value on the entity.
           $developer->enforceIsNew(TRUE);
           $developer->save();
+          \Drupal::getContainer()->get('apigee_edge.dev_sync.last_update_tracker')->set($developer->getEmail(), \Drupal::time()->getCurrentTime());
         }
         catch (\Exception $exception) {
           $context = [
@@ -1410,6 +1412,7 @@ function apigee_edge_user_presave(UserInterface $account) {
             $developer->enforceIsNew(FALSE);
             try {
               $developer->save();
+              \Drupal::getContainer()->get('apigee_edge.dev_sync.last_update_tracker')->set($result->getDeveloper()->getEmail(), \Drupal::time()->getCurrentTime());
             }
             catch (ApiException $exception) {
               $logger->error("Unable to update existing @developer developer's data after registered on the portal.", $context);
