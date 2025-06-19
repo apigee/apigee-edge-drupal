@@ -1,3 +1,10 @@
+apigee_edge.cache_insert_chunk_size:
+  type: integer
+  label: 'Cache insert chunk size'
+  constraints:
+    Range:
+      min: 1
+
 apigee_edge.error_page:
   type: config_object
   label: 'Apigee Edge: Error page'
@@ -79,6 +86,8 @@ apigee_edge.developer_app_settings:
       label: 'How to refer to a Developer App on the UI (plural)'
     cache_expiration:
       type: integer
+    cache_insert_chunk_size:
+      type: apigee_edge.cache_insert_chunk_size
     required_base_fields:
       type: sequence
       sequence:
@@ -161,6 +170,8 @@ apigee_edge.developer_settings:
           label: 'Message'
     cache_expiration:
       type: integer
+    cache_insert_chunk_size:
+      type: apigee_edge.cache_insert_chunk_size
 
 apigee_edge.api_product_settings:
   type: config_object
@@ -174,6 +185,8 @@ apigee_edge.api_product_settings:
       label: 'How to refer to an API Product on the UI (plural)'
     cache_expiration:
       type: integer
+    cache_insert_chunk_size:
+      type: apigee_edge.cache_insert_chunk_size
     access:
       type: mapping
       label: 'Filter displayed API products by access attribute'

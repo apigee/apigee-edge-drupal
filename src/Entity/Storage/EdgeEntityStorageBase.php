@@ -51,6 +51,13 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
   public const SAVED_UNKNOWN = 0;
 
   /**
+   * The default cache insert chunk size to the persistent cache.
+   *
+   * @var int
+   */
+  protected const int DEFAULT_PERSISTENT_CACHE_INSERT_CHUNK_SIZE = 100;
+
+  /**
    * Cache backend.
    *
    * @var \Drupal\Core\Cache\CacheBackendInterface
@@ -67,7 +74,12 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
    */
   protected $cacheExpiration = CacheBackendInterface::CACHE_PERMANENT;
 
-  protected int $cacheChunkSize = 100;
+  /**
+   * The cache insert chunk size to the persistent cache.
+   *
+   * @var int
+   */
+  protected int $cacheInsertChunkSize = self::DEFAULT_PERSISTENT_CACHE_INSERT_CHUNK_SIZE;
 
   /**
    * The system time.
@@ -397,7 +409,7 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
 
     while (!empty($entities)) {
       $cache_items = [];
-      foreach (array_splice($entities, 0, $this->cacheChunkSize) as $id => $entity) {
+      foreach (array_splice($entities, 0, $this->cacheInsertChunkSize) as $id => $entity) {
         $cache_items[$this->buildCacheId($id)] = [
           'data' => $entity,
           'expire' => $this->getPersistentCacheExpiration(),

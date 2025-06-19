@@ -23,6 +23,7 @@ namespace Drupal\apigee_edge_teams\Entity\Storage;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge\Entity\Controller\AppControllerInterface;
@@ -73,10 +74,18 @@ class TeamAppStorage extends AppStorage implements TeamAppStorageInterface {
    * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
    *   The organization controller service.
    */
-  public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, TeamAppControllerFactoryInterface $team_app_controller_factory, AppControllerInterface $app_controller, OrganizationControllerInterface $org_controller) {
+  public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, TeamAppControllerFactoryInterface $team_app_controller_factory, AppControllerInterface $app_controller, OrganizationControllerInterface $org_controller, protected ?ConfigFactoryInterface $config = NULL) {
     parent::__construct($entity_type, $cache_backend, $memory_cache, $system_time, $app_controller);
     $this->teamAppControllerFactory = $team_app_controller_factory;
     $this->orgController = $org_controller;
+    if ($config === NULL) {
+      @trigger_error('Calling ' . __METHOD__ . ' without the $config is deprecated in apigee_edge:4.0.3 and it will be required in apigee_edge:5.0.0. See https://github.com/apigee/apigee-edge-drupal/pull/1155.', E_USER_DEPRECATED);
+      $config = \Drupal::configFactory();
+    }
+
+    $config = $config->get('apigee_edge_teams.team_app_settings');
+    $this->cacheExpiration = $config->get('cache_expiration');
+    $this->cacheInsertChunkSize = $config->get('cache_insert_chunk_size') ?? static::DEFAULT_PERSISTENT_CACHE_INSERT_CHUNK_SIZE;
   }
 
   /**
@@ -90,7 +99,8 @@ class TeamAppStorage extends AppStorage implements TeamAppStorageInterface {
       $container->get('datetime.time'),
       $container->get('apigee_edge_teams.controller.team_app_controller_factory'),
       $container->get('apigee_edge.controller.app'),
-      $container->get('apigee_edge.controller.organization')
+      $container->get('apigee_edge.controller.organization'),
+      $container->get('config.factory'),
     );
   }
 

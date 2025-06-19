@@ -24,3 +24,4 @@ user_edit_error_message:
   value: 'This email address already exists in our system. You can register a new account if you would like to use it on the Developer Portal.'
   format: 'plain_text'
 cache_expiration: 900
+cache_insert_chunk_size: 100

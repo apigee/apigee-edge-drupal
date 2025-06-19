@@ -250,7 +250,7 @@ abstract class AppStorage extends AttributesAwareFieldableEdgeEntityStorageBase 
     // application name combinations.
     while (!empty($entities)) {
       $cache_items = [];
-      foreach (array_splice($entities, 0, $this->cacheChunkSize) as $entity) {
+      foreach (array_splice($entities, 0, $this->cacheInsertChunkSize) as $entity) {
         $cache_items[$this->buildCacheIdForAppName($entity->getAppOwner(), $entity->getName())] = [
           'data' => $entity->getAppId(),
           'expire' => $this->getPersistentCacheExpiration(),

@@ -78,7 +78,9 @@ class DeveloperAppStorage extends AppStorage implements DeveloperAppStorageInter
   public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, DeveloperAppControllerFactoryInterface $developer_app_controller_factory, AppControllerInterface $app_controller, ConfigFactoryInterface $config, EmailValidatorInterface $email_validator, OrganizationControllerInterface $org_controller) {
     parent::__construct($entity_type, $cache_backend, $memory_cache, $system_time, $app_controller);
     $this->appEntityController = new DeveloperAppEdgeEntityControllerProxy($developer_app_controller_factory, $app_controller, $org_controller);
-    $this->cacheExpiration = $config->get('apigee_edge.developer_app_settings')->get('cache_expiration');
+    $config = $config->get('apigee_edge.developer_app_settings');
+    $this->cacheExpiration = $config->get('cache_expiration');
+    $this->cacheInsertChunkSize = $config->get('cache_insert_chunk_size') ?? static::DEFAULT_PERSISTENT_CACHE_INSERT_CHUNK_SIZE;
     $this->emailValidator = $email_validator;
   }
 
