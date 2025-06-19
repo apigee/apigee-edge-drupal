@@ -55,7 +55,7 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
    *
    * @var int
    */
-  protected const int DEFAULT_PERSISTENT_CACHE_INSERT_CHUNK_SIZE = 100;
+  protected const DEFAULT_PERSISTENT_CACHE_INSERT_CHUNK_SIZE = 100;
 
   /**
    * Cache backend.
