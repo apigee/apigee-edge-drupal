@@ -234,7 +234,7 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
   protected function setPersistentCache(array $entities) {
     parent::setPersistentCache($entities);
 
-    if (!$this->entityType->isPersistentlyCacheable()) {
+    if ($this->cacheExpiration === 0 || !$this->entityType->isPersistentlyCacheable()) {
       return;
     }
 

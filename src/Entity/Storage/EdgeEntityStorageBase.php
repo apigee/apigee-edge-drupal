@@ -403,7 +403,7 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
    *   Entities to store in the cache.
    */
   protected function setPersistentCache(array $entities) {
-    if (!$this->entityType->isPersistentlyCacheable()) {
+    if ($this->cacheExpiration === 0 || !$this->entityType->isPersistentlyCacheable()) {
       return;
     }
 
