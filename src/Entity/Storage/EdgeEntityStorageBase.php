@@ -67,6 +67,8 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
    */
   protected $cacheExpiration = CacheBackendInterface::CACHE_PERMANENT;
 
+  protected int $cacheChunkSize = 100;
+
   /**
    * The system time.
    *
@@ -393,8 +395,17 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
       return;
     }
 
-    foreach ($entities as $id => $entity) {
-      $this->cacheBackend->set($this->buildCacheId($id), $entity, $this->getPersistentCacheExpiration(), $this->getPersistentCacheTags($entity));
+    while (!empty($entities)) {
+      $cache_items = [];
+      foreach (array_splice($entities, 0, $this->cacheChunkSize) as $id => $entity) {
+        $cache_items[$this->buildCacheId($id)] = [
+          'data' => $entity,
+          'expire' => $this->getPersistentCacheExpiration(),
+          'tags' => $this->getPersistentCacheTags($entity),
+        ];
+      }
+
+      $this->cacheBackend->setMultiple($cache_items);
     }
   }
 

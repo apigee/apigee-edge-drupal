@@ -239,9 +239,17 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
     // Create a separate cache entry that uses developer id in the cache id
     // instead of the email address. This way we can load a developer from
     // cache by using both ids.
-    foreach ($entities as $entity) {
-      /** @var \Drupal\apigee_edge\Entity\Developer $entity */
-      $this->cacheBackend->set($this->buildCacheId($entity->getDeveloperId()), $entity, $this->getPersistentCacheExpiration(), $this->getPersistentCacheTags($entity));
+    while (!empty($entities)) {
+      $cache_items = [];
+      foreach (array_splice($entities, 0, $this->cacheChunkSize) as $id => $entity) {
+        $cache_items[$this->buildCacheId($entity->getDeveloperId())] = [
+          'data' => $entity,
+          'expire' => $this->getPersistentCacheExpiration(),
+          'tags' => $this->getPersistentCacheTags($entity),
+        ];
+      }
+
+      $this->cacheBackend->setMultiple($cache_items);
     }
   }
 
