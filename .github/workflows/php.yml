@@ -39,6 +39,7 @@ jobs:
           # Should update the following as the minimum supported version from Drupal.org
           - "10.2.x"
           - "10.3.x"
+          - "10.4.x"
         instance-type:
           - "Edge"
           - "X"
@@ -112,7 +113,7 @@ jobs:
         composer update --with-all-dependencies
 
     - name: "Allow plugins and dev dependencies for Drupal 10.3"
-      if: ${{ matrix.drupal-core == '10.3.x' }}
+      if: ${{ matrix.drupal-core == '10.3.x' || matrix.drupal-core == '10.4.x' }}
       run: |
         cd drupal
         composer require 'drupal/rules:^4.0'
