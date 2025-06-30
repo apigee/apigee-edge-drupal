@@ -37,7 +37,6 @@ jobs:
           - "8.3"
         drupal-core:
           # Should update the following as the minimum supported version from Drupal.org
-          - "10.2.x"
           - "10.3.x"
           - "10.4.x"
         instance-type:
