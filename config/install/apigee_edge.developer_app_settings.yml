@@ -2,6 +2,7 @@ langcode: en
 entity_label_singular: 'App'
 entity_label_plural: 'Apps'
 cache_expiration: 900
+cache_insert_chunk_size: 100
 credential_lifetime: 0
 locked_base_fields:
   - displayName

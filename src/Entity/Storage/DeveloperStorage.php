@@ -75,7 +75,9 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
    */
   public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, DeveloperControllerInterface $developer_controller, ConfigFactoryInterface $config, DeveloperCompaniesCacheInterface $developer_companies_cache) {
     parent::__construct($entity_type, $cache_backend, $memory_cache, $system_time);
-    $this->cacheExpiration = $config->get('apigee_edge.developer_settings')->get('cache_expiration');
+    $config = $config->get('apigee_edge.developer_settings');
+    $this->cacheExpiration = $config->get('cache_expiration');
+    $this->cacheInsertChunkSize = $config->get('cache_insert_chunk_size') ?? static::DEFAULT_PERSISTENT_CACHE_INSERT_CHUNK_SIZE;
     $this->developerController = $developer_controller;
     $this->developerCompanies = $developer_companies_cache;
   }
@@ -232,16 +234,24 @@ class DeveloperStorage extends EdgeEntityStorageBase implements DeveloperStorage
   protected function setPersistentCache(array $entities) {
     parent::setPersistentCache($entities);
 
-    if (!$this->entityType->isPersistentlyCacheable()) {
+    if ($this->cacheExpiration === 0 || !$this->entityType->isPersistentlyCacheable()) {
       return;
     }
 
     // Create a separate cache entry that uses developer id in the cache id
     // instead of the email address. This way we can load a developer from
     // cache by using both ids.
-    foreach ($entities as $entity) {
-      /** @var \Drupal\apigee_edge\Entity\Developer $entity */
-      $this->cacheBackend->set($this->buildCacheId($entity->getDeveloperId()), $entity, $this->getPersistentCacheExpiration(), $this->getPersistentCacheTags($entity));
+    while (!empty($entities)) {
+      $cache_items = [];
+      foreach (array_splice($entities, 0, $this->cacheInsertChunkSize) as $id => $entity) {
+        $cache_items[$this->buildCacheId($entity->getDeveloperId())] = [
+          'data' => $entity,
+          'expire' => $this->getPersistentCacheExpiration(),
+          'tags' => $this->getPersistentCacheTags($entity),
+        ];
+      }
+
+      $this->cacheBackend->setMultiple($cache_items);
     }
   }
 
