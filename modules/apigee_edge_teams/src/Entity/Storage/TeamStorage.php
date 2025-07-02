@@ -66,7 +66,7 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
   private $logger;
 
   /**
-   * Constructs an DeveloperStorage instance.
+   * Constructs an TeamStorage instance.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
@@ -88,7 +88,9 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
   public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, TeamControllerInterface $team_controller, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config, LoggerInterface $logger) {
     parent::__construct($entity_type, $cache_backend, $memory_cache, $system_time);
     $this->teamController = $team_controller;
-    $this->cacheExpiration = $config->get('apigee_edge_teams.team_settings')->get('cache_expiration');
+    $config = $config->get('apigee_edge_teams.team_settings');
+    $this->cacheExpiration = $config->get('cache_expiration');
+    $this->cacheInsertChunkSize = $config->get('cache_insert_chunk_size') ?? static::DEFAULT_PERSISTENT_CACHE_INSERT_CHUNK_SIZE;
     $this->entityTypeManager = $entity_type_manager;
     $this->logger = $logger;
   }

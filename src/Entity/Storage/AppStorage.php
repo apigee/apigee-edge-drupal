@@ -240,17 +240,25 @@ abstract class AppStorage extends AttributesAwareFieldableEdgeEntityStorageBase 
   protected function setPersistentCache(array $entities) {
     parent::setPersistentCache($entities);
 
-    if (!$this->entityType->isPersistentlyCacheable()) {
+    if ($this->cacheExpiration === 0 || !$this->entityType->isPersistentlyCacheable()) {
       return;
     }
 
-    /** @var \Drupal\apigee_edge\Entity\AppInterface $entity */
-    foreach ($entities as $entity) {
-      // Create an additional cache entry for each app that stores the app id
-      // for each developerId or company (team) name + app name combinations.
-      // Thanks for this we can run queries faster that tries to an load app
-      // by using these two properties instead of the app id.
-      $this->cacheBackend->set($this->buildCacheIdForAppName($entity->getAppOwner(), $entity->getName()), $entity->getAppId(), $this->getPersistentCacheExpiration(), $this->getPersistentCacheTagsForAppName($entity));
+    // Create secondary cache entries to enable fast lookups by
+    // developer/company + app name. This allows querying apps without knowing
+    // the app ID, improving performance for searches based on owner and
+    // application name combinations.
+    while (!empty($entities)) {
+      $cache_items = [];
+      foreach (array_splice($entities, 0, $this->cacheInsertChunkSize) as $entity) {
+        $cache_items[$this->buildCacheIdForAppName($entity->getAppOwner(), $entity->getName())] = [
+          'data' => $entity->getAppId(),
+          'expire' => $this->getPersistentCacheExpiration(),
+          'tags' => $this->getPersistentCacheTagsForAppName($entity),
+        ];
+      }
+
+      $this->cacheBackend->setMultiple($cache_items);
     }
   }
 

@@ -233,3 +233,16 @@ function apigee_edge_teams_update_9003() {
   $team_settings['enablefilter'] = $new_team_settings['enablefilter'];
   $config_storage->write('apigee_edge_teams.team_settings', $team_settings);
 }
+
+/**
+ * Set cache_insert_chunk_size for Teams and Team apps.
+ */
+function apigee_edge_teams_update_11401(): void {
+  $configs = [
+    'apigee_edge_teams.team_settings',
+    'apigee_edge_teams.team_app_settings',
+  ];
+  foreach ($configs as $config) {
+    \Drupal::configFactory()->getEditable($config)->set('cache_insert_chunk_size', 100)->save(TRUE);
+  }
+}
