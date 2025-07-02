@@ -73,6 +73,8 @@ class TeamAppStorage extends AppStorage implements TeamAppStorageInterface {
    *   The app controller service.
    * @param \Drupal\apigee_edge\Entity\Controller\OrganizationControllerInterface $org_controller
    *   The organization controller service.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config
+   *   Configuration factory.
    */
   public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, TeamAppControllerFactoryInterface $team_app_controller_factory, AppControllerInterface $app_controller, OrganizationControllerInterface $org_controller, protected ?ConfigFactoryInterface $config = NULL) {
     parent::__construct($entity_type, $cache_backend, $memory_cache, $system_time, $app_controller);
