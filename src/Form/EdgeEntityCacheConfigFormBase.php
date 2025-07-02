@@ -47,6 +47,14 @@ abstract class EdgeEntityCacheConfigFormBase extends ConfigFormBase {
       '#min' => -1,
       '#required' => TRUE,
     ];
+    $form['cache']['cache_insert_chunk_size'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Cache insert chunk size'),
+      '#description' => $this->t('Number of entities to process in each batch when storing to persistent cache.'),
+      '#default_value' => $config->get('cache_insert_chunk_size'),
+      '#min' => 1,
+      '#required' => TRUE,
+    ];
     $form['cache']['actions'] = [
       '#type' => 'actions',
     ];
@@ -65,6 +73,7 @@ abstract class EdgeEntityCacheConfigFormBase extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->config($this->getConfigNameWithCacheSettings())
       ->set('cache_expiration', $form_state->getValue('cache_expiration'))
+      ->set('cache_insert_chunk_size', $form_state->getValue('cache_insert_chunk_size'))
       ->save();
     parent::submitForm($form, $form_state);
   }

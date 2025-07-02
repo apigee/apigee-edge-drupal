@@ -5,6 +5,7 @@ enablefilter: ''
 entity_label_singular: ''
 entity_label_plural: ''
 cache_expiration: 900
+cache_insert_chunk_size: 100
 non_member_team_apps_visible_api_products:
   - public
   - private
