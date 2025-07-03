@@ -19,6 +19,8 @@ apigee_edge_teams.team_settings:
       label: 'How to refer to a Team on the UI (plural)'
     cache_expiration:
       type: integer
+    cache_insert_chunk_size:
+      type: apigee_edge.cache_insert_chunk_size
     non_member_team_apps_visible_api_products:
       type: sequence
       sequence:
@@ -45,6 +47,8 @@ apigee_edge_teams.team_app_settings:
       label: 'How to refer to a Team App on the UI (plural)'
     cache_expiration:
       type: integer
+    cache_insert_chunk_size:
+      type: apigee_edge.cache_insert_chunk_size
     required_base_fields:
       type: sequence
       sequence:
