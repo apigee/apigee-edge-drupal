@@ -1860,7 +1860,7 @@ function apigee_edge_preprocess_fieldset(&$variables) {
       unset($variables['attributes']['required']);
     }
 
-    if ($variables['attributes']['aria-required']) {
+    if (array_key_exists('aria-required', $variables['attributes'])) {
       unset($variables['attributes']['aria-required']);
     }
   }
