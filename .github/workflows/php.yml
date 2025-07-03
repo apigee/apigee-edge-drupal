@@ -37,8 +37,8 @@ jobs:
           - "8.3"
         drupal-core:
           # Should update the following as the minimum supported version from Drupal.org
-          - "10.2.x"
           - "10.3.x"
+          - "10.4.x"
         instance-type:
           - "Edge"
           - "X"
@@ -104,15 +104,7 @@ jobs:
         composer require --dev drupal/classy:^1.0
         composer config --no-plugins allow-plugins.drupal/console-extend-plugin true
 
-    - name: "Allow plugins and dev dependencies for Drupal 10.2"
-      if: ${{ matrix.drupal-core == '10.2.x' }}
-      run: |
-        cd drupal
-        composer require 'drupal/rules:3.x-dev@dev'
-        composer update --with-all-dependencies
-
-    - name: "Allow plugins and dev dependencies for Drupal 10.3"
-      if: ${{ matrix.drupal-core == '10.3.x' }}
+    - name: "Allow plugins and dev dependencies"
       run: |
         cd drupal
         composer require 'drupal/rules:^4.0'
@@ -138,12 +130,6 @@ jobs:
         echo "APIGEE_EDGE_ENDPOINT=$APIGEE_EDGE_HYBRID_ENDPOINT" >> $GITHUB_ENV
         composer show > composer-show.txt
 
-    - name: "Drupal check for Drupal 10.2"
-      if: ${{ matrix.drupal-core == '10.2.x' }}
-      run: |
-        cd drupal
-        vendor/bin/drupal-check modules/contrib/apigee_edge
-
     - uses: nanasess/setup-chromedriver@v2
 
     - run: |
@@ -152,13 +138,13 @@ jobs:
         sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
 
     - name: "Run PHPUnit tests"
-      if: ${{ matrix.drupal-core != '10.2.x' || matrix.php-version != '8.2' }}
+      if: ${{ matrix.drupal-core != '10.3.x' || matrix.php-version != '8.3' }}
       run: |
         cd drupal
         vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit,kernel,functional,functional-javascript modules/contrib/apigee_edge
 
     - name: "Run PHPUnit tests with Code Coverage"
-      if: ${{ matrix.drupal-core == '10.2.x' && matrix.php-version == '8.2' }}
+      if: ${{ matrix.drupal-core == '10.3.x' && matrix.php-version == '8.3' }}
       run: |
         cd drupal
         cp modules/contrib/apigee_edge/phpunit.core.xml.dist core/phpunit.xml
@@ -172,7 +158,7 @@ jobs:
         path: drupal/sites/simpletest/browser_output/*
 
     - name: Upload coverage to Codecov
-      if: ${{ matrix.drupal-core == '10.2.x' && matrix.php-version == '8.2' }}
+      if: ${{ matrix.drupal-core == '10.3.x' && matrix.php-version == '8.3' }}
       uses: codecov/codecov-action@v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
