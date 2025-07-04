@@ -76,6 +76,33 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       ],
       '#default_value' => $values['instance_type'] ?? 'public',
     ];
+    $form['residency'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Data Residency'),
+      '#description' => $this->t('You may enter a data residency specific Apigee control plane API endpoint for your region. For more information regarding endpoints please refer <a href="@url">Apigee documentation</a>.', [
+          '@url' => 'https://cloud.google.com/apigee/docs/locations#available-apigee-api-control-plane-hosting-jurisdictions',
+          ]
+        ),
+      '#required' => TRUE,
+      '#options' => [
+        EdgeKeyTypeInterface::EDGE_DRZ_PLANE_USA => $this->t('United States'),
+        EdgeKeyTypeInterface::EDGE_DRZ_PLANE_CANADA => $this->t('Canada'),
+        EdgeKeyTypeInterface::EDGE_DRZ_PLANE_EUROPE => $this->t('European Union'),
+        EdgeKeyTypeInterface::EDGE_DRZ_PLANE_GERMANY => $this->t('Germany'),
+        EdgeKeyTypeInterface::EDGE_DRZ_PLANE_FRANCE => $this->t('France'),
+        EdgeKeyTypeInterface::EDGE_DRZ_PLANE_SWITZERLAND => $this->t('Switzerland'),
+        EdgeKeyTypeInterface::EDGE_DRZ_PLANE_AUSTRALIA => $this->t('Australia'),
+        EdgeKeyTypeInterface::EDGE_DRZ_PLANE_INDIA => $this->t('India'),
+        EdgeKeyTypeInterface::EDGE_DRZ_PLANE_JAPAN => $this->t('Japan'),
+        EdgeKeyTypeInterface::EDGE_DRZ_PLANE_SAUDI => $this->t('Saudi Arabia'),
+        EdgeKeyTypeInterface::EDGE_DRZ_PLANE_ISRAEL => $this->t('Israel'),
+      ],
+      '#default_value' => $values['residency'] ?? EdgeKeyTypeInterface::EDGE_DRZ_PLANE_USA,
+      '#states' => [
+        'visible' => [$state_for_private, $state_for_hybrid],
+        'required' => [$state_for_private, $state_for_hybrid],
+      ],
+    ];
     $form['auth_type'] = [
       '#type' => 'select',
       '#title' => $this->t('Authentication type'),
@@ -322,6 +349,9 @@ class ApigeeAuthKeyInput extends KeyInputBase {
           }
         }
       }
+
+      // Update endpoint value if DRZ is selected
+      if ($instance_type == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID || $instance_type == EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE) {}
 
       // Remove `key_value` so it doesn't get double encoded.
       unset($input_values['key_value']);

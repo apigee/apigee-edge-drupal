@@ -48,6 +48,72 @@ interface EdgeKeyTypeInterface extends KeyTypeMultivalueInterface, KeyTypeAuthen
    */
   public const INSTANCE_TYPE_HYBRID = 'hybrid';
   /**
+   * ID of the Data Residency Control Plane.
+   *
+   * @var string
+   */
+  const EDGE_DRZ_PLANE_USA = 'us';
+  /**
+   * ID of the Data Residency Control Plane.
+   *
+   * @var string
+   */
+  const EDGE_DRZ_PLANE_CANADA = 'ca';
+  /**
+   * ID of the Data Residency Control Plane.
+   *
+   * @var string
+   */
+  const EDGE_DRZ_PLANE_EUROPE = 'eu';
+  /**
+   * ID of the Data Residency Control Plane.
+   *
+   * @var string
+   */
+  const EDGE_DRZ_PLANE_GERMANY = 'de';
+  /**
+   * ID of the Data Residency Control Plane.
+   *
+   * @var string
+   */
+  const EDGE_DRZ_PLANE_FRANCE = 'fr';
+  /**
+   * ID of the Data Residency Control Plane.
+   *
+   * @var string
+   */
+  const EDGE_DRZ_PLANE_SWITZERLAND = 'ch';
+  /**
+   * ID of the Data Residency Control Plane.
+   *
+   * @var string
+   */
+  const EDGE_DRZ_PLANE_AUSTRALIA = 'au';
+  /**
+   * ID of the Data Residency Control Plane.
+   *
+   * @var string
+   */
+  const EDGE_DRZ_PLANE_INDIA = 'in';
+  /**
+   * ID of the Data Residency Control Plane.
+   *
+   * @var string
+   */
+  const EDGE_DRZ_PLANE_JAPAN = 'jp';
+  /**
+   * ID of the Data Residency Control Plane.
+   *
+   * @var string
+   */
+  const EDGE_DRZ_PLANE_SAUDI = 'sa';
+  /**
+   * ID of the Data Residency Control Plane.
+   *
+   * @var string
+   */
+  const EDGE_DRZ_PLANE_ISRAEL = 'il';
+  /**
    * ID of the basic authentication method.
    *
    * @var string
