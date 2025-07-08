@@ -196,7 +196,6 @@ class JobExecutor implements JobExecutorInterface {
    * {@inheritdoc}
    */
   public function cleanup(string $tag): void {
-    // @todo handle race conditions.
     $query = $this->connection->delete('apigee_edge_job')
       ->condition('status', Job::FINISHED)
       ->condition('tag', $tag);

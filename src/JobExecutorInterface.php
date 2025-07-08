@@ -104,6 +104,8 @@ interface JobExecutorInterface {
    *
    * @param string $tag
    *   Tag to filter with.
+   *
+   * @todo Handle race conditions.
    */
   public function cleanup(string $tag): void;
 
