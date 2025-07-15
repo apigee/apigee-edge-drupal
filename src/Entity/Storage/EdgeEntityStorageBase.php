@@ -51,6 +51,13 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
   public const SAVED_UNKNOWN = 0;
 
   /**
+   * The default cache insert chunk size to the persistent cache.
+   *
+   * @var int
+   */
+  protected const DEFAULT_PERSISTENT_CACHE_INSERT_CHUNK_SIZE = 100;
+
+  /**
    * Cache backend.
    *
    * @var \Drupal\Core\Cache\CacheBackendInterface
@@ -66,6 +73,13 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
    * @var int
    */
   protected $cacheExpiration = CacheBackendInterface::CACHE_PERMANENT;
+
+    /**
+   * The cache insert chunk size to the persistent cache.
+   *
+   * @var int
+   */
+  protected int $cacheInsertChunkSize = self::DEFAULT_PERSISTENT_CACHE_INSERT_CHUNK_SIZE;
 
   /**
    * The system time.
@@ -388,13 +402,22 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
    * @param \Drupal\Core\Entity\EntityInterface[] $entities
    *   Entities to store in the cache.
    */
-  protected function setPersistentCache(array $entities) {
-    if (!$this->entityType->isPersistentlyCacheable()) {
+    if ($this->cacheExpiration === 0 || !$this->entityType->isPersistentlyCacheable()) {
       return;
     }
 
     foreach ($entities as $id => $entity) {
-      $this->cacheBackend->set($this->buildCacheId($id), $entity, $this->getPersistentCacheExpiration(), $this->getPersistentCacheTags($entity));
+      while (!empty($entities)) {
+      $cache_items = [];
+      foreach (array_splice($entities, 0, $this->cacheInsertChunkSize) as $id => $entity) {
+        $cache_items[$this->buildCacheId($id)] = [
+          'data' => $entity,
+          'expire' => $this->getPersistentCacheExpiration(),
+          'tags' => $this->getPersistentCacheTags($entity),
+        ];
+      }
+
+      $this->cacheBackend->setMultiple($cache_items);
     }
   }
 
