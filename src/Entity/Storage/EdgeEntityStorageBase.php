@@ -74,7 +74,7 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
    */
   protected $cacheExpiration = CacheBackendInterface::CACHE_PERMANENT;
 
-    /**
+  /**
    * The cache insert chunk size to the persistent cache.
    *
    * @var int
