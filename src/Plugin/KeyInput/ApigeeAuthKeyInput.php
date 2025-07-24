@@ -76,6 +76,11 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       ],
       '#default_value' => $values['instance_type'] ?? 'public',
     ];
+    $form['drzendpoint'] = [
+      '#type' => 'hidden',
+      '#value' => $values['drzendpoint'] ?? '',
+      '#default_value' => $values['drzendpoint'] ?? '',
+    ];
     $form['auth_type'] = [
       '#type' => 'select',
       '#title' => $this->t('Authentication type'),
@@ -288,6 +293,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       // Make sure the endpoint defaults are not overridden by other values.
       if ($instance_type == EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC) {
         $input_values['endpoint'] = '';
+        $input_values['drzendpoint'] = '';
       }
       if (empty($input_values['authorization_server_type']) || $input_values['authorization_server_type'] == 'default') {
         $input_values['authorization_server'] = '';
@@ -306,6 +312,33 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         if (!empty($input_values['gcp_hosted'])) {
           $input_values['account_json_key'] = '';
         }
+        $curlUrl = 'https://staging-apigee.sandbox.googleapis.com/v1/organizations/' . $input_values['organization'] . ':getProjectMapping';
+        // Initialize cURL.
+        $ch = curl_init();
+
+        // Set cURL options.
+        curl_setopt($ch, CURLOPT_URL, $curlUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Return the transfer as a string.
+
+        // Execute cURL request and get the response.
+        $response = curl_exec($ch);
+
+        // Check for cURL errors.
+        if (curl_errno($ch)) {
+          $this->messenger()->addError($this->t('cURL error: @error', ['@error' => curl_error($ch)]));
+        } else {
+          // Process the cURL response.
+          $decoded_response = json_decode($response);
+          if ($decoded_response['location']) {
+            $this->messenger()->addStatus($this->t('Location set to @location', ['@location' => $decoded_response['location']]));
+            $input_values['drzendpoint'] = 'https://' . $decoded_response['location'] . '-staging-apigee.sandbox.googleapis.com/v1';
+          } else {
+            $this->messenger()->addWarning($this->t('The organization is not supporting DRZ feature'));
+            unset($input_values['drzendpoint']);
+          }
+        }
+        // Close cURL resource.
+        curl_close($ch);
       }
       else {
         // Remove unneeded values if on a Public or Private instance.
@@ -320,6 +353,9 @@ class ApigeeAuthKeyInput extends KeyInputBase {
           if (!empty($values['password'])) {
             $input_values['password'] = $values['password'];
           }
+        }
+        if (!empty($input_values['drzendpoint'])) {
+          unset($input_values['drzendpoint']);
         }
       }
 
