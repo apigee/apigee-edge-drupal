@@ -21,11 +21,16 @@ namespace Drupal\apigee_edge\Plugin\KeyInput;
 
 use Apigee\Edge\ClientInterface;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
+use Apigee\Edge\HttpClient\Plugin\Authentication\OauthTokenStorageInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StreamWrapper\PrivateStream;
 use Drupal\apigee_edge\Connector\GceServiceAccountAuthentication;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\File\FileExists;
 use Drupal\key\Plugin\KeyInputBase;
+use Google\Client as GoogleClient;
 use Http\Client\Exception;
 
 /**
@@ -75,11 +80,6 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE => $this->t('Private cloud (Custom endpoint)'),
       ],
       '#default_value' => $values['instance_type'] ?? 'public',
-    ];
-    $form['drzendpoint'] = [
-      '#type' => 'hidden',
-      '#value' => $values['drzendpoint'] ?? '',
-      '#default_value' => $values['drzendpoint'] ?? '',
     ];
     $form['auth_type'] = [
       '#type' => 'select',
@@ -293,7 +293,6 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       // Make sure the endpoint defaults are not overridden by other values.
       if ($instance_type == EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC) {
         $input_values['endpoint'] = '';
-        $input_values['drzendpoint'] = '';
       }
       if (empty($input_values['authorization_server_type']) || $input_values['authorization_server_type'] == 'default') {
         $input_values['authorization_server'] = '';
@@ -312,35 +311,75 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         if (!empty($input_values['gcp_hosted'])) {
           $input_values['account_json_key'] = '';
         }
-        $curlUrl = 'https://staging-apigee.sandbox.googleapis.com/v1/organizations/' . $input_values['organization'] . ':getProjectMapping';
-        // Initialize cURL.
-        $ch = curl_init();
+        $output = json_encode($input_values['account_json_key'], true);
+        $directory = \Drupal::service('file_system')->realpath("private://.apigee_edge");
+        \Drupal::service('file_system')->prepareDirectory($directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+        $fileLocation = $directory.'/apigeegcpacckey.json';
+        $file = \Drupal::service('file.repository')->writeData($output, $fileLocation, FileExists::Replace);
+        if ($file) {
+          $file->save();
+        }
 
-        // Set cURL options.
-        curl_setopt($ch, CURLOPT_URL, $curlUrl);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Return the transfer as a string.
+        $scopes = ['https://www.googleapis.com/auth/cloud-platform']; // Or adjust as needed
+        // Path to your service account key JSON file
+        $serviceAccountKeyFilePath = $fileLocation; // IMPORTANT: Secure this file!
+        try {
+          // --- Initialize Google Client ---
+          $client = new GoogleClient();
+          $client->setApplicationName("GCP Project Mapping Fetcher");
+          $client->setAuthConfig($serviceAccountKeyFilePath);
+          $client->setScopes($scopes);
 
-        // Execute cURL request and get the response.
-        $response = curl_exec($ch);
+          // --- Fetch the Access Token ---
+          $accessToken = $client->fetchAccessTokenWithAssertion();
 
-        // Check for cURL errors.
-        if (curl_errno($ch)) {
-          $this->messenger()->addError($this->t('cURL error: @error', ['@error' => curl_error($ch)]));
-        } else {
-          // Process the cURL response.
-          $decoded_response = json_decode($response);
-          if ($decoded_response['location']) {
-            $this->messenger()->addStatus($this->t('Location set to @location', ['@location' => $decoded_response['location']]));
-            $input_values['drzendpoint'] = 'https://' . $decoded_response['location'] . '-staging-apigee.sandbox.googleapis.com/v1';
+          if (isset($accessToken['access_token'])) {
+            // echo "Successfully fetched Google OAuth 2.0 Access Token:\n";
+            // echo "Access Token: " . $accessToken['access_token'] . "\n";
+            // echo "Expires In: " . $accessToken['expires_in'] . " seconds\n";
+            // echo "Token Type: " . $accessToken['token_type'] . "\n\n";
+
+            $curlUrl = 'https://apigee.googleapis.com/v1/organizations/' . $input_values['organization'] . ':getProjectMapping';
+            $ch = curl_init();
+            // Set cURL options.
+            curl_setopt($ch, CURLOPT_URL, $curlUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Return the transfer as a string.
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Authorization: Bearer ' . $accessToken['access_token'],
+                'Content-Type: application/json',
+            ]);
+
+            // Execute cURL request and get the response.
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+            // Check for cURL errors.
+            if (curl_errno($ch)) {
+              $this->messenger()->addError($this->t('cURL error: @error', ['@error' => curl_error($ch)]));
+            } else {
+              // Process the cURL response.
+              $decoded_response = json_decode($response, true);
+              if ($decoded_response['location']) {
+                $this->messenger()->addStatus($this->t('Location set to @location', ['@location' => $decoded_response['location']]));
+                $input_values['endpoint'] = 'https://' . $decoded_response['location'] . '-apigee.googleapis.com/v1';
+              } else {
+                $this->messenger()->addWarning($this->t('The organization is not supporting DRZ feature'));
+                unset($input_values['endpoint']);
+              }
+            }
+            // Close cURL resource.
+            curl_close($ch);
           } else {
-            $this->messenger()->addWarning($this->t('The organization is not supporting DRZ feature'));
-            unset($input_values['drzendpoint']);
+            echo "Failed to fetch access token.\n";
+            print_r($accessToken); // Print full response for debugging
+          }
+        } catch (Exception $e) {
+          echo "An error occurred: " . $e->getMessage() . "\n";
+          if ($e->getPrevious()) {
+            echo "Previous error: " . $e->getPrevious()->getMessage() . "\n";
           }
         }
-        // Close cURL resource.
-        curl_close($ch);
-      }
-      else {
+      } else {
         // Remove unneeded values if on a Public or Private instance.
         $input_values['account_json_key'] = '';
         if (!empty($input_values['gcp_hosted'])) {
@@ -353,9 +392,6 @@ class ApigeeAuthKeyInput extends KeyInputBase {
           if (!empty($values['password'])) {
             $input_values['password'] = $values['password'];
           }
-        }
-        if (!empty($input_values['drzendpoint'])) {
-          unset($input_values['drzendpoint']);
         }
       }
 
