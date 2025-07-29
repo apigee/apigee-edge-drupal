@@ -69,11 +69,13 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
    * {@inheritdoc}
    */
   public function getEndpoint(KeyInterface $key): string {
-    if ($this->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
-      return ClientInterface::APIGEE_ON_GCP_ENDPOINT;
-    }
-    elseif ($this->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC) {
-      return Client::EDGE_ENDPOINT;
+    if (!isset($key->getKeyValues()['endpoint'])) {
+      if ($this->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+        return ClientInterface::APIGEE_ON_GCP_ENDPOINT;
+      }
+      elseif ($this->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC) {
+        return Client::EDGE_ENDPOINT;
+      }
     }
     return $key->getKeyValues()['endpoint'];
   }
