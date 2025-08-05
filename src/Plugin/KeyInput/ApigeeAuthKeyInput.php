@@ -21,7 +21,6 @@ namespace Drupal\apigee_edge\Plugin\KeyInput;
 
 use Apigee\Edge\ClientInterface;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
-use Apigee\Edge\HttpClient\Plugin\Authentication\OauthTokenStorageInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StreamWrapper\PrivateStream;
@@ -311,14 +310,15 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         if (!empty($input_values['gcp_hosted'])) {
           $input_values['account_json_key'] = '';
         }
-        $output = json_encode($input_values['account_json_key'], true);
-        $directory = \Drupal::service('file_system')->realpath("private://.apigee_edge");
-        \Drupal::service('file_system')->prepareDirectory($directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-        $fileLocation = $directory.'/apigeegcpacckey.json';
-        $file = \Drupal::service('file.repository')->writeData($output, $fileLocation, FileExists::Replace);
-        if ($file) {
-          $file->save();
-        }
+        // Converting Json string to array.
+        $json_array = json_decode($input_values['account_json_key'], true);
+        // Converting Json array to json string for file data save.
+        $json_content = json_encode($json_array, JSON_PRETTY_PRINT);
+        $fileSystem = \Drupal::service('file_system');
+        $directory = $fileSystem->realpath("private://.apigee_edge");
+        $fileSystem->prepareDirectory($directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+        $fileLocation = $directory . '/apigeegcpacckey.json';
+        $fileSystem->saveData($json_content, $fileLocation, FileExists::Replace);
 
         $scopes = ['https://www.googleapis.com/auth/cloud-platform']; // Or adjust as needed
         // Path to your service account key JSON file
@@ -334,11 +334,6 @@ class ApigeeAuthKeyInput extends KeyInputBase {
           $accessToken = $client->fetchAccessTokenWithAssertion();
 
           if (isset($accessToken['access_token'])) {
-            // echo "Successfully fetched Google OAuth 2.0 Access Token:\n";
-            // echo "Access Token: " . $accessToken['access_token'] . "\n";
-            // echo "Expires In: " . $accessToken['expires_in'] . " seconds\n";
-            // echo "Token Type: " . $accessToken['token_type'] . "\n\n";
-
             $curlUrl = 'https://apigee.googleapis.com/v1/organizations/' . $input_values['organization'] . ':getProjectMapping';
             $ch = curl_init();
             // Set cURL options.
