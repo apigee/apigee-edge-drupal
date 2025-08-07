@@ -23,7 +23,6 @@ use Apigee\Edge\ClientInterface;
 use Apigee\Edge\HttpClient\Plugin\Authentication\Oauth;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\StreamWrapper\PrivateStream;
 use Drupal\apigee_edge\Connector\GceServiceAccountAuthentication;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Core\File\FileSystemInterface;
@@ -311,7 +310,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
           $input_values['account_json_key'] = '';
         }
         // Converting Json string to array.
-        $json_array = json_decode($input_values['account_json_key'], true);
+        $json_array = json_decode($input_values['account_json_key'], TRUE);
         // Converting Json array to json string for file data save.
         $json_content = json_encode($json_array, JSON_PRETTY_PRINT);
         $fileSystem = \Drupal::service('file_system');
@@ -320,9 +319,11 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         $fileLocation = $directory . '/apigeegcpacckey.json';
         $fileSystem->saveData($json_content, $fileLocation, FileExists::Replace);
 
-        $scopes = ['https://www.googleapis.com/auth/cloud-platform']; // Or adjust as needed
-        // Path to your service account key JSON file
-        $serviceAccountKeyFilePath = $fileLocation; // IMPORTANT: Secure this file!
+        // Or adjust as needed.
+        $scopes = ['https://www.googleapis.com/auth/cloud-platform'];
+        // Path to your service account key JSON file.
+        // IMPORTANT: Secure this file!
+        $serviceAccountKeyFilePath = $fileLocation;
         try {
           // --- Initialize Google Client ---
           $client = new GoogleClient();
@@ -337,10 +338,11 @@ class ApigeeAuthKeyInput extends KeyInputBase {
             $ch = curl_init();
             // Set cURL options.
             curl_setopt($ch, CURLOPT_URL, $curlUrl);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Return the transfer as a string.
+            // Return the transfer as a string.
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
             curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Authorization: Bearer ' . $accessToken['access_token'],
-                'Content-Type: application/json',
+              'Authorization: Bearer ' . $accessToken['access_token'],
+              'Content-Type: application/json',
             ]);
 
             // Execute cURL request and get the response.
@@ -350,31 +352,36 @@ class ApigeeAuthKeyInput extends KeyInputBase {
             // Check for cURL errors.
             if (curl_errno($ch)) {
               $this->messenger()->addError($this->t('cURL error: @error', ['@error' => curl_error($ch)]));
-            } else {
+            }
+            else {
               // Process the cURL response.
-              $decoded_response = json_decode($response, true);
+              $decoded_response = json_decode($response, TRUE);
               if ($decoded_response['location']) {
                 $this->messenger()->addStatus($this->t('Location set to @location', ['@location' => strtoupper($decoded_response['location.'])]));
                 $input_values['endpoint'] = 'https://' . $decoded_response['location'] . '-apigee.googleapis.com/v1';
-              } else {
+              }
+              else {
                 $this->messenger()->addWarning($this->t('The organization is not supporting DRZ feature.'));
                 unset($input_values['endpoint']);
               }
             }
             // Close cURL resource.
             curl_close($ch);
-          } else {
+          }
+          else {
             echo "Failed to fetch access token.\n";
-            // Print full response for debugging
+            // Print full response for debugging.
             print_r($accessToken);
           }
-        } catch (Exception $e) {
+        }
+        catch (Exception $e) {
           echo "An error occurred: " . $e->getMessage() . "\n";
           if ($e->getPrevious()) {
             echo "Previous error: " . $e->getPrevious()->getMessage() . "\n";
           }
         }
-      } else {
+      }
+      else {
         // Remove unneeded values if on a Public or Private instance.
         $input_values['account_json_key'] = '';
         if (!empty($input_values['gcp_hosted'])) {
