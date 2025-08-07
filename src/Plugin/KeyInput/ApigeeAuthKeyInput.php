@@ -25,11 +25,12 @@ use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StreamWrapper\PrivateStream;
 use Drupal\apigee_edge\Connector\GceServiceAccountAuthentication;
+use Drupal\apigee_edge\OauthTokenFileStorage;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\File\FileExists;
 use Drupal\key\Plugin\KeyInputBase;
-use Google\Client as GoogleClient;
+// use Google\Client as GoogleClient;
 use Http\Client\Exception;
 
 /**
@@ -324,50 +325,54 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         // Path to your service account key JSON file
         $serviceAccountKeyFilePath = $fileLocation; // IMPORTANT: Secure this file!
         try {
-          // --- Initialize Google Client ---
-          $client = new GoogleClient();
-          $client->setApplicationName("GCP Project Mapping Fetcher");
-          $client->setAuthConfig($serviceAccountKeyFilePath);
-          $client->setScopes($scopes);
+          $tokenStorage = \Drupal::service('apigee_edge.authentication.oauth_token_storage');
+          if ($tokenStorage instanceof OauthTokenFileStorage) {
+            $accessToken = $tokenStorage->getAccessToken();
+            if (isset($accessToken) && $accessToken !== null & $accessToken !== '') {
+              $curlUrl = 'https://apigee.googleapis.com/v1/organizations/' . $input_values['organization'] . ':getProjectMapping';
+              $ch = curl_init();
+              // Set cURL options.
+              curl_setopt($ch, CURLOPT_URL, $curlUrl);
+              curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Return the transfer as a string.
+              curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                  'Authorization: Bearer ' . $accessToken,
+                  'Content-Type: application/json',
+              ]);
 
-          // --- Fetch the Access Token ---
-          $accessToken = $client->fetchAccessTokenWithAssertion();
+              // Execute cURL request and get the response.
+              $response = curl_exec($ch);
+              $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-          if (isset($accessToken['access_token'])) {
-            $curlUrl = 'https://apigee.googleapis.com/v1/organizations/' . $input_values['organization'] . ':getProjectMapping';
-            $ch = curl_init();
-            // Set cURL options.
-            curl_setopt($ch, CURLOPT_URL, $curlUrl);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Return the transfer as a string.
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Authorization: Bearer ' . $accessToken['access_token'],
-                'Content-Type: application/json',
-            ]);
-
-            // Execute cURL request and get the response.
-            $response = curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-            // Check for cURL errors.
-            if (curl_errno($ch)) {
-              $this->messenger()->addError($this->t('cURL error: @error', ['@error' => curl_error($ch)]));
-            } else {
-              // Process the cURL response.
-              $decoded_response = json_decode($response, true);
-              if ($decoded_response['location']) {
-                $this->messenger()->addStatus($this->t('Location set to @location', ['@location' => $decoded_response['location']]));
-                $input_values['endpoint'] = 'https://' . $decoded_response['location'] . '-apigee.googleapis.com/v1';
+              // Check for cURL errors.
+              if (curl_errno($ch)) {
+                $this->messenger()->addError($this->t('cURL error: @error', ['@error' => curl_error($ch)]));
               } else {
-                $this->messenger()->addWarning($this->t('The organization is not supporting DRZ feature'));
-                unset($input_values['endpoint']);
+                // Process the cURL response.
+                $decoded_response = json_decode($response, true);
+                if ($decoded_response['location']) {
+                  $this->messenger()->addStatus($this->t('Location set to @location', ['@location' => strtoupper($decoded_response['location'])]));
+                  $input_values['endpoint'] = 'https://' . $decoded_response['location'] . '-apigee.googleapis.com/v1';
+                } else {
+                  $this->messenger()->addWarning($this->t('The organization is not supporting DRZ feature'));
+                  unset($input_values['endpoint']);
+                }
               }
+              // Close cURL resource.
+              curl_close($ch);
+            } else {
+              echo "Failed to fetch access token.\n";
+              print_r($accessToken); // Print full response for debugging
             }
-            // Close cURL resource.
-            curl_close($ch);
-          } else {
-            echo "Failed to fetch access token.\n";
-            print_r($accessToken); // Print full response for debugging
           }
+          // --- Initialize Google Client ---
+          // $hybridStorage = \Drupal::service('apigee_edge.authentication');
+          // $client = new GoogleClient();
+          // $client->setApplicationName("GCP Project Mapping Fetcher");
+          // $client->setAuthConfig($serviceAccountKeyFilePath);
+          // $client->setScopes($scopes);
+
+          // // --- Fetch the Access Token ---
+          // $accessToken = $client->fetchAccessTokenWithAssertion();
         } catch (Exception $e) {
           echo "An error occurred: " . $e->getMessage() . "\n";
           if ($e->getPrevious()) {
