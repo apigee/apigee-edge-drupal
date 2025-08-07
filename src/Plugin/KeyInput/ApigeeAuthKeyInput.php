@@ -357,7 +357,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
               // Process the cURL response.
               $decoded_response = json_decode($response, TRUE);
               if ($decoded_response['location']) {
-                $this->messenger()->addStatus($this->t('Location set to @location', ['@location' => strtoupper($decoded_response['location.'])]));
+                $this->messenger()->addStatus($this->t('Location set to @location', ['@location' => strtoupper($decoded_response['location'])]));
                 $input_values['endpoint'] = 'https://' . $decoded_response['location'] . '-apigee.googleapis.com/v1';
               }
               else {
