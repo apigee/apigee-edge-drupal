@@ -184,6 +184,10 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         'required' => $state_for_private,
       ],
     ];
+    $form['drzlocation'] = [
+      '#type' => 'hidden',
+      '#value' => ''
+    ];
     $form['authorization_server_type'] = [
       '#title' => $this->t('Authorization server'),
       '#type' => 'radios',
@@ -320,7 +324,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         $fileSystem->saveData($json_content, $fileLocation, FileExists::Replace);
 
         // Or adjust as needed.
-        $scopes = ['https://www.googleapis.com/auth/cloud-platform'];
+        $scopes = [ClientInterface::APIGEE_TOKEN_ENDPOINT];
         // Path to your service account key JSON file.
         // IMPORTANT: Secure this file!
         $serviceAccountKeyFilePath = $fileLocation;
@@ -334,7 +338,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
           // --- Fetch the Access Token ---
           $accessToken = $client->fetchAccessTokenWithAssertion();
           if (isset($accessToken['access_token'])) {
-            $curlUrl = 'https://apigee.googleapis.com/v1/organizations/' . $input_values['organization'] . ':getProjectMapping';
+            $curlUrl = ClientInterface::APIGEE_ON_GCP_ENDPOINT . "/organizations/" . $input_values['organization'] . ":getProjectMapping";
             $ch = curl_init();
             // Set cURL options.
             curl_setopt($ch, CURLOPT_URL, $curlUrl);
@@ -347,7 +351,6 @@ class ApigeeAuthKeyInput extends KeyInputBase {
 
             // Execute cURL request and get the response.
             $response = curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
             // Check for cURL errors.
             if (curl_errno($ch)) {
@@ -358,20 +361,20 @@ class ApigeeAuthKeyInput extends KeyInputBase {
               $decoded_response = json_decode($response, TRUE);
               if ($decoded_response['location']) {
                 $this->messenger()->addStatus($this->t('Location set to @location', ['@location' => strtoupper($decoded_response['location'])]));
-                $input_values['endpoint'] = 'https://' . $decoded_response['location'] . '-apigee.googleapis.com/v1';
+                $input_values['drzlocation'] = $decoded_response['location'];
               }
               else {
-                $this->messenger()->addWarning($this->t('The organization is not supporting DRZ feature.'));
-                unset($input_values['endpoint']);
+                $this->messenger()->addWarning($this->t('The organization is not supporting DRZ feature switching to default hybrid instance.'));
+                unset($input_values['drzlocation']);
               }
             }
             // Close cURL resource.
             curl_close($ch);
           }
           else {
-            echo "Failed to fetch access token.\n";
+            $this->messenger()->addStatus($this->t('Failed to fetch access token.\n'));
             // Print full response for debugging.
-            print_r($accessToken);
+            $this->messenger()->addStatus($accessToken);
           }
         }
         catch (Exception $e) {
@@ -386,6 +389,9 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         $input_values['account_json_key'] = '';
         if (!empty($input_values['gcp_hosted'])) {
           unset($input_values['gcp_hosted']);
+        }
+        if (!empty($input_values['drzlocation'])) {
+          unset($input_values['drzlocation']);
         }
         // If password field is empty we just skip it and preserve the initial
         // password if there is one already.
