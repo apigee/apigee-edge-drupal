@@ -330,6 +330,17 @@ class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterfa
       ->setLabel(t("@team name", ['@team' => $team_singular_label]))
       ->setRequired(TRUE);
 
+    $definitions['email']
+      ->setDisplayOptions('view', [
+        'label' => 'inline',
+        'weight' => 1,
+      ])
+      ->setDisplayOptions('form', [
+        'weight' => 1,
+      ])
+      ->setLabel(t("Email"))
+      ->setRequired(FALSE);
+
     $definitions['status']
       ->setDisplayOptions('view', [
         'label' => 'inline',

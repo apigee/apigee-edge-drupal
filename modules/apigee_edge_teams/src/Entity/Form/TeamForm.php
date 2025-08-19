@@ -199,6 +199,14 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
       '#default_value' => $team->id(),
     ];
 
+    $form['email'] = [
+      '#type' => 'email',
+      '#title' => $this->t('Team Administrator Email'),
+      '#description' => $this->t('The email address of the team administrator.'),
+      '#default_value' => !$team->isNew() ? $team->getAttribute(static::ADMIN_EMAIL_ATTRIBUTE) : $this->currentUser->getEmail(),
+      '#required' => TRUE,
+    ];
+
     return $form;
   }
 
