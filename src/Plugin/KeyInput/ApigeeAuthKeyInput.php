@@ -360,7 +360,8 @@ class ApigeeAuthKeyInput extends KeyInputBase {
               // Process the cURL response.
               $decoded_response = json_decode($response, TRUE);
               if ($decoded_response['location']) {
-                $this->messenger()->addStatus($this->t('Location set to @location', ['@location' => strtoupper($decoded_response['location'])]));
+                $classLocation = 'APIGEE_ON_GCP_' . strtoupper($decoded_response['location']) . '_DRZ_ENDPOINT';
+                $this->messenger()->addStatus($this->t('Data residency is enabled for this organization. Service endpoint being used is @serviceEndpoint', ['@serviceEndpoint' => constant(ClientInterface::class . '::' . $classLocation)]));
                 $input_values['drzlocation'] = $decoded_response['location'];
               }
               else {
