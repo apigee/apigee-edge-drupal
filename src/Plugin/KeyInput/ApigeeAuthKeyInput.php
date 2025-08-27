@@ -25,7 +25,10 @@ use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\apigee_edge\Connector\GceServiceAccountAuthentication;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\File\FileExists;
 use Drupal\key\Plugin\KeyInputBase;
+use Google\Client as GoogleClient;
 use Http\Client\Exception;
 
 /**
@@ -181,6 +184,10 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         'required' => $state_for_private,
       ],
     ];
+    $form['drzlocation'] = [
+      '#type' => 'hidden',
+      '#value' => ''
+    ];
     $form['authorization_server_type'] = [
       '#title' => $this->t('Authorization server'),
       '#type' => 'radios',
@@ -306,12 +313,86 @@ class ApigeeAuthKeyInput extends KeyInputBase {
         if (!empty($input_values['gcp_hosted'])) {
           $input_values['account_json_key'] = '';
         }
+        // Converting Json string to array.
+        $json_array = json_decode($input_values['account_json_key'], TRUE);
+        // Converting Json array to json string for file data save.
+        $json_content = json_encode($json_array, JSON_PRETTY_PRINT);
+        $fileSystem = \Drupal::service('file_system');
+        $directory = $fileSystem->realpath("private://.apigee_edge");
+        $fileSystem->prepareDirectory($directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+        $fileLocation = $directory . '/apigeegcpacckey.json';
+        $fileSystem->saveData($json_content, $fileLocation, FileExists::Replace);
+
+        // Or adjust as needed.
+        $scopes = [ClientInterface::APIGEE_TOKEN_ENDPOINT];
+        // Path to your service account key JSON file.
+        // IMPORTANT: Secure this file!
+        $serviceAccountKeyFilePath = $fileLocation;
+        try {
+          // --- Initialize Google Client ---
+          $client = new GoogleClient();
+          $client->setApplicationName("GCP Project Mapping Fetcher");
+          $client->setAuthConfig($serviceAccountKeyFilePath);
+          $client->setScopes($scopes);
+
+          // --- Fetch the Access Token ---
+          $accessToken = $client->fetchAccessTokenWithAssertion();
+          if (isset($accessToken['access_token'])) {
+            $curlUrl = ClientInterface::APIGEE_ON_GCP_ENDPOINT . "/organizations/" . $input_values['organization'] . ":getProjectMapping";
+            $ch = curl_init();
+            // Set cURL options.
+            curl_setopt($ch, CURLOPT_URL, $curlUrl);
+            // Return the transfer as a string.
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+              'Authorization: Bearer ' . $accessToken['access_token'],
+              'Content-Type: application/json',
+            ]);
+
+            // Execute cURL request and get the response.
+            $response = curl_exec($ch);
+
+            // Check for cURL errors.
+            if (curl_errno($ch)) {
+              $this->messenger()->addError($this->t('cURL error: @error', ['@error' => curl_error($ch)]));
+            }
+            else {
+              // Process the cURL response.
+              $decoded_response = json_decode($response, TRUE);
+              if ($decoded_response['location']) {
+                $classLocation = 'APIGEE_ON_GCP_' . strtoupper($decoded_response['location']) . '_DRZ_ENDPOINT';
+                $this->messenger()->addStatus($this->t('Data residency is enabled for this organization. Service endpoint being used is @serviceEndpoint', ['@serviceEndpoint' => constant(ClientInterface::class . '::' . $classLocation)]));
+                $input_values['drzlocation'] = $decoded_response['location'];
+              }
+              else {
+                $this->messenger()->addWarning($this->t('The organization is not supporting DRZ feature switching to default hybrid instance.'));
+                unset($input_values['drzlocation']);
+              }
+            }
+            // Close cURL resource.
+            curl_close($ch);
+          }
+          else {
+            $this->messenger()->addStatus($this->t('Failed to fetch access token.\n'));
+            // Print full response for debugging.
+            $this->messenger()->addStatus($accessToken);
+          }
+        }
+        catch (Exception $e) {
+          echo "An error occurred: " . $e->getMessage() . "\n";
+          if ($e->getPrevious()) {
+            echo "Previous error: " . $e->getPrevious()->getMessage() . "\n";
+          }
+        }
       }
       else {
         // Remove unneeded values if on a Public or Private instance.
         $input_values['account_json_key'] = '';
         if (!empty($input_values['gcp_hosted'])) {
           unset($input_values['gcp_hosted']);
+        }
+        if (!empty($input_values['drzlocation'])) {
+          unset($input_values['drzlocation']);
         }
         // If password field is empty we just skip it and preserve the initial
         // password if there is one already.
