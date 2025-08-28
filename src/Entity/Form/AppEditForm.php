@@ -207,6 +207,7 @@ abstract class AppEditForm extends AppForm {
       foreach ($form_state->getValue('credential', []) as $credential_key => $credential_changes) {
         foreach ($app->getCredentials() as $credential) {
           if ($credential_key === $credential->getConsumerKey()) {
+            $credentialScopes = $credential->getScopes();
             $original_api_product_ids = [];
             // Cast it to array to be able handle the same way the single- and
             // multi-select configuration.
@@ -232,6 +233,10 @@ abstract class AppEditForm extends AppForm {
 
               // Do not add anything to the results if there were no change.
               if ($product_list_changed) {
+                // Updates scopes for Credentials if present.
+                if (count($credentialScopes) > 0) {
+                  $app_credential_controller->overrideScopes($credential_key, $credentialScopes);
+                }
                 $results[] = TRUE;
               }
               break;
