@@ -349,13 +349,12 @@ final class KeyEntityFormEnhancer {
       // Test the connection.
       $this->connector->testConnection($test_key);
       $this->messenger()->addStatus($this->t('Connection successful.'));
-
-      $input_values = $form_state->getValues();
       // Data Residency check.
       $key_value = json_decode($key_value, TRUE);
-      if ($input_values['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+      dpm($key_value);
+      if ($key_value['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
         // Converting Json string to array.
-        $json_array = json_decode($input_values['account_json_key'], TRUE);
+        $json_array = json_decode($key_value['account_json_key'], TRUE);
         // Converting Json array to json string for file data save.
         $json_content = json_encode($json_array, JSON_PRETTY_PRINT);
         $fileSystem = \Drupal::service('file_system');
@@ -378,7 +377,7 @@ final class KeyEntityFormEnhancer {
           // --- Fetch the Access Token ---
           $accessToken = $client->fetchAccessTokenWithAssertion();
           if (isset($accessToken['access_token'])) {
-            $curlUrl = ClientInterface::APIGEE_ON_GCP_ENDPOINT . "/organizations/" . $input_values['organization'] . ":getProjectMapping";
+            $curlUrl = ClientInterface::APIGEE_ON_GCP_ENDPOINT . "/organizations/" . $key_value['organization'] . ":getProjectMapping";
             $ch = curl_init();
             // Set cURL options.
             curl_setopt($ch, CURLOPT_URL, $curlUrl);
@@ -403,16 +402,14 @@ final class KeyEntityFormEnhancer {
                 $classLocation = 'APIGEE_ON_GCP_' . strtoupper($decoded_response['location']) . '_DRZ_ENDPOINT';
                 $this->messenger()->addStatus($this->t('Data residency is enabled for this organization. Service endpoint being used is @serviceEndpoint', ['@serviceEndpoint' => constant(ClientInterface::class . '::' . $classLocation)]));
                 $key_value['drzlocation'] = $decoded_response['location'];
-                $input_values['drzlocation'] = $decoded_response['location'];
+                $key_value['drzlocation'] = $decoded_response['location'];
               }
               else {
                 unset($key_value['drzlocation']);
-                unset($input_values['drzlocation']);
               }
             }
             // Close cURL resource.
             curl_close($ch);
-            $form_state->setValues(['key_value' => json_encode(array_filter($key_value))]);
           }
           else {
             $this->messenger()->addStatus($this->t('Failed to fetch access token.\n'));
@@ -428,8 +425,9 @@ final class KeyEntityFormEnhancer {
           }
         }
       } else {
-        unset($input_values['drzlocation']);
+        unset($key_value['drzlocation']);
       }
+      $form_state->setValues(['key_value' => json_encode(array_filter($key_value))]);
 
       // Based on type of organization, cache needs to clear.
       drupal_flush_all_caches();
