@@ -351,7 +351,6 @@ final class KeyEntityFormEnhancer {
       $this->messenger()->addStatus($this->t('Connection successful.'));
       // Data Residency check.
       $key_value = json_decode($key_value, TRUE);
-      dpm($key_value);
       if ($key_value['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
         // Converting Json string to array.
         $json_array = json_decode($key_value['account_json_key'], TRUE);
