@@ -20,6 +20,7 @@
 
 namespace Drupal\apigee_edge;
 
+use Apigee\Edge\Api\Management\Controller\OrganizationController;
 use Apigee\Edge\ClientInterface;
 use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\ApigeeOnGcpOauth2AuthenticationException;
@@ -47,7 +48,6 @@ use Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType;
 use Drupal\key\Form\KeyFormBase;
 use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyProviderSettableValueInterface;
-use Google\Client as GoogleClient;
 use GuzzleHttp\Exception\ConnectException;
 use Http\Client\Exception\NetworkException;
 
@@ -350,83 +350,31 @@ final class KeyEntityFormEnhancer {
       $this->connector->testConnection($test_key);
       $this->messenger()->addStatus($this->t('Connection successful.'));
       // Data Residency check.
-      $key_value = json_decode($key_value, TRUE);
-      if ($key_value['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
-        // Converting Json string to array.
-        $json_array = json_decode($key_value['account_json_key'], TRUE);
-        // Converting Json array to json string for file data save.
-        $json_content = json_encode($json_array, JSON_PRETTY_PRINT);
-        $fileSystem = \Drupal::service('file_system');
-        $directory = $fileSystem->realpath("private://.apigee_edge");
-        $fileSystem->prepareDirectory($directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-        $fileLocation = $directory . '/apigeegcpacckey.json';
-        $fileSystem->saveData($json_content, $fileLocation, FileExists::Replace);
-
-        $scopes = [ClientInterface::APIGEE_TOKEN_ENDPOINT];
-        // Path to your service account key JSON file.
-        // IMPORTANT: Secure this file!
-        $serviceAccountKeyFilePath = $fileLocation;
+      $key_value_array = json_decode($key_value, TRUE);
+      if ($key_value_array['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
         try {
-          // --- Initialize Google Client ---
-          $client = new GoogleClient();
-          $client->setApplicationName("GCP Project Mapping Fetcher");
-          $client->setAuthConfig($serviceAccountKeyFilePath);
-          $client->setScopes($scopes);
+          // The getProjectMapping endpoint is only available on the global endpoint.
+          $client = $this->connector->buildClient($test_key_type->getAuthenticationMethod($test_key), ClientInterface::APIGEE_ON_GCP_ENDPOINT);
+          $orgController = new OrganizationController($client);
+          $decoded_response = $orgController->getProjectMapping($key_value_array['organization']);
 
-          // --- Fetch the Access Token ---
-          $accessToken = $client->fetchAccessTokenWithAssertion();
-          if (isset($accessToken['access_token'])) {
-            $curlUrl = ClientInterface::APIGEE_ON_GCP_ENDPOINT . "/organizations/" . $key_value['organization'] . ":getProjectMapping";
-            $ch = curl_init();
-            // Set cURL options.
-            curl_setopt($ch, CURLOPT_URL, $curlUrl);
-            // Return the transfer as a string.
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-              'Authorization: Bearer ' . $accessToken['access_token'],
-              'Content-Type: application/json',
-            ]);
-
-            // Execute cURL request and get the response.
-            $response = curl_exec($ch);
-
-            // Check for cURL errors.
-            if (curl_errno($ch)) {
-              $this->messenger()->addError($this->t('cURL error: @error', ['@error' => curl_error($ch)]));
-            }
-            else {
-              // Process the cURL response.
-              $decoded_response = json_decode($response, TRUE);
-              if (isset($decoded_response['location'])) {
-                $classLocation = 'APIGEE_ON_GCP_' . strtoupper($decoded_response['location']) . '_DRZ_ENDPOINT';
-                $this->messenger()->addStatus($this->t('Data residency is enabled for this organization. Service endpoint being used is @serviceEndpoint', ['@serviceEndpoint' => constant(ClientInterface::class . '::' . $classLocation)]));
-                $key_value['drzlocation'] = $decoded_response['location'];
-                $key_value['drzlocation'] = $decoded_response['location'];
-              }
-              else {
-                unset($key_value['drzlocation']);
-              }
-            }
-            // Close cURL resource.
-            curl_close($ch);
+          if (isset($decoded_response['location'])) {
+            $classLocation = 'APIGEE_ON_GCP_' . strtoupper($decoded_response['location']) . '_DRZ_ENDPOINT';
+            $this->messenger()->addStatus($this->t('Data residency is enabled for this organization. Service endpoint being used is @serviceEndpoint', ['@serviceEndpoint' => constant(ClientInterface::class . '::' . $classLocation)]));
+            $key_value_array['drzlocation'] = $decoded_response['location'];
           }
           else {
-            $this->messenger()->addStatus($this->t('Failed to fetch access token.\n'));
-            // Print full response for debugging.
-            $this->messenger()->addStatus($accessToken);
-            unset($key_value['drzlocation']);
+            unset($key_value_array['drzlocation']);
           }
         }
         catch (\Exception $e) {
-          echo "An error occurred: " . $e->getMessage() . "\n";
-          if ($e->getPrevious()) {
-            echo "Previous error: " . $e->getPrevious()->getMessage() . "\n";
-          }
+          $this->messenger()->addError($this->t('Could not determine data residency information. Error: @error', ['@error' => $e->getMessage()]));
+          unset($key_value_array['drzlocation']);
         }
       } else {
-        unset($key_value['drzlocation']);
+        unset($key_value_array['drzlocation']);
       }
-      $form_state->setValues(['key_value' => json_encode(array_filter($key_value))]);
+      $form_state->setValues(['key_value' => json_encode(array_filter($key_value_array))]);
 
       // Based on type of organization, cache needs to clear.
       drupal_flush_all_caches();

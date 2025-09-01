@@ -143,6 +143,13 @@ final class OrganizationController implements OrganizationControllerInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function getProjectMapping(string $organizationName): array {
+    return $this->decorated()->getProjectMapping($organizationName);
+  }
+
+  /**
    * Checks whether the organization is Edge or ApigeeX organization.
    *
    * @return bool

@@ -27,4 +27,20 @@ use Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface as Edg
  */
 interface OrganizationControllerInterface extends EdgeOrganizationControllerInterface {
 
+  /**
+   * Gets the Project Mapping for an organization.
+   *
+   * @return array
+   *   Gets the project details for an organization.
+   */
+  public function getProjectMapping(string $organizationName): array;
+
+  /**
+   * Checks whether the organization is Edge or ApigeeX organization.
+   *
+   * @return bool
+   *   TRUE if the value of the property is "true", false otherwise.
+   */
+  public function isOrganizationApigeeX(): bool;
+
 }
