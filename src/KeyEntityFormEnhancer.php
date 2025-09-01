@@ -356,14 +356,11 @@ final class KeyEntityFormEnhancer {
           // The getProjectMapping endpoint is only available on the global endpoint.
           $client = $this->connector->buildClient($test_key_type->getAuthenticationMethod($test_key), ClientInterface::APIGEE_ON_GCP_ENDPOINT);
           $orgController = new OrganizationController($client);
-          $decoded_response = $orgController->getProjectMapping($key_value_array['organization']);
-
-          if (isset($decoded_response['location'])) {
-            $classLocation = 'APIGEE_ON_GCP_' . strtoupper($decoded_response['location']) . '_DRZ_ENDPOINT';
-            $this->messenger()->addStatus($this->t('Data residency is enabled for this organization. Service endpoint being used is @serviceEndpoint', ['@serviceEndpoint' => constant(ClientInterface::class . '::' . $classLocation)]));
-            $key_value_array['drzlocation'] = $decoded_response['location'];
-          }
-          else {
+          $dataResidencyEndpoint = $orgController->getDataResidencyEndpoint($key_value_array['organization']);
+          if ($dataResidencyEndpoint !== ClientInterface::APIGEE_ON_GCP_ENDPOINT || $dataResidencyEndpoint !== ClientInterface::EDGE_ENDPOINT) {
+            $this->messenger()->addStatus($this->t('Data residency is enabled for this organization. Service endpoint being used is @serviceEndpoint', ['@serviceEndpoint' => $dataResidencyEndpoint]));
+            $key_value_array['drzlocation'] = $dataResidencyEndpoint;
+          } else {
             unset($key_value_array['drzlocation']);
           }
         }

@@ -28,12 +28,14 @@ use Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface as Edg
 interface OrganizationControllerInterface extends EdgeOrganizationControllerInterface {
 
   /**
-   * Gets the Project Mapping for an organization.
+   * Returns the Data Residency Endpoint for the organization.
    *
-   * @return array
-   *   Gets the project details for an organization.
+   * This is only available for Apigee X/Hybrid organizations.
+   *
+   * @return string
+   *   Returns location based endpoint uri.
    */
-  public function getProjectMapping(string $organizationName): array;
+  public function getDataResidencyEndpoint(string $organizationName): string;
 
   /**
    * Checks whether the organization is Edge or ApigeeX organization.

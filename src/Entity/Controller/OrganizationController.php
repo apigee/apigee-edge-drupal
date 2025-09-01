@@ -138,15 +138,16 @@ final class OrganizationController implements OrganizationControllerInterface {
   public function getEntities(): array {
     $entities = $this->decorated()->getEntities();
     foreach ($entities as $id => $entity) {
-      $this->cache[$id] = $entities;
+      $this->cache[$id] = $entity;
     }
+    return $entities;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getProjectMapping(string $organizationName): array {
-    return $this->decorated()->getProjectMapping($organizationName);
+  public function getDataResidencyEndpoint(string $organizationName): string {
+    return $this->decorated()->getDataResidencyEndpoint($organizationName);
   }
 
   /**
