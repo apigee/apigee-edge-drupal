@@ -358,6 +358,7 @@ final class KeyEntityFormEnhancer {
           if ($dataResidencyEndpoint !== ClientInterface::APIGEE_ON_GCP_ENDPOINT || $dataResidencyEndpoint !== ClientInterface::EDGE_ENDPOINT) {
             $this->messenger()->addStatus($this->t('Data residency is enabled for this organization. Service endpoint being used is @serviceEndpoint', ['@serviceEndpoint' => $dataResidencyEndpoint]));
             $key_value_array['drzlocation'] = $dataResidencyEndpoint;
+            $form_state->setValue('drzlocation', $dataResidencyEndpoint);
           } else {
             unset($key_value_array['drzlocation']);
           }
