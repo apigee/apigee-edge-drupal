@@ -26,5 +26,22 @@ use Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface as Edg
  * Base definition of the Organization controller service in Drupal.
  */
 interface OrganizationControllerInterface extends EdgeOrganizationControllerInterface {
+  /**
+   * Returns the Data Residency Endpoint for the organization.
+   *
+   * This is only available for Apigee X/Hybrid organizations.
+   *
+   * @return string
+   *   Returns location based endpoint uri.
+   */
+  public function getDataResidencyEndpoint(string $organizationName): string;
+
+  /**
+   * Checks whether the organization is Edge or ApigeeX organization.
+   *
+   * @return bool
+   *   TRUE if the value of the property is "true", false otherwise.
+   */
+  public function isOrganizationApigeeX(): bool;
 
 }

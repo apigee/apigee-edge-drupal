@@ -20,6 +20,8 @@
 
 namespace Drupal\apigee_edge;
 
+use Apigee\Edge\Api\Management\Controller\OrganizationController;
+use Apigee\Edge\ClientInterface;
 use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\ApigeeOnGcpOauth2AuthenticationException;
 use Apigee\Edge\Exception\OauthAuthenticationException;
@@ -345,6 +347,30 @@ final class KeyEntityFormEnhancer {
       // Test the connection.
       $this->connector->testConnection($test_key);
       $this->messenger()->addStatus($this->t('Connection successful.'));
+      // Data Residency check.
+      $key_value_array = json_decode($key_value, TRUE);
+      if ($key_value_array['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+        try {
+          // The getProjectMapping endpoint is only available on the global endpoint.
+          $client = $this->connector->buildClient($test_key_type->getAuthenticationMethod($test_key), ClientInterface::APIGEE_ON_GCP_ENDPOINT);
+          $orgController = new OrganizationController($client);
+          $dataResidencyEndpoint = $orgController->getDataResidencyEndpoint($key_value_array['organization']);
+          if ($dataResidencyEndpoint !== ClientInterface::APIGEE_ON_GCP_ENDPOINT || $dataResidencyEndpoint !== ClientInterface::EDGE_ENDPOINT) {
+            $this->messenger()->addStatus($this->t('Data residency is enabled for this organization. Service endpoint being used is @serviceEndpoint', ['@serviceEndpoint' => $dataResidencyEndpoint]));
+            $key_value_array['drzlocation'] = $dataResidencyEndpoint;
+            $form_state->setValue('drzlocation', $dataResidencyEndpoint);
+          } else {
+            unset($key_value_array['drzlocation']);
+          }
+        }
+        catch (\Exception $e) {
+          $this->messenger()->addError($this->t('Could not determine data residency information. Error: @error', ['@error' => $e->getMessage()]));
+          unset($key_value_array['drzlocation']);
+        }
+      } else {
+        unset($key_value_array['drzlocation']);
+      }
+      $form_state->setValues(['key_value' => json_encode(array_filter($key_value_array))]);
 
       // Based on type of organization, cache needs to clear.
       drupal_flush_all_caches();
