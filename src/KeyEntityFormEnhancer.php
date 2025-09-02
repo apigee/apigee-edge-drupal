@@ -368,7 +368,8 @@ final class KeyEntityFormEnhancer {
           $this->messenger()->addError($this->t('Could not determine data residency information. Error: @error', ['@error' => $e->getMessage()]));
           unset($key_value_array['drzlocation']);
         }
-      } else {
+      } 
+      else {
         unset($key_value_array['drzlocation']);
       }
       $form_state->setValues(['key_value' => json_encode(array_filter($key_value_array))]);
