@@ -182,8 +182,7 @@ class ApigeeAuthKeyInput extends KeyInputBase {
       ],
     ];
     $form['drzlocation'] = [
-      '#type' => 'hidden',
-      '#value' => ''
+      '#type' => 'hidden'
     ];
     $form['authorization_server_type'] = [
       '#title' => $this->t('Authorization server'),
