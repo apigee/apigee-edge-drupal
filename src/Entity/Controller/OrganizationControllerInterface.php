@@ -26,6 +26,7 @@ use Apigee\Edge\Api\Management\Controller\OrganizationControllerInterface as Edg
  * Base definition of the Organization controller service in Drupal.
  */
 interface OrganizationControllerInterface extends EdgeOrganizationControllerInterface {
+
   /**
    * Returns the Data Residency Endpoint for the organization.
    *

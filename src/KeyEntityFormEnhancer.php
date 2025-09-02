@@ -355,11 +355,12 @@ final class KeyEntityFormEnhancer {
           $client = $this->connector->buildClient($test_key_type->getAuthenticationMethod($test_key), ClientInterface::APIGEE_ON_GCP_ENDPOINT);
           $orgController = new OrganizationController($client);
           $dataResidencyEndpoint = $orgController->getDataResidencyEndpoint($key_value_array['organization']);
-          if ($dataResidencyEndpoint !== ClientInterface::APIGEE_ON_GCP_ENDPOINT || $dataResidencyEndpoint !== ClientInterface::EDGE_ENDPOINT) {
+          if (ClientInterface::APIGEE_ON_GCP_ENDPOINT !== $dataResidencyEndpoint || ClientInterface::EDGE_ENDPOINT !== $dataResidencyEndpoint) {
             $this->messenger()->addStatus($this->t('Data residency is enabled for this organization. Service endpoint being used is @serviceEndpoint', ['@serviceEndpoint' => $dataResidencyEndpoint]));
             $key_value_array['drzlocation'] = $dataResidencyEndpoint;
             $form_state->setValue('drzlocation', $dataResidencyEndpoint);
-          } else {
+          }
+          else {
             unset($key_value_array['drzlocation']);
           }
         }
