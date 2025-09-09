@@ -120,6 +120,8 @@ final class KeyEntityFormEnhancer {
    *   The config factory.
    * @param \Drupal\Component\Utility\EmailValidatorInterface $email_validator
    *   The email validator.
+   * @param \Drupal\apigee_edge\Service\DataResidencyEndpointDiscoveryInterface $data_residency_endpoint_discovery
+   *   The data residency endpoint discovery service.
    */
   public function __construct(SDKConnectorInterface $connector, OauthTokenStorageInterface $oauth_token_storage, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, EmailValidatorInterface $email_validator, DataResidencyEndpointDiscoveryInterface $data_residency_endpoint_discovery) {
     $this->connector = $connector;

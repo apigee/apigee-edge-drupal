@@ -70,6 +70,10 @@ class DataResidencyEndpointDiscovery implements DataResidencyEndpointDiscoveryIn
    *   The SDK connector service.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state service.
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger service.
+   * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
+   *   String translation.
    */
   public function __construct(SDKConnectorInterface $sdk_connector, StateInterface $state, MessengerInterface $messenger, TranslationInterface $string_translation) {
     $this->sdkConnector = $sdk_connector;
