@@ -81,7 +81,7 @@ class TeamAppStorage extends AppStorage implements TeamAppStorageInterface {
     $this->teamAppControllerFactory = $team_app_controller_factory;
     $this->orgController = $org_controller;
     if ($config === NULL) {
-      @trigger_error('Calling ' . __METHOD__ . ' without the $config is deprecated in apigee_edge:4.0.3 and it will be required in apigee_edge:5.0.0. See https://github.com/apigee/apigee-edge-drupal/pull/1155.', E_USER_DEPRECATED);
+      @trigger_error('Calling ' . __METHOD__ . ' without the $config is deprecated in apigee_edge:3.0.12. See https://github.com/apigee/apigee-edge-drupal/pull/1155.', E_USER_DEPRECATED);
       $config = \Drupal::configFactory();
     }
 
