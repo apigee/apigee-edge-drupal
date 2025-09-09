@@ -24,7 +24,7 @@ services:
 
   apigee_edge.key_entity_form_enhancer:
     class: Drupal\apigee_edge\KeyEntityFormEnhancer
-    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.authentication.oauth_token_storage', '@entity_type.manager', '@config.factory', '@email.validator']
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.authentication.oauth_token_storage', '@entity_type.manager', '@config.factory', '@email.validator', '@apigee_edge.data_residency_endpoint_discovery']
     calls:
       - [setMessenger, ['@messenger']]
       - [setStringTranslation, ['@string_translation']]
@@ -217,3 +217,7 @@ services:
   apigee_edge.post_user_delete_action_performer:
     class: Drupal\apigee_edge\User\RemoveRelatedDeveloperAccountSynchronousPostUserDeleteActionPerformer
     arguments: ['@entity_type.manager', '@logger.channel.apigee_edge']
+
+  apigee_edge.data_residency_endpoint_discovery:
+    class: Drupal\apigee_edge\Service\DataResidencyEndpointDiscovery
+    arguments: ['@apigee_edge.sdk_connector', '@state', '@messenger', '@string_translation']

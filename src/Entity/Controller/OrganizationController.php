@@ -158,4 +158,16 @@ final class OrganizationController implements OrganizationControllerInterface {
     }
   }
 
+  /**
+   * Returns the Data Residency Endpoint for the organization.
+   *
+   * This is only available for Apigee X/Hybrid organizations.
+   *
+   * @return array
+   *   Returns the project ID and region for an Apigee organization.
+   */
+  public function getgetProjectMapping(string $organizationName): array {
+    return $this->decorated()->getProjectMapping($organizationName);
+  }
+
 }

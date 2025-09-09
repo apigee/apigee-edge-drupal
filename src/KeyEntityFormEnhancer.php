@@ -41,6 +41,7 @@ use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\apigee_edge\Plugin\KeyProviderRequirementsInterface;
 use Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType;
+use Drupal\apigee_edge\Service\DataResidencyEndpointDiscoveryInterface;
 use Drupal\key\Form\KeyFormBase;
 use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyProviderSettableValueInterface;
@@ -100,6 +101,13 @@ final class KeyEntityFormEnhancer {
   private $emailValidator;
 
   /**
+   * The data residency endpoint discovery service.
+   *
+   * @var \Drupal\apigee_edge\Service\DataResidencyEndpointDiscoveryInterface
+   */
+  private $dataResidencyEndpointDiscovery;
+
+  /**
    * KeyEntityFormEnhancer constructor.
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
@@ -113,12 +121,13 @@ final class KeyEntityFormEnhancer {
    * @param \Drupal\Component\Utility\EmailValidatorInterface $email_validator
    *   The email validator.
    */
-  public function __construct(SDKConnectorInterface $connector, OauthTokenStorageInterface $oauth_token_storage, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, EmailValidatorInterface $email_validator) {
+  public function __construct(SDKConnectorInterface $connector, OauthTokenStorageInterface $oauth_token_storage, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, EmailValidatorInterface $email_validator, DataResidencyEndpointDiscoveryInterface $data_residency_endpoint_discovery) {
     $this->connector = $connector;
     $this->entityTypeManager = $entity_type_manager;
     $this->oauthTokenStorage = $oauth_token_storage;
     $this->configFactory = $config_factory;
     $this->emailValidator = $email_validator;
+    $this->dataResidencyEndpointDiscovery = $data_residency_endpoint_discovery;
   }
 
   /**
@@ -342,6 +351,14 @@ final class KeyEntityFormEnhancer {
         // Clear existing OAuth token data.
         $this->cleanUpOauthTokenData();
       }
+
+      // Data Residency check.
+      \Drupal::state()->delete(DataResidencyEndpointDiscoveryInterface::ENDPOINT_KEY);
+      $key_value_array = json_decode($key_value, TRUE);
+      if ($key_value_array['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+        $this->dataResidencyEndpointDiscovery->discoverEndpoint($test_key);
+      }
+
       // Test the connection.
       $this->connector->testConnection($test_key);
       $this->messenger()->addStatus($this->t('Connection successful.'));
