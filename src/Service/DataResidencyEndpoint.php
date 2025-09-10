@@ -90,13 +90,13 @@ class DataResidencyEndpoint implements DataResidencyEndpointInterface {
     $key_type = $key->getKeyType();
 
     try {
-
       $client = $this->sdkConnector->buildClient($key_type->getAuthenticationMethod($key), ClientInterface::APIGEE_ON_GCP_ENDPOINT);
       $orgController = new OrganizationController($client);
       $dataResidencyData = $orgController->getProjectMapping($key_type->getOrganization($key));
 
       if (isset($dataResidencyData['location']) && $dataResidencyData['location']) {
-        $dataResidencyEndpoint = 'https://' . $dataResidencyData['location'] . '-apigee.googleapis.com/v1';
+        $base_endpoint = ClientInterface::APIGEE_ON_GCP_ENDPOINT;
+        $dataResidencyEndpoint = str_replace("https://", "https://{$dataResidencyData['location']}-", $base_endpoint);
 
         $this->state->set(self::ENDPOINT_KEY, $dataResidencyEndpoint);
         $this->messenger->addStatus($this->stringTranslation->translate('Data residency is enabled for this organization. Service endpoint being used is @serviceEndpoint', ['@serviceEndpoint' => $dataResidencyEndpoint]));
