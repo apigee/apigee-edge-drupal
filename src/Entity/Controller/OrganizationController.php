@@ -166,7 +166,7 @@ final class OrganizationController implements OrganizationControllerInterface {
    * @return array
    *   Returns the project ID and region for an Apigee organization.
    */
-  public function getgetProjectMapping(string $organizationName): array {
+  public function getProjectMapping(string $organizationName): array {
     return $this->decorated()->getProjectMapping($organizationName);
   }
 

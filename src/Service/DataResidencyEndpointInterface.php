@@ -25,7 +25,7 @@ use Drupal\key\KeyInterface;
 /**
  * Defines an interface for discovering the data residency endpoint.
  */
-interface DataResidencyEndpointDiscoveryInterface {
+interface DataResidencyEndpointInterface {
 
   /**
    * The key used to store the endpoint in the state.

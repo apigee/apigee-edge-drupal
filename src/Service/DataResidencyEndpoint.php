@@ -10,7 +10,7 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details_
+ * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
@@ -32,7 +32,7 @@ use Drupal\Core\StringTranslation\TranslationInterface;
 /**
  * Discovers the data residency endpoint for a given key.
  */
-class DataResidencyEndpointDiscovery implements DataResidencyEndpointDiscoveryInterface {
+class DataResidencyEndpoint implements DataResidencyEndpointInterface {
   use StringTranslationTrait;
 
   /**
@@ -64,7 +64,7 @@ class DataResidencyEndpointDiscovery implements DataResidencyEndpointDiscoveryIn
   protected $stringTranslation;
 
   /**
-   * Constructs a new DataResidencyEndpointDiscovery object.
+   * Constructs a new DataResidencyEndpoint object.
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
    *   The SDK connector service.

@@ -41,7 +41,7 @@ use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\apigee_edge\Plugin\KeyProviderRequirementsInterface;
 use Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType;
-use Drupal\apigee_edge\Service\DataResidencyEndpointDiscoveryInterface;
+use Drupal\apigee_edge\Service\DataResidencyEndpointInterface;
 use Drupal\key\Form\KeyFormBase;
 use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyProviderSettableValueInterface;
@@ -101,11 +101,11 @@ final class KeyEntityFormEnhancer {
   private $emailValidator;
 
   /**
-   * The data residency endpoint discovery service.
+   * The data residency endpoint service.
    *
-   * @var \Drupal\apigee_edge\Service\DataResidencyEndpointDiscoveryInterface
+   * @var \Drupal\apigee_edge\Service\DataResidencyEndpointInterface
    */
-  private $dataResidencyEndpointDiscovery;
+  private $dataResidencyEndpoint;
 
   /**
    * KeyEntityFormEnhancer constructor.
@@ -120,16 +120,16 @@ final class KeyEntityFormEnhancer {
    *   The config factory.
    * @param \Drupal\Component\Utility\EmailValidatorInterface $email_validator
    *   The email validator.
-   * @param \Drupal\apigee_edge\Service\DataResidencyEndpointDiscoveryInterface $data_residency_endpoint_discovery
-   *   The data residency endpoint discovery service.
+   * @param \Drupal\apigee_edge\Service\DataResidencyEndpointInterface $data_residency_endpoint
+   *   The data residency endpoint service.
    */
-  public function __construct(SDKConnectorInterface $connector, OauthTokenStorageInterface $oauth_token_storage, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, EmailValidatorInterface $email_validator, DataResidencyEndpointDiscoveryInterface $data_residency_endpoint_discovery) {
+  public function __construct(SDKConnectorInterface $connector, OauthTokenStorageInterface $oauth_token_storage, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, EmailValidatorInterface $email_validator, DataResidencyEndpointInterface $data_residency_endpoint) {
     $this->connector = $connector;
     $this->entityTypeManager = $entity_type_manager;
     $this->oauthTokenStorage = $oauth_token_storage;
     $this->configFactory = $config_factory;
     $this->emailValidator = $email_validator;
-    $this->dataResidencyEndpointDiscovery = $data_residency_endpoint_discovery;
+    $this->dataResidencyEndpoint = $data_residency_endpoint;
   }
 
   /**
@@ -355,10 +355,10 @@ final class KeyEntityFormEnhancer {
       }
 
       // Data Residency check.
-      \Drupal::state()->delete(DataResidencyEndpointDiscoveryInterface::ENDPOINT_KEY);
+      \Drupal::state()->delete(DataResidencyEndpointInterface::ENDPOINT_KEY);
       $key_value_array = json_decode($key_value, TRUE);
       if ($key_value_array['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
-        $this->dataResidencyEndpointDiscovery->discoverEndpoint($test_key);
+        $this->dataResidencyEndpoint->discoverEndpoint($test_key);
       }
 
       // Test the connection.
