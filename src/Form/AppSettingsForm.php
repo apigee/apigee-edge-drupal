@@ -173,6 +173,13 @@ class AppSettingsForm extends ConfigFormBase {
       '#required' => $form_state->getValue('user_select') === NULL ? !(bool) $common_app_settings->get('user_select') : !(bool) $form_state->getValue('user_select'),
     ];
 
+    $form['app_credential_warnings_bc_mode'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Render app credential warnings synchronously'),
+      '#description' => $this->t('Whether to render app credentials synchronously or asynchronously with BigPipe to reduce page load time.'),
+      '#default_value' => $common_app_settings->get('app_credential_warnings_bc_mode'),
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -209,6 +216,7 @@ class AppSettingsForm extends ConfigFormBase {
       ->set('display_as_select', $form_state->getValue('display_as_select'))
       ->set('user_select', $form_state->getValue('user_select'))
       ->set('default_products', array_values(array_filter($form_state->getValue('default_api_product_multiple'))))
+      ->set('app_credential_warnings_bc_mode', $form_state->getValue('app_credential_warnings_bc_mode'))
       ->save();
 
     parent::submitForm($form, $form_state);

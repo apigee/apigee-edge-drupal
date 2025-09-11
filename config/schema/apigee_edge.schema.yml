@@ -66,6 +66,9 @@ apigee_edge.common_app_settings:
     callback_url_placeholder:
       type: label
       label: 'Placeholder for a Callback URL'
+    app_credential_warnings_bc_mode:
+      type: boolean
+      deprecated: "The 'app_credential_warnings_bc_mode' config schema is deprecated in Apigee Edge 3.0.3 and will be removed from Apigee Edge 4.0.0."
 
 apigee_edge.developer_app_settings:
   type: config_object

@@ -10,3 +10,4 @@ callback_url_pattern: '^https?:\/\/.*$'
 callback_url_pattern_error_message: 'The Callback URL must start with http:// or https://'
 callback_url_description: 'External site to which a consumer of this app is redirected to log in when using three-legged OAuth.'
 callback_url_placeholder: ''
+app_credential_warnings_bc_mode: false

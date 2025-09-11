@@ -102,6 +102,14 @@ function apigee_edge_requirements($phase) {
         // Do nothing.
       }
     }
+
+    if (\Drupal::configFactory()->getEditable('apigee_edge.common_app_settings')->get('app_credential_warnings_bc_mode')) {
+      $requirements['apigee_edge_app_credential_warnings_bc_mode'] = [
+        'title' => t('Apigee Edge'),
+        'description' => t('App credential warnings are rendered in BC mode but that is going to removed in Apigee Edge 4.0.0.'),
+        'severity' => REQUIREMENT_WARNING,
+      ];
+    }
   }
 
   return $requirements;
@@ -388,4 +396,12 @@ function apigee_edge_update_9002() {
   $edge_settings = $config_storage->read('core.entity_view_display.developer_app.developer_app.default');
   $edge_settings['content']['callbackUrl'] = $new_edge_settings['content']['callbackUrl'];
   $config_storage->write('core.entity_view_display.developer_app.developer_app.default', $edge_settings);
+}
+
+/**
+ * Enable BC rendering mode for app credential warnings.
+ */
+function apigee_edge_update_10301(): void {
+  $app_settings = \Drupal::configFactory()->getEditable('apigee_edge.common_app_settings');
+  $app_settings->set('app_credential_warnings_bc_mode', TRUE)->save(TRUE);
 }
