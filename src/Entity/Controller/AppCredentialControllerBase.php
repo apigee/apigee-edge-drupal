@@ -116,9 +116,11 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
    * {@inheritdoc}
    */
   public function addProducts(string $consumer_key, array $api_products): AppCredentialInterface {
+    // Keep the original scopes from before the products are added.
+    $originalScopes = $this->load($consumer_key)->getScopes();
     $credential = $this->decorated()->addProducts($consumer_key, $api_products);
     $this->eventDispatcher->dispatch(
-      new AppCredentialAddApiProductEvent($this->getAppType(), $this->owner, $this->appName, $credential, $api_products),
+      new AppCredentialAddApiProductEvent($this->getAppType(), $this->owner, $this->appName, $credential, $api_products, $originalScopes),
       AppCredentialAddApiProductEvent::EVENT_NAME
     );
     // By removing app from cache we force reload the credentials as well.

@@ -42,6 +42,13 @@ class AppCredentialAddApiProductEvent extends AbstractAppCredentialEvent {
   private $newProducts;
 
   /**
+   * The original scopes before products were added.
+   *
+   * @var array
+   */
+  private $originalScopes;
+
+  /**
    * AppCredentialAddApiProductEvent constructor.
    *
    * @param string $app_type
@@ -54,10 +61,13 @@ class AppCredentialAddApiProductEvent extends AbstractAppCredentialEvent {
    *   The app credential that has been created.
    * @param array $new_products
    *   Array of API product names that has just been added to the key.
+   * @param array $original_scopes
+   *   The original scopes.
    */
-  public function __construct(string $app_type, string $owner_id, string $app_name, AppCredentialInterface $credential, array $new_products) {
+  public function __construct(string $app_type, string $owner_id, string $app_name, AppCredentialInterface $credential, array $new_products, array $original_scopes = []) {
     parent::__construct($app_type, $owner_id, $app_name, $credential);
     $this->newProducts = $new_products;
+    $this->originalScopes = $original_scopes;
   }
 
   /**
@@ -68,6 +78,16 @@ class AppCredentialAddApiProductEvent extends AbstractAppCredentialEvent {
    */
   public function getNewProducts(): array {
     return $this->newProducts;
+  }
+
+  /**
+   * Returns the original scopes.
+   *
+   * @return array
+   *   The original scopes.
+   */
+  public function getOriginalScopes(): array {
+    return $this->originalScopes;
   }
 
 }
