@@ -71,7 +71,7 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
    */
   public function getEndpoint(KeyInterface $key): string {
     if ($this->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
-      if ($endpoint = \Drupal::state()->get(DataResidencyEndpointInterface::ENDPOINT_KEY)) {
+      if ($endpoint = \Drupal::state()->get(DataResidencyEndpointInterface::DRZ_ENDPOINT)) {
         return $endpoint;
       }
       return ClientInterface::APIGEE_ON_GCP_ENDPOINT;

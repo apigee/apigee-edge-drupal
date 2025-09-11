@@ -30,7 +30,7 @@ interface DataResidencyEndpointInterface {
   /**
    * The key used to store the endpoint in the state.
    */
-  public const ENDPOINT_KEY = 'drzendpoint';
+  public const DRZ_ENDPOINT = 'drzendpoint';
 
   /**
    * Discovers and stores the data residency endpoint for a given key.
@@ -38,6 +38,6 @@ interface DataResidencyEndpointInterface {
    * @param \Drupal\key\KeyInterface $key
    *   The key to discover the endpoint for.
    */
-  public function discoverEndpoint(KeyInterface $key): void;
+  public function getEndpoint(KeyInterface $key): void;
 
 }

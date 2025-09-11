@@ -85,7 +85,7 @@ class DataResidencyEndpoint implements DataResidencyEndpointInterface {
   /**
    * {@inheritdoc}
    */
-  public function discoverEndpoint(KeyInterface $key): void {
+  public function getEndpoint(KeyInterface $key): void {
     /** @var \Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType $key_type */
     $key_type = $key->getKeyType();
 
@@ -99,17 +99,17 @@ class DataResidencyEndpoint implements DataResidencyEndpointInterface {
       if (isset($dataResidencyData['location']) && $dataResidencyData['location']) {
         $dataResidencyEndpoint = str_replace("https://", "https://{$dataResidencyData['location']}-", $base_endpoint);
 
-        $this->state->set(self::ENDPOINT_KEY, $dataResidencyEndpoint);
+        $this->state->set(self::DRZ_ENDPOINT, $dataResidencyEndpoint);
         $this->messenger->addStatus($this->stringTranslation->translate('Data residency is enabled for this organization. Service endpoint being used is @serviceEndpoint', ['@serviceEndpoint' => $dataResidencyEndpoint]));
       }
       else {
-        $this->state->delete(self::ENDPOINT_KEY);
+        $this->state->delete(self::DRZ_ENDPOINT);
       }
     }
     catch (\Exception $e) {
       // We can ignore this exception, as it means that the data residency
       // endpoint could not be determined.
-      $this->state->delete(self::ENDPOINT_KEY);
+      $this->state->delete(self::DRZ_ENDPOINT);
     }
   }
 

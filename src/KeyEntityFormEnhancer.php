@@ -355,10 +355,10 @@ final class KeyEntityFormEnhancer {
       }
 
       // Data Residency check.
-      \Drupal::state()->delete(DataResidencyEndpointInterface::ENDPOINT_KEY);
+      \Drupal::state()->delete(DataResidencyEndpointInterface::DRZ_ENDPOINT);
       $key_value_array = json_decode($key_value, TRUE);
       if ($key_value_array['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
-        $this->dataResidencyEndpoint->discoverEndpoint($test_key);
+        $this->dataResidencyEndpoint->getEndpoint($test_key);
       }
 
       // Test the connection.
