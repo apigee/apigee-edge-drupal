@@ -41,6 +41,7 @@ use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\apigee_edge\Plugin\KeyProviderRequirementsInterface;
 use Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType;
+use Drupal\apigee_edge\Service\DataResidencyEndpointInterface;
 use Drupal\key\Form\KeyFormBase;
 use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyProviderSettableValueInterface;
@@ -100,6 +101,13 @@ final class KeyEntityFormEnhancer {
   private $emailValidator;
 
   /**
+   * The data residency endpoint service.
+   *
+   * @var \Drupal\apigee_edge\Service\DataResidencyEndpointInterface
+   */
+  private $dataResidencyEndpoint;
+
+  /**
    * KeyEntityFormEnhancer constructor.
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
@@ -112,13 +120,16 @@ final class KeyEntityFormEnhancer {
    *   The config factory.
    * @param \Drupal\Component\Utility\EmailValidatorInterface $email_validator
    *   The email validator.
+   * @param \Drupal\apigee_edge\Service\DataResidencyEndpointInterface $data_residency_endpoint
+   *   The data residency endpoint service.
    */
-  public function __construct(SDKConnectorInterface $connector, OauthTokenStorageInterface $oauth_token_storage, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, EmailValidatorInterface $email_validator) {
+  public function __construct(SDKConnectorInterface $connector, OauthTokenStorageInterface $oauth_token_storage, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, EmailValidatorInterface $email_validator, DataResidencyEndpointInterface $data_residency_endpoint) {
     $this->connector = $connector;
     $this->entityTypeManager = $entity_type_manager;
     $this->oauthTokenStorage = $oauth_token_storage;
     $this->configFactory = $config_factory;
     $this->emailValidator = $email_validator;
+    $this->dataResidencyEndpoint = $data_residency_endpoint;
   }
 
   /**
@@ -342,6 +353,14 @@ final class KeyEntityFormEnhancer {
         // Clear existing OAuth token data.
         $this->cleanUpOauthTokenData();
       }
+
+      // Data Residency check.
+      \Drupal::state()->delete(DataResidencyEndpointInterface::DRZ_ENDPOINT);
+      $key_value_array = json_decode($key_value, TRUE);
+      if ($key_value_array['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+        $this->dataResidencyEndpoint->getEndpoint($test_key);
+      }
+
       // Test the connection.
       $this->connector->testConnection($test_key);
       $this->messenger()->addStatus($this->t('Connection successful.'));
