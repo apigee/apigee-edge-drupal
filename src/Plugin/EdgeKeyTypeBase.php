@@ -26,6 +26,7 @@ use Drupal\Component\Serialization\Json;
 use Drupal\apigee_edge\Exception\AuthenticationKeyValueMalformedException;
 use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyTypeBase;
+use Drupal\apigee_edge\Service\DataResidencyEndpointInterface;
 
 /**
  * Defines a base class for Apigee Edge Key Type plugins.
@@ -70,6 +71,9 @@ abstract class EdgeKeyTypeBase extends KeyTypeBase implements EdgeKeyTypeInterfa
    */
   public function getEndpoint(KeyInterface $key): string {
     if ($this->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+      if ($endpoint = \Drupal::state()->get(DataResidencyEndpointInterface::DRZ_ENDPOINT)) {
+        return $endpoint;
+      }
       return ClientInterface::APIGEE_ON_GCP_ENDPOINT;
     }
     elseif ($this->getInstanceType($key) === EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC) {
