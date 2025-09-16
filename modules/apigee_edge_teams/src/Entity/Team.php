@@ -310,16 +310,14 @@ class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterfa
   /**
    * {@inheritdoc}
    */
-  public function getEmail(): ?string
-  {
+  public function getEmail(): ?string {
     return $this->decorated->getEmail();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setEmail(string $email): void
-  {
+  public function setEmail(string $email): void {
     $this->decorated->setEmail($email);
   }
 
