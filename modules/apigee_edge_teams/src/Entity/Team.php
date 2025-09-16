@@ -310,6 +310,22 @@ class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterfa
   /**
    * {@inheritdoc}
    */
+  public function getEmail(): ?string
+  {
+    return $this->decorated->getEmail();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setEmail(string $email): void
+  {
+    $this->decorated->setEmail($email);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     /** @var \Drupal\Core\Field\BaseFieldDefinition[] $definitions */
     $definitions = parent::baseFieldDefinitions($entity_type);
@@ -329,6 +345,19 @@ class Team extends AttributesAwareFieldableEdgeEntityBase implements TeamInterfa
       ])
       ->setLabel(t("@team name", ['@team' => $team_singular_label]))
       ->setRequired(TRUE);
+
+    if (self::isApigeeX()) {
+      $definitions['email']
+        ->setDisplayOptions('view', [
+          'label' => 'inline',
+          'weight' => 1,
+        ])
+        ->setDisplayOptions('form', [
+          'weight' => 1,
+        ])
+        ->setLabel(t("Email"))
+        ->setRequired(FALSE);
+    }
 
     $definitions['status']
       ->setDisplayOptions('view', [
