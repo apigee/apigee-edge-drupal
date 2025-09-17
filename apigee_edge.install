@@ -389,3 +389,17 @@ function apigee_edge_update_9002() {
   $edge_settings['content']['callbackUrl'] = $new_edge_settings['content']['callbackUrl'];
   $config_storage->write('core.entity_view_display.developer_app.developer_app.default', $edge_settings);
 }
+
+/**
+ * Set cache_insert_chunk_size for API Products, Developers, Developer apps.
+ */
+function apigee_edge_update_10401(): void {
+  $configs = [
+    'apigee_edge.api_product_settings',
+    'apigee_edge.developer_settings',
+    'apigee_edge.developer_app_settings',
+  ];
+  foreach ($configs as $config) {
+    \Drupal::configFactory()->getEditable($config)->set('cache_insert_chunk_size', 100)->save(TRUE);
+  }
+}
