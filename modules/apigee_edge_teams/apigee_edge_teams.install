@@ -29,44 +29,6 @@ use Drupal\views\Views;
  */
 
 /**
- * Implements hook_requirements().
- */
-function apigee_edge_teams_requirements($phase) {
-  $requirements = [];
-
-  if ($phase == 'install' || $phase == 'runtime') {
-    try {
-      /** @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
-      $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
-      $org_controller = \Drupal::service('apigee_edge.controller.organization');
-      /* @var \Apigee\Edge\Api\Management\Entity\Organization $organization */
-      $organization = $org_controller->load($sdk_connector->getOrganization());
-      if ($organization && $org_controller->isOrganizationApigeeX()) {
-        // AppGroup APIs are not supported in Apigee X / Hybrid orgs with monetization enabled.
-        if ($organization->getAddonsConfig() && $organization->getAddonsConfig()->getMonetizationConfig() && TRUE === $organization->getAddonsConfig()->getMonetizationConfig()->getEnabled()) {
-          $url = [
-            ':url' => 'https://cloud.google.com/apigee/docs/api-platform/publish/organizing-client-app-ownership?hl=en#appgroups-limitations-and-known-issues',
-          ];
-          $message = ($phase == 'runtime') ?
-            t("The Teams module functionality is not available for monetization enabled org on Apigee X / Hybrid and should be uninstalled, because <a href=':url' target='_blank'>AppGroup APIs are not supported in Apigee X / Hybrid orgs with monetization enabled</a>.", $url) :
-            t("The Teams module functionality is not available for monetization enabled org on Apigee X / Hybrid because <a href=':url' target='_blank'>AppGroup APIs are not supported in Apigee X / Hybrid orgs with monetization enabled</a>.", $url);
-          $requirements['apigee_edge_teams_not_supported'] = [
-            'title' => t('Apigee Teams'),
-            'description' => $message,
-            'severity' => REQUIREMENT_ERROR,
-          ];
-        }
-      }
-    }
-    catch (\Exception $exception) {
-      // Do nothing if connection to Edge is not available.
-    }
-  }
-
-  return $requirements;
-}
-
-/**
  * Implements hook_install().
  */
 function apigee_edge_teams_install() {
