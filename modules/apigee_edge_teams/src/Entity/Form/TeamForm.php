@@ -199,17 +199,10 @@ class TeamForm extends FieldableEdgeEntityForm implements EdgeEntityFormInterfac
       '#default_value' => $team->id(),
     ];
 
-    // The parent form adds an 'email' field. We modify it here.
+    // The parent form adds an 'email' field. We modify it here for ApigeeX
+    // organizations.
     if (isset($form['email'])) {
-      $form['email']['widget'][0]['value']['#title'] = $this->t('Team Administrator Email');
-      $form['email']['widget'][0]['value']['#description'] = $this->t('The email address of the team administrator.');
-      $form['email']['widget'][0]['value']['#required'] = TRUE;
-
-      // For non-Apigee X, the email is stored as an attribute.
-      if (!$this->orgController->isOrganizationApigeeX()) {
-        $default_email = !$team->isNew() ? $team->getAttribute(static::ADMIN_EMAIL_ATTRIBUTE) : $this->currentUser->getEmail();
-        $form['email']['widget'][0]['value']['#default_value'] = $default_email;
-      }
+      $form['email']['widget'][0]['value']['#title'] = $this->t('Contact email address');
     }
     return $form;
   }
