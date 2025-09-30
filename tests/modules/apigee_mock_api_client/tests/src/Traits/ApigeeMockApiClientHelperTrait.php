@@ -393,6 +393,7 @@ trait ApigeeMockApiClientHelperTrait {
     $team = Team::create([
       'name' => $this->randomMachineName(),
       'displayName' => Random::getGenerator()->name(),
+      'email' => $this->randomMachineName() . '@example.com',
     ]);
 
     $this->queueAppGroupResponse($team->decorated());
