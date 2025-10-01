@@ -184,7 +184,7 @@ class AuthenticationForm extends KeyEditForm {
     $status = parent::save($form, $form_state);
 
     // Save the authentication key entity id to module's configuration.
-    $this->configFactory->getEditable(static::CONFIG_NAME)->set('active_key', $this->entity->id());
+    \Drupal::configFactory()->getEditable(static::CONFIG_NAME)->set('active_key', $this->entity->id())->save();
     // Override the redirect destination.
     $form_state->setRedirect('apigee_edge.settings');
 
