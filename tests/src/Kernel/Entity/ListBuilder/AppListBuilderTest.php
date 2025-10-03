@@ -327,6 +327,7 @@ class AppListBuilderTest extends ApigeeEdgeKernelTestBase {
           'apps' => [
             $this->approvedAppWithApprovedCredential,
             $this->approvedAppWithOneRevokedCredential,
+            $this->approvedAppWithAllRevokedCredential,
             $this->revokedAppWithRevokedCredential,
             $this->approvedAppWithExpiredCredential,
             $this->revokedAppWithExpiredCredential,
