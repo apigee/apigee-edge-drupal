@@ -192,4 +192,14 @@ class JobExecutor implements JobExecutorInterface {
       ->fetchField();
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function cleanup(string $tag): void {
+    $query = $this->connection->delete('apigee_edge_job')
+      ->condition('status', Job::FINISHED)
+      ->condition('tag', $tag);
+    $query->execute();
+  }
+
 }
