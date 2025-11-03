@@ -148,6 +148,7 @@ class TeamMemberSyncController extends ControllerBase {
       'operations' => [
         [[static::class, 'batchGenerateJobs'], [$tag]],
         [[static::class, 'batchExecuteJobs'], [$tag]],
+        [[static::class, 'batchCleanupJobs'], [$tag]],
       ],
       'finished' => [static::class, 'batchFinished'],
     ];
@@ -197,6 +198,23 @@ class TeamMemberSyncController extends ControllerBase {
 
     $context['message'] = (string) $job;
     $context['finished'] = $executor->countJobs($tag, [Job::FAILED, Job::FINISHED]) / $executor->countJobs($tag);
+  }
+
+  /**
+   * The third batch operation.
+   *
+   * @param string $tag
+   *   Job tag.
+   * @param array $context
+   *   Batch context.
+   */
+  public static function batchCleanupJobs(string $tag, array &$context) {
+    $executor = apigee_edge_get_executor();
+    $executor->cleanup($tag);
+    // This is needed to prevent the Drush CLI throwing warnings.
+    $context['message'] = '';
+    // This is needed to tell the Drush CLI we're finished.
+    $context['finished'] = 1.0;
   }
 
   /**
