@@ -23,7 +23,7 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Provides settings form for team_invitation..
+ * Provides settings form for team_invitation.
  */
 class TeamInvitationForm extends ConfigFormBase {
 
