@@ -71,11 +71,12 @@ class DeveloperAttributesSettingsForm extends ConfigFormBase {
    * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config_manager
    *   The typed config manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory,
+  public function __construct(
+    ConfigFactoryInterface $config_factory,
     EntityFieldManagerInterface $entity_field_manager,
     FieldStorageFormatManagerInterface $field_storage_format_manager,
     FieldAttributeConverterInterface $field_attribute_converter,
-    TypedConfigManagerInterface $typed_config_manager
+    TypedConfigManagerInterface $typed_config_manager,
   ) {
     parent::__construct($config_factory, $typed_config_manager);
     $this->fieldAttributeConverter = $field_attribute_converter;
