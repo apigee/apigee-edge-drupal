@@ -385,7 +385,6 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
 
     if ($ids === NULL) {
       $all_ids_cid = 'all_ids:' . $this->entityTypeId;
-      // return "values:{$this->entityTypeId}:{$id}";
       // Try to load our "master ID list" from the cache.
       if ($cache = $this->cacheBackend->get($all_ids_cid)) {
         // We found the list! Set $ids to this list.
@@ -429,8 +428,8 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
       return;
     }
 
-    if(!empty($entities)){
-      //  Get all entity IDs
+    if (!empty($entities)) {
+      // Get all entity IDs.
       $all_entity_ids = array_keys($entities);
       $entity_count = count($all_entity_ids);
     }
