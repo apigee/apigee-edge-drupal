@@ -117,7 +117,10 @@ abstract class AppCredentialControllerBase implements AppCredentialControllerInt
    */
   public function addProducts(string $consumer_key, array $api_products): AppCredentialInterface {
     // Keep the original scopes from before the products are added.
-    $originalScopes = $this->load($consumer_key)->getScopes();
+    $originalScopes = [];
+    if ($this->getAppType() === 'team') {
+      $originalScopes = $this->load($consumer_key)->getScopes();
+    }
     $credential = $this->decorated()->addProducts($consumer_key, $api_products);
     if ($this->getAppType() === 'team' && !empty($originalScopes) && \Drupal::hasService('apigee_edge_teams.app_group_scope_manager')) {
       $app_group_scope_manager = \Drupal::service('apigee_edge_teams.app_group_scope_manager');
