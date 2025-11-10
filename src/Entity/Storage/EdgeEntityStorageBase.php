@@ -378,7 +378,24 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
    *   Array of entities from the persistent cache.
    */
   protected function getFromPersistentCache(?array &$ids = NULL) {
-    if (!$this->entityType->isPersistentlyCacheable() || empty($ids)) {
+
+    if ($this->cacheExpiration === 0 || !$this->entityType->isPersistentlyCacheable()) {
+      return [];
+    }
+
+    if ($ids === NULL) {
+      $all_ids_cid = 'all_ids:' . $this->entityTypeId;
+      // return "values:{$this->entityTypeId}:{$id}";
+      // Try to load our "master ID list" from the cache.
+      if ($cache = $this->cacheBackend->get($all_ids_cid)) {
+        // We found the list! Set $ids to this list.
+        $ids = $cache->data;
+      }
+      // If we did NOT find the list, $ids remains NULL. The code
+      // will proceed as normal, hit the API, and our modified
+      // setPersistentCache() will create the list for next time.
+    }
+    if (empty($ids)) {
       return [];
     }
     $entities = [];
@@ -412,6 +429,12 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
       return;
     }
 
+    if(!empty($entities)){
+      //  Get all entity IDs
+      $all_entity_ids = array_keys($entities);
+      $entity_count = count($all_entity_ids);
+    }
+
     while (!empty($entities)) {
       $cache_items = [];
       foreach (array_splice($entities, 0, $this->cacheInsertChunkSize) as $id => $entity) {
@@ -423,6 +446,22 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
       }
 
       $this->cacheBackend->setMultiple($cache_items);
+    }
+
+    // After all chunks are saved, save the master ID list.
+    // We only do this if we actually processed entities from the API.
+    if ($entity_count > 0) {
+      $all_ids_cid = 'all_ids:' . $this->entityTypeId;
+      // Use the main entity type tag so this item is cleared when
+      // the rest of the entity cache is cleared.
+      $all_ids_tags = [$this->entityTypeId . ':values'];
+
+      $this->cacheBackend->set(
+        $all_ids_cid,
+        $all_entity_ids,
+        $this->getPersistentCacheExpiration(),
+        $all_ids_tags
+      );
     }
   }
 
