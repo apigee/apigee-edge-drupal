@@ -466,7 +466,6 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
     }
   }
 
-
   /**
    * Number of seconds after a cache item expires.
    *
