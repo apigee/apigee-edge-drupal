@@ -211,4 +211,78 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
     }
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function getFromPersistentCache(?array &$ids = NULL) {
+
+    if ($this->cacheExpiration === 0 || !$this->entityType->isPersistentlyCacheable()) {
+      return [];
+    }
+
+    if ($ids === NULL) {
+      // During tests, this state is set to TRUE (in parent::setUp()) to
+      // force a cache miss and take data from the Mock API. This prevents test isolation failures where
+      // stale data from a previous test could cause the current test to fail.
+      if (\Drupal::state()->get('apigee_teams_test_skip_cache', FALSE)) {
+        return [];
+      }
+      $all_ids_cid = 'all_ids:' . $this->entityTypeId;
+      // Try to load our "master ID list" from the cache.
+      if ($cache = $this->cacheBackend->get($all_ids_cid)) {
+        // We found the list! Set $ids to this list.
+        $ids = $cache->data;
+      }
+      // If we did NOT find the list, $ids remains NULL. The code
+      // will proceed as normal, hit the API, and our modified
+      // setPersistentCache() will create the list for next time.
+    }
+
+    if (empty($ids)) {
+      return [];
+    }
+
+    return parent::getFromPersistentCache($ids);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setPersistentCache(array $entities) {
+    parent::setPersistentCache($entities);
+
+    $entity_count = 0;
+    if (!empty($entities)) {
+      // Get all entity IDs.
+      $all_entity_ids = array_keys($entities);
+      $entity_count = count($all_entity_ids);
+    }
+
+    // After all chunks are saved, save the master ID list.
+    // We only do this if we actually processed entities from the API.
+    if ($entity_count > 0) {
+      $all_ids_cid = 'all_ids:' . $this->entityTypeId;
+      // Use the main entity type tag so this item is cleared when
+      // the rest of the entity cache is cleared.
+      $all_ids_tags = [$this->entityTypeId . ':values'];
+
+      $this->cacheBackend->set(
+        $all_ids_cid,
+        $all_entity_ids,
+        $this->getPersistentCacheExpiration(),
+        $all_ids_tags
+      );
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function resetCache(?array $ids = NULL) {
+
+    $this->cacheBackend->delete('all_ids:' . $this->entityTypeId);
+
+    parent::resetCache($ids);
+  }
+
 }
