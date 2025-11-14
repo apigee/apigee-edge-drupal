@@ -83,6 +83,13 @@ jobs:
       with:
         path: drupal/modules/contrib/apigee_edge
 
+    - name: Delete lock file
+      # Deleting the composer.lock file forces Composer to re-evaluate all dependencies
+      # and ensure the latest, secure versions are resolved during the 'composer update' step.
+      run: |
+        echo "Removing composer.lock to force update latest dependencies."
+        rm -f drupal/composer.lock
+
     - name: "Allow plugins and dev dependencies"
       run: |
         cd drupal
