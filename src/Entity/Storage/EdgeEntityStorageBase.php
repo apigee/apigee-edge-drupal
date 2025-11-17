@@ -378,7 +378,6 @@ abstract class EdgeEntityStorageBase extends DrupalEntityStorageBase implements 
    *   Array of entities from the persistent cache.
    */
   protected function getFromPersistentCache(?array &$ids = NULL) {
-
     if (!$this->entityType->isPersistentlyCacheable() || empty($ids)) {
       return [];
     }

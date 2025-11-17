@@ -78,6 +78,13 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
   protected $teamB;
 
   /**
+   * The state service.
+   *
+   * @var \Drupal\Core\State\State
+   */
+  protected $state;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -88,7 +95,8 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
     // When it's TRUE, that method will *always* return [], forcing
     // a cache miss and guaranteeing that every test gets fresh data
     // from the source (the API) instead of the cache.
-    \Drupal::state()->set('apigee_teams_test_skip_cache', TRUE);
+    $this->state = $this->container->get('state');
+    $this->state->set('apigee_teams_test_skip_cache', TRUE);
 
     $this->addOrganizationMatchedResponse();
 
