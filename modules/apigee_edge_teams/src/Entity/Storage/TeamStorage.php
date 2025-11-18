@@ -38,6 +38,7 @@ use Drupal\apigee_edge\Entity\Storage\AttributesAwareFieldableEdgeEntityStorageB
 use Drupal\apigee_edge_teams\Entity\Controller\TeamControllerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\State\StateInterface;
 
 /**
  * Entity storage implementation for teams.
@@ -66,6 +67,13 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
   private $logger;
 
   /**
+   * The state service.
+   *
+   * @var \Drupal\Core\State\StateInterface
+   */
+  protected $state;
+
+  /**
    * Constructs an TeamStorage instance.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -84,8 +92,10 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
    *   Configuration factory.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
+   * @param \Drupal\Core\State\StateInterface $state
+   *   The state service.
    */
-  public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, TeamControllerInterface $team_controller, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config, LoggerInterface $logger) {
+  public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, TeamControllerInterface $team_controller, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config, LoggerInterface $logger, StateInterface $state) {
     parent::__construct($entity_type, $cache_backend, $memory_cache, $system_time);
     $this->teamController = $team_controller;
     $config = $config->get('apigee_edge_teams.team_settings');
@@ -93,6 +103,7 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
     $this->cacheInsertChunkSize = $config->get('cache_insert_chunk_size') ?? static::DEFAULT_PERSISTENT_CACHE_INSERT_CHUNK_SIZE;
     $this->entityTypeManager = $entity_type_manager;
     $this->logger = $logger;
+    $this->state = $state;
   }
 
   /**
@@ -107,7 +118,8 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
       $container->get('apigee_edge_teams.controller.team'),
       $container->get('entity_type.manager'),
       $container->get('config.factory'),
-      $container->get('logger.channel.apigee_edge_teams')
+      $container->get('logger.channel.apigee_edge_teams'),
+      $container->get('state')
     );
   }
 
@@ -222,7 +234,8 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
 
     if ($ids === NULL) {
       // During tests, this state is set to TRUE (in parent::setUp()) to
-      // force a cache miss and take data from the Mock API. This prevents test isolation failures where
+      // force a cache miss and take data from the Mock API.
+      // This prevents test isolation failures where
       // stale data from a previous test could cause the current test to fail.
       if (\Drupal::state()->get('apigee_teams_test_skip_cache', FALSE)) {
         return [];
