@@ -237,7 +237,7 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
       // force a cache miss and take data from the Mock API.
       // This prevents test isolation failures where
       // stale data from a previous test could cause the current test to fail.
-      if (\Drupal::state()->get('apigee_teams_test_skip_cache', FALSE)) {
+      if ($this->state->get('apigee_teams_test_skip_cache', FALSE)) {
         return [];
       }
       $all_ids_cid = 'all_ids:' . $this->entityTypeId;
