@@ -38,7 +38,7 @@ class TeamListBuilder extends EdgeEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory = NULL) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, ?ConfigFactoryInterface $config_factory = NULL) {
     parent::__construct($entity_type, $entity_type_manager, $config_factory);
 
     // Override the limit here.
@@ -131,11 +131,10 @@ class TeamListBuilder extends EdgeEntityListBuilder {
     $build = parent::render();
     $account = $this->entityTypeManager->getStorage('user')->load(\Drupal::currentUser()->id());
 
-    // Ensure the render array is a container so we can add the pager as a sibling.
     if (isset($build['#type']) && $build['#type'] === 'table') {
-        $build = [
-            'table' => $build,
-        ];
+      $build = [
+        'table' => $build,
+      ];
     }
 
     $build['#cache']['keys'][] = 'team_list_per_user';
@@ -149,7 +148,7 @@ class TeamListBuilder extends EdgeEntityListBuilder {
     // @see \Drupal\KernelTests\Core\Cache\CacheContextOptimizationTest
     $build['#cache']['contexts'][] = 'user';
     $build['#cache']['contexts'][] = 'user.permissions';
-    
+
     // Important: Cache per page.
     $build['#cache']['contexts'][] = 'url.query_args:page';
 
