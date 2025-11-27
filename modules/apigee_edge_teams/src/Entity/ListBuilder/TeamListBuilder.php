@@ -21,10 +21,7 @@
 namespace Drupal\apigee_edge_teams\Entity\ListBuilder;
 
 use Drupal\Core\Cache\Cache;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Url;
 use Drupal\apigee_edge\Element\StatusPropertyElement;
 use Drupal\apigee_edge\Entity\ListBuilder\EdgeEntityListBuilder;
@@ -34,16 +31,6 @@ use Drupal\apigee_edge_teams\Entity\TeamInterface;
  * General entity listing builder for teams.
  */
 class TeamListBuilder extends EdgeEntityListBuilder {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, ?ConfigFactoryInterface $config_factory = NULL) {
-    parent::__construct($entity_type, $entity_type_manager, $config_factory);
-
-    // Override the limit here.
-    $this->limit = 1000;
-  }
 
   /**
    * {@inheritdoc}
@@ -131,11 +118,7 @@ class TeamListBuilder extends EdgeEntityListBuilder {
     $build = parent::render();
     $account = $this->entityTypeManager->getStorage('user')->load(\Drupal::currentUser()->id());
 
-    if (isset($build['#type']) && $build['#type'] === 'table') {
-      $build = [
-        'table' => $build,
-      ];
-    }
+    $build = empty($build['table']) ? $build : $build['table'];
 
     $build['#cache']['keys'][] = 'team_list_per_user';
 
@@ -148,9 +131,6 @@ class TeamListBuilder extends EdgeEntityListBuilder {
     // @see \Drupal\KernelTests\Core\Cache\CacheContextOptimizationTest
     $build['#cache']['contexts'][] = 'user';
     $build['#cache']['contexts'][] = 'user.permissions';
-
-    // Important: Cache per page.
-    $build['#cache']['contexts'][] = 'url.query_args:page';
 
     $build['#cache']['tags'] = Cache::mergeTags($build['#cache']['tags'], $account->getCacheTags());
 
