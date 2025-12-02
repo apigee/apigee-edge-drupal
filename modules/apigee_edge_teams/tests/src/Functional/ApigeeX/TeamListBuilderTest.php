@@ -191,6 +191,9 @@ class TeamListBuilderTest extends ApigeeEdgeTeamsFunctionalTestBase {
     $this->drupalLogout();
   }
 
+  /**
+   * Tests team list cache with and without Team Permission.
+   */
   public function testTeamListWithAndWithoutTeamPermission() {
     $appgroups = [
       $this->teamA->decorated(),
