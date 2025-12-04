@@ -189,9 +189,32 @@ class TeamListBuilderTest extends ApigeeEdgeTeamsFunctionalTestBase {
     $assert->pageTextNotContains($this->teamA->label());
     $assert->pageTextContains($this->teamB->label());
     $this->drupalLogout();
+  }
+
+  /**
+   * Tests team list cache with and without Team Permission.
+   */
+  public function testTeamListWithAndWithoutTeamPermission() {
+    $appgroups = [
+      $this->teamA->decorated(),
+      $this->teamB->decorated(),
+    ];
+
+    $this->drupalLogin($this->cMemberAccount);
+    // Give cMemberAccount permission to view all teams.
+    $this->cMemberAccount->addRole($this->customRole);
+    $this->cMemberAccount->save();
+
+    // cMemberAccount should see both teams now.
+    $this->queueAppGroupsResponse($appgroups);
+    $this->drupalGet(Url::fromUserInput('/teams'));
+    $assert = $this->assertSession();
+    $assert->pageTextContains($this->teamA->label());
+    $assert->pageTextContains($this->teamB->label());
 
     // cMemberAccount should not see any teams.
-    $this->drupalLogin($this->cMemberAccount);
+    $this->cMemberAccount->removeRole($this->customRole);
+    $this->cMemberAccount->save();
     $this->queueAppGroupsResponse($appgroups);
     $this->queueDeveloperResponse($this->cMemberAccount);
     $this->queueDeveloperResponse($this->cMemberAccount);
@@ -199,18 +222,6 @@ class TeamListBuilderTest extends ApigeeEdgeTeamsFunctionalTestBase {
     $assert = $this->assertSession();
     $assert->pageTextNotContains($this->teamA->label());
     $assert->pageTextNotContains($this->teamB->label());
-
-    // Give cMemberAccount permission to view all teams.
-    $this->cMemberAccount->addRole($this->customRole);
-    $this->cMemberAccount->save();
-
-    // cMemberAccount should see both teams now.
-    $this->queueAppGroupsResponse($appgroups);
-    $this->queueDeveloperResponse($this->cMemberAccount);
-    $this->drupalGet(Url::fromUserInput('/teams'));
-    $assert = $this->assertSession();
-    $assert->pageTextContains($this->teamA->label());
-    $assert->pageTextContains($this->teamB->label());
   }
 
   /**
