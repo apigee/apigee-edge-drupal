@@ -272,7 +272,7 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
     }
 
     // After all chunks are saved, save the master ID list.
-    // Only proceed if we have entities to process
+    // Only proceed if we have entities to process.
     if ($entity_count > 0) {
       $all_ids_cid = 'all_ids:' . $this->entityTypeId;
       // Use the main entity type tag so this item is cleared when
@@ -282,9 +282,8 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
       // Try to load existing cache.
       // $this->cacheBackend->get() returns FALSE if the item does not exist.
       $cache_object = $this->cacheBackend->get($all_ids_cid);
-      
-      // If cache is empty AND count is 1, we DO NOT save. 
-      // We leave it empty so the List Page is forced to fetch the full list from API.
+
+      // If cache is empty AND count is 1, we DO NOT cache the entity.
       if ($cache_object || $entity_count > 1) {
 
         $existing_ids = $cache_object ? $cache_object->data : [];
@@ -301,7 +300,7 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
     }
   }
 
-    /**
+  /**
    * {@inheritdoc}
    */
   public function resetCache(?array $ids = NULL) {
