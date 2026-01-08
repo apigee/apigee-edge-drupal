@@ -20,11 +20,9 @@ on:
   push:
     branches:
       - '3.x'
-      - '4.x'
   pull_request:
     branches:
       - '3.x'
-      - '4.x'
   schedule:
     - cron: '00 01 * * *'
 
