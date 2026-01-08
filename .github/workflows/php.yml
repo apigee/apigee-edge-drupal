@@ -29,6 +29,7 @@ jobs:
     permissions:
       contents: read
       security-events: write
+
     name: "PHP ${{ matrix.php-version }} | Drupal ${{ matrix.drupal-core }} | ${{ matrix.instance-type }}"
     strategy:
       fail-fast: false
