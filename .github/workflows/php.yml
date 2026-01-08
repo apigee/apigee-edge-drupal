@@ -17,7 +17,7 @@ env:
   MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", { "chromeOptions": { "w3c": false } }, "http://127.0.0.1:9515/wd/hub"]'
 
 on:
-  push:
+  pull_request:
     branches:
       - '3.x'
   schedule:
