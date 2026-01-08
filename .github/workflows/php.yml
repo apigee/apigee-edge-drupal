@@ -18,15 +18,21 @@ env:
 
 on:
   push:
-  pull_request_target:
+    branches:
+      - '3.x'
+  pull_request:
+    branches:
+      - '3.x'
   schedule:
-    - cron: '00 01 * * *'  
+    - cron: '00 01 * * *'
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: read
+      security-events: write
     name: "PHP ${{ matrix.php-version }} | Drupal ${{ matrix.drupal-core }} | ${{ matrix.instance-type }}"
     strategy:
       fail-fast: false
@@ -37,7 +43,6 @@ jobs:
           - "8.3"
         drupal-core:
           # Should update the following as the minimum supported version from Drupal.org
-          - "10.4.x"
           - "10.5.x"
         instance-type:
           - "Edge"
@@ -93,6 +98,7 @@ jobs:
     - name: "Allow plugins and dev dependencies"
       run: |
         cd drupal
+        composer require "justinrainbow/json-schema:^6.5.1" --no-update
         composer config --no-plugins allow-plugins.composer/installers true
         composer config --no-plugins allow-plugins.drupal/core-composer-scaffold true
         composer config --no-plugins allow-plugins.drupal/core-project-message true
@@ -145,13 +151,13 @@ jobs:
         sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
 
     - name: "Run PHPUnit tests"
-      if: ${{ matrix.drupal-core != '10.4.x' || matrix.php-version != '8.3' }}
+      if: ${{ matrix.php-version != '8.3' }}
       run: |
         cd drupal
         vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit,kernel,functional,functional-javascript modules/contrib/apigee_edge
 
     - name: "Run PHPUnit tests with Code Coverage"
-      if: ${{ matrix.drupal-core == '10.4.x' && matrix.php-version == '8.3' }}
+      if: ${{ matrix.drupal-core == '10.5.x' && matrix.php-version == '8.3' }}
       run: |
         cd drupal
         cp modules/contrib/apigee_edge/phpunit.core.xml.dist core/phpunit.xml
@@ -165,7 +171,7 @@ jobs:
         path: drupal/sites/simpletest/browser_output/*
 
     - name: Upload coverage to Codecov
-      if: ${{ matrix.drupal-core == '10.4.x' && matrix.php-version == '8.3' }}
+      if: ${{ matrix.drupal-core == '10.5.x' && matrix.php-version == '8.3' }}
       uses: codecov/codecov-action@v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
