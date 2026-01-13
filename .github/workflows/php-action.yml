@@ -82,6 +82,7 @@ jobs:
     - name: Checkout apigee_edge module
       uses: actions/checkout@v4
       with:
+        ref: ${{ github.event.pull_request.head.sha }}
         path: drupal/modules/contrib/apigee_edge
 
     - name: Delete lock file
