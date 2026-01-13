@@ -18,10 +18,10 @@ env:
 
 on:
   push:
-  workflow_dispatch:
+  pull_request_target:
   schedule:
     - cron: '00 01 * * *'  
-
+permissions: read-all
 jobs:
   build:
 
@@ -80,7 +80,6 @@ jobs:
     - name: Checkout apigee_edge module
       uses: actions/checkout@v4
       with:
-        ref: ${{ github.event.pull_request.head.sha }}
         path: drupal/modules/contrib/apigee_edge
 
     - name: Delete lock file
