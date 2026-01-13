@@ -19,6 +19,8 @@ env:
 on:
   push:
   pull_request:
+    branches:
+      - 3.x
   schedule:
     - cron: '00 01 * * *'  
 
