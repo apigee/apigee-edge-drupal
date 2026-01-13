@@ -18,9 +18,8 @@ env:
 
 on:
   push:
-  pull_request_target:
-    branches:
-      - '3.x'
+    branches: [ "3.x" ]
+  workflow_dispatch:
   schedule:
     - cron: '00 01 * * *'  
 
