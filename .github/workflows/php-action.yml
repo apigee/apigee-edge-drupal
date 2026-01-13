@@ -18,7 +18,6 @@ env:
 
 on:
   push:
-    branches: [ "3.x" ]
   workflow_dispatch:
   schedule:
     - cron: '00 01 * * *'  
