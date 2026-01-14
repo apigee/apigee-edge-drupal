@@ -1406,7 +1406,6 @@ function apigee_edge_user_presave(UserInterface $account) {
           // its stored developer data there with the new one.
           if (isset($account->{APIGEE_EDGE_USER_REGISTRATION_SOURCE}) && $account->{APIGEE_EDGE_USER_REGISTRATION_SOURCE} === 'user_register_form') {
             $developer = $user_developer->convertUser($account);
-            $developer->setDeveloperId($developer_id);
             $developer->enforceIsNew(FALSE);
             try {
               $developer->save();
