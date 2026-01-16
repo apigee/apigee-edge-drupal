@@ -18,13 +18,9 @@ env:
 
 on:
   push:
-    branches:
-      - '3.x'
-  pull_request:
-    branches:
-      - '3.x'
+  pull_request_target:
   schedule:
-    - cron: '00 01 * * *'
+    - cron: '00 01 * * *'  
 
 jobs:
   build:
@@ -33,6 +29,7 @@ jobs:
     permissions:
       contents: read
       security-events: write
+    
     name: "PHP ${{ matrix.php-version }} | Drupal ${{ matrix.drupal-core }} | ${{ matrix.instance-type }}"
     strategy:
       fail-fast: false
