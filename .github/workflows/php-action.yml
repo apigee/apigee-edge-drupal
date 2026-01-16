@@ -1,10 +1,7 @@
 name: test_and_lint
 env:
   SIMPLETEST_DB: "sqlite://localhost//tmp/test.sqlite"
-  SIMPLETEST_BASE_URL: "http://127.0.0.1:8000"
-  BROWSERTEST_OUTPUT_DIRECTORY: "sites/simpletest/browser_output"
-  BROWSERTEST_OUTPUT_BASE_URL: ""
-  MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", { "chromeOptions": { "w3c": false } }, "http://127.0.0.1:9515/wd/hub"]'
+  SIMPLETEST_BASE_URL: "http://127.0.0.1:8000"  
   APIGEE_EDGE_AUTH_TYPE: ${{ secrets.APIGEE_EDGE_AUTH_TYPE }}
   APIGEE_EDGE_ORGANIZATION: ${{ secrets.APIGEE_EDGE_ORGANIZATION }}
   APIGEE_EDGE_USERNAME: ${{ secrets.APIGEE_EDGE_USERNAME }}
@@ -15,23 +12,24 @@ env:
   APIGEE_EDGE_ACCOUNT_JSON_KEY: ${{ secrets.APIGEE_EDGE_ACCOUNT_JSON_KEY }}
   APIGEE_EDGE_HYBRID_ENDPOINT: ${{ secrets.APIGEE_EDGE_HYBRID_ENDPOINT }}
   APIGEE_EDGE_HYBRID_ORGANIZATION: ${{ secrets.APIGEE_EDGE_HYBRID_ORGANIZATION }}
+  BROWSERTEST_OUTPUT_DIRECTORY: "sites/simpletest/browser_output"
+  BROWSERTEST_OUTPUT_BASE_URL: ""
+  MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", { "chromeOptions": { "w3c": false } }, "http://127.0.0.1:9515/wd/hub"]'
 
 on:
   push:
-    branches:
-      - 3.x
-  pull_request:
-    branches:
-      - 3.x
+  pull_request_target:
   schedule:
-    - cron: '00 01 * * *'
-  workflow_dispatch:
-
-permissions: read-all
+    - cron: '00 01 * * *'  
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    
     name: "PHP ${{ matrix.php-version }} | Drupal ${{ matrix.drupal-core }} | ${{ matrix.instance-type }}"
     strategy:
       fail-fast: false
@@ -41,28 +39,19 @@ jobs:
           - "8.2"
           - "8.3"
         drupal-core:
+          # Should update the following as the minimum supported version from Drupal.org
           - "10.5.x"
         instance-type:
           - "Edge"
           - "X"
 
     steps:
+
     - name: Disable deprecations check for PR
       if: github.event_name != 'schedule'
       run: |
         echo "Disable deprecations check"
         echo "SYMFONY_DEPRECATIONS_HELPER=disabled" >> $GITHUB_ENV
-
-    - name: Determine branch to checkout
-      id: set_branch
-      run: |
-        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-          echo "BRANCH=${{ github.event.pull_request.base.ref }}" >> $GITHUB_OUTPUT
-          echo "Event is Pull Request. Testing against BASE branch: ${{ github.event.pull_request.base.ref }}"
-        else
-          echo "BRANCH=${{ github.ref_name }}" >> $GITHUB_OUTPUT
-          echo "Event is ${{ github.event_name }}. Testing against event branch: ${{ github.ref_name }}"
-        fi
 
     - name: "Install PHP"
       uses: "shivammathur/setup-php@v2"
@@ -77,7 +66,7 @@ jobs:
         git clone --depth 1 --branch ${{ matrix.drupal-core }} https://github.com/drupal/drupal.git drupal
         mkdir -p drupal/modules/contrib/apigee_edge
         mkdir -p drupal/sites/simpletest/browser_output
-
+  
     - name: Get composer cache directory
       id: composercache
       run: |
@@ -91,36 +80,22 @@ jobs:
         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
         restore-keys: ${{ runner.os }}-composer-
 
-    - name: Checkout apigee_edge module from Target Branch
+    - name: Checkout apigee_edge module
       uses: actions/checkout@v4
       with:
-        ref: ${{ steps.set_branch.outputs.BRANCH }}
         path: drupal/modules/contrib/apigee_edge
 
-    - name: Verify Checked-out Branch
-      run: |
-        echo "--- Verifying apigee_edge module checkout ---"
-        cd drupal/modules/contrib/apigee_edge
-        echo "Module Path: $(pwd)"
-        echo "Git Remote URL:"
-        git remote -v
-        echo "Git Branch:"
-        git branch --show-current
-        echo "Git Ref:"
-        git rev-parse HEAD
-        echo "Last 3 Commits:"
-        git log -n 3 --oneline
-        echo "--- End Verification ---"
-        cd ../../..
-
     - name: Delete lock file
+      # Deleting the composer.lock file forces Composer to re-evaluate all dependencies
+      # and ensure the latest, secure versions are resolved during the 'composer update' step.
       run: |
         echo "Removing composer.lock to force update latest dependencies."
         rm -f drupal/composer.lock
 
-    - name: "Composer setup"
+    - name: "Allow plugins and dev dependencies"
       run: |
         cd drupal
+        composer require "justinrainbow/json-schema:^6.5.1" --no-update
         composer config --no-plugins allow-plugins.composer/installers true
         composer config --no-plugins allow-plugins.drupal/core-composer-scaffold true
         composer config --no-plugins allow-plugins.drupal/core-project-message true
@@ -128,7 +103,7 @@ jobs:
         composer config --no-plugins allow-plugins.wikimedia/composer-merge-plugin true
         composer config --no-plugins allow-plugins.composer/package-versions-deprecated true
         composer config --no-plugins allow-plugins.cweagans/composer-patches true
-        composer config --no-plugins allow-plugins.php-http/discovery true
+        composer config --no-plugins allow-plugins.php-http/discovery true        
         composer config minimum-stability dev
         composer require wikimedia/composer-merge-plugin
         composer config --json extra.merge-plugin.require '["modules/contrib/apigee_edge/composer.json"]'
@@ -138,26 +113,28 @@ jobs:
         composer require --dev phpspec/prophecy-phpunit:^2
         composer require --dev drupal/classy:^1.0
         composer config --no-plugins allow-plugins.drupal/console-extend-plugin true
+
+    - name: "Allow plugins and dev dependencies"
+      run: |
+        cd drupal
         composer require 'drupal/rules:^4.0'
         composer update --with-all-dependencies
 
+    # Install drupal using minimal installation profile and enable the module.
     - name: Install Drupal
       run: |
-        cd drupal
+        cd drupal   
         php -d sendmail_path=$(which true); vendor/bin/drush --yes -v site-install minimal --db-url="$SIMPLETEST_DB"
         vendor/bin/drush en apigee_edge -y
         vendor/bin/drush rs 8000 &
 
-    - name: "PHPCS"
+    - name: "PHPCS and setting up Apigee X environment"
+      if: ${{ matrix.instance-type == 'X' }}
       run: |
         cd drupal
         cp modules/contrib/apigee_edge/phpcs.xml.dist .
         vendor/bin/phpcs --standard=./phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors
-
-    - name: "Setting up Apigee X environment"
-      if: ${{ matrix.instance-type == 'X' }}
-      run: |
-        cd drupal
+        # Setting environment variables to run Apigee X tests
         echo "APIGEE_EDGE_INSTANCE_TYPE=hybrid" >> $GITHUB_ENV
         echo "APIGEE_EDGE_ORGANIZATION=$APIGEE_EDGE_HYBRID_ORGANIZATION" >> $GITHUB_ENV
         echo "APIGEE_EDGE_ENDPOINT=$APIGEE_EDGE_HYBRID_ENDPOINT" >> $GITHUB_ENV
@@ -168,9 +145,9 @@ jobs:
     - run: |
         export DISPLAY=:99
         chromedriver --url-base=/wd/hub &
-        sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
+        sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
 
-    - name: "Run PHPUnit tests (Non-Coverage)"
+    - name: "Run PHPUnit tests"
       if: ${{ matrix.php-version != '8.3' }}
       run: |
         cd drupal
