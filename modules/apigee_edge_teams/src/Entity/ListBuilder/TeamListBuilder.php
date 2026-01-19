@@ -89,16 +89,6 @@ class TeamListBuilder extends EdgeEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, ?ConfigFactoryInterface $config_factory = NULL) {
-    parent::__construct($entity_type, $entity_type_manager, $config_factory);
-
-    // Override the limit here.
-    $this->limit = 1000;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function buildHeader() {
     $headers = [];
 
