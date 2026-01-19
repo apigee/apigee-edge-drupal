@@ -38,6 +38,7 @@ use Drupal\apigee_edge\Entity\Storage\AttributesAwareFieldableEdgeEntityStorageB
 use Drupal\apigee_edge_teams\Entity\Controller\TeamControllerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\State\StateInterface;
 
 /**
  * Entity storage implementation for teams.
@@ -66,6 +67,13 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
   private $logger;
 
   /**
+   * The state service.
+   *
+   * @var \Drupal\Core\State\StateInterface
+   */
+  protected $state;
+
+  /**
    * Constructs an TeamStorage instance.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -84,8 +92,10 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
    *   Configuration factory.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
+   * @param \Drupal\Core\State\StateInterface $state
+   *   The state service.
    */
-  public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, TeamControllerInterface $team_controller, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config, LoggerInterface $logger) {
+  public function __construct(EntityTypeInterface $entity_type, CacheBackendInterface $cache_backend, MemoryCacheInterface $memory_cache, TimeInterface $system_time, TeamControllerInterface $team_controller, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config, LoggerInterface $logger, StateInterface $state) {
     parent::__construct($entity_type, $cache_backend, $memory_cache, $system_time);
     $this->teamController = $team_controller;
     $config = $config->get('apigee_edge_teams.team_settings');
@@ -93,6 +103,7 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
     $this->cacheInsertChunkSize = $config->get('cache_insert_chunk_size') ?? static::DEFAULT_PERSISTENT_CACHE_INSERT_CHUNK_SIZE;
     $this->entityTypeManager = $entity_type_manager;
     $this->logger = $logger;
+    $this->state = $state;
   }
 
   /**
@@ -107,7 +118,8 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
       $container->get('apigee_edge_teams.controller.team'),
       $container->get('entity_type.manager'),
       $container->get('config.factory'),
-      $container->get('logger.channel.apigee_edge_teams')
+      $container->get('logger.channel.apigee_edge_teams'),
+      $container->get('state')
     );
   }
 
@@ -209,6 +221,93 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
         $this->logger->critical("Integrity check: Failed to remove %developer team member's role(s) from %team team when team got deleted. @message %function (line %line of %file). <pre>@backtrace_string</pre>", $context);
       }
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getFromPersistentCache(?array &$ids = NULL) {
+
+    if ($this->cacheExpiration === 0 || !$this->entityType->isPersistentlyCacheable()) {
+      return [];
+    }
+
+    if ($ids === NULL) {
+      // During tests, this state is set to TRUE (in parent::setUp()) to
+      // force a cache miss and take data from the Mock API.
+      // This prevents test isolation failures where
+      // stale data from a previous test could cause the current test to fail.
+      if ($this->state->get('apigee_teams_test_skip_cache', FALSE)) {
+        return [];
+      }
+      $all_ids_cid = 'all_ids:' . $this->entityTypeId;
+      // Try to load our "master ID list" from the cache.
+      if ($cache = $this->cacheBackend->get($all_ids_cid)) {
+        // We found the list! Set $ids to this list.
+        $ids = $cache->data;
+      }
+      // If we did NOT find the list, $ids remains NULL. The code
+      // will proceed as normal, hit the API, and our modified
+      // setPersistentCache() will create the list for next time.
+    }
+
+    if (empty($ids)) {
+      return [];
+    }
+
+    return parent::getFromPersistentCache($ids);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setPersistentCache(array $entities) {
+    parent::setPersistentCache($entities);
+
+    $entity_count = 0;
+    if (!empty($entities)) {
+      // Get all entity IDs.
+      $all_entity_ids = array_keys($entities);
+      $entity_count = count($all_entity_ids);
+    }
+
+    // After all chunks are saved, save the master ID list.
+    // Only proceed if we have entities to process.
+    if ($entity_count > 0) {
+      $all_ids_cid = 'all_ids:' . $this->entityTypeId;
+      // Use the main entity type tag so this item is cleared when
+      // the rest of the entity cache is cleared.
+      $all_ids_tags = [$this->entityTypeId . ':values'];
+
+      // Try to load existing cache.
+      // $this->cacheBackend->get() returns FALSE if the item does not exist.
+      $cache_object = $this->cacheBackend->get($all_ids_cid);
+
+      // If cache is empty AND count is 1, we DO NOT cache the entity.
+      if ($cache_object || $entity_count > 1) {
+
+        $existing_ids = $cache_object ? $cache_object->data : [];
+
+        $final_all_team_ids = array_unique(array_merge($existing_ids, $all_entity_ids));
+
+        $this->cacheBackend->set(
+          $all_ids_cid,
+          $final_all_team_ids,
+          $this->getPersistentCacheExpiration(),
+          $all_ids_tags
+        );
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function resetCache(?array $ids = NULL) {
+
+    $this->cacheBackend->delete('all_ids:' . $this->entityTypeId);
+
+    parent::resetCache($ids);
   }
 
 }

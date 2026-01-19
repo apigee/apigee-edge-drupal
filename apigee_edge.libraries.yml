@@ -99,3 +99,9 @@ charts:
     gpl-compatible: false
   js:
     https://www.gstatic.com/charts/loader.js: { type: external, minified: true }
+
+entity_search_form:
+  version: 1.0
+  css:
+    theme:
+      css/apigee_edge.search_form.css: {}
