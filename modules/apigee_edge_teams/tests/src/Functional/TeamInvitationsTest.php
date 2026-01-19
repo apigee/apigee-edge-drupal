@@ -78,10 +78,25 @@ class TeamInvitationsTest extends ApigeeEdgeTeamsFunctionalTestBase {
   protected $teamB;
 
   /**
+   * The state service.
+   *
+   * @var \Drupal\Core\State\State
+   */
+  protected $state;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
     parent::setUp();
+
+    // This state acts as a "kill switch." Our overridden
+    // `getFromPersistentCache()` method checks for this state.
+    // When it's TRUE, that method will *always* return [], forcing
+    // a cache miss and guaranteeing that every test gets fresh data
+    // from the source (the API) instead of the cache.
+    $this->state = $this->container->get('state');
+    $this->state->set('apigee_teams_test_skip_cache', TRUE);
 
     $this->addOrganizationMatchedResponse();
 
