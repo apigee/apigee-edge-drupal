@@ -205,13 +205,20 @@ class AccessTest extends ApigeeEdgeTeamsFunctionalTestBase {
     // Setting isApigeeX() to true for Apigee X org.
     TeamApp::$apigeex = TRUE;
     parent::setUp();
+
     $this->teamStorage = $this->container->get('entity_type.manager')->getStorage('team');
     $this->teamAppStorage = $this->container->get('entity_type.manager')->getStorage('team_app');
     $this->teamRoleStorage = $this->container->get('entity_type.manager')->getStorage('team_role');
     $this->teamMemberRoleStorage = $this->container->get('entity_type.manager')->getStorage('team_member_role');
     $this->teamMembershipManager = $this->container->get('apigee_edge_teams.team_membership_manager');
     $this->teamPermissionHandler = $this->container->get('apigee_edge_teams.team_permissions');
+    // This state acts as a "kill switch." Our overridden
+    // `getFromPersistentCache()` method checks for this state.
+    // When it's TRUE, that method will *always* return [], forcing
+    // a cache miss and guaranteeing that every test gets fresh data
+    // from the source (the API) instead of the cache.
     $this->state = $this->container->get('state');
+    $this->state->set('apigee_teams_test_skip_cache', TRUE);
 
     $team_entity_type = $this->container->get('entity_type.manager')->getDefinition('team');
     $team_app_entity_type = $this->container->get('entity_type.manager')->getDefinition('team_app');
