@@ -29,6 +29,11 @@ use Drupal\Core\Url;
 use Drupal\apigee_edge\Element\StatusPropertyElement;
 use Drupal\apigee_edge\Entity\ListBuilder\EdgeEntityListBuilder;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
+use Drupal\Core\Form\FormBuilderInterface;
+use Drupal\Core\Entity\Query\QueryInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Drupal\apigee_edge\Form\EdgeEntitySearchForm;
 
 /**
  * General entity listing builder for teams.
@@ -36,13 +41,49 @@ use Drupal\apigee_edge_teams\Entity\TeamInterface;
 class TeamListBuilder extends EdgeEntityListBuilder {
 
   /**
+   * The form builder service.
+   *
+   * @var \Drupal\Core\Form\FormBuilderInterface
+   */
+  protected $formBuilder;
+
+  /**
+   * The request stack service.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $requestStack;
+
+  /**
    * {@inheritdoc}
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, ?ConfigFactoryInterface $config_factory = NULL) {
+  public function __construct(
+    EntityTypeInterface $entity_type,
+    EntityTypeManagerInterface $entity_type_manager,
+    FormBuilderInterface $form_builder,
+    RequestStack $request_stack,
+    ?ConfigFactoryInterface $config_factory = NULL,
+  ) {
     parent::__construct($entity_type, $entity_type_manager, $config_factory);
 
-    // Override the limit here.
+    $this->formBuilder = $form_builder;
+    $this->requestStack = $request_stack;
+
+    // Override the parent construct limit here.
     $this->limit = 1000;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+    return new static(
+      $entity_type,
+      $container->get('entity_type.manager'),
+      $container->get('form_builder'),
+      $container->get('request_stack'),
+      $container->get('config.factory')
+    );
   }
 
   /**
@@ -113,6 +154,22 @@ class TeamListBuilder extends EdgeEntityListBuilder {
   /**
    * {@inheritdoc}
    */
+  protected function buildEntityIdQuery(): QueryInterface {
+
+    $query = parent::buildEntityIdQuery();
+
+    $search_query = $this->requestStack->getCurrentRequest()->query->get($this->entityTypeId, '');
+    // If there is a search term, add the condition to the query.
+    if (!empty($search_query)) {
+      $query->condition('displayName', $search_query, 'CONTAINS');
+    }
+
+    return $query;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function buildRow(EntityInterface $entity) {
     /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $entity */
     $row['name']['data'] = $entity->toLink()->toRenderable();
@@ -132,10 +189,11 @@ class TeamListBuilder extends EdgeEntityListBuilder {
     $account = $this->entityTypeManager->getStorage('user')->load(\Drupal::currentUser()->id());
 
     if (isset($build['#type']) && $build['#type'] === 'table') {
-      $build = [
-        'table' => $build,
-      ];
+      $build['table'] = $build;
     }
+
+    $build['filter_form'] = $this->formBuilder->getForm(EdgeEntitySearchForm::class, $this->entityTypeId);
+    $build['filter_form']['#weight'] = -1;
 
     $build['#cache']['keys'][] = 'team_list_per_user';
 
