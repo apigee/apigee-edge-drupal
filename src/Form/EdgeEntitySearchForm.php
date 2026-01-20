@@ -31,7 +31,6 @@ class EdgeEntitySearchForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  
   public function getFormId() {
     return 'apigee_edge_enitity_search_form';
   }
