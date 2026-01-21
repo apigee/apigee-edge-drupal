@@ -59,6 +59,13 @@ class TeamListBuilderTest extends ApigeeEdgeTeamsFunctionalTestBase {
   protected $teamStorage;
 
   /**
+   * The state service.
+   *
+   * @var \Drupal\Core\State\State
+   */
+  protected $state;
+
+  /**
    * The user 1 account.
    *
    * @var \Drupal\user\UserInterface
@@ -112,6 +119,14 @@ class TeamListBuilderTest extends ApigeeEdgeTeamsFunctionalTestBase {
    */
   protected function setUp(): void {
     parent::setUp();
+
+    // This state acts as a "kill switch." Our overridden
+    // `getFromPersistentCache()` method checks for this state.
+    // When it's TRUE, that method will *always* return [], forcing
+    // a cache miss and guaranteeing that every test gets fresh data
+    // from the source (the API) instead of the cache.
+    $this->state = $this->container->get('state');
+    $this->state->set('apigee_teams_test_skip_cache', TRUE);
 
     $this->storeToken();
     $this->addApigeexOrganizationMatchedResponse();
@@ -189,9 +204,32 @@ class TeamListBuilderTest extends ApigeeEdgeTeamsFunctionalTestBase {
     $assert->pageTextNotContains($this->teamA->label());
     $assert->pageTextContains($this->teamB->label());
     $this->drupalLogout();
+  }
+
+  /**
+   * Tests team list cache with and without Team Permission.
+   */
+  public function testTeamListWithAndWithoutTeamPermission() {
+    $appgroups = [
+      $this->teamA->decorated(),
+      $this->teamB->decorated(),
+    ];
+
+    $this->drupalLogin($this->cMemberAccount);
+    // Give cMemberAccount permission to view all teams.
+    $this->cMemberAccount->addRole($this->customRole);
+    $this->cMemberAccount->save();
+
+    // cMemberAccount should see both teams now.
+    $this->queueAppGroupsResponse($appgroups);
+    $this->drupalGet(Url::fromUserInput('/teams'));
+    $assert = $this->assertSession();
+    $assert->pageTextContains($this->teamA->label());
+    $assert->pageTextContains($this->teamB->label());
 
     // cMemberAccount should not see any teams.
-    $this->drupalLogin($this->cMemberAccount);
+    $this->cMemberAccount->removeRole($this->customRole);
+    $this->cMemberAccount->save();
     $this->queueAppGroupsResponse($appgroups);
     $this->queueDeveloperResponse($this->cMemberAccount);
     $this->queueDeveloperResponse($this->cMemberAccount);
@@ -199,18 +237,6 @@ class TeamListBuilderTest extends ApigeeEdgeTeamsFunctionalTestBase {
     $assert = $this->assertSession();
     $assert->pageTextNotContains($this->teamA->label());
     $assert->pageTextNotContains($this->teamB->label());
-
-    // Give cMemberAccount permission to view all teams.
-    $this->cMemberAccount->addRole($this->customRole);
-    $this->cMemberAccount->save();
-
-    // cMemberAccount should see both teams now.
-    $this->queueAppGroupsResponse($appgroups);
-    $this->queueDeveloperResponse($this->cMemberAccount);
-    $this->drupalGet(Url::fromUserInput('/teams'));
-    $assert = $this->assertSession();
-    $assert->pageTextContains($this->teamA->label());
-    $assert->pageTextContains($this->teamB->label());
   }
 
   /**
