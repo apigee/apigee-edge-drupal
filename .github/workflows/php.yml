@@ -18,11 +18,7 @@ env:
 
 on:
   push:
-    branches:
-      - '4.x'
-  pull_request:
-    branches:
-      - '4.x'
+  pull_request_target:
   schedule:
     - cron: '00 01 * * *' 
 
