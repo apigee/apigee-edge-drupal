@@ -25,7 +25,7 @@ use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Drupal\apigee_edge\FieldAttributeConverter;
+use Drupal\apigee_edge\FieldAttributeConverterInterface;
 use Drupal\apigee_edge\Plugin\FieldStorageFormatManagerInterface;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\FieldConfigInterface;
@@ -66,12 +66,18 @@ class DeveloperAttributesSettingsForm extends ConfigFormBase {
    *   Entity field manager service.
    * @param \Drupal\apigee_edge\Plugin\FieldStorageFormatManagerInterface $field_storage_format_manager
    *   Field storage format manager service.
-   * @param \Drupal\apigee_edge\FieldAttributeConverter $field_attribute_converter
+   * @param \Drupal\apigee_edge\FieldAttributeConverterInterface $field_attribute_converter
    *   Field name to attribute name converted service.
    * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config_manager
    *   The typed config manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, EntityFieldManagerInterface $entity_field_manager, FieldStorageFormatManagerInterface $field_storage_format_manager, FieldAttributeConverter $field_attribute_converter, TypedConfigManagerInterface $typed_config_manager) {
+  public function __construct(
+    ConfigFactoryInterface $config_factory,
+    EntityFieldManagerInterface $entity_field_manager,
+    FieldStorageFormatManagerInterface $field_storage_format_manager,
+    FieldAttributeConverterInterface $field_attribute_converter,
+    TypedConfigManagerInterface $typed_config_manager,
+  ) {
     parent::__construct($config_factory, $typed_config_manager);
     $this->fieldAttributeConverter = $field_attribute_converter;
     $this->entityFieldManager = $entity_field_manager;
