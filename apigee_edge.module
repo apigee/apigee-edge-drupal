@@ -1400,13 +1400,11 @@ function apigee_edge_user_presave(UserInterface $account) {
         $logger->info($previous->getMessage());
         $developer = Developer::load($account->getEmail());
         if ($developer) {
-          $developer_id = $developer->getDeveloperId();
           // If a user could register on the portal with an email address
           // that already belongs to a developer on Apigee Edge then override
           // its stored developer data there with the new one.
           if (isset($account->{APIGEE_EDGE_USER_REGISTRATION_SOURCE}) && $account->{APIGEE_EDGE_USER_REGISTRATION_SOURCE} === 'user_register_form') {
-            $developer = $user_developer->convertUser($account);
-            $developer->setDeveloperId($developer_id);
+            $developer = $user_developer->convertUser($account)->getDeveloper();
             $developer->enforceIsNew(FALSE);
             try {
               $developer->save();
