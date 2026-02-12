@@ -252,7 +252,7 @@ function apigee_edge_system_breadcrumb_alter(Breadcrumb &$breadcrumb, RouteMatch
   // Remove breadcrumb cache from every path under "/user" to let
   // CreateAppForDeveloperBreadcrumbBuilder build breadcrumb properly on the
   // add developer app for developer page.
-  if (preg_match('/^\/user.*/', $route_match->getRouteObject()->getPath())) {
+  if (($object = $route_match->getRouteObject()) && (preg_match('/^\/user.*/', $object->getPath()))) {
     $breadcrumb->mergeCacheMaxAge(0);
   }
   if ($route_match->getRouteName() === 'entity.developer_app.add_form_for_developer') {
