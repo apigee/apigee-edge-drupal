@@ -482,16 +482,24 @@ final class KeyEntityFormEnhancer {
    *   The suggestion text to be displayed.
    */
   private function createSuggestion(\Exception $exception, KeyInterface $key): MarkupInterface {
+    /** @var \Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType $key_type */
+    $key_type = $key->getKeyType();
+    $type = $key_type->getInstanceType($key);
+
     $fail_text = $this->t('Failed to connect to Apigee Edge.');
+    if (EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID === $type) {
+      $fail_text = $this->t('Failed to connect to Apigee X.');
+    }
+    elseif (EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE === $type) {
+      $fail_text = $this->t('Failed to connect to Private Cloud.');
+    }
     // General error message.
     $suggestion = $this->t('@fail_text', [
       '@fail_text' => $fail_text,
     ]);
-    /** @var \Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType $key_type */
-    $key_type = $key->getKeyType();
 
     if ($exception instanceof AuthenticationKeyException) {
-      $suggestion = $this->t('@fail_text Verify the Apigee Edge connection settings.', [
+      $suggestion = $this->t('@fail_text Verify the Apigee connection settings.', [
         '@fail_text' => $fail_text,
       ]);
     }
