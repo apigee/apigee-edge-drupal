@@ -18,7 +18,7 @@ env:
 
 on:
   push:
-  pull_request:
+  pull_request_target:
   schedule:
     - cron: '00 01 * * *' 
 
