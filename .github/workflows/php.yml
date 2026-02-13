@@ -38,7 +38,8 @@ jobs:
           - "8.3"
         drupal-core:
           # Should update the following as the minimum supported version from Drupal.org
-          - "11.1.x"
+          - "11.2.x"
+          - "11.3.x"
         instance-type:
           - "Edge"
           - "X"
