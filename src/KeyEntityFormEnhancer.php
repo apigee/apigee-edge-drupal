@@ -304,6 +304,7 @@ final class KeyEntityFormEnhancer {
     /** @var \Drupal\key\KeyInterface $key */
     $key = $form_state->getFormObject()->getEntity();
 
+    $key_value = NULL;
     // Check whether or not we know how to write to this key.
     if ($this->keyIsWritable($key)) {
       // When form gets saved, key values are already processed.
@@ -356,8 +357,13 @@ final class KeyEntityFormEnhancer {
 
       // Data Residency check.
       \Drupal::state()->delete(DataResidencyEndpointInterface::DRZ_ENDPOINT);
-      $key_value_array = json_decode($key_value, TRUE);
-      if ($key_value_array['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+      $key_value_array = [];
+      $sanitized_key_value = is_string($key_value) ? $key_value : '';
+
+      if (!empty($sanitized_key_value)) {
+        $key_value_array = json_decode($sanitized_key_value, TRUE);
+      }
+      if (isset($key_value_array['instance_type']) && $key_value_array['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
         $this->dataResidencyEndpoint->getEndpoint($test_key);
       }
 
