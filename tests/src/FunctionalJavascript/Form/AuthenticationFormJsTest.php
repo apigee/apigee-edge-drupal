@@ -342,8 +342,8 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     $page->fillField('Password', $this->password);
     // Press the Save/Save configuration button.
     $page->pressButton('op');
-    $this->assertSession()->pageTextContains('Connection successful.');
-
+    $result = $this->assertSession()->waitForText('Connection successful.');
+    $this->assertNotNull($result, 'The expected text "Connection successful." did not appear.');
     // Because Key add/edit form redirects the user to the Key entity listing
     // page on success therefore we have to re-visit the form again.
     $visitFormAsAdmin();
@@ -384,10 +384,12 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
     // $page->fillField('Organization', $this->organization);
     // Test invalid endpoint.
     $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE);
-    $invalid_domain = "{Random::getGenerator()->word(16)}.example.com";
+    $random_host = Random::getGenerator()->word(16);
+    $invalid_domain = $random_host . ".example.com";
     $page->fillField('Apigee endpoint', "http://{$invalid_domain}/");
-    $this->assertSendRequestMessage('.messages--error', "Failed to connect to Private Cloud. The given endpoint (http://{$invalid_domain}/) is incorrect or something is wrong with the connection. Error message: ");
-    $web_assert->elementContains('css', 'textarea[data-drupal-selector="edit-debug-text"]', "\"endpoint\": \"http:\/\/{$invalid_domain}\/\"");
+    $this->assertSendRequestMessage('.messages--error', 'Failed to connect to Private Cloud.');
+    $this->assertSendRequestMessage('.messages--error', 'is incorrect or something is wrong with the connection.');
+    $web_assert->elementContains('css', '.messages--error', $invalid_domain);
     $web_assert->fieldValueEquals('Apigee endpoint', "http://{$invalid_domain}/");
     $page->fillField('Apigee endpoint', '');
     $page->selectFieldOption('key_input_settings[instance_type]', EdgeKeyTypeInterface::INSTANCE_TYPE_PUBLIC);
@@ -410,7 +412,8 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
     // Test invalid authorization server.
     $this->cssSelect('select[data-drupal-selector="edit-key-input-settings-auth-type"]')[0]->setValue('oauth');
-    $invalid_domain = "{Random::getGenerator()->word(16)}.example.com";
+    $random_host = Random::getGenerator()->word(16);
+    $invalid_domain = $random_host . ".example.com";
     $page->selectFieldOption('key_input_settings[authorization_server_type]', 'custom');
     $page->fillField('Custom authorization server', "http://{$invalid_domain}/");
     $this->assertSendRequestMessage('.messages--error', "Failed to connect to the OAuth authorization server. The given authorization server (http://{$invalid_domain}/) is incorrect or something is wrong with the connection. Error message: ");

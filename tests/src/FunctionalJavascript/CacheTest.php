@@ -159,9 +159,7 @@ class CacheTest extends ApigeeEdgeFunctionalJavascriptTestBase {
 
     // Hide keys.
     $this->clickLink('Hide key', 0);
-    $this->assertSession()->assertWaitOnAjaxRequest(30000);
     $this->clickLink('Hide key', 1);
-    $this->assertSession()->assertWaitOnAjaxRequest(30000);
     $this->assertSession()->pageTextNotContains($credentials[0]->getConsumerKey());
     $this->assertSession()->pageTextNotContains($credentials[0]->getConsumerSecret());
 
