@@ -225,7 +225,9 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
    * Visits the Authentication form for testing.
    */
   protected function visitAuthenticationForm(): void {
-    if ($this->loggedInUser->id() !== $this->rootUser) {
+    $current_uid = $this->loggedInUser ? $this->loggedInUser->id() : NULL;
+    $target_uid = $this->rootUser ? $this->rootUser->id() : NULL;
+    if ($current_uid !== $target_uid) {
       $this->drupalLogin($this->rootUser);
     }
     $this->drupalGet(Url::fromRoute('apigee_edge.settings'));
@@ -237,7 +239,9 @@ class AuthenticationFormJsTest extends ApigeeEdgeFunctionalJavascriptTestBase {
   protected function visitKeyAddForm(): void {
     $web_assert = $this->assertSession();
     $page = $this->getSession()->getPage();
-    if ($this->loggedInUser->id() !== $this->rootUser) {
+    $current_uid = $this->loggedInUser ? $this->loggedInUser->id() : NULL;
+    $target_uid = $this->rootUser ? $this->rootUser->id() : NULL;
+    if ($current_uid !== $target_uid) {
       $this->drupalLogin($this->rootUser);
     }
     $this->drupalGet(Url::fromRoute('entity.key.add_form'));

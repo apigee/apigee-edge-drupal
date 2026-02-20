@@ -91,6 +91,9 @@ abstract class ApiProductRoleBasedAccessTestBase extends ApiProductAccessTest {
     $this->submitForm($post, 'Save configuration');
     $result = $this->assertSession()->waitForText('The configuration options have been saved.');
     $this->assertNotNull($result, 'The batch process did not finish in time.');
+    $this->getSession()->getPage()->waitFor(30, function () {
+      return !str_contains($this->getSession()->getCurrentUrl(), '/batch');
+    });
     $this->drupalLogout();
   }
 
