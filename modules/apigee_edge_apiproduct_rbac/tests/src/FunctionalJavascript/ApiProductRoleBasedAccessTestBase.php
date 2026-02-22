@@ -89,11 +89,12 @@ abstract class ApiProductRoleBasedAccessTestBase extends ApiProductAccessTest {
     $this->drupalLogin($this->users[self::USER_WITH_ADMIN_PERM]);
     $this->drupalGet(Url::fromRoute('apigee_edge.settings.developer.api_product_access'));
     $this->submitForm($post, 'Save configuration');
-    $result = $this->assertSession()->waitForText('The configuration options have been saved.');
-    $this->assertNotNull($result, 'The batch process did not finish in time.');
-    $this->getSession()->getPage()->waitFor(60, function () {
+    $this->getSession()->getPage()->waitFor(30, function () {
       return !str_contains($this->getSession()->getCurrentUrl(), '/batch');
     });
+    $result = $this->assertSession()->waitForText('The configuration options have been saved.');
+    $this->assertNotNull($result, 'The batch process did not finish in time.');
+    $this->getSession()->wait(5000, 'document.readyState === "complete"');
     $this->drupalLogout();
   }
 
