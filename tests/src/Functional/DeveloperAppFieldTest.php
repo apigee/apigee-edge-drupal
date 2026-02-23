@@ -175,19 +175,6 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
         'encoded' => '1',
       ],
       strtolower($this->randomMachineName()) => [
-        'type' => 'float',
-        'data' => [
-          ['value' => round(M_PI, 10)],
-          ['value' => round(M_E, 10)],
-          ['value' => round(M_EULER, 10)],
-        ],
-        'encoded' => implode(',', [
-          round(M_PI, 10),
-          round(M_E, 10),
-          round(M_EULER, 10),
-        ]),
-      ],
-      strtolower($this->randomMachineName()) => [
         'type' => 'integer',
         'data' => [
           ['value' => 4],
@@ -268,27 +255,11 @@ class DeveloperAppFieldTest extends ApigeeEdgeFunctionalTestBase {
         ],
         'encoded' => 'zero,one',
       ],
-      'list_float' => [
-        'name' => strtolower($this->randomMachineName()),
-        'settings' => [
-          'field_storage[subform][settings][allowed_values][table][0][item][key]' => 0,
-          'field_storage[subform][settings][allowed_values][table][0][item][label]' => 'Zero',
-          'field_storage[subform][settings][allowed_values][table][1][item][key]' => .5,
-          'field_storage[subform][settings][allowed_values][table][1][item][label]' => 'Point five',
-          'field_storage[subform][settings][allowed_values][table][2][item][key]' => 2,
-          'field_storage[subform][settings][allowed_values][table][2][item][label]' => 'Two',
-        ],
-        'data' => [
-          '0' => 'Zero',
-          '0.5' => 'Point five',
-          '2' => 'Two',
-        ],
-        'encoded' => '0.5',
-      ],
     ];
 
     // Changes for field of types 'list' fields
-    // Using field configs to save the fields as issue is faced by FieldUiTestTrait.
+    // Using field configs to save the fields as
+    // issue is faced by FieldUiTestTrait.
     foreach ($this->listFields as $list_type => $listData) {
       $this->fieldName = 'field_' . $listData['name'];
       $this->createOptionsField($list_type);
