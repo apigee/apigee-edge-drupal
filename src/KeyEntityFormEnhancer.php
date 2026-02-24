@@ -41,6 +41,7 @@ use Drupal\apigee_edge\Exception\KeyProviderRequirementsException;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\apigee_edge\Plugin\KeyProviderRequirementsInterface;
 use Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType;
+use Drupal\apigee_edge\Service\DataResidencyEndpointInterface;
 use Drupal\key\Form\KeyFormBase;
 use Drupal\key\KeyInterface;
 use Drupal\key\Plugin\KeyProviderSettableValueInterface;
@@ -100,6 +101,13 @@ final class KeyEntityFormEnhancer {
   private $emailValidator;
 
   /**
+   * The data residency endpoint service.
+   *
+   * @var \Drupal\apigee_edge\Service\DataResidencyEndpointInterface
+   */
+  private $dataResidencyEndpoint;
+
+  /**
    * KeyEntityFormEnhancer constructor.
    *
    * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
@@ -112,13 +120,16 @@ final class KeyEntityFormEnhancer {
    *   The config factory.
    * @param \Drupal\Component\Utility\EmailValidatorInterface $email_validator
    *   The email validator.
+   * @param \Drupal\apigee_edge\Service\DataResidencyEndpointInterface $data_residency_endpoint
+   *   The data residency endpoint service.
    */
-  public function __construct(SDKConnectorInterface $connector, OauthTokenStorageInterface $oauth_token_storage, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, EmailValidatorInterface $email_validator) {
+  public function __construct(SDKConnectorInterface $connector, OauthTokenStorageInterface $oauth_token_storage, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, EmailValidatorInterface $email_validator, DataResidencyEndpointInterface $data_residency_endpoint) {
     $this->connector = $connector;
     $this->entityTypeManager = $entity_type_manager;
     $this->oauthTokenStorage = $oauth_token_storage;
     $this->configFactory = $config_factory;
     $this->emailValidator = $email_validator;
+    $this->dataResidencyEndpoint = $data_residency_endpoint;
   }
 
   /**
@@ -293,6 +304,7 @@ final class KeyEntityFormEnhancer {
     /** @var \Drupal\key\KeyInterface $key */
     $key = $form_state->getFormObject()->getEntity();
 
+    $key_value = NULL;
     // Check whether or not we know how to write to this key.
     if ($this->keyIsWritable($key)) {
       // When form gets saved, key values are already processed.
@@ -342,6 +354,19 @@ final class KeyEntityFormEnhancer {
         // Clear existing OAuth token data.
         $this->cleanUpOauthTokenData();
       }
+
+      // Data Residency check.
+      \Drupal::state()->delete(DataResidencyEndpointInterface::DRZ_ENDPOINT);
+      $key_value_array = [];
+      $sanitized_key_value = is_string($key_value) ? $key_value : '';
+
+      if (!empty($sanitized_key_value)) {
+        $key_value_array = json_decode($sanitized_key_value, TRUE);
+      }
+      if (isset($key_value_array['instance_type']) && $key_value_array['instance_type'] == EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
+        $this->dataResidencyEndpoint->getEndpoint($test_key);
+      }
+
       // Test the connection.
       $this->connector->testConnection($test_key);
       $this->messenger()->addStatus($this->t('Connection successful.'));
@@ -463,16 +488,24 @@ final class KeyEntityFormEnhancer {
    *   The suggestion text to be displayed.
    */
   private function createSuggestion(\Exception $exception, KeyInterface $key): MarkupInterface {
+    /** @var \Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType $key_type */
+    $key_type = $key->getKeyType();
+    $type = $key_type->getInstanceType($key);
+
     $fail_text = $this->t('Failed to connect to Apigee Edge.');
+    if (EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID === $type) {
+      $fail_text = $this->t('Failed to connect to Apigee X.');
+    }
+    elseif (EdgeKeyTypeInterface::INSTANCE_TYPE_PRIVATE === $type) {
+      $fail_text = $this->t('Failed to connect to Private Cloud.');
+    }
     // General error message.
     $suggestion = $this->t('@fail_text', [
       '@fail_text' => $fail_text,
     ]);
-    /** @var \Drupal\apigee_edge\Plugin\KeyType\ApigeeAuthKeyType $key_type */
-    $key_type = $key->getKeyType();
 
     if ($exception instanceof AuthenticationKeyException) {
-      $suggestion = $this->t('@fail_text Verify the Apigee Edge connection settings.', [
+      $suggestion = $this->t('@fail_text Verify the Apigee connection settings.', [
         '@fail_text' => $fail_text,
       ]);
     }

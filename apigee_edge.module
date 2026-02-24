@@ -252,7 +252,7 @@ function apigee_edge_system_breadcrumb_alter(Breadcrumb &$breadcrumb, RouteMatch
   // Remove breadcrumb cache from every path under "/user" to let
   // CreateAppForDeveloperBreadcrumbBuilder build breadcrumb properly on the
   // add developer app for developer page.
-  if (preg_match('/^\/user.*/', $route_match->getRouteObject()->getPath())) {
+  if (($object = $route_match->getRouteObject()) && (preg_match('/^\/user.*/', $object->getPath()))) {
     $breadcrumb->mergeCacheMaxAge(0);
   }
   if ($route_match->getRouteName() === 'entity.developer_app.add_form_for_developer') {
@@ -850,6 +850,81 @@ function apigee_edge_form_user_register_form_alter(&$form, FormStateInterface $f
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter() for 'field_config_edit_form'.
+ */
+function apigee_edge_form_field_config_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+
+  $table = &$form['field_storage']['subform']['settings']['allowed_values']['table'] ?? null;
+
+  if (!$table) {
+    return;
+  }
+
+  $form_object = $form_state->getFormObject();
+
+  /** @var \Drupal\field\Entity\FieldConfig $field_config */
+  $field_config = $form_object->getEntity();
+  $target_entity_type = $field_config->getTargetEntityTypeId();
+  $field_name = $field_config->getName();
+
+  $used_values = _apigee_edge_get_used_values($target_entity_type, $field_name);
+
+  if (!empty($used_values)) {
+      _apigee_edge_disable_allowed_values($table, $used_values);
+  }
+}
+
+/**
+ * Helper function to calculate used allowed values.
+ */
+function _apigee_edge_get_used_values($target_entity_type, $field_name) {
+  $used_values = [];
+
+  try {
+    $storage = \Drupal::entityTypeManager()->getStorage($target_entity_type);
+
+    $entities = $storage->loadMultiple();
+
+    foreach ($entities as $entity) {
+      /** @var \Drupal\apigee_edge\Entity\FieldableEdgeEntityInterface $entity */
+      if ($entity->hasField($field_name) && !$entity->get($field_name)->isEmpty()) {
+        $value = $entity->get($field_name)->value;
+        $used_values[$value] = TRUE;
+      }
+    }
+  }
+  catch (\Exception $e) {
+    return [];
+  }
+
+  return $used_values;
+}
+
+/**
+ * Helper function to disable buttons in the allowed values table.
+ */
+function _apigee_edge_disable_allowed_values(array &$table, array $used_values) {
+  foreach (Element::children($table) as $delta) {
+    $row = &$table[$delta];
+    $row_value = $row['item']['key']['#default_value'] ?? NULL;
+
+    if ($row_value && isset($used_values[$row_value])) {
+      // Disable Input Machine Name
+      $row['item']['key']['#attributes']['disabled'] = 'disabled';
+
+      // Disable Remove Button
+      $row['delete']['#attributes']['disabled'] = 'disabled';
+      $row['delete'] += [
+            'message' => [
+              '#type' => 'item',
+              '#markup' => t('Cannot be removed: option in use.'),
+            ],
+      ];
+    }
+  }
+}
+
+/**
  * After build function for user_registration_form.
  *
  * @param array $form
@@ -1402,13 +1477,11 @@ function apigee_edge_user_presave(UserInterface $account) {
         $logger->info($previous->getMessage());
         $developer = Developer::load($account->getEmail());
         if ($developer) {
-          $developer_id = $developer->getDeveloperId();
           // If a user could register on the portal with an email address
           // that already belongs to a developer on Apigee Edge then override
           // its stored developer data there with the new one.
           if (isset($account->{APIGEE_EDGE_USER_REGISTRATION_SOURCE}) && $account->{APIGEE_EDGE_USER_REGISTRATION_SOURCE} === 'user_register_form') {
-            $developer = $user_developer->convertUser($account);
-            $developer->setDeveloperId($developer_id);
+            $developer = $user_developer->convertUser($account)->getDeveloper();
             $developer->enforceIsNew(FALSE);
             try {
               $developer->save();

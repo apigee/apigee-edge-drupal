@@ -24,7 +24,7 @@ services:
 
   apigee_edge.key_entity_form_enhancer:
     class: Drupal\apigee_edge\KeyEntityFormEnhancer
-    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.authentication.oauth_token_storage', '@entity_type.manager', '@config.factory', '@email.validator']
+    arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.authentication.oauth_token_storage', '@entity_type.manager', '@config.factory', '@email.validator', '@apigee_edge.data_residency_endpoint']
     calls:
       - [setMessenger, ['@messenger']]
       - [setStringTranslation, ['@string_translation']]
@@ -222,3 +222,7 @@ services:
     class: Drupal\Core\KeyValueStore\KeyValueStoreInterface
     factory: [ '@keyvalue', 'get' ]
     arguments: [ 'apigee_edge.dev_sync.last_update_tracker' ]
+  
+  apigee_edge.data_residency_endpoint:
+    class: Drupal\apigee_edge\Service\DataResidencyEndpoint
+    arguments: ['@apigee_edge.sdk_connector', '@state', '@messenger', '@string_translation']
