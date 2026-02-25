@@ -19,6 +19,7 @@
 
 namespace Drupal\Tests\apigee_edge\FunctionalJavascript;
 
+use Drupal\Core\Url;
 use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
 use Drupal\Tests\apigee_edge\Traits\ApigeeEdgeFunctionalTestTrait;
 use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
@@ -73,6 +74,27 @@ abstract class ApigeeEdgeFunctionalJavascriptTestBase extends WebDriverTestBase 
     // the system before a screenshot got created more easily from logs.
     $this->container->get('logger.channel.apigee_edge_test')->debug("Creating new screenshot: {$filename}.");
     parent::createScreenshot($filename, $set_background_color);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function drupalLogout() {
+    $assert_session = $this->assertSession();
+    $destination = Url::fromRoute('user.page')->toString();
+    $this->drupalGet(Url::fromRoute('user.logout.confirm', options: ['query' => ['destination' => $destination]]));
+    // Target the submit button using the name rather than the value to work
+    // regardless of the user interface language.
+    $this->submitForm([], 'op', 'user-logout-confirm');
+
+    // Wait for the login form to appear before asserting the fields.
+    // The 'name' field is typically the username field on the login form.
+    $this->getSession()->wait(10000, "jQuery('input[name=\"name\"]').length > 0");
+
+    $assert_session->fieldExists('name');
+    $assert_session->fieldExists('pass');
+
+    $this->drupalResetSession();
   }
 
 }

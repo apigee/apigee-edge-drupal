@@ -14,7 +14,7 @@ env:
   APIGEE_EDGE_HYBRID_ORGANIZATION: ${{ secrets.APIGEE_EDGE_HYBRID_ORGANIZATION }}
   BROWSERTEST_OUTPUT_DIRECTORY: "sites/simpletest/browser_output"
   BROWSERTEST_OUTPUT_BASE_URL: ""
-  MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", { "chromeOptions": { "w3c": false } }, "http://127.0.0.1:9515/wd/hub"]'
+  MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", { "chromeOptions": { "w3c": false, "args": ["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--window-size=1280,1024"] } }, "http://127.0.0.1:9515/wd/hub"]'
 
 on:
   push:
@@ -38,7 +38,7 @@ jobs:
           - "8.3"
         drupal-core:
           # Should update the following as the minimum supported version from Drupal.org
-          - "11.1.x"
+          - "11.2.x"
         instance-type:
           - "Edge"
           - "X"
@@ -139,10 +139,26 @@ jobs:
 
     - uses: nanasess/setup-chromedriver@v2
 
-    - run: |
+    # FIXED: Added wait loop to ensure port 9515 is open before tests start
+    - name: Start ChromeDriver and Xvfb
+      run: |
+        # Start Xvfb
+        sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
         export DISPLAY=:99
-        chromedriver --url-base=/wd/hub &
-        sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
+        
+        # Start ChromeDriver with explicit port and allowed IPs
+        chromedriver --url-base=/wd/hub --port=9515 --allowed-ips=127.0.0.1 &
+        
+        # Loop until ChromeDriver is ready (Max wait: 30s)
+        echo "Waiting for ChromeDriver..."
+        for i in {1..30}; do
+          if nc -z 127.0.0.1 9515; then
+            echo "ChromeDriver is up!"
+            break
+          fi
+          echo "Waiting..."
+          sleep 1
+        done
 
     - name: "Run PHPUnit tests with Code Coverage"
       run: |
