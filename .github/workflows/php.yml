@@ -39,6 +39,7 @@ jobs:
         drupal-core:
           # Should update the following as the minimum supported version from Drupal.org
           - "11.2.x"
+          - "11.3.x"
         instance-type:
           - "Edge"
           - "X"
@@ -107,7 +108,6 @@ jobs:
         composer require wikimedia/composer-merge-plugin
         composer config --json extra.merge-plugin.require '["modules/contrib/apigee_edge/composer.json"]'
         composer config platform.php ${{ matrix.php-version }}
-        composer config --json extra.patches."drupal/core" '{ "Support entities that are neither content nor config entities": "https://www.drupal.org/files/issues/2020-12-02/3042467-50.patch"}'
         composer update --with-all-dependencies
         composer require --dev phpspec/prophecy-phpunit:^2
         composer config --no-plugins allow-plugins.drupal/console-extend-plugin true
