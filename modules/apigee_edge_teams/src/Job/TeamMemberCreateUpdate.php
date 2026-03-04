@@ -58,6 +58,10 @@ abstract class TeamMemberCreateUpdate extends EdgeJob {
     else {
       $team_members = $member_controller->getMembers($this->team_ids);
     }
+
+    // Record the sync attempt timestamp for the team, regardless of whether
+    // an entity update occurred, to prevent redundant sync operations.
+    \Drupal::service('apigee_edge_teams.team_sync.last_update_tracker')->set($this->team_ids, \Drupal::time()->getCurrentTime());
   }
 
 }
