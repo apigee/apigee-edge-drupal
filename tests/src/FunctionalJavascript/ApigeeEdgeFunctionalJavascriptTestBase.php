@@ -87,10 +87,6 @@ abstract class ApigeeEdgeFunctionalJavascriptTestBase extends WebDriverTestBase 
     // regardless of the user interface language.
     $this->submitForm([], 'op', 'user-logout-confirm');
 
-    // Wait for the login form to appear before asserting the fields.
-    // The 'name' field is typically the username field on the login form.
-    $this->getSession()->wait(10000, "jQuery('input[name=\"name\"]').length > 0");
-
     $assert_session->fieldExists('name');
     $assert_session->fieldExists('pass');
 
