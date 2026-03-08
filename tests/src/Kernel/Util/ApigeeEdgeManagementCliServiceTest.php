@@ -131,7 +131,7 @@ class ApigeeEdgeManagementCliServiceTest extends ApigeeEdgeKernelTestBase implem
     $this->httpClient = $this->sdkConnector->getClient();
   }
 
-/**
+  /**
    * {@inheritdoc}
    */
   protected function tearDown(): void {
