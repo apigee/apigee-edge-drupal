@@ -524,34 +524,36 @@ class DeveloperSyncTest extends ApigeeEdgeFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function tearDown(): void {
-    $developers_to_delete = array_merge($this->edgeDevelopers, $this->drupalUsers, $this->modifiedEdgeDevelopers, $this->modifiedDrupalUsers);
-    foreach ($developers_to_delete as $email => $entity) {
+    if (\Drupal::hasContainer()) {
+      $developers_to_delete = array_merge($this->edgeDevelopers, $this->drupalUsers, $this->modifiedEdgeDevelopers, $this->modifiedDrupalUsers);
+      foreach ($developers_to_delete as $email => $entity) {
+        try {
+          /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
+          if (($developer = Developer::load($email)) !== NULL) {
+            $developer->delete();
+          }
+        }
+        catch (\Exception $exception) {
+          $this->logException($exception);
+        }
+      }
       try {
         /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
-        if (($developer = Developer::load($email)) !== NULL) {
+        if (($developer = Developer::load("{$this->prefix}.reserved@example.com")) !== NULL) {
           $developer->delete();
         }
       }
       catch (\Exception $exception) {
         $this->logException($exception);
       }
-    }
-    try {
-      /** @var \Drupal\apigee_edge\Entity\DeveloperInterface $developer */
-      if (($developer = Developer::load("{$this->prefix}.reserved@example.com")) !== NULL) {
-        $developer->delete();
+      try {
+        if ($this->inactiveDeveloper !== NULL) {
+          $this->inactiveDeveloper->delete();
+        }
       }
-    }
-    catch (\Exception $exception) {
-      $this->logException($exception);
-    }
-    try {
-      if ($this->inactiveDeveloper !== NULL) {
-        $this->inactiveDeveloper->delete();
+      catch (\Exception $exception) {
+        $this->logException($exception);
       }
-    }
-    catch (\Exception $exception) {
-      $this->logException($exception);
     }
     parent::tearDown();
   }
