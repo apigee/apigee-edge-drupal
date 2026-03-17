@@ -107,7 +107,9 @@ class DeveloperTest extends ApigeeEdgeFunctionalTestBase {
    * {@inheritdoc}
    */
   protected function tearDown(): void {
-    $this->stack->reset();
+    if ($this->stack) {
+      $this->stack->reset();
+    }
     try {
       if ($this->developer !== NULL) {
         $this->queueDeveloperResponseFromDeveloper($this->developer);

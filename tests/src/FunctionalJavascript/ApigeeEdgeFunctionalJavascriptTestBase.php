@@ -89,7 +89,7 @@ abstract class ApigeeEdgeFunctionalJavascriptTestBase extends WebDriverTestBase 
 
     // Wait for the login form to appear before asserting the fields.
     // The 'name' field is typically the username field on the login form.
-    $this->getSession()->wait(10000, "jQuery('input[name=\"name\"]').length > 0");
+    $this->getSession()->wait(10000, "document.querySelector('input[name=\"name\"]')");
 
     $assert_session->fieldExists('name');
     $assert_session->fieldExists('pass');
