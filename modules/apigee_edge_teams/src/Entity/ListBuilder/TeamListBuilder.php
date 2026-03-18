@@ -190,17 +190,20 @@ class TeamListBuilder extends EdgeEntityListBuilder {
     // the pager is initialized.
     if ($this->currentUser->isAuthenticated() && !$this->currentUser->hasPermission('administer team') && !$this->currentUser->hasPermission('view any team')) {
       $teams = $this->teamMembershipManager->getTeams($this->currentUser->getEmail());
+      
+      // FIX: Disable the pager completely if the user have a single team or no teams.
+      // `Query::getFromStorage()` have `IN` conditions containing only a
+      // single value, which breaks the pager count and triggers global
+      // pagination for single team or no teams on teams page.
+      // Only return entities the user is explicitly a member of.
+      if (count($teams) <= 1) {
+        $this->limit = 0;
+      }
 
       if (!empty($teams)) {
-        // Only return entities the user is explicitly a member of.
         $query->condition('name', $teams, 'IN');
       }
-      else {
-        // If the user is not a member of any teams, return no results.
-        $query->condition('name', NULL);
-      }
     }
-
     return $query;
   }
 
