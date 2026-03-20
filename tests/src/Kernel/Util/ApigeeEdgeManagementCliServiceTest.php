@@ -135,19 +135,24 @@ class ApigeeEdgeManagementCliServiceTest extends ApigeeEdgeKernelTestBase implem
    * {@inheritdoc}
    */
   protected function tearDown(): void {
-    $url = $this->endpoint . '/o/' . $this->organization . '/userroles/' . self::TEST_ROLE_NAME;
-    try {
-      $this->stack->queueMockResponse('get_not_found');
-      $response = $this->httpClient->get($url);
+    if ($this->stack && $this->httpClient) {
+      $url = $this->endpoint . '/o/' . $this->organization . '/userroles/' . self::TEST_ROLE_NAME;
+      try {
+        $this->stack->queueMockResponse('get_not_found');
+        $response = $this->httpClient->get($url);
 
-      if ($response->getStatusCode() == 200) {
-        $url = $this->endpoint . '/o/' . $this->organization . '/userroles/' . self::TEST_ROLE_NAME;
-        $this->httpClient->delete($url);
+        if ($response->getStatusCode() == 200) {
+          $url = $this->endpoint . '/o/' . $this->organization . '/userroles/' . self::TEST_ROLE_NAME;
+          $this->httpClient->delete($url);
+        }
       }
-    }
-    catch (\Exception $exception) {
-      $logger = \Drupal::logger('apigee_edge');
-      Error::logException($logger, $exception);
+      catch (\Exception $exception) {
+        // Double-check the container exists before attempting to log.
+        if (\Drupal::hasContainer()) {
+          $logger = \Drupal::logger('apigee_edge');
+          Error::logException($logger, $exception);
+        }
+      }
     }
 
     parent::tearDown();
