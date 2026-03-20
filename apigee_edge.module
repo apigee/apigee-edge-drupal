@@ -1821,7 +1821,7 @@ function apigee_edge_developer_app_storage_load(array $entities) {
  *
  * @see \Drupal\Core\Entity\EntityAccessControlHandlerInterface::access()
  */
-function _apigee_edge_user_has_an_app_with_product(string $product_name, AccountInterface $account = NULL, bool $return_as_object = FALSE) {
+function _apigee_edge_user_has_an_app_with_product(string $product_name, ?AccountInterface $account = NULL, bool $return_as_object = FALSE) {
   if ($account === NULL) {
     $account = \Drupal::currentUser();
   }
