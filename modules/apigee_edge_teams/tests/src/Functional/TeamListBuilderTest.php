@@ -186,7 +186,6 @@ class TeamListBuilderTest extends ApigeeEdgeTeamsFunctionalTestBase {
 
     // aMemberAccount should only see teamA.
     $this->drupalLogin($this->aMemberAccount);
-    
     $this->queueDeveloperResponse($this->aMemberAccount, 200, ['companies' => [$this->teamA->id()]]);
     $this->queueCompanyResponse($this->teamA->decorated());
     $this->queueCompanyResponse($this->teamA->decorated());
