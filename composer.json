@@ -6,7 +6,7 @@
     "require": {
         "php": "~8.3.0 || ~8.4.0 || ~8.5.0",
         "ext-json": "*",
-        "apigee/apigee-client-php": "~4.0.2",
+        "apigee/apigee-client-php": "dev-newer-php-version",
         "drupal/core": "^11.2",
         "drupal/entity": "^1.0",
         "drupal/key": "^1.8",
@@ -33,6 +33,12 @@
             "services": {
                 "drush.services.yml": "^13"
             }
+        }
+    },
+    "repositories": {
+        "forked-apigee_client_php": {
+            "type": "vcs",
+            "url": "https://github.com/shailesh-google/apigee-client-php"
         }
     }
 }
