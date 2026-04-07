@@ -60,19 +60,20 @@ final class AppCache extends EntityCache implements AppCacheInterface {
   protected function prepareCacheItem(EntityInterface $entity): array {
     /** @var \Apigee\Edge\Api\Management\Entity\AppInterface $entity */
     $owner = $this->getAppOwner($entity);
+    $app_id = $entity->getAppId() ?? '';
     $item = [
       // We have to cache apps by their app ids here, $entity->id() returns
       // the name of the app.
-      $entity->getAppId() => [
+      $app_id => [
         'data' => $entity,
         'tags' => [
-          $entity->getAppId(),
+          $app_id,
           $owner,
         ],
       ],
     ];
 
-    $this->appOwnerAppNameAppIdMap[$owner][$entity->getName()] = $entity->getAppId();
+    $this->appOwnerAppNameAppIdMap[$owner][$entity->getName()] = $app_id;
 
     return $item;
   }

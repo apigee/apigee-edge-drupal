@@ -86,7 +86,7 @@ class EntityCache implements EntityCacheInterface {
     foreach ($entities as $entity) {
       $primary_cache_item = $this->prepareCacheItem($entity);
       $primary_cache_cids = array_keys($primary_cache_item);
-      $primary_cache_cid = reset($primary_cache_cids);
+      $primary_cache_cid = (string) reset($primary_cache_cids);
       $this->cacheIds[$primary_cache_cid] = $primary_cache_cid;
       $items += $primary_cache_item;
     }
@@ -183,10 +183,11 @@ class EntityCache implements EntityCacheInterface {
    * @see \Drupal\Core\Cache\CacheBackendInterface::setMultiple()
    */
   protected function prepareCacheItem(EntityInterface $entity): array {
+    $id = (string) $entity->id();
     return [
-      $entity->id() => [
+      $id => [
         'data' => $entity,
-        'tags' => [$entity->id()],
+        'tags' => [$id],
       ],
     ];
   }
