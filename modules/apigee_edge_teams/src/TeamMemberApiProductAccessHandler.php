@@ -220,12 +220,9 @@ final class TeamMemberApiProductAccessHandler implements TeamMemberApiProductAcc
    *   API Product, operation, and team and account in the cache.
    */
   protected function getCache(ApiProductInterface $api_product, string $operation, TeamInterface $team, AccountInterface $account): ?AccessResultInterface {
-    $team_id = $team->id() ?? '';
-    $account_id = $account->id() ?? '';
-    $api_product_id = $api_product->id() ?? '';
     // Return from cache if a value has been set for it previously.
-    if (isset($this->accessCache[$team_id][$account_id][$api_product_id][$operation])) {
-      return $this->accessCache[$team_id][$account_id][$api_product_id][$operation];
+    if (isset($this->accessCache[$team->id()][$account->id()][$api_product->id()][$operation])) {
+      return $this->accessCache[$team->id()][$account->id()][$api_product->id()][$operation];
     }
 
     return NULL;
@@ -247,11 +244,8 @@ final class TeamMemberApiProductAccessHandler implements TeamMemberApiProductAcc
    *   The team member for which to check access.
    */
   protected function setCache(AccessResultInterface $access, ApiProductInterface $api_product, string $operation, TeamInterface $team, AccountInterface $account): void {
-    $team_id = $team->id() ?? '';
-    $account_id = $account->id() ?? '';
-    $api_product_id = $api_product->id() ?? '';
     // Save the given value in the static cache and directly return it.
-    $this->accessCache[$team_id][$account_id][$api_product_id][$operation] = $access;
+    $this->accessCache[$team->id()][$account->id()][$api_product->id()][$operation] = $access;
   }
 
   /**
