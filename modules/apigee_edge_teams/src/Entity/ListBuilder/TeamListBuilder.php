@@ -25,10 +25,12 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\apigee_edge\Element\StatusPropertyElement;
 use Drupal\apigee_edge\Entity\ListBuilder\EdgeEntityListBuilder;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
+use Drupal\apigee_edge_teams\TeamMembershipManagerInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -55,6 +57,20 @@ class TeamListBuilder extends EdgeEntityListBuilder {
   protected $requestStack;
 
   /**
+   * The current user.
+   *
+   * @var \Drupal\Core\Session\AccountInterface
+   */
+  protected $currentUser;
+
+  /**
+   * The team membership manager.
+   *
+   * @var \Drupal\apigee_edge_teams\TeamMembershipManagerInterface
+   */
+  protected $teamMembershipManager;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(
@@ -63,11 +79,15 @@ class TeamListBuilder extends EdgeEntityListBuilder {
     FormBuilderInterface $form_builder,
     RequestStack $request_stack,
     ?ConfigFactoryInterface $config_factory = NULL,
+    ?AccountInterface $current_user = NULL,
+    ?TeamMembershipManagerInterface $team_membership_manager = NULL,
   ) {
     parent::__construct($entity_type, $entity_type_manager, $config_factory);
 
     $this->formBuilder = $form_builder;
     $this->requestStack = $request_stack;
+    $this->currentUser = $current_user ?: \Drupal::currentUser();
+    $this->teamMembershipManager = $team_membership_manager ?: \Drupal::service('apigee_edge_teams.team_membership_manager');
 
     // Override the parent construct limit here.
     $this->limit = 1000;
@@ -82,7 +102,9 @@ class TeamListBuilder extends EdgeEntityListBuilder {
       $container->get('entity_type.manager'),
       $container->get('form_builder'),
       $container->get('request_stack'),
-      $container->get('config.factory')
+      $container->get('config.factory'),
+      $container->get('current_user'),
+      $container->get('apigee_edge_teams.team_membership_manager')
     );
   }
 
@@ -164,6 +186,24 @@ class TeamListBuilder extends EdgeEntityListBuilder {
       $query->condition('displayName', $search_query, 'CONTAINS');
     }
 
+    // It filters the entities for non admin users BEFORE
+    // the pager is initialized.
+    if ($this->currentUser->isAuthenticated() && !$this->currentUser->hasPermission('administer team') && !$this->currentUser->hasPermission('view any team')) {
+      $teams = $this->teamMembershipManager->getTeams($this->currentUser->getEmail());
+
+      // FIX: Disable the pager completely if the user have a single team
+      // or no teams. `Query::getFromStorage()` have `IN` conditions
+      // containing only a single value, which breaks the pager count and
+      // triggers global pagination for single team or no teams on teams page.
+      // Only return entities the user is explicitly a member of.
+      if (count($teams) <= 1) {
+        $this->limit = 0;
+      }
+
+      if (!empty($teams)) {
+        $query->condition('name', $teams, 'IN');
+      }
+    }
     return $query;
   }
 
@@ -186,7 +226,7 @@ class TeamListBuilder extends EdgeEntityListBuilder {
    */
   public function render() {
     $build = parent::render();
-    $account = $this->entityTypeManager->getStorage('user')->load(\Drupal::currentUser()->id());
+    $account = $this->entityTypeManager->getStorage('user')->load($this->currentUser->id());
 
     if (isset($build['#type']) && $build['#type'] === 'table') {
       $build['table'] = $build;

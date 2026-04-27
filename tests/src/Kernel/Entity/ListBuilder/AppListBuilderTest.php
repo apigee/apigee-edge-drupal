@@ -217,7 +217,9 @@ class AppListBuilderTest extends ApigeeEdgeKernelTestBase {
    * {@inheritdoc}
    */
   protected function tearDown(): void {
-    $this->stack->reset();
+    if ($this->stack) {
+      $this->stack->reset();
+    }
     try {
       if ($this->account) {
         $this->queueDeveloperResponse($this->account);
