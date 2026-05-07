@@ -39,6 +39,10 @@
         "forked-apigee_mock_client_php": {
             "type": "vcs",
             "url": "https://github.com/shailesh-google/apigee-mock-client-php"
+        },
+        "forked-apigee_client_php": {
+            "type": "vcs",
+            "url": "https://github.com/shailesh-google/apigee-client-php"
         }
     }
 }
