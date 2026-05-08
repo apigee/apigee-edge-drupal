@@ -123,7 +123,7 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
         }
         else {
           // Probably this could never happen...
-          $result = AccessResult::neutral("The team ({$entity->getCompanyName()}) that the team app ({$entity->getAppId()}) belongs does not exist.");
+          $result = AccessResult::neutral("The team ({$team_name}) that the team app ({$entity->getAppId()}) belongs does not exist.");
         }
       }
     }
