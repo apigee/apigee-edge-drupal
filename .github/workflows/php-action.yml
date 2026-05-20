@@ -39,7 +39,6 @@ jobs:
           - "8.3"
         drupal-core:
           # Should update the following as the minimum supported version from Drupal.org
-          - "10.5.x"
           - "10.6.x"
         instance-type:
           - "Edge"
@@ -154,7 +153,7 @@ jobs:
         vendor/bin/phpunit -c core --verbose --color --group apigee_edge --testsuite unit,kernel,functional,functional-javascript modules/contrib/apigee_edge
 
     - name: "Run PHPUnit tests with Code Coverage"
-      if: ${{ matrix.drupal-core == '10.5.x' && matrix.php-version == '8.3' }}
+      if: ${{ matrix.drupal-core == '10.6.x' && matrix.php-version == '8.3' }}
       run: |
         cd drupal
         cp modules/contrib/apigee_edge/phpunit.core.xml.dist core/phpunit.xml
@@ -168,7 +167,7 @@ jobs:
         path: drupal/sites/simpletest/browser_output/*
 
     - name: Upload coverage to Codecov
-      if: ${{ matrix.drupal-core == '10.5.x' && matrix.php-version == '8.3' }}
+      if: ${{ matrix.drupal-core == '10.6.x' && matrix.php-version == '8.3' }}
       uses: codecov/codecov-action@v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
