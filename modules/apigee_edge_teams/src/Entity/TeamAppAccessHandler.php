@@ -143,7 +143,13 @@ final class TeamAppAccessHandler extends EntityAccessControlHandler implements E
 
       if ($result->isNeutral()) {
         // Applies to "add-form-for-team" link template of Team App entity.
-        $team = $this->routeMatch->getParameter('team');
+        $team = $context['team'] ?? $this->routeMatch->getParameter('team');
+        // If the route parameter or context is just a string ID, upcast it to
+        // an entity.
+        if (is_string($team)) {
+          $team = $this->entityTypeManager->getStorage('team')->load($team);
+        }
+
         if ($team) {
           $result = $this->checkAccessByTeamMemberPermissions($team, 'create', $account);
         }
