@@ -6,7 +6,7 @@
     "require": {
         "php": "~8.2.0 || ~8.3.0 || ~8.4.0",
         "ext-json": "*",
-        "apigee/apigee-client-php": "dev-issue-newer-php-3.x",
+        "apigee/apigee-client-php": "dev-3.x",
         "drupal/core": "^10.6",
         "drupal/entity": "^1.0",
         "drupal/key": "^1.8",
@@ -42,7 +42,7 @@
         },
         "forked-apigee_client_php": {
             "type": "vcs",
-            "url": "https://github.com/shailesh-google/apigee-client-php"
+            "url": "https://github.com/apigee/apigee-client-php"
         }
     }
 }
