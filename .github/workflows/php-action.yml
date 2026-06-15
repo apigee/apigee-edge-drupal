@@ -140,7 +140,7 @@ jobs:
         echo "APIGEE_EDGE_ENDPOINT=$APIGEE_EDGE_HYBRID_ENDPOINT" >> $GITHUB_ENV
         composer show > composer-show.txt
 
-    - uses: nanasess/setup-chromedriver@master
+    - uses: nanasess/setup-chromedriver@v2
 
     - run: |
         export DISPLAY=:99
