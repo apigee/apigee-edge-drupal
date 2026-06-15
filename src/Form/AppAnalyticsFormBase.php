@@ -504,9 +504,32 @@ abstract class AppAnalyticsFormBase extends FormBase {
     $stats_controller = new StatsController($environment, $this->connector->getOrganization(), $this->connector->getClient());
     $stats_query = new StatsQuery([$metric], Period::fromDate(new \DateTimeImmutable('@' . $since), new \DateTimeImmutable('@' . $until)));
     $stats_query
-      ->setFilter("({$this->getAnalyticsFilterCriteriaByAppOwner($app)} and developer_app eq '{$app->getName()}')")
+      ->setFilter($this->getAnalyticsFilter($app))
       ->setTimeUnit('hour');
-    return $stats_controller->getOptimizedMetricsByDimensions(['apps'], $stats_query);
+    return $stats_controller->getOptimizedMetricsByDimensions($this->getAnalyticsDimensions(), $stats_query);
+  }
+
+  /**
+   * Returns the analytics dimensions.
+   *
+   * @return array
+   *   The dimensions array.
+   */
+  protected function getAnalyticsDimensions(): array {
+    return ['apps'];
+  }
+
+  /**
+   * Returns the analytics filter.
+   *
+   * @param \Drupal\apigee_edge\Entity\AppInterface $app
+   *   The app entity.
+   *
+   * @return string
+   *   The analytics filter.
+   */
+  protected function getAnalyticsFilter(AppInterface $app): string {
+    return "({$this->getAnalyticsFilterCriteriaByAppOwner($app)} and developer_app eq '{$app->getName()}')";
   }
 
   /**
