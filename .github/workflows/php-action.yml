@@ -37,6 +37,7 @@ jobs:
         php-version:
           - "8.2"
           - "8.3"
+          - "8.4"
         drupal-core:
           # Should update the following as the minimum supported version from Drupal.org
           - "10.6.x"

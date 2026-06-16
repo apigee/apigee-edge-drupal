@@ -4,16 +4,16 @@
     "type": "drupal-module",
     "description": "Apigee for Drupal.",
     "require": {
-        "php": "~8.2.0 || ~8.3.0",
+        "php": "~8.2.0 || ~8.3.0 || ~8.4.0",
         "ext-json": "*",
-        "apigee/apigee-client-php": "~3.0.12",
+        "apigee/apigee-client-php": "~3.1.0",
         "drupal/core": "^10.6",
         "drupal/entity": "^1.0",
         "drupal/key": "^1.8",
         "php-http/guzzle7-adapter": "^1.0"
     },
     "require-dev": {
-        "apigee/apigee-mock-client-php": "^1.1.2",
+        "apigee/apigee-mock-client-php": "^1.1.4",
         "drupal/drupal-extension": "^4.2.1 || ~5",
         "cweagans/composer-patches": "^1.6",
         "drupal/core-dev": "^10.6",
