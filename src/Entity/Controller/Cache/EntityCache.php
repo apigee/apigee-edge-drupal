@@ -183,10 +183,11 @@ class EntityCache implements EntityCacheInterface {
    * @see \Drupal\Core\Cache\CacheBackendInterface::setMultiple()
    */
   protected function prepareCacheItem(EntityInterface $entity): array {
+    $id = (string) $entity->id();
     return [
-      $entity->id() => [
+      $id => [
         'data' => $entity,
-        'tags' => [$entity->id()],
+        'tags' => [$id],
       ],
     ];
   }

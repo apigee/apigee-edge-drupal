@@ -90,7 +90,7 @@ class CSV implements FieldStorageFormatInterface {
     $handle = fopen("php://temp", "w+");
 
     foreach ($data as $row) {
-      fputcsv($handle, $row);
+      fputcsv($handle, $row, ',', '"', '\\');
     }
 
     rewind($handle);
@@ -116,7 +116,7 @@ class CSV implements FieldStorageFormatInterface {
 
     $result = [];
 
-    while (($cols = fgetcsv($handle, 0))) {
+    while (($cols = fgetcsv($handle, 0, ',', '"', '\\'))) {
       $result[] = $cols;
     }
 
