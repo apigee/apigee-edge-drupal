@@ -65,7 +65,8 @@ final class DeveloperCache extends EntityCache implements EntityCacheInterface {
       $item[$cid]['tags'][] = $entity->getEmail();
     }
 
-    $this->developerIdEmailMap[$entity->getDeveloperId()] = $entity->getEmail();
+    $developer_id = $entity->getDeveloperId() ?? '';
+    $this->developerIdEmailMap[$developer_id] = $entity->getEmail();
 
     return $item;
   }

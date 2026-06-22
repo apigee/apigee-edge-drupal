@@ -291,7 +291,7 @@ function apigee_edge_apiproduct_rbac_form_apigee_edge_api_product_access_control
  *   Name of the attribute that originally stored the role assignments.
  *   If attribute has not changed it can be ommitted.
  */
-function _apigee_edge_apiproduct_rbac_batch(array $product_name_display_name_map, array $product_name_rids_map, string $attr_name = NULL, string $original_attr_name = NULL) {
+function _apigee_edge_apiproduct_rbac_batch(array $product_name_display_name_map, array $product_name_rids_map, ?string $attr_name = NULL, ?string $original_attr_name = NULL) {
   $attr_name = $attr_name ?? \Drupal::config(APIGEE_EDGE_APIPRODUCT_RBAC_CONFIG_SETTINGS)->get('attribute_name');
   $original_attr_name = $original_attr_name ?? $attr_name;
   $batch = [

@@ -145,14 +145,14 @@ class TeamApp extends App implements TeamAppInterface {
    * {@inheritdoc}
    */
   public function getCompanyName(): ?string {
-    return $this->decorated->getCompanyName();
+    return $this->isApigeeX() ? NULL : $this->decorated->getCompanyName();
   }
 
   /**
    * {@inheritdoc}
    */
   public function getAppGroup(): ?string {
-    return $this->decorated->getAppGroup();
+    return $this->isApigeeX() ? $this->decorated->getAppGroup() : NULL;
   }
 
   /**
