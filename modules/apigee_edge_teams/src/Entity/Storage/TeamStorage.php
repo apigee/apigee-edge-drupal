@@ -261,43 +261,25 @@ class TeamStorage extends AttributesAwareFieldableEdgeEntityStorageBase implemen
   /**
    * {@inheritdoc}
    */
-  protected function setPersistentCache(array $entities) {
-    parent::setPersistentCache($entities);
+  protected function doLoadMultiple(?array $ids = NULL) {
+    $entities = parent::doLoadMultiple($ids);
 
-    $entity_count = 0;
-    if (!empty($entities)) {
-      // Get all entity IDs.
-      $all_entity_ids = array_keys($entities);
-      $entity_count = count($all_entity_ids);
-    }
-
-    // After all chunks are saved, save the master ID list.
-    // Only proceed if we have entities to process.
-    if ($entity_count > 0) {
-      $all_ids_cid = 'all_ids:' . $this->entityTypeId;
-      // Use the main entity type tag so this item is cleared when
-      // the rest of the entity cache is cleared.
+    // Only cache the master ID list if a full load was explicitly requested,
+    // the teams should be cached persistently, and the cache expired or does
+    // not exist.
+    $all_ids_cid = 'all_ids:' . $this->entityTypeId;
+    if ($ids === NULL && !empty($entities) && $this->entityType->isPersistentlyCacheable() && $this->cacheExpiration !== 0 && !$this->cacheBackend->get($all_ids_cid)) {
       $all_ids_tags = [$this->entityTypeId . ':values'];
 
-      // Try to load existing cache.
-      // $this->cacheBackend->get() returns FALSE if the item does not exist.
-      $cache_object = $this->cacheBackend->get($all_ids_cid);
-
-      // If cache is empty AND count is 1, we DO NOT cache the entity.
-      if ($cache_object || $entity_count > 1) {
-
-        $existing_ids = $cache_object ? $cache_object->data : [];
-
-        $final_all_team_ids = array_unique(array_merge($existing_ids, $all_entity_ids));
-
-        $this->cacheBackend->set(
-          $all_ids_cid,
-          $final_all_team_ids,
-          $this->getPersistentCacheExpiration(),
-          $all_ids_tags
-        );
-      }
+      $this->cacheBackend->set(
+        $all_ids_cid,
+        array_keys($entities),
+        $this->getPersistentCacheExpiration(),
+        $all_ids_tags
+      );
     }
+
+    return $entities;
   }
 
   /**
