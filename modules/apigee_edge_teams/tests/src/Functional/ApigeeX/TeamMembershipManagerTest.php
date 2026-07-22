@@ -129,9 +129,6 @@ class TeamMembershipManagerTest extends ApigeeEdgeTeamsFunctionalTestBase {
    */
   public function testTeamMembershipManager() {
 
-    // @todo This test is temporarily skipped pending resolution of https://github.com/apigee/apigee-edge-drupal/issues/1238.
-    $this->markTestSkipped('Skipping due to known DeveloperDoesNotExistException (sync issue on github action but test passing in local system).');
-
     $team_membership_manager = $this->container->get('apigee_edge_teams.team_membership_manager');
     $team_membership_cache = $this->container->get('apigee_edge_teams.cache.appgroup_membership_object');
 
