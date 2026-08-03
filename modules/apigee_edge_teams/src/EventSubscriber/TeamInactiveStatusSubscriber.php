@@ -40,7 +40,7 @@ class TeamInactiveStatusSubscriber implements EventSubscriberInterface {
   /**
    * The class resolver service.
    *
-   * @var \Drupal\Core\Controller\ControllerResolverInterface
+   * @var \Drupal\Core\DependencyInjection\ClassResolverInterface
    */
   protected $classResolver;
 
@@ -50,13 +50,6 @@ class TeamInactiveStatusSubscriber implements EventSubscriberInterface {
    * @var \Drupal\Core\Routing\RouteMatchInterface
    */
   protected $routeMatch;
-
-  /**
-   * The available main content renderer services, keyed per format.
-   *
-   * @var array
-   */
-  protected $mainContentRenderers;
 
   /**
    * The current user.
@@ -72,15 +65,12 @@ class TeamInactiveStatusSubscriber implements EventSubscriberInterface {
    *   The class resolver service.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The route match service.
-   * @param array $main_content_renderers
-   *   The available main content renderer service IDs.
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
    */
-  public function __construct(ClassResolverInterface $class_resolver, RouteMatchInterface $route_match, array $main_content_renderers, AccountInterface $current_user) {
+  public function __construct(ClassResolverInterface $class_resolver, RouteMatchInterface $route_match, AccountInterface $current_user) {
     $this->classResolver = $class_resolver;
     $this->routeMatch = $route_match;
-    $this->mainContentRenderers = $main_content_renderers;
     $this->currentUser = $current_user;
   }
 
@@ -115,7 +105,7 @@ class TeamInactiveStatusSubscriber implements EventSubscriberInterface {
       ],
     ];
 
-    $renderer = $this->classResolver->getInstanceFromDefinition($this->mainContentRenderers['html']);
+    $renderer = $this->classResolver->getInstanceFromDefinition('main_content_renderer.html');
     /** @var \Symfony\Component\HttpFoundation\Response $response */
     $response = $renderer->renderResponse($content, $event->getRequest(), $this->routeMatch);
     $response->setStatusCode(Response::HTTP_FORBIDDEN);

@@ -87,13 +87,6 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
   protected $routeMatch;
 
   /**
-   * The available main content renderer services, keyed per format.
-   *
-   * @var array
-   */
-  protected $mainContentRenderers;
-
-  /**
    * The getResponseForException mock.
    *
    * @var \Prophecy\Prophecy\ObjectProphecy
@@ -122,8 +115,6 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
 
     $response = $this->prophet->prophesize(Response::class);
 
-    $this->mainContentRenderers = ['html' => 'main_content_renderer.html'];
-
     $htmlRenderer = $this->prophet->prophesize(HtmlRenderer::class);
     $htmlRenderer->renderResponse(Argument::cetera())
       ->willReturn($response->reveal());
@@ -135,7 +126,7 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
       ->willReturn('');
 
     $this->classResolver = $this->prophet->prophesize(ClassResolverInterface::class);
-    $this->classResolver->getInstanceFromDefinition(Argument::is($this->mainContentRenderers['html']))
+    $this->classResolver->getInstanceFromDefinition(Argument::is('main_content_renderer.html'))
       ->willReturn($htmlRenderer->reveal());
     $this->classResolver->getInstanceFromDefinition(Argument::is(ErrorPageController::class))
       ->willReturn($errorPageController->reveal());
@@ -176,8 +167,7 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
       $this->configFactory->reveal(),
       $this->messenger->reveal(),
       $this->classResolver->reveal(),
-      $this->routeMatch->reveal(),
-      $this->mainContentRenderers
+      $this->routeMatch->reveal()
     );
 
     $edge_exception_subscriber->onException($this->getResponseForExceptionEvent);
@@ -211,8 +201,7 @@ class EdgeExceptionSubscriberTest extends UnitTestCase {
       $this->configFactory->reveal(),
       $this->messenger->reveal(),
       $this->classResolver->reveal(),
-      $this->routeMatch->reveal(),
-      $this->mainContentRenderers
+      $this->routeMatch->reveal()
     );
 
     $edge_exception_subscriber->onException($this->getResponseForExceptionEvent);

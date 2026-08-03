@@ -110,7 +110,6 @@ services:
     arguments:
       - '@class_resolver'
       - '@current_route_match'
-      - '%main_content_renderers%'
       - '@current_user'
     tags:
       - { name: event_subscriber }

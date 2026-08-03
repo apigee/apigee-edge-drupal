@@ -77,13 +77,6 @@ final class EdgeExceptionSubscriber implements EventSubscriberInterface {
   protected $routeMatch;
 
   /**
-   * The available main content renderer services, keyed per format.
-   *
-   * @var array
-   */
-  protected $mainContentRenderers;
-
-  /**
    * EdgeExceptionSubscriber constructor.
    *
    * @param \Psr\Log\LoggerInterface $logger
@@ -96,16 +89,13 @@ final class EdgeExceptionSubscriber implements EventSubscriberInterface {
    *   The class resolver service.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
-   * @param array $main_content_renderers
-   *   The available main content renderer service IDs, keyed by format.
    */
-  public function __construct(LoggerInterface $logger, ConfigFactoryInterface $config_factory, MessengerInterface $messenger, ClassResolverInterface $class_resolver, RouteMatchInterface $route_match, array $main_content_renderers) {
+  public function __construct(LoggerInterface $logger, ConfigFactoryInterface $config_factory, MessengerInterface $messenger, ClassResolverInterface $class_resolver, RouteMatchInterface $route_match) {
     $this->logger = $logger;
     $this->configFactory = $config_factory;
     $this->messenger = $messenger;
     $this->classResolver = $class_resolver;
     $this->routeMatch = $route_match;
-    $this->mainContentRenderers = $main_content_renderers;
   }
 
   /**
@@ -134,7 +124,7 @@ final class EdgeExceptionSubscriber implements EventSubscriberInterface {
       ];
 
       $routeMatch = new RouteMatch('apigee_edge.error_page', new Route('/api-communication-error'));
-      $renderer = $this->classResolver->getInstanceFromDefinition($this->mainContentRenderers['html']);
+      $renderer = $this->classResolver->getInstanceFromDefinition('main_content_renderer.html');
 
       /** @var \Symfony\Component\HttpFoundation\Response $response */
       $response = $renderer->renderResponse($content, $event->getRequest(), $routeMatch);
