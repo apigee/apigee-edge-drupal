@@ -160,3 +160,8 @@ services:
   apigee_edge_teams.app_group_scope_manager:
     class: Drupal\apigee_edge_teams\Service\AppGroupScopeManager
     arguments: ['@apigee_edge.sdk_connector', '@apigee_edge.controller.organization']
+
+  apigee_edge_teams.team_sync.last_update_tracker:
+    class: Drupal\Core\KeyValueStore\KeyValueStoreInterface
+    factory: [ '@keyvalue', 'get' ]
+    arguments: [ 'apigee_edge_teams.team_sync.last_update_tracker' ]

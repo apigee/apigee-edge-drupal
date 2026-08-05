@@ -63,7 +63,9 @@ class CliService implements CliServiceInterface {
         if (isset($context['message']) && $context['message'] !== $last_message) {
           $io->text($t($context['message']));
         }
-        $last_message = $context['message'];
+        // Fallback to an empty string if the batch operation didn't set a new
+        // message.
+        $last_message = $context['message'] ?? '';
 
         gc_collect_cycles();
       }

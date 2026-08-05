@@ -58,12 +58,23 @@ class TeamMemberSync extends EdgeJob {
   public function execute(): bool {
     parent::execute();
 
-    $team_ids = array_keys(\Drupal::entityTypeManager()->getStorage('team')->loadMultiple());
+    /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface[] $teams */
+    $teams = \Drupal::entityTypeManager()->getStorage('team')->loadMultiple();
+    $lastUpdateTracker = \Drupal::service('apigee_edge_teams.team_sync.last_update_tracker');
 
-    foreach ($team_ids as $team_name) {
-      $update_team_member_job = new TeamMemberUpdate($team_name);
-      $update_team_member_job->setTag($this->getTag());
-      $this->scheduleJob($update_team_member_job);
+    foreach ($teams as $team_name => $team) {
+      $last_synced = $lastUpdateTracker->get($team_name, 0);
+
+      // Get the last modified timestamp from Apigee.
+      $last_modified = $team->getLastModifiedAt() ? $team->getLastModifiedAt()->getTimestamp() : 0;
+
+      // Only schedule a sync if we have never synced this team BEFORE, OR if
+      // the team has been modified in Apigee AFTER our last sync.
+      if ($last_synced === 0 || $last_synced < $last_modified) {
+        $update_team_member_job = new TeamMemberUpdate($team_name);
+        $update_team_member_job->setTag($this->getTag());
+        $this->scheduleJob($update_team_member_job);
+      }
     }
 
     return FALSE;
