@@ -6,7 +6,7 @@
     "require": {
         "php": "~8.1",
         "drupal/apigee_edge": "*",
-        "guzzlehttp/guzzle": "^6.1.0"
+        "guzzlehttp/guzzle": "^7.15.1"
     },
     "config": {
         "sort-packages": true
