@@ -99,8 +99,8 @@ services:
     arguments: ['@apigee_edge.controller.cache.apps', '@apigee_edge.entity.controller.cache.app_name_cache_by_owner_factory']
 
   apigee_edge.entity.controller.cache.developer_app_cache_factory:
-   class: Drupal\apigee_edge\Entity\Controller\Cache\DeveloperAppCacheFactory
-   arguments: ['@apigee_edge.entity.controller.cache.app_cache_by_owner_factory', '@entity_type.manager', '@email.validator']
+    class: Drupal\apigee_edge\Entity\Controller\Cache\DeveloperAppCacheFactory
+    arguments: ['@apigee_edge.entity.controller.cache.app_cache_by_owner_factory', '@entity_type.manager', '@email.validator']
 
   apigee_edge.entity.controller.cache.developer_app_name_cache_factory:
     class: Drupal\apigee_edge\Entity\Controller\Cache\DeveloperAppNameCacheFactory
@@ -125,7 +125,6 @@ services:
       - '@messenger'
       - '@class_resolver'
       - '@current_route_match'
-      - '%main_content_renderers%'
     tags:
       - { name: event_subscriber }
 
