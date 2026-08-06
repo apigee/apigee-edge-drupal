@@ -70,6 +70,11 @@ abstract class DeveloperCreateUpdate extends EdgeJob {
       if ($result->getSuccessfullyAppliedChanges() > 0) {
         $result->getDeveloper()->save();
       }
+      // Record the sync attempt timestamp for the developer's email,
+      // regardless of whether an entity update occurred, to prevent redundant
+      // sync operations. This ensures that the developer will only be re-synced
+      // if a new relevant change is detected after this timestamp.
+      \Drupal::getContainer()->get('apigee_edge.dev_sync.last_update_tracker')->set($result->getDeveloper()->getEmail(), \Drupal::time()->getCurrentTime());
     }
     catch (\Exception $exception) {
       $message = '@operation: Skipping %mail developer. @message %function (line %line of %file). <pre>@backtrace_string</pre>';
