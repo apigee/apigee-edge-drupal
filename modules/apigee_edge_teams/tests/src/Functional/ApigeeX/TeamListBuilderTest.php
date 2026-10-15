@@ -187,6 +187,7 @@ class TeamListBuilderTest extends ApigeeEdgeTeamsFunctionalTestBase {
 
     // aMemberAccount should only see teamA.
     $this->drupalLogin($this->aMemberAccount);
+    $this->queueAppGroupResponse($this->teamA->decorated());
     $this->queueAppGroupsResponse($appgroups);
 
     $this->drupalGet(Url::fromRoute('entity.team.collection'));
@@ -197,6 +198,7 @@ class TeamListBuilderTest extends ApigeeEdgeTeamsFunctionalTestBase {
 
     // bMemberAccount should only see teamB.
     $this->drupalLogin($this->bMemberAccount);
+    $this->queueAppGroupResponse($this->teamB->decorated());
     $this->queueAppGroupsResponse($appgroups);
     $this->queueDeveloperResponse($this->bMemberAccount, 200, ['appgroups' => [$this->teamB->id()]]);
     $this->drupalGet(Url::fromUserInput('/teams'));
