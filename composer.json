@@ -4,7 +4,7 @@
     "type": "drupal-module",
     "description": "Apigee for Drupal.",
     "require": {
-        "php": "~8.3.0 || ~8.4.0 || ~8.5.0",
+        "php": "~8.3.36 || ~8.4.27 || ~8.5.12",
         "ext-json": "*",
         "apigee/apigee-client-php": "~4.1.0",
         "drupal/core": "^11.3",
