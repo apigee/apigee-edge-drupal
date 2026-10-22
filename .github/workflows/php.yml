@@ -111,7 +111,7 @@ jobs:
         composer require 'drupal/rules:^4.0'
         composer require wikimedia/composer-merge-plugin
         composer config --json extra.merge-plugin.require '["modules/contrib/apigee_edge/composer.json"]'
-        composer config platform.php ${{ matrix.php-version }}
+        composer config platform.php $(php -r "echo PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION;")
         composer update --with-all-dependencies
         composer require --dev phpspec/prophecy-phpunit:^2
         composer config --no-plugins allow-plugins.drupal/console-extend-plugin true
