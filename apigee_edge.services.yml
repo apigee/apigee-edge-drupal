@@ -217,6 +217,11 @@ services:
     class: Drupal\apigee_edge\User\RemoveRelatedDeveloperAccountSynchronousPostUserDeleteActionPerformer
     arguments: ['@entity_type.manager', '@logger.channel.apigee_edge']
 
+  apigee_edge.dev_sync.last_update_tracker:
+    class: Drupal\Core\KeyValueStore\KeyValueStoreInterface
+    factory: [ '@keyvalue', 'get' ]
+    arguments: [ 'apigee_edge.dev_sync.last_update_tracker' ]
+  
   apigee_edge.data_residency_endpoint:
     class: Drupal\apigee_edge\Service\DataResidencyEndpoint
     arguments: ['@apigee_edge.sdk_connector', '@state', '@messenger', '@string_translation']

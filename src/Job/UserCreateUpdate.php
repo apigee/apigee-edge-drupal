@@ -77,6 +77,12 @@ abstract class UserCreateUpdate extends EdgeJob {
         _apigee_edge_set_sync_in_progress(TRUE);
         $result->getUser()->save();
       }
+
+      // Record the sync attempt timestamp for the developer's email,
+      // regardless of whether an entity update occurred, to prevent redundant
+      // sync operations. This ensures that the developer will only be re-synced
+      // if a new relevant change is detected after this timestamp.
+      \Drupal::getContainer()->get('apigee_edge.dev_sync.last_update_tracker')->set($developer->getEmail(), \Drupal::time()->getCurrentTime());
     }
     catch (\Exception $exception) {
       $message = '@operation: Skipping %mail user. @message %function (line %line of %file). <pre>@backtrace_string</pre>';
@@ -85,8 +91,8 @@ abstract class UserCreateUpdate extends EdgeJob {
         '@operation' => get_class($this),
       ];
       $context += Error::decodeException($exception);
-      // Unset backtrace, exception, severity_level as they are not shown in the log message
-      // and throws php warning in logs.
+      // Unset backtrace, exception, severity_level as they are not shown in
+      // the log message and throws php warning in logs.
       unset($context['backtrace'], $context['exception'], $context['severity_level']);
 
       $this->logger()->error($message, $context);
