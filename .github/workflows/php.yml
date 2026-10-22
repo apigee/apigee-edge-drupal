@@ -57,7 +57,7 @@ jobs:
         echo "SYMFONY_DEPRECATIONS_HELPER=disabled" >> $GITHUB_ENV
 
     - name: "Install PHP"
-      uses: "shivammathur/setup-php@v2"
+      uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
       with:
         coverage: "xdebug"
         php-version: "${{ matrix.php-version }}"
@@ -77,14 +77,14 @@ jobs:
         echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
     - name: Cache composer dependencies
-      uses: actions/cache@v4
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       with:
         path: ${{ steps.composercache.outputs.dir }}
         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
         restore-keys: ${{ runner.os }}-composer-
 
     - name: Checkout apigee_edge module
-      uses: actions/checkout@v4
+      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       with:
         path: drupal/modules/contrib/apigee_edge
 
@@ -111,7 +111,7 @@ jobs:
         composer require 'drupal/rules:^4.0'
         composer require wikimedia/composer-merge-plugin
         composer config --json extra.merge-plugin.require '["modules/contrib/apigee_edge/composer.json"]'
-        composer config platform.php ${{ matrix.php-version }}
+        composer config --unset platform.php
         composer update --with-all-dependencies
         composer require --dev phpspec/prophecy-phpunit:^2
         composer config --no-plugins allow-plugins.drupal/console-extend-plugin true
@@ -141,7 +141,7 @@ jobs:
     #     cd drupal
     #     vendor/bin/drupal-check modules/contrib/apigee_edge
 
-    - uses: nanasess/setup-chromedriver@v2
+    - uses: nanasess/setup-chromedriver@ef5c64a93512d266b23b80bae95e46a67f30e703 # v2
 
     # FIXED: Added wait loop to ensure port 9515 is open before tests start
     - name: Start ChromeDriver and Xvfb
@@ -173,13 +173,13 @@ jobs:
 
     - name: Artifacts
       if: failure()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
         name: browser-output-${{ matrix.php-version }}-${{ matrix.drupal-core }}-${{ matrix.instance-type }}-artifact
         path: drupal/sites/simpletest/browser_output/*
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: /tmp/coverage_${{ matrix.instance-type }}.xml
