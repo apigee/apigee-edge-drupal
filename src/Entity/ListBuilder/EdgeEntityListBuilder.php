@@ -132,6 +132,13 @@ class EdgeEntityListBuilder extends EntityListBuilder {
       $build = parent::render();
     }
 
+    if ($this->limit && !isset($build['pager'])) {
+      $build['pager'] = [
+        '#type' => 'pager',
+        '#weight' => 10,
+      ];
+    }
+
     // Add cache contexts.
     $build['#cache'] = [
       'contexts' => $this->entityType->getListCacheContexts(),

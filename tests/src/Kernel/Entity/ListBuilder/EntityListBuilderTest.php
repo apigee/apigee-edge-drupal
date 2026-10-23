@@ -167,6 +167,23 @@ class EntityListBuilderTest extends ApigeeEdgeKernelTestBase {
     $build = $entity_type_manager->getListBuilder(static::ENTITY_TYPE)->render();
     static::assertSame('apigee_entity_list', $build['#type']);
     static::assertSame('foo', $build['#view_mode']);
+    static::assertArrayNotHasKey('pager', $build);
+
+    // Using view mode with a pagination limit set.
+    $list_builder = $entity_type_manager->getListBuilder(static::ENTITY_TYPE);
+    $reflection = new \ReflectionProperty($list_builder, 'limit');
+    $reflection->setAccessible(TRUE);
+    $reflection->setValue($list_builder, 10);
+    $this->stack->queueMockResponse([
+      'get_developer_apps' => [
+        'apps' => [$this->app],
+      ],
+    ]);
+    $build = $list_builder->render();
+    static::assertSame('apigee_entity_list', $build['#type']);
+    static::assertSame('foo', $build['#view_mode']);
+    static::assertArrayHasKey('pager', $build);
+    static::assertSame('pager', $build['pager']['#type']);
   }
 
   /**
