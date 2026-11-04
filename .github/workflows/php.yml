@@ -18,8 +18,7 @@ env:
 
 on:
   push:
-  # zizmor: ignore[dangerous-triggers] - Checks out trusted base branch ref; required for integration test secrets.
-  pull_request_target:
+  pull_request:
   schedule:
     - cron: '00 01 * * *' 
 
@@ -29,7 +28,6 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: read
-      security-events: write
     
     name: "PHP ${{ matrix.php-version }} | Drupal ${{ matrix.drupal-core }} | ${{ matrix.instance-type }}"
     strategy:
