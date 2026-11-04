@@ -193,16 +193,30 @@ class Condition extends ConditionBase implements ConditionInterface {
    *   Property value or NULL if not found.
    */
   public static function getProperty($item, string $property) {
-    $normalized = ucfirst(implode('', array_map('ucfirst', explode('_', $property))));
-    $getter_candidates = [
-      "is{$normalized}",
-      "get{$normalized}",
-      $normalized,
-    ];
+    if (str_starts_with($property, 'AttributeValue.')) {
+      [$getter, $attribute_name] = explode('.', $property);
+      $getter_candidates[] = 'get' . $getter;
+      unset($getter);
+      $args = [];
+      $args[] = $attribute_name;
+    }
+    else {
+      $normalized = ucfirst(implode('', array_map('ucfirst', explode('_', $property))));
+      $args = NULL;
+      $getter_candidates = [
+        "is{$normalized}",
+        "get{$normalized}",
+        $normalized,
+      ];
+    }
 
     foreach ($getter_candidates as $getter) {
       if (method_exists($item, $getter)) {
-        return call_user_func([$item, $getter]);
+        if ($args === NULL) {
+          return $item->$getter();
+        }
+
+        return $item->$getter(...$args);
       }
     }
 
