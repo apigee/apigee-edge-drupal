@@ -191,6 +191,20 @@ class TeamListBuilder extends EdgeEntityListBuilder {
     if ($this->currentUser->isAuthenticated() && !$this->currentUser->hasPermission('administer team') && !$this->currentUser->hasPermission('view any team')) {
       $teams = $this->teamMembershipManager->getTeams($this->currentUser->getEmail());
 
+      // On Apigee X, getTeams() without a team parameter returns an empty
+      // array. Fall back to candidate team memberships from the local
+      // team_member_role storage so pagination slices only accessible teams.
+      if (empty($teams) && $this->entityTypeManager->hasDefinition('team_member_role')) {
+        /** @var \Drupal\apigee_edge_teams\Entity\Storage\TeamMemberRoleStorageInterface $team_member_role_storage */
+        $team_member_role_storage = $this->entityTypeManager->getStorage('team_member_role');
+        foreach ($team_member_role_storage->loadByDeveloper($this->currentUser) as $team_member_role) {
+          if ($team_id = $team_member_role->get('team')->target_id) {
+            $teams[] = $team_id;
+          }
+        }
+        $teams = array_values(array_unique($teams));
+      }
+
       // FIX: Disable the pager completely if the user have a single team
       // or no teams. `Query::getFromStorage()` have `IN` conditions
       // containing only a single value, which breaks the pager count and
