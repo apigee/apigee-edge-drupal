@@ -20,6 +20,7 @@
 namespace Drupal\Tests\apigee_edge\Traits;
 
 use Drupal\Core\Entity\EntityStorageException;
+use Drupal\apigee_edge\Plugin\EdgeKeyTypeInterface;
 use Drupal\key\Entity\Key;
 
 /**
@@ -41,6 +42,9 @@ trait ApigeeEdgeUtilTestTrait {
       if (getenv($env_var_name)) {
         $environment_variables[$id] = getenv($env_var_name);
       }
+    }
+    if (($environment_variables['instance_type'] ?? '') === EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID && empty($environment_variables['account_json_key'])) {
+      $environment_variables['gcp_hosted'] = 1;
     }
 
     $key = Key::create([
