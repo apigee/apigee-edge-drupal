@@ -2,24 +2,13 @@ name: test_and_lint
 env:
   SIMPLETEST_DB: "sqlite://localhost//tmp/test.sqlite"
   SIMPLETEST_BASE_URL: "http://127.0.0.1:8000"  
-  APIGEE_EDGE_AUTH_TYPE: ${{ secrets.APIGEE_EDGE_AUTH_TYPE }}
-  APIGEE_EDGE_ORGANIZATION: ${{ secrets.APIGEE_EDGE_ORGANIZATION }}
-  APIGEE_EDGE_USERNAME: ${{ secrets.APIGEE_EDGE_USERNAME }}
-  APIGEE_EDGE_PASSWORD: ${{ secrets.APIGEE_EDGE_PASSWORD }}
-  APIGEE_EDGE_INSTANCE_TYPE: ${{ secrets.APIGEE_EDGE_INSTANCE_TYPE }}
-  APIGEE_INTEGRATION_ENABLE: ${{ secrets.APIGEE_INTEGRATION_ENABLE }}
-  APIGEE_EDGE_ENDPOINT: ${{ secrets.APIGEE_EDGE_ENDPOINT }}
-  APIGEE_EDGE_ACCOUNT_JSON_KEY: ${{ secrets.APIGEE_EDGE_ACCOUNT_JSON_KEY }}
-  APIGEE_EDGE_HYBRID_ENDPOINT: ${{ secrets.APIGEE_EDGE_HYBRID_ENDPOINT }}
-  APIGEE_EDGE_HYBRID_ORGANIZATION: ${{ secrets.APIGEE_EDGE_HYBRID_ORGANIZATION }}
   BROWSERTEST_OUTPUT_DIRECTORY: "sites/simpletest/browser_output"
   BROWSERTEST_OUTPUT_BASE_URL: ""
   MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", { "chromeOptions": { "w3c": false, "args": ["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--window-size=1280,1024"] } }, "http://127.0.0.1:9515/wd/hub"]'
 
 on:
   push:
-  # zizmor: ignore[dangerous-triggers] - Checks out trusted base branch ref; required for integration test secrets.
-  pull_request_target:
+  pull_request:
   schedule:
     - cron: '00 01 * * *' 
 
@@ -29,7 +18,6 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: read
-      security-events: write
     
     name: "PHP ${{ matrix.php-version }} | Drupal ${{ matrix.drupal-core }} | ${{ matrix.instance-type }}"
     strategy:
@@ -133,8 +121,6 @@ jobs:
         vendor/bin/phpcs --standard=./phpcs.xml.dist modules/contrib/apigee_edge -p -s -n --colors
         # Setting environment variables to run Apigee X tests
         echo "APIGEE_EDGE_INSTANCE_TYPE=hybrid" >> $GITHUB_ENV
-        echo "APIGEE_EDGE_ORGANIZATION=$APIGEE_EDGE_HYBRID_ORGANIZATION" >> $GITHUB_ENV
-        echo "APIGEE_EDGE_ENDPOINT=$APIGEE_EDGE_HYBRID_ENDPOINT" >> $GITHUB_ENV
         composer show > composer-show.txt
 
     # - name: "Drupal check"
