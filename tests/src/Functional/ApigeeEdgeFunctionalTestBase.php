@@ -46,6 +46,9 @@ abstract class ApigeeEdgeFunctionalTestBase extends BrowserTestBase {
     if (!empty($instance_type) && $instance_type === EdgeKeyTypeInterface::INSTANCE_TYPE_HYBRID) {
       $this->markTestSkipped('This test suite is expecting a PUBLIC instance type.');
     }
+    if (!static::$mock_api_client_ready && empty(getenv('APIGEE_INTEGRATION_ENABLE'))) {
+      $this->markTestSkipped('Online test skipped: APIGEE_INTEGRATION_ENABLE is not enabled.');
+    }
     parent::setUp();
     $this->initTestEnv();
   }
