@@ -56,6 +56,9 @@ trait ApigeeEdgeFunctionalTestTrait {
       $this->installExtraModules(['apigee_mock_api_client']);
       $this->apigeeTestHelperSetup();
     }
+    elseif (empty(getenv('APIGEE_INTEGRATION_ENABLE'))) {
+      $this->markTestSkipped('Online test skipped: APIGEE_INTEGRATION_ENABLE is not enabled.');
+    }
     else {
       $this->installExtraModules(['apigee_edge_test']);
       $this->createTestKey();
